@@ -1,15 +1,12 @@
 From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
-Subject: Re: Ottawa
-Date: Sat, 12 Mar 2005 11:29:41 +1100
-Message-ID: <1110587382.5752.144.camel@gaston>
-References: <F7DC2337C7631D4386A2DF6E8FB22B3002F2271A@hdsmsx401.amr.corp.intel.com>
-	<1110542934.5810.94.camel@gaston>
-	<Pine.LNX.4.50.0503111258490.19793-100000@monsoon.he.net>
-	<1110585295.5752.126.camel@gaston>
-	<20050311170827.07daf488@cosmic.amd.com>
+Subject: RE: IRC Meeting
+Date: Sat, 12 Mar 2005 11:32:22 +1100
+Message-ID: <1110587542.5809.146.camel@gaston>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3002F68137@hdsmsx401.amr.corp.intel.com>
+	<Pine.LNX.4.50.0503111341560.19793-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============95846558276445393=="
-In-Reply-To: <20050311170827.07daf488-aftB2sG12IhaqnLngUycEA@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============9533942733339934=="
+In-Reply-To: <Pine.LNX.4.50.0503111341560.19793-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,43 +16,29 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Jordan Crouse <jordan.crouse-5C7GfCeVMHo@public.gmane.org>
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
 Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============95846558276445393==
+--===============9533942733339934==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2005-03-11 at 17:08 -0700, Jordan Crouse wrote:
-> On Sat, 12 Mar 2005 10:54:55 +1100
-> "Benjamin Herrenschmidt" <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org> wrote:
+On Fri, 2005-03-11 at 13:42 -0800, Patrick Mochel wrote:
+> On Fri, 11 Mar 2005, Brown, Len wrote:
 > 
-> > > On that note, no matter where we have it, I'd like to limit it to
-> > > 6-8 people, with at most maybe 10. I don't wish to exclude anyone,
-> > > but I think that smaller groups can remain more focused. Plus,
-> > > there's all those sociological studies that say 6-7 people is the
-> > > optimal size for a discussion group. :)
-> > 
-> > Us, Nigel, David Brownell, Alan, Pavel, Brown, we are already 7... ?
+> > Times are fine with me (US EST)
+> >
+> > Would it make sense to set up an audio phone bridge, or is IRC
+> > preferred?
 > 
-> Are there any logical divisions of area of interest that could result in
-> multiple productive meetings? 
+> I much prefer IRC; I'm much more of a visual person rather than an audial
+> one. And, I hate the telephone. :)
 
-Not sure. There are 2 different "main" areas, which are the global
-system suspend/resume, and the "local" or "dynamic" power management of
-devices & busses. We have a good solution for the first, but not for the
-second at this point, so I would expect that we concentrate on that
-part.
-
-Plus some always-pending issues for global suspend, the biggest one
-beeing video chips that need a re-POST on wakeup.
-
-Ben.
+Yah, me too :)
 
 
-
---===============95846558276445393==
+--===============9533942733339934==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -66,4 +49,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============95846558276445393==--
+--===============9533942733339934==--
