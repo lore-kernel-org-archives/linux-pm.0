@@ -1,11 +1,21 @@
-From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
-Subject: Re: Nested suspends; messages vs. states
-Date: Thu, 24 Mar 2005 09:13:35 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0503240904570.13683-100000@monsoon.he.net>
-References: <Pine.LNX.4.44L0.0503241149000.1345-100000@ida.rowland.org>
+From: Nathan Lynch <ntl-e+AXbWqSrlAAvxtiuMwx3w@public.gmane.org>
+Subject: Re: CPU local things [was Re: Nested suspends;
+	messages vs. states]
+Date: Thu, 24 Mar 2005 11:14:06 -0600
+Message-ID: <20050324171406.GE16469@otto>
+References: <1111548664.16201.63.camel@gaston>
+	<Pine.LNX.4.50.0503231008340.17099-100000@monsoon.he.net>
+	<20050323210204.GE30704@elf.ucw.cz>
+	<1111613750.14853.117.camel@desktop.cunningham.myip.net.au>
+	<20050323215416.GK30704@elf.ucw.cz>
+	<Pine.LNX.4.50.0503231838570.15119-100000@monsoon.he.net>
+	<1111634182.3430.1.camel@desktop.cunningham.myip.net.au>
+	<Pine.LNX.4.50.0503240017460.15119-100000@monsoon.he.net>
+	<20050324100153.GE1354@elf.ucw.cz>
+	<Pine.LNX.4.50.0503240749030.24692-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============14437404686112076=="
-In-Reply-To: <Pine.LNX.4.44L0.0503241149000.1345-100000-3WpdWqXrU/qjv4eRiOYp3g@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============62873135482885789=="
+In-Reply-To: <Pine.LNX.4.50.0503240749030.24692-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,79 +25,74 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+Cc: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============14437404686112076==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============62873135482885789==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, Mar 24, 2005 at 07:59:21AM -0800, Patrick Mochel wrote:
+> 
+> On Thu, 24 Mar 2005, Pavel Machek wrote:
+> 
+> > Hi!
+> >
+> > > > Just for clarity's sake, what are you thinking should happen to MTRR
+> > > > support?
+> > >
+> > > Become more componentized. We need a better way to represent optional
+> > > features of any device, but in particular CPUs. We should never be calling
+> > > it directly; we should be looping over the feature drivers bound to a 'CPU
+> > > Driver' and suspending them.
+> >
+> > Actually, no.
+> >
+> > mtrr's are cpu local. That means they need to be handled by CPU
+> > hotplug framework. I guess we should just drop them from "normal"
+> > device trees, and create something per-CPU.
+> 
+> Sorry, it was late and that explanation sucked.
+> 
+> - Every CPU has a set of optional features that it supports.
+> 
+> - MTRRs are an optional feature that a CPU may support.
+> 
+> - When the MTRR driver is loaded, a data structure should be allocated for
+>   each CPU and added to a list.
+> 
+> - The list that the per-CPU MTRR data structure is added to could be part
+>   of a 'CPU driver'.
+> 
+> - We should be looping over the set of optional features that a CPU
+>   supports to suspend/resume them, rather than calling them directly.
+
+Don't sysdev_suspend and sysdev_resume do this already?
 
 
-On Thu, 24 Mar 2005, Alan Stern wrote:
+> > Perhaps plain old notification list is enough for this one.
+> 
+> It's possible, but notification lists present some problems. Like the fact
+> they use a hard-coded set of events in a global header file. They are good
+> only for a certain set of events.
+> 
+> It's damn simple to create a struct type for CPU features and a method
+> contained in each one for cpu offline/online. I would suggest adding a
+> list_head to struct cpu (include/linux/cpu.h) called 'features', then
+> having things like MTRR add themselves to that list.
 
-> On Wed, 23 Mar 2005, Patrick Mochel wrote:
-
-> >  It would make it potentially very hard to debug and add a lot of
-> > time to the process.
->
-> Hard to debug, maybe... we can't tell without actually trying.  Adding a
-> lot of time to the suspend process, no.  Acquiring the locks would block
-> only for things that should cause you to block anyway, like trying to
-> suspend a device while it's being probed.
-
-It would change the locking from an O(1) operation to an O(n) operation,
-where n is the number of devices. Taking any lock is not cheap, so taking
-N locks, when is N is large is going to be grossly inefficient.
-
-> (Or did you mean it would add a lot of time to the development process?  I
-> doubt it, but it would force people to think about issues they would
-> prefer to ignore.)
-
-Uh, I hadn't thought about it, but yes, that's true as well. While in
-theory it's good to make people think about what they're doing, you want
-to make things as simple as possible for people to implement ("Make it
-impossible to get wrong."). Especially for driver writers, who typically
-have the least experience with the Linux kernel, and in many cases, very
-little experience with multi-processor systems and race conditions.
-
-[ Note that it's still easy to get things wrong in the driver model, but
-that's specifically where the effort is going - to make it harder to mess
-up. ]
-
-> > Note that you're locking ideas are at least original, but I'm having a
-> > harder and harder time taking them seriously without any code. I highly
-> > recommend that you at least try to codify the locking changes before
-> > making suggestions. It will weed out a lot of under-cooked ideas and get
-> > us a lot closer to a workable solution. As Linus would say "Show me the
-> > code!"
->
-> A large part of the concept is already coded up and part of the kernel
-> since about 2.6.9, and it works quite well.  Its scope is currently
-> restricted to the USB layer; I'm proposing to make it more general.
-
-Really? And it works well? Greg, David? What do you guys think of it?
-
-> In fact at this stage it's more a matter for discussion under the topic
-> of driver-model development, so I'm going to stop talking about it on
-> linux-pm.  You indicated that you had some relevant driver-model patches
-> -- would you like to send them to me?
-
-I apologize, I assumed you had seen them. You can find them here:
-
-http://article.gmane.org/gmane.linux.kernel/289092
-
-specifically the klist patch:
-
-http://article.gmane.org/gmane.linux.kernel/289090
+Why is the existing sysdev auxiliary driver support not sufficient?
+Last time I checked, cpufreq uses it for this kind of purpose.
 
 
-	Pat
+Nathan
 
---===============14437404686112076==
+--===============62873135482885789==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============14437404686112076==--
+--===============62873135482885789==--
