@@ -1,12 +1,21 @@
-From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
-Subject: Re: [RFC] Driver States
-Date: Tue, 29 Mar 2005 21:57:43 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0503292155120.26543-100000@monsoon.he.net>
-References: <1111963367.3503.152.camel@localhost.localdomain>
+From: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Subject: Re: Re: swsusp 'disk' fails in bk-current - intel_agp at
+	fault?
+Date: Wed, 30 Mar 2005 01:52:13 -0800
+Message-ID: <20050330095213.GA12632@kroah.com>
+References: <4243252D.6090206@suse.de> <20050324235439.GA27902@hexapodia.org>
+	<4243D854.2010506@suse.de>
+	<d120d50005032908183b2f622e@mail.gmail.com>
+	<20050329181831.GB8125@elf.ucw.cz>
+	<d120d50005032911114fd2ea32@mail.gmail.com>
+	<20050329192339.GE8125@elf.ucw.cz>
+	<d120d50005032912051fee6e91@mail.gmail.com>
+	<20050329205225.GF8125@elf.ucw.cz>
+	<Pine.LNX.4.50.0503291321490.29474-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============55904417521386773=="
+Content-Type: multipart/mixed; boundary="===============068671297222429928=="
 Return-path: <linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
-In-Reply-To: <1111963367.3503.152.camel-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.50.0503291321490.29474-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,74 +25,48 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
-Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+Cc: Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Andy Isaacson <adi-3HqRAUrWAWyGglJvpFV4uA@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Stefan Seyfried <seife-l3A5Bk7waGM@public.gmane.org>, kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============55904417521386773==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============068671297222429928==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
+On Tue, Mar 29, 2005 at 01:23:35PM -0800, Patrick Mochel wrote:
+> 
+> On Tue, 29 Mar 2005, Pavel Machek wrote:
+> 
+> > I don't really want us to try execve during resume... Could we simply
+> > artifically fail that execve with something if (in_suspend()) return
+> > -EINVAL; [except that in_suspend() just is not there, but there were
+> > some proposals to add it].
+> >
+> > Or just avoid calling hotplug at all in resume case? And then do
+> > coldplug-like scan when userspace is ready...
+> 
+> I thought that cold-plugging only worked for devices, not all objects.
 
-On Sun, 27 Mar 2005, Adam Belay wrote:
+We can walk the whole sysfs tree and create "cold" hotplug events.
+udevstart does that for devices that udev cares about (as an example.)
 
-> Dynamic power management may require devices and drivers to transition
-> between various physical and logical states.  I would like to start a
-> discussion on how these might be defined at the bus, driver, and class
-> levels.
+> Can we just queue up hotplug events? That way we wouldn't lose any across
+> the transition, and could be used to send resume events to userspace for
+> various devices that need help..
 
-<snip>
+Ick, I really hate this idea, but there is a patch in the SuSE kernel to
+do this at boot time.  Hopefully the author of that patch resubmitts it
+again and maybe it will make it eventually into mainline...
 
-> Bus Level
-> =========
-> At the bus level, there are two state attributes, power and
-> enable/disable.  Enable/disable may mean different things on different
-> buses, but they generally refer to resource decoding.  A device can only
-> be enabled during a non-off power state.
+thanks,
 
-<...>
+greg k-h
 
-> Driver Level
-> ============
-> At the driver level there are two areas of interest, physical and
-> logical state.  There is an additional concern of transitioning between
-> these states multiple times.  Because a driver acts as a bridge between
-> physical and logical components, I think separating these steps seems
-> natural.
-
-<...>
-
-> *attach - allocates data structures, creates sysfs entries, prepares driver
->        to handle the hardware.
->
-> *start -  Sets up device resources and configures the hardware.  Loads
-> firmware, etc.
-> (physical)
->
-> *open -   engages the hardware, and makes it usable by the class device.
-> (logical and physical)
->
-> *close -  disengages the hardware, and stops class level access
-> (logical and physical)
->
-> *stop -   physically disables the hardware
-> (physical)
->
-> *detach - tears down the driver and releases it from the "struct device"
->
-
-You have a few things here that can easily conflict, and that will be
-developed at different paces. I like the direction that it's going, but
-how do you intend to do it gradually. I.e. what to do first?
-
-
-	Pat
-
-
---===============55904417521386773==
+--===============068671297222429928==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============55904417521386773==--
+--===============068671297222429928==--
