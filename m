@@ -1,16 +1,16 @@
 From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
 Subject: Re: Nested suspends; messages vs. states
-Date: Thu, 24 Mar 2005 13:22:07 +1100
-Message-ID: <1111630927.16224.163.camel@gaston>
+Date: Thu, 24 Mar 2005 13:29:34 +1100
+Message-ID: <1111631375.16201.172.camel@gaston>
 References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
 	<Pine.LNX.4.50.0503221635130.16154-100000@monsoon.he.net>
 	<1111540913.16224.43.camel@gaston>
 	<Pine.LNX.4.50.0503221724550.16154-100000@monsoon.he.net>
 	<1111548664.16201.63.camel@gaston>
-	<Pine.LNX.4.50.0503231727220.15119-100000@monsoon.he.net>
+	<Pine.LNX.4.50.0503231742090.15119-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============038389627281401495=="
-In-Reply-To: <Pine.LNX.4.50.0503231727220.15119-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============60596345724769884=="
+In-Reply-To: <Pine.LNX.4.50.0503231742090.15119-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,64 +24,122 @@ To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
 Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============038389627281401495==
+--===============60596345724769884==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
 
-> I'm talking about an array of device states the device supports. They
-> would be exporting them to userspace for the purpose of device power
-> management. While it's related to the device states a driver supports,
-> it's not exactly the same thing.
+> Are the leaf devices ever going to enter some random, ill-defined state?
+> While a device could enter a number of states, that set seems finite.
+> Correct me if I'm wrong, I only know PM from a PCI perpsective.
+> 
+> For PCI, there are 4 possible states a device could be in (ok 5, counting
+> D3-cold). How many power states are there in USB?
 
-I would have a single array. Just use a flag in there to mark the ones
-that are visible to userspace.
+Power states of a device go far beyond what their bus provide. For
+example, I have ideas of using that to provide a way for radeonfb to
+underclock the video chip, with significant gain on power consumptions.
+There may be plenty other operational modes on a given piece of HW that
+aren't necesarily related to the PCI PM state. The later is just a
+"tool" for use by the driver, they aren't really useful to expose in
+practice.
 
-> You want to expose only the mutual set of those sets (the states the
-> device and the driver both support) on a per-device basis. The easiest way
-> to do that would be with a per-device array. You could do it with a
-> per-driver array, but in the case where a driver supports different revs
-> of a chip with different power management capabilities, you'd have to
-> constantly check what rev of the chip you're using..
+> It would be trivial to add a set of lists to each bridge driver to hold
+> each device that is in a particular state. E.g. for PCI that would be:
+> 
+> 	struct list_head	devices_d0;
+> 	struct list_head	devices_d1;
+> 	struct list_head	devices_d2;
+> 	struct list_head	devices_d3;
+> 	struct list_head	devices_d3cold;
 
-Too many arrays, we are going to complicate the driver-side of the model
-too much. I'm thinking more about an array that can be pointed to
-statically from the driver structure (which is usually static as well).
-This is important for a reason: Devices may be added to a part of the
-tree that is in a low power state. So the actual "state" upon probe() is
-_not_ necessarily the "main" power state. The core must be able to
-resolve the state dependency at device add time before probe I think, or
-at least know what value to put in "current state" before probe(), so
-the driver can eventually try to clamp the state up on the parent if it
-needs more power to initialize itself.
+But they make no sense ! Have you any driver writing experience ? :)
+Specs are nice, but sometimes quite far from reality. Those states
+aren't even properly defined by the PCI Spec (their actual HW meaning is
+not), and what state to enter for a given state and what is the effect
+of that state is totally device dependant. Some devices support only a
+subset of them, etc etc etc...
+ 
+> As devices are discovered and bound, they are put on the devices_d0 list.
+> As runtime power management happens, they would be moved to the
+> appropriate lists based on the power state they entered. When a bridge was
+> told to go into a certain power state, it could easily iterate over all
+> the devices that were only in a power state that had to change.
 
-Something like
+No, we shouldn't even care about the PCI PM states IMHO. Drivers may
+chose to put their device in a given PCI PM state because they know that
+on such HW, that PM state has this specific effect etc... but that's not
+something we want to expose beyond that. There _is_ some platform
+requirements on PCI PM states for sustem suspend though, and we need a
+way to address them (via pci_choose_state or equivalent maybe) but that
+isn't even always properly dealt with by all HW anyway.
 
-struct pm_state_list my_states = {
-	{ "running", PM_STATE_USER, .... <whatever else> },
-	{ "snoozing", PM_STATE_USER, .... <whatever else> },
-	{ "suspended", PM_STATE_USER, .... <whatever else> },
-};
+>It would be trivial for a bus to do automatic opportunistic power
+> management. It could quickly check what was the lowest state it could
+> enter based on the highest power state a child could have:
+> 
+> 	if (list_empty(&devices_d0)) {
+> 		if (list_empty(&devices_d1)) {
+> 			if (list_empty(&devices_d2)) {
+> 				enter_b3();
+> 			} else {
+> 				enter_b2();
+> 			}
+> 		} else {
+> 			enter_b1();
+> 		}
+> 	}
+> 
+> Or something like that. :)
 
-struct pci_driver my_driver = {
-   .../...
-   dev.pm_states = &my_states;
-};
+Excepot that there is nothing like a definition of what a "D2" state
+means to a PCI bus ... If it meant "unclocked" (which is _usually_ the
+case with some devices, assuming D2 means you can remove the clock but
+not power), but it's not even properly specified.
 
-The above array is just a random example, we definitely have to work
-more on the defintion of a state. In that example, we have the state
-name and a flags word, PM_STATE_USER indicating the state can be set by
-the user.
+> I agree, and it's easy enough to think of things with a bus-centric view.
+> But, how does that add complexity to the core? I envision the core doing
+> something like this:
+> 
+> - Keep a hierarchical list of buses
+> - Iterate over buses to put them to sleep
 
-Ben.
+The core should only care about devices. A bus is just a special case of
+device with childs... and thus a possible dependency. States exposed by
+busses are device states. PCI cannot really expose any since the PCI D
+states don't really have any meaning. The only thing PCI can expose with
+some useful sanity is "clocked removed" and "power removed" ... There
+may be room for a "low power" (only the minimum sleep power is
+provided). Drivers could act on those, since those are states that
+actually _mean_ something to the HW, thus drivers designers could take
+proper decisions on what to do. At the bus level, D1 or D2 have no
+meaning. The PCI spec is broken in this regard (and many others ...)
+
+> If we kept it at that, we could just call down to the bridge drivers and
+> have them iterate over the devices on their bus to suspend them. This
+> would push all the handling of leaf devices to the bus subsystems
+> themselves. That would keep the core simple, not matter to the leaf device
+> drivers, and place the burden on the bridge drivers.
+> 
+> The bridge driver largely don't exist (except for USB hubs), the
+> requirements aren't very tough, and it would localize the semantics where
+> they need to be - in the bus subsystems.
+> 
+> Seems like a win all around..
+> 
+> Ok, now I'll read the rest of the threads..
+> 
+> 
+> 	Pat
+-- 
+Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
 
 
-
---===============038389627281401495==
+--===============60596345724769884==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============038389627281401495==--
+--===============60596345724769884==--
