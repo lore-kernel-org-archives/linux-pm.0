@@ -1,11 +1,15 @@
 From: Pavel Machek <pavel-AlSwsSmVLrQ@public.gmane.org>
-Subject: Re: uhci-hcd suspend/resume under the new driver model
-Date: Sun, 13 Mar 2005 19:12:25 +0100
-Message-ID: <20050313181225.GC1579@elf.ucw.cz>
-References: <20050313101453.GA4820@blackham.com.au>
+Subject: Re: Devices eating too much power [was Re: Some thoughts
+	on suspend/resume development]
+Date: Sun, 13 Mar 2005 19:14:55 +0100
+Message-ID: <20050313181455.GD1579@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0503091111470.1117-100000@ida.rowland.org>
+	<1110403931.8870.6.camel@desktop.cunningham.myip.net.au>
+	<20050309214416.GG17034@elf.ucw.cz>
+	<1110405336.8870.22.camel@desktop.cunningham.myip.net.au>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============37440366828381433=="
-In-Reply-To: <20050313101453.GA4820-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============60792205593996052=="
+In-Reply-To: <1110405336.8870.22.camel-r49W/1Cwd2ff0s6lnCXPX/uOuaPYTxhvJwvTLr3MMZM@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,52 +19,54 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
-Cc: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============37440366828381433==
+--===============60792205593996052==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-> One of the problems Suspend2 is running into with the driver model
-> changes, is uhci-hcd doesn't suspend and resume correctly. The
-> problem is that in the changes to usb_hcd_pci_suspend in hcd-pci.c,
-> we now use pci_choose_state to obtain the PCI power state to put the
-> machine into. It affects uhci-hcd because it does not have the
-> PCI_CAP_ID_PM capability bit set.
+> > > > This isn't to say that we should copy Windows.  However it does show that 
+> > > > a very complex set of controls might not be needed.
+> > 
+> > Actually, as we already spindown and blank settings, we could finish
+> > here :-).
+> > 
+> > What devices is this targetted at? Video should be handled
+> > already (or perhaps we want to power down graphics card when screen is
+> > blanked?). Disks spin down too. IRDA ports?
 > 
-> Before the new driver model, state would be 3 (passed directly to
-> the function), and the function would run with state D3hot, and
-> has_pci_pm false.  With these changes however, pci_choose_state sees
-> the lack of PCI_CAP_ID_PM and returns state D0 instead of D3hot.
-> Hence the function runs as if suspending into D0, and doesn't do the
-> suspend as it should.
-> 
-> My hack (attached), fixes the suspend function to proceed with the
-> suspend even if state is D0, if it sees that has_pci_pm is false. It
-> resolves the suspend/resume issues, but it's probably not the
-> cleanest solution, as it relies on the fact that the suspend
-> function is only there to put the device into D3hot (and not any
-> other power state).
-> 
-> Other drivers that lack PCI_CAP_ID_PM probably have the same
-> problem, and I thought you might have a cleaner solution. Any
-> suggestions? :)
+> - Video
 
-I guess has_pci_pm check should be killed from pci_choose_state. It is
-probably going to create some problems elsewhere....
+X/dpms handles these already.
+
+> - Storage
+
+laptop mode.
+
+> - Hotplug devices
+> - CPU power savings
+
+cpufreq.
+
+> - Scanner lights
+
+Ok ;-).
+
+> Anything you might care to imagine :>
+
+Well, I meant something that is not already handled. Like... what
+power-hungry device do we fail to properly handle today?
 
 								Pavel
-
-
 -- 
 People were complaining that M$ turns users into beta-testers...
 ...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
 
---===============37440366828381433==
+--===============60792205593996052==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -71,4 +77,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============37440366828381433==--
+--===============60792205593996052==--
