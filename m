@@ -1,13 +1,9 @@
-From: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
-Subject: Re: Re: uhci-hcd suspend/resume under the new driver model
-Date: Thu, 17 Mar 2005 09:10:13 +0800
-Message-ID: <20050317011013.GD10545@blackham.com.au>
-References: <20050316165239.GA10545@blackham.com.au>
-	<Pine.LNX.4.44L0.0503161336500.1040-100000@ida.rowland.org>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Possible subjects for IRC discussion
+Date: Wed, 16 Mar 2005 22:44:11 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0503162218100.6156-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="eJnRUKwClWJh1Khz"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0503161336500.1040-100000-3WpdWqXrU/qjv4eRiOYp3g@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============85629025734340436=="
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,80 +13,71 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>, ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+To: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+--===============85629025734340436==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
---eJnRUKwClWJh1Khz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+For anyone who manages to read this message in time...
 
-On Wed, Mar 16, 2005 at 01:44:00PM -0500, Alan Stern wrote:
-> > Needed an extra patch to compile, attached.
-> 
-> I didn't get your attachment.
+Here are some things we could talk about:
 
-D'oh. For real this time.
+	How should device power states be represented in the kernel?
+	One option: pointer to some kind of structure.
 
-> >  However, it still doesn't survive more than one suspend/resume
-> >  with devices plugged in. On the second resume, USB is dead, and
-> >  it enters the same suspend_hc/wakeup_hc loop. I traced this
-> >  back to the hcd never really being resumed, as the pci power
-> >  state never changes from D0 as pci_set_power_state is never
-> >  called here. The attached patch also addresses this - I'm not
-> >  sure if it's the right way, but it works(ish):
-> 
-> Can _you_ elaborate on "never really being resumed"?  Since the
-> state never changes from D0 much of the code in
-> usb_hcd_pci_suspend never runs, as you said above.  In fact about
-> the only thing that does happen is the call to
-> hcd->driver->suspend.  However the reverse call to
-> hcd->driver->resume does get made in usb_hcd_pci_resume even
-> though the state upon entry is D0.
+	How should parents be notified about power state changes in
+	their children?  Internally at the bus-subsystem level, or
+	should the PM core provide some facility?
 
-I meant specifically in the resume path, there's an if statement to
-check if the pci power state is > D0, and only acts if that's the
-case. Hopefully the first hunk of the patch attached makes this more
-clear. None of the code inside that if statement was being called.
+	Can we name device power states so they can be displayed in
+	sysfs?  To what extent can these names be bus-independent?  What
+	about complex states that represent multiple settings (different
+	clocks and so on)?
 
-Bernard
+	If the user interface involves telling the kernel what state to
+	put a device into by writing the state's name to the sysfs
+	attribute file, the kernel needs to know which name represents
+	Full Power.  Otherwise it won't be able to tell whether it should
+	call the driver's ->resume or ->suspend!  Should we always use
+	some conventional name (like "on") to represent full power?
 
--- 
- Bernard Blackham <bernard at blackham dot com dot au>
+	Kernel power management facilities exist in order to carry out
+	user policy.  What forms can that policy take, and what does the
+	kernel need to implement?  Some examples:
 
---eJnRUKwClWJh1Khz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="alan-usb-fixes-2-fixes.diff"
+		Change device D from power state X to power state Y after
+		N seconds of inactivity.
 
-Index: linux/drivers/usb/core/hcd-pci.c
-===================================================================
---- linux.orig/drivers/usb/core/hcd-pci.c	2005-03-16 23:49:50.000000000 +0800
-+++ linux/drivers/usb/core/hcd-pci.c	2005-03-17 00:28:10.000000000 +0800
-@@ -396,7 +396,7 @@
- 
- 	hcd->state = USB_STATE_RESUMING;
- 
--	if (dev->current_state > PCI_D0) {
-+	if (dev->dev.power.power_state.event != EVENT_ON) {
- 		if (has_pci_pm) {
- #ifdef	CONFIG_USB_SUSPEND
- 			pci_enable_wake (dev, dev->current_state, 0);
-@@ -411,7 +411,7 @@
- 		}
- 		dev->dev.power.power_state = PMSG_ON;
- 		retval = request_irq (dev->irq, usb_hcd_irq, SA_SHIRQ,
--				hcd->irq_descr, hcd);
-+				hcd->driver->description, hcd);
- 		if (retval < 0) {
- 			dev_err (hcd->self.controller,
- 				"can't restore IRQ after resume!\n");
+		Put device D in power state Z whenever Suspend To Ram 
+		occurs.
 
---eJnRUKwClWJh1Khz
+		Put device D in power state X right now.
+
+	Are there any other forms of policy the kernel can carry out?
+	How should even these simple policies be conveyed from userspace
+	to the kernel?
+
+	The user interface needs a way to tell the kernel whether a
+	device is enabled for wakeup signals.  It also needs a way to
+	tell the kernel whether a device should be resumed whenever a
+	software I/O request arrives on the device's queue.  How should 
+	this information be conveyed?
+
+	What messages need to be sent to userspace when device power
+	changes occur?  What sort of changes should generate such a 
+	message?  What mechanism should be used for sending the messages?  
+	(This is for device power management of course; system power
+	management will require its own set of messages.)
+
+Alan Stern
+
+
+--===============85629025734340436==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---eJnRUKwClWJh1Khz--
+--===============85629025734340436==--
