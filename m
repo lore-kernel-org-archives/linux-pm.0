@@ -1,11 +1,11 @@
 From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: Re: uhci-hcd suspend/resume under the new driver model
-Date: Wed, 16 Mar 2005 22:57:45 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503162246160.7210-100000@netrider.rowland.org>
-References: <20050317011013.GD10545@blackham.com.au>
+Subject: Re: Ottawa [topics]
+Date: Wed, 16 Mar 2005 23:11:12 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0503162259320.7210-100000@netrider.rowland.org>
+References: <200503161350.02426.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============28227466659638201=="
-In-Reply-To: <20050317011013.GD10545-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============45124693447411812=="
+In-Reply-To: <200503161350.02426.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,59 +15,51 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
-Cc: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>, ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+To: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Cc: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>, linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============28227466659638201==
+--===============45124693447411812==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Thu, 17 Mar 2005, Bernard Blackham wrote:
+On Wed, 16 Mar 2005, David Brownell wrote:
 
-> > I didn't get your attachment.
+> > Wether the system IRQs must be masked or not is one thing that is
+> > platform specific during suspend. Wether devices must stop their IRQ
+> > emission, well... 
 > 
-> D'oh. For real this time.
+> What's a "system IRQ" as opposed to any other kind?  Drivers don't
+> generally know or care how their IRQs are routed, they just care
+> that they get a callback.
 
-Of your two changes, it looks like the first one is an unimportant change
-to use the new PM types.  The second is to revert something that hasn't
-yet migrated out of the USB development tree.  So neither one is really
-important.
+Given that on some platforms it's necessary to leave some IRQs enabled for 
+remote wakeup to work, the definitions of FREEZE and SUSPEND need to be 
+changed.  A quiesced device does not perform DMA and does not generate 
+interrupt requests _except_ that it may issue wakeup requests (which may 
+be IRQs) if it is enabled for remote wakeup.
 
-> > Can _you_ elaborate on "never really being resumed"?  Since the
-> > state never changes from D0 much of the code in
-> > usb_hcd_pci_suspend never runs, as you said above.  In fact about
-> > the only thing that does happen is the call to
-> > hcd->driver->suspend.  However the reverse call to
-> > hcd->driver->resume does get made in usb_hcd_pci_resume even
-> > though the state upon entry is D0.
-> 
-> I meant specifically in the resume path, there's an if statement to
-> check if the pci power state is > D0, and only acts if that's the
-> case. Hopefully the first hunk of the patch attached makes this more
-> clear. None of the code inside that if statement was being called.
+I don't think this will cause any problems for Suspend To Disk.  If a 
+wakeup IRQ arrives before the system is asleep and is fielded by an 
+interrupt handler, the handler will try to start a resume.  But resume 
+needs a process context to operate, and all processes will be frozen -- so 
+nothing will happen.
 
-Yes, that's right.  There's a corresponding if statement in the suspend
-routine as well, and none of the code inside it was being run either.  In
-fact, the stuff inside the resume "if" block undoes the actions taken by
-the stuff inside the suspend "if" block.
+The case of Suspend To Ram, where processes may not be frozen, can be
+solved by suitable device locking.  If the PM core locks all devices
+before initiating the sleep transition -- which it should in any case --
+and unlocks them after waking up, and if resume processing involves
+acquiring the device lock, then again nothing will happen.
 
-So I don't think this is related to your mouse not functioning after 
-resume.  More likely that was caused by some HID driver not handling the 
-suspend/resume sequence correctly.
-
-I tried a similar test on my system, not with a mouse but with a mass 
-storage device.  There was no problem about binding the usb-storage driver 
-to it after the resume.  This adds to my suspicion that your problem was 
-caused by a mouse driver and not by the USB core or UHCI host driver.
+Does this help clarify things?
 
 Alan Stern
 
 
---===============28227466659638201==
+--===============45124693447411812==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============28227466659638201==--
+--===============45124693447411812==--
