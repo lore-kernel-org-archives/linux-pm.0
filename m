@@ -1,10 +1,9 @@
-From: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+From: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
 Subject: Re: suspend/resume uevents [was Re: Introducing HAL
 	userspace power management]
-Date: Fri, 11 Mar 2005 20:15:35 -0800
-Message-ID: <20050312041535.GB9671@kroah.com>
-References: <1110426926.3443.3.camel@daxter.boston.redhat.com>
-	<20050310095629.GA13444@elf.ucw.cz>
+Date: Sat, 12 Mar 2005 12:25:07 +0800
+Message-ID: <20050312042507.GC5649@blackham.com.au>
+References: <20050310095629.GA13444@elf.ucw.cz>
 	<1110476278.3404.60.camel@daxter.boston.redhat.com>
 	<20050310211320.GG632@openzaurus.ucw.cz>
 	<1110490939.3404.84.camel@daxter.boston.redhat.com>
@@ -13,9 +12,10 @@ References: <1110426926.3443.3.camel@daxter.boston.redhat.com>
 	<20050311084158.GA1705@elf.ucw.cz>
 	<1110557099.4203.19.camel@daxter.boston.redhat.com>
 	<1110574140.32510.12.camel@desktop.cunningham.myip.net.au>
+	<20050312041535.GB9671@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============36140058289684518=="
-In-Reply-To: <1110574140.32510.12.camel-r49W/1Cwd2ff0s6lnCXPX/uOuaPYTxhvJwvTLr3MMZM@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============4418262521560834=="
+In-Reply-To: <20050312041535.GB9671-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,27 +25,34 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Cc: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>, seife-l3A5Bk7waGM@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>, seife-l3A5Bk7waGM@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============36140058289684518==
+--===============4418262521560834==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Sat, Mar 12, 2005 at 07:49:00AM +1100, Nigel Cunningham wrote:
-> There's an excellent hibernate script written by Bernard Blackham that
-> we use for suspend2, but is also able to handle swsusp etc. If everyone
-> would start using it... (me included! [Bernard, that's five times I've
-> said it!])
+On Fri, Mar 11, 2005 at 08:15:35PM -0800, Greg KH wrote:
+> On Sat, Mar 12, 2005 at 07:49:00AM +1100, Nigel Cunningham wrote:
+> > There's an excellent hibernate script written by Bernard Blackham that
+> > we use for suspend2, but is also able to handle swsusp etc. If everyone
+> > would start using it... (me included! [Bernard, that's five times I've
+> > said it!])
+> 
+> A pointer to the script?
 
-A pointer to the script?
+It doesn't have its own page yet.
 
-thanks,
+http://www.suspend2.net/downloads/ - under the "Hibernate Script"
+section.
 
-greg k-h
+Bernard.
 
---===============36140058289684518==
+-- 
+ Bernard Blackham <bernard at blackham dot com dot au>
+
+--===============4418262521560834==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -56,4 +63,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============36140058289684518==--
+--===============4418262521560834==--
