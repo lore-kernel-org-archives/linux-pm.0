@@ -1,10 +1,13 @@
-From: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Subject: Mockup of a driver.
-Date: Thu, 24 Mar 2005 10:28:07 +1100
-Message-ID: <1111620485.14853.234.camel@desktop.cunningham.myip.net.au>
-Reply-To: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org
+From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+Subject: Re: Nested suspends; messages vs. states
+Date: Thu, 24 Mar 2005 10:24:36 +1100
+Message-ID: <1111620276.16224.107.camel@gaston>
+References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
+	<1111465290.27490.34.camel@gaston>
+	<200503231058.54311.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============40511143425272955=="
+Content-Type: multipart/mixed; boundary="===============55270178125286007=="
+In-Reply-To: <200503231058.54311.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,106 +17,122 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============40511143425272955==
+--===============55270178125286007==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Hi.
+On Wed, 2005-03-23 at 10:58 -0800, David Brownell wrote:
+> On Monday 21 March 2005 8:21 pm, Benjamin Herrenschmidt wrote:
+> > 
+> > Yup, the model we are desinging now should allow for arbitrary
+> > transitions I suppose as long  as the target state is legal vs. the
+> > dependencies.
+> 
+> Leading to the question:  how are the dependencies identified and
+> enforced?
 
-Perhaps we can help ourselves solidify this discussion a little by
-producing some pseudo code. Here's my first hack at driver "fred". I
-haven't made any effort at applying _all_ of the discussion so far. Feel
-free to ignore it, pull it to pieces...
+I have proposed something, if you read my other mails, that should deal
+with most of the usual cases.
 
-Nigel
+> My current thought is that it's wrong to expect the PM core code to
+> do all this.  Discussion on this list strongly suggests to me that
+> we'll never achieve a Grand Unified Theory of PM into which every
+> device, bus, platform, and board will fit ... unless we give up
+> on the notion that _everything_ be centrally controlled.  The key
+> will be having good ways to delegate all the important issues.
 
-/* fred_power_management
- *
- * Called on system state transitions and run time transitions
- */
-static int fred_power_management(pm_messsage_t * request)
-{
-	/* The state we're really in */
-	static int current_state = FRED_FULL_POWER;
+The problem with your approach is since you have in mind those extremely
+weird embedded setups that can't fit in any sane model, you decide to
+reject any model that does anything useful at the core. I don't agree
+with your logic. Most embedded systems even would fit in the simple
+model. In the case of on-chip devices driven by clock nets, it's even
+possible to just consider clock domains as "busses" and miracle ! we end
+up with a nice discrete list of bus state to apply to drivers and
+dependencies that fit the proposed model.
 
-	/* The state we would be in if a system state isn't overriding us */
-	static int current_state_rt = FRED_FULL_POWER;
+> So for example it would make sense to have device suspend() logic
+> verify any dependencies for the target state, and then just fail
+> cleanly if they're not satisfied.
 
-	/* 
-	 * pm_message_to_fred_state might be the same function for a whole
-	 * swag of devices eg those on a particular bus
-	 */
-	int fred_state_requested = pm_message_to_fred_state(request);
+How ? It doesn't have the necessary knowledge unless we start moving a
+lot of burden into drivers. And every time we'll move some algorithmic
+requirements like that to drivers, 99% of them will get it wrong.
 
-	int result = 0;
+> That'll mostly be an issue for bridge drivers ... like PCI
+> bridges, host adapters for things like USB, hubs, and so on.
 
-	/* 
-	 * Whether a system state or rt state requested, if we're
-	 * already in the state, there's nothing to do.
-	 */
+Bridges/busses have no knowledges of device states, they can't verify
+dependencies unless the devices expose their state list & dependency
+information in a meaningful way, which is exactly what I'm proposing.
 
-	if (fred_state_requested == current_state)
-		return 0;
+> But it also shows a way to handle custom hardware, which may
+> not be as regular as the PC and server centric developers want
+> the world to be...
 
-	if (request->type == PM_SYSTEM_STATE) {
-		/* Can we, and do we want to decline the transition? */
-		if (request->can_decline && i_dont_want_to())
-			return -ENO_WAY_HOSE;
-	} else {
-		current_state_rt = fred_state_requested;
+Yah, I know those, I have been doing embedded dev too, and in most
+cases, they aren't _that_ bad. And if they are ? well, they'll hack
+around like they do today.
 
-		/* Does system state force us to a lower state? */
-		if (current_state < fred_state_requested)
-			return 0;
-	}
+> I'm happy with per-driver responsibilities.  Less so with the notion
+> of conflating power states and performance modes; they seem a bit more
+> orthogonal to me.
 
-	/* 
-	 * Perhaps other drivers (not necessarily parent) might like to know
-	 * I'm about to change state. They might also want to say "Don't do it!"
-	 * Is a notifier chain the best way to do this?
-	 * notifier_chain (or whatever) would really be part of the struct device,
-	 * I guess.
-	 */
-	if (result=notifier_call_chain(&fred_pre_state_change_notifier_chain))
-		return result;
+They tend to be very tied in practice though ...
 
-	switch (fred_state_requested) {
-		case FRED_FULL_POWER:
-			/* whatever is required to do the transition */
-			break;
-		
-		case FRED_SEMI_CONSCIOUS:
-			/* whatever is required to do this transition */
-			break;
-	}
+> On the other hand, I've also described the role of a driver suspend()
+> call as just picking one of potentially many device power states that
+> are compatible with the target (system) state, and I think there's
+> common ground there.  If the "very low" device power state is compatible,
+> nobody should care ... because the request to the driver should have been
+> "become compatible with this system power state", and only in unusual
+> cases (sysfs requests) "go into this device power state".
+> 
+> So, two types of request to drivers then.  The main one would be to
+> become compatible with a given system power state; flexible.  The
+> inflexible one would be to go into a specific device power state.
 
-	/* 
-	 * Perhaps other drivers (not necessarily parent) might like to know
-	 * I have changed state. They can't complain now, though.
-	 */
-	notifier_call_chain(&fred_post_state_change_notifier_chain))
+But a device power state has an impact on childs of this device, thus
+the dependency issue. I am not talking about system states here. Unless
+you want to completely phase out dyamic PM of busses...
 
-	current_state = fred_state_requested;
-	return 0;
-}
+> The handful of drivers that deal with dependencies can be responsible
+> for that ordering.  They should be able to delegate much of the work
+> to PM core code (else why have a PM core?).
 
+No, I don't agree. That would be huge code duplication with different
+kinds of bugs in <name all busses in linux, and that is a LOT> 
+
+> I suspect that having all device states in some sort of order like that
+> is a problem isomorphic with the Grand Unified Theory of PM, which I
+> said we shouldn't try to derive.
+
+Bla bla bla bla... I am NOT proposing a f*king Grand Unified Whatever,
+I'm proposing a _model_ which should deal with a vast majority of issues
+with a simple driver side API, period. I'm not trying to put in
+everything nor all the crazy cases. It seems you are reasoning in an
+all-or-nothing way, and since all is not desirable nor even possible in
+a sane way, then you say, let's do nothing. I do NOT agree.
+
+> If the drivers that deal with dependencies -- "bridge" drivers, for
+> now -- can tell the PM core what to do with a given device (before
+> me, after me, skip it) the PM core could just ask those bridge drivers
+> to build a list, then walk the list issuing the right calls.  Instead
+> of having a single global list, build it on demand.
+> 
+> - Dave
 -- 
-Nigel Cunningham
-Software Engineer, Canberra, Australia
-http://www.cyclades.com
-Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
-
-Maintainer of Suspend2 Kernel Patches http://suspend2.net
+Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
 
 
---===============40511143425272955==
+--===============55270178125286007==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============40511143425272955==--
+--===============55270178125286007==--
