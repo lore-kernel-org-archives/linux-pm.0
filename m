@@ -1,22 +1,11 @@
-From: David Zeuthen <davidz-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: suspend/resume uevents [was Re: Introducing HAL
-	userspace power management]
-Date: Fri, 11 Mar 2005 10:52:03 -0500
-Message-ID: <1110556324.4203.7.camel@daxter.boston.redhat.com>
-References: <Pine.LNX.4.44L0.0503071125001.1378-100000@ida.rowland.org>
-	<1110411138.7779.86.camel@daxter.boston.redhat.com>
-	<20050309233556.GO17034@elf.ucw.cz>
-	<1110426926.3443.3.camel@daxter.boston.redhat.com>
-	<20050310095629.GA13444@elf.ucw.cz>
-	<1110476278.3404.60.camel@daxter.boston.redhat.com>
-	<20050310211320.GG632@openzaurus.ucw.cz>
-	<1110490939.3404.84.camel@daxter.boston.redhat.com>
-	<20050310230745.GC10954@elf.ucw.cz>
-	<1110518935.4512.14.camel@daxter.boston.redhat.com>
-	<1110525158.12485.178.camel@localhost.localdomain>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: Some thoughts on suspend/resume development
+Date: Fri, 11 Mar 2005 11:42:02 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0503111133040.1203-100000@ida.rowland.org>
+References: <20050311084733.GB1705@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============45969622496972429=="
-In-Reply-To: <1110525158.12485.178.camel-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============52054151377122015=="
+In-Reply-To: <20050311084733.GB1705-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,40 +15,52 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
-Cc: linux-pm <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, seife-l3A5Bk7waGM@public.gmane.org
+To: Pavel Machek <pavel-AlSwsSmVLrQ@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Adam Belay <amb-YszlSufgerXQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============45969622496972429==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--===============52054151377122015==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Fri, 2005-03-11 at 02:12 -0500, Adam Belay wrote:
-> > Maybe I'm reading the source wrong, but isn't it the case that some
-> > laptops using APM (my IBM thinkpad T41 with acpi=off for instance)
-> > suspends without user space interaction when the lid is closed, thus
-> > rendering it impossible to send the event from user space? 
-> > 
-> > One may even ask whether it's sound to assume that all architectures
-> > will be suspended via user space?
-> > 
-> > <snip>
+On Fri, 11 Mar 2005, Pavel Machek wrote:
+
+> > This is why I'm in favor of power domains (power parents and children
+> > that can be independent of physical device relations).  Power domains
+> > are common for internal devices, not just external devices.  Still, if
+> > you disable a physical parent, then the device is no longer operational.
+> > Disable the usb host controller, and the external disk drive cannot be
+> > used (in fact data may be lost).  So it's necessary to stop every child
+> > device first, and generally also power it off if we can control the
+> > power source.
 > 
-> I would consider this to be an exception.  APM has been obsolete for
-> years.  Our focus (for those platforms where it is available) should be
-> with ACPI on.
+> I just don't see it like that.
 > 
+> Remember old scsi disks where formatting took half an hour? You may do
+> something like
+> 
+> invoke scsi format operation
+> power down usb controller
+> <half an hour later>
+> power up usb controller
+> get the results
+> 
+> Now, that was probably bad example, but I do think some devices might
+> do usefull work even with their parents disabled.
 
-Except that quite a few laptop users (it's getting fewer thankfully,
-since ACPI support is getting better all the time) currently are forced
-to use APM if they want their laptop to actually suspend.
+There's another aspect to it as well.  You can suspend the USB host
+controller and then _still_ use the external disk, if the host controller
+is automatically resumed when the next disk I/O request arrives.  Whereas
+if you would stop the disk and its driver, the next I/O request might
+simply languish in a plugged queue.  I suppose this would depend on
+whether the disk driver was smart enough to leave its queue unplugged
+under the right circumstances, so perhaps this isn't a great example.  
+(And you're right about the possibility of data being lost -- although
+it's pretty unlikely -- which makes this an even worse example.)
 
-Cheers,
-David
+Alan Stern
 
 
-
---===============45969622496972429==
+--===============52054151377122015==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -70,4 +71,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============45969622496972429==--
+--===============52054151377122015==--
