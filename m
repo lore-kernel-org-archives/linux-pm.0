@@ -1,13 +1,13 @@
 From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 Subject: Re: Nested suspends; messages vs. states
-Date: Wed, 23 Mar 2005 21:16:38 -0800
-Message-ID: <200503232116.38924.david-b@pacbell.net>
+Date: Wed, 23 Mar 2005 21:27:19 -0800
+Message-ID: <200503232127.19576.david-b@pacbell.net>
 References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
-	<200503231058.54311.david-b@pacbell.net>
-	<20050323123725.201d8a67@cosmic.amd.com>
+	<200503231845.55392.david-b@pacbell.net>
+	<1111640590.16224.180.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============30132444976491768=="
-In-Reply-To: <20050323123725.201d8a67-aftB2sG12IhaqnLngUycEA@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============19966614205880129=="
+In-Reply-To: <1111640590.16224.180.camel@gaston>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,84 +17,62 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
+To: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============30132444976491768==
+--===============19966614205880129==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Wednesday 23 March 2005 11:37 am, Jordan Crouse wrote:
-> On Wed, 23 Mar 2005 10:58:54 -0800
-> "David Brownell" <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org> wrote:
+On Wednesday 23 March 2005 9:03 pm, Benjamin Herrenschmidt wrote:
+> On Wed, 2005-03-23 at 18:45 -0800, David Brownell wrote:
 > 
-> > So, two types of request to drivers then.  The main one would be to
-> > become compatible with a given system power state; flexible.  The
-> > inflexible one would be to go into a specific device power state.
+> > If you've hogtied your system by forcing some devices ("busses") into
+> > certain states that prevent others from working, it seems only fair to
+> > me that it stay hogtied.
 > 
-> I like the idea of the flexible request.  This would add the ability for
-> the policy to individually manage devices that for one reason or another
-> cannot or should not enter a power state compatible with the system
-> power state. 
+> No. For example, I'm a host controller. I notice I didn't get any
+> request for a while, I want to enter a suspended state. That means going
+> through dependencies of my childs so they can all enter a state
+> compatible with me going to suspend.
 
-Why wouldn't "can't enter compatible state" be an error case, preventing
-entry to that system power state?
+That's a different example though:  you've given the host controller
+flexibility.  You have _not_ hogtied it.
 
-
-> As an illustrative example, I'm thinking of a fictitious VoIP phone with
-> an audio device that has an abnormally large latency resuming from a
-> clocks off power state, so by the time it wakes up and is ready to go,
-> the incoming call is lost.
-
-I'll pick on that example though:  the audio output and radio input
-will be separate devices, with separate management.  Audio won't be
-providing a reason to drop the call; that'd be specific to the radio
-handling code.
+The model we seem to be aiming towards in USB land is a bit different
+than that though.  When autosuspend is the goal, it bubbles up from
+the bottom ... nodes (like HC) don't force children into idle, they
+wait for the children to idle themselves and then take the opportunity
+to snooze themselves.  That's a model with wide applicability...
 
 
-> At this point, the user/developer/designer 
-> could decide that the the extra power consumed by leaving the clocks on
-> is less important then having a responsive device, and the policy is set
-> so that the device only enters a D1 state with a suspend-to-ram system
-> power state, rather then a D3 state as it normally would (pardon the
-> PCI/ACPI terms, they're just for simplicity).
-
-There's no problem with different devices having different power
-states.  They're different devices for a reason, after all!
-
-The radio needs to be active enough to detect it's the target
-of a call, and issue a system wakeup event.  Then the rest of
-the system needs to be able to wake up quickly enough not to
-make the user doze off.  :)
-
-
-> In that case, even though the device state wouldn't technically be
-> compatible with the given system state, it would still be the
-> best fit for the platform as a whole.
-
-No, it would by definition be compatible.  Otherwise the system
-couldn't enter that state!  There's no rule saying that all
-PCI devices must be in PCI_D3 state when the system is in S3.
-PCI D1 or D2 states can be more appropriate ... Ben has lots
-of video driver examples (devices are sometimes reset in D3, and
-maybe Linux relies on BIOS init), and there are other cases  too.
-
-- Dave
-
- 
-> Jordan
+> > I suspect you're actually agreeing with me there that some of the
+> > drivers need flexibility to manage their power states.  And maybe
+> > even that such modes will be the main ones of interest...
+> >
+> > My answer to the question of how those parent/child dependency
+> > details should be managed was to ensure that the parent can do
+> > what it needs to.  That is, decentralize those issues.  I don't
+> > understand why you seem to dislike that approach, when so many
+> > of your examples seem to confirm it would work.
 > 
-> 
-> 
-> 
+> I want to have the driver in control, yes. But I also want to have a
+> core that removes the burden from driver writers in the "generic" cases.
+> It's all a tradeoff to find :)
 
---===============30132444976491768==
+And I don't want to aim for an all-singing/all-dancing pm core that
+really can't deliver what's needed, because it's trying to centralize
+things that are easier to address in a decentralized way.  :)
+
+
+--===============19966614205880129==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============30132444976491768==--
+--===============19966614205880129==--
