@@ -1,11 +1,11 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: pm_message_t becoming struct
-Date: Fri, 25 Mar 2005 10:51:08 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503251049000.1207-100000@ida.rowland.org>
-References: <20050325152332.GA3738@elf.ucw.cz>
+From: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: IRC Log of Meeting
+Date: Sun, 27 Mar 2005 14:14:53 -0500
+Message-ID: <1111950894.3503.85.camel@localhost.localdomain>
+References: <Pine.LNX.4.50.0503250216240.28664-200000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============35382171518276762=="
-In-Reply-To: <20050325152332.GA3738-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============20857425344141389=="
+In-Reply-To: <Pine.LNX.4.50.0503250216240.28664-200000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,45 +15,38 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>, linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============35382171518276762==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============20857425344141389==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Fri, 25 Mar 2005, Pavel Machek wrote:
-
-> > Are you willing to go halfway?  If we do something more like this:
-> > 
-> > 	typedef struct {
-> > 		struct pm_message *m;
-> > 	} pm_message_t;
-> > 
-> > then the code can pass pm_message_t's around with full type-checking and
-> > still retain the benefit of sending a pointer rather than a structure.
-> > 
-> > Yes, it looks stupid.  But it's a reasonable compromise that won't
+On Fri, 2005-03-25 at 02:19 -0800, Patrick Mochel wrote:
+> Hi there.
 > 
-> I'm afraid it really looks stupid. [It actually has benefit that we
-> _could_ go over tree in future and change pm_message_t into struct
-> pm_message *.]
+> Attached is the log of the IRC meeting yesterday, including a lengthy
+> discussion on the merits/detriments on the calling convention for the PCI
+> suspend/resume functions.
 > 
-> OTOH we would probably be stuck with this stupid-looking-thing
-> forever, and I'd really prefer to avoid that.
+> I have not had a chance to summarize the discussions, and I probably won't
+> get a chance to do so in the next couple of days.
+> 
 
-Understandably.  But looking stupid in public is not as bad as bickering 
-among ourselves and not getting anything done.  Especially if it smooths 
-the path toward making future improvements.
+I'm sorry I wasn't able to attend the meeting, but had a few conflicts.
+I appreciate the log.  I'll try to read through it and mention any
+comments.
 
-Alan Stern
+Thanks,
+Adam
 
 
---===============35382171518276762==
+
+--===============20857425344141389==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============35382171518276762==--
+--===============20857425344141389==--
