@@ -1,11 +1,11 @@
-From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+From: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
 Subject: Re: Re: uhci-hcd suspend/resume under the new driver model
-Date: Tue, 15 Mar 2005 14:11:54 -0800
-Message-ID: <200503151411.54748.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0503151636290.711-100000@ida.rowland.org>
+Date: Wed, 16 Mar 2005 11:04:49 +0800
+Message-ID: <20050316030448.GA8588@blackham.com.au>
+References: <20050314022308.GD6008@blackham.com.au>
+	<Pine.LNX.4.44L0.0503151636290.711-100000@ida.rowland.org>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_q21NCjiJMyTUyPU"
+Content-Type: multipart/mixed; boundary="===============30941724390495917=="
 In-Reply-To: <Pine.LNX.4.44L0.0503151636290.711-100000-3WpdWqXrU/qjv4eRiOYp3g@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
@@ -17,94 +17,87 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>, ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>, ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_q21NCjiJMyTUyPU
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+--===============30941724390495917==
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Tuesday 15 March 2005 1:48 pm, Alan Stern wrote:
-
-> It turns out there are a few problems in the hcd-pci.c suspend and resume
-> routines; mostly that the resume routine doesn't do the reverse of what
-> the suspend routine does.  One particularly bad symptom is that when
-> "resuming" from D0 it does pci_restore_state() even though
-> pci_save_state() was never called.  That's why my controller ended up
-> unconfigured.
-
-I noticed that a while back, and had a patch for it.  Didn't seem to
-matter on anything I tested; sorry, I should have posted the patch
-just for comments, in case it mattered on other hardware!  Attached;
-applies to current code with some fuzz, not guaranteed to behave.
-
-
+On Tue, Mar 15, 2005 at 04:48:19PM -0500, Alan Stern wrote:
 > One other point: Suspend calls free_irq() and resume calls request_irq().  
 > This doesn't seem necessary to me since the common IRQ handler will reject
 > interrupts occuring while the controller is suspended.  Also it's asking
 > for trouble if the driver is unloaded before the controller is resumed,
 > since the remove routine will call free_irq() again on its own.  I've
 > #ifdef'ed out those calls below, but this deserves closer attention.
-
-Those request/free calls moved up out of PPC-specific code; Ben can
-comment on why at least some of the Apple hardware needed it.  The
-free_irq() should be safe, since it should be a NOP if there's no
-handler associated with that cookie.
-
-
+> 
 > Another thing deserving closer attention is the various error pathways and
 > what state they end up leaving the hardware and the data structures in.  
+> The patch below doesn't address this.
+> 
+> Anyway, here are the changes I made.  Now things are working better again.  
+> Bernard, does this help you?
 
-As always!  My rule of thumb is that if there aren't three lines of
-fault handling code for every "productive" line, it's likely there's
-something wrong in a fault path.  That's not always accurate, but it's
-surprisingly close on stable codebases.
+Somewhat. I had to tweak the patches for the new driver model
+(specifically, change "power_state = state" to "power_state.event =
+msg.event"), and I'm still using the patch to remove the
+PCI_CAP_ID_PM check from pci_choose_state.
 
-- Dave
+Suspend and resume into both S3, and suspend-to-disk (where
+PMSG_FREEZE and PMSG_ON are used), are fine if there are no devices
+plugged in. If there are devices plugged in, it's not so good.
+(Using a boring USB mouse for testing here). They'll suspend and
+resume the first time, suspend a second time, then fail on resume -
+I get a stream of messages:
 
+Mar 16 10:07:30 amidala kernel: uhci_hcd 0000:00:1d.1: suspend_hc
+Mar 16 10:07:30 amidala kernel: uhci_hcd 0000:00:1d.1: wakeup_hc
+Mar 16 10:07:31 amidala kernel: uhci_hcd 0000:00:1d.1: host controller process error, something bad happened!
+Mar 16 10:07:31 amidala kernel: uhci_hcd 0000:00:1d.1: host controller halted, very bad!
+Mar 16 10:07:31 amidala kernel: usb 3-1: gpilotd timed out on ep0in
+Mar 16 10:07:33 amidala kernel: uhci_hcd 0000:00:1d.1: suspend_hc
+Mar 16 10:07:33 amidala kernel: uhci_hcd 0000:00:1d.1: wakeup_hc
+Mar 16 10:07:33 amidala kernel: uhci_hcd 0000:00:1d.1: host controller process error, something bad happened!
+Mar 16 10:07:33 amidala kernel: uhci_hcd 0000:00:1d.1: host controller halted, very bad!
+Mar 16 10:07:35 amidala kernel: uhci_hcd 0000:00:1d.1: suspend_hc
+Mar 16 10:07:35 amidala kernel: uhci_hcd 0000:00:1d.1: wakeup_hc
+Mar 16 10:07:36 amidala kernel: uhci_hcd 0000:00:1d.1: host controller process error, something bad happened!
 
---Boundary-00=_q21NCjiJMyTUyPU
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="hcd.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="hcd.patch"
+repeating over and over again. USB is dead, and any program that
+tries to touch USB will hang:
 
---- 1.50/drivers/usb/core/hcd-pci.c	Sun Nov  7 05:06:51 2004
-+++ edited/drivers/usb/core/hcd-pci.c	Wed Nov 10 09:55:10 2004
-@@ -407,9 +407,9 @@
- 
- 	hcd->state = USB_STATE_RESUMING;
- 
--	if (has_pci_pm)
--		pci_set_power_state (dev, 0);
--	dev->dev.power.power_state = 0;
-+	pci_enable_device (dev);
-+	pci_restore_state (dev);
-+	pci_set_master (dev);
- 	retval = request_irq (dev->irq, usb_hcd_irq, SA_SHIRQ,
- 				hcd->description, hcd);
- 	if (retval < 0) {
-@@ -418,7 +418,9 @@
- 		return retval;
- 	}
- 	hcd->saw_irq = 0;
--	pci_restore_state (dev);
-+	if (has_pci_pm)
-+		pci_set_power_state (dev, 0);
-+	dev->dev.power.power_state = 0;
- #ifdef	CONFIG_USB_SUSPEND
- 	pci_enable_wake (dev, dev->current_state, 0);
- 	pci_enable_wake (dev, 4, 0);
+Mar 16 10:08:55 amidala kernel: Xorg          D C041E3E0     0  3214   3118          3952       (NOTLB)
+Mar 16 10:08:55 amidala kernel: f5fb5ee8 00003082 f5ae0570 c041e3e0 f5a2fb80 f5fb5ee8 c026271a c1bfbe00 
+Mar 16 10:08:55 amidala kernel:        f5a2fb80 c01e3f43 f6c08020 00000c34 c53639fe 00000017 f5ae06c4 f5a2fb80 
+Mar 16 10:08:55 amidala kernel:        f5fb5f18 f5fb5f0c f5fb5f44 c026321d f5a2fb80 fffffffe 00000000 f5ae0570 
+Mar 16 10:08:55 amidala kernel: Call Trace:
+Mar 16 10:08:55 amidala kernel:  [usb_kill_urb+221/304] usb_kill_urb+0xdd/0x130
+Mar 16 10:08:55 amidala kernel:  [input_close_device+57/64] input_close_device+0x39/0x40
+Mar 16 10:08:55 amidala kernel:  [mixdev_release+58/112] mixdev_release+0x3a/0x70
+Mar 16 10:08:55 amidala kernel:  [__fput+301/320] __fput+0x12d/0x140
+Mar 16 10:08:55 amidala kernel:  [filp_close+87/144] filp_close+0x57/0x90
+Mar 16 10:08:55 amidala kernel:  [sys_close+97/160] sys_close+0x61/0xa0
+Mar 16 10:08:55 amidala kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
 
---Boundary-00=_q21NCjiJMyTUyPU
+and strangely enough, soon every process in the system becomes hung.
+I haven't tried David's patch yet - the only differences are it
+seems to use a slightly different order, and also calls
+pci_set_master. I'll give that a spin later today combined with and
+without yours to see what works reliably.
+
+Thanks,
+
+Bernard.
+
+-- 
+ Bernard Blackham <bernard at blackham dot com dot au>
+
+--===============30941724390495917==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Boundary-00=_q21NCjiJMyTUyPU--
+--===============30941724390495917==--
