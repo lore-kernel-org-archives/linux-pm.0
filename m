@@ -1,14 +1,12 @@
-From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 Subject: Re: Nested suspends; messages vs. states
-Date: Thu, 24 Mar 2005 09:41:07 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0503240937150.13683-100000@monsoon.he.net>
-References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
-	<200503240838.37628.david-b@pacbell.net>
-	<Pine.LNX.4.50.0503240858200.13683-100000@monsoon.he.net>
-	<200503240933.49123.david-b@pacbell.net>
+Date: Thu, 24 Mar 2005 09:46:07 -0800
+Message-ID: <200503240946.08026.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0503241149000.1345-100000@ida.rowland.org>
+	<Pine.LNX.4.50.0503240904570.13683-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============44323180610417734=="
-In-Reply-To: <200503240933.49123.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============53319902948271114=="
+In-Reply-To: <Pine.LNX.4.50.0503240904570.13683-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,52 +16,63 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
-Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+To: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============44323180610417734==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============53319902948271114==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-
-On Thu, 24 Mar 2005, David Brownell wrote:
-
-> On Thursday 24 March 2005 9:00 am, Patrick Mochel wrote:
+On Thursday 24 March 2005 9:13 am, Patrick Mochel wrote:
+> 
+> On Thu, 24 Mar 2005, Alan Stern wrote:
 >
-> > > Other platforms could use the same names differently of course.  Capsule
-> > > summary, "deep" means there's only a 32KHz clock, while "big" means the
-> > > 48 MHz one is available to peripherals that need it (UARTs, USB, MMC/SD,
-> > > camera, and so forth).
 > >
-> > It sounds like they refer to low-power states in which the system is still
-> > operating, which are distinct from the STD/STR/Standby that we're used to
-> > that are non-operational low-power states. Is that correct?
->
-> Well, _some_ parts of the system are still operating.  But that's
-> true of STR/Standby too ... some components are operating well
-> enough to issue wakeup events.  (Even in some STD modes.)  And
-> return from STR/Standby does't mean all device state is trashed;
-> those devices don't go "non-operational" as in "reset" either.
+> > A large part of the concept is already coded up and part of the kernel
+> > since about 2.6.9, and it works quite well.  Its scope is currently
+> > restricted to the USB layer; I'm proposing to make it more general.
+> 
+> Really? And it works well? Greg, David? What do you guys think of it?
 
-That's a bit of a stretch. While it's true that some devices can generate
-wakeup interrupts, they are not servicing normal requests. Enabling the
-wakeup events seems to imply disabling other services.
+USB locking keeps tripping over the driver model.  At all levels,
+including driver binding, device configuration, port reset, remote
+wakeup, disconnect processing, and suspend/resume.  The bus rwsem
+has been particularly troublesome for tree and subtree operations
+(which include most of those operations I listed).
 
-It sounds like in the case you speak of, the devices are still doing
-'normal' work, but it also seems like that normal work is self-contained
-in the device and doesn't need any code executed on a CPU to do so (like
-via an ISR).
+I'll be interested to hear Alan's feedback on your proposed patches.
+We've kind of taken turns butting heads against the driver model,
+and he's freshest.
 
+By the way, a lock hierarchy isn't an O(N) proposition unless you're
+aiming to acquire extra locks (wholesale).
 
-	Pat
+- Dave
 
+> > In fact at this stage it's more a matter for discussion under the topic
+> > of driver-model development, so I'm going to stop talking about it on
+> > linux-pm.  You indicated that you had some relevant driver-model patches
+> > -- would you like to send them to me?
+> 
+> I apologize, I assumed you had seen them. You can find them here:
+> 
+> http://article.gmane.org/gmane.linux.kernel/289092
+> 
+> specifically the klist patch:
+> 
+> http://article.gmane.org/gmane.linux.kernel/289090
+> 
+> 
+> 	Pat
+> 
 
-
---===============44323180610417734==
+--===============53319902948271114==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============44323180610417734==--
+--===============53319902948271114==--
