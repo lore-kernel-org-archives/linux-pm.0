@@ -1,21 +1,12 @@
 From: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Subject: Re: suspend/resume uevents [was Re: Introducing HAL
-	userspace power management]
-Date: Sat, 12 Mar 2005 07:39:34 +1100
-Message-ID: <1110573574.32510.2.camel@desktop.cunningham.myip.net.au>
-References: <Pine.LNX.4.44L0.0503071125001.1378-100000@ida.rowland.org>
-	<1110411138.7779.86.camel@daxter.boston.redhat.com>
-	<20050309233556.GO17034@elf.ucw.cz>
-	<1110426926.3443.3.camel@daxter.boston.redhat.com>
-	<20050310095629.GA13444@elf.ucw.cz>
-	<1110476278.3404.60.camel@daxter.boston.redhat.com>
-	<20050310211320.GG632@openzaurus.ucw.cz> <4230BCB9.7070005@suse.de>
-	<20050310230008.GB10954@elf.ucw.cz> <42317A81.8050205@suse.de>
-	<20050311110619.GK1705@elf.ucw.cz>  <4231872F.9040101@suse.de>
+Subject: Re: Ottawa
+Date: Sat, 12 Mar 2005 07:42:06 +1100
+Message-ID: <1110573725.32510.5.camel@desktop.cunningham.myip.net.au>
+References: <Pine.LNX.4.50.0503090627400.9502-100000@monsoon.he.net>
 Reply-To: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============034701645831829886=="
-In-Reply-To: <4231872F.9040101-l3A5Bk7waGM@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============4011406201071428=="
+In-Reply-To: <Pine.LNX.4.50.0503090627400.9502-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,40 +16,70 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Stefan Seyfried <seife-l3A5Bk7waGM@public.gmane.org>
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
 Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============034701645831829886==
+--===============4011406201071428==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
 Hi.
 
-On Fri, 2005-03-11 at 22:55, Stefan Seyfried wrote:
-> Pavel Machek wrote:
-> > Hi!
-> 
-> > I'm afraid this is racy by default. Machine resumes, then Xscreensaver
-> > is being told that it should lock, but bad user may type in console in
-> > meantime or something.
-> 
-> i do of course lock the screen before suspend, but some screensavers are
-> not synchronous and take some time to actually lock. It is a mess.
-> 
-> > Synchronous notification *before* suspend might do the trick,
-> > through. Tell Xscreensaver to lock, wait for it to lock, only then
-> > proceed with suspend. That seems only safe solution.
-> 
-> Yes, but you'll need another ~10 seconds until power off.
-> Both xscreensaver and kde screensaver are not from the speedy department :-(
+On Thu, 2005-03-10 at 01:54, Patrick Mochel wrote:
+> My proposal for a Power Management BOF at OLS was approved last week.
+> There is not a schedule yet, and usually isn't until quite late in the
+> game. Hopefully everyone can make it to Ottawa this year, as there will be
+> a lot of crucial discussion taking place.
 
-There's an xset to activate the screensaver too - and to force it to
-lock if you want.
-
-Regards,
+I received confirmation yesterday that I can go. Looking forward to it!
+I'll be there the whole week too.
 
 Nigel
+
+> I expect there to be at least 1 slot dedicated to Power Management at the
+> Kernel Summit, too, and perhaps a BOF. That's only speculative, and have
+> no idea yet whether or not I will be attending. However, I *will* be in
+> Ottawa the entire week, regardless of whether I get invited to the Kernel
+> Summit. I encourage others to plan on the same, as we will have a lot to
+> talk about.
+> 
+> In years past at KS, during the allotted slot, the progress made has been
+> minimal, as most people don't hold the same context of the multi-faceted
+> challenges that we face in dealing with PM. It's usually best as simply an
+> overview of the progress being made and the challenges ahead.
+> 
+> Even the BOFs at KS have been helpful with people contributing some
+> insight, requirements, and wishlists, but have not done much WRT the
+> outstanding design/architectural issues. Instead, countless hours have
+> been spent in the halls and pubs working things out.
+> 
+> What I propse is that we dedicate some time to meet in a smaller forum to
+> catch up and resolve outstanding issues before any allotted KS time. With
+> any slot we get, we can speak firmly, and in unity, about what we're doing
+> and where we're going. Discussion will inevitably ensue throughout the
+> week, strenghtening our TODO lists. ;)
+> 
+> The OLS BOF will present a wider audience with more people concerned about
+> the usability and functionality, rather than the implementation. This is a
+> good thing; it just requires a slightly different perspective, and that
+> most arguments be at least placated by then. :)
+> 
+> What do people think?
+> 
+> 
+> 	Pat
+> 
+> 
+> P.S. If anyone would like to attend OLS, but cannot get their company to
+> fund it, and is not already speaking, please let me know. I might be able
+> to add you as a co-chair of the BOF.
+> 
+> ______________________________________________________________________
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
+> http://lists.osdl.org/mailman/listinfo/linux-pm
 -- 
 Nigel Cunningham
 Software Engineer, Canberra, Australia
@@ -68,7 +89,7 @@ Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
 Maintainer of Suspend2 Kernel Patches http://suspend2.net
 
 
---===============034701645831829886==
+--===============4011406201071428==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -79,4 +100,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============034701645831829886==--
+--===============4011406201071428==--
