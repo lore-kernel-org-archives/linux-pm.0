@@ -1,10 +1,12 @@
-From: Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org>
+From: Jon Smirl <jonsmirl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Subject: Re: [RFC] Some thoughts on device drivers and sysfs
-Date: Sun, 27 Mar 2005 23:08:53 +0200
-Message-ID: <20050327210853.GA18358@isilmar.linta.de>
+Date: Sun, 27 Mar 2005 16:25:10 -0500
+Message-ID: <9e47339105032713251c88890@mail.gmail.com>
 References: <1111951499.3503.87.camel@localhost.localdomain>
+Reply-To: Jon Smirl <jonsmirl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============77426151591190107=="
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 In-Reply-To: <1111951499.3503.87.camel-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
@@ -19,39 +21,16 @@ To: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
 Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============77426151591190107==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Sun, 27 Mar 2005 14:24:59 -0500, Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org> wrote:
+> This would allow us to represent per-device driver attributes in sysfs.
+> As an added benefit, driver devices would allow the tracking and control
+> of driver state, which may be needed for dynamic power management.  I
+> look forward to any comments.
 
-On Sun, Mar 27, 2005 at 02:24:59PM -0500, Adam Belay wrote:
-> One of the original design goals of sysfs was to provide a standardized
-> location to keep driver configuration attributes.  Although sysfs
-> handles this very well for bus devices and class devices, there isn't
-> currently a method to export attributes for device drivers and their
-> specific bound device instances to userspace.
+Isn't there already a way to do this? I recall some discussion lkml
+about six months ago  about doing it. I tried googling for it but
+couldn't find it. It may not have been implemented.
 
-Drivers can add (e.g. in ->probe) attributes for devices using
-extern int device_create_file(struct device *device, struct device_attribute
-* entry);
-and delete them (e.g. in ->remove) using
-extern void device_remove_file(struct device * dev, struct device_attribute
-* attr);
-
-and there's also 
-
-extern int driver_create_file(struct device_driver *, struct
-driver_attribute *);
-extern void driver_remove_file(struct device_driver *, struct
-driver_attribute *);
-
-
-	Dominik
-
---===============77426151591190107==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============77426151591190107==--
+-- 
+Jon Smirl
+jonsmirl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
