@@ -1,12 +1,11 @@
 From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
-Subject: Re: IRC Meeting
-Date: Fri, 11 Mar 2005 13:41:43 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0503111331390.19793-100000@monsoon.he.net>
-References: <Pine.LNX.4.50.0503111306480.19793-100000@monsoon.he.net>
-	<1110576748.32510.18.camel@desktop.cunningham.myip.net.au>
+Subject: RE: IRC Meeting
+Date: Fri, 11 Mar 2005 13:42:27 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0503111341560.19793-100000@monsoon.he.net>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3002F68137@hdsmsx401.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============72279504709992937=="
-In-Reply-To: <1110576748.32510.18.camel-r49W/1Cwd2ff0s6lnCXPX/uOuaPYTxhvJwvTLr3MMZM@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============92795491178268019=="
+In-Reply-To: <F7DC2337C7631D4386A2DF6E8FB22B3002F68137-N2PTB0HCzHKkrb+BlOpmy7fspsVTdybXVpNB7YpNyf8@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,37 +15,28 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============72279504709992937==
+--===============92795491178268019==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
-On Sat, 12 Mar 2005, Nigel Cunningham wrote:
+On Fri, 11 Mar 2005, Brown, Len wrote:
 
-> Ben and I should move to Perth. That would make life easier :>
-
-Cool, I'll go too!
-
-> > Someone in the "Comfortable Timezone" can be the one that takes notes and
-> > summarizes each week.
+> Times are fine with me (US EST)
 >
-> Speaking of that, I've been considering trying to summarise the outcomes
-> of all our little subthreads so far. Does that sound like a good idea?
-> I'm happy to volunteer to do it, but it won't be done until Monday my
-> time.
+> Would it make sense to set up an audio phone bridge, or is IRC
+> preferred?
 
-Heh, I've been thinking about the same for months actually. :) We should
-have some sort of working document about what's going on. It could serve
-two purposes: to document existing practices and to document future plans.
-Please feel free to post something in some format..
+I much prefer IRC; I'm much more of a visual person rather than an audial
+one. And, I hate the telephone. :)
 
 
 	Pat
 
---===============72279504709992937==
+--===============92795491178268019==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -57,4 +47,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============72279504709992937==--
+--===============92795491178268019==--
