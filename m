@@ -1,11 +1,15 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: comments on irc log
-Date: Fri, 18 Mar 2005 22:23:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503182205040.30560-100000@netrider.rowland.org>
-References: <1111195262.25179.201.camel@gaston>
+From: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Subject: Re: Ottawa
+Date: Fri, 18 Mar 2005 22:13:20 -0800
+Message-ID: <20050319061320.GA22127@kroah.com>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3002F2271A@hdsmsx401.amr.corp.intel.com>
+	<1110542934.5810.94.camel@gaston>
+	<Pine.LNX.4.50.0503111258490.19793-100000@monsoon.he.net>
+	<1110585295.5752.126.camel@gaston>
+	<Pine.LNX.4.50.0503181214400.16627-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============13138553476527326=="
-In-Reply-To: <1111195262.25179.201.camel@gaston>
+Content-Type: multipart/mixed; boundary="===============30370248303833947=="
+In-Reply-To: <Pine.LNX.4.50.0503181214400.16627-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,72 +19,41 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
 Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============13138553476527326==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============30370248303833947==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Sat, 19 Mar 2005, Benjamin Herrenschmidt wrote:
-
-> > > I wonder if we need to quiesce the controller in fact for FREEZE.
-> > > Probably not. Just stop all queue processing and refuse URBs. The hcca
-> > > will still get updated, but who cares ? it will end up beeing saved in
-> > > an inconsistent state in the suspend image, so what ? On resume, we will
-> > > have rebooted, we can "clean it up".
-> > > 
-> > > This is sort-of breaking the rule of "no DMA", and thus is not suitable
-> > > for kexec (which is ok, kexec currently uses the separate "shutdown"
-> > > callback which must switch DMA off), but would fix the problem for
-> > > suspend to disk...
-> > 
-> > What problem? suspend seems to +/- work with suspend-to-disk just
-> > now. I'd really hate to have to think about "some memory may change
-> > behind my back" during suspend. I think "no DMA" is a good rule.
+On Fri, Mar 18, 2005 at 12:16:50PM -0800, Patrick Mochel wrote:
 > 
-> Well, it's not that simple. It may work for you and not for others, and
-> it will definitely introduce complications with the current scheme since
-> it seems we +/- have to suspend USB busses (and possibly disconnect some
-> devices) at freeze time...
-
-It may not be as bad as I made it sound...  The time required is probably 
-on the order of 20 - 30 ms per bus for freeze/suspend + resume.
-
-> Note that this will become a non-issue when instead of waking everybody
-> up, we just wake the devices on the disk path, we can do the real
-> suspend initially for the others.
+> Sorry about the delay. Long week.. :/
 > 
-> For now, it might be interesting to not shut down the OHCI (not sure
-> about E/UHCI's tho) as just letting it touch the HCCA isn't an issue
-> (only for the freeze before snapshot tho, not when getting rid of the
-> loader kernel, but in this case, what we do is more like kexec and we
-> might prefer using shutdown callbacks to that effect).
+> On Sat, 12 Mar 2005, Benjamin Herrenschmidt wrote:
+> 
+> > > On that note, no matter where we have it, I'd like to limit it to 6-8
+> > > people, with at most maybe 10. I don't wish to exclude anyone, but I think
+> > > that smaller groups can remain more focused. Plus, there's all those
+> > > sociological studies that say 6-7 people is the optimal size for a
+> > > discussion group. :)
+> >
+> > Us, Nigel, David Brownell, Alan, Pavel, Brown, we are already 7... ?
+> 
+> Plus Adam Belay, maybe Greg K-H as the voice of reason, and maybe 1 more
+> that may arise before then, which would put us at 10.
 
-If I understand correctly EHCI is no problem at all, since the I/O queues 
-can be turned off independently from the controller itself.
+I'll try to make it, but will try to stay out of the conversation and
+let you all fight it out... :)
 
-But there might be a different problem.  If a USB driver is not modular,
-then what happens when the swsusp boot kernel loads the memory image?  It
-FREEZEs all the devices first, right?  So that the image kernel gets
-control back with the devices in a known good state.  If you allowed a
-device to continue doing DMA during this FREEZE (even if it's just OUT
-transfers, not writing to memory), it could end up reading arbitrary
-invalid data which would cause a device error.
+greg k-h
 
-This problem would be eliminated if the boot kernel's driver was aware
-that a resume-from-disk was in progress.  I've heard that suspend2 can
-offer such a feature; can it be added to swsusp?  Using a special flags 
-value for the FREEZE would be sufficient.
-
-Alan Stern
-
-
---===============13138553476527326==
+--===============30370248303833947==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============13138553476527326==--
+--===============30370248303833947==--
