@@ -1,10 +1,9 @@
-From: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: RE: Ottawa
-Date: Fri, 11 Mar 2005 16:25:47 -0500
-Message-ID: <F7DC2337C7631D4386A2DF6E8FB22B3002F68135@hdsmsx401.amr.corp.intel.com>
+From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+Subject: IRC Meeting
+Date: Fri, 11 Mar 2005 13:26:36 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0503111306480.19793-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============80233805315562634=="
-Content-class: urn:content-classes:message
+Content-Type: multipart/mixed; boundary="===============63125501246808091=="
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,35 +13,59 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============80233805315562634==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8bit
-
-I second Patrick's nomination for Sunday, May 17th in Ottawa.
-
-I know some folks who have similar meetings -- I'll ask what they do for
-rooms.
-
-> there's all those sociological studies that say 6-7 people
-> is the optimal size for a discussion group. :)
-
-Somebody told me it was the Roman Army that discovered a unit commander
-could effectively handle 7 others before he had to add additional
-management overhead...  I've also hears that train tracks are the width
-that they are because of the wheel width of Roman chariots -- urban
-legend?:-)
-
-cheers,
--Len
+--===============63125501246808091==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
---===============80233805315562634==
+Hi everyone.
+
+I think we should start having some IRC meetings next week. We have a lot
+to talk about, and a lot of ideas to kick around. I don't think we can, or
+should try, to talk about everything in one shot, so it would help to
+priortize and organize the meetings. :)
+
+That said, I think it would be good to have a few meetings in a row so we
+can get everything out on the table. Say, 1 per week for the first three
+weeks, then every other week. Would people be interested in that?
+
+Thursday would work best for me next week, and seems like a good day
+anyway. For times, I suggest we rotate the time over the course of three
+weeks so we all get a good time and a painful one. :)
+
+How about this:
+
+
+Meeting 1:
+
+AU		US PST		US EST		EU Time
+--
+3/18, 00:00	3/17, 07:00	3/17, 10:00	3/17, 17:00
+
+
+Meeting 2:
+
+AU		US PST		US EST		EU Time
+--
+3/25, 07:00	3/24, 14:00	3/24, 17:00	3/24, 23:00
+
+
+Meeting 3:
+
+AU		US PST		US EST		EU Time
+--
+3/31, 15:00	3/30, 22:00	3/31, 01:00	3/31, 07:00
+
+
+Someone in the "Comfortable Timezone" can be the one that takes notes and
+summarizes each week.
+
+
+	Pat
+
+--===============63125501246808091==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -53,4 +76,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============80233805315562634==--
+--===============63125501246808091==--
