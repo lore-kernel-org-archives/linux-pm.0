@@ -1,12 +1,13 @@
-From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 Subject: Re: Nested suspends; messages vs. states
-Date: Thu, 24 Mar 2005 09:51:47 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0503240949410.13683-100000@monsoon.he.net>
-References: <Pine.LNX.4.44L0.0503241149000.1345-100000@ida.rowland.org>
-	<Pine.LNX.4.50.0503240904570.13683-100000@monsoon.he.net>
+Date: Thu, 24 Mar 2005 10:08:39 -0800
+Message-ID: <200503241008.39984.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
+	<200503240933.49123.david-b@pacbell.net>
+	<Pine.LNX.4.50.0503240937150.13683-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============093500188096171222=="
-In-Reply-To: <Pine.LNX.4.50.0503240904570.13683-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============73773625405544596=="
+In-Reply-To: <Pine.LNX.4.50.0503240937150.13683-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,55 +17,54 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============093500188096171222==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============73773625405544596==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+On Thursday 24 March 2005 9:41 am, Patrick Mochel wrote:
+> 
+> 
+> That's a bit of a stretch. While it's true that some devices can generate
+> wakeup interrupts, they are not servicing normal requests. Enabling the
+> wakeup events seems to imply disabling other services.
+
+There's not much distinction between wakeup irqs and "normal" ones.
+Normally they're one and the same.  (That's not OMAP-specific.)
 
 
-On Thu, 24 Mar 2005, Patrick Mochel wrote:
+> It sounds like in the case you speak of, the devices are still doing
+> 'normal' work, but it also seems like that normal work is self-contained
+> in the device and doesn't need any code executed on a CPU to do so (like
+> via an ISR).
 
->
-> On Thu, 24 Mar 2005, Alan Stern wrote:
->
-> > On Wed, 23 Mar 2005, Patrick Mochel wrote:
->
-> > >  It would make it potentially very hard to debug and add a lot of
-> > > time to the process.
-> >
-> > Hard to debug, maybe... we can't tell without actually trying.  Adding a
-> > lot of time to the suspend process, no.  Acquiring the locks would block
-> > only for things that should cause you to block anyway, like trying to
-> > suspend a device while it's being probed.
->
-> It would change the locking from an O(1) operation to an O(n) operation,
-> where n is the number of devices. Taking any lock is not cheap, so taking
-> N locks, when is N is large is going to be grossly inefficient.
+Well, the IRQ would transition the SOC out of say "big sleep", then the
+ISR would run.  (I'm not sure whether DMAs can stay active in big sleep.)
 
-Ok, I'm a hypocrit. :)
+Just this morning I saw an experimental patch teaching the smc91x Ethernet
+driver -- external chip, hooked up to many OMAP devel boards -- to setup
+its GPIO IRQ line as a wakeup IRQ.  So the normal work of receiving
+and transmitting packets using that chip's local buffers could go on while
+the SOC went to sleep.
 
-The first patch in the series that I posted adds a semaphore to struct
-device that is taken before each driver operation, including suspend and
-resume. It is dropped, though, when the operation is complete. I think
-that's the right way to do it, and I'm interested to hear if that will
-work for what you guys want to do.
-
-I *do* realize that it is equivalent in terms of time spent acquiring and
-releasing locks that I bashed above. I will eat my words now.
-
-Thanks,
+You're right, it sounds _just_ like that!  :)
 
 
-	Pat
+One reason I mentioned the AT91rm9200 is because it has a "slow clock mode"
+where the CPU itself is running at 32KHz.  Variations on a low-power theme.
 
+- Dave
 
---===============093500188096171222==
+--===============73773625405544596==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============093500188096171222==--
+--===============73773625405544596==--
