@@ -1,13 +1,9 @@
-From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
-Subject: Re: Ottawa [topics]
-Date: Thu, 17 Mar 2005 09:26:03 -0800
-Message-ID: <200503170926.04001.david-b@pacbell.net>
-References: <F7DC2337C7631D4386A2DF6E8FB22B3002F2271A@hdsmsx401.amr.corp.intel.com>
-	<200503161350.02426.david-b@pacbell.net>
-	<1111016445.7192.72.camel@gaston>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Summary of today's IRC discussion
+Date: Thu, 17 Mar 2005 13:37:35 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0503171331071.855-100000@ida.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============066053375616560439=="
-In-Reply-To: <1111016445.7192.72.camel@gaston>
+Content-Type: multipart/mixed; boundary="===============80857946637056033=="
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,177 +13,103 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-Cc: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
+To: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============066053375616560439==
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--===============80857946637056033==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Wednesday 16 March 2005 3:40 pm, Benjamin Herrenschmidt wrote:
-> On Wed, 2005-03-16 at 13:50 -0800, David Brownell wrote:
-> 
-> > > 
-> > > Yes, but it's orthogonal to the PM model. A device could even request
-> > > slower clocks in intermediate power states or whatever, but it's the
-> > > device driver that calls into the "clock manager" on power state
-> > > transitions (or even at runtime) to express it's needs.
-> > 
-> > Not orthogonal.  Suspending a device will often involve a clock
-> > transition ... and certain clocking levels will preclude certain
-> > system PM states.
-> 
->  .../...
-> 
-> Oh well, then come up with a scheme that can deal with those without
-> beeing as big as the kernel itself...
+Note: the live IRC log is available (thanks to Bernard!) at
+<http://helicon.ucs.uwa.edu.au/~bernard/irc/%23pm.log>.
 
-If suspend-prepare fails, then the pm core backs out of that state
-transition.  That's one part -- isolating core from many details,
-and keeping it from needing to centrally manage every minor detail.
+The session got started after some minor confusion caused by incorrect
+time-zone calculations (now all fixed up on the wiki for the future 
+sessions).
 
+People agreed that the list of topics I wrote up in
+<http://lists.osdl.org/pipermail/linux-pm/2005-March/000633.html> was
+good but too extensive to cover over IRC.  Patrick suggested sticking
+to a single topic, more or less, for each session.
 
-Another part is something I've been implying quite a lot:  that many
-system power transitions should be "opportunistic".  Drivers would
-have default "low power when unused" policies.  Parents would see
-low power children, and could enter low power states themselves.
+We started by talking about the internal representation of device power
+states.  It was agreed that the representation should be a pointer to
+struct, where the contents of the struct are to be determined.  (In
+some cases it might just encapsulate pm_message_t.)  There will be a
+name field, but other fields are bus- and device-specific.  Should
+attributes like FROZEN be included as well?
 
-Then the platform PM logic could automatically enter appropriate
-system PM states.  E.g. using the variable scheduler timeout stuff
-to notice that now might be a good time to enter "big sleep" or
-some other S1 or "suspend" analogue ... or that since the 48 MHz
-clock is off, that "deep sleep" (or other S3 analogue) is possible.
-With various wakeup sources including the system timer, of course.
+Information about these states is passed to/from userspace via sysfs.
+It can also be passed between drivers, as in a child telling its
+parent when it changes state, or a parent asking a child to change
+state.  (Although the PM core never asks a device to go from one
+suspend state to another without passing through resume, such a
+requirement should not be enforced generally.)
 
-That could tie into the centrally managed power state transitions
-as follows:  userspace says "goto state FOO", device tree is notified,
-the above opportunistic logic kicks in.  When the tree notifications
-complete, the same logic called from the VST code could kick in.
-Same result:  system goes into S1, or S3, or whatever.  Just it's
-done by userspace request, not automatically.  (A policy choice.)
+A good way of doing state transformations is needed.  The important case
+is going from generic system states (Standby, STR, STD) to device states.  
+Often ACPI can help provide such a mapping, but many systems don't support
+ACPI and sometimes the ACPI mappings are wrong.  There should be a way to
+override them from userspace, say at boot time.  Also ACPI only knows
+about devices on the motherboard.  But when available (and appropriate!)
+it makes a good starting point.
 
+In many situations these mapping can be done at the bus level so
+device drivers don't need to worry about it.  There may also be a set
+of mappings available for a device to use, like "PCI", "ACPI",
+"Custom",...
 
-This just uses the existing PM infrastructure intelligently, with
-minor additions to pass information up the tree ... and to use
-that information once it's there.  It decentralizes much of the
-key decision making, leveraging hardware PM support.
+(Side issue: The list of wakeup devices currently maintained by the
+ACPI core is a temporary hack that will go away, replaced by a
+property of the real devices in sysfs.  David Brownell will repost an
+old patch that exposes this information.)
 
+Mapping for device sub-states, as used in runtime power management, is
+harder.  Maybe such sub-states shouldn't be exposed at all.  Sometimes
+there are intricate relations among device states and system states
+that are platform-specific; it would be easist to leave the complexity
+sitting in the driver.
 
-> > Embedded chips normally couple clock management with power management
-> > very tightly.  They may have separate power switching controls, but
-> > that's less widespread.
-> 
-> I am familiar with that, and I still think this shouldn't be directly
-> dealt by the PM framework. In fact, in most embedded cases, drivers are
-> specific anyway and can embed the clock net stuff.
+There was considerable disagreement over the matter of vetoing system
+sleep transitions.  A driver might want to avoid sleeping if it's busy
+doing something that shouldn't be interrupted.  But some situations
+(like battery power low) can't be vetoed.  Suggestions included adding
+a new system power state for non-vetoable sleeping and multi-stage
+suspend messaging (first stage is notification with a chance to
+veto).  Multi-stage was tried in the past and didn't work because of
+bugs in drivers and immaturity of the model.  We may need to revisit
+it in the future.
 
-That just won't work.  They're joined at the hip.  Drivers embed much
-clock tree knowledge, that goes without saying.  But at the same time,
-the platform PM code has to understand very basic rules like "these
-clocks must be off before we can enter state FOO" and "state BAR is
-like state FOO but these additional clocks must be off".  It's got
-to rely on the drivers to gate the clocks correctly, otherwise any
-attempt to suspend will just break the drivers.
+(Note that even now drivers are allowed to delay a suspend, although
+they can't veto it.)
 
+Since system sleeps come from userspace, perhaps questions of vetoable
+or forced sleeps should be considered part of the userspace policy.
+There's also the question of computer-user interaction: When people
+tell their computer to do something, they want it to obey.  But other
+people might not care so much, especially if they just told the
+computer to do something it shouldn't.  The relations between a
+userspace policy manager and the kernel's policy manager (if any!) are
+very unclear.
 
-> "My" hardware is jsut a fucking standard NEC USB2 chip in most cases and
-> a lucent cell in Apple stuff in the other. Also "My" hardware is also
-> the class of laptops that happen to have had working sleep support for
-> much longer and much more reliably than any x86 out there. You are
-> breaking that and don't seem to be interested in making that work. THat
-> makes me thing that working sleep on USB today is just a matter of luck.
+Lastly people decided it was a good idea to have a small list of
+targeted systems for PM development.  That way we have a minimum set
+of goals for PM -- it has to work on those platforms -- and something to
+focus on.  Also we'll have an excuse when someone asks "Why doesn't
+this work on platform X?"  Suggested targets included x86 and ppc (both
+workstations and laptops), a couple of embedded systems (OMAP ARM and
+ppc8xx) with maybe a few odd additions such as MIPS.
 
-Calm down.  I don't have "your" hardware to test with, and "you" (Paul)
-only yesterday posted the first proposed patch.  Expecting me to solve
-all your hardware-coupled problems is unreasonable in such cases.
+It was also agreed that we should document what hardware is supported,
+and what states are supported by which drivers.
 
-Another thing that's unreasonable is to try to prevent progress in x86
-space just because it'd affect PPC.  :)
-
-
-> > > At least with USB, you do free_irq(). That means that 
-> > > unless your IRQ is shared, it _will_ be masked at the controller level
-> > > anyway. So if the IRQ is used to wakeup the CPU, that is broken, at
-> > > least unless the IRQ line from the device (before reaching the IRQ
-> > > controller) is also triggering some sort of external wakeup mecanism.
-> > 
-> > That's a good example of a PCI-specific assumption, the type I
-> > was saying creates problems.  Non-PCI hardware has no reason to
-> > free the IRQ.  (In fact, the only reason PCI hardware does it is
-> > to keep that PPC-ism out of the OHCI code.)
-> 
-> Which we have to keep anyway for the suspend code.
-
-You're making no sense to me, since you appear to have just ignored
-the point I made.   The PCI code works, modulo bugs, today.  As do
-several non-PCI chips, that will absolutely break if you try to
-disable their (wakeup) IRQs during suspend.
+Alan Stern
 
 
-> And embedded with 
-> bizarre clock stuff will need hooks there too.
-
-My example was embedded with non-bizarre clocks, which disproved
-the point you were making about IRQs....
-
-
-> I don't understand how 
-> you try to get the ppc stuff out on one side and deal with all the
-> embedded cruft on the other. Masking IRQ in my case is mostly a matter
-> of sanity. I'm switching the main clock off on the OHCI cell and disable
-> the cell in the ASIC, I disable the IRQ that I know is not shared to
-> make sure that there is no "dangling" irq line. I'm fairly sure other
-> platforms (embedded especially) will need similar tweaks.
-
-Remember that the example I gave was for platforms that do NOT want
-to see the IRQs disabled.  They are after all the sources of wakeup
-events that take the system out of the sleep/suspend state.  They
-do NOT want "similar tweaks" at all.
-
- 
-> > > I tend to think that devices using IRQs for wakeup instead of separate
-> > > IOs are broken design, but then, we all know that HW folks can't get
-> > > anything right ;)
-> > 
-> > Again, that's a strong PCI bias.
-> 
-> Not at all. I would have said the same before we had PCI PM in the PCI
-> spec.
-
-Well, it's at any rate a faulty assumption that you should stop making.
-
-- Dave
-
-
-> >   Having PCI biases like that is
-> > just creating trouble.  In fact, not all PCI hardware works that
-> > way either ... just stuff using the PCI PM model.  And the last
-> > many PCI busess I've looked at have had devices that don't use
-> > the PCM PM attributes, don't support PCI D3 ...
-> > 
-> > - Dave
-> > 
-> > 
-> > 
-> > > In some cases, we might have to provide some arch hooks to be called by
-> > > drivers to know what to do ...
-> > > 
-> > > Ben.
-> > > 
-> > > 
-> -- 
-> Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
-> 
-> 
-
---===============066053375616560439==
+--===============80857946637056033==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============066053375616560439==--
+--===============80857946637056033==--
