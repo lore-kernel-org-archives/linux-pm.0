@@ -1,13 +1,15 @@
-From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
-Subject: Re: Nested suspends; messages vs. states
-Date: Thu, 24 Mar 2005 10:08:39 -0800
-Message-ID: <200503241008.39984.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
-	<200503240933.49123.david-b@pacbell.net>
-	<Pine.LNX.4.50.0503240937150.13683-100000@monsoon.he.net>
+From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+Subject: Re: comments on irc log
+Date: Thu, 24 Mar 2005 10:40:46 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0503241037420.8012-100000@monsoon.he.net>
+References: <1111113131.25179.73.camel@gaston>
+	<200503231153.48230.david-b@pacbell.net>
+	<20050323210835.GF30704@elf.ucw.cz>
+	<200503231333.22647.david-b@pacbell.net>
+	<20050323215330.GJ30704@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============73773625405544596=="
-In-Reply-To: <Pine.LNX.4.50.0503240937150.13683-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============96745158141822407=="
+In-Reply-To: <20050323215330.GJ30704-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,54 +19,71 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
-Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============73773625405544596==
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Thursday 24 March 2005 9:41 am, Patrick Mochel wrote:
-> 
-> 
-> That's a bit of a stretch. While it's true that some devices can generate
-> wakeup interrupts, they are not servicing normal requests. Enabling the
-> wakeup events seems to imply disabling other services.
-
-There's not much distinction between wakeup irqs and "normal" ones.
-Normally they're one and the same.  (That's not OMAP-specific.)
+--===============96745158141822407==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
-> It sounds like in the case you speak of, the devices are still doing
-> 'normal' work, but it also seems like that normal work is self-contained
-> in the device and doesn't need any code executed on a CPU to do so (like
-> via an ISR).
 
-Well, the IRQ would transition the SOC out of say "big sleep", then the
-ISR would run.  (I'm not sure whether DMAs can stay active in big sleep.)
+On Wed, 23 Mar 2005, Pavel Machek wrote:
 
-Just this morning I saw an experimental patch teaching the smc91x Ethernet
-driver -- external chip, hooked up to many OMAP devel boards -- to setup
-its GPIO IRQ line as a wakeup IRQ.  So the normal work of receiving
-and transmitting packets using that chip's local buffers could go on while
-the SOC went to sleep.
-
-You're right, it sounds _just_ like that!  :)
+A couple of questions:
 
 
-One reason I mentioned the AT91rm9200 is because it has a "slow clock mode"
-where the CPU itself is running at 32KHz.  Variations on a low-power theme.
 
-- Dave
+> --- clean/drivers/base/power/shutdown.c	2004-08-15 19:14:55.000000000 +0200
+> +++ linux/drivers/base/power/shutdown.c	2005-03-22 12:20:53.000000000 +0100
+> @@ -29,7 +29,8 @@
+>  			dev->driver->shutdown(dev);
+>  		return 0;
+>  	}
+> -	return dpm_runtime_suspend(dev, dev->detach_state);
+> +	/* FIXME */
+> +	return dpm_runtime_suspend(dev, PMSG_FREEZE);
 
---===============73773625405544596==
+Why is this a FIXME? Mind adding a bit more descriptive of a comment
+there?
+
+> --- clean/drivers/base/power/sysfs.c	2004-08-15 19:14:55.000000000 +0200
+> +++ linux/drivers/base/power/sysfs.c	2005-03-22 12:20:53.000000000 +0100
+> @@ -26,19 +26,20 @@
+>
+>  static ssize_t state_show(struct device * dev, char * buf)
+>  {
+> -	return sprintf(buf, "%u\n", dev->power.power_state);
+> +	return sprintf(buf, "%u\n", dev->power.power_state.event);
+>  }
+>
+>  static ssize_t state_store(struct device * dev, const char * buf, size_t n)
+>  {
+> -	u32 state;
+> +	pm_message_t state;
+>  	char * rest;
+>  	int error = 0;
+>
+> -	state = simple_strtoul(buf, &rest, 10);
+> +	state.event = simple_strtoul(buf, &rest, 10);
+> +//	state.flags = PFL_RUNTIME;
+
+What is PFL_RUNTIME?
+
+This appears to be the only usage of the .flags field. Perhaps we should
+omit that field (and this commented out line) for now?
+
+Thanks,
+
+
+	Pat
+
+
+--===============96745158141822407==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============73773625405544596==--
+--===============96745158141822407==--
