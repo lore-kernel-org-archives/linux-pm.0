@@ -1,14 +1,11 @@
-From: "Jordan Crouse" <jordan.crouse-5C7GfCeVMHo@public.gmane.org>
-Subject: Re: Ottawa
-Date: Fri, 11 Mar 2005 17:08:27 -0700
-Message-ID: <20050311170827.07daf488@cosmic.amd.com>
-References: <F7DC2337C7631D4386A2DF6E8FB22B3002F2271A@hdsmsx401.amr.corp.intel.com>
-	<1110542934.5810.94.camel@gaston>
-	<Pine.LNX.4.50.0503111258490.19793-100000@monsoon.he.net>
-	<1110585295.5752.126.camel@gaston>
+From: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: Some thoughts on suspend/resume development
+Date: Fri, 11 Mar 2005 19:18:38 -0500
+Message-ID: <1110586718.12485.234.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0503111133040.1203-100000@ida.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============84000782693024867=="
-In-Reply-To: <1110585295.5752.126.camel@gaston>
+Content-Type: multipart/mixed; boundary="===============2396119954232363=="
+In-Reply-To: <Pine.LNX.4.44L0.0503111133040.1203-100000-3WpdWqXrU/qjv4eRiOYp3g@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,42 +15,70 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============84000782693024867==
-Content-Type: text/plain;
- charset=us-ascii
+--===============2396119954232363==
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Sat, 12 Mar 2005 10:54:55 +1100
-"Benjamin Herrenschmidt" <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org> wrote:
-
-> > On that note, no matter where we have it, I'd like to limit it to
-> > 6-8 people, with at most maybe 10. I don't wish to exclude anyone,
-> > but I think that smaller groups can remain more focused. Plus,
-> > there's all those sociological studies that say 6-7 people is the
-> > optimal size for a discussion group. :)
+On Fri, 2005-03-11 at 11:42 -0500, Alan Stern wrote:
+> On Fri, 11 Mar 2005, Pavel Machek wrote:
 > 
-> Us, Nigel, David Brownell, Alan, Pavel, Brown, we are already 7... ?
+> > > This is why I'm in favor of power domains (power parents and children
+> > > that can be independent of physical device relations).  Power domains
+> > > are common for internal devices, not just external devices.  Still, if
+> > > you disable a physical parent, then the device is no longer operational.
+> > > Disable the usb host controller, and the external disk drive cannot be
+> > > used (in fact data may be lost).  So it's necessary to stop every child
+> > > device first, and generally also power it off if we can control the
+> > > power source.
+> > 
+> > I just don't see it like that.
+> > 
+> > Remember old scsi disks where formatting took half an hour? You may do
+> > something like
+> > 
+> > invoke scsi format operation
+> > power down usb controller
+> > <half an hour later>
+> > power up usb controller
+> > get the results
+> > 
+> > Now, that was probably bad example, but I do think some devices might
+> > do usefull work even with their parents disabled.
 
-Are there any logical divisions of area of interest that could result in
-multiple productive meetings? 
-  
-Jordan
+Yes, but at a logical (class) level the parent device would never be
+disabled, right?  I guess it would be possible to model such a situation
+if we take advantage of the driver class design.  I hadn't considered it
+before, but I'll try to keep it in mind.  It would be interesting to see
+how common it might be.
 
--- 
-Jordan Crouse
-Senior Linux Engineer
-AMD - Personal Connectivity Solutions Group
-<www.amd.com/embeddedprocessors>
+> 
+> There's another aspect to it as well.  You can suspend the USB host
+> controller and then _still_ use the external disk, if the host controller
+> is automatically resumed when the next disk I/O request arrives.  Whereas
+> if you would stop the disk and its driver, the next I/O request might
+> simply languish in a plugged queue.  I suppose this would depend on
+> whether the disk driver was smart enough to leave its queue unplugged
+> under the right circumstances, so perhaps this isn't a great example.  
+> (And you're right about the possibility of data being lost -- although
+> it's pretty unlikely -- which makes this an even worse example.)
+> 
+> Alan Stern
+
+Yes, so I think if we ensure that the parent device is enabled at a
+logical level, and that the power source is active, it would be possible
+to do such a thing.  I'm guessing this is something not to worry about
+too much now; do you think so?
+
+Thanks,
+Adam
 
 
 
-
-
-
---===============84000782693024867==
+--===============2396119954232363==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -64,4 +89,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============84000782693024867==--
+--===============2396119954232363==--
