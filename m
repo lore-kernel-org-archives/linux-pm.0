@@ -1,11 +1,13 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: Nested suspends; messages vs. states
-Date: Wed, 23 Mar 2005 16:18:24 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503231614580.631-100000@ida.rowland.org>
-References: <1111609769.14853.104.camel@desktop.cunningham.myip.net.au>
+From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Subject: Re: comments on irc log
+Date: Wed, 23 Mar 2005 13:33:22 -0800
+Message-ID: <200503231333.22647.david-b@pacbell.net>
+References: <1111113131.25179.73.camel@gaston>
+	<200503231153.48230.david-b@pacbell.net>
+	<20050323210835.GF30704@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============63209543740993346=="
-In-Reply-To: <1111609769.14853.104.camel-r49W/1Cwd2ff0s6lnCXPX/uOuaPYTxhvJwvTLr3MMZM@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============76861815323164917=="
+In-Reply-To: <20050323210835.GF30704-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,48 +17,70 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Cc: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============63209543740993346==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============76861815323164917==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Thu, 24 Mar 2005, Nigel Cunningham wrote:
-
-> Hi
+On Wednesday 23 March 2005 1:08 pm, Pavel Machek wrote:
+> Hi!
 > 
-> On Thu, 2005-03-24 at 06:06, David Brownell wrote:
-> > On Tuesday 22 March 2005 4:52 pm, Patrick Mochel wrote:
-> > > > 
-> > > I think the core should always call ->suspend() for a device, regardless
-> > > of whether it thinks it's in a low power state, or inactive. This is
-> > > specifically for the reason that a device could be a low-power runtime
-> > > state when the system is suspended.
+> > > Thing is, it's the system power states that are placing clock
+> > > constraints on devices.  On OMAP, going into "deep sleep" means
+> > > you've got to stop using the 48 MHz clock.  For "big sleep",
+> > > you can keep using that clock.  Most other CPUs have similar
+> > > constraints:  multiple system states, defined primarily by
+> > > clock usage.  
 > > 
-> > I don't quite see a need for this.  If the parent/bridge driver knows
-> > the device is adequately suspended, why kick it again?  It's actually
-> > rather annoying -- and error/bug prone! -- to have to code drivers to
-> > detect and cope with superfluous suspend calls.
+> > 
+> > So to focus on one point:  "pm_message_t" doesn't work well
+> > at all, since it doesn't have a way to identify the target
+> > system power state, and drivers thus have no way to see if
+> > they should drop their requests for those clocks or whether
+> > the hardware should keep working away.
 > 
-> I would think it would be simpler not to have the parent/bridge check
-> whether the device is already suspended, and to just have all the logic
-> that decides what to do in the driver. I'm only thinking intuitively,
-> but it sounds like that should help with avoiding race conditions.
+> Well, in current model,
 
-David and Patrick are talking about two different things without realizing
-it.  Patrick said the _core_ should always call bus->suspend.  Dave said
-the _parent/bridge/bus_ doesn't have to call driver->suspend.  Both can be 
-correct.
+That is, after pm_message_t change.  That represents a loss of
+functionality.  Previously drivers received a target system
+sleep state, and could make such deductions easily:  anything
+like a PCI D3cold ("4") means maximal power off, anything like
+a PCI D3hot ("3") is less aggressive, and so on.  (Not that all
+drivers behaved right, or that the different incarnations of
+the "pm core" code used "3" vs "4" sanely, etc.)
 
-Alan Stern
+So maybe one question for tomorrow should be how we'll restore
+that temporarily-list functionality.
 
 
---===============63209543740993346==
+> drivers shoudl stop all the activity they can 
+> ("deep sleep"). If you want to add support for "big sleep", then you
+> should probably use flags... I guess calling "big sleep" standby is
+> okay...
+
+That's the loss of functionality.  Previously drivers didn't need
+to "stop all the activity they can" (PCI D3cold = 4), they also
+had options that didn't assume swsusp poweroff (PCI D3hot = 3).
+
+I don't know what you mean by "flags".  Mapping "big sleep" to a
+"standby" might make sense, specifically for that one architecture,
+but that doesn't seem like it'd address the  general issue.  What
+if there are more than two such non-"disk" system states that need
+support, for example?  Or about system states that relate to more
+factors than just the CPU/SOC states?
+
+- Dave
+
+--===============76861815323164917==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============63209543740993346==--
+--===============76861815323164917==--
