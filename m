@@ -1,14 +1,16 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: comments on irc log
-Date: Wed, 23 Mar 2005 22:53:30 +0100
-Message-ID: <20050323215330.GJ30704@elf.ucw.cz>
-References: <1111113131.25179.73.camel@gaston>
-	<200503231153.48230.david-b@pacbell.net>
-	<20050323210835.GF30704@elf.ucw.cz>
-	<200503231333.22647.david-b@pacbell.net>
+From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+Subject: Re: Nested suspends; messages vs. states
+Date: Thu, 24 Mar 2005 10:14:15 +1100
+Message-ID: <1111619655.16201.98.camel@gaston>
+References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
+	<Pine.LNX.4.50.0503221635130.16154-100000@monsoon.he.net>
+	<1111540913.16224.43.camel@gaston>
+	<Pine.LNX.4.50.0503221724550.16154-100000@monsoon.he.net>
+	<1111548664.16201.63.camel@gaston>
+	<Pine.LNX.4.50.0503231008340.17099-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============79348177776575235=="
-In-Reply-To: <200503231333.22647.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============62286952746654056=="
+In-Reply-To: <Pine.LNX.4.50.0503231008340.17099-100000-x8k/2hhmB0w5etPau2IXcQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,516 +20,77 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
-Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
+To: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============79348177776575235==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============62286952746654056==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Hi!
+On Wed, 2005-03-23 at 10:20 -0800, Patrick Mochel wrote:
 
-> > > > Thing is, it's the system power states that are placing clock
-> > > > constraints on devices.  On OMAP, going into "deep sleep" means
-> > > > you've got to stop using the 48 MHz clock.  For "big sleep",
-> > > > you can keep using that clock.  Most other CPUs have similar
-> > > > constraints:  multiple system states, defined primarily by
-> > > > clock usage.  
-> > > 
-> > > 
-> > > So to focus on one point:  "pm_message_t" doesn't work well
-> > > at all, since it doesn't have a way to identify the target
-> > > system power state, and drivers thus have no way to see if
-> > > they should drop their requests for those clocks or whether
-> > > the hardware should keep working away.
-> > 
-> > Well, in current model,
+> I wasn't disputing that. What I was trying to say was the core could
+> effectively do:
 > 
-> That is, after pm_message_t change.  That represents a loss of
-> functionality.  Previously drivers received a target system
-> sleep state, and could make such deductions easily:  anything
-> like a PCI D3cold ("4") means maximal power off, anything like
-> a PCI D3hot ("3") is less aggressive, and so on.  (Not that all
-> drivers behaved right, or that the different incarnations of
-> the "pm core" code used "3" vs "4" sanely, etc.)
+> 	for each device {
+> 		device->suspend();	/* Stop Device */
+> 		device->enter_state();	/* Power Down */
+> 	}
+
+Where is room in the above for suspend() to be the one deciding what
+state to enter ? suspend() has no way to do it with your example. I'd
+rather have suspend optionally call device_enter_state() itself (and not
+device->enter_state if we decide to have a function pointer per state in
+the state array, those won't be pointers in struct device, which is
+probably better since enter_state() would end up just switch/casing on
+them anyway).
+
+> The reason I'm going down this road is because I think it could possibly
+> be split into such a way like this:
 > 
-> So maybe one question for tomorrow should be how we'll restore
-> that temporarily-list functionality.
+> 	device->class->stop(dev, system_state);
+> 	device->bus->save_state(dev, system_state);
+> 	device->bus->enter_state(dev, system_state);
+> 
+> 
+> The first would perform functional-level suspension - stopping current
+> transactions and preventing future ones.
 
-pm_message_t change is not done, yet. It is going to be structure, and
-it will have second field "flags" that will address your concerns.
+It's up to the driver's suspend() to do those. I would keep that policy
+in there, really. I agree that a class->stop() may be useful for putting
+the "common" code, but I'd rather have it seen as a "helper" that the
+driver can call.
 
-Here's patch doing that... It may even make it into 2.6.12.
+> The second would call down to the device driver and save the device
+> context for the system state being entered.
+> 
+> The third would call down to the device driver and actually enter the low
+> power state.
 
-								Pavel
+save_state would be nop most of the time. enter_state may have to save
+things too... I think the distinction between those is very academic and
+makes little sense in practice.
 
---- clean/drivers/base/power/resume.c	2004-12-25 13:34:59.000000000 +0100
-+++ linux/drivers/base/power/resume.c	2005-03-22 12:20:53.000000000 +0100
-@@ -41,7 +41,7 @@
- 		list_add_tail(entry, &dpm_active);
- 
- 		up(&dpm_list_sem);
--		if (!dev->power.prev_state)
-+		if (!dev->power.prev_state.event)
- 			resume_device(dev);
- 		down(&dpm_list_sem);
- 		put_device(dev);
---- clean/drivers/base/power/runtime.c	2005-01-12 11:07:39.000000000 +0100
-+++ linux/drivers/base/power/runtime.c	2005-03-22 12:20:53.000000000 +0100
-@@ -13,10 +13,10 @@
- static void runtime_resume(struct device * dev)
- {
- 	dev_dbg(dev, "resuming\n");
--	if (!dev->power.power_state)
-+	if (!dev->power.power_state.event)
- 		return;
- 	if (!resume_device(dev))
--		dev->power.power_state = 0;
-+		dev->power.power_state = PMSG_ON;
- }
- 
- 
-@@ -49,10 +49,10 @@
- 	int error = 0;
- 
- 	down(&dpm_sem);
--	if (dev->power.power_state == state)
-+	if (dev->power.power_state.event == state.event)
- 		goto Done;
- 
--	if (dev->power.power_state)
-+	if (dev->power.power_state.event)
- 		runtime_resume(dev);
- 
- 	if (!(error = suspend_device(dev, state)))
---- clean/drivers/base/power/shutdown.c	2004-08-15 19:14:55.000000000 +0200
-+++ linux/drivers/base/power/shutdown.c	2005-03-22 12:20:53.000000000 +0100
-@@ -29,7 +29,8 @@
- 			dev->driver->shutdown(dev);
- 		return 0;
- 	}
--	return dpm_runtime_suspend(dev, dev->detach_state);
-+	/* FIXME */
-+	return dpm_runtime_suspend(dev, PMSG_FREEZE);
- }
- 
- 
---- clean/drivers/base/power/suspend.c	2005-01-12 11:07:39.000000000 +0100
-+++ linux/drivers/base/power/suspend.c	2005-03-22 12:20:53.000000000 +0100
-@@ -43,7 +43,7 @@
- 
- 	dev->power.prev_state = dev->power.power_state;
- 
--	if (dev->bus && dev->bus->suspend && !dev->power.power_state)
-+	if (dev->bus && dev->bus->suspend && (!dev->power.power_state.event))
- 		error = dev->bus->suspend(dev, state);
- 
- 	return error;
---- clean/drivers/base/power/sysfs.c	2004-08-15 19:14:55.000000000 +0200
-+++ linux/drivers/base/power/sysfs.c	2005-03-22 12:20:53.000000000 +0100
-@@ -26,19 +26,20 @@
- 
- static ssize_t state_show(struct device * dev, char * buf)
- {
--	return sprintf(buf, "%u\n", dev->power.power_state);
-+	return sprintf(buf, "%u\n", dev->power.power_state.event);
- }
- 
- static ssize_t state_store(struct device * dev, const char * buf, size_t n)
- {
--	u32 state;
-+	pm_message_t state;
- 	char * rest;
- 	int error = 0;
- 
--	state = simple_strtoul(buf, &rest, 10);
-+	state.event = simple_strtoul(buf, &rest, 10);
-+//	state.flags = PFL_RUNTIME;
- 	if (*rest)
- 		return -EINVAL;
--	if (state)
-+	if (state.event)
- 		error = dpm_runtime_suspend(dev, state);
- 	else
- 		dpm_runtime_resume(dev);
---- clean/drivers/ide/ide.c	2005-03-19 00:31:23.000000000 +0100
-+++ linux/drivers/ide/ide.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1390,7 +1390,7 @@
- 	rq.special = &args;
- 	rq.pm = &rqpm;
- 	rqpm.pm_step = ide_pm_state_start_suspend;
--	rqpm.pm_state = state;
-+	rqpm.pm_state = state.event;
- 
- 	return ide_do_drive_cmd(drive, &rq, ide_wait);
- }
-@@ -1409,7 +1409,7 @@
- 	rq.special = &args;
- 	rq.pm = &rqpm;
- 	rqpm.pm_step = ide_pm_state_start_resume;
--	rqpm.pm_state = 0;
-+	rqpm.pm_state = PM_EVENT_ON;
- 
- 	return ide_do_drive_cmd(drive, &rq, ide_head_wait);
- }
---- clean/drivers/pci/pci.c	2005-03-19 00:31:43.000000000 +0100
-+++ linux/drivers/pci/pci.c	2005-03-22 12:20:53.000000000 +0100
-@@ -312,22 +312,24 @@
- /**
-  * pci_choose_state - Choose the power state of a PCI device
-  * @dev: PCI device to be suspended
-- * @state: target sleep state for the whole system
-+ * @state: target sleep state for the whole system. This is the value
-+ *	that is passed to suspend() function.
-  *
-  * Returns PCI power state suitable for given device and given system
-  * message.
-  */
- 
--pci_power_t pci_choose_state(struct pci_dev *dev, u32 state)
-+pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state)
- {
--	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
-+	switch (state.event) {
-+	case PM_EVENT_ON:
- 		return PCI_D0;
--
--	switch (state) {
--	case 0:	return PCI_D0;
--	case 2: return PCI_D2;
--	case 3: return PCI_D3hot;
--	default: BUG();
-+	case PM_EVENT_FREEZE:
-+	case PM_EVENT_SUSPEND:
-+		return PCI_D3hot;
-+	default: 
-+		printk("They asked me for state %d\n", state.event);
-+		BUG();
- 	}
- 	return PCI_D0;
- }
---- clean/drivers/usb/core/hcd-pci.c	2005-03-19 00:31:51.000000000 +0100
-+++ linux/drivers/usb/core/hcd-pci.c	2005-03-22 12:20:53.000000000 +0100
-@@ -68,7 +68,7 @@
- 	if (pci_enable_device (dev) < 0)
- 		return -ENODEV;
- 	dev->current_state = 0;
--	dev->dev.power.power_state = 0;
-+	dev->dev.power.power_state.event = 0;
- 	
-         if (!dev->irq) {
-         	dev_err (&dev->dev,
-@@ -291,9 +294,6 @@
- 		break;
- 	}
- 
--	/* update power_state **ONLY** to make sysfs happier */
--	if (retval == 0)
--		dev->dev.power.power_state = state;
- 	return retval;
- }
- EXPORT_SYMBOL (usb_hcd_pci_suspend);
---- clean/drivers/usb/core/hub.c	2005-03-19 00:31:51.000000000 +0100
-+++ linux/drivers/usb/core/hub.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1557,7 +1557,7 @@
- 			struct usb_driver	*driver;
- 
- 			intf = udev->actconfig->interface[i];
--			if (state <= intf->dev.power.power_state)
-+			if (state.event <= intf->dev.power.power_state.event)
- 				continue;
- 			if (!intf->dev.driver)
- 				continue;
-@@ -1565,11 +1565,11 @@
- 
- 			if (driver->suspend) {
- 				status = driver->suspend(intf, state);
--				if (intf->dev.power.power_state != state
-+				if (intf->dev.power.power_state.event != state.event
- 						|| status)
- 					dev_err(&intf->dev,
- 						"suspend %d fail, code %d\n",
--						state, status);
-+						state.event, status);
- 			}
- 
- 			/* only drivers with suspend() can ever resume();
-@@ -1582,7 +1582,7 @@
- 			 * since we know every driver's probe/disconnect works
- 			 * even for drivers that can't suspend.
- 			 */
--			if (!driver->suspend || state > PM_SUSPEND_MEM) {
-+			if (!driver->suspend || state.event > PM_EVENT_FREEZE) {
- #if 1
- 				dev_warn(&intf->dev, "resume is unsafe!\n");
- #else
-@@ -1603,7 +1603,7 @@
- 	 * policies (when HNP doesn't apply) once we have mechanisms to
- 	 * turn power back on!  (Likely not before 2.7...)
- 	 */
--	if (state > PM_SUSPEND_MEM) {
-+	if (state.event > PM_EVENT_FREEZE) {
- 		dev_warn(&udev->dev, "no poweroff yet, suspending instead\n");
- 	}
- 
-@@ -1718,7 +1718,7 @@
- 			struct usb_driver	*driver;
- 
- 			intf = udev->actconfig->interface[i];
--			if (intf->dev.power.power_state == PM_SUSPEND_ON)
-+			if (intf->dev.power.power_state.event == PM_EVENT_ON)
- 				continue;
- 			if (!intf->dev.driver) {
- 				/* FIXME maybe force to alt 0 */
-@@ -1732,11 +1732,11 @@
- 
- 			/* can we do better than just logging errors? */
- 			status = driver->resume(intf);
--			if (intf->dev.power.power_state != PM_SUSPEND_ON
-+			if (intf->dev.power.power_state.event != PM_EVENT_ON
- 					|| status)
- 				dev_dbg(&intf->dev,
- 					"resume fail, state %d code %d\n",
--					intf->dev.power.power_state, status);
-+					intf->dev.power.power_state.event, status);
- 		}
- 		status = 0;
- 
-@@ -1917,7 +1917,7 @@
- 	unsigned		port1;
- 	int			status;
- 
--	if (intf->dev.power.power_state == PM_SUSPEND_ON)
-+	if (intf->dev.power.power_state.event == PM_EVENT_ON)
- 		return 0;
- 
- 	for (port1 = 1; port1 <= hdev->maxchild; port1++) {
---- clean/drivers/usb/core/usb.c	2005-03-19 00:31:51.000000000 +0100
-+++ linux/drivers/usb/core/usb.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1367,7 +1367,7 @@
- 	driver = to_usb_driver(dev->driver);
- 
- 	/* there's only one USB suspend state */
--	if (intf->dev.power.power_state)
-+	if (intf->dev.power.power_state.event)
- 		return 0;
- 
- 	if (driver->suspend)
---- clean/drivers/usb/host/ehci-dbg.c	2005-01-12 11:07:40.000000000 +0100
-+++ linux/drivers/usb/host/ehci-dbg.c	2005-03-22 12:20:53.000000000 +0100
-@@ -641,7 +641,7 @@
- 
- 	spin_lock_irqsave (&ehci->lock, flags);
- 
--	if (bus->controller->power.power_state) {
-+	if (bus->controller->power.power_state.event) {
- 		size = scnprintf (next, size,
- 			"bus %s, device %s (driver " DRIVER_VERSION ")\n"
- 			"SUSPENDED (no register access)\n",
---- clean/drivers/usb/host/ohci-dbg.c	2005-03-19 00:31:53.000000000 +0100
-+++ linux/drivers/usb/host/ohci-dbg.c	2005-03-22 12:20:53.000000000 +0100
-@@ -625,7 +625,7 @@
- 		hcd->self.controller->bus_id,
- 		hcd_name);
- 
--	if (bus->controller->power.power_state) {
-+	if (bus->controller->power.power_state.event) {
- 		size -= scnprintf (next, size,
- 			"SUSPENDED (no register access)\n");
- 		goto done;
---- clean/drivers/usb/host/sl811-hcd.c	2005-03-19 00:31:53.000000000 +0100
-+++ linux/drivers/usb/host/sl811-hcd.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1781,9 +1781,9 @@
- 	if (phase != SUSPEND_POWER_DOWN)
- 		return retval;
- 
--	if (state <= PM_SUSPEND_MEM)
-+	if (state.event == PM_EVENT_FREEZE)
- 		retval = sl811h_hub_suspend(hcd);
--	else
-+	else if (state.event == PM_EVENT_SUSPEND)
- 		port_power(sl811, 0);
- 	if (retval == 0)
- 		dev->power.power_state = state;
-@@ -1802,14 +1802,14 @@
- 	/* with no "check to see if VBUS is still powered" board hook,
- 	 * let's assume it'd only be powered to enable remote wakeup.
- 	 */
--	if (dev->power.power_state > PM_SUSPEND_MEM
-+	if (dev->power.power_state.event == PM_EVENT_SUSPEND
- 			|| !hcd->can_wakeup) {
- 		sl811->port1 = 0;
- 		port_power(sl811, 1);
- 		return 0;
- 	}
- 
--	dev->power.power_state = PM_SUSPEND_ON;
-+	dev->power.power_state = PMSG_ON;
- 	return sl811h_hub_resume(hcd);
- }
- 
---- clean/drivers/video/aty/atyfb_base.c	2005-03-19 00:31:59.000000000 +0100
-+++ linux/drivers/video/aty/atyfb_base.c	2005-03-22 12:20:53.000000000 +0100
-@@ -2070,12 +2070,12 @@
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 
--	if (pdev->dev.power.power_state == 0)
-+	if (pdev->dev.power.power_state.event == PM_EVENT_ON)
- 		return 0;
- 
- 	acquire_console_sem();
- 
--	if (pdev->dev.power.power_state == 2)
-+	if (pdev->dev.power.power_state.event == 2)
- 		aty_power_mgmt(0, par);
- 	par->asleep = 0;
- 
---- clean/drivers/video/aty/radeon_pm.c	2005-03-19 00:31:59.000000000 +0100
-+++ linux/drivers/video/aty/radeon_pm.c	2005-03-22 12:20:53.000000000 +0100
-@@ -2519,33 +2519,26 @@
- }
- 
- 
--static/*extern*/ int susdisking = 0;
--
--int radeonfb_pci_suspend(struct pci_dev *pdev, u32 state)
-+int radeonfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- {
-         struct fb_info *info = pci_get_drvdata(pdev);
-         struct radeonfb_info *rinfo = info->par;
- 	u8 agp;
- 	int i;
- 
--	if (state == pdev->dev.power.power_state)
-+	if (state.event == pdev->dev.power.power_state.event)
- 		return 0;
- 
- 	printk(KERN_DEBUG "radeonfb (%s): suspending to state: %d...\n",
--	       pci_name(pdev), state);
-+	       pci_name(pdev), state.event);
- 
- 	/* For suspend-to-disk, we cheat here. We don't suspend anything and
- 	 * let fbcon continue drawing until we are all set. That shouldn't
- 	 * really cause any problem at this point, provided that the wakeup
- 	 * code knows that any state in memory may not match the HW
- 	 */
--	if (state != PM_SUSPEND_MEM)
--		goto done;
--	if (susdisking) {
--		printk("radeonfb (%s): suspending to disk but state = %d\n",
--		       pci_name(pdev), state);
-+	if (state.event == PM_EVENT_FREEZE)
- 		goto done;
--	}
- 
- 	acquire_console_sem();
- 
-@@ -2637,7 +2630,7 @@
-         struct radeonfb_info *rinfo = info->par;
- 	int rc = 0;
- 
--	if (pdev->dev.power.power_state == 0)
-+	if (pdev->dev.power.power_state.event == PM_EVENT_ON)
- 		return 0;
- 
- 	if (rinfo->no_schedule) {
-@@ -2647,7 +2640,7 @@
- 		acquire_console_sem();
- 
- 	printk(KERN_DEBUG "radeonfb (%s): resuming from state: %d...\n",
--	       pci_name(pdev), pdev->dev.power.power_state);
-+	       pci_name(pdev), pdev->dev.power.power_state.event);
- 
- 
- 	if (pci_enable_device(pdev)) {
-@@ -2658,7 +2651,7 @@
- 	}
- 	pci_set_master(pdev);
- 
--	if (pdev->dev.power.power_state == PM_SUSPEND_MEM) {
-+	if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
- 		/* Wakeup chip. Check from config space if we were powered off
- 		 * (todo: additionally, check CLK_PIN_CNTL too)
- 		 */
---- clean/drivers/video/i810/i810_main.c	2005-03-19 00:32:00.000000000 +0100
-+++ linux/drivers/video/i810/i810_main.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1492,18 +1492,18 @@
- /***********************************************************************
-  *                         Power Management                            *
-  ***********************************************************************/
--static int i810fb_suspend(struct pci_dev *dev, u32 state)
-+static int i810fb_suspend(struct pci_dev *dev, pm_message_t state)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct i810fb_par *par = (struct i810fb_par *) info->par;
- 	int blank = 0, prev_state = par->cur_state;
- 
--	if (state == prev_state)
-+	if (state.event == prev_state)
- 		return 0;
- 
--	par->cur_state = state;
-+	par->cur_state = state.event;
- 
--	switch (state) {
-+	switch (state.event) {
- 	case 1:
- 		blank = VESA_VSYNC_SUSPEND;
- 		break;
-@@ -1524,7 +1524,7 @@
- 		pci_disable_device(dev);
- 	}
- 	pci_save_state(dev);
--	pci_set_power_state(dev, state);
-+	pci_set_power_state(dev, pci_choose_state(dev, state));
- 
- 	return 0;
- }
---- clean/include/linux/pm.h	2005-03-19 00:32:25.000000000 +0100
-+++ linux/include/linux/pm.h	2005-03-22 12:25:54.000000000 +0100
-@@ -185,7 +185,10 @@
- 
- struct device;
- 
--typedef u32 __bitwise pm_message_t;
-+typedef struct pm_message {
-+	int event;
-+	int flags;
-+} pm_message_t;
- 
- /*
-  * There are 4 important states driver can be in:
-@@ -205,9 +208,15 @@
-  * or something similar soon.
-  */
- 
--#define PMSG_FREEZE	((__force pm_message_t) 3)
--#define PMSG_SUSPEND	((__force pm_message_t) 3)
--#define PMSG_ON		((__force pm_message_t) 0)
-+#define PM_EVENT_ON 0
-+#define PM_EVENT_FREEZE 1
-+#define PM_EVENT_SUSPEND 2
-+
-+#define PFL_RUNTIME 1
-+
-+#define PMSG_FREEZE	({struct pm_message m; m.event = PM_EVENT_FREEZE; m.flags = 0; m; })
-+#define PMSG_SUSPEND	({struct pm_message m; m.event = PM_EVENT_SUSPEND; m.flags = 0; m; })
-+#define PMSG_ON		({struct pm_message m; m.event = PM_EVENT_ON; m.flags = 0; m; })
- 
- struct dev_pm_info {
- 	pm_message_t		power_state;
+> Functionally, this is what happens. Do you see a reason to/not to break it
+> up programmatically?
 
--- 
-People were complaining that M$ turns users into beta-testers...
-...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
+Because I think it's a lot more flexible not to do it :) That is,
+breaking it up _imposes_ a structure on driver that I'd rather avoid in
+this case. Just let them have suspend(), that can eventually use the
+state mecanism and maybe a class "stop" helper, but some drivers will
+want to do tricks etc... or do things before stopping the class, you
+can't even imagine now :) So I'd rather not have the core do that.
 
---===============79348177776575235==
+Ben.
+
+
+
+--===============62286952746654056==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============79348177776575235==--
+--===============62286952746654056==--
