@@ -1,9 +1,9 @@
 From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: switch pm_message_t to struct
-Date: Fri, 25 Mar 2005 00:08:34 +0100
-Message-ID: <20050324230834.GA1691@elf.ucw.cz>
+Subject: pm_message_t becoming struct
+Date: Fri, 25 Mar 2005 11:11:49 +0100
+Message-ID: <20050325101149.GA1301@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============28521353161115659=="
+Content-Type: multipart/mixed; boundary="===============87041943828333812=="
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -13,23 +13,39 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: ACPI mailing list <acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============28521353161115659==
+--===============87041943828333812==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-This is what I'd like to push to akpm. It is not yet rediffed against
--rc1-mm2. For preview only, I need to get some sleep.
+pm_message_t is becoming typedefed into struct with single field,
+"event" real soon now. If you do anything that wants to look inside
+pm_message_t, please base it on this patch.
+
+[Patrick and David would like to pass struct pm_message * instead of
+pm_message_t, but that just does not fly. Original code passed u32
+there (ouch), and it is not easy to replace u32 with struct pm_message
+* and not breaking the whole tree. Plus you do not get enough
+typechecking that way.]
+
+Len, please do something with platform_pci_choose_state(). I guess
+right way is to make it return pci_power_t and add
+
+#define PCI_POWER_ERROR -1...
+
+Patch is relative to 2.6.12-rc1-mm3, and works okay here.
 
 								Pavel
 
---- clean/drivers/base/power/resume.c	2004-12-25 13:34:59.000000000 +0100
-+++ linux/drivers/base/power/resume.c	2005-03-22 12:20:53.000000000 +0100
-@@ -41,7 +41,7 @@
+
+--- clean-mm/drivers/base/power/resume.c	2005-03-25 09:56:42.000000000 +0100
++++ linux-mm/drivers/base/power/resume.c	2005-03-25 08:47:16.000000000 +0100
+@@ -45,7 +45,7 @@
  		list_add_tail(entry, &dpm_active);
  
  		up(&dpm_list_sem);
@@ -38,8 +54,8 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  			resume_device(dev);
  		down(&dpm_list_sem);
  		put_device(dev);
---- clean/drivers/base/power/runtime.c	2005-01-12 11:07:39.000000000 +0100
-+++ linux/drivers/base/power/runtime.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/base/power/runtime.c	2005-01-12 11:07:39.000000000 +0100
++++ linux-mm/drivers/base/power/runtime.c	2005-03-25 08:47:16.000000000 +0100
 @@ -13,10 +13,10 @@
  static void runtime_resume(struct device * dev)
  {
@@ -66,32 +82,32 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		runtime_resume(dev);
  
  	if (!(error = suspend_device(dev, state)))
---- clean/drivers/base/power/shutdown.c	2004-08-15 19:14:55.000000000 +0200
-+++ linux/drivers/base/power/shutdown.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/base/power/shutdown.c	2004-08-15 19:14:55.000000000 +0200
++++ linux-mm/drivers/base/power/shutdown.c	2005-03-25 08:47:16.000000000 +0100
 @@ -29,7 +29,8 @@
  			dev->driver->shutdown(dev);
  		return 0;
  	}
 -	return dpm_runtime_suspend(dev, dev->detach_state);
-+	/* FIXME */
++	/* FIXME we now pass single state for "runtime PM", but that's ok, it never really worked anyway  */
 +	return dpm_runtime_suspend(dev, PMSG_FREEZE);
  }
  
  
---- clean/drivers/base/power/suspend.c	2005-01-12 11:07:39.000000000 +0100
-+++ linux/drivers/base/power/suspend.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/base/power/suspend.c	2005-03-25 09:56:42.000000000 +0100
++++ linux-mm/drivers/base/power/suspend.c	2005-03-25 08:47:47.000000000 +0100
 @@ -43,7 +43,7 @@
  
+ 	down(&dev->sem);
  	dev->power.prev_state = dev->power.power_state;
- 
 -	if (dev->bus && dev->bus->suspend && !dev->power.power_state)
 +	if (dev->bus && dev->bus->suspend && (!dev->power.power_state.event))
  		error = dev->bus->suspend(dev, state);
- 
+ 	up(&dev->sem);
  	return error;
---- clean/drivers/base/power/sysfs.c	2004-08-15 19:14:55.000000000 +0200
-+++ linux/drivers/base/power/sysfs.c	2005-03-22 12:20:53.000000000 +0100
-@@ -26,19 +26,20 @@
+--- clean-mm/drivers/base/power/sysfs.c	2004-08-15 19:14:55.000000000 +0200
++++ linux-mm/drivers/base/power/sysfs.c	2005-03-25 08:47:16.000000000 +0100
+@@ -26,19 +26,19 @@
  
  static ssize_t state_show(struct device * dev, char * buf)
  {
@@ -108,7 +124,6 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  
 -	state = simple_strtoul(buf, &rest, 10);
 +	state.event = simple_strtoul(buf, &rest, 10);
-+//	state.flags = PFL_RUNTIME;
  	if (*rest)
  		return -EINVAL;
 -	if (state)
@@ -116,8 +131,9 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		error = dpm_runtime_suspend(dev, state);
  	else
  		dpm_runtime_resume(dev);
---- clean/drivers/ide/ide.c	2005-03-19 00:31:23.000000000 +0100
-+++ linux/drivers/ide/ide.c	2005-03-22 12:20:53.000000000 +0100
+Only in linux-mm/drivers/char: consolemap_deftbl.c
+--- clean-mm/drivers/ide/ide.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/ide/ide.c	2005-03-25 08:47:16.000000000 +0100
 @@ -1390,7 +1390,7 @@
  	rq.special = &args;
  	rq.pm = &rqpm;
@@ -136,66 +152,32 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  
  	return ide_do_drive_cmd(drive, &rq, ide_head_wait);
  }
---- clean/drivers/pci/pci.c	2005-03-19 00:31:43.000000000 +0100
-+++ linux/drivers/pci/pci.c	2005-03-22 12:20:53.000000000 +0100
-@@ -312,22 +312,24 @@
- /**
-  * pci_choose_state - Choose the power state of a PCI device
-  * @dev: PCI device to be suspended
-- * @state: target sleep state for the whole system
-+ * @state: target sleep state for the whole system. This is the value
-+ *	that is passed to suspend() function.
-  *
-  * Returns PCI power state suitable for given device and given system
-  * message.
-  */
+--- clean-mm/drivers/pci/pci.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/pci/pci.c	2005-03-25 08:49:24.000000000 +0100
+@@ -376,14 +376,12 @@
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+ 		return PCI_D0;
  
--pci_power_t pci_choose_state(struct pci_dev *dev, u32 state)
-+pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state)
- {
--	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+-	if (platform_pci_choose_state) {
+-		ret = platform_pci_choose_state(dev, state);
+-		if (ret >= 0)
+-			state = ret;
+-	}
+-	switch (state) {
+-	case 0: return PCI_D0;
+-	case 3: return PCI_D3hot;
 +	switch (state.event) {
 +	case PM_EVENT_ON:
- 		return PCI_D0;
--
--	switch (state) {
--	case 0:	return PCI_D0;
--	case 2: return PCI_D2;
--	case 3: return PCI_D3hot;
--	default: BUG();
++		return PCI_D0;
 +	case PM_EVENT_FREEZE:
 +	case PM_EVENT_SUSPEND:
 +		return PCI_D3hot;
-+	default: 
-+		printk("They asked me for state %d\n", state.event);
-+		BUG();
- 	}
- 	return PCI_D0;
- }
---- clean/drivers/usb/core/hcd-pci.c	2005-03-19 00:31:51.000000000 +0100
-+++ linux/drivers/usb/core/hcd-pci.c	2005-03-22 12:20:53.000000000 +0100
-@@ -68,7 +68,7 @@
- 	if (pci_enable_device (dev) < 0)
- 		return -ENODEV;
- 	dev->current_state = 0;
--	dev->dev.power.power_state = 0;
-+	dev->dev.power.power_state.event = 0;
- 	
-         if (!dev->irq) {
-         	dev_err (&dev->dev,
-@@ -291,9 +294,6 @@
- 		break;
- 	}
- 
--	/* update power_state **ONLY** to make sysfs happier */
--	if (retval == 0)
--		dev->dev.power.power_state = state;
- 	return retval;
- }
- EXPORT_SYMBOL (usb_hcd_pci_suspend);
---- clean/drivers/usb/core/hub.c	2005-03-19 00:31:51.000000000 +0100
-+++ linux/drivers/usb/core/hub.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1557,7 +1557,7 @@
+ 	default:
+ 		printk("They asked me for state %d\n", state);
+ 		BUG();
+--- clean-mm/drivers/usb/core/hub.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/usb/core/hub.c	2005-03-25 08:51:25.000000000 +0100
+@@ -1568,7 +1568,7 @@
  			struct usb_driver	*driver;
  
  			intf = udev->actconfig->interface[i];
@@ -204,7 +186,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  				continue;
  			if (!intf->dev.driver)
  				continue;
-@@ -1565,11 +1565,11 @@
+@@ -1576,11 +1576,11 @@
  
  			if (driver->suspend) {
  				status = driver->suspend(intf, state);
@@ -218,7 +200,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  			}
  
  			/* only drivers with suspend() can ever resume();
-@@ -1582,7 +1582,7 @@
+@@ -1593,7 +1593,7 @@
  			 * since we know every driver's probe/disconnect works
  			 * even for drivers that can't suspend.
  			 */
@@ -227,7 +209,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  #if 1
  				dev_warn(&intf->dev, "resume is unsafe!\n");
  #else
-@@ -1603,7 +1603,7 @@
+@@ -1614,7 +1614,7 @@
  	 * policies (when HNP doesn't apply) once we have mechanisms to
  	 * turn power back on!  (Likely not before 2.7...)
  	 */
@@ -236,20 +218,20 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		dev_warn(&udev->dev, "no poweroff yet, suspending instead\n");
  	}
  
-@@ -1718,7 +1718,7 @@
+@@ -1731,7 +1731,7 @@
  			struct usb_driver	*driver;
  
  			intf = udev->actconfig->interface[i];
--			if (intf->dev.power.power_state == PM_SUSPEND_ON)
-+			if (intf->dev.power.power_state.event == PM_EVENT_ON)
+-			if (intf->dev.power.power_state == PMSG_SUSPEND)
++			if (intf->dev.power.power_state.event == PM_EVENT_SUSPEND)
  				continue;
  			if (!intf->dev.driver) {
  				/* FIXME maybe force to alt 0 */
-@@ -1732,11 +1732,11 @@
+@@ -1745,11 +1745,11 @@
  
  			/* can we do better than just logging errors? */
  			status = driver->resume(intf);
--			if (intf->dev.power.power_state != PM_SUSPEND_ON
+-			if (intf->dev.power.power_state != PMSG_ON
 +			if (intf->dev.power.power_state.event != PM_EVENT_ON
  					|| status)
  				dev_dbg(&intf->dev,
@@ -259,7 +241,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		}
  		status = 0;
  
-@@ -1917,7 +1917,7 @@
+@@ -1932,7 +1932,7 @@
  	unsigned		port1;
  	int			status;
  
@@ -268,9 +250,9 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		return 0;
  
  	for (port1 = 1; port1 <= hdev->maxchild; port1++) {
---- clean/drivers/usb/core/usb.c	2005-03-19 00:31:51.000000000 +0100
-+++ linux/drivers/usb/core/usb.c	2005-03-22 12:20:53.000000000 +0100
-@@ -1367,7 +1367,7 @@
+--- clean-mm/drivers/usb/core/usb.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/usb/core/usb.c	2005-03-25 08:47:16.000000000 +0100
+@@ -1376,7 +1376,7 @@
  	driver = to_usb_driver(dev->driver);
  
  	/* there's only one USB suspend state */
@@ -279,8 +261,8 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		return 0;
  
  	if (driver->suspend)
---- clean/drivers/usb/host/ehci-dbg.c	2005-01-12 11:07:40.000000000 +0100
-+++ linux/drivers/usb/host/ehci-dbg.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/usb/host/ehci-dbg.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/usb/host/ehci-dbg.c	2005-03-25 08:47:16.000000000 +0100
 @@ -641,7 +641,7 @@
  
  	spin_lock_irqsave (&ehci->lock, flags);
@@ -290,8 +272,8 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		size = scnprintf (next, size,
  			"bus %s, device %s (driver " DRIVER_VERSION ")\n"
  			"SUSPENDED (no register access)\n",
---- clean/drivers/usb/host/ohci-dbg.c	2005-03-19 00:31:53.000000000 +0100
-+++ linux/drivers/usb/host/ohci-dbg.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/usb/host/ohci-dbg.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/usb/host/ohci-dbg.c	2005-03-25 08:47:16.000000000 +0100
 @@ -625,7 +625,7 @@
  		hcd->self.controller->bus_id,
  		hcd_name);
@@ -301,8 +283,8 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		size -= scnprintf (next, size,
  			"SUSPENDED (no register access)\n");
  		goto done;
---- clean/drivers/usb/host/sl811-hcd.c	2005-03-19 00:31:53.000000000 +0100
-+++ linux/drivers/usb/host/sl811-hcd.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/usb/host/sl811-hcd.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/usb/host/sl811-hcd.c	2005-03-25 08:47:16.000000000 +0100
 @@ -1781,9 +1781,9 @@
  	if (phase != SUSPEND_POWER_DOWN)
  		return retval;
@@ -332,9 +314,9 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  	return sl811h_hub_resume(hcd);
  }
  
---- clean/drivers/video/aty/atyfb_base.c	2005-03-19 00:31:59.000000000 +0100
-+++ linux/drivers/video/aty/atyfb_base.c	2005-03-22 12:20:53.000000000 +0100
-@@ -2070,12 +2070,12 @@
+--- clean-mm/drivers/video/aty/atyfb_base.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/video/aty/atyfb_base.c	2005-03-25 08:47:16.000000000 +0100
+@@ -2071,12 +2071,12 @@
  	struct fb_info *info = pci_get_drvdata(pdev);
  	struct atyfb_par *par = (struct atyfb_par *) info->par;
  
@@ -349,19 +331,18 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		aty_power_mgmt(0, par);
  	par->asleep = 0;
  
---- clean/drivers/video/aty/radeon_pm.c	2005-03-19 00:31:59.000000000 +0100
-+++ linux/drivers/video/aty/radeon_pm.c	2005-03-22 12:20:53.000000000 +0100
-@@ -2519,33 +2519,26 @@
+--- clean-mm/drivers/video/aty/radeon_pm.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/video/aty/radeon_pm.c	2005-03-25 09:39:47.000000000 +0100
+@@ -2520,8 +2520,6 @@
  }
  
  
 -static/*extern*/ int susdisking = 0;
 -
--int radeonfb_pci_suspend(struct pci_dev *pdev, u32 state)
-+int radeonfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ int radeonfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
  {
          struct fb_info *info = pci_get_drvdata(pdev);
-         struct radeonfb_info *rinfo = info->par;
+@@ -2529,24 +2527,19 @@
  	u8 agp;
  	int i;
  
@@ -389,7 +370,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  
  	acquire_console_sem();
  
-@@ -2637,7 +2630,7 @@
+@@ -2638,7 +2631,7 @@
          struct radeonfb_info *rinfo = info->par;
  	int rc = 0;
  
@@ -398,7 +379,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		return 0;
  
  	if (rinfo->no_schedule) {
-@@ -2647,7 +2640,7 @@
+@@ -2648,7 +2641,7 @@
  		acquire_console_sem();
  
  	printk(KERN_DEBUG "radeonfb (%s): resuming from state: %d...\n",
@@ -407,7 +388,7 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  
  
  	if (pci_enable_device(pdev)) {
-@@ -2658,7 +2651,7 @@
+@@ -2659,7 +2652,7 @@
  	}
  	pci_set_master(pdev);
  
@@ -416,8 +397,8 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  		/* Wakeup chip. Check from config space if we were powered off
  		 * (todo: additionally, check CLK_PIN_CNTL too)
  		 */
---- clean/drivers/video/i810/i810_main.c	2005-03-19 00:32:00.000000000 +0100
-+++ linux/drivers/video/i810/i810_main.c	2005-03-22 12:20:53.000000000 +0100
+--- clean-mm/drivers/video/i810/i810_main.c	2005-03-25 09:56:43.000000000 +0100
++++ linux-mm/drivers/video/i810/i810_main.c	2005-03-25 08:54:42.000000000 +0100
 @@ -1492,18 +1492,18 @@
  /***********************************************************************
   *                         Power Management                            *
@@ -441,17 +422,17 @@ This is what I'd like to push to akpm. It is not yet rediffed against
  	case 1:
  		blank = VESA_VSYNC_SUSPEND;
  		break;
-@@ -1524,7 +1524,7 @@
- 		pci_disable_device(dev);
- 	}
- 	pci_save_state(dev);
--	pci_set_power_state(dev, state);
-+	pci_set_power_state(dev, pci_choose_state(dev, state));
+@@ -1538,7 +1538,7 @@
+ 		return 0;
  
- 	return 0;
- }
---- clean/include/linux/pm.h	2005-03-19 00:32:25.000000000 +0100
-+++ linux/include/linux/pm.h	2005-03-22 12:25:54.000000000 +0100
+ 	pci_restore_state(dev);
+-	pci_set_power_state(dev, 0);
++	pci_set_power_state(dev, PCI_D0);
+ 	pci_enable_device(dev);
+ 	agp_bind_memory(par->i810_gtt.i810_fb_memory,
+ 			par->fb.offset);
+--- clean-mm/include/linux/pm.h	2005-03-25 09:56:45.000000000 +0100
++++ linux-mm/include/linux/pm.h	2005-03-25 08:47:16.000000000 +0100
 @@ -185,7 +185,10 @@
  
  struct device;
@@ -488,11 +469,11 @@ This is what I'd like to push to akpm. It is not yet rediffed against
 People were complaining that M$ turns users into beta-testers...
 ...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
 
---===============28521353161115659==
+--===============87041943828333812==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============28521353161115659==--
+--===============87041943828333812==--
