@@ -1,23 +1,15 @@
 From: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Subject: Re: suspend/resume uevents [was Re: Introducing HAL
-	userspace power management]
-Date: Sat, 12 Mar 2005 16:43:16 +1100
-Message-ID: <1110606196.32510.25.camel@desktop.cunningham.myip.net.au>
-References: <1110426926.3443.3.camel@daxter.boston.redhat.com>
-	<20050310095629.GA13444@elf.ucw.cz>
-	<1110476278.3404.60.camel@daxter.boston.redhat.com>
-	<20050310211320.GG632@openzaurus.ucw.cz>
-	<1110490939.3404.84.camel@daxter.boston.redhat.com>
-	<20050310230745.GC10954@elf.ucw.cz>
-	<1110518935.4512.14.camel@daxter.boston.redhat.com>
-	<20050311084158.GA1705@elf.ucw.cz>
-	<1110557099.4203.19.camel@daxter.boston.redhat.com>
-	<1110574140.32510.12.camel@desktop.cunningham.myip.net.au>
-	<20050312041535.GB9671@kroah.com>
+Subject: Re: IRC Meeting
+Date: Sat, 12 Mar 2005 16:45:23 +1100
+Message-ID: <1110606323.32510.27.camel@desktop.cunningham.myip.net.au>
+References: <Pine.LNX.4.50.0503111306480.19793-100000@monsoon.he.net>
+	<1110576748.32510.18.camel@desktop.cunningham.myip.net.au>
+	<Pine.LNX.4.50.0503111331390.19793-100000@monsoon.he.net>
+	<20050311145331.42d16f50@cosmic.amd.com>
 Reply-To: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============26577489012155064=="
-In-Reply-To: <20050312041535.GB9671-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============0063417927200251079=="
+In-Reply-To: <20050311145331.42d16f50-aftB2sG12IhaqnLngUycEA@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,36 +19,36 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
-Cc: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>, seife-l3A5Bk7waGM@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Jordan Crouse <jordan.crouse-5C7GfCeVMHo@public.gmane.org>
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============26577489012155064==
+--===============0063417927200251079==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Hi.
+That's a good idea.
 
-On Sat, 2005-03-12 at 15:15, Greg KH wrote:
-> On Sat, Mar 12, 2005 at 07:49:00AM +1100, Nigel Cunningham wrote:
-> > There's an excellent hibernate script written by Bernard Blackham that
-> > we use for suspend2, but is also able to handle swsusp etc. If everyone
-> > would start using it... (me included! [Bernard, that's five times I've
-> > said it!])
-> 
-> A pointer to the script?
-
-Here you go...
-
-http://suspend2.net/downloads/all/hibernate-script-1.05.tar.gz
+Bernard being the wiz that he is, I'm sure he could set us up one on
+suspend2.net. Shall I ask?
 
 Regards,
 
 Nigel
 
-> thanks,
+On Sat, 2005-03-12 at 08:53, Jordan Crouse wrote:
+> On Fri, 11 Mar 2005 13:41:43 -0800 (PST)
+> "Patrick Mochel" <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org> wrote:
 > 
-> greg k-h
+> > Heh, I've been thinking about the same for months actually. :) We
+> > should have some sort of working document about what's going on. It
+> > could serve two purposes: to document existing practices and to
+> > document future plans. Please feel free to post something in some
+> > format..
+> 
+> A wiki would be best, I think for a living document.
+> 
+> Jordan
 -- 
 Nigel Cunningham
 Software Engineer, Canberra, Australia
@@ -66,7 +58,7 @@ Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
 Maintainer of Suspend2 Kernel Patches http://suspend2.net
 
 
---===============26577489012155064==
+--===============0063417927200251079==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -77,4 +69,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============26577489012155064==--
+--===============0063417927200251079==--
