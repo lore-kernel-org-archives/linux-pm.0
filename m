@@ -1,19 +1,16 @@
-From: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
 Subject: Re: Re: swsusp 'disk' fails in bk-current - intel_agp at
 	fault?
-Date: Thu, 31 Mar 2005 10:02:37 -0500
-Message-ID: <d120d50005033107024b4c2f96@mail.gmail.com>
+Date: Thu, 31 Mar 2005 08:02:44 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0503310801410.15519-100000@monsoon.he.net>
 References: <20050329181831.GB8125@elf.ucw.cz>
 	<1112135477.29392.16.camel@desktop.cunningham.myip.net.au>
 	<20050329223519.GI8125@elf.ucw.cz>
 	<200503310226.03495.dtor_core@ameritech.net>
-	<20050331083909.GA1387@elf.ucw.cz>
-Reply-To: dtor_core-yWtbtysYrB+LZ21kGMrzwg@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============93915452635374397=="
 Return-path: <linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
-In-Reply-To: <20050331083909.GA1387-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
+In-Reply-To: <200503310226.03495.dtor_core-yWtbtysYrB+LZ21kGMrzwg@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,30 +20,39 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Pavel Machek <pavel-AlSwsSmVLrQ@public.gmane.org>
+To: Dmitry Torokhov <dtor_core-yWtbtysYrB+LZ21kGMrzwg@public.gmane.org>
 Cc: Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Andy Isaacson <adi-3HqRAUrWAWyGglJvpFV4uA@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>, Stefan Seyfried <seife-l3A5Bk7waGM@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 31 Mar 2005 10:39:10 +0200, Pavel Machek <pavel-AlSwsSmVLrQ@public.gmane.org> wrote:
-> >  int swsusp_write(void)
-> >  {
-> >       int error;
-> > -     device_resume();
-> >       lock_swapdevices();
-> >       error = write_suspend_image();
-> >       /* This will unlock ignored swap devices since writing is
-> 
-> Looks good, except... why move code around? Could you just call
-> usermodehelper_disable from swsusp_write?
+--===============93915452635374397==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-That's because I don't think that swsusp_write is a proper place for
-it ;) It looks like a lean and mean function that does just write and
-manipulating usermodehelper state _and_ system (device) state is
-wrong. Let it do one thing, don't overload with actions that I think
-belong to the upper level. Do you agree?
 
-I think I need to stick in usermodehelper_enable call in case
-swsusp_write fails though.
+On Thu, 31 Mar 2005, Dmitry Torokhov wrote:
 
--- 
-Dmitry
+> Ok, what do you think about this one?
+>
+> ===================================================================
+>
+> swsusp: disable usermodehelper after generating memory snapshot and
+>         before resuming devices, so when device fails to resume we
+>         won't try to call hotplug - userspace stopped anyway.
+
+Hm, shouldn't we disable it before we start to freeze processes? We don't
+want any more processes trying to start up after we've taken care of
+them..
+
+Thanks,
+
+
+	Pat
+
+
+--===============93915452635374397==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============93915452635374397==--
