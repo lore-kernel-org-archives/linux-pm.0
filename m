@@ -1,9 +1,11 @@
 From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Possible subjects for IRC discussion
-Date: Wed, 16 Mar 2005 22:44:11 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503162218100.6156-100000@netrider.rowland.org>
+Subject: Re: Re: uhci-hcd suspend/resume under the new driver model
+Date: Wed, 16 Mar 2005 22:57:45 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0503162246160.7210-100000@netrider.rowland.org>
+References: <20050317011013.GD10545@blackham.com.au>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============85629025734340436=="
+Content-Type: multipart/mixed; boundary="===============28227466659638201=="
+In-Reply-To: <20050317011013.GD10545-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -13,71 +15,59 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>
+Cc: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>, ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============85629025734340436==
+--===============28227466659638201==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-For anyone who manages to read this message in time...
+On Thu, 17 Mar 2005, Bernard Blackham wrote:
 
-Here are some things we could talk about:
+> > I didn't get your attachment.
+> 
+> D'oh. For real this time.
 
-	How should device power states be represented in the kernel?
-	One option: pointer to some kind of structure.
+Of your two changes, it looks like the first one is an unimportant change
+to use the new PM types.  The second is to revert something that hasn't
+yet migrated out of the USB development tree.  So neither one is really
+important.
 
-	How should parents be notified about power state changes in
-	their children?  Internally at the bus-subsystem level, or
-	should the PM core provide some facility?
+> > Can _you_ elaborate on "never really being resumed"?  Since the
+> > state never changes from D0 much of the code in
+> > usb_hcd_pci_suspend never runs, as you said above.  In fact about
+> > the only thing that does happen is the call to
+> > hcd->driver->suspend.  However the reverse call to
+> > hcd->driver->resume does get made in usb_hcd_pci_resume even
+> > though the state upon entry is D0.
+> 
+> I meant specifically in the resume path, there's an if statement to
+> check if the pci power state is > D0, and only acts if that's the
+> case. Hopefully the first hunk of the patch attached makes this more
+> clear. None of the code inside that if statement was being called.
 
-	Can we name device power states so they can be displayed in
-	sysfs?  To what extent can these names be bus-independent?  What
-	about complex states that represent multiple settings (different
-	clocks and so on)?
+Yes, that's right.  There's a corresponding if statement in the suspend
+routine as well, and none of the code inside it was being run either.  In
+fact, the stuff inside the resume "if" block undoes the actions taken by
+the stuff inside the suspend "if" block.
 
-	If the user interface involves telling the kernel what state to
-	put a device into by writing the state's name to the sysfs
-	attribute file, the kernel needs to know which name represents
-	Full Power.  Otherwise it won't be able to tell whether it should
-	call the driver's ->resume or ->suspend!  Should we always use
-	some conventional name (like "on") to represent full power?
+So I don't think this is related to your mouse not functioning after 
+resume.  More likely that was caused by some HID driver not handling the 
+suspend/resume sequence correctly.
 
-	Kernel power management facilities exist in order to carry out
-	user policy.  What forms can that policy take, and what does the
-	kernel need to implement?  Some examples:
-
-		Change device D from power state X to power state Y after
-		N seconds of inactivity.
-
-		Put device D in power state Z whenever Suspend To Ram 
-		occurs.
-
-		Put device D in power state X right now.
-
-	Are there any other forms of policy the kernel can carry out?
-	How should even these simple policies be conveyed from userspace
-	to the kernel?
-
-	The user interface needs a way to tell the kernel whether a
-	device is enabled for wakeup signals.  It also needs a way to
-	tell the kernel whether a device should be resumed whenever a
-	software I/O request arrives on the device's queue.  How should 
-	this information be conveyed?
-
-	What messages need to be sent to userspace when device power
-	changes occur?  What sort of changes should generate such a 
-	message?  What mechanism should be used for sending the messages?  
-	(This is for device power management of course; system power
-	management will require its own set of messages.)
+I tried a similar test on my system, not with a mouse but with a mass 
+storage device.  There was no problem about binding the usb-storage driver 
+to it after the resume.  This adds to my suspicion that your problem was 
+caused by a mouse driver and not by the USB core or UHCI host driver.
 
 Alan Stern
 
 
---===============85629025734340436==
+--===============28227466659638201==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============85629025734340436==--
+--===============28227466659638201==--
