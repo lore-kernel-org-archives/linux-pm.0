@@ -1,10 +1,10 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 Subject: Re: comments on irc log
-Date: Fri, 18 Mar 2005 11:56:11 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503181147110.1099-100000@ida.rowland.org>
+Date: Fri, 18 Mar 2005 19:13:17 +0100
+Message-ID: <20050318181317.GD18427@elf.ucw.cz>
 References: <1111113131.25179.73.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============47094714442081043=="
+Content-Type: multipart/mixed; boundary="===============70733223336163475=="
 In-Reply-To: <1111113131.25179.73.camel@gaston>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
@@ -19,56 +19,67 @@ To: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.o
 Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============47094714442081043==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============70733223336163475==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Fri, 18 Mar 2005, Benjamin Herrenschmidt wrote:
+Hi!
 
-> I have this crazy idea that we could have a single "new" enter_state(), and keep
-> suspend/resume for system state transitions.
+> I've browsed the IRC log and have a few notes/comments/replies:
 > 
-> Basically, my idea there is that enter_state() is the actual low level driver
-> state change function. It is called when userland picks a state in sysfs, or
-> we could deal with the various bus state dependencies if we want etc...
+> 21:38:01< pavelm> At one point someone at intel was looking onto s-t-ram on smp machine...
+> 21:38:13< pavelm> ...is he/she still working on that?
+> 21:38:51< pavelm> Airplane-like machine was toshiba laptop; I did nnot open it.
+> 21:39:24< pavelm> DC=dual core... aha, I parsed it wrong.
 > 
-> We could keep suspend/resume separate for the system-wide suspend, and have
-> them implement the policy of converting a system wide suspend/resume into the
-> appropriate enter_state() for the driver.
+> Pavel: Paulus has that working on an SMP PowerMac. The simplest/safest way to do that
+> is to implement some kind of hotplug CPU (even if the CPU isn't physically turned off,
+> just "park" it in some kind of sleep loop or so), and only trigger the system-wide STR
+> after you have stopped all CPUs but one. He left usrland the
+> responsibility to do that.
+
+I do not want to leave that to userland, because we need it during
+swsusp resume, too, and userland is not available at that
+point. Otherwise I agree (and have some code from Li that implements
+it that way).
+
+> 21:43:34< nigel> Luming: I was meaning one where the chip itself gets completely powered down and needs a complete reconfigure on wake.
+> 21:43:39< pavelm> ;-< well, when BIOS at least posts the card, things are easy.
 > 
-> "Old" or "Simple" drivers would just suspend/resume and not implement
-> enter_state, more complex/subtle drivers would do the above.
+> Note that I have some code for POST'ing some radeon's that might be adapt-able. The only
+> "issue" is I don't know how to extract from the x86 BIOS ROM the proper sequence of values
+> for the SDRAM mode register (SDRAM chip init). This is write-only obviously so I can't just
+> read the values before sleep and POST the chip with those like I do for the rest of the
+> chip. I know values for Mac laptops, not x86.
+
+So it is basically "need very simple piece of documentation from
+notebook vendor" and some vendors are already wiling to share that
+info? Good.
+
+> 21:52:11< pavelm> I was playing with variable scheduling ticks here, hoping to save some power.
+> 21:52:31< pavelm> How big power savings should I expect?
+> 21:52:48< pavelm> What cpu will benefit most?
+> 21:53:04< pavelm> Is there easy way to measure it?
 > 
-> I haven't quite thought out the implications, it's just an idea that came to mind
-> as I was reading the log...
+> I played with that too on some PPCs and was surprised by the absence of benefit, but I might
+> have done something wrong, I need to instrument the stuff better.
 
-This sounds like a reasonable thing to do.  We do need distinct ways to
-tell drivers "Go to this system state" and "Go to this bus/device state".  
-Whether they are implemented by 1, 2, or 3 different callbacks doesn't
-really matter (except that we might want to minimize the number of 
-function pointers stored in the driver structures).
+Difference between HZ=100 and HZ=1000 was measuerd to be approx. as
+big as disk spinnned up vs. spinned down (i.e. watt or so) by
+seife.... Not *that* unimportant. But it took month or so to get that
+data, because he was basically measuring runtime from full to empty
+battery.
 
-> Yes, partial tree suspend. It was decided that we would bother about it when we have the stuff
-> working well enough as it is though :) If we start going to device local states, sysfs originated
-> transitions, etc, though, we'll probably end up with a mecanism capable of that. That is
-> triggering a wake of the storage device which will "cascade" upward along the tree.
+								Pavel
+-- 
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
 
-Absolutely; something like that is needed for runtime resume-on-demand.
-
-> Note that entering FREEZE and exiting it is very fast. Currently, we suspend everything tho, but
-> once drivers start knowing the difference, it will be as there is no HW PM to be done.
-
-Usually very fast.  Unfortunately for some kinds of USB host controllers 
-it can be relatively slow, since quiescing the controller has an 
-unavoidable side effect of suspending all devices on the bus.
-
-Alan Stern
-
-
---===============47094714442081043==
+--===============70733223336163475==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============47094714442081043==--
+--===============70733223336163475==--
