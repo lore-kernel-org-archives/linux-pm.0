@@ -1,15 +1,14 @@
-From: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Subject: Re: Re: uhci-hcd suspend/resume under the new driver model
-Date: Thu, 17 Mar 2005 09:48:41 +1100
-Message-ID: <1111013321.3240.63.camel@desktop.cunningham.myip.net.au>
-References: <20050313101453.GA4820@blackham.com.au>
-	<200503161305.57698.david-b@pacbell.net>
-	<1111009442.3240.28.camel@desktop.cunningham.myip.net.au>
-	<200503161412.42387.david-b@pacbell.net>
-Reply-To: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org
+From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+Subject: Re: Ottawa [topics]
+Date: Thu, 17 Mar 2005 10:40:45 +1100
+Message-ID: <1111016445.7192.72.camel@gaston>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3002F2271A@hdsmsx401.amr.corp.intel.com>
+	<200503132028.49339.david-b@pacbell.net>
+	<1110776843.14684.250.camel@gaston>
+	<200503161350.02426.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============67862718476587336=="
-In-Reply-To: <200503161412.42387.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============99775690925356109=="
+In-Reply-To: <200503161350.02426.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,132 +19,172 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 To: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
-Cc: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+Cc: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============67862718476587336==
+--===============99775690925356109==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Hi David.
+On Wed, 2005-03-16 at 13:50 -0800, David Brownell wrote:
 
-On Thu, 2005-03-17 at 09:12, David Brownell wrote:
-> Hi,
+> > 
+> > Yes, but it's orthogonal to the PM model. A device could even request
+> > slower clocks in intermediate power states or whatever, but it's the
+> > device driver that calls into the "clock manager" on power state
+> > transitions (or even at runtime) to express it's needs.
 > 
-> On Wednesday 16 March 2005 1:44 pm, Nigel Cunningham wrote:
-> > On Thu, 2005-03-17 at 08:05, David Brownell wrote:
-> > > For the record, I've recently observed that all the swsusp issues
-> > > start making sense to me when I start thinking of swsusp as being
-> > > completely unrelated to suspend states.  (S4bios aside...)  And if
-> > > I don't think of it that way, I keep tripping over complications
-> > > where it's fighting against "real" suspend states.
+> Not orthogonal.  Suspending a device will often involve a clock
+> transition ... and certain clocking levels will preclude certain
+> system PM states.
+
+ .../...
+
+Oh well, then come up with a scheme that can deal with those without
+beeing as big as the kernel itself...
+
+> 
+> > > That's sort of a "low level" category ... except that it pops up to
+> > > higher level concerns.  For example, clocks may be shared (which can
+> > > make the "low level" vs "driver state and relationships" distinctions
+> > > look nonexistent), and they may interact with system power transitions. 
+> > 
+> > A bit, but then, the clock net is often even more scary than the power
+> > tree. I wouldn't try to mix them up.
+> 
+> Embedded chips normally couple clock management with power management
+> very tightly.  They may have separate power switching controls, but
+> that's less widespread.
+
+I am familiar with that, and I still think this shouldn't be directly
+dealt by the PM framework. In fact, in most embedded cases, drivers are
+specific anyway and can embed the clock net stuff.
+
+>  
+> > > The primary mechanism I've heard discussed is having devices monitor
+> > > when they haven't been used recently, and using that to enter some
+> > > suspend level.  The "not even active" clock gating approach isn't
+> > > quite the same.
+> > 
+> > Yes, drivers deciding themselves, or through sysfs. Part of the model I
+> > propose is to let drivers expose a richer set of states to userland as
+> > well. Policy for things like handelds can become so complicated that I
+> > think it should be moved to userspace.
+> 
+> When drivers just don't use clocks they don't need (a "policy"), it
+> gets simple rather quickly.  Pushing it to userspace would be a way
+> to add complexity ... IMO a non-goal.
+
+Gah ? Did you understand what I said ?
+> 
+> > > > 4.) Userspace - how to notify of power changes, how to allow the user to
+> > > > control power management.
+> > > > 
+> > > > Anything else?
 > > > 
-> > > The thing is, swsusp in normal usage does not involve system
-> > > suspend states like S1/S2/S3, or their analogues in non-ACPI
-> > > embedded systems.  Neither does it involve wakeup from those
-> > > states ... in fact, it fights against addressing all those.
+> > > Oh, and wakeup event sources.  ACPI has a very indirect approach,
+> > > which seems to underlay some assumptions on this list.  There's a
+> > > similar thing going on with PCI.  So for example when folk start
+> > > to assume that a "wakeup" event is for some reason distinct from
+> > > the device's normal IRQ, I must cringe ... anyone assuming that
+> > > device or system suspend involves turning off IRQs is erecting
+> > > roadblocks against most embedded hardware.
 > > 
-> > Both swsusp and suspend2 can enter S4 as their method of powering down,
-> > and do use the prepare, enter and finish methods when doing so.
+> > Yes and no ... They must be treated differently for sure. There are a
+> > lot of cases where they are actually completely different.
 > 
-> As I said, S4 aside.  The history I recall is that swsusp came
-> out a fair degree of frustration with getting Linux to work
-> with the BIOS support ... and lack of firmware init for video,
-> etc.  And certainly S4 modes don't seem to be the default, or
-> widely used/tested.
+> And as many when they aren't.  Hence my point that assuming they ARE
+> is making trouble.  Some of the swsusp discussions seem to bring that
+> notion out.
 
-I think we're confusing things somewhere. You said "S4bios aside", and
-that's fine. I wasn't talking about S4 bios support at all. Instead, I
-was talking about the support swsusp and suspend2 have for invoking the
-ACPI S4 sleep state. (S4 is suspend-to-disk. The problems you mention
-sound more like S3 - suspend to ram).
+It's all bla bla bla as far as I'm concerned, we should find a model and
+see if it actually precludes anything. I think in all cases, the
+specifics of clock dependencies can be expressed as power state
+dependencies.
+> 
+> > The problem 
+> > we discussed a while ago with USB is an example of the mess, and I still
+> > have to investigate in details. Basically, the current USB code upstream
+> > will crash the machine on sleep 90% of the times when I have something
+> > plugged, while the same set of devices sleeps happily in OS X 100% of
+> > the time. So we must be doing something wrong.
+> 
+> Orthogonal issue; still loks specific to your hardware.
 
-> > > If swsusp were called a system checkpoint/restore mechanism, it'd
-> > > have a much clearer relationship to power management:  enabling
-> > > system power-off is a useful side effect, but it's not exactly
-> > > the point of a checkpoint mechanism.  I suspect that if it were
-> > > packaged as halt-after-checkpoint, plus resume-from-checkpoint,
-> > > a lot of technical issues would start shaking out better.  Also
-> > > maybe some political/funding ones ... checkpointing has much
-> > > value for enterprise server operations.
+"My" hardware is jsut a fucking standard NEC USB2 chip in most cases and
+a lucent cell in Apple stuff in the other. Also "My" hardware is also
+the class of laptops that happen to have had working sleep support for
+much longer and much more reliably than any x86 out there. You are
+breaking that and don't seem to be interested in making that work. THat
+makes me thing that working sleep on USB today is just a matter of luck.
+ 
+> > Wether the system IRQs must be masked or not is one thing that is
+> > platform specific during suspend. Wether devices must stop their IRQ
+> > emission, well... 
+> 
+> What's a "system IRQ" as opposed to any other kind?  Drivers don't
+> generally know or care how their IRQs are routed, they just care
+> that they get a callback.
+
+"system irq" means masking the irq at the PIC level (enable/disable irq)
+while masking the irq at the device level means stopping irq emission on
+the device using device local registers. It's totally different and may
+have a different impact on PM depending on how wakeup works.
+> 
+> > At least with USB, you do free_irq(). That means that 
+> > unless your IRQ is shared, it _will_ be masked at the controller level
+> > anyway. So if the IRQ is used to wakeup the CPU, that is broken, at
+> > least unless the IRQ line from the device (before reaching the IRQ
+> > controller) is also triggering some sort of external wakeup mecanism.
+> 
+> That's a good example of a PCI-specific assumption, the type I
+> was saying creates problems.  Non-PCI hardware has no reason to
+> free the IRQ.  (In fact, the only reason PCI hardware does it is
+> to keep that PPC-ism out of the OHCI code.)
+
+Which we have to keep anyway for the suspend code. And embedded with
+bizarre clock stuff will need hooks there too. I don't understand how
+you try to get the ppc stuff out on one side and deal with all the
+embedded cruft on the other. Masking IRQ in my case is mostly a matter
+of sanity. I'm switching the main clock off on the OHCI cell and disable
+the cell in the ASIC, I disable the IRQ that I know is not shared to
+make sure that there is no "dangling" irq line. I'm fairly sure other
+platforms (embedded especially) will need similar tweaks.
+>  
+> > I tend to think that devices using IRQs for wakeup instead of separate
+> > IOs are broken design, but then, we all know that HW folks can't get
+> > anything right ;)
+> 
+> Again, that's a strong PCI bias.
+
+Not at all. I would have said the same before we had PCI PM in the PCI
+spec.
+
+>   Having PCI biases like that is
+> just creating trouble.  In fact, not all PCI hardware works that
+> way either ... just stuff using the PCI PM model.  And the last
+> many PCI busess I've looked at have had devices that don't use
+> the PCM PM attributes, don't support PCI D3 ...
+> 
+> - Dave
+> 
+> 
+> 
+> > In some cases, we might have to provide some arch hooks to be called by
+> > drivers to know what to do ...
 > > 
-> > Checkpointing and restoring is very different from what swsusp and
-> > suspend2 do. I've been asked a number of times if I could make Suspend2
-> > do checkpointing as well as suspending, and it's simply not possible.
-> 
-> That is, other folk have noticed that it's essentially the same
-> problem...
-
-Only from the point of view of quiescing drivers.
-
-> > The reason is that we really are suspending to disk. We're writing the
-> > entire contents of memory, and those contents are only valid while the
-> > disk is in exactly the state it is in when we suspend. As soon as you
-> > change a file on the disk (as you would after checkpointing), the image
-> > is invalid and will create corruption if restored. To do checkpointing,
-> > we'd at least have to  modify the implementations to be able to reverse
-> > on disk changes back to the point where the checkpoint was taken, and
-> > probably also add a mechanism for tracking in-memory changes and
-> > updating the image to reflect them. It's not impossible, but it's not
-> > what swsusp and Suspend2 do now.
-> 
-> True, not what they do now.  I didn't intend to imply they did.
-> A checkpoint package would have key differences, including those.
-> 
-> That wasn't my point:  that swsusp, in normal usage, is more of a
-> checkpoint/restore than a suspend/resume.  Which is why some of what
-> it wants is different from suspend/resume.  In particular, since
-> the devices are goin to be powered off, the resume paths are VERY
-> different.  They are in fact reset paths, not resume paths.
-
-Ok. I agree suspend to disk is by definition akin to a
-checkpoint/restore operation. That's simply because of the nature of the
-beast - devices get powered down in this state.
-
-Can we nevertheless please still call it suspend/resume? Checkpointing
-is a different creature, and we don't want to confuse the issue.
-
-> > I realise you're writing in the context of freezing drivers, and may
-> > simply be thinking in terms of the action being the same as would be
-> > required if you were checkpointing. From that point of view I'd probably
-> > agree. But in the first instance, I'm reacting to you speaking of
-> > calling swsusp a system checkpoint/restore mechanism.
-> 
-> I'm trying to articulate why so much of the swsusp stuff seems (to me)
-> to be fighting against "normal" suspend/resume and wakeup mechanisms,
-> which can more naturally be built piecemeal from selective suspend.
-> (And why there's any pushback on selective suspend, given that it's so
-> basic to "normal" suspend/resume/wakeup.)
-
-Not sure I understand everything you're saying here, so can I see if my
-understanding matches/helps clarify?
-
-I see the system states as being like a big clamp over the run-time
-power management. To enter the PM_FREEZE state, for example, is to force
-all the drivers into a lower state of activity & preparedness than they
-would otherwise occupy. In normal operation, they'll happily interact
-with each other and float between the various run-time states according
-to whatever policy, but when PM_FREEZE comes along, they're collectively
-forced to a lowest common denominator. Is that akin to the "fighting
-again 'normal' suspend/resume and wakeup mechanisms" you speak of?
-
-Regards,
-
-Nigel 
+> > Ben.
+> > 
+> > 
 -- 
-Nigel Cunningham
-Software Engineer, Canberra, Australia
-http://www.cyclades.com
-Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
-
-Maintainer of Suspend2 Kernel Patches http://suspend2.net
+Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
 
 
---===============67862718476587336==
+--===============99775690925356109==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============67862718476587336==--
+--===============99775690925356109==--
