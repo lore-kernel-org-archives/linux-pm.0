@@ -1,13 +1,18 @@
-From: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
-Subject: Re: comments on irc log
-Date: Wed, 23 Mar 2005 13:33:22 -0800
-Message-ID: <200503231333.22647.david-b@pacbell.net>
-References: <1111113131.25179.73.camel@gaston>
-	<200503231153.48230.david-b@pacbell.net>
-	<20050323210835.GF30704@elf.ucw.cz>
+From: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
+Subject: Re: Nested suspends; messages vs. states
+Date: Thu, 24 Mar 2005 08:35:51 +1100
+Message-ID: <1111613750.14853.117.camel@desktop.cunningham.myip.net.au>
+References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
+	<Pine.LNX.4.50.0503221635130.16154-100000@monsoon.he.net>
+	<1111540913.16224.43.camel@gaston>
+	<Pine.LNX.4.50.0503221724550.16154-100000@monsoon.he.net>
+	<1111548664.16201.63.camel@gaston>
+	<Pine.LNX.4.50.0503231008340.17099-100000@monsoon.he.net>
+	<20050323210204.GE30704@elf.ucw.cz>
+Reply-To: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============76861815323164917=="
-In-Reply-To: <20050323210835.GF30704-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============78045965399986406=="
+In-Reply-To: <20050323210204.GE30704-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,69 +23,46 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
+Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============76861815323164917==
-Content-Type: text/plain;
-  charset="us-ascii"
+--===============78045965399986406==
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Wednesday 23 March 2005 1:08 pm, Pavel Machek wrote:
-> Hi!
+Hi.
+
+On Thu, 2005-03-24 at 08:02, Pavel Machek wrote:
+> Yes.
 > 
-> > > Thing is, it's the system power states that are placing clock
-> > > constraints on devices.  On OMAP, going into "deep sleep" means
-> > > you've got to stop using the 48 MHz clock.  For "big sleep",
-> > > you can keep using that clock.  Most other CPUs have similar
-> > > constraints:  multiple system states, defined primarily by
-> > > clock usage.  
-> > 
-> > 
-> > So to focus on one point:  "pm_message_t" doesn't work well
-> > at all, since it doesn't have a way to identify the target
-> > system power state, and drivers thus have no way to see if
-> > they should drop their requests for those clocks or whether
-> > the hardware should keep working away.
-> 
-> Well, in current model,
+> There are many drivers that do not fit your idea of "driver". Like
+> mtrrs. Some drivers only ever do work on resume, etc. Forcing driver
+> to think how to split it into class->stop, bus->save_state and
+> bus->enter state is bad idea. [Notice that almost no drivers need
+> ->save_state operation...]
 
-That is, after pm_message_t change.  That represents a loss of
-functionality.  Previously drivers received a target system
-sleep state, and could make such deductions easily:  anything
-like a PCI D3cold ("4") means maximal power off, anything like
-a PCI D3hot ("3") is less aggressive, and so on.  (Not that all
-drivers behaved right, or that the different incarnations of
-the "pm core" code used "3" vs "4" sanely, etc.)
+I don't think MTRRs should be counted as drivers. Rather, they should be
+counted as part of the CPU state(s), to be saved and restored when CPU
+context is saved and restored. Treating them as drivers leads to races
+:>
 
-So maybe one question for tomorrow should be how we'll restore
-that temporarily-list functionality.
+Regards,
+
+Nigel
+-- 
+Nigel Cunningham
+Software Engineer, Canberra, Australia
+http://www.cyclades.com
+Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
+
+Maintainer of Suspend2 Kernel Patches http://suspend2.net
 
 
-> drivers shoudl stop all the activity they can 
-> ("deep sleep"). If you want to add support for "big sleep", then you
-> should probably use flags... I guess calling "big sleep" standby is
-> okay...
-
-That's the loss of functionality.  Previously drivers didn't need
-to "stop all the activity they can" (PCI D3cold = 4), they also
-had options that didn't assume swsusp poweroff (PCI D3hot = 3).
-
-I don't know what you mean by "flags".  Mapping "big sleep" to a
-"standby" might make sense, specifically for that one architecture,
-but that doesn't seem like it'd address the  general issue.  What
-if there are more than two such non-"disk" system states that need
-support, for example?  Or about system states that relate to more
-factors than just the CPU/SOC states?
-
-- Dave
-
---===============76861815323164917==
+--===============78045965399986406==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============76861815323164917==--
+--===============78045965399986406==--
