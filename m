@@ -1,11 +1,11 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: Some thoughts on suspend/resume development
-Date: Fri, 11 Mar 2005 23:42:13 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0503112341030.7509-100000@netrider.rowland.org>
-References: <1110586718.12485.234.camel@localhost.localdomain>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Subject: Re: IRC Meeting
+Date: Sat, 12 Mar 2005 06:41:17 +0100
+Message-ID: <20050312054117.GC29059@atrey.karlin.mff.cuni.cz>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3002F68137@hdsmsx401.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============98692621125795466=="
-In-Reply-To: <1110586718.12485.234.camel-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============25139407421319948=="
+In-Reply-To: <F7DC2337C7631D4386A2DF6E8FB22B3002F68137-N2PTB0HCzHKkrb+BlOpmy7fspsVTdybXVpNB7YpNyf8@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,48 +15,25 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Adam Belay <abelay-Et1tbQHTxzrQT0dZR+AlfA@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============98692621125795466==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============25139407421319948==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Fri, 11 Mar 2005, Adam Belay wrote:
-
-> > > Now, that was probably bad example, but I do think some devices might
-> > > do usefull work even with their parents disabled.
+> Times are fine with me (US EST)
 > 
-> Yes, but at a logical (class) level the parent device would never be
-> disabled, right?  I guess it would be possible to model such a situation
-> if we take advantage of the driver class design.  I hadn't considered it
-> before, but I'll try to keep it in mind.  It would be interesting to see
-> how common it might be.
-> 
-> > 
-> > There's another aspect to it as well.  You can suspend the USB host
-> > controller and then _still_ use the external disk, if the host controller
-> > is automatically resumed when the next disk I/O request arrives.  Whereas
-> > if you would stop the disk and its driver, the next I/O request might
-> > simply languish in a plugged queue.  I suppose this would depend on
-> > whether the disk driver was smart enough to leave its queue unplugged
-> > under the right circumstances, so perhaps this isn't a great example.  
-> > (And you're right about the possibility of data being lost -- although
-> > it's pretty unlikely -- which makes this an even worse example.)
-> > 
-> > Alan Stern
-> 
-> Yes, so I think if we ensure that the parent device is enabled at a
-> logical level, and that the power source is active, it would be possible
-> to do such a thing.  I'm guessing this is something not to worry about
-> too much now; do you think so?
+> Would it make sense to set up an audio phone bridge, or is IRC
+> preferred?
 
-Agreed.  As Patrick said, this is a corner case.
+I do not think I can do audio.
+								Pavel
+-- 
+Boycott Kodak -- for their patent abuse against Java.
 
-Alan Stern
-
-
---===============98692621125795466==
+--===============25139407421319948==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -67,4 +44,4 @@ linux-pm mailing list
 linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 http://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============98692621125795466==--
+--===============25139407421319948==--
