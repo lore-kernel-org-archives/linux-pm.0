@@ -1,13 +1,14 @@
-From: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>
-Subject: Re: [REMINDER] Linux-PM IRC Meeting
-Date: Thu, 17 Mar 2005 08:56:26 +1100
-Message-ID: <1111010186.3240.31.camel@desktop.cunningham.myip.net.au>
-References: <1111008233.3240.14.camel@desktop.cunningham.myip.net.au>
-	<20050316215135.GA2641@elf.ucw.cz>
-Reply-To: ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Subject: Re: Re: uhci-hcd suspend/resume under the new driver model
+Date: Wed, 16 Mar 2005 22:57:28 +0100
+Message-ID: <20050316215727.GB2641@elf.ucw.cz>
+References: <20050313101453.GA4820@blackham.com.au>
+	<200503141059.26107.david-b@pacbell.net>
+	<20050314193054.GO5461@elf.ucw.cz>
+	<200503161305.57698.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============23649183062081436=="
-In-Reply-To: <20050316215135.GA2641-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============075666742151979438=="
+In-Reply-To: <200503161305.57698.david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,56 +18,75 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: David Brownell <david-b-yBeKhBN/0LDR7s880joybQ@public.gmane.org>
+Cc: Bernard Blackham <bernard-4vSAtV5O1nc0n/F98K4Iww@public.gmane.org>, ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org, linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---===============23649183062081436==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--===============075666742151979438==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi Pavel.
-
-On Thu, 2005-03-17 at 08:51, Pavel Machek wrote:
-> Hi!
-> 
-> > This is your wakeup call! Well, not quite.
-> 
-> :-)
-> 
-> > We have a meeting scheduled in the #pm room on irc.lame.org in
-> > approximately 15 1/2 hours (as I write)
+On St 16-03-05 13:05:57, David Brownell wrote:
+> On Monday 14 March 2005 11:30 am, Pavel Machek wrote:
+> > On Po 14-03-05 10:59:25, David Brownell wrote:
 > > 
-> > AU              US PST          US EST          EU Time
-> > --
-> > 3/18, 00:00     3/17, 07:00     3/17, 10:00     3/17, 17:00
+> > > > pci_choose_state() needs to return d3hot even 
+> > > > for pmsg_freeze, because that's what old code did, and I did not audit
+> > > > all the drivers.
+> > > 
+> > > Seems like a problem to me.  Do S1/S2/S3 transitions even
+> > > need a "freeze" transition?  I thought we'd agreed they don't;
+> > 
+> > That's not the problem.
 > 
-> I have some horses to ride at around that time... It should last about
-> 90 minutes, right? My email access will be slightly better than irc
-> access [it is possible to check email on horseback ;-)], so feel free
-> to mail me/start without me if I'm not there on time.
+> It's _a_ problem, maybe not the one you want to focus on right now.
 
-I have no idea how long it will last, but technology permitting, I'll be
-happy to email you my log - and we were going to seek someone to play
-minute taker anyway :>
+We do not do "device_suspend(...FREEZE)" for suspend-to-RAM (= S3). We
+freeze processes in order to make driver's life easier.
 
-Regards,
+> > Old code put devices into D3hot in swsusp "freeze" case. We'll need to
+> > do the same now, slowly auditing the drivers and removing that
+> > unneccessary D0->D3hot->D0 transition.
+> 
+> That's true.  The extra suspend/resume transition is trouble;
+> it's not necessary for the checkpoint stage, or system poweroff.
+> 
+> 
+> For the record, I've recently observed that all the swsusp issues
+> start making sense to me when I start thinking of swsusp as being
+> completely unrelated to suspend states.  (S4bios aside...)  And if
+> I don't think of it that way, I keep tripping over complications
+> where it's fighting against "real" suspend states.
+> 
+> The thing is, swsusp in normal usage does not involve system
+> suspend states like S1/S2/S3, or their analogues in non-ACPI
+> embedded systems.  Neither does it involve wakeup from those
+> states ... in fact, it fights against addressing all those.
+> 
+> 
+> If swsusp were called a system checkpoint/restore mechanism, it'd
+> have a much clearer relationship to power management:  enabling
+> system power-off is a useful side effect, but it's not exactly
+> the point of a checkpoint mechanism.  I suspect that if it were
+> packaged as halt-after-checkpoint, plus resume-from-checkpoint,
+> a lot of technical issues would start shaking out better.  Also
+> maybe some political/funding ones ... checkpointing has much
+> value for enterprise server operations.
 
-Nigel
+Yes, I pretty much agree with this one. OTOH drivers must be aware
+that powerdown *is* eventually going to happen, and that state of
+their devices is going to be lost. And they can't just store it just
+before powerdown, because that context is going to be lost.
+								Pavel
 -- 
-Nigel Cunningham
-Software Engineer, Canberra, Australia
-http://www.cyclades.com
-Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
 
-Maintainer of Suspend2 Kernel Patches http://suspend2.net
-
-
---===============23649183062081436==
+--===============075666742151979438==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============23649183062081436==--
+--===============075666742151979438==--
