@@ -1,11 +1,19 @@
 From: Patrick Mochel <mochel-og82NyAXoxR0I81aPRRTmR2eb7JE58TQ@public.gmane.org>
 Subject: Re: Nested suspends; messages vs. states
-Date: Wed, 23 Mar 2005 18:35:30 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0503231827310.15119-100000@monsoon.he.net>
-References: <Pine.LNX.4.44L0.0503231544550.631-100000@ida.rowland.org>
+Date: Wed, 23 Mar 2005 18:40:42 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0503231838570.15119-100000@monsoon.he.net>
+References: <Pine.LNX.4.44L0.0503211436020.1241-100000@ida.rowland.org>
+	<Pine.LNX.4.50.0503221635130.16154-100000@monsoon.he.net>
+	<1111540913.16224.43.camel@gaston>
+	<Pine.LNX.4.50.0503221724550.16154-100000@monsoon.he.net>
+	<1111548664.16201.63.camel@gaston>
+	<Pine.LNX.4.50.0503231008340.17099-100000@monsoon.he.net>
+	<20050323210204.GE30704@elf.ucw.cz>
+	<1111613750.14853.117.camel@desktop.cunningham.myip.net.au>
+	<20050323215416.GK30704@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============39485687750160325=="
-In-Reply-To: <Pine.LNX.4.44L0.0503231544550.631-100000-3WpdWqXrU/qjv4eRiOYp3g@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============40035312409947332=="
+In-Reply-To: <20050323215416.GK30704-I/5MKhXcvmPrBKCeMvbIDA@public.gmane.org>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,64 +23,51 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request-qjLDD68F18O7TbgM5vRIOg@public.gmane.org?subject=subscribe>
 Sender: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
 Errors-To: linux-pm-bounces-qjLDD68F18O7TbgM5vRIOg@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: Nigel Cunningham <ncunningham-3EexvZdKGZRWk0Htik3J/w@public.gmane.org>, Linux-pm mailing list <linux-pm-qjLDD68F18O7TbgM5vRIOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============39485687750160325==
+--===============40035312409947332==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
-On Wed, 23 Mar 2005, Alan Stern wrote:
+On Wed, 23 Mar 2005, Pavel Machek wrote:
 
-> So what's wrong with changing it into:
+> Hi!
 >
-> 	void suspend_to_ram()
-> 	{
-> 		lock all devices
-> 		suspend all devices
-> 		turn off main power
-> 		/* Zzzz... */
-> 		resume all devices
-> 		unlock all devices
-> 	}
+> > > There are many drivers that do not fit your idea of "driver". Like
+> > > mtrrs. Some drivers only ever do work on resume, etc. Forcing driver
+> > > to think how to split it into class->stop, bus->save_state and
+> > > bus->enter state is bad idea. [Notice that almost no drivers need
+> > > ->save_state operation...]
+> >
+> > I don't think MTRRs should be counted as drivers. Rather, they should be
+> > counted as part of the CPU state(s), to be saved and restored when CPU
+> > context is saved and restored. Treating them as drivers leads to races
+> > :>
 >
-> I agree that your single-semaphore idea would also work to prevent
-> unwanted resumes during a system sleep.  But it doesn't protect against
-> the possibility of devices being removed or added while the PM core is
-> traversing its lists.  Locking does protect against that -- or rather, it
-> will once the mechanisms have been added to the driver model core.
+> Okay, I'll need to make cpu hotplug deal with them. But MTRR are not
+> the only strange device. Think timer, for example.
 
-That would add a lot of complication. You never want to add more locks
-than you need to. Without locking, each suspend operation is a single
-discete action with no dependencies on anything else. Having to lock every
-device now intertwines them all in a very complicated and disgusting
-manner. It would make it potentially very hard to debug and add a lot of
-time to the process.
+That's a system device (like the current MTRR). In the name of sanity,
+please don't make exceptions to the model based on them or platform
+devices. Both of those models are FITH and need to be re-done.
 
-Note that you're locking ideas are at least original, but I'm having a
-harder and harder time taking them seriously without any code. I highly
-recommend that you at least try to codify the locking changes before
-making suggestions. It will weed out a lot of under-cooked ideas and get
-us a lot closer to a workable solution. As Linus would say "Show me the
-code!"
-
-Take this from someone that has had to make provably correct shotgun
-locking changes to code already in the kernel to appease a screaming Al
-Viro (whose usual statement is something along the lines of only "There's
-a race in function foo(). You idiot."), and a host of people that believe
-his word as gospel by default.
+Tangentially, if anyone has decent ideas on how to better represent those
+types of devices, I'm very intersted in knowing. I'd like to see them
+fixed up and cleaned up in the next few months..
 
 Thanks,
 
 
 	Pat
 
---===============39485687750160325==
+
+--===============40035312409947332==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============39485687750160325==--
+--===============40035312409947332==--
