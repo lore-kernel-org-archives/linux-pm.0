@@ -1,12 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] Mapping Device Power States
-Date: Thu, 7 Apr 2005 15:04:47 -0700
-Message-ID: <200504071504.47531.david-b@pacbell.net>
-References: <1112909150.21887.18.camel@linux.site>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: freeze_processes questions
+Date: Thu, 7 Apr 2005 18:09:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0504071803330.1071-100000@ida.rowland.org>
+References: <200504072259.56759.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============32006997039437435=="
+Content-Type: multipart/mixed; boundary="===============67710440060346566=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1112909150.21887.18.camel@linux.site>
+In-Reply-To: <200504072259.56759.rjw@sisk.pl>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,85 +16,47 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: Adam Belay <abelay@novell.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============32006997039437435==
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--===============67710440060346566==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Thursday 07 April 2005 2:25 pm, Adam Belay wrote:
+On Thu, 7 Apr 2005, Rafael J. Wysocki wrote:
+
+> During resume, we boot the kernel, check if there's an image to read and
+> (if there's one) we freeze processes using the refrigerator (we need to get rid
+> of them so that we can restore the image safely).  Then, it seems, on
+> some systems, freeze_processes() may be called before all of the compiled-in
+> drivers complete their initialization.  In particular, kseriod calls usermodehelper
+> at that time, which makes it wait uninterruptibly for a helper process to
+> complete.  If that helper process is frozen, we end up with the uninterruptible
+> kseriod that we can't freeze and _resume_ fails, which is not nice, especially
+> that we don't need to care for this kseriod, as we are going to restore
+> the image in a while ...
 > 
-> Linux supports a wide variety of hardware, each with different power
-> management characteristics and capabilities.  However, power management
-> statistics (e.g. calling a power tick for determining an idling) are
-> generally gathered at the class device level.  In order for class
-> devices to relate bus specific power states to their own state change
-> intentions, it may make sense to have a table mapping each bus level
-> power state to its corresponding generic Linux power state.
+> Perhaps we should not use the refrigerator during resume, or we could use a
+> slightly modified version?  I don't know.
 
-I'm not clear on that "In order for ...".  For one thing, class
-devices aren't necessarily relevant.  For another, it presumes
-the notion of a "generic" (device) power state.
+Kernel threads calling (and waiting for!) userspace processes is a very 
+difficult problem for suspend.  It comes up in several different places, 
+and it doesn't seem to have any easy solution.
 
-But I guess my fundamental question is:  why should anything other
-than its driver want to know about the device's power state?
+It might be best to require that kernel threads should always be
+freeze-able when they do this, which in particular implies that they must
+not hold any locks.  While that should work, it would create problems for
+a number of drivers that use the firmware loader during their probe()  
+routine.  There will probably be other similar problems I'm not aware of.
 
-System suspend transitions can all be handled by a "make yourself
-compatible with this target system state" request.  The details of
-how that's done are irrelevant outside the drivers.  Likewise,
-runtime/dynamic/whatever power management operations can be done
-at any time ... in fact, I'd argue all hardware should stay in
-low power modes until it's actually needed, and entering higher
-power modes should normally be transparent.  (So that if they
-are stupid and stay in high power modes all the time, the only
-penalty is wasted power.)
+Alan Stern
 
 
-> Another problem with having multiple separate states is that it is very
-> difficult to relate the power requirements of child devices when the
-> parent has a different set of bus level power states.
-
-That's a partial answer to my question:  sometimes a "container"
-needs to coordinate power states of several devices.  OK; they
-may have private agreements.  (A "bus" might be a "container",
-but not all containers are busses.  Some are bridges, or hubs,
-and some are less regular components involving multiple sorts
-of control, data, and power connection.)
-
-Of course, the current PM models in Linux don't exactly have such
-a "container" model.  We've discussed needing child-to-parent
-notificatios at various points, and those would be part of such
-a model.
-
-
-> I would like to explore the possibility of defining a set of generic
-> power states, to which each bus level state can be mapped.  It might be
-> as follows:
-> 
-> functional - the device is operational.
-> context - the current data/operations passing through the device
-> configuration - resources, firmware, settings done in *probe, etc.
-
-The only one of those that seems needed outside of the driver
-itself is whether it's "functional".  The rest are private to
-the driver or maybe its container.
-
-
-In short:  why should there be any Linux-wide notion like that?
-Wouldn't trying to create one just be the problem of creating a
-"Grand Unified Theory of Power Management"?
-
-- Dave
-
---===============32006997039437435==
+--===============67710440060346566==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============32006997039437435==--
+--===============67710440060346566==--
