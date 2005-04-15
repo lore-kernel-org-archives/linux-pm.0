@@ -1,14 +1,10 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: [RFC] A New Power Management API
-Date: Fri, 15 Apr 2005 19:53:40 -0700
-Message-ID: <42607E34.7060909@mvista.com>
-References: <1113533193.3451.40.camel@localhost.localdomain>	<20050415095003.52f3185a@cosmic.amd.com>
-	<1113591290.3451.79.camel@localhost.localdomain>
+From: "Isah Balewa" <isahbalewa2007@clicavenue.com>
+Subject: Next of kin
+Date: Fri, 15 Apr 2005 14:42:57 +0200
+Message-ID: <GMail.1113568977.241478038.98512459458@clicavenue.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============96899668496620284=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1113591290.3451.79.camel@localhost.localdomain>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,62 +14,75 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <ambx1@neo.rr.com>
-Cc: linux-pm@lists.osdl.org
+To: isahbalewa2007@clicavenue.ns30914.ovh.net
 List-Id: linux-pm@vger.kernel.org
 
-Adam Belay wrote:
-> On Fri, 2005-04-15 at 09:50 -0600, Jordan Crouse wrote:
-...
->>This is where I see the policy managers taking a greater role.  In
->>addition to the hard coded states (the first five you defined sound fine
->>to me), the user would define a number of pseudo system states as well
->>as define the translation tables for device states under those pseudo
->>states. Each pseudo state would be registered with the PM core and
->>assigned a unique identifier.
-> 
-> 
-> That's an interesting idea.  How would the sysfs interface work?  In
-> general, it's challenging to allow the user to define policy
-> configuration settings on a per-system-state basis.
-> 
-> 
->>We would then define a system state flag, say
->>PM_SYSTEM_STATE_PSEUDO, which would prompt a driver to query its policy
->>manager to get the translation for the right device state.  Those
->>devices that don't understand or care about user defined power
->>states would simply ignore the flag.
-> 
-> 
-> I think the policy manager would directly request for a change of the
-> state.  Then the driver would handle *suspend.  Although the policy
-> manger is code included with the driver, I'd like it to handle any
-> decisions.  So it would be the policy manager's job to notice something
-> like PM_SYSTEM_STATE_PSEUDO.
+--===============96899668496620284==
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id j3GDCqs4012657
 
-As a real-life embedded systems example, I have periodic conversations 
-with some folks who design Linux-based mobile phones, and they have 
-recently asked for the addition of features that I figure can be 
-addressed by approximately just this.
+Attn: To Whom It May Concern .
+__________________________________________________
 
-On the other hand, I've been trying to push them toward a simpler-kernel 
-model in which all the product-specific logic for placing various 
-devices in designated power states occurs in a userspace power policy 
-manager, and: (a) most drivers take no additional action at system 
-suspend, leaving the policy-manager-set power state in place, with some 
-exceptions for drivers necessary to run the system right up until sleep 
-time; (b) most drivers do nothing at system resume other than those 
-needed to get the system up and running (for a mobile phone, say, at 
-least mtd subsystem and flash chip driver) and then let userspace policy 
-manager decide what power state to place all the devices in.  Their 
-products tend to do highly customized things like power back up a small 
-subset of devices that were on prior to the sleep, or briefly power up 
-previously-off devices to check to see if any important changes in the 
-environent occurred during the sleep, etc.
+This letter is not intended to cause any embarrassment in whatever form,r=
+ather it is intended to contact your esteemed self,following the knowledg=
+e of your high repute and trustworthiness.Firstly, I must solicit your co=
+nfidentiality.
 
-I think either way will work fine for what they're trying to do, am open 
-to discuss the merits of either approach.  If anyone has any comments on 
-the simplistic kernel method it's appreciated.  Thanks,
+I know that a proposal of this magnitude will make anyone apprehensive an=
+d worried,but I am assuring you that it is made in good faith and will be=
+ of mutual benefit.I am Barrister Isah Balewa,the personal attorney to Mr=
+ Barry Kelly,herein after referred to as my client, a national of your co=
+untry,who until his death was a major crude oil contractor with the feder=
+al government of Nigeria. My client and his entire family were involved i=
+n a fatal motor accident which unfortunately claimed their lives,along th=
+e Shagamu expressway sparing none of the occupants of the vehicle.
 
--- 
-Todd
+I have since then made several enquiries to your Embassy,in a bid to loca=
+te any relation of my client and these efforts of mine have not been prod=
+uctive.I then decided to find someone overseas who i can present to the b=
+ank to assist me in securing the money and property left behind by my cli=
+ent before they are declared as unclaimed and unserviceable by the bank w=
+here they have been lodged for safekeeping. I am particularly interested =
+in securing the funds lodged with Global Trust Bank Plc,totaling fifteen =
+Million,United States Dollar(USD15M).
+
+This is because the said Bank has issued a notice to me,unequivocally ins=
+tructing me to produce the Next of Kin/Beneficiary to the said account wi=
+thin the next ten official working days, or have the account confiscated.=
+ Considering my lack of success in my bid to locate his relatives for ove=
+r a year now,I solicit your consent to enable me produce you as the Next =
+of Kin to my deceased client,The funds will then be transferred to you as=
+ the beneficiary and shared according to a proposed sharing pattern/ratio=
+ of 60:40 i.e. 60% for me and 40% for you.
+
+I will provide all the necessary legally obtained documents that the bank=
+ might require to back up any claim we make regarding this process,and wi=
+ll just require your understanding and cooperation to enable us achieve s=
+uccess within legitimate arrangement,eliminating any liability resulting =
+from any breach of the prevalent laws.
+
+Your urgent response will be highly appreciated and you could also reach =
+me at this email address:isahbalewa2005@walla.com
+
+Thank you.
+Best Regards,
+Barrister Isah Balewa.
+
+--
+ClicAvenue Mail : Cr=E9ez votre propre email gratuitement ! Avec protecti=
+on (virus et spams), mot de
+passe et acc=E8s depuis n'importe quel ordinateur ! Enfin un email origin=
+al...
+http://www.clicavenue.com/email
+
+
+--===============96899668496620284==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+--===============96899668496620284==--
