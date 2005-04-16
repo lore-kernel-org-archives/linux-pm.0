@@ -1,14 +1,14 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC] A New Power Management API
-Date: Sat, 16 Apr 2005 11:24:05 -0700
-Message-ID: <200504161124.05846.david-b@pacbell.net>
+Date: Sat, 16 Apr 2005 12:26:12 -0700
+Message-ID: <200504161226.12849.david-b@pacbell.net>
 References: <1113533193.3451.40.camel@localhost.localdomain>
-	<20050415095003.52f3185a@cosmic.amd.com>
 	<1113591290.3451.79.camel@localhost.localdomain>
+	<42607E34.7060909@mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============13443387393991868=="
+Content-Type: multipart/mixed; boundary="===============76233925471946673=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1113591290.3451.79.camel@localhost.localdomain>
+In-Reply-To: <42607E34.7060909@mvista.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,97 +21,110 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============13443387393991868==
+--===============76233925471946673==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Friday 15 April 2005 11:54 am, Adam Belay wrote:
-> On Fri, 2005-04-15 at 09:50 -0600, Jordan Crouse wrote:
-> > Adam - 
+On Friday 15 April 2005 7:53 pm, Todd Poynor wrote:
+> Adam Belay wrote:
+> > On Fri, 2005-04-15 at 09:50 -0600, Jordan Crouse wrote:
+> ...
+> >>We would then define a system state flag, say
+> >>PM_SYSTEM_STATE_PSEUDO, which would prompt a driver to query its policy
+> >>manager to get the translation for the right device state.  Those
+> >>devices that don't understand or care about user defined power
+> >>states would simply ignore the flag.
 > > 
-> > Nice stuff.  A few comments.  First, a question:
-> > 
-> > Is it safe to assume that PMU devices  (like these:
-> >  http://www.dialog-semiconductor.com/template.php?page_id=62) would fall
-> > under the category of Power Resources?  if so, we may need to consider
-> > some more advanced hooks than just on/off.
+> > I think the policy manager would directly request for a change of the
+> > state.  Then the driver would handle *suspend.  Although the policy
+> > manger is code included with the driver, I'd like it to handle any
+> > decisions.  So it would be the policy manager's job to notice something
+> > like PM_SYSTEM_STATE_PSEUDO.
 > 
-> I'm not familiar with how we would control such a device from software.
-> If you think more than _ON and _OFF would be necessary, I could
-> certainly revise this code.  
+> As a real-life embedded systems example, I have periodic conversations 
+> with some folks who design Linux-based mobile phones, and they have 
+> recently asked for the addition of features that I figure can be 
+> addressed by approximately just this.
 
-Other similar devices include the TI TPS6501x series:
-
-  http://focus.ti.com/docs/prod/folders/print/tps65010.html
-
-One of these moments I'll submit the driver I wrote for use with
-OMAP; it's pretty minimalist just now, but tps65010.c is in BK at:
-
-  http://linux-omap.bkbits.net:8080/main/src/drivers/i2c/chips
-
-Yes, more than "on" and "off" is necessary.  Lots of drivers
-build on that.  Currently most of them just access the GPIOs
-it provides, interact with battery recharging, or control
-various aspects of system power state transitions.  The hardware
-defaults manage a "not-fast" battery recharge, so battery based
-systems "just work".
-
-That driver doesn't yet do anything like forcing a system suspend
-when battery power goes dangerously low, or even feeding IRQs to
-other drivers.  Much less monitoring battery recharge or managing
-fast recharge.  That is, it's incomplete ... so all you will see
-right now is stuff that's essential even for devel boards that
-mostly run on AC power.  No UI is supported yet.
-
-Those Dialog devices have a slightly different functional mix.
-Motorola also has similar parts, also used in cell phones.
-
-One small point to notice:  this is an I2C driver, but it needs
-to initialize quite early on most boards, since it's used to power
-up other devices (including often the DSP).  So the system init
-sequence has been adjusted to make that behave:  I2C initializes
-early (subsys_initcall), as does this specific I2C driver.
+I like that idea, except that I don't see why it should kick in
+only with a PM_SYSTEM_STATE_PSUEDO flag.  Why shouldn't the power
+container's policy code _always_ work that way?  That is, I see
+no motivation for a special case here.
 
 
-> ACPI only supports _ON and _OFF in its 
-> model.  More complex stuff is handled by the state of the device.
+> On the other hand, I've been trying to push them toward a simpler-kernel 
+> model in which all the product-specific logic for placing various 
+> devices in designated power states occurs in a userspace power policy 
+> manager,
+
+So maybe you have some answers for me about why there should need
+to be *any* notion of exporting device power states.  (Rather than
+not caring, and just requiring driver-internal powers states always
+to become consistent with the upcoming system power state.)
+
+If one takes the notion of userspace managing those states off the table,
+is there any other motivation to expose those device power states?   If
+not, the only reason to export power states would be to support this
+particular style of userspace power management micro-policy.
+
+I'm pretty sure that supporting this sort of userspace functionality
+won't really fit into the "simpler kernel" rubric.  If for no other
+reason than the self-evident fact that a kernel exporting such stuff
+must have more code than one not exporting it...
+
+
+Right now the only reason I'm not strongly leaning towards just
+removing the /sys/.../power/state files completely is that I still
+want a way to test individual driver suspend and resume methods
+without forcing some system sleep transition.  It's a real pain
+to be unable to test one each driver until all the others are
+also working correctly; in fact, it's a major chicken/egg issue.
+
+
+> and: (a) most drivers take no additional action at system  
+> suspend, leaving the policy-manager-set power state in place, with some 
+> exceptions for drivers necessary to run the system right up until sleep 
+> time; (b) most drivers do nothing at system resume other than those 
+> needed to get the system up and running (for a mobile phone, say, at 
+> least mtd subsystem and flash chip driver) and then let userspace policy 
+> manager decide what power state to place all the devices in.  Their 
+> products tend to do highly customized things like power back up a small 
+> subset of devices that were on prior to the sleep, or briefly power up 
+> previously-off devices to check to see if any important changes in the 
+> environent occurred during the sleep, etc.
 > 
->     ---(power_resource)
->     |        |
-> domain -> device
-> 
-> In my design, power resources are specific power planes and clocks that
-> belong to a given power domain (or that domain's parent).  They often
-> depend on the state of the domain or the system state.  A device may
-> require multiple power resources, but can only belong to one power
-> domain.
+> I think either way will work fine for what they're trying to do, am open 
+> to discuss the merits of either approach.  If anyone has any comments on 
+> the simplistic kernel method it's appreciated.  Thanks,
 
-But power domains must be able to belong to other power domains,
-and the domains are themselves power devices... so there's a fair
-amount of "inheritance" going on.
+I think it's more accurate to talk about that as a "userspace micro-policy
+management" approach rather than a "simplistic kernel method".  Simpler
+kernels would export only broad-brush policy controls.
 
-
-> I could see something like having a clock put at a slower 
-> speed, so maybe we do need more than on and off.
-
-How would you handle the ARM clock trees?  E.g. the stuff you'll
-find in arch/arm/mach-omap/clock.c in 2.6.12-rc2?  (Older versions
-are very similar, the latest version in the linux-omap tree above
-can be made to disable unused clocks at boot time.)  My initial
-thought was that these specific resources wouldn't show up as any
-kind of power resource, since they're already managed properly
-(by clk_use/clk_unuse) as drivers activate and de-activate.
+I see it as akin to the tradeoff between lots of fine grained locks, versus
+a few coarse grained ones:  except for the atypical highly-contended cases,
+one coarse lock invariably provides the lowest overhead.
 
 - Dave
 
 
---===============13443387393991868==
+
+> 
+> -- 
+> Todd
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> http://lists.osdl.org/mailman/listinfo/linux-pm
+> 
+
+--===============76233925471946673==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============13443387393991868==--
+--===============76233925471946673==--
