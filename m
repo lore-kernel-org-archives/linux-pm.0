@@ -1,10 +1,13 @@
-From: "Isah Balewa" <isahbalewa2007@clicavenue.com>
-Subject: Next of kin
-Date: Fri, 15 Apr 2005 14:42:57 +0200
-Message-ID: <GMail.1113568977.241478038.98512459458@clicavenue.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC] A New Power Management API
+Date: Sat, 16 Apr 2005 10:13:09 -0700
+Message-ID: <200504161013.10135.david-b@pacbell.net>
+References: <1113533193.3451.40.camel@localhost.localdomain>
+	<9268368b0504150616652c268b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============96899668496620284=="
+Content-Type: multipart/mixed; boundary="===============16580401181122895=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <9268368b0504150616652c268b@mail.gmail.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,75 +17,45 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: isahbalewa2007@clicavenue.ns30914.ovh.net
+To: linux-pm@lists.osdl.org, Daniel Petrini <d.pensator@gmail.com>
+Cc: Adam Belay <abelay@novell.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============96899668496620284==
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id j3GDCqs4012657
+--===============16580401181122895==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Attn: To Whom It May Concern .
-__________________________________________________
+On Friday 15 April 2005 6:16 am, Daniel Petrini wrote:
+> 
+> Suggestion: as discussed in early weeks, why don't adopt names taking into 
+> consideration that Linux can run in systems other than desktops and servers?
+> 
+> #define PM_SYSTEM_STATE_SUSPEND_RAM 0x00000010
+> #define PM_SYSTEM_STATE_SUSPEND_DISK 0x00000020
 
-This letter is not intended to cause any embarrassment in whatever form,r=
-ather it is intended to contact your esteemed self,following the knowledg=
-e of your high repute and trustworthiness.Firstly, I must solicit your co=
-nfidentiality.
+The notion of RAM doesn't bother me much, although it may matter
+whether that means "all system RAM is preserved" versus "only a
+small bit of on-chip SDRAM is preserved".
 
-I know that a proposal of this magnitude will make anyone apprehensive an=
-d worried,but I am assuring you that it is made in good faith and will be=
- of mutual benefit.I am Barrister Isah Balewa,the personal attorney to Mr=
- Barry Kelly,herein after referred to as my client, a national of your co=
-untry,who until his death was a major crude oil contractor with the feder=
-al government of Nigeria. My client and his entire family were involved i=
-n a fatal motor accident which unfortunately claimed their lives,along th=
-e Shagamu expressway sparing none of the occupants of the vehicle.
+The notion of DISK bothers me more.  Systems with only FLASH/MTD
+probably aren't more demanding of PM infrastructure, but when
+folk assume that the only non-volatile storage is a disk, it may
+start to seem that way.
 
-I have since then made several enquiries to your Embassy,in a bid to loca=
-te any relation of my client and these efforts of mine have not been prod=
-uctive.I then decided to find someone overseas who i can present to the b=
-ank to assist me in securing the money and property left behind by my cli=
-ent before they are declared as unclaimed and unserviceable by the bank w=
-here they have been lodged for safekeeping. I am particularly interested =
-in securing the funds lodged with Global Trust Bank Plc,totaling fifteen =
-Million,United States Dollar(USD15M).
+For the moment, maybe using "NONVOLATILE" rather than DISK would
+be good.  Also, somewhat of a nit, those aren't exactly states,
+so maybe take at least the _STATE_ thingie out.
 
-This is because the said Bank has issued a notice to me,unequivocally ins=
-tructing me to produce the Next of Kin/Beneficiary to the said account wi=
-thin the next ten official working days, or have the account confiscated.=
- Considering my lack of success in my bid to locate his relatives for ove=
-r a year now,I solicit your consent to enable me produce you as the Next =
-of Kin to my deceased client,The funds will then be transferred to you as=
- the beneficiary and shared according to a proposed sharing pattern/ratio=
- of 60:40 i.e. 60% for me and 40% for you.
-
-I will provide all the necessary legally obtained documents that the bank=
- might require to back up any claim we make regarding this process,and wi=
-ll just require your understanding and cooperation to enable us achieve s=
-uccess within legitimate arrangement,eliminating any liability resulting =
-from any breach of the prevalent laws.
-
-Your urgent response will be highly appreciated and you could also reach =
-me at this email address:isahbalewa2005@walla.com
-
-Thank you.
-Best Regards,
-Barrister Isah Balewa.
-
---
-ClicAvenue Mail : Cr=E9ez votre propre email gratuitement ! Avec protecti=
-on (virus et spams), mot de
-passe et acc=E8s depuis n'importe quel ordinateur ! Enfin un email origin=
-al...
-http://www.clicavenue.com/email
+- Dave
 
 
---===============96899668496620284==
+--===============16580401181122895==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
---===============96899668496620284==--
+--===============16580401181122895==--
