@@ -1,14 +1,15 @@
-From: Adam Belay <abelay@novell.com>
+From: Adam Belay <ambx1@neo.rr.com>
 Subject: Re: [RFC] A New Power Management API
-Date: Sun, 17 Apr 2005 16:26:22 -0400
-Message-ID: <1113769584.3451.89.camel@localhost.localdomain>
+Date: Sun, 17 Apr 2005 16:48:34 -0400
+Message-ID: <1113770914.3451.107.camel@localhost.localdomain>
 References: <1113533193.3451.40.camel@localhost.localdomain>
-	<9268368b0504150616652c268b@mail.gmail.com>
-	<200504161013.10135.david-b@pacbell.net>
+	<20050415095003.52f3185a@cosmic.amd.com>
+	<1113591290.3451.79.camel@localhost.localdomain>
+	<200504161124.05846.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============58394032626197112=="
+Content-Type: multipart/mixed; boundary="===============026326858694452504=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200504161013.10135.david-b@pacbell.net>
+In-Reply-To: <200504161124.05846.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,46 +23,128 @@ To: David Brownell <david-b@pacbell.net>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============58394032626197112==
+--===============026326858694452504==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Sat, 2005-04-16 at 10:13 -0700, David Brownell wrote:
-> On Friday 15 April 2005 6:16 am, Daniel Petrini wrote:
+On Sat, 2005-04-16 at 11:24 -0700, David Brownell wrote:
+> On Friday 15 April 2005 11:54 am, Adam Belay wrote:
+> > On Fri, 2005-04-15 at 09:50 -0600, Jordan Crouse wrote:
+> > > Adam - 
+> > > 
+> > > Nice stuff.  A few comments.  First, a question:
+> > > 
+> > > Is it safe to assume that PMU devices  (like these:
+> > >  http://www.dialog-semiconductor.com/template.php?page_id=62) would fall
+> > > under the category of Power Resources?  if so, we may need to consider
+> > > some more advanced hooks than just on/off.
 > > 
-> > Suggestion: as discussed in early weeks, why don't adopt names taking into 
-> > consideration that Linux can run in systems other than desktops and servers?
-> > 
-> > #define PM_SYSTEM_STATE_SUSPEND_RAM 0x00000010
-> > #define PM_SYSTEM_STATE_SUSPEND_DISK 0x00000020
+> > I'm not familiar with how we would control such a device from software.
+> > If you think more than _ON and _OFF would be necessary, I could
+> > certainly revise this code.  
 > 
-> The notion of RAM doesn't bother me much, although it may matter
-> whether that means "all system RAM is preserved" versus "only a
-> small bit of on-chip SDRAM is preserved".
+> Other similar devices include the TI TPS6501x series:
 > 
-> The notion of DISK bothers me more.  Systems with only FLASH/MTD
-> probably aren't more demanding of PM infrastructure, but when
-> folk assume that the only non-volatile storage is a disk, it may
-> start to seem that way.
+>   http://focus.ti.com/docs/prod/folders/print/tps65010.html
 > 
-> For the moment, maybe using "NONVOLATILE" rather than DISK would
-> be good.  Also, somewhat of a nit, those aren't exactly states,
-> so maybe take at least the _STATE_ thingie out.
+> One of these moments I'll submit the driver I wrote for use with
+> OMAP; it's pretty minimalist just now, but tps65010.c is in BK at:
 > 
-> - Dave
+>   http://linux-omap.bkbits.net:8080/main/src/drivers/i2c/chips
+> 
+> Yes, more than "on" and "off" is necessary.  Lots of drivers
+> build on that.  Currently most of them just access the GPIOs
+> it provides, interact with battery recharging, or control
+> various aspects of system power state transitions.  The hardware
+> defaults manage a "not-fast" battery recharge, so battery based
+> systems "just work".
 
-Yeah, I agree.  I've changed this.
+Ok, so I think each power plane (or LDO or whatever) would be a power
+resource, not the controller itself.
+
+> 
+> That driver doesn't yet do anything like forcing a system suspend
+> when battery power goes dangerously low, or even feeding IRQs to
+> other drivers.  Much less monitoring battery recharge or managing
+> fast recharge.  That is, it's incomplete ... so all you will see
+> right now is stuff that's essential even for devel boards that
+> mostly run on AC power.  No UI is supported yet.
+
+I've looked through the code.  I appreciate the information.
+
+> 
+> Those Dialog devices have a slightly different functional mix.
+> Motorola also has similar parts, also used in cell phones.
+> 
+> One small point to notice:  this is an I2C driver, but it needs
+> to initialize quite early on most boards, since it's used to power
+> up other devices (including often the DSP).  So the system init
+> sequence has been adjusted to make that behave:  I2C initializes
+> early (subsys_initcall), as does this specific I2C driver.
+
+Yeah, sounds like that could get rather tricky.
+
+> 
+> 
+> > ACPI only supports _ON and _OFF in its 
+> > model.  More complex stuff is handled by the state of the device.
+> > 
+> >     ---(power_resource)
+> >     |        |
+> > domain -> device
+> > 
+> > In my design, power resources are specific power planes and clocks that
+> > belong to a given power domain (or that domain's parent).  They often
+> > depend on the state of the domain or the system state.  A device may
+> > require multiple power resources, but can only belong to one power
+> > domain.
+> 
+> But power domains must be able to belong to other power domains,
+> and the domains are themselves power devices... so there's a fair
+> amount of "inheritance" going on.
+
+Correct "power devices" use an inheritance model.  "power resources" can
+be independent of the inheritance and belong to the global system pool.
+I think this can cover most platforms.
+
+> 
+> 
+> > I could see something like having a clock put at a slower 
+> > speed, so maybe we do need more than on and off.
+> 
+> How would you handle the ARM clock trees?  E.g. the stuff you'll
+> find in arch/arm/mach-omap/clock.c in 2.6.12-rc2?  (Older versions
+> are very similar, the latest version in the linux-omap tree above
+> can be made to disable unused clocks at boot time.)  My initial
+> thought was that these specific resources wouldn't show up as any
+> kind of power resource, since they're already managed properly
+> (by clk_use/clk_unuse) as drivers activate and de-activate.
+
+So I think each clock could be a power resource.  It looks like the
+current code isn't doing much more than turning them on and off.  I'm
+curious about changing the frequency.  In what cases might this happen?
+Would it be related to power state of the device, or could the frequency
+be changed without changing the state?  Is the frequency a specific
+requirement of the device that isn't intended to be changed at all?
+
+I think adding more than on and off might get to be too complicated, but
+clearly every power resource we're interested in has an on/off
+capability.  If we really need this sort of functionality to be handled
+by the power management subsystem, then maybe we could have a "struct
+power_clock" with a "struct power_resource" inside of it?  Maybe the
+drivers should be handling these sort of things on their own?  I'm
+interested in how drivers will be interacting with this.
 
 Thanks,
 Adam
 
 
 
---===============58394032626197112==
+--===============026326858694452504==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============58394032626197112==--
+--===============026326858694452504==--
