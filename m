@@ -1,13 +1,14 @@
 From: Adam Belay <abelay@novell.com>
 Subject: Re: [RFC] A New Power Management API
-Date: Sun, 17 Apr 2005 16:25:17 -0400
-Message-ID: <1113769518.3451.87.camel@localhost.localdomain>
+Date: Sun, 17 Apr 2005 16:26:22 -0400
+Message-ID: <1113769584.3451.89.camel@localhost.localdomain>
 References: <1113533193.3451.40.camel@localhost.localdomain>
-	<200504161027.53592.david-b@pacbell.net>
+	<9268368b0504150616652c268b@mail.gmail.com>
+	<200504161013.10135.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============38228910376999875=="
+Content-Type: multipart/mixed; boundary="===============58394032626197112=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200504161027.53592.david-b@pacbell.net>
+In-Reply-To: <200504161013.10135.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,56 +22,46 @@ To: David Brownell <david-b@pacbell.net>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============38228910376999875==
+--===============58394032626197112==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Sat, 2005-04-16 at 10:27 -0700, David Brownell wrote:
-> On Thursday 14 April 2005 7:46 pm, Adam Belay wrote:
+On Sat, 2005-04-16 at 10:13 -0700, David Brownell wrote:
+> On Friday 15 April 2005 6:16 am, Daniel Petrini wrote:
+> > 
+> > Suggestion: as discussed in early weeks, why don't adopt names taking into 
+> > consideration that Linux can run in systems other than desktops and servers?
+> > 
+> > #define PM_SYSTEM_STATE_SUSPEND_RAM 0x00000010
+> > #define PM_SYSTEM_STATE_SUSPEND_DISK 0x00000020
 > 
-> > The new API uses a power container/domain model. 
+> The notion of RAM doesn't bother me much, although it may matter
+> whether that means "all system RAM is preserved" versus "only a
+> small bit of on-chip SDRAM is preserved".
 > 
-> I like that as a basic organizing principle, and I don't think
-> anyone has problems with the notion that the power relationships
-> can't always map directly to the physical device tree.
+> The notion of DISK bothers me more.  Systems with only FLASH/MTD
+> probably aren't more demanding of PM infrastructure, but when
+> folk assume that the only non-volatile storage is a disk, it may
+> start to seem that way.
 > 
-> Could you describe a bit about how the containers behave?  For
-> example, when a device drops its power consumption, how does it
-> notify its container?  And when sets of devices -- e.g. all USB
-> devices, all PCI devices -- support the same power states, how
-> will that code be shared?  Would "struct power_device" be the
-> driver model replacement for "struct power"?
-
-Here are my current thoughts:
-
-When greatest common denominator of power requirements is lowered (as a
-result of a power_device lowering its state), the policy manager of the
-container "struct power_device" will be notified.  Code for the same
-states will not be shared, because the method of transitioning these
-states is different.  Also their meanings are often different.  However,
-if the states are the same, the mappings will likely be simplistic.
-
-Every "struct device' will have a "struct power_device", but not every
-"struct power_device" must have a "struct device".  "struct
-power_device" will be the base unit of power management topologies.
-
-> 
-> Also, I'd rather see "struct system_power_state *" everywhere
-> you're now passing "int system_state" in the API.
+> For the moment, maybe using "NONVOLATILE" rather than DISK would
+> be good.  Also, somewhat of a nit, those aren't exactly states,
+> so maybe take at least the _STATE_ thingie out.
 > 
 > - Dave
 
-Fixed.  Thanks for the suggestion.
+Yeah, I agree.  I've changed this.
 
+Thanks,
 Adam
 
 
 
---===============38228910376999875==
+--===============58394032626197112==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============38228910376999875==--
+--===============58394032626197112==--
