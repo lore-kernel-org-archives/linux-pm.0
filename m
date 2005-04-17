@@ -1,15 +1,10 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [RFC] A New Power Management API
-Date: Sun, 17 Apr 2005 16:48:34 -0400
-Message-ID: <1113770914.3451.107.camel@localhost.localdomain>
-References: <1113533193.3451.40.camel@localhost.localdomain>
-	<20050415095003.52f3185a@cosmic.amd.com>
-	<1113591290.3451.79.camel@localhost.localdomain>
-	<200504161124.05846.david-b@pacbell.net>
+From: Adam Belay <abelay@novell.com>
+Subject: [RFC] Power Management Policies
+Date: Sun, 17 Apr 2005 17:15:32 -0400
+Message-ID: <1113772533.3451.131.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============026326858694452504=="
+Content-Type: multipart/mixed; boundary="===============80421487874792907=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200504161124.05846.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,132 +14,59 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============026326858694452504==
+--===============80421487874792907==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Sat, 2005-04-16 at 11:24 -0700, David Brownell wrote:
-> On Friday 15 April 2005 11:54 am, Adam Belay wrote:
-> > On Fri, 2005-04-15 at 09:50 -0600, Jordan Crouse wrote:
-> > > Adam - 
-> > > 
-> > > Nice stuff.  A few comments.  First, a question:
-> > > 
-> > > Is it safe to assume that PMU devices  (like these:
-> > >  http://www.dialog-semiconductor.com/template.php?page_id=62) would fall
-> > > under the category of Power Resources?  if so, we may need to consider
-> > > some more advanced hooks than just on/off.
-> > 
-> > I'm not familiar with how we would control such a device from software.
-> > If you think more than _ON and _OFF would be necessary, I could
-> > certainly revise this code.  
-> 
-> Other similar devices include the TI TPS6501x series:
-> 
->   http://focus.ti.com/docs/prod/folders/print/tps65010.html
-> 
-> One of these moments I'll submit the driver I wrote for use with
-> OMAP; it's pretty minimalist just now, but tps65010.c is in BK at:
-> 
->   http://linux-omap.bkbits.net:8080/main/src/drivers/i2c/chips
-> 
-> Yes, more than "on" and "off" is necessary.  Lots of drivers
-> build on that.  Currently most of them just access the GPIOs
-> it provides, interact with battery recharging, or control
-> various aspects of system power state transitions.  The hardware
-> defaults manage a "not-fast" battery recharge, so battery based
-> systems "just work".
 
-Ok, so I think each power plane (or LDO or whatever) would be a power
-resource, not the controller itself.
+Hi All,
 
-> 
-> That driver doesn't yet do anything like forcing a system suspend
-> when battery power goes dangerously low, or even feeding IRQs to
-> other drivers.  Much less monitoring battery recharge or managing
-> fast recharge.  That is, it's incomplete ... so all you will see
-> right now is stuff that's essential even for devel boards that
-> mostly run on AC power.  No UI is supported yet.
+I was wondering if you had any thoughts on how power management policies
+should be configured by userspace.  It seems like the central question
+here is how much of the decision should occur in kernel-space.
 
-I've looked through the code.  I appreciate the information.
+For example, on one extreme we could have each policy manager define a
+list of policies and allow the user to select one.  So, in my model, the
+user might tell a "power device" to use the policy "max performance" or
+"emergency power-save".  One could argue that these decisions are too
+complex and device specific for userspace to be reliable.  It would give
+the driver author, who likely has extensive knowledge of the pm
+capabilities of the device, a chance to include power management
+policies with the driver.
 
-> 
-> Those Dialog devices have a slightly different functional mix.
-> Motorola also has similar parts, also used in cell phones.
-> 
-> One small point to notice:  this is an I2C driver, but it needs
-> to initialize quite early on most boards, since it's used to power
-> up other devices (including often the DSP).  So the system init
-> sequence has been adjusted to make that behave:  I2C initializes
-> early (subsys_initcall), as does this specific I2C driver.
+On the other extreme, we could allow userspace to configure every
+timeout value, and other policy attributes.  The user would be in
+complete control, but may not be aware of how long the transitions will
+take, how much power will be consumed by the transition, or what the
+manufacturer intended.  If the user wanted a disk drive to turn off
+after 1 ms of inactivity, there would be nothing stopping that.  Of
+course, one could argue that the kernel shouldn't be making policy
+decisions, and we should throw these toward the layer above us.
 
-Yeah, sounds like that could get rather tricky.
+One other option is to allow userspace to actually tell the devices
+which state to switch to.  I'd argue against this, because I think that
+userspace cannot disable a device that it needs to function.
 
-> 
-> 
-> > ACPI only supports _ON and _OFF in its 
-> > model.  More complex stuff is handled by the state of the device.
-> > 
-> >     ---(power_resource)
-> >     |        |
-> > domain -> device
-> > 
-> > In my design, power resources are specific power planes and clocks that
-> > belong to a given power domain (or that domain's parent).  They often
-> > depend on the state of the domain or the system state.  A device may
-> > require multiple power resources, but can only belong to one power
-> > domain.
-> 
-> But power domains must be able to belong to other power domains,
-> and the domains are themselves power devices... so there's a fair
-> amount of "inheritance" going on.
-
-Correct "power devices" use an inheritance model.  "power resources" can
-be independent of the inheritance and belong to the global system pool.
-I think this can cover most platforms.
-
-> 
-> 
-> > I could see something like having a clock put at a slower 
-> > speed, so maybe we do need more than on and off.
-> 
-> How would you handle the ARM clock trees?  E.g. the stuff you'll
-> find in arch/arm/mach-omap/clock.c in 2.6.12-rc2?  (Older versions
-> are very similar, the latest version in the linux-omap tree above
-> can be made to disable unused clocks at boot time.)  My initial
-> thought was that these specific resources wouldn't show up as any
-> kind of power resource, since they're already managed properly
-> (by clk_use/clk_unuse) as drivers activate and de-activate.
-
-So I think each clock could be a power resource.  It looks like the
-current code isn't doing much more than turning them on and off.  I'm
-curious about changing the frequency.  In what cases might this happen?
-Would it be related to power state of the device, or could the frequency
-be changed without changing the state?  Is the frequency a specific
-requirement of the device that isn't intended to be changed at all?
-
-I think adding more than on and off might get to be too complicated, but
-clearly every power resource we're interested in has an on/off
-capability.  If we really need this sort of functionality to be handled
-by the power management subsystem, then maybe we could have a "struct
-power_clock" with a "struct power_resource" inside of it?  Maybe the
-drivers should be handling these sort of things on their own?  I'm
-interested in how drivers will be interacting with this.
+I personally have some concerns over too much userspace interaction.  I
+think these decisions are too device specific, and if we don't take
+responsibility for them, then the layers above the kernel may not be
+able to properly handle it.  Also I think that some decisions may need
+to be made very quickly.  In the end, we will probably make a compromise
+between these extremes.  I would appreciate any opinions or suggestions.
 
 Thanks,
 Adam
 
 
 
---===============026326858694452504==
+--===============80421487874792907==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============026326858694452504==--
+--===============80421487874792907==--
