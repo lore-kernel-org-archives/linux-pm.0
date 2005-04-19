@@ -1,12 +1,14 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: Re: [RFC] Power Management Policies
-Date: Mon, 18 Apr 2005 09:39:19 -0600
-Message-ID: <20050418093919.37bb40db@cosmic.amd.com>
-References: <1113772533.3451.131.camel@localhost.localdomain>
+From: Todd Poynor <tpoynor@mvista.com>
+Subject: Re: [RFC] A New Power Management API
+Date: Mon, 18 Apr 2005 20:09:04 -0700
+Message-ID: <42647650.3030607@mvista.com>
+References: <1113533193.3451.40.camel@localhost.localdomain>	<1113591290.3451.79.camel@localhost.localdomain>	<42607E34.7060909@mvista.com>
+	<200504161226.12849.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============66381590987409655=="
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1113772533.3451.131.camel@localhost.localdomain>
+In-Reply-To: <200504161226.12849.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,78 +18,64 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============66381590987409655==
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 7bit
+David Brownell wrote:
+> On Friday 15 April 2005 7:53 pm, Todd Poynor wrote:
+>...
+>>On the other hand, I've been trying to push them toward a simpler-kernel 
+>>model in which all the product-specific logic for placing various 
+>>devices in designated power states occurs in a userspace power policy 
+>>manager,
+> 
+> So maybe you have some answers for me about why there should need
+> to be *any* notion of exporting device power states.  (Rather than
+> not caring, and just requiring driver-internal powers states always
+> to become consistent with the upcoming system power state.)
+> 
+> If one takes the notion of userspace managing those states off the table,
+> is there any other motivation to expose those device power states? 
 
-Adam -
+So far as I have been able to determine, the usage you describe, as well 
+as straightforward individual device power state management (power this 
+device off upon receipt of some event, period of inactivity, etc.) is 
+common, although with enough flexibility in creating custom system power 
+states and reacting to those states in driver power controller objects, 
+the second usage may be covered by the first.  I believe in some cases 
+power policy management applications are also examining device power 
+state to make policy decisions, but I certainly recommend use of 
+kernel-to-userspace notification of power events over such polling.  If 
+I recall any other more exotic things I've run across I'll post a 
+response later.
 
-Excellent summary.
+> I'm pretty sure that supporting this sort of userspace functionality
+> won't really fit into the "simpler kernel" rubric.  If for no other
+> reason than the self-evident fact that a kernel exporting such stuff
+> must have more code than one not exporting it...
 
-> On the other extreme, we could allow userspace to configure every
-> timeout value, and other policy attributes. 
+It may not be simpler overall on the kernel side (at least prior to 
+being customized for a particular policy, for which the in-kernel 
+alternative does add some amount of code).  It does, however, place the 
+code implementing custom system power states and associated decisions on 
+device power states (which might fall under the general category of 
+"policy") in userspace and exports just enough kernel interfaces for 
+controlling system and device power behavior to let userspace handle it. 
+  As I say, though, the userspace vs. kernel home for this isn't a 
+matter of strong preference to me, but have suggested userspace device 
+state management as arguably more in keeping with prevailing winds of 
+kernel development.
 
-With regards to this specifically, in addition to the
-other extremes you mentioned, we also have two different types of
-systems. On one hand, we have open systems, with many different options,
-and plenty of PCI and PCMCIA slots to keep adding new devices. while
-on the other hand, we have closed systems such as cell phones and PDAs,
-where the number of attached devices stays fairly constant.
-
->From a software point of view, the latter is usually controlled by a
-operating environment (usually GUI based), that is developed by the
-manufacturer and generally not hacked by the end user (most don't even
-have terminals). And of course, Linux on an open system is usually
-installed and hand tuned by the end user working closely with the
-command line.  
-
-So when it comes to a closed system, then I don't see any problem with
-asking the userspace to configure everything about the policy, because
-it gives the operating environment developer the most control over the
-final device.  If someone down the line discovers that the wake
-latency of a device is way too long, then I would much prefer that they
-be able to tweak the settings via userspace, rather then have me patch a
-new kernel just for them.
-
-However, I can completely see where somebody responsible for an open
-system would run in terror from this.  This would mean an immense amount
-of work for the various distributions, as well as the inevitable
-mailing list / technical support snafus that will occur when everybody
-needs to figure out the various power management related quirks of their
-various devices.
-
-> I personally have some concerns over too much userspace interaction. 
-> I think these decisions are too device specific, and if we don't take
-> responsibility for them, then the layers above the kernel may not be
-> able to properly handle it.
-
-I generally favor the "user knows best" policy.  As developers, we will
-make the best overall power management decisions for our drivers
-(timeouts, system state transitions, etc, etc...), but should allow for
-a facility for the user to override these if they so choose (possibly
-through the policy manager).  We can even go so far as to make the
-framework disabled by default in the kernel, so that one has to go in,
-specifically choose it, and thereby take on the additional risk.  
-
-Regards,
-Jordan
+I don't mean to get hung up in the terminology, but I wouldn't call 
+relatively infrequent changes to fairly large-grained device power 
+states "micro-policy management" either -- there is plenty of room for 
+more frequent, possibly finer grained, changes to device power 
+characteristics in driver code based on device state or hardware 
+capabilities (auto clock gating, power up/down according to app use...), 
+the aggressiveness of which may also be a policy consideration to be 
+configured, perhaps from userspace (at least MacOS seems to have such 
+interfaces).
 
 -- 
-Jordan Crouse
-Senior Linux Engineer
-AMD - Personal Connectivity Solutions Group
-<www.amd.com/embeddedprocessors>
-
-
---===============66381590987409655==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============66381590987409655==--
+Todd
