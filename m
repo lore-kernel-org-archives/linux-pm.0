@@ -1,14 +1,12 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: [RFC] A New Power Management API
-Date: Mon, 18 Apr 2005 20:09:04 -0700
-Message-ID: <42647650.3030607@mvista.com>
-References: <1113533193.3451.40.camel@localhost.localdomain>	<1113591290.3451.79.camel@localhost.localdomain>	<42607E34.7060909@mvista.com>
-	<200504161226.12849.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] Power Management API (rev 1)
+Date: Wed, 20 Apr 2005 17:59:56 +0200
+Message-ID: <20050420155956.GA3372@elf.ucw.cz>
+References: <1113773748.3451.142.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============59078016816400458=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200504161226.12849.david-b@pacbell.net>
+In-Reply-To: <1113773748.3451.142.camel@localhost.localdomain>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,64 +16,114 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org
+To: Adam Belay <abelay@novell.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-David Brownell wrote:
-> On Friday 15 April 2005 7:53 pm, Todd Poynor wrote:
->...
->>On the other hand, I've been trying to push them toward a simpler-kernel 
->>model in which all the product-specific logic for placing various 
->>devices in designated power states occurs in a userspace power policy 
->>manager,
+--===============59078016816400458==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi!
+
+> I've made some revisions to my new power management API.  I would
+> appreciate any suggestions or comments.
+
+
+> /*
+>  *  pm.h - the Power Management Interface
+>  *
+>  */
 > 
-> So maybe you have some answers for me about why there should need
-> to be *any* notion of exporting device power states.  (Rather than
-> not caring, and just requiring driver-internal powers states always
-> to become consistent with the upcoming system power state.)
+> #ifndef _LINUX_PM_H
+> #define _LINUX_PM_H
 > 
-> If one takes the notion of userspace managing those states off the table,
-> is there any other motivation to expose those device power states? 
+> #ifdef __KERNEL__
+> 
+> #include <linux/config.h>
+> #include <linux/list.h>
+> #include <asm/atomic.h>
+> 
+> struct device;
+> 
+> struct power_resource;
+> struct power_driver;
+> struct power_policy;
+> struct power_device;
+> 
+> 
+> /*
+>  * Global System Power States
+>  *
+>  * Reflect the status of the overall system.
+>  */
+> 
+> struct system_power_state {
+> 	unsigned int state;
 
-So far as I have been able to determine, the usage you describe, as well 
-as straightforward individual device power state management (power this 
-device off upon receipt of some event, period of inactivity, etc.) is 
-common, although with enough flexibility in creating custom system power 
-states and reacting to those states in driver power controller objects, 
-the second usage may be covered by the first.  I believe in some cases 
-power policy management applications are also examining device power 
-state to make policy decisions, but I certainly recommend use of 
-kernel-to-userspace notification of power events over such polling.  If 
-I recall any other more exotic things I've run across I'll post a 
-response later.
+We already have int system_state... How is this different?
 
-> I'm pretty sure that supporting this sort of userspace functionality
-> won't really fit into the "simpler kernel" rubric.  If for no other
-> reason than the self-evident fact that a kernel exporting such stuff
-> must have more code than one not exporting it...
+Please move the defines near here, and preferably add type-checking
+for sparse.
 
-It may not be simpler overall on the kernel side (at least prior to 
-being customized for a particular policy, for which the in-kernel 
-alternative does add some amount of code).  It does, however, place the 
-code implementing custom system power states and associated decisions on 
-device power states (which might fall under the general category of 
-"policy") in userspace and exports just enough kernel interfaces for 
-controlling system and device power behavior to let userspace handle it. 
-  As I say, though, the userspace vs. kernel home for this isn't a 
-matter of strong preference to me, but have suggested userspace device 
-state management as arguably more in keeping with prevailing winds of 
-kernel development.
+> 	unsigned int flags;
+> 
+> 	struct list_head state_list;
+> };
+> 
+> extern int pm_register_system_state(struct system_power_state *state);
+> extern void pm_unregister_system_state(struct system_power_state *state);
+> 
+> extern struct system_power_state *
+> pm_get_system_state_data(unsigned int state);
 
-I don't mean to get hung up in the terminology, but I wouldn't call 
-relatively infrequent changes to fairly large-grained device power 
-states "micro-policy management" either -- there is plenty of room for 
-more frequent, possibly finer grained, changes to device power 
-characteristics in driver code based on device state or hardware 
-capabilities (auto clock gating, power up/down according to app use...), 
-the aggressiveness of which may also be a policy consideration to be 
-configured, perhaps from userspace (at least MacOS seems to have such 
-interfaces).
+Having "unsigned int state" is asking for trouble.
 
+> /*
+>  * Power States
+>  *
+>  * These are used to define device-specific power states.
+>  */
+> 
+> struct power_state {
+> 	char * name;
+> 	int available;
+> 
+> 	unsigned int state;
+> 	unsigned int flags;
+
+Are they same type as system_power_state.state? This should be clear,
+and type-checked by sparse. Otherwise people will get it wrong.
+
+
+> /*
+>  * Power Devices
+>  *
+>  * Power devices are the core building block of a system's power management
+>  * topology.  They may require power resources, but the primary dependency
+>  * relationships are represented by a tree of "power devices".  This tree
+>  * is based on a power domain (or container) model.
+>  */
+> 
+> struct power_device {
+> 	char			* name;
+> 	struct kobject		kobj;
+> 
+> 	unsigned int		state;
+> 	unsigned int		min_state;
+> 	unsigned int		max_state;
+
+Third "state"... Are they same type? Different?
+
+							Pavel
 -- 
-Todd
+Boycott Kodak -- for their patent abuse against Java.
+
+--===============59078016816400458==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============59078016816400458==--
