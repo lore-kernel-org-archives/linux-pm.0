@@ -1,18 +1,14 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [PATCH] PCI: Add pci shutdown ability
-Date: Mon, 25 Apr 2005 16:24:55 -0400
-Message-ID: <20050425202454.GE27771@neo.rr.com>
-References: <Pine.LNX.4.44L0.0504251128070.5751-100000@iolanthe.rowland.org>
-	<20050425182951.GA23209@kroah.com>
-	<SVLXCHCON1syWVLEFN00000099e@SVLXCHCON1.enterprise.veritas.com>
-	<20050425185113.GC23209@kroah.com>
-	<20050425190606.GA23763@kroah.com>
-	<20050425200825.GA3951@neo.rr.com>
-	<20050425201949.GA24695@kroah.com>
+From: Nigel Cunningham <ncunningham@cyclades.com>
+Subject: Re: [RFC] Power Management API (rev 1)
+Date: Tue, 26 Apr 2005 13:04:03 +1000
+Message-ID: <1114484643.30859.128.camel@desktop.cunningham.myip.net.au>
+References: <1113773748.3451.142.camel@localhost.localdomain>
+	<20050420155956.GA3372@elf.ucw.cz> <20050423072358.GD27771@neo.rr.com>
+Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============52050261687757349=="
+Content-Type: multipart/mixed; boundary="===============9528512869115402=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050425201949.GA24695@kroah.com>
+In-Reply-To: <20050423072358.GD27771@neo.rr.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,57 +18,37 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: akpm@osdl.org, Amit Gud <gud@eth.net>, USB development list <linux-usb-devel@lists.sourceforge.net>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-pci@atrey.karlin.mff.cuni.cz, jgarzik@pobox.com, linux-kernel@vger.kernel.org, cramerj@intel.com
+To: Adam Belay <ambx1@neo.rr.com>
+Cc: Adam Belay <abelay@novell.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============52050261687757349==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============9528512869115402==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 25, 2005 at 01:19:49PM -0700, Greg KH wrote:
-> On Mon, Apr 25, 2005 at 04:08:25PM -0400, Adam Belay wrote:
-> > I think this could be important for any type of device, so the power
-> > management subsystem and driver core should handle it.  I'm not really
-> > sure if it's useful in pci alone, as it lacks the necessary ordering and
-> > coordination.
-> 
-> The driver core today _does_ handle this properly, and in the correct
-> order.  I'm just allowing pci drivers access to that functionality, as
-> today they can not take advantage of it.  That's all this patch does.
+Hi Adam.
 
-sorry, I didn't notice this after a quick glance :)
+Thanks for all of your work so far. It looks good. Please accept my
+apologies for not giving feedback yet - I've been drowning in other
+things for a few weeks. I'll eagerly await your next revision.
 
-> +       drv->driver.shutdown = pci_device_shutdown,
+Regards,
 
-Ok, great.  I understand.
+Nigel
+-- 
+Nigel Cunningham
+Software Engineer, Canberra, Australia
+http://www.cyclades.com
+Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
 
-> 
-> > I'm currently developing an interface for quieting devices without turning
-> > them off in my Power Management model.  Pavel seems to also have plans along
-> > those lines:
-> 
-> <snip>
+Maintainer of Suspend2 Kernel Patches http://suspend2.net
 
-I think the intention here may have been to use PM_FREEZE via *suspend.  It
-isn't currently supported though.
 
-> 
-> Great, then it will tie into the current driver model code, which will
-> then call the proper pci driver code, and everyone will be happy :)
-> 
-> thanks,
-> 
-> greg k-h
-
-Thanks,
-Adam
-
---===============52050261687757349==
+--===============9528512869115402==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============52050261687757349==--
+--===============9528512869115402==--
