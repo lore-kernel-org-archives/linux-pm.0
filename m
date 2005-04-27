@@ -1,14 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] Power Management Policies
-Date: Wed, 27 Apr 2005 07:01:54 -0700
-Message-ID: <200504270701.55152.david-b@pacbell.net>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: Power Management Policies
+Date: Wed, 27 Apr 2005 08:57:17 -0600
+Message-ID: <20050427145717.GA20602@cosmic.amd.com>
 References: <1113772533.3451.131.camel@localhost.localdomain>
 	<20050418093919.37bb40db@cosmic.amd.com>
-	<20050423071833.GC27771@neo.rr.com>
+	<200504270722.31321.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============44775947523402948=="
+Content-Type: multipart/mixed; boundary="===============74707309134705779=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050423071833.GC27771@neo.rr.com>
+In-Reply-To: <200504270722.31321.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,44 +21,45 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============44775947523402948==
+--===============74707309134705779==
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-On Saturday 23 April 2005 12:18 am, Adam Belay wrote:
-> > > 
-> > > I personally have some concerns over too much userspace interaction. 
-> > > I think these decisions are too device specific, and if we don't take
-> > > responsibility for them, then the layers above the kernel may not be
-> > > able to properly handle it.
+On 27/04/05 07:22 -0700, David Brownell wrote:
+> I don't see major vendors wanting to move away from "closed" models
+> at the lower end, or in fact whereever they have the power to dictate
+> customer "preferences".  (The latter case is also known as a "market
+> failure", except by radical corporatists...)  But for higher end products,
+> or when customers truly have (or need!!) choices, then "open" is more
+> usually the answer.
 
-Me too ...
+Indeed.  Really, my point was that massive userland based configuration is
+better suited to systems with known configurations and vendors motivated to
+spend the time and expense to tune the system.
 
-> In general, it seems to make sense for userspace to tell the kernel about
-> policy preferences, but then have the kernel execute those decisions.  If
-> we were to ship suggested policy options inside of driver modules, then 
-> driver developers could ensure the user is at least aware of typical policy
-> configuration values.
+As the system configuration opens up, it becomes less likely that the end user
+will be willing to go to the same effort.  When you hit the desktop/laptop 
+market, only the very uber of geeks will even consider it.
 
-The way I view things:  drivers offer choice-of-policy to userspace,
-then userspace chooses the policy.
+Which is why I think that userland tuning should be an option, and not
+mandatory.  A wide majority of the users across the Linux spectrum might 
+not care what the wake up latency of their NIC is, but I think that there are
+enough that do to make a userland configuration framework useful.
 
-What I want to avoid is treating active userspace intervention as the
-normal case ... polling every Nth-of-a-second as one example.  It's
-quite reasonable for userspace to deal with higher level notions that
-are already application-visible, like LCD (back)lighting or various
-activity timeouts.  It's quite another thing to create interfaces
-specifically to export low level monitoring to userspace.
+-- 
+Jordan Crouse
+Senior Linux Engineer
+AMD - Personal Connectivity Solutions Group
+<www.amd.com/embeddedprocessors>
 
-- Dave
 
---===============44775947523402948==
+--===============74707309134705779==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============44775947523402948==--
+--===============74707309134705779==--
