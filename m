@@ -1,14 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC] Power Management Policies
-Date: Wed, 27 Apr 2005 07:08:08 -0700
-Message-ID: <200504270708.09111.david-b@pacbell.net>
+Date: Wed, 27 Apr 2005 07:22:31 -0700
+Message-ID: <200504270722.31321.david-b@pacbell.net>
 References: <1113772533.3451.131.camel@localhost.localdomain>
 	<20050418093919.37bb40db@cosmic.amd.com>
-	<20050422200549.GF475@openzaurus.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============78172422276772491=="
+Content-Type: multipart/mixed; boundary="===============17716787827628355=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050422200549.GF475@openzaurus.ucw.cz>
+In-Reply-To: <20050418093919.37bb40db@cosmic.amd.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,43 +20,55 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============78172422276772491==
+--===============17716787827628355==
 Content-Type: text/plain;
   charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-On Friday 22 April 2005 1:05 pm, Pavel Machek wrote:
-> Hi!
+On Monday 18 April 2005 8:39 am, Jordan Crouse wrote:
+>  [ open vs closed device/appliance models]
 > 
-> > > On the other extreme, we could allow userspace to configure every
-> > > timeout value, and other policy attributes. 
-> > 
-> > With regards to this specifically, in addition to the
-> > other extremes you mentioned, we also have two different types of
-> > systems. On one hand, we have open systems, with many different options,
-> > and plenty of PCI and PCMCIA slots to keep adding new devices. while
-> > on the other hand, we have closed systems such as cell phones and PDAs,
-> > where the number of attached devices stays fairly constant.
+> From a software point of view, the latter is usually controlled by a
+> operating environment (usually GUI based), that is developed by the
+> manufacturer and generally not hacked by the end user (most don't even
+> have terminals). And of course, Linux on an open system is usually
+> installed and hand tuned by the end user working closely with the
+> command line.  
 > 
-> Notebooks and PDAs are not that different. Both are mostly closed with pcmcia/cf/sd slot...
+> So when it comes to a closed system, then I don't see any problem with
+> asking the userspace to configure everything about the policy, because
+> it gives the operating environment developer the most control over the
+> final device. 
 
-And, whoops, USB ... which lets systems expand easily.  If the device
-supports a hub, then you (or, more accurately, crazy people!) could
-add over a hundred devices.  That's pretty "open".
+There's product positioning ("marketing") involved here too.  Consumer
+electronics models have traditionally been pretty "closed".  Putting
+aside (temporarily) the issue that such models don't necessarily serve
+the customers as well as they serve the manufacturers, it's also clear
+that "open" systems are better for non-appliance/throwaway models.
+They support add-on products and multi-vendor "eco"systems, where you
+can get new features by add-ons rather than (expensive) replacements.
 
-AFAICT the hardware folk are more than ready to start providing hand-held
-devices (PDA-ish, vs luggable laptops) with USB host capabilities.  But
-WinCE isn't ready for that yet though... ergo products don't do it yet.
-Linux has less trouble, since market positioning doesn't interfere.  :)
+>From the customer point of view, the attraction of "closed" is limited.
+It can be a huge win in terms of ease-of-use to not _need_ to configure
+things, and know "this is how you do it".  Turn off brain, use product;
+throw it away rather than repairing/upgrading.
+
+I don't see major vendors wanting to move away from "closed" models
+at the lower end, or in fact whereever they have the power to dictate
+customer "preferences".  (The latter case is also known as a "market
+failure", except by radical corporatists...)  But for higher end products,
+or when customers truly have (or need!!) choices, then "open" is more
+usually the answer.
 
 - Dave
 
---===============78172422276772491==
+
+--===============17716787827628355==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============78172422276772491==--
+--===============17716787827628355==--
