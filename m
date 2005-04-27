@@ -1,14 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: Power Management Policies
-Date: Wed, 27 Apr 2005 09:03:50 -0700
-Message-ID: <200504270903.51099.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] Power Management Policies
+Date: Wed, 27 Apr 2005 16:48:53 +0200
+Message-ID: <20050427144853.GB28119@elf.ucw.cz>
 References: <1113772533.3451.131.camel@localhost.localdomain>
-	<200504270722.31321.david-b@pacbell.net>
-	<20050427145717.GA20602@cosmic.amd.com>
+	<20050418093919.37bb40db@cosmic.amd.com>
+	<20050422200549.GF475@openzaurus.ucw.cz>
+	<200504270708.09111.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============63959734232139476=="
+Content-Type: multipart/mixed; boundary="===============73667769533779359=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050427145717.GA20602@cosmic.amd.com>
+In-Reply-To: <200504270708.09111.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,64 +19,49 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============63959734232139476==
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+--===============73667769533779359==
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Wednesday 27 April 2005 7:57 am, Jordan Crouse wrote:
-> On 27/04/05 07:22 -0700, David Brownell wrote:
-> > I don't see major vendors wanting to move away from "closed" models
-> > at the lower end, or in fact whereever they have the power to dictate
-> > customer "preferences".  (The latter case is also known as a "market
-> > failure", except by radical corporatists...)  But for higher end products,
-> > or when customers truly have (or need!!) choices, then "open" is more
-> > usually the answer.
+Hi!
+
+> > > > On the other extreme, we could allow userspace to configure every
+> > > > timeout value, and other policy attributes. 
+> > > 
+> > > With regards to this specifically, in addition to the
+> > > other extremes you mentioned, we also have two different types of
+> > > systems. On one hand, we have open systems, with many different options,
+> > > and plenty of PCI and PCMCIA slots to keep adding new devices. while
+> > > on the other hand, we have closed systems such as cell phones and PDAs,
+> > > where the number of attached devices stays fairly constant.
+> > 
+> > Notebooks and PDAs are not that different. Both are mostly closed with pcmcia/cf/sd slot...
 > 
-> Indeed.  Really, my point was that massive userland based configuration is
-> better suited to systems with known configurations and vendors motivated to
-> spend the time and expense to tune the system.
+> And, whoops, USB ... which lets systems expand easily.  If the device
+> supports a hub, then you (or, more accurately, crazy people!) could
+> add over a hundred devices.  That's pretty "open".
+> 
+> AFAICT the hardware folk are more than ready to start providing hand-held
+> devices (PDA-ish, vs luggable laptops) with USB host capabilities.  But
+> WinCE isn't ready for that yet though... ergo products don't do it yet.
+> Linux has less trouble, since market positioning doesn't interfere.  :)
 
-They _could_ apply some of that effort to in-kernel support, of course,.  :)
-The question is what goes where.  Some folk talk about putting extremely low
-level policies in userspace.  I'm more a fan of right-sizing/right-placing,
-which means that a lot of hardware PM mechanisms won't show up in userspace.
-(Except maybe for monitoring purposes, or as highlevel policy options.)
+USB zauruses could do that for >2 years now, and even recent windows
+CE devices frequently list USB host capabilities... (Or USB on-the-go
+which is similar, AFAICT).
+								Pavel
+-- 
+Boycott Kodak -- for their patent abuse against Java.
 
-
-> ...
-> Which is why I think that userland tuning should be an option, and not
-> mandatory.  A wide majority of the users across the Linux spectrum might 
-> not care what the wake up latency of their NIC is, but I think that there are
-> enough that do to make a userland configuration framework useful.
-
-Configuration framework, I agree.  Tuning, in the normal sense of
-setting parameters and then going away, ditto.
-
-There may even be a role for some "dynamic tuning", monitoring the
-system and updating parameters on the fly to save power.  That's
-sort of a grey zone though; such schemes can easily be abused.
-I've maybe seen too many things fail because of broken userspace
-policy implementations...
-
-But there are things that don't belong in userspace, and IMO those
-include many/most of the lowest level dirtiest bits of PM.  If userspace
-sticks to policy selection, rather than implementing mechanism by
-requiring the kernel to export low level hooks, I'll be happiest.
-
-- Dave
-
- 
-
---===============63959734232139476==
+--===============73667769533779359==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============63959734232139476==--
+--===============73667769533779359==--
