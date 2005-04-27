@@ -1,14 +1,14 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: Re: freeze_processes questions
-Date: Wed, 27 Apr 2005 19:53:54 +1000
-Message-ID: <1114595634.7918.25.camel@desktop.cunningham.myip.net.au>
-References: <200504081323.51164.rjw@sisk.pl>
-	<1114594241.12809.37.camel@sli10-desk.sh.intel.com>
-Reply-To: ncunningham@linuxmail.org
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC] Power Management Policies
+Date: Wed, 27 Apr 2005 07:08:08 -0700
+Message-ID: <200504270708.09111.david-b@pacbell.net>
+References: <1113772533.3451.131.camel@localhost.localdomain>
+	<20050418093919.37bb40db@cosmic.amd.com>
+	<20050422200549.GF475@openzaurus.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============70168650808194744=="
+Content-Type: multipart/mixed; boundary="===============78172422276772491=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1114594241.12809.37.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <20050422200549.GF475@openzaurus.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,65 +18,46 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Li Shaohua <shaohua.li@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============70168650808194744==
-Content-Type: text/plain
+--===============78172422276772491==
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi.
+On Friday 22 April 2005 1:05 pm, Pavel Machek wrote:
+> Hi!
+> 
+> > > On the other extreme, we could allow userspace to configure every
+> > > timeout value, and other policy attributes. 
+> > 
+> > With regards to this specifically, in addition to the
+> > other extremes you mentioned, we also have two different types of
+> > systems. On one hand, we have open systems, with many different options,
+> > and plenty of PCI and PCMCIA slots to keep adding new devices. while
+> > on the other hand, we have closed systems such as cell phones and PDAs,
+> > where the number of attached devices stays fairly constant.
+> 
+> Notebooks and PDAs are not that different. Both are mostly closed with pcmcia/cf/sd slot...
 
-On Wed, 2005-04-27 at 19:30, Li Shaohua wrote:
-> Hi,
-> Sorry for raising the problem again after a long time. I got some
-> reports about ' xxx not stopped' at suspend time. The general cause is
-> one task is waiting for another task which has been into refrigerator
-> first. Report an error and stop suspend can't solve the problem. After
-> the task's dependent task is released from refrigerator, the task itself
-> will soon go into refrigerator and will never be waked up. 
-> Nigel's refrigerator patch half solves the problem. It distinct kernel
-> tasks and user tasks, so can solve the dependence between kernel tasks
-> and user tasks, but can't solve the user tasks dependence. Right, Nigel?
+And, whoops, USB ... which lets systems expand easily.  If the device
+supports a hub, then you (or, more accurately, crazy people!) could
+add over a hundred devices.  That's pretty "open".
 
-That's right, but the example you give below is userspace (syslogd) vs
-kernel space (kjournald), so I wonder if something could be wrong with
-your implementation.
+AFAICT the hardware folk are more than ready to start providing hand-held
+devices (PDA-ish, vs luggable laptops) with USB host capabilities.  But
+WinCE isn't ready for that yet though... ergo products don't do it yet.
+Linux has less trouble, since market positioning doesn't interfere.  :)
 
-> Below is a proposal method to solve the issue. Assume task A depends on
-> task B. Task B is frozen first. When we find task A can't be frozen
-> after a long time, we thaw all tasks and let task A continue (task A has
-> gotten a freeze signal so it will soon go into refrigerator) and then we
-> freeze other tasks again. In theory, this can solve all task dependence
-> (sure can't solve the circled dependence) if the retry times are enough
-> big, but cost maybe too high. Looks it help my case (syslogd can't be
-> stopped because it's waitting for kjournald). Any idea?
+- Dave
 
-Perhaps what is needful is the other component of my refrigerator
-implementation. I also mark threads like kjournald with the new flag
-PF_SYNCTHREAD, and temporarily give it to threads that enter sys_sync
-and siblings. That ensures that processes submitting I/O are frozen,
-then the I/O is flushed, then kernel threads such as kjournald are
-frozen.
-
-Regards,
-
-Nigel
--- 
-Nigel Cunningham
-Software Engineer, Canberra, Australia
-http://www.cyclades.com
-Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
-
-Maintainer of Suspend2 Kernel Patches http://suspend2.net
-
-
---===============70168650808194744==
+--===============78172422276772491==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============70168650808194744==--
+--===============78172422276772491==--
