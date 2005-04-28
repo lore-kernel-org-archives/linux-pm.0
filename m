@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC] Power Management Policies
-Date: Wed, 27 Apr 2005 16:48:53 +0200
-Message-ID: <20050427144853.GB28119@elf.ucw.cz>
+Date: Wed, 27 Apr 2005 17:05:39 -0700
+Message-ID: <200504271705.40068.david-b@pacbell.net>
 References: <1113772533.3451.131.camel@localhost.localdomain>
-	<20050418093919.37bb40db@cosmic.amd.com>
-	<20050422200549.GF475@openzaurus.ucw.cz>
 	<200504270708.09111.david-b@pacbell.net>
+	<20050427144853.GB28119@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============73667769533779359=="
+Content-Type: multipart/mixed; boundary="===============46119125191477783=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200504270708.09111.david-b@pacbell.net>
+In-Reply-To: <20050427144853.GB28119@elf.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,49 +18,53 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============73667769533779359==
-Content-Type: text/plain; charset=us-ascii
+--===============46119125191477783==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi!
-
-> > > > On the other extreme, we could allow userspace to configure every
-> > > > timeout value, and other policy attributes. 
-> > > 
-> > > With regards to this specifically, in addition to the
-> > > other extremes you mentioned, we also have two different types of
-> > > systems. On one hand, we have open systems, with many different options,
-> > > and plenty of PCI and PCMCIA slots to keep adding new devices. while
-> > > on the other hand, we have closed systems such as cell phones and PDAs,
-> > > where the number of attached devices stays fairly constant.
+On Wednesday 27 April 2005 7:48 am, Pavel Machek wrote:
 > > 
-> > Notebooks and PDAs are not that different. Both are mostly closed with pcmcia/cf/sd slot...
+> > AFAICT the hardware folk are more than ready to start providing hand-held
+> > devices (PDA-ish, vs luggable laptops) with USB host capabilities.  But
+> > WinCE isn't ready for that yet though... ergo products don't do it yet.
+> > Linux has less trouble, since market positioning doesn't interfere.  :)
 > 
-> And, whoops, USB ... which lets systems expand easily.  If the device
-> supports a hub, then you (or, more accurately, crazy people!) could
-> add over a hundred devices.  That's pretty "open".
-> 
-> AFAICT the hardware folk are more than ready to start providing hand-held
-> devices (PDA-ish, vs luggable laptops) with USB host capabilities.  But
-> WinCE isn't ready for that yet though... ergo products don't do it yet.
-> Linux has less trouble, since market positioning doesn't interfere.  :)
+> USB zauruses could do that for >2 years now,
 
-USB zauruses could do that for >2 years now, and even recent windows
-CE devices frequently list USB host capabilities... (Or USB on-the-go
-which is similar, AFAICT).
-								Pavel
--- 
-Boycott Kodak -- for their patent abuse against Java.
+Which ones?  The ones I know about have a peripheral controller,
+not a host controller.   There's a recent iPaq that uses OHCI
+on a pxa27x to contact an on-board bluetooth adapter.  But AFAIK,
+PDAs with an USB host _connector_ is pretty rare.  (There's a
+CF/IO card adapter I've seen, but that's not quite the same.)
 
---===============73667769533779359==
+
+> and even recent windows 
+> CE devices frequently list USB host capabilities... (Or USB on-the-go
+> which is similar, AFAICT).
+
+Well, you may be watching those WinCE devices more closely than
+me, but all I've noticed in that respect is spec-ware support
+for host side capabilities... with even that being scarce.
+I'd be glad to see that improving though!
+
+For USB OTG devices, a Mini-AB connector can act as either host
+or peripheral; and can switch roles later.  Hub support is
+optional, so it's not necessarily as flexible as one might like.
+But yes, once that starts to catch on, it should be interesting.
+
+- Dave
+
+--===============46119125191477783==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============73667769533779359==--
+--===============46119125191477783==--
