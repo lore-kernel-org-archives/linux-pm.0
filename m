@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC] Power Management Policies
-Date: Thu, 28 Apr 2005 20:59:59 +0200
-Message-ID: <20050428185959.GA12495@elf.ucw.cz>
+Date: Thu, 28 Apr 2005 13:28:57 -0700
+Message-ID: <200504281328.57807.david-b@pacbell.net>
 References: <1113772533.3451.131.camel@localhost.localdomain>
-	<200504271705.40068.david-b@pacbell.net>
-	<20050428082313.GJ1906@elf.ucw.cz>
 	<200504281016.44512.david-b@pacbell.net>
+	<20050428185959.GA12495@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============75324603774316623=="
+Content-Type: multipart/mixed; boundary="===============93889494937526319=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200504281016.44512.david-b@pacbell.net>
+In-Reply-To: <20050428185959.GA12495@elf.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,61 +18,78 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============75324603774316623==
-Content-Type: text/plain; charset=us-ascii
+--===============93889494937526319==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi!
-
-> > sl-5500 has peripheral controller, but sl-5600 and newer should have a
-> > host controller. [Unfortunately mine is 5500.]
+On Thursday 28 April 2005 11:59 am, Pavel Machek wrote:
+> Hi!
 > 
-> I think you're wrong about all except possibly the very latest ones
-> using pxa27x chips.  The pxa25x based products would need a separate
-> controller chip to get host functionality.  I know for a fact that
-> even the C-860 doesn't have one integrated; folk use that CF/IO card,
-> with an sl811hs driver, if they crave a USB keyboard or flashdisk.
+> > > sl-5500 has peripheral controller, but sl-5600 and newer should have a
+> > > host controller. [Unfortunately mine is 5500.]
+> > 
+> > I think you're wrong about all except possibly the very latest ones
+> > using pxa27x chips.  The pxa25x based products would need a separate
+> > controller chip to get host functionality.  I know for a fact that
+> > even the C-860 doesn't have one integrated; folk use that CF/IO card,
+> > with an sl811hs driver, if they crave a USB keyboard or flashdisk.
+> 
+> I searched web a bit, on amazon pages:
+> 
+> Sharp Zaurus SL-6000L Handheld
 
-I searched web a bit, on amazon pages:
-
-Sharp Zaurus SL-6000L Handheld
-Other products by Sharp
-
-Usually ships within 1-2 business days
+That's sort of an exception, designed originally for IBM as I recall
+and not originally as a "consumer" product.
 
 
-3 used & new from $799.00
+> ...
+>     * Input/Output: USB 1.1 host connector mini Type-A, IR port, 2.5
+>                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Making me wonder what controller chip it uses ... or alternatively,
+if that listing is wrong.  (It's been known to happen...)
+
+> Okay, that's strange. Mini conectors are only device-side, right?
+
+It's just a wee bit rare.  There are three kinds of USB "Mini"
+sockets, used with "Mini-A" or "Mini-B" connectors on cables:
+
+   - Mini-A, as above ... host only.  The Psion NetBook does this
+     too (pxa 255 based, sl811hs host, no USB peripheral).  Used
+     normally with an adapter, Mini-A to standard-A/socket, plus a
+     more standard A-to-B cable like you'd use with a PC.
+
+   - Mini-B, what you're thinking of ... peripheral only.  I've seen
+     this on a variety of USB peripherals by now.   Cables normally
+     go Mini-B to standard-A
+
+   - Mini-AB, OTG-only ... you can connect either the Mini-A end
+     of a cable into it, or the Mini-B end.  The device acts as
+     either host or peripheral, as necessary.
+
+I'd rather see OTG devices, with Mini-AB sockets, than Mini-A; but
+OTG takes a while to adopt.
 
 
+> If c-860 does not have usb, I was probably wrong (or confused by
+> something like above...)
 
-Technical data
+Just confused.  Mini-A is indeed not common.  C860 does have USB,
+except it's the peripheral support (like most all PDAs I've seen).
 
-    * Operating System: Embedded Linux with J2ME CDC Personal Profile
-    * Display: 4 inch 640 x 480 CG Silicon transflective TFT
-    * Wireless: Integrated 802.11 lb
-    * Keyboard: 37-key QWERTY keyboard with slide cover
-    * Memory: 64 MB SDRAM; 64 MB Flash
-    * Expansion Slots: 1 Type II CF slot; 1 SD slot
-    * Input/Output: USB 1.1 host connector mini Type-A, IR port, 2.5
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Dave
 
-Okay, that's strange. Mini conectors are only device-side, right?
-
-If c-860 does not have usb, I was probably wrong (or confused by
-something like above...)
-								Pavel
--- 
-Boycott Kodak -- for their patent abuse against Java.
-
---===============75324603774316623==
+--===============93889494937526319==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============75324603774316623==--
+--===============93889494937526319==--
