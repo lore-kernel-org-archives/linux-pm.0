@@ -1,14 +1,13 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Re: freeze_processes questions
-Date: Thu, 28 Apr 2005 16:21:52 +1000
-Message-ID: <1114669311.3580.25.camel@desktop.cunningham.myip.net.au>
-References: <1114667366.3580.19.camel@desktop.cunningham.myip.net.au>
-	<1114668061.22492.16.camel@sli10-desk.sh.intel.com>
-Reply-To: ncunningham@linuxmail.org
+Date: Thu, 28 Apr 2005 10:14:35 +0200
+Message-ID: <20050428081435.GE1906@elf.ucw.cz>
+References: <1114595634.7918.25.camel@desktop.cunningham.myip.net.au>
+	<1114663706.22110.35.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============99989875872167433=="
+Content-Type: multipart/mixed; boundary="===============31585419804741077=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1114668061.22492.16.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1114663706.22110.35.camel@sli10-desk.sh.intel.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,55 +18,34 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Li Shaohua <shaohua.li@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============99989875872167433==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--===============31585419804741077==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi.
+Hi!
 
-On Thu, 2005-04-28 at 16:01, Li Shaohua wrote:
-> What states should be saved/restored for the dead CPU? The dead CPU is
-> in idle thread before becoming dead, so ingoring save/restore general
-> registers doesn't matter. Sure there are something which must be
-> saved/restored, like the MTRR registers and possible Local APIC
-> registers if their value are different with the boot time. But there are
-> no much such cases, I think.
+> > That's right, but the example you give below is userspace (syslogd) vs
+> > kernel space (kjournald), so I wonder if something could be wrong with
+> > your implementation.
+> Right, my example can be solved with your patch. But I'd like a more
+> generic solution to solve all the dependences, like user space tasks
+> dependencies.
 
-Well, I don't have it working perfectly yet, but saving and restoring
-MTRRs definitely did make a difference. Prior to that I added the same
-save and restore of CPU registers we use at the moment (suspend2 style)
-and shifted the irq disable call above the wait loop (so the comment is
-true). Given what you say, I'll try reversing the other changes and just
-leaving in the MTRR save/restore, then see if it's as reliable as it is
-now.
+How can usespace processes depend on each other? By definition user
+task sleeps in place where it holds no locks... it can't block anyone.
 
-For the record, without anything added, I was getting spontaneous
-reboots in the copy back with just hotplug. With everything I have now
-added, I'm always making it to the end of the resume, but then getting
-seg faults when I try to start apps. Should be simple to fix, but I
-won't be trying this evening as I'm going to my last LUG meeting here in
-Canberra. We move to Brisbane May 9.
-
-Regards,
-
-Nigel
+								Pavel
 -- 
-Nigel Cunningham
-Software Engineer, Canberra, Australia
-http://www.cyclades.com
-Bus: +61 (2) 6291 9554; Hme: +61 (2) 6292 8028;  Mob: +61 (417) 100 574
+Boycott Kodak -- for their patent abuse against Java.
 
-Maintainer of Suspend2 Kernel Patches http://suspend2.net
-
-
---===============99989875872167433==
+--===============31585419804741077==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============99989875872167433==--
+--===============31585419804741077==--
