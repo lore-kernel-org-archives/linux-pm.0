@@ -1,14 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] Power Management Policies
-Date: Wed, 27 Apr 2005 17:05:39 -0700
-Message-ID: <200504271705.40068.david-b@pacbell.net>
-References: <1113772533.3451.131.camel@localhost.localdomain>
-	<200504270708.09111.david-b@pacbell.net>
-	<20050427144853.GB28119@elf.ucw.cz>
+From: Li Shaohua <shaohua.li@intel.com>
+Subject: Re: Re: freeze_processes questions
+Date: Thu, 28 Apr 2005 12:48:26 +0800
+Message-ID: <1114663706.22110.35.camel@sli10-desk.sh.intel.com>
+References: <1114595634.7918.25.camel@desktop.cunningham.myip.net.au>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============46119125191477783=="
+Content-Type: multipart/mixed; boundary="===============31927440217486436=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050427144853.GB28119@elf.ucw.cz>
+In-Reply-To: <1114595634.7918.25.camel@desktop.cunningham.myip.net.au>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,53 +16,49 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.osdl.org
+To: Nigel Cunningham <ncunningham@linuxmail.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============46119125191477783==
-Content-Type: text/plain;
-  charset="us-ascii"
+--===============31927440217486436==
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Wednesday 27 April 2005 7:48 am, Pavel Machek wrote:
-> > 
-> > AFAICT the hardware folk are more than ready to start providing hand-held
-> > devices (PDA-ish, vs luggable laptops) with USB host capabilities.  But
-> > WinCE isn't ready for that yet though... ergo products don't do it yet.
-> > Linux has less trouble, since market positioning doesn't interfere.  :)
+Hi,
+On Wed, 2005-04-27 at 17:53, Nigel Cunningham wrote:
+> > Sorry for raising the problem again after a long time. I got some
+> > reports about ' xxx not stopped' at suspend time. The general cause
+> is
+> > one task is waiting for another task which has been into
+> refrigerator
+> > first. Report an error and stop suspend can't solve the problem.
+> After
+> > the task's dependent task is released from refrigerator, the task
+> itself
+> > will soon go into refrigerator and will never be waked up. 
+> > Nigel's refrigerator patch half solves the problem. It distinct
+> kernel
+> > tasks and user tasks, so can solve the dependence between kernel
+> tasks
+> > and user tasks, but can't solve the user tasks dependence. Right,
+> Nigel?
 > 
-> USB zauruses could do that for >2 years now,
+> That's right, but the example you give below is userspace (syslogd) vs
+> kernel space (kjournald), so I wonder if something could be wrong with
+> your implementation.
+Right, my example can be solved with your patch. But I'd like a more
+generic solution to solve all the dependences, like user space tasks
+dependencies.
 
-Which ones?  The ones I know about have a peripheral controller,
-not a host controller.   There's a recent iPaq that uses OHCI
-on a pxa27x to contact an on-board bluetooth adapter.  But AFAIK,
-PDAs with an USB host _connector_ is pretty rare.  (There's a
-CF/IO card adapter I've seen, but that's not quite the same.)
+Thanks,
+Shaohua
 
 
-> and even recent windows 
-> CE devices frequently list USB host capabilities... (Or USB on-the-go
-> which is similar, AFAICT).
-
-Well, you may be watching those WinCE devices more closely than
-me, but all I've noticed in that respect is spec-ware support
-for host side capabilities... with even that being scarce.
-I'd be glad to see that improving though!
-
-For USB OTG devices, a Mini-AB connector can act as either host
-or peripheral; and can switch roles later.  Hub support is
-optional, so it's not necessarily as flexible as one might like.
-But yes, once that starts to catch on, it should be interesting.
-
-- Dave
-
---===============46119125191477783==
+--===============31927440217486436==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============46119125191477783==--
+--===============31927440217486436==--
