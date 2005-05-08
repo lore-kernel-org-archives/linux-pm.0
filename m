@@ -1,14 +1,14 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] A New Power Management API
-Date: Sun, 8 May 2005 12:05:55 -0700
-Message-ID: <200505081205.55292.david-b@pacbell.net>
-References: <1113533193.3451.40.camel@localhost.localdomain>
-	<200504161226.12849.david-b@pacbell.net>
-	<42647650.3030607@mvista.com>
+Subject: Re: Re: [RFC] Linux Power Management
+Date: Sun, 8 May 2005 11:39:23 -0700
+Message-ID: <200505081139.24099.david-b@pacbell.net>
+References: <1115094736.28902.167.camel@localhost.localdomain>
+	<20050505041214.GA21223@neo.rr.com>
+	<20050505093830.GA3260@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============95730708258293262=="
+Content-Type: multipart/mixed; boundary="===============81183912837421568=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <42647650.3030607@mvista.com>
+In-Reply-To: <20050505093830.GA3260@elf.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,129 +19,95 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
+Cc: Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============95730708258293262==
+--===============81183912837421568==
 Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Monday 18 April 2005 8:09 pm, Todd Poynor wrote:
-> David Brownell wrote:
-> > On Friday 15 April 2005 7:53 pm, Todd Poynor wrote:
-> >...
-> >>On the other hand, I've been trying to push them toward a simpler-kernel 
-> >>model in which all the product-specific logic for placing various 
-> >>devices in designated power states occurs in a userspace power policy 
-> >>manager,
+On Thursday 05 May 2005 2:38 am, Pavel Machek wrote:
+> > > No. It took 2+ years to add at at least system power states. You want
+> > > to build on that, not scratch it and start over.
 
-Which, as I've commented, doesn't necessarily seem simple to me!
+But Pavel, since you started to push all those pm_message_t patches,
+you've effectively REMOVED the entire visibility of system power states
+to drivers ... they no longer have any information they can use to choose
+the right device power state based on the upcoming system state.
 
-Userspace policy code could just as well be ALL device-specific,
-like "turn off backlight", without needing any generic notion of
-power states.  Or, something like MontaVista DPM could work with
-no need to expose device-specific power states... just the ability
-to set some "operating point", which in ACPI terms might be one
-of the many possible S0 states.
+This whole pm_message_t thing was pretty darn close to a "start over".
+(Though that wasn't the original goal.)
+
+Before those patches, pretty much everything **EXCEPT SWSUSP** (I had
+to examine the whole kernel tree, and study how the PM framework had
+evolved since 2.4...) was good about the integer suspend() parameter being
+an ACPI S-number for the target system state.  And there were drivers
+that used that information ... the primary problem was that those numbers
+weren't documented as such, so confusion came when swsusp created its
+own new/incompatible theory about what the integers meant.  (Rather than
+adopting and/or formalizing the pre-existing model, with its enums.)
+
+What you've done with those patches is (a) force all drivers and subsystems
+to change, while (b) removing even the possibility for drivers to choose
+target device states based on knowledge of the target system state, and
+(c) breaking the drivers that DID choose states intelligently.
+
+In short, the problem is that you _removed_ the previous driver-visible
+notion of system power.  Now here you're complaining about Adam noticing
+that the status quo ante was really a better direction.  Basically giving
+him the same treatment you've given me for making that same point.  Forgive
+me if I remain un-persuaded.
 
 
-> > So maybe you have some answers for me about why there should need
-> > to be *any* notion of exporting device power states.  (Rather than
-> > not caring, and just requiring driver-internal powers states always
-> > to become consistent with the upcoming system power state.)
-> > 
-> > If one takes the notion of userspace managing those states off the table,
-> > is there any other motivation to expose those device power states? 
+
+> > I was wondering, however, what do you have in mind for adding to pm_message_t?
+> > Also, are you going to use "PMSG_HALT" and/or "PMSG_REBOOT"?
 > 
-> So far as I have been able to determine, the usage you describe, as well 
-> as straightforward individual device power state management (power this 
-> device off upon receipt of some event, period of inactivity, etc.) is 
-> common, although with enough flexibility in creating custom system power 
-> states and reacting to those states in driver power controller objects, 
-> the second usage may be covered by the first.
+> If I added PMSG_REBOOT, I'd have to modify all the drivers to support
+> it. Incompatible change, bad.
 
-I can't quite parse this as an answer to my question though.  Driver-internal
-states are by definition not exported, and can't be "covered" by userspace.
+You're going to have to do that to support PMSG_FREEZE already... as
+you note.  What was your _previous_ plan for getting FREEZE to behave,
+then?  Given what's happened so far, I have to conclude you never
+really expected (or wanted) something that suspend() parameter to
+be used for anything except the magic number "3".  (Which is used
+for both FREEZE and SUSPEND now...)
 
-The userspace knobs I think everyone pretty much agrees on are the sort
-that are already widely used in X11, hdparm, and so on:  idle timeouts,
-with the system probably setting a sane default.   Ones that are less
-widely agreed on include having "system power states" that are more
-specific/custom than just ACPI S1/S3/S4 or analogues ... because they
-could include things like S0 states with backlight on vs off, or so on
-for other devices.  (That does beg the question of which states need to
-be known as such to the kernel, and how... via /sys/power/state etc.)
+If you really had believed incompatible changes were bad, you'd
+not have chosen the approach you did for pm_message_t.  You would
+have instead just formalized the existing model, using the existing
+enum (used inside pmcore, except by swsusp) for a "strong" type
+that sparse would check.
 
 
-The question was about whether "device power states" have any role
-OTHER than to be managed by userspace.  You didn't identify any such
-role, so I'll continue to believe there is none.
+> We already have something close enough, PMSG_FREEZE. That means that
+> drivers will do right thing by default. If someone really needs to
+> tell between normal freeze and reboot, we can add a flag; but I'm not
+> 100% convinced it is neccessary.
+
+So what's your current rationale for FREEZE then?  The original
+motivation was to have a "quiesced" state for drivers, distinct
+from a full fledged SUSPEND, to avoid pointless suspend/resume
+cycles in the middle of swsusp.
 
 
-> > I'm pretty sure that supporting this sort of userspace functionality
-> > won't really fit into the "simpler kernel" rubric.  If for no other
-> > reason than the self-evident fact that a kernel exporting such stuff
-> > must have more code than one not exporting it...
-> 
-> It may not be simpler overall on the kernel side (at least prior to 
-> being customized for a particular policy, for which the in-kernel 
-> alternative does add some amount of code). 
+What you're arguing here is effectively that the parameter to
+all suspend methods can never change.  Ergo it's useless, and
+we might as well just have removed it in the first place!!!
 
-Depends on what what you expect out of a policy.  Separately, I've
-talked about how drivers can often be smart enough to stay in low
-power modes "all the time" when they're idle.  Such drivers don't
-need ANY other policy inputs.  If more drivers do that, the system
-as a whole just needs to be smart enough to tell (possibly from
-userspace) when the devices are idle ... and maybe to conclude, as
-with the dynamic tick or VST stuff, that it's time to enter some
-more power-efficient system state.
-
-To concoct a DPM-like example, if one were to write the name describing
-some operating point to some file in sysfs, and that ended up calling a
-board-specific routine to suspend/resume various devices, maybe updating
-clocks and power supplies, that would be straightforward and obvious.
-Which makes it simpler than threading all that stuff throughout the
-driver model to support doing that from userspace.  :)
-
-
-> It does, however, place the  
-> code implementing custom system power states and associated decisions on 
-> device power states (which might fall under the general category of 
-> "policy") in userspace and exports just enough kernel interfaces for 
-> controlling system and device power behavior to let userspace handle it. 
-
-Again, you're not answering the question of what point there'd to
-expose any notion of driver state _other_ than to export that sort
-of control knob to user-mode agents ... along with more widely used
-things like idle timeout settings and backlight on/off controls,
-or less widely accepted DPM-ish ones that effectively provide new
-system power states ("operating points").
-
-
->   As I say, though, the userspace vs. kernel home for this isn't a 
-> matter of strong preference to me, but have suggested userspace device 
-> state management as arguably more in keeping with prevailing winds of 
-> kernel development.
-
-There are lots of winds blowing, and I don't think you can really say
-that there's a wind blowing in favor of a particular type of feature
-which has never yet been really usable... if anything, the wind has
-always blown in favor of removing broken or unusable capabilities.
-
-It's a question of what sort of policy choice the kernel has any
-real business exporting.  I've seen lots of interfaces designed to
-export low level control knobs that really shouldn't be exported.
-This still looks to me like yet another one...
+Of course, one flaw in that argument is that there _are_ in fact
+different system power states, and some drivers do need to choose
+device states accordingly...
 
 - Dave
 
-
---===============95730708258293262==
+--===============81183912837421568==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============95730708258293262==--
+--===============81183912837421568==--
