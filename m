@@ -1,15 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [RFC] Linux Power Management
-Date: Mon, 9 May 2005 10:35:38 +0200
-Message-ID: <20050509083538.GB5718@atrey.karlin.mff.cuni.cz>
+Subject: Re: [RFC] Linux Power Management
+Date: Mon, 9 May 2005 11:49:04 +0200
+Message-ID: <20050509094904.GA19790@atrey.karlin.mff.cuni.cz>
 References: <1115094736.28902.167.camel@localhost.localdomain>
-	<20050505041214.GA21223@neo.rr.com>
-	<20050505093830.GA3260@elf.ucw.cz>
-	<200505081139.24099.david-b@pacbell.net>
+	<Pine.LNX.4.44L0.0505031132520.19073-100000@iolanthe.rowland.org>
+	<20050505043920.GB21223@neo.rr.com>
+	<200505081135.56811.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============87740595701231761=="
+Content-Type: multipart/mixed; boundary="===============33639847347387503=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200505081139.24099.david-b@pacbell.net>
+In-Reply-To: <200505081135.56811.david-b@pacbell.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,64 +23,44 @@ To: David Brownell <david-b@pacbell.net>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============87740595701231761==
+--===============33639847347387503==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-> > > I was wondering, however, what do you have in mind for adding to pm_message_t?
-> > > Also, are you going to use "PMSG_HALT" and/or "PMSG_REBOOT"?
-> > 
-> > If I added PMSG_REBOOT, I'd have to modify all the drivers to support
-> > it. Incompatible change, bad.
+> > However, I 
+> > don't think this will be common, and not every layer in between the tree
+> > has to participate.  So, psuedo-logical device layers like we're seeing in the
+> > PCI express bus driver could just be skipped past.  I'll change my plans to
+> > reflect this.
 > 
-> You're going to have to do that to support PMSG_FREEZE already... as
-> you note.  What was your _previous_ plan for getting FREEZE to behave,
-> then?  Given what's happened so far, I have to conclude you never
-> really expected (or wanted) something that suspend() parameter to
-> be used for anything except the magic number "3".  (Which is used
-> for both FREEZE and SUSPEND now...)
+> When you "don't think this will be common" you're basically assuming
+> Linux won't be used on embedded hardware.   Unhealthy assumption!!
 > 
-> If you really had believed incompatible changes were bad, you'd
-> not have chosen the approach you did for pm_message_t.  You would
-> have instead just formalized the existing model, using the existing
-> enum (used inside pmcore, except by swsusp) for a "strong" type
-> that sparse would check.
+> It's **really easy** and in fact natural for hardware designers to
+> provide power management relationships that don't directly match
+> the logical bus structure that software likes to use.  Chips to
+> switch power are in widespread use, and the GPIO lines used to drive
+> them don't always come from a CPU (where they'd probably be always
+> available unless the CPU itself suspends).
 
-PMSG_REBOOT is not good enough reason to go through all the
-drivers. PMSG_FREEZE can be used, instead.
+Well, people can mess up hardware any way they like, but don't expect
+us to mess up linux to match...
 
-> > We already have something close enough, PMSG_FREEZE. That means that
-> > drivers will do right thing by default. If someone really needs to
-> > tell between normal freeze and reboot, we can add a flag; but I'm not
-> > 100% convinced it is neccessary.
-> 
-> So what's your current rationale for FREEZE then?  The original
-> motivation was to have a "quiesced" state for drivers, distinct
-> from a full fledged SUSPEND, to avoid pointless suspend/resume
-> cycles in the middle of swsusp.
+If they use GPIO lines on chip that eats so much power that it must be
+power-managed... yes, I'd call that broken hardware.
 
-It still holds. PMSG_FREEZE is quiesced state, usefull for at least
-swsusp and reboot.
-
-> What you're arguing here is effectively that the parameter to
-> all suspend methods can never change.  Ergo it's useless, and
-> we might as well just have removed it in the first place!!!
-
-No, I'm not argument that parameter to suspend methods can never
-change. It will change in 2.6.12. It will have 3 values, PMSG_FREEZE
-and PMSG_SUSPEND (and PMSG_ON, if you want to store state somewhere).
-
+Of course, current pm core *is* inadequate for even simple uses...
 								Pavel
 -- 
 Boycott Kodak -- for their patent abuse against Java.
 
---===============87740595701231761==
+--===============33639847347387503==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============87740595701231761==--
+--===============33639847347387503==--
