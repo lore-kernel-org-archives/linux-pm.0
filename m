@@ -1,13 +1,13 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [RFC] Disabling Devices
-Date: Mon, 9 May 2005 11:04:53 -0400
-Message-ID: <20050509150452.GC27448@neo.rr.com>
-References: <20050509021528.GB27448@neo.rr.com>
-	<Pine.LNX.4.44L0.0505091012400.5325-100000@iolanthe.rowland.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [patch 2.6.12-rc4] driver model wakeup support
+Date: Mon, 9 May 2005 07:36:05 -0700
+Message-ID: <200505090736.05302.david-b@pacbell.net>
+References: <200505081724.09468.david-b@pacbell.net>
+	<20050509014916.GA27448@neo.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============24931677538229069=="
+Content-Type: multipart/mixed; boundary="===============47523815246288614=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0505091012400.5325-100000@iolanthe.rowland.org>
+In-Reply-To: <20050509014916.GA27448@neo.rr.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,94 +17,107 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Adam Belay <ambx1@neo.rr.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============24931677538229069==
-Content-Type: text/plain; charset=us-ascii
+--===============47523815246288614==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Mon, May 09, 2005 at 10:26:20AM -0400, Alan Stern wrote:
-> On Sun, 8 May 2005, Adam Belay wrote:
+On Sunday 08 May 2005 6:49 pm, Adam Belay wrote:
+> On Sun, May 08, 2005 at 05:24:09PM -0700, David Brownell wrote:
+> > This is a refresh of a patch I sent before.  I suspect it'd be
+> > appropriate to merge this, given the agreement I thought I
+> > heard last time I posted it.
+> > ...
 > 
-> > One potentially important aspect of power management is the ability for the
-> > user to disable a device that he or she does not intend to use.  Our current
-> > model does not allow for this.  Calling PMSG_SUSPEND won't cut it, because it
-> > might enable wake events and is expecting the system to sleep.  It seems we
-> > need to implement something specifically for this case.  Also, there is the
-> > posibility of resource rebalancing, which requires yet another slightly
-> > different behavior.
-> > 
-> > Consider if a user wanted to disable a pci bus...  If the bus was just
-> > suspended, it would be straightforward, put all the children to sleep and
-> > then turn off the bus.  However, in the case of disabling it (as in "do not
-> > use me") all of the child devices would actually need to be unregistered.
-> > 
-> > Furthermore, take an ethernet controller as an example.  When suspending, just
-> > run the driver specific logic.  When disabling, you actually want to unregister
-> > from the net class interface.
+> I actually was working on a similar patch, but decided to stop.  I have some
+> concerns about the generic-ness of "wakeup".  For example, some devices may
+> have multiple wakeup modes or wakeup criteria.  Under these situations having
+> a global "wakeup" parameter might become clumsy.  So should drivers be
+> exporting these sort of things on their own?
 > 
-> You're taking this too far.  "Disable", as in "do not use me", really 
-> requires nothing more than that the device be suspended (with remote 
-> wakeup turned off) and that the driver respond to requests with an error.
+> "Wake-on-lan", as an example, could have 4 or 5 different packet types to look
+> for.  So when the user specifies one of these, he or she is expecting
+> "wake-on-lan" to just work.  In the case of your patch, I think the sysfs
+> attribute would also need to be configured.
+
+As I commented.  Note that the various WOL options that "ethtool" exposes
+apply to the "ethN" device (in sysfs, /sys/class/net/* devices) which are
+not affected by this patch, not to real /sys/devices/... ones which are.
+
+
+> "wakeup" seems to fit most ACPI and PCI devices well.  I'm not sure how it
+> would apply to usb, firewire, pcmcia, etc., especially when determining
+> if it supports wake.  It may just be something that only the driver knows.
+
+This patch was partially written to solve a big gaping hole in the
+PM framework that I noticed from USB.  It certainly behaves with USB!
+(That is, with USB parts not included in that core patch.)
+
+I have a hard time seeing how a simple policy setting could NOT work
+for other wakeup-capable frameworks (or devices), though I suppose
+an argument could be made that there should be an "always enabled"
+option to export perverse hardware to userspace.
+
+USB devices have a single "remote wakeup" mechanism, which not all
+devices support.  If they support it, it's listed in the descriptor
+for the active configuration (the one being suspended).  That's info
+that's known by usbcore.  Network adapters often use it (with WOL),
+as do keyboards and mice.
+
+
+> A few more points:
 > 
-> What you describe is more like "do your best to pretend this device 
-> doesn't exist at all"!  I don't see any need to unregister anything, 
-> unload drivers, or take other special action.
+> Wakeup configuration may vary between system states, how can we account for
+> this?  Should wakeup information be reconfigured by userspace before entering
+> a sleep or off state?
 
-Really this is an implementation detail.  The point I was trying to make is
-that we don't currently have a way of even suspending devices without wakeup.
-However, "pretend this device doesn't exist" seems logical to me, it frees
-memory and removes clutter.
+What do you mean by "wakeup configuration"?  
 
+I don't see any benefit to having state-specific policies; if the device
+is going to be able to wake the system from sleep, the user isn't really
+going to care how deep a sleep is involved.  They may be annoyed when it
+can wake from some states and not others ... but that's basically going
+to be an inescapable hardware limitation.  (Example:  sleep states that
+let USB controllers retain root hub power can support wakeup by USB.
+But sleep states which power off the hubs, maybe "deeper" sleep, can't.)
+
+
+> Would there be any value in exporting a list of system states in which wake is
+> supported on a per-device basis?
+
+How would normal users -- "joe six-pack", "aunt tilly", or whoever -- use
+such things?  I don't see many folk wanting to think about such issues.
+They'll care if they can wake it up by touching the keyboard, and likely
+remember that sometimes they have to use the front panel power switch
+(for classic swsusp) rather than the one on the keyboard.
+
+
+> > It would be preferable to not have the attribute for devices that aren't
+> > wired with wakeup support, but that'd involve extra sysfs magic.
 > 
-> 
-> > As another issue, how should we handle surprise removal between suspend and
-> > resume?  It seems like we would need to tell the resume method about this.
-> 
-> I don't know how it should be handled in other subsystems.  With USB, we 
-> detect the removal at or close to the time when we attempt to resume the 
-> device.  Of course USB is peculiar, in that the drivers don't bind 
-> directly to the devices (they bind to interfaces within the devices).  
-> Hence by the time the drivers' ->resume gets called, there's a good chance 
-> we already know the device is gone.
-> 
-> But even if we didn't know, it wouldn't matter much.  The driver would
-> encounter a rash of errors as it tried to communicate with the missing
-> device, and they would end abruptly when we learned that the device had
-> been disconnected.
+> This probably isn't too difficult.  The question is how consistent we want
+> the interface to be.
 
-Most drivers aren't this smart, and not every bus will be happy with drivers
-tearing through the remains of previously removed hardware.
+I'd say it differently:  the question is how we want to trade off types
+of consistency versus memory usage.  At one point Patrick estimated that
+each sysfs attribute instance cost about 1 KByte.  That adds up quickly,
+especially on embedded systems ... and it's probably more consistent to
+not have attributes if they're not meaningful, than to have them always
+and to require userspace to always check for null values (etc).
 
-> 
-> In any case, isn't it up to the bus to detect new devices and removals?  
-> Why should removal during suspend be treated any differently from removal 
-> at any other time when the device is not in use?
+- Dave
 
-It's a very different situation.  Take PCI as an example...  If the device has
-been removed while suspended, the goal changes from "restore this device" to
-"free up this saved state information and unregister stuff".
 
-Notice how surprise removal is connected and related with manual device
-disabling.  We need to have unregistration infustructure anyway, why not
-handle device disabling completely?
-
-Also, there is no way to ensure that a removal will not occur during a reduced
-power state (dynamic power management) that wasn't invoked by suspend.  So, in
-short, hotplug drivers will need to be really robust.  I think the PM
-subsystem should try to be helpful here when it can.
-
-Finally, we need to have device resume routines rescan for child devices.
-
-Adam
-
---===============24931677538229069==
+--===============47523815246288614==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============24931677538229069==--
+--===============47523815246288614==--
