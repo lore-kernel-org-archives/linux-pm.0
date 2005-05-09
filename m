@@ -1,12 +1,12 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch 2.6.12-rc4] driver model wakeup support
-Date: Mon, 9 May 2005 11:57:58 +0200
-Message-ID: <20050509095758.GC19790@atrey.karlin.mff.cuni.cz>
-References: <200505081724.09468.david-b@pacbell.net>
+Subject: Re: [RFC] Disabling Devices
+Date: Mon, 9 May 2005 12:46:43 +0200
+Message-ID: <20050509104643.GB25275@atrey.karlin.mff.cuni.cz>
+References: <20050509021528.GB27448@neo.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4125120831268238=="
+Content-Type: multipart/mixed; boundary="===============98093587645700397=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200505081724.09468.david-b@pacbell.net>
+In-Reply-To: <20050509021528.GB27448@neo.rr.com>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,35 +16,44 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
+To: Adam Belay <ambx1@neo.rr.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============4125120831268238==
+--===============98093587645700397==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
->   * there's a writeable sysfs "wakeup" file, with one of three values:
->       - "enabled", when the policy is to allow wakeup 
->       - "disabled", when the policy is not to allow it
->       - "" (empty string), when the hardware doesn't support wakeup
+> One potentially important aspect of power management is the ability for the
+> user to disable a device that he or she does not intend to use.  Our current
+> model does not allow for this.  Calling PMSG_SUSPEND won't cut it, because it
+> might enable wake events and is expecting the system to sleep.  It seems we
+> need to implement something specifically for this case.  Also, there is the
+> posibility of resource rebalancing, which requires yet another slightly
+> different behavior.
+> 
+> Consider if a user wanted to disable a pci bus...  If the bus was just
+> suspended, it would be straightforward, put all the children to sleep and
+> then turn off the bus.  However, in the case of disabling it (as in "do not
+> use me") all of the child devices would actually need to be unregistered.
 
-> It would be preferable to not have the attribute for devices that aren't
-> wired with wakeup support, but that'd involve extra sysfs magic.
+I think you should talk to hotplug people from high-end
+machines. "Disable PCI bus" seems very similar to "hey, I want to
+unplug that PCI bus". And they have to the ethernet case for
+hot-pluggable PCI cards, too.
 
-Yes, not having empty wakeup file might be nice. Or place "<not
-supported>" there if we are doing strings anyway.
 								Pavel
+
 -- 
 Boycott Kodak -- for their patent abuse against Java.
 
---===============4125120831268238==
+--===============98093587645700397==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============4125120831268238==--
+--===============98093587645700397==--
