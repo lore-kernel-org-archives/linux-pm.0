@@ -1,14 +1,12 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: [RFC] Linux Power Management
-Date: Sun, 8 May 2005 11:39:23 -0700
-Message-ID: <200505081139.24099.david-b@pacbell.net>
-References: <1115094736.28902.167.camel@localhost.localdomain>
-	<20050505041214.GA21223@neo.rr.com>
-	<20050505093830.GA3260@elf.ucw.cz>
+Subject: [patch 2.6.12-rc4] pm diagnostics update,
+	check for errors
+Date: Sun, 8 May 2005 17:15:20 -0700
+Message-ID: <200505081715.20470.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============81183912837421568=="
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_YuqfCs0gvrt7951"
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050505093830.GA3260@elf.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,95 +17,159 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
-Cc: Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============81183912837421568==
-Content-Disposition: inline
+--Boundary-00=_YuqfCs0gvrt7951
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Thursday 05 May 2005 2:38 am, Pavel Machek wrote:
-> > > No. It took 2+ years to add at at least system power states. You want
-> > > to build on that, not scratch it and start over.
+I've had this for a while, and converting to a GIT repository is
+incentive enough to send it out.  Mostly it just makes existing
+diagnostics be more useful, but it also adds some error checking
+for cases that can happen on non-trivial systems ... or when
+userspace actions through /sys/.../power/state files break some
+system integrity rules.
 
-But Pavel, since you started to push all those pm_message_t patches,
-you've effectively REMOVED the entire visibility of system power states
-to drivers ... they no longer have any information they can use to choose
-the right device power state based on the upcoming system state.
-
-This whole pm_message_t thing was pretty darn close to a "start over".
-(Though that wasn't the original goal.)
-
-Before those patches, pretty much everything **EXCEPT SWSUSP** (I had
-to examine the whole kernel tree, and study how the PM framework had
-evolved since 2.4...) was good about the integer suspend() parameter being
-an ACPI S-number for the target system state.  And there were drivers
-that used that information ... the primary problem was that those numbers
-weren't documented as such, so confusion came when swsusp created its
-own new/incompatible theory about what the integers meant.  (Rather than
-adopting and/or formalizing the pre-existing model, with its enums.)
-
-What you've done with those patches is (a) force all drivers and subsystems
-to change, while (b) removing even the possibility for drivers to choose
-target device states based on knowledge of the target system state, and
-(c) breaking the drivers that DID choose states intelligently.
-
-In short, the problem is that you _removed_ the previous driver-visible
-notion of system power.  Now here you're complaining about Adam noticing
-that the status quo ante was really a better direction.  Basically giving
-him the same treatment you've given me for making that same point.  Forgive
-me if I remain un-persuaded.
-
-
-
-> > I was wondering, however, what do you have in mind for adding to pm_message_t?
-> > Also, are you going to use "PMSG_HALT" and/or "PMSG_REBOOT"?
-> 
-> If I added PMSG_REBOOT, I'd have to modify all the drivers to support
-> it. Incompatible change, bad.
-
-You're going to have to do that to support PMSG_FREEZE already... as
-you note.  What was your _previous_ plan for getting FREEZE to behave,
-then?  Given what's happened so far, I have to conclude you never
-really expected (or wanted) something that suspend() parameter to
-be used for anything except the magic number "3".  (Which is used
-for both FREEZE and SUSPEND now...)
-
-If you really had believed incompatible changes were bad, you'd
-not have chosen the approach you did for pm_message_t.  You would
-have instead just formalized the existing model, using the existing
-enum (used inside pmcore, except by swsusp) for a "strong" type
-that sparse would check.
-
-
-> We already have something close enough, PMSG_FREEZE. That means that
-> drivers will do right thing by default. If someone really needs to
-> tell between normal freeze and reboot, we can add a flag; but I'm not
-> 100% convinced it is neccessary.
-
-So what's your current rationale for FREEZE then?  The original
-motivation was to have a "quiesced" state for drivers, distinct
-from a full fledged SUSPEND, to avoid pointless suspend/resume
-cycles in the middle of swsusp.
-
-
-What you're arguing here is effectively that the parameter to
-all suspend methods can never change.  Ergo it's useless, and
-we might as well just have removed it in the first place!!!
-
-Of course, one flaw in that argument is that there _are_ in fact
-different system power states, and some drivers do need to choose
-device states accordingly...
+If nobody objects, I'll probably ask to merge this at some point.
 
 - Dave
 
---===============81183912837421568==
+--Boundary-00=_YuqfCs0gvrt7951
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="power.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="power.patch"
+
+This patch includes various tweaks in the messaging that appears during
+system pm state transitions:
+
+  * Warn about certain illegal calls in the device tree, like resuming
+    child before parent or suspending parent before child.  This could
+    happen easily enough through sysfs, or in some cases when drivers
+    use device_pm_set_parent().
+
+  * Be more consistent about dev_dbg() tracing ... do it for resume() and
+    shutdown() too, and never if the driver doesn't have that method.
+
+  * Say which type of system sleep state is being entered.
+
+Except for the warnings, these only affect debug messaging.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+
+--- a/drivers/base/power/resume.c	2005-05-08 06:48:13 -07:00
++++ b/drivers/base/power/resume.c	2005-05-08 06:48:13 -07:00
+@@ -22,8 +22,17 @@
+ 
+ int resume_device(struct device * dev)
+ {
+-	if (dev->bus && dev->bus->resume)
++	if (dev->power.pm_parent
++			&& dev->power.pm_parent->power.power_state) {
++		dev_err(dev, "PM: resume from %d, parent %s still %d\n",
++			dev->power.power_state,
++			dev->power.pm_parent->bus_id,
++			dev->power.pm_parent->power.power_state);
++	}
++	if (dev->bus && dev->bus->resume) {
++		dev_dbg(dev,"resuming\n");
+ 		return dev->bus->resume(dev);
++	}
+ 	return 0;
+ }
+ 
+--- a/drivers/base/power/shutdown.c	2005-05-08 06:48:13 -07:00
++++ b/drivers/base/power/shutdown.c	2005-05-08 06:48:13 -07:00
+@@ -25,8 +25,10 @@
+ 		return 0;
+ 
+ 	if (dev->detach_state == DEVICE_PM_OFF) {
+-		if (dev->driver && dev->driver->shutdown)
++		if (dev->driver && dev->driver->shutdown) {
++			dev_dbg(dev, "shutdown\n");
+ 			dev->driver->shutdown(dev);
++		}
+ 		return 0;
+ 	}
+ 	return dpm_runtime_suspend(dev, dev->detach_state);
+@@ -52,13 +54,12 @@
+ 	struct device * dev;
+ 
+ 	down_write(&devices_subsys.rwsem);
+-	list_for_each_entry_reverse(dev, &devices_subsys.kset.list, kobj.entry) {
+-		pr_debug("shutting down %s: ", dev->bus_id);
++	list_for_each_entry_reverse(dev, &devices_subsys.kset.list,
++				kobj.entry) {
+ 		if (dev->driver && dev->driver->shutdown) {
+-			pr_debug("Ok\n");
++			dev_dbg(dev, "shutdown\n");
+ 			dev->driver->shutdown(dev);
+-		} else
+-			pr_debug("Ignored.\n");
++		}
+ 	}
+ 	up_write(&devices_subsys.rwsem);
+ 
+--- a/drivers/base/power/suspend.c	2005-05-08 06:48:13 -07:00
++++ b/drivers/base/power/suspend.c	2005-05-08 06:48:13 -07:00
+@@ -39,12 +39,25 @@
+ {
+ 	int error = 0;
+ 
+-	dev_dbg(dev, "suspending\n");
++	if (dev->power.power_state) {
++		dev_dbg(dev, "PM: suspend %d-->%d\n",
++			dev->power.power_state, state);
++	}
++	if (dev->power.pm_parent
++			&& dev->power.pm_parent->power.power_state) {
++		dev_err(dev,
++			"PM: suspend %d->%d, parent %s already %d\n",
++			dev->power.power_state, state,
++			dev->power.pm_parent->bus_id,
++			dev->power.pm_parent->power.power_state);
++	}
+ 
+ 	dev->power.prev_state = dev->power.power_state;
+ 
+-	if (dev->bus && dev->bus->suspend && !dev->power.power_state)
++	if (dev->bus && dev->bus->suspend && !dev->power.power_state) {
++		dev_dbg(dev, "suspending\n");
+ 		error = dev->bus->suspend(dev, state);
++	}
+ 
+ 	return error;
+ }
+--- a/kernel/power/main.c	2005-05-08 06:48:13 -07:00
++++ b/kernel/power/main.c	2005-05-08 06:48:13 -07:00
+@@ -156,14 +156,14 @@
+ 		goto Unlock;
+ 	}
+ 
+-	pr_debug("PM: Preparing system for suspend\n");
++	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+ 	if ((error = suspend_prepare(state)))
+ 		goto Unlock;
+ 
+-	pr_debug("PM: Entering state.\n");
++	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+ 	error = suspend_enter(state);
+ 
+-	pr_debug("PM: Finishing up.\n");
++	pr_debug("PM: Finishing wakeup.\n");
+ 	suspend_finish(state);
+  Unlock:
+ 	up(&pm_sem);
+
+--Boundary-00=_YuqfCs0gvrt7951
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============81183912837421568==--
+--Boundary-00=_YuqfCs0gvrt7951--
