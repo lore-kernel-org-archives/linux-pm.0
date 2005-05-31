@@ -1,14 +1,13 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] Add some hooks to generic suspend code
-Date: Wed, 01 Jun 2005 09:31:49 +1000
-Message-ID: <1117582309.5826.60.camel@gaston>
-References: <1117524577.5826.35.camel@gaston>
-	<20050531101344.GB9614@elf.ucw.cz> <1117550660.5826.42.camel@gaston>
-	<20050531212556.GA14968@elf.ucw.cz>
+Subject: Re: [PATCH] Don't explode on swsusp failure to find swap
+Date: Wed, 01 Jun 2005 09:50:03 +1000
+Message-ID: <1117583403.5826.72.camel@gaston>
+References: <1117523585.5826.18.camel@gaston>
+	<20050531103623.GB1848@elf.ucw.cz>  <1117550706.5826.43.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============58140433904559785=="
+Content-Type: multipart/mixed; boundary="===============62503340936315754=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050531212556.GA14968@elf.ucw.cz>
+In-Reply-To: <1117550706.5826.43.camel@gaston>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,53 +21,46 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============58140433904559785==
+--===============62503340936315754==
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-
-> Why do you need it? Do you initiate suspend without userland asking
-> you to?
-
-Because there is an existing API, via /dev/apm_bios, and that's all X
-understands ! And because I've always done that ;)
-
-> Anyway, it should not be arch-dependend. We need one good mechanism of
-> notifying userland, not one per architecture.
-
-We need to define a new mecanism, I think. In the meantime, my APM
-emulation works though and I won't drop it. 
-
-> > > > 	/* called after unfreezing userland */
-> > > > 	void (*post_freeze)(suspend_state_t state);
-> > > > 
-> > > > That one is the mirror of pre-freeze, gets called after userland has been re-enabled,
-> > > > it also calls my old-style notifiers, which includes APM emulation, which is important
-> > > > for sending the APM wakeup events to things like X.
-> > > 
-> > > Could this be marked deprecated, too?
-> > > 
-> > > Alternatively, proper way of notifying X (etc) should be created, and
-> > > done from generic code....
+On Wed, 2005-06-01 at 00:45 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2005-05-31 at 12:36 +0200, Pavel Machek wrote:
+> > Hi!
 > > 
-> > Sure, ideally. However, existing X knows how to deal with APM events,
-> > and thus APM emulation is an important thing to get something that
-> > works. Pne thing I should do is consolidate PPC APM emu with ARM one as
-> > I think Russell improve my stuff significantly.
+> > > If we specify a swap device for swsusp using resume= kernel argument and
+> > > that device doesn't exist in the swap list, we end up calling
+> > > swsusp_free() before we have allocated pagedir_save. That causes us to
+> > > explode when trying to free it.
+> > > 
+> > > Pavel, does that look right ?
+> > 
+> > It looks like a workaround. We should not call swsusp_free in case
+> > device does not exists. Quick look did not reveal where the bug comes
+> > from, can you try to trace it?
+> > 								Pavel
 > 
-> Perhaps we need apm emulation on i386, too?
+> Well, the bug comes from arch code calling swsusp_save() which fails,
+> then we call swsusp_free()
 
-Maybe. It may help in some cases.
+More specifically, arch suspend calls swsusp_save().
+
+It fails and returns the error to the arch asm code, which itself
+returns it to it's caller swsusp_suspend(), which does that:
+
+ 	if ((error = swsusp_arch_suspend()))
+		swsusp_free();
 
 Ben.
 
 
 
---===============58140433904559785==
+--===============62503340936315754==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============58140433904559785==--
+--===============62503340936315754==--
