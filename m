@@ -1,40 +1,28 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Re: [PATCH] Don't explode on swsusp failure to find swap
-Date: Wed, 1 Jun 2005 22:42:07 +0200
-Message-ID: <20050601204207.GA11163@elf.ucw.cz>
-References: <1117523585.5826.18.camel@gaston> <1117583403.5826.72.camel@gaston> <20050601092742.GC6693@elf.ucw.cz> <200506012120.40607.rjw@sisk.pl>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Don't "lose" devices on suspend on failure
+Date: Wed, 1 Jun 2005 14:24:18 -0700
+Message-ID: <20050601212418.GA3936@kroah.com>
+References: <1117523329.5826.14.camel@gaston>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261217AbVFAUq1@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261240AbVFAVRB@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200506012120.40607.rjw@sisk.pl>
+In-Reply-To: <1117523329.5826.14.camel@gaston>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Patrick Mochel <mochel@digitalimplant.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
-> > --- a/kernel/power/swsusp.c
-> > +++ b/kernel/power/swsusp.c
-> > @@ -975,13 +975,6 @@ extern asmlinkage int swsusp_arch_resume
-> >  
-> >  asmlinkage int swsusp_save(void)
-> >  {
-> > -	int error = 0;
-> > -
-> > -	if ((error = swsusp_swap_check())) {
-> > -		printk(KERN_ERR "swsusp: FATAL: cannot find swap device, try "
-> > -				"swapon -a!\n");
-> > -		return error;
-> > -	}
-> >  	return suspend_prepare_image();
-> >  }
+On Tue, May 31, 2005 at 05:08:49PM +1000, Benjamin Herrenschmidt wrote:
+> Hi !
 > 
-> I think we can move the contents of suspend_prepare_image() directly to
-> swsusp_save().  It's not used anywhere else.
+> I think we need this patch or we might "lose" devices to the dpm_irq_off
+> list if a failure occurs during the suspend process.
+> 
+> Patrick, Greg, your opinion ?
 
-I thought about that, too, but bugfixes first, cleanups next.
+Looks fine to me, I've added it to my tree.
 
-									Pavel
+thanks,
+
+greg k-h
