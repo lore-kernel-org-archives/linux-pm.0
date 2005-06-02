@@ -1,39 +1,57 @@
-From: Stefan Seyfried <seife@suse.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC] Add some hooks to generic suspend code
-Date: Thu, 02 Jun 2005 18:21:49 +0200
-Message-ID: <429F321D.9000009@suse.de>
-References: <1117524577.5826.35.camel@gaston>	<20050531101344.GB9614@elf.ucw.cz>	<1117550660.5826.42.camel@gaston> <20050531212556.GA14968@elf.ucw.cz>
+Date: Fri, 03 Jun 2005 08:18:00 +1000
+Message-ID: <1117750680.31082.81.camel@gaston>
+References: <1117524577.5826.35.camel@gaston>
+	<20050531101344.GB9614@elf.ucw.cz>	<1117550660.5826.42.camel@gaston>
+	<20050531212556.GA14968@elf.ucw.cz>  <429F321D.9000009@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261189AbVFBQWV@vger.kernel.org>
-In-Reply-To: <20050531212556.GA14968@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/mixed; boundary="===============06494105195107025=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <429F321D.9000009@suse.de>
+List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Stefan Seyfried <seife@suse.de>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
+--===============06494105195107025==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> Anyway, it should not be arch-dependend. We need one good mechanism o=
-f
-> notifying userland, not one per architecture.
+On Thu, 2005-06-02 at 18:21 +0200, Stefan Seyfried wrote:
 
-Yes.
+> >> Sure, ideally. However, existing X knows how to deal with APM events,
+> >> and thus APM emulation is an important thing to get something that
+> >> works. Pne thing I should do is consolidate PPC APM emu with ARM one as
+> >> I think Russell improve my stuff significantly.
+> > 
+> > Perhaps we need apm emulation on i386, too?
+> 
+> No. This is too ugly for words IMO. If we have one good mechanism of
+> notifying userland, X can use this mechanism. Let's kill APM, not keep
+> it alive.
 
->> Sure, ideally. However, existing X knows how to deal with APM events=
-,
->> and thus APM emulation is an important thing to get something that
->> works. Pne thing I should do is consolidate PPC APM emu with ARM one=
- as
->> I think Russell improve my stuff significantly.
->=20
-> Perhaps we need apm emulation on i386, too?
+Euh... maybe but I still think we need to keep this userland interface
+alive for a little while. At least ARM and PPC have existing stuff that
+rely on it.
 
-No. This is too ugly for words IMO. If we have one good mechanism of
-notifying userland, X can use this mechanism. Let's kill APM, not keep
-it alive.
---=20
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out."
+Ben.
+
+
+
+--===============06494105195107025==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============06494105195107025==--
