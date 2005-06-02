@@ -1,28 +1,39 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] Don't "lose" devices on suspend on failure
-Date: Wed, 1 Jun 2005 14:24:18 -0700
-Message-ID: <20050601212418.GA3936@kroah.com>
-References: <1117523329.5826.14.camel@gaston>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [RFC] Add some hooks to generic suspend code
+Date: Thu, 02 Jun 2005 18:21:49 +0200
+Message-ID: <429F321D.9000009@suse.de>
+References: <1117524577.5826.35.camel@gaston>	<20050531101344.GB9614@elf.ucw.cz>	<1117550660.5826.42.camel@gaston> <20050531212556.GA14968@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261240AbVFAVRB@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1117523329.5826.14.camel@gaston>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261189AbVFBQWV@vger.kernel.org>
+In-Reply-To: <20050531212556.GA14968@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Patrick Mochel <mochel@digitalimplant.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 31, 2005 at 05:08:49PM +1000, Benjamin Herrenschmidt wrote:
-> Hi !
-> 
-> I think we need this patch or we might "lose" devices to the dpm_irq_off
-> list if a failure occurs during the suspend process.
-> 
-> Patrick, Greg, your opinion ?
+Pavel Machek wrote:
 
-Looks fine to me, I've added it to my tree.
+> Anyway, it should not be arch-dependend. We need one good mechanism o=
+f
+> notifying userland, not one per architecture.
 
-thanks,
+Yes.
 
-greg k-h
+>> Sure, ideally. However, existing X knows how to deal with APM events=
+,
+>> and thus APM emulation is an important thing to get something that
+>> works. Pne thing I should do is consolidate PPC APM emu with ARM one=
+ as
+>> I think Russell improve my stuff significantly.
+>=20
+> Perhaps we need apm emulation on i386, too?
+
+No. This is too ugly for words IMO. If we have one good mechanism of
+notifying userland, X can use this mechanism. Let's kill APM, not keep
+it alive.
+--=20
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out."
