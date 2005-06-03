@@ -1,12 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: swsusp issues
-Date: Fri, 3 Jun 2005 13:15:41 +0200
-Message-ID: <20050603111541.GC3867@elf.ucw.cz>
+Date: Sat, 04 Jun 2005 08:50:28 +1000
+Message-ID: <1117839029.31082.180.camel@gaston>
 References: <1117764111.31082.119.camel@gaston>
+	<20050603111541.GC3867@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============28418876193148868=="
+Content-Type: multipart/mixed; boundary="===============40416172986067522=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1117764111.31082.119.camel@gaston>
+In-Reply-To: <20050603111541.GC3867@elf.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,78 +17,54 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============28418876193148868==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============40416172986067522==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Hi!
 
-> So one problem I was having with my new code is that swsusp "hooks" of
-> enter_state() early and doesn't go through the "normal" callback
-> mecanism, thus wasn't calling any of my new callbacks.
-> 
-> In addition, it has its own save/restore_processor_state that do not go
-> through pm_ops, but instead are arch inlines (and besides, I never found
-> any use of those for saving/restoring processor state, though I do use
-> them for other means, the semantics are quite crappy here).
+> PM_DISK_REBOOT is very usefull for testing (and I believe generic; you
+> could do that on ppc too). PM_DISK_SHUTDOWN is usefull for using
+> normal powerdown paths in case something is wrong with disk-specific
+> powerdown. We should move away from it, but please try not to kill it.
 
-Well, i386 definitely uses them for saving some 'less important' cpu
-registers.
+Well, I have a problem with these because they don't call the arch
+prepare/finish callbacks.
 
-> This is all fairly inconsistent.
-> 
-> What about (note: I'm proposing here to do the job, not asking you to do
-> it) merging at least disk.c into main.c, that is, having swsusp just use
-> the "normal" infrastructure ?
+Anyway, I discussed with Patrick yesterday and we came to the conclusion
+that the best is in fact to just kill the current mecanism which was
+done upside down. Kill pm_ops completely and instead of having a slim
+"core" that uses callbacks all over, have the arch contain the main
+state enter function and have the stuff in kernel/power/* be "library"
+functions to be called by the arch code.
 
-Merging disk.c and main.c is certainly good idea, I never know which
-one to look in, anyway.
+The idea here is then to have the arch provide main.c with an array of
+"name",function pairs (name beeing the name in /sys/power/state and
+function is what to call when the user echo's that name
+to /sys/power/state). The rest would be entirely under arch control, and
+that would remove most of the current cruft.
 
-> suspend_prepare() and suspend_finish() are pretty much equivalent to
-> what disk.c does in (un)prepare_processes(), prepare_devices() and
-> finish() with the exception of free_some_memory() which is not used in
-> suspend to ram, and swsusp does this totally bogus SMP tricks (they
-> really can't work properly, you'll deadlock trying to use them,
-> really !)
+To simplify the job for swsusp and avoid the ugly in_suspend thing, we
+should do a slight change of the low level code so that swsusp_suspend()
+returns: 0 -> resume, 1 -> snapshotted, <0 -> error
 
-Those smp tricks... see my development tree at
-www.kernel.org/...git/pavel/work.git. We actually use cpu hotplug
-infrastructure and it should work ok.
+We could provide an "example" default implementation that does only
+swsusp that an arch can "drop in" if you want, but archs have to
+implement the various "inline" callbacks anyway (save_processor_state &
+friends).
 
-> Then, the "main" implementation does ops->enter(). On swsusp, this enter
-> sort-of depdends of the "type" of suspend to disk required. Either
-> "enter" does all the job (PM_DISK_FIRMWARE) which is then totally
-> equivalent to the core code needs, or it's replaced by a blurb that does
-> swsusp_suspend, swsusp_write, etc...
+Ben.
 
-PM_DISK_FIRMWARE can be safely removed. See feature-removal*,
-DISK_FIRMWARE is S4BIOS.
 
-> Finally, the whole pm_disk_mode is just disgustingly ugly. Especially
-> the fact that the user can go muck around and change it. I do not
-> support any mode but "PM_DISK_PLATFORM" on ppc and I really think that
-> should be the only implementation. That is, it's up to the platform
-> provided pm_ops to decide what to  do. Either doing all the work, or
-> using swsusp_suspend/swsusp_disk and then restart or shutdown or
-> whatever. This is all platform specific. Here, basically, the genric
-> code is exposing some x86 crappola.
 
-PM_DISK_REBOOT is very usefull for testing (and I believe generic; you
-could do that on ppc too). PM_DISK_SHUTDOWN is usefull for using
-normal powerdown paths in case something is wrong with disk-specific
-powerdown. We should move away from it, but please try not to kill it.
-
-								Pavel
-
---===============28418876193148868==
+--===============40416172986067522==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============28418876193148868==--
+--===============40416172986067522==--
