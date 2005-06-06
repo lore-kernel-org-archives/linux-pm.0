@@ -1,15 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: swsusp issues
-Date: Sat, 04 Jun 2005 16:23:55 +1000
-Message-ID: <1117866235.31082.214.camel@gaston>
-References: <1117764111.31082.119.camel@gaston>
-	<20050603111541.GC3867@elf.ucw.cz> <1117839029.31082.180.camel@gaston>
-	<20050603232109.GA2132@elf.ucw.cz> <1117841396.31082.196.camel@gaston>
-	<20050604061340.GB2132@elf.ucw.cz>
+From: "Yu, Luming" <luming.yu@intel.com>
+Subject: Re: Re: swsusp: Not enough free pages
+Date: Mon, 6 Jun 2005 14:39:02 +0800
+Message-ID: <200506061439.03023.luming.yu@intel.com>
+References: <3ACA40606221794F80A5670F0AF15F84041AC1A8@pdsmsx403>
+	<20050530091419.GA7922@linux.sh.intel.com>
+	<20050530150157.GC2207@elf.ucw.cz>
+Reply-To: luming.yu@intel.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============72975382872376171=="
+Content-Type: multipart/mixed; boundary="===============54373380669240134=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050604061340.GB2132@elf.ucw.cz>
+In-Reply-To: <20050530150157.GC2207@elf.ucw.cz>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,33 +19,93 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Linux Kernel List <linux-kernel@vger.kernel.org>
+Cc: ACPI devel <acpi-devel@lists.sourceforge.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============72975382872376171==
-Content-Type: text/plain
+--===============54373380669240134==
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
 
-> Well, if we are talking about single function (enter_state) being
-> moved to arch code... that should be okay. It is really simple
-> function.
+> > > So far, yes. I just tried 2 times.
+> >
+> > always. (I check that swap dev is on)
+> >
+> > Sometimes, my ia32 laptop free 0 pages too.
+> > I think we should always free some pages
+> > from various caches.
+>
+> Try this hack... it is basically mm problem I don't know how to fix,
+> but this seems to help.
+> 								Pavel
 
-That and breaking it down a little bit tho :)
+Thanks Pavel, this hack works.
+..
+Freeing memory...  ^Hdone (0 pages freed)
+Freeing memory...  ^H-^Hdone (4636 pages freed)
+Freeing memory...  ^Hdone (0 pages freed)
+Freeing memory...  ^H-^Hdone (914 pages freed)
+Freeing memory...  ^Hdone (0 pages freed)
+Freezing CPUs (at 0)...ok
 
-Anyway, we should meet on irc one of these days with Patrick to discuss
-that.
+Any mm guru know how to fix this?
 
-Ben.
+>
+> Index: kernel/power/disk.c
+> ===================================================================
+> --- 805a02ec2bcff3671d7b1e701bd1981ad2fa196c/kernel/power/disk.c 
+> (mode:100644) +++
+> ecd8559cc08319bb16a42aac06cf7d664157643a/kernel/power/disk.c  (mode:100644)
+> @@ -88,23 +92,25 @@
+>
+>  static void free_some_memory(void)
+>  {
+> -	unsigned int i = 0;
+> -	unsigned int tmp;
+> -	unsigned long pages = 0;
+> -	char *p = "-\\|/";
+> -
+> -	printk("Freeing memory...  ");
+> -	while ((tmp = shrink_all_memory(10000))) {
+> -		pages += tmp;
+> -		printk("\b%c", p[i]);
+> -		i++;
+> -		if (i > 3)
+> -			i = 0;
+> +	int i;
+> +	for (i=0; i<5; i++) {
+> +		int i = 0, tmp;
+> +		long pages = 0;
+> +		char *p = "-\\|/";
+> +
+> +		printk("Freeing memory...  ");
+> +		while ((tmp = shrink_all_memory(10000))) {
+> +			pages += tmp;
+> +			printk("\b%c", p[i]);
+> +			i++;
+> +			if (i > 3)
+> +				i = 0;
+> +		}
+> +		printk("\bdone (%li pages freed)\n", pages);
+> +		msleep_interruptible(200);
+>  	}
+> -	printk("\bdone (%li pages freed)\n", pages);
+>  }
+>
+> -
+>  static inline void platform_finish(void)
+>  {
+>  	if (pm_disk_mode == PM_DISK_PLATFORM) {
 
 
-
---===============72975382872376171==
+--===============54373380669240134==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============72975382872376171==--
+--===============54373380669240134==--
