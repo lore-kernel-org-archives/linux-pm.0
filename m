@@ -1,15 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: swsusp: Not enough free pages
-Date: Thu, 9 Jun 2005 00:03:07 +0200
-Message-ID: <20050608220307.GA2614@elf.ucw.cz>
-References: <3ACA40606221794F80A5670F0AF15F84041AC1A8@pdsmsx403>
-	<200506081702.53349.rjw@sisk.pl>
-	<20050608162728.GA3969@openzaurus.ucw.cz>
-	<200506082342.14420.rjw@sisk.pl>
+From: "Leo L. Schwab" <lschwab@tapwave.com>
+Subject: What's Left at Shutdown?
+Date: Wed, 08 Jun 2005 15:09:59 -0700
+Message-ID: <42A76CB7.6080606@tapwave.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============28240409279341749=="
+Content-Type: multipart/mixed; boundary="===============9133687010565259=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200506082342.14420.rjw@sisk.pl>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,45 +14,36 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI devel <acpi-devel@lists.sourceforge.net>, linux-pm@lists.osdl.org, Linux Kernel List <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@zip.com.au>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============28240409279341749==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============9133687010565259==
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi!
+.	How much of the kernel is left standing by the time a driver's .shutdown() 
+vector is called?
 
-> > > This is the worst result from the second box:
-> > > 
-> > > Freeing memory...  done (54641 pages freed)
-> > > Freeing memory...  done (0 pages freed)
-> > > Freeing memory...  done (5120 pages freed)
-> > > Freeing memory...  done (1952 pages freed)
-> > > Freeing memory...  done (2304 pages freed)
-> > > 
-> > > Still, there are 5x more pages freed in the first pass (80% of RAM was
-> > > empty anyway before suspend), and usually it is 10-20x more or so.
-> > 
-> > I have seen 0 freed on i386 machine with preempt -rc6-mm1, today...
-> > Something is definitely wrong there.
-> 
-> Well, I have compiled the kernel with preempt and retested (on -rc6) but it
-> doesn't want to get worse. :-)
-> 
-> The problem seems to be arch-dependent or at least configuration-dependent ... 
-> 
-> Hm, how much RAM is there in your box?
+	We have some hardware we'd like to power off when the system shuts down, 
+but also during run time when the HW is not in use.  During run time, we can 
+rely on interrupt handlers and the various wait_event*() calls working, but 
+during the various stages of a full shutdown, this is less clear.
 
-This was on 2GB box...
-							Pavel
+	The hardware in question is programmed by writing commands, then waiting 
+for a completion interrupt.  We would prefer to use the same 
+(interrupt-driven) code path for both "normal" operation and system 
+shutdown.  So what services are guaranteed to be available -- and which are 
+guaranteed to be unavailable -- when a driver's .shutdown() vector is called?
 
---===============28240409279341749==
+	Thanks in advance.
+
+					Schwab
+
+--===============9133687010565259==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============28240409279341749==--
+--===============9133687010565259==--
