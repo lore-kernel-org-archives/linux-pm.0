@@ -1,13 +1,10 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: Re: tg3: issue for reboot/kexec
-Date: Fri, 24 Jun 2005 20:33:28 -0700
-Message-ID: <20050625033328.GC3934@kroah.com>
-References: <42BC9F09.1060002@us.ibm.com>
-	<20050624174652.159f26ce.rdunlap@xenotime.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Suspend "core": what to do now ?
+Date: Mon, 27 Jun 2005 15:49:54 +1000
+Message-ID: <1119851395.5133.112.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============52364518145885386=="
+Content-Type: multipart/mixed; boundary="===============86748740151638482=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050624174652.159f26ce.rdunlap@xenotime.net>
 List-Unsubscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,66 +14,39 @@ List-Subscribe: <http://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: randy_dunlap <rdunlap@xenotime.net>
-Cc: netdev@vger.kernel.org, fastboot@lists.osdl.org, Haren Myneni <haren@us.ibm.com>, linux-pm@lists.osdl.org
+To: Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============52364518145885386==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============86748740151638482==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 24, 2005 at 05:46:52PM -0700, randy_dunlap wrote:
-> On Fri, 24 Jun 2005 17:02:17 -0700 Haren Myneni wrote:
-> 
-> | 
-> | Hello,
-> |     The kexec boot on power blade (JS20) is not successfull without 
-> | doing 'ifdown <ethernet device>'.  Based on my initial look in tg3 code, 
-> | the driver does not have shutdown nor reboot notifier code unlike in 
-> | other drivers. Hence, I added the the following patch (based on e1000) 
-> | and it is working. Is it OK to include this patch? If not, any help to 
-> | track down the issue would be appreciated.
-> | 
-> | My system is having the following cards:
-> | 0000:11:01.0 Ethernet controller: Broadcom Corporation NetXtreme 
-> | BCM5704S Gigabit Ethernet (rev 03)
-> | 0000:11:01.1 Ethernet controller: Broadcom Corporation NetXtreme 
-> | BCM5704S Gigabit Ethernet (rev 03)
-> | 
-> | lspci -n -s 0000:11:01
-> | 0000:11:01.0 Class 0200: 14e4:16a8 (rev 03)
-> | 0000:11:01.1 Class 0200: 14e4:16a8 (rev 03)
-> 
-> [adding fastboot & linux-pm mailing lists]
-> 
-> There was just a SCSI driver patch that tried to use a reboot
-> notifier on shutdown and the patch got this comment:
-> 
-> Subject: Re: [PATCH] 2.6 aacraid: shutdown notification
-> Message-ID: <42BC6D6F.5090402@us.ibm.com>
-> From:	Mark Haverkamp <markh@osdl.org>
-> 
-> and reply From:	Brian King <brking@us.ibm.com>:
-> | The pci_driver->shutdown method should be used instead of registering
-> | a reboot notifier.
-> 
-> so is there a good reason that network drivers should use the
-> reboot notifier instead of pci_driver->shutdown,
-> or should we be converting drivers to use pci_driver->shutdown
-> instead?
-> My quick look favors pci_driver->shutdown.
+Hi !
 
-Yes, don't add a reboot notifier, use the shutdown function instead.
+So I'm still sitting on that rewrite of the pmac suspend code including
+suspend to disk consolidation etc... that I would really like to get
+upstream. However, I'm still having a problem:
 
-thanks,
+ - I'm still adding all those callbacks to pm_ops, Patrick wants to get
+the stuff out of the core, which I agree, but I don't feel like "fixing"
+x86 neither :) Pavel wants to keep the existing stuff.
 
-greg k-h
+ - If I keep my callbacks addition, we need to consolidate
+kernel/power/disk.c with kernel/power/main.c. I need all callbacks in
+both cases. The current inconsistency makes little sense.
 
---===============52364518145885386==
+ - I want that in 2.6.13 final, so please, let's decide something :)
+
+Ben.
+
+
+
+--===============86748740151638482==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============52364518145885386==--
+--===============86748740151638482==--
