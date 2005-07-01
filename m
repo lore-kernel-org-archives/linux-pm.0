@@ -1,17 +1,14 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [Fastboot] Re: Re: tg3: issue for reboot/kexec
-Date: Thu, 30 Jun 2005 19:27:51 -0600
-Message-ID: <m1r7ejjox4.fsf@ebiederm.dsl.xmission.com>
-References: <42BC9F09.1060002@us.ibm.com>
-	<20050624174652.159f26ce.rdunlap@xenotime.net>
-	<20050625033328.GC3934@kroah.com>
-	<m18y0rl9bq.fsf@ebiederm.dsl.xmission.com>
-	<42C499DD.3050009@us.ibm.com>
+From: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [RFC] firmware leaves device in D3hot at boot
+Date: Thu, 30 Jun 2005 21:41:00 -0400
+Message-ID: <20050701014056.GA13710@tuxdriver.com>
+References: <20050623191451.GA20572@tuxdriver.com>
+	<20050624022807.GF28077@tuxdriver.com>
+	<20050630171010.GD11369@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============74603266690478365=="
+Content-Type: multipart/mixed; boundary="===============044885295061538599=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <42C499DD.3050009@us.ibm.com> (Haren Myneni's message of "Thu,
-	30 Jun 2005 18:18:21 -0700")
+In-Reply-To: <20050630171010.GD11369@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,40 +18,42 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Haren Myneni <haren@us.ibm.com>
-Cc: linux-pm@lists.osdl.org, fastboot@lists.osdl.org, netdev@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-pm <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============74603266690478365==
+--===============044885295061538599==
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Haren Myneni <haren@us.ibm.com> writes:
+On Thu, Jun 30, 2005 at 10:10:10AM -0700, Greg KH wrote:
+> On Thu, Jun 23, 2005 at 10:28:07PM -0400, John W. Linville wrote:
+> > On Thu, Jun 23, 2005 at 03:14:52PM -0400, John W. Linville wrote:
+> > 
+> > > This issue regarding D3hot->D0 state transitions seems like a piece
+> > > of minutiae that we should not force individual drivers to address.
+> > 
+> > After some thought, I'm inclined to think that the patch below is
+> > the right one.  It unconditionally saves and restores the PCI config
+ 
+> But how does this solve your problem with the state change?
 
-> Eric W. Biederman wrote:
->
->>A couple stray bits of feedback.  Downing the interface is generally
->>a user space requirement like unmounting filesystems.
->>/sbin/kexec and /sbin/reboot both perform this operation so I don't
->>see how this bug was hit.
->>
->>
->>
-> Thanks for your feedback. We are still working on kexec tools for PPC64. In the
-> mean time, I was using a temporary tool which does not do ifdown. I was in the
-> impression that the kexec boot will be successful since the normal kexec code
-> path (kernel/sys.c) contains device_shutdown/reboot notifier. It turns out I am
-> wrong.
+Please ignore the previous patches.  I've had some good feedback
+from Russell King and Adam Belay, and I have reformulated the patch
+accordingly.  I will be posting that shortly.
 
-Buggy drivers will do that to you as well.  But not doing a clean shutdown
-(downing interfaces, and unmounting the filesystems) doesn't help things  :)
+Thanks,
 
-Eric
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
 
---===============74603266690478365==
+--===============044885295061538599==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============74603266690478365==--
+--===============044885295061538599==--
