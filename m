@@ -1,16 +1,21 @@
 From: "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 2.6.12] pci: restore BAR values in
-	pci_enable_device
+Subject: [patch 2.6.12 (repost w/ corrected subject)] pci:
+	restore BAR values in pci_enable_device_bars
 Date: Thu, 30 Jun 2005 22:26:37 -0400
-Message-ID: <20050701022634.GA5629@tuxdriver.com>
+Message-ID: <20050701022634.GA5629.1@tuxdriver.com>
 References: <20050623191451.GA20572@tuxdriver.com>
 	<20050624022807.GF28077@tuxdriver.com>
 	<20050630171010.GD11369@kroah.com>
 	<20050701014056.GA13710@tuxdriver.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============092733640200373557=="
+Content-Type: multipart/mixed; boundary="===============58013404858747464=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Resent-Message-Id: <200507010231.j612VCjT005717@bilbo.tuxdriver.com>
 In-Reply-To: <20050701014056.GA13710@tuxdriver.com>
+Resent-To: linux-pci@atrey.karlin.mff.cuni.cz,
+   linux-pm <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org,
+   Greg KH <greg@kroah.com>, Adam Belay <ambx1@neo.rr.com>,
+   Russell King <rmk@arm.linux.org.uk>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,7 +29,7 @@ To: linux-pci@atrey.karlin.mff.cuni.cz
 Cc: linux-pm <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
---===============092733640200373557==
+--===============58013404858747464==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -118,11 +123,12 @@ diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
 John W. Linville
 linville@tuxdriver.com
 
---===============092733640200373557==
+
+--===============58013404858747464==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============092733640200373557==--
+--===============58013404858747464==--
