@@ -1,17 +1,22 @@
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [patch 2.6.12 (repost w/ corrected subject)] pci:
-	restore BAR values in pci_enable_device_bars
-Date: Fri, 8 Jul 2005 12:20:43 +0400
-Message-ID: <20050708122043.A8779@jurassic.park.msu.ru>
-References: <20050708095104.A612@den.park.msu.ru>
-	<20050707.233530.85417983.davem@davemloft.net>
-	<20050708110358.A8491@jurassic.park.msu.ru>
-	<20050708.003333.28789082.davem@davemloft.net>
+From: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [patch 2.6.13-rc2] pci: restore BAR values in
+	pci_set_power_state for D3hot->D0
+Date: Fri, 8 Jul 2005 08:37:50 -0400
+Message-ID: <20050708123747.GA13445@tuxdriver.com>
+References: <20050701014056.GA13710@tuxdriver.com>
+	<20050701022634.GA5629.1@tuxdriver.com>
+	<20050702072954.GA14091@colo.lackof.org>
+	<20050702090913.B1506@flint.arm.linux.org.uk>
+	<20050705200555.GA4756@parcelfarce.linux.theplanet.co.uk>
+	<20050705224620.B15292@flint.arm.linux.org.uk>
+	<20050706033454.A706@den.park.msu.ru>
+	<20050708005701.GA13384@tuxdriver.com>
+	<20050708005934.GB13384@tuxdriver.com>
+	<20050708034302.267AF85EC2@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============42249762373949373=="
+Content-Type: multipart/mixed; boundary="===============46706712622798213=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050708.003333.28789082.davem@davemloft.net>;
-	from davem@davemloft.net on Fri, Jul 08, 2005 at 12:33:33AM -0700
+In-Reply-To: <20050708034302.267AF85EC2@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,29 +26,45 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "David S. Miller" <davem@davemloft.net>
-Cc: rmk+lkml@arm.linux.org.uk, grundler@parisc-linux.org, matthew@wil.cx, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: david-b@pacbell.net
+Cc: rmk+lkml@arm.linux.org.uk, ink@jurassic.park.msu.ru, grundler@parisc-linux.org, matthew@wil.cx, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============42249762373949373==
+--===============46706712622798213==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Jul 08, 2005 at 12:33:33AM -0700, David S. Miller wrote:
-> Do PCI devices ever come out of reset in a PM state, and thus
-> would execute John's new code as a side effect?
+On Thu, Jul 07, 2005 at 08:43:02PM -0700, david-b@pacbell.net wrote:
+> > Some PCI devices lose all configuration (including BARs) when
+> > transitioning from D3hot->D0.  This leaves such a device in an
 
-PCI spec requires that all devices must enter D0 state from
-power on reset, so this code shouldn't be executed unless you
-have some really buggy PM firmware (which is unlikely :-).
+> Hmm, I wonder if I missed something in previous email, but exactly
+> why isn't this the responsibility of the driver for that device?
 
-Ivan.
+It certainly could be handled that way.  Of course, that could
+mean replicating essentially identical code across dozens (or more)
+drivers.  Plus, many of those drivers might only need such changes for
+one variation of a device or for devices under a handful of BIOSen.
+Those drivers probably won't get fixed anytime soon unless some kernel
+hacker happens to stumble into such a situation.  In the meantime,
+those drivers fail to work when they "should" be working.
 
---===============42249762373949373==
+In my mind, this is a documented behaviour that should not be
+unexpected.  It is not some random quirk of some oddball device.
+A few simple steps taken when this situation is recognized can allow
+drivers to remain unaware of this detail of PCI PM.  That seems
+worthwhile to me.
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
+
+--===============46706712622798213==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============42249762373949373==--
+--===============46706712622798213==--
