@@ -1,15 +1,17 @@
-From: "David S. Miller" <davem@davemloft.net>
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 Subject: Re: [patch 2.6.12 (repost w/ corrected subject)] pci:
- restore BAR values in pci_enable_device_bars
-Date: Thu, 07 Jul 2005 23:35:30 -0700 (PDT)
-Message-ID: <20050707.233530.85417983.davem@davemloft.net>
+	restore BAR values in pci_enable_device_bars
+Date: Fri, 8 Jul 2005 11:03:58 +0400
+Message-ID: <20050708110358.A8491@jurassic.park.msu.ru>
 References: <20050708005701.GA13384@tuxdriver.com>
 	<20050707.201103.41635951.davem@davemloft.net>
 	<20050708095104.A612@den.park.msu.ru>
+	<20050707.233530.85417983.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============78605317999391344=="
+Content-Type: multipart/mixed; boundary="===============38422898047030896=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050708095104.A612@den.park.msu.ru>
+In-Reply-To: <20050707.233530.85417983.davem@davemloft.net>;
+	from davem@davemloft.net on Thu, Jul 07, 2005 at 11:35:30PM -0700
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,28 +21,30 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: ink@jurassic.park.msu.ru
+To: "David S. Miller" <davem@davemloft.net>
 Cc: rmk+lkml@arm.linux.org.uk, grundler@parisc-linux.org, matthew@wil.cx, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============78605317999391344==
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+--===============38422898047030896==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Date: Fri, 8 Jul 2005 09:51:04 +0400
+On Thu, Jul 07, 2005 at 11:35:30PM -0700, David S. Miller wrote:
+> That's fine, what would be the most minimal implementation?
 
-> Why not just implement sparc64 version of pci_update_resource elsewhere
-> (perhaps a dummy one, if you don't need PCI PM), rather than force the
-> rest of the world to duplicate the code?
+#define pci_update_resource(dev, res, n)	BUG()
 
-That's fine, what would be the most minimal implementation?
+No, I'm serious - I don't believe that generic implementation of
+pcibios_resource_to_bus() in the proposed patch does the right thing
+on sparc64 anyway.
 
---===============78605317999391344==
+Ivan.
+
+--===============38422898047030896==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============78605317999391344==--
+--===============38422898047030896==--
