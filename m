@@ -1,18 +1,13 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [patch 2.6.13-rc2] pci: restore BAR values from
-	pci_set_power_state for D3hot->D0
-Date: Mon, 11 Jul 2005 22:28:55 -0400
-Message-ID: <20050712022855.GA3689@neo.rr.com>
-References: <20050708095104.A612@den.park.msu.ru>
-	<20050707.233530.85417983.davem@davemloft.net>
-	<20050708110358.A8491@jurassic.park.msu.ru>
-	<20050708.003333.28789082.davem@davemloft.net>
-	<20050708122043.A8779@jurassic.park.msu.ru>
-	<20050708183452.GB13445@tuxdriver.com>
+From: Hiroki Kaminaga <kaminaga@sm.sony.co.jp>
+Subject: Re: [PATCH][RFC] swsusp for OSK
+Date: Tue, 12 Jul 2005 17:27:16 +0900 (JST)
+Message-ID: <20050712.172716.74733957.kaminaga@sm.sony.co.jp>
+References: <20050707.111613.107948201.kaminaga@sm.sony.co.jp>
+	<1120714200.4860.861.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============94025188170896268=="
+Content-Type: multipart/mixed; boundary="===============22108304743982976=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050708183452.GB13445@tuxdriver.com>
+In-Reply-To: <1120714200.4860.861.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,73 +17,61 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: rmk+lkml@arm.linux.org.uk, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, grundler@parisc-linux.org, matthew@wil.cx, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+To: ncunningham@cyclades.com
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============94025188170896268==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============22108304743982976==
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 08, 2005 at 02:34:56PM -0400, John W. Linville wrote:
-> Some PCI devices lose all configuration (including BARs) when
-> transitioning from D3hot->D0.  This leaves such a device in an
-> inaccessible state.  The patch below causes the BARs to be restored
-> when enabling such a device, so that its driver will be able to
-> access it.
+> > Perhaps I have to turn off MMU while copying pagedir_nosave, and turn
+> > on later?
 > 
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> ---
-> Some firmware leaves devices in D3hot after a (re)boot.  Most drivers
-> call pci_enable_device very early, so devices left in D3hot that lose
-> configuration during the D3hot->D0 transition will be inaccessible to
-> their drivers.
+> That sounds right.
 
-Also, I think there is a possibility of only enabling boot devices for ACPI
-S4.  However, for the reboot case, we're not restoring anything.  Instead new
-resource assignments are being made.  Doesn't the PCI subsystem already
-handle this?
+I tried turning off MMU when copying pagedir_nosave, but OSK target
+board hanged up just after MMU was turned off.
 
-> 
-> Drivers could be modified to account for this, but it would
-> be difficult to know which drivers need modification.  This is
-> especially true since often many devices are covered by the same
-> driver.  It likely would be necessary to replicate code across dozens
-> of drivers.
+What I did was:
 
-Agreed.
+* invalidate cache
+* invalidate write buffer
+* invalidate TLB
+* disable cache
+* disable MMU
 
-> 
-> The patch below should trigger only when transitioning from D3hot->D0
-> (or at boot), and only for devices that have the "no soft reset" bit
-> cleared in the PM control register.  I believe it is safe to include as
-> part of the PCI infrastructure.
+I have to investigate more on how to turn off MMU on ARM...
+Below are actual insn:
 
+        mcr     p15, 0, r0, c7, c7, 0   @ invalidate cache
+        mcr     p15, 0, r0, c7, c10, 4  @ drain write buffer
+        mcr     p15, 0, r0, c8, c7, 0   @ invalidate TLB
+        mrc     p15, 0, r0, c1, c0, 0   @ get control register
+        bic     r1, r0, #0x0000100d     @ disable cache and MMU
+        mcr     p15, 0, r1, c1, c0, 0   @ set control register
+	nop	<--- place where hanged up
 
->   * pci_set_power_state - Set the power state of a PCI device
->   * @dev: PCI device to be suspended
->   * @state: PCI power state (D0, D1, D2, D3hot, D3cold) we're entering
-> @@ -239,7 +270,7 @@ pci_find_parent_resource(const struct pc
->  int
->  pci_set_power_state(struct pci_dev *dev, pci_power_t state)
->  {
+Besides that, I must convert mem from virt to phys if I go with MMU off.
+In kernel area, VIRT_TO_PHYS could be like this:
 
-Couldn't this be in pci_restore_state() instead?  I was thinking it would
-(in part) replace the ugly dword reads we have now.  They include many
-registers we don't need to touch.  I wonder if we'll need pci_save_state()
-at all or if we can derive all the information from the pci_dev.  I'll have
-to look into it further.
+#define VIRT_TO_PHYS(x)        \
+        sub     x, x, # PAGE_OFFSET + PHYS_OFFSET
 
-Also we need a way to restore specific PCI capabilities.
+but could this also be used against hibernated image?
 
-Thanks,
-Adam
+# sorry for late reply.
 
---===============94025188170896268==
+Regards,
+
+HK.
+--
+
+--===============22108304743982976==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============94025188170896268==--
+--===============22108304743982976==--
