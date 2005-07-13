@@ -1,14 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][RFC] swsusp for OSK
-Date: Tue, 12 Jul 2005 11:20:27 +0200
-Message-ID: <20050712092027.GK1854@elf.ucw.cz>
-References: <20050707.111613.107948201.kaminaga@sm.sony.co.jp>
-	<20050709190837.GA1385@elf.ucw.cz>
-	<20050712.173208.41653102.kaminaga@sm.sony.co.jp>
+From: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [patch 2.6.13-rc2] pci: restore BAR values from
+	pci_set_power_state for D3hot->D0
+Date: Wed, 13 Jul 2005 13:34:21 -0400
+Message-ID: <20050713173417.GA21547@tuxdriver.com>
+References: <20050708095104.A612@den.park.msu.ru>
+	<20050707.233530.85417983.davem@davemloft.net>
+	<20050708110358.A8491@jurassic.park.msu.ru>
+	<20050708.003333.28789082.davem@davemloft.net>
+	<20050708122043.A8779@jurassic.park.msu.ru>
+	<20050708183452.GB13445@tuxdriver.com>
+	<20050712022855.GA3689@neo.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============64128206456654313=="
+Content-Type: multipart/mixed; boundary="===============73593685599968994=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050712.173208.41653102.kaminaga@sm.sony.co.jp>
+In-Reply-To: <20050712022855.GA3689@neo.rr.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,41 +23,74 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Hiroki Kaminaga <kaminaga@sm.sony.co.jp>
-Cc: linux-pm@lists.osdl.org
+To: Adam Belay <ambx1@neo.rr.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, greg@kroah.com, grundler@parisc-linux.org, linux-pci@atrey.karlin.mff.cuni.cz, rmk+lkml@arm.linux.org.uk, matthew@wil.cx, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============64128206456654313==
+--===============73593685599968994==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi!
+On Mon, Jul 11, 2005 at 10:28:55PM -0400, Adam Belay wrote:
+> On Fri, Jul 08, 2005 at 02:34:56PM -0400, John W. Linville wrote:
 
-> > > Here is swsusp for ARM architecture. It is still target specific.
-> > > Anyone doing similar work?
-> > 
-> > What kind of hardware is that?
+> > Some firmware leaves devices in D3hot after a (re)boot.  Most drivers
+> > call pci_enable_device very early, so devices left in D3hot that lose
+> > configuration during the D3hot->D0 transition will be inaccessible to
+> > their drivers.
 > 
-> I used OMAP 5912 STARTER KIT (OSK) as target reference board.
-> http://www.celinuxforum.org/CelfPubWiki/OSK
+> Also, I think there is a possibility of only enabling boot devices for ACPI
+> S4.  However, for the reboot case, we're not restoring anything.  Instead new
+> resource assignments are being made.  Doesn't the PCI subsystem already
+> handle this?
 
-I just wondered what kind of hardware has both ARM cpu and wants to
-suspend-to-disk. Obviously you can do this with any ARM hardware, but
-I wanted to know what kind of machine it is actually usefull at.
+I'm not sure I understand you...the kernel doesn't actually make the
+assignments, relying on the BIOS to do so...am I wrong?
 
-Probably not PDA-style machine, right? And users would not tolerate
-long startup on disk-based mp3-player, right? Maybe big PDA with
-notebook-like features? [Or just tell me that you can not say ;-)].
+So, if the BIOS leaves a device in D3hot, it will loose it's
+BIOS-assigned resources when it transitions to D0 in pci_enable_device.
+The point of this patch is to restore those BAR assignments so that
+the device's registers will be accessible to the driver.  The driver
+remains blissfully unaware of the D3hot->D0 issue.
 
-								Pavel
+> >   * pci_set_power_state - Set the power state of a PCI device
+> >   * @dev: PCI device to be suspended
+> >   * @state: PCI power state (D0, D1, D2, D3hot, D3cold) we're entering
+> > @@ -239,7 +270,7 @@ pci_find_parent_resource(const struct pc
+> >  int
+> >  pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+> >  {
+> 
+> Couldn't this be in pci_restore_state() instead?  I was thinking it would
+> (in part) replace the ugly dword reads we have now.  They include many
+> registers we don't need to touch.  I wonder if we'll need pci_save_state()
+> at all or if we can derive all the information from the pci_dev.  I'll have
+> to look into it further.
+ 
+Currently pci_restore_state is only useful if there is a preceding
+pci_save_state.  While this commonly occurs in the ->resume routines,
+most drivers don't do any such thing (i.e. either save or restore) in
+the ->probe routines.  This is likely because it only makes sense to
+do so if you know about the D3hot->D0 issue; in that case, we would
+be back to replicating code in any number of drivers.  I think we
+agree that should be avoided.
+
+> Also we need a way to restore specific PCI capabilities.
+
+If you are asking for additional patches (or more changes to this one)
+then you'll have to be more specific.  I don't know what you want here.
+
+Thanks,
+
+John
 -- 
-teflon -- maybe it is a trademark, but it should not be.
+John W. Linville
+linville@tuxdriver.com
 
---===============64128206456654313==
+--===============73593685599968994==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============64128206456654313==--
+--===============73593685599968994==--
