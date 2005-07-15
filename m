@@ -1,12 +1,13 @@
-From: "Leo L. Schwab" <ewhac@best.com>
+From: Igor Stoppa <igor.stoppa@nokia.com>
 Subject: Re: Few enhancement ideas
-Date: Thu, 14 Jul 2005 14:56:07 -0700
-Message-ID: <20050714215607.GA16613@best.com>
+Date: Fri, 15 Jul 2005 16:04:28 +0300
+Message-ID: <1121432668.27159.2.camel@localhost>
 References: <1121277175.6338.105.camel@localhost>
+	<20050713183814.1F948BF466@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5882963574550486=="
+Content-Type: multipart/mixed; boundary="===============92890929329023597=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1121277175.6338.105.camel@localhost>
+In-Reply-To: <20050713183814.1F948BF466@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,51 +17,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: "ext db@adsl-69-107-32-110.dsl.pltn13.pacbell.net" <db@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+Cc: linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
---===============5882963574550486==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============92890929329023597==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 13, 2005 at 08:52:55PM +0300, Amit Kucheria wrote:
-> The Nokia 770 Linux team has made many contributions to the Linux-OMAP
-> port, some of the PM-specific ones being:
+Hi,
+
+On Wed, 2005-07-13 at 11:38 -0700, ext
+db@adsl-69-107-32-110.dsl.pltn13.pacbell.net wrote:
+> > The Product
+> > ===========
+> > Nokia 770 is powered by an OMAP1710 on a custom board. 
+[snip]
+> ... and all that running Linux!  The last rumor I heard was that
+> it might base on the 2.6.12 kernel. I look forward to seeing one
+> of these, so I'll know for sure!
+Yes, we'll bring some with us.
+
+> For those unfamiliar with OMAP, http://linux.omap.com is a place
+> to start ... there's a Linux-OMAP mailing list and patches (such
+> as 2.6.13-rc1-omap1) in a GIT repository, many of which have made
+> their way into kernel.org releases.  It's a family of ARM SOC
+> processors that's very power-efficient.
 > 
-> - Dynamic tick patch by Tony Lindgren
-> (http://www.muru.com/linux/dyntick/): Initially for
-> the OMAP architecture followed by the recent x86 port
-> - Clock framework for the OMAP architecture - Thanks to Tuukka Tikkanen
->   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> - PM-enabling various drivers in the mach-omap tree
 > 
-	My thanks to you and Tuukka Tikkanen as well.  I took the ARM clock
-API framework you developed for the OMAP, hacked it to shreds and got it
-working on the Freescale i.MX1.
+> > Interests
+> > =========
+> > Here are a few ideas that we are planning to investigate in order to
+> > address shortcomings in the current PM model with respect to system-wide
+> > PM:
+> >
+> > - Regulator framework: similar to clock framework HAL
+> 
+> Perhaps you could elaborate in a separate email thread?
+As Amit wrote we've been very busy till now, but we plan to elaborate an articulated proposal
 
-	Some clocks on the i.MX1 are always running, so when they're unused,
-I elected to spin them down the slowest available speed, saving a bit more
-power.  I also keep a copy of the requested target frequency so that when
-parent clocks get changed, I can keep the child clocks running as close as
-possible to the originally requested speed.  This is useful for stuff like
-the I2C bus and audio clocks, and really darned helpful in keeping the
-console serial port working correctly.
+> > - Generic framework for system-wide constraints: to handle constraints
+> > outside bus control
+> > - PM framework: Enhance PM framework to allow flexible policy control.
+> > Like DPM?
+> > - User space API: Requires study
+> >
+> > Are these ideas of interest to the PM community or Nokia-specific?
+> 
+> General interest!
+> 
+> I'll be very glad to see a more cross-pollination from that part
+> of the embedded Linux world.  Laptops get plenty of attention,
+> but there's more to Linux than that.  :)
+> 
+> - Dave
+> 
 
-	When you were implementing the framework, did you have any thoughts
-about where the initial clock frequencies "should" come from?  It sounds
-like a policy issue, and therefore compiling it into the kernel (as you've
-done in your OMAP implementation) is The Wrong Thing.  But it's not at all
-clear where else it could go.
-
-	Again, my thanks.  It was tons of help.
-
-					Schwab
-
---===============5882963574550486==
+--===============92890929329023597==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============5882963574550486==--
+--===============92890929329023597==--
