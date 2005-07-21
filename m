@@ -1,12 +1,12 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [PATCH] Workqueue freezer support.
-Date: Thu, 21 Jul 2005 12:42:54 -0700 (PDT)
-Message-ID: <Pine.LNX.4.50.0507211221550.12779-100000@monsoon.he.net>
-References: <1121923059.2936.224.camel@localhost>
+Subject: Re: [PATCH] Syncthreads support.
+Date: Thu, 21 Jul 2005 13:05:13 -0700 (PDT)
+Message-ID: <Pine.LNX.4.50.0507211254140.12779-100000@monsoon.he.net>
+References: <1121923564.2936.231.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4600311265357746=="
+Content-Type: multipart/mixed; boundary="===============96514144894623=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1121923059.2936.224.camel@localhost>
+In-Reply-To: <1121923564.2936.231.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,121 +20,55 @@ To: Nigel Cunningham <ncunningham@cyclades.com>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============4600311265357746==
+--===============96514144894623==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-
 
 
 On Thu, 21 Jul 2005, Nigel Cunningham wrote:
 
-> This patch implements freezer support for workqueues. The current
-> refrigerator implementation makes all workqueues NOFREEZE, regardless of
-> whether they need to be or not.
+> This patch implements a new PF_SYNCTHREAD flag, which allows upcoming
+> the refrigerator implementation to know that a thread is syncing data to
+> disk. This allows the refrigerator to be more reliable, even under heavy
+> load, because it can separate userspace processes that are submitting
+> I/O from those trying to sync it and freezing the former first. We can
+> thus ensure that syncing processes complete their work more quickly and
+> the refrigerator is far less likely to incorrectly give up (thinking a
+> syncing process is completely failing to enter the refrigerator).
 
-A few comments..
+I don't have any strong feelings for this, one way or another. It seems
+kinda hacky, and it needs to be discussed publically, and it seems like it
+definitely seems like it doesn't need to go in immediately.
 
-> Signed-off by: Nigel Cunningham <nigel@suspend2.net>
->
->  drivers/acpi/osl.c          |    2 +-
->  drivers/block/ll_rw_blk.c   |    2 +-
->  drivers/char/hvc_console.c  |    2 +-
->  drivers/char/hvcs.c         |    2 +-
->  drivers/input/serio/serio.c |    2 +-
->  drivers/md/dm-crypt.c       |    2 +-
->  drivers/scsi/hosts.c        |    2 +-
->  drivers/usb/net/pegasus.c   |    2 +-
+I have just a couple of suggestions below..
 
-If you want some practice splitting things up, submit the patches above
-individually to the maintainers o the relevant code once the patches you
-submit below get merged to -mm.
-
->  include/linux/kthread.h     |   20 ++++++++++++++++++--
->  include/linux/workqueue.h   |    9 ++++++---
->  kernel/kmod.c               |    4 ++++
->  kernel/kthread.c            |   23 ++++++++++++++++++++++-
->  kernel/sched.c              |    4 ++--
->  kernel/softirq.c            |    3 +--
->  kernel/workqueue.c          |   21 ++++++++++++---------
->  15 files changed, 73 insertions(+), 27 deletions(-)
-
-
-You should make sure that you get an explicit ACK from people (Ingo et al)
-about whether this is an acceptable interface.
-
-> --- 400-workthreads.patch-old/include/linux/kthread.h	2004-11-03 21:51:12.000000000 +1100
-> +++ 400-workthreads.patch-new/include/linux/kthread.h	2005-07-20 15:11:37.000000000 +1000
-> @@ -27,6 +27,14 @@ struct task_struct *kthread_create(int (
->  				   void *data,
->  				   const char namefmt[], ...);
->
-> +struct task_struct *_kthread_create(int (*threadfn)(void *data),
-> +				   void *data,
-> +				   unsigned long freezer_flags,
-> +				   const char namefmt[], ...);
+>  int fsync_super(struct super_block *sb)
+>  {
+> +	int ret;
 > +
+> +	/* A safety net. During suspend, we might overwrite
+> +	 * memory containing filesystem info. We don't then
+> +	 * want to sync it to disk. */
+> +	BUG_ON(test_suspend_state(SUSPEND_DISABLE_SYNCING));
 
-This should be __kthread_create(...)
+Please do not add any new BUG()s. Figure out another way to gracefully
+fail, perhaps some place else.
 
-> -#define kthread_run(threadfn, data, namefmt, ...)			   \
-> +#define kthread_run(threadfn, data, namefmt, args...)			   \
->  ({									   \
->  	struct task_struct *__k						   \
-> -		= kthread_create(threadfn, data, namefmt, ## __VA_ARGS__); \
-> +		= kthread_create(threadfn, data, namefmt, ##args);	   \
->  	if (!IS_ERR(__k))						   \
->  		wake_up_process(__k);					   \
->  	__k;								   \
->  })
->
-> +#define kthread_nofreeze_run(threadfn, data, namefmt, args...)		   \
-> +({									   \
-> +	struct task_struct *__k	= kthread_nofreeze_create(threadfn, data,  \
-> +			namefmt, ##args);				   \
-> +	if (!IS_ERR(__k))						   \
-> +		wake_up_process(__k);					   \
-> +	__k;								   \
-> +})
+> +	current->flags |= PF_SYNCTHREAD;
 
-Do these functions need to be inlined?
+Is all the modification of current->flags safe? It seems like you could be
+pre-empted in the middle and things could get wacky.
 
-> @@ -86,6 +87,10 @@ static int kthread(void *_create)
->  	/* By default we can run anywhere, unlike keventd. */
->  	set_cpus_allowed(current, CPU_MASK_ALL);
->
-> +	/* Set our freezer flags */
-> +	current->flags &= ~(PF_SYNCTHREAD | PF_NOFREEZE);
-> +	current->flags |= (create->freezer_flags & PF_NOFREEZE);
-> +
-
-Maybe these should be encapsulated in a helper in include/linux/sched.h
-like some other flags manipulations are?
-
-> diff -ruNp 400-workthreads.patch-old/kernel/sched.c 400-workthreads.patch-new/kernel/sched.c
-> --- 400-workthreads.patch-old/kernel/sched.c	2005-07-21 04:00:02.000000000 +1000
-> +++ 400-workthreads.patch-new/kernel/sched.c	2005-07-21 04:00:19.000000000 +1000
-> @@ -4580,10 +4580,10 @@ static int migration_call(struct notifie
->
->  	switch (action) {
->  	case CPU_UP_PREPARE:
-> -		p = kthread_create(migration_thread, hcpu, "migration/%d",cpu);
-> +		p = kthread_create(migration_thread, hcpu,
-> +				"migration/%d",cpu);
-
-This is unnecessary.
-
-Overall, it looks pretty good.
-
-Thanks,
-
+Another note is that these changes will have to go through Al Viro, who
+might have some suggestions on the Right(tm) way to do it.
 
 
 	Pat
 
---===============4600311265357746==
+--===============96514144894623==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============4600311265357746==--
+--===============96514144894623==--
