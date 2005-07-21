@@ -1,14 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFT] solve "swsusp plays yoyo" with disks
-Date: Thu, 21 Jul 2005 21:20:15 +0200
-Message-ID: <20050721192015.GA6367@atrey.karlin.mff.cuni.cz>
-References: <20050705172953.GA18748@elf.ucw.cz>
-	<42DFAD1C.80004@stud.feec.vutbr.cz>
-	<42DFBFA8.5060800@stud.feec.vutbr.cz>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: Re: [PATCH] Workqueue freezer support.
+Date: Thu, 21 Jul 2005 12:42:54 -0700 (PDT)
+Message-ID: <Pine.LNX.4.50.0507211221550.12779-100000@monsoon.he.net>
+References: <1121923059.2936.224.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============76646342536138201=="
+Content-Type: multipart/mixed; boundary="===============4600311265357746=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <42DFBFA8.5060800@stud.feec.vutbr.cz>
+In-Reply-To: <1121923059.2936.224.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,57 +16,125 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
-Cc: B.Zolnierkiewicz@elka.pw.edu.pl, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+To: Nigel Cunningham <ncunningham@cyclades.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============76646342536138201==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-hi!
-
-> >>I'd like to get this tested under as many configurations as
-> >>possible. With this, your hdd should no longer do "yoyo" (spindown,
-> >>spinup, spindown) during suspend...
-> >
-> >
-> >It looks like the patch is now in -mm (I use 2.6.13-rc3-mm1).
-> >But my disks still yoyo during suspend. What more is needed? Some patch 
-> >to ide-disk.c ?
-> 
-> I think I've found the problem.
-> The attached patch stops the disks from spinning down and up on suspend.
-> The patch applies to 2.6.13-rc3-mm1.
-> 
-> Signed-off-by: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
-
-Thanks, applied, I'll eventually propagate it.
-
-							Pavel
-
-> diff -Nurp -X dontdiff.new linux-mm/drivers/ide/ide-io.c linux-mm.mich/drivers/ide/ide-io.c
-> --- linux-mm/drivers/ide/ide-io.c	2005-06-30 01:00:53.000000000 +0200
-> +++ linux-mm.mich/drivers/ide/ide-io.c	2005-07-21 16:59:46.000000000 +0200
-> @@ -150,7 +150,7 @@ static void ide_complete_power_step(ide_
->  
->  	switch (rq->pm->pm_step) {
->  	case ide_pm_flush_cache:	/* Suspend step 1 (flush cache) complete */
-> -		if (rq->pm->pm_state == 4)
-> +		if (rq->pm->pm_state == PM_EVENT_FREEZE)
->  			rq->pm->pm_step = ide_pm_state_completed;
->  		else
->  			rq->pm->pm_step = idedisk_pm_standby;
+--===============4600311265357746==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
--- 
-Boycott Kodak -- for their patent abuse against Java.
 
---===============76646342536138201==
+On Thu, 21 Jul 2005, Nigel Cunningham wrote:
+
+> This patch implements freezer support for workqueues. The current
+> refrigerator implementation makes all workqueues NOFREEZE, regardless of
+> whether they need to be or not.
+
+A few comments..
+
+> Signed-off by: Nigel Cunningham <nigel@suspend2.net>
+>
+>  drivers/acpi/osl.c          |    2 +-
+>  drivers/block/ll_rw_blk.c   |    2 +-
+>  drivers/char/hvc_console.c  |    2 +-
+>  drivers/char/hvcs.c         |    2 +-
+>  drivers/input/serio/serio.c |    2 +-
+>  drivers/md/dm-crypt.c       |    2 +-
+>  drivers/scsi/hosts.c        |    2 +-
+>  drivers/usb/net/pegasus.c   |    2 +-
+
+If you want some practice splitting things up, submit the patches above
+individually to the maintainers o the relevant code once the patches you
+submit below get merged to -mm.
+
+>  include/linux/kthread.h     |   20 ++++++++++++++++++--
+>  include/linux/workqueue.h   |    9 ++++++---
+>  kernel/kmod.c               |    4 ++++
+>  kernel/kthread.c            |   23 ++++++++++++++++++++++-
+>  kernel/sched.c              |    4 ++--
+>  kernel/softirq.c            |    3 +--
+>  kernel/workqueue.c          |   21 ++++++++++++---------
+>  15 files changed, 73 insertions(+), 27 deletions(-)
+
+
+You should make sure that you get an explicit ACK from people (Ingo et al)
+about whether this is an acceptable interface.
+
+> --- 400-workthreads.patch-old/include/linux/kthread.h	2004-11-03 21:51:12.000000000 +1100
+> +++ 400-workthreads.patch-new/include/linux/kthread.h	2005-07-20 15:11:37.000000000 +1000
+> @@ -27,6 +27,14 @@ struct task_struct *kthread_create(int (
+>  				   void *data,
+>  				   const char namefmt[], ...);
+>
+> +struct task_struct *_kthread_create(int (*threadfn)(void *data),
+> +				   void *data,
+> +				   unsigned long freezer_flags,
+> +				   const char namefmt[], ...);
+> +
+
+This should be __kthread_create(...)
+
+> -#define kthread_run(threadfn, data, namefmt, ...)			   \
+> +#define kthread_run(threadfn, data, namefmt, args...)			   \
+>  ({									   \
+>  	struct task_struct *__k						   \
+> -		= kthread_create(threadfn, data, namefmt, ## __VA_ARGS__); \
+> +		= kthread_create(threadfn, data, namefmt, ##args);	   \
+>  	if (!IS_ERR(__k))						   \
+>  		wake_up_process(__k);					   \
+>  	__k;								   \
+>  })
+>
+> +#define kthread_nofreeze_run(threadfn, data, namefmt, args...)		   \
+> +({									   \
+> +	struct task_struct *__k	= kthread_nofreeze_create(threadfn, data,  \
+> +			namefmt, ##args);				   \
+> +	if (!IS_ERR(__k))						   \
+> +		wake_up_process(__k);					   \
+> +	__k;								   \
+> +})
+
+Do these functions need to be inlined?
+
+> @@ -86,6 +87,10 @@ static int kthread(void *_create)
+>  	/* By default we can run anywhere, unlike keventd. */
+>  	set_cpus_allowed(current, CPU_MASK_ALL);
+>
+> +	/* Set our freezer flags */
+> +	current->flags &= ~(PF_SYNCTHREAD | PF_NOFREEZE);
+> +	current->flags |= (create->freezer_flags & PF_NOFREEZE);
+> +
+
+Maybe these should be encapsulated in a helper in include/linux/sched.h
+like some other flags manipulations are?
+
+> diff -ruNp 400-workthreads.patch-old/kernel/sched.c 400-workthreads.patch-new/kernel/sched.c
+> --- 400-workthreads.patch-old/kernel/sched.c	2005-07-21 04:00:02.000000000 +1000
+> +++ 400-workthreads.patch-new/kernel/sched.c	2005-07-21 04:00:19.000000000 +1000
+> @@ -4580,10 +4580,10 @@ static int migration_call(struct notifie
+>
+>  	switch (action) {
+>  	case CPU_UP_PREPARE:
+> -		p = kthread_create(migration_thread, hcpu, "migration/%d",cpu);
+> +		p = kthread_create(migration_thread, hcpu,
+> +				"migration/%d",cpu);
+
+This is unnecessary.
+
+Overall, it looks pretty good.
+
+Thanks,
+
+
+
+	Pat
+
+--===============4600311265357746==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============76646342536138201==--
+--===============4600311265357746==--
