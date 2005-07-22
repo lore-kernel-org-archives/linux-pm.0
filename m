@@ -1,12 +1,12 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [PATCH] Syncthreads support.
-Date: Thu, 21 Jul 2005 13:05:13 -0700 (PDT)
-Message-ID: <Pine.LNX.4.50.0507211254140.12779-100000@monsoon.he.net>
-References: <1121923564.2936.231.camel@localhost>
+From: Nigel Cunningham <ncunningham@cyclades.com>
+Subject: [PATCH] Address BUG: using smp_processor_id() in
+	preemptible [00000001] code
+Date: Fri, 22 Jul 2005 13:59:01 +1000
+Message-ID: <1122004741.3033.49.camel@localhost>
+Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============96514144894623=="
+Content-Type: multipart/mixed; boundary="===============99383816617657939=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1121923564.2936.231.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,59 +16,47 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============96514144894623==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============99383816617657939==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+This patch fixes a warning in the disable_nonboot_cpus call in
+kernel/power/smp.c.
+
+Please apply.
+
+Signed-off by: Nigel Cunningham <nigel@suspend2.net>
+
+ smp.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+diff -ruNp 830-smp_processor_id_warning.patch-old/kernel/power/smp.c 830-smp_processor_id_warning.patch-new/kernel/power/smp.c
+--- 830-smp_processor_id_warning.patch-old/kernel/power/smp.c	2005-07-18 06:37:08.000000000 +1000
++++ 830-smp_processor_id_warning.patch-new/kernel/power/smp.c	2005-07-22 11:09:16.000000000 +1000
+@@ -38,7 +38,7 @@ void disable_nonboot_cpus(void)
+ 		}
+ 		printk("Error taking cpu %d down: %d\n", cpu, error);
+ 	}
+-	BUG_ON(smp_processor_id() != 0);
++	BUG_ON(raw_smp_processor_id() != 0);
+ 	if (error)
+ 		panic("cpus not sleeping");
+ }
+
+-- 
+Evolution.
+Enumerate the requirements.
+Consider the interdependencies.
+Calculate the probabilities.
 
 
-On Thu, 21 Jul 2005, Nigel Cunningham wrote:
-
-> This patch implements a new PF_SYNCTHREAD flag, which allows upcoming
-> the refrigerator implementation to know that a thread is syncing data to
-> disk. This allows the refrigerator to be more reliable, even under heavy
-> load, because it can separate userspace processes that are submitting
-> I/O from those trying to sync it and freezing the former first. We can
-> thus ensure that syncing processes complete their work more quickly and
-> the refrigerator is far less likely to incorrectly give up (thinking a
-> syncing process is completely failing to enter the refrigerator).
-
-I don't have any strong feelings for this, one way or another. It seems
-kinda hacky, and it needs to be discussed publically, and it seems like it
-definitely seems like it doesn't need to go in immediately.
-
-I have just a couple of suggestions below..
-
->  int fsync_super(struct super_block *sb)
->  {
-> +	int ret;
-> +
-> +	/* A safety net. During suspend, we might overwrite
-> +	 * memory containing filesystem info. We don't then
-> +	 * want to sync it to disk. */
-> +	BUG_ON(test_suspend_state(SUSPEND_DISABLE_SYNCING));
-
-Please do not add any new BUG()s. Figure out another way to gracefully
-fail, perhaps some place else.
-
-> +	current->flags |= PF_SYNCTHREAD;
-
-Is all the modification of current->flags safe? It seems like you could be
-pre-empted in the middle and things could get wacky.
-
-Another note is that these changes will have to go through Al Viro, who
-might have some suggestions on the Right(tm) way to do it.
-
-
-	Pat
-
---===============96514144894623==
+--===============99383816617657939==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============96514144894623==--
+--===============99383816617657939==--
