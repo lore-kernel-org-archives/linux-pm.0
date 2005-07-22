@@ -1,68 +1,63 @@
-From: Nigel Cunningham <ncunningham@cyclades.com>
-Subject: Re: [linux-pm] [PATCH] Syncthreads support.
-Date: Fri, 22 Jul 2005 13:10:26 +1000
-Message-ID: <1122001826.3033.25.camel@localhost>
-References: <1121923564.2936.231.camel@localhost>
-	 <20050721153932.GA2005@elf.ucw.cz>
-Reply-To: ncunningham@cyclades.com
+From: "Yu, Luming" <luming.yu@intel.com>
+Subject: RE: Re: OLS meeting with ATI about BIOS & PM
+Date: Fri, 22 Jul 2005 16:14:09 +0800
+Message-ID: <3ACA40606221794F80A5670F0AF15F84041AC1E3@pdsmsx403>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261932AbVGVE6t@vger.kernel.org>
-In-Reply-To: <20050721153932.GA2005@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============4426480753474078=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>, Hui Yu <hyu@ati.com>
+Cc: NORITY@jp.lenovo.com, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+--===============4426480753474078==
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id j6M8EUjA010067
 
-On Fri, 2005-07-22 at 01:39, Pavel Machek wrote:
-> Hi!
-> 
-> > This patch implements a new PF_SYNCTHREAD flag, which allows upcoming
-> > the refrigerator implementation to know that a thread is syncing data to
-> > disk. This allows the refrigerator to be more reliable, even under heavy
-> > load, because it can separate userspace processes that are submitting
-> > I/O from those trying to sync it and freezing the former first. We can
-> > thus ensure that syncing processes complete their work more quickly and
-> > the refrigerator is far less likely to incorrectly give up (thinking a
-> > syncing process is completely failing to enter the refrigerator).
-> 
-> This patch is ****, and pretty intrusive too. Ouch and then it is
-> unneccessary. We have been over this before, and explained to you in
-> person. Greg explained it to you, too. This one is NOT GOING IN. Drop
-> it from your patches, trying to submit it 10 times will not get it
-> accepted.
-> 
-> [For the record, simple solution for this one is 
-> 
-> sys_sync();
-> 
-> and only then start refrigeration].
+Oh, I missed it.  I'm blunt to the time difference.=20
+Do you get some conclusion?
 
-That's not right.
+Thanks
+Luming=20
 
-Greg said he believed the right thing to do was to sync in the kernel,
-but he also said he agreed with you. I thought at the time he was
-confused about who was suggesting what - let's check with him.
+>-----Original Message-----
+>From: linux-pm-bounces@lists.osdl.org=20
+>[mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Pavel Machek
+>Sent: 2005=C4=EA7=D4=C221=C8=D5 23:32
+>To: Hui Yu
+>Cc: Linux-pm mailing list
+>Subject: [linux-pm] Re: OLS meeting with ATI about BIOS & PM
+>
+>Hi!
+>
+>> Tomorrow or Friday? Sounds good to me anyway. Michel and I will be
+>> there.
+>
+>Today, 13:30, basement... works for me.
+>								Pavel
+>
+>--=20
+>teflon -- maybe it is a trademark, but it should not be.
+>
 
-Anyway, we discussed before that sync_sync before starting refrigerating
-is insufficient. Remember that since processes aren't refrigerated yet,
-there is absolutely nothing to stop other processes submitting I/O
-between the two actions and thus making the sync pointless. The sync
-needs to be done after the userspace processes that might submit I/O
-have been frozen, to ensure that all the dirty data is actually synced
-to disk.
 
-Remember also that it is important that we do need to sync all dirty
-buffers. In the case of not resuming, data loss should nil.
+--===============4426480753474078==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
 
-Nigel
--- 
-Evolution.
-Enumerate the requirements.
-Consider the interdependencies.
-Calculate the probabilities.
+--===============4426480753474078==--
