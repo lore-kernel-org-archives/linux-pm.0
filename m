@@ -1,149 +1,66 @@
 From: Nigel Cunningham <ncunningham@cyclades.com>
-Subject: Re: [linux-pm] [PATCH] Workqueue freezer support.
-Date: Fri, 22 Jul 2005 13:02:41 +1000
-Message-ID: <1122001360.3030.17.camel@localhost>
-References: <1121923059.2936.224.camel@localhost>
-	 <Pine.LNX.4.50.0507211221550.12779-100000@monsoon.he.net>
+Subject: Re: [linux-pm] [PATCH] Syncthreads support.
+Date: Fri, 22 Jul 2005 13:10:26 +1000
+Message-ID: <1122001826.3033.25.camel@localhost>
+References: <1121923564.2936.231.camel@localhost>
+	 <20050721153932.GA2005@elf.ucw.cz>
 Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262033AbVGVEtz@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.50.0507211221550.12779-100000@monsoon.he.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261932AbVGVE6t@vger.kernel.org>
+In-Reply-To: <20050721153932.GA2005@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Mochel <mochel@digitalimplant.org>
+To: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Fri, 2005-07-22 at 05:42, Patrick Mochel wrote:
-> On Thu, 21 Jul 2005, Nigel Cunningham wrote:
+On Fri, 2005-07-22 at 01:39, Pavel Machek wrote:
+> Hi!
 > 
-> > This patch implements freezer support for workqueues. The current
-> > refrigerator implementation makes all workqueues NOFREEZE, regardless of
-> > whether they need to be or not.
+> > This patch implements a new PF_SYNCTHREAD flag, which allows upcoming
+> > the refrigerator implementation to know that a thread is syncing data to
+> > disk. This allows the refrigerator to be more reliable, even under heavy
+> > load, because it can separate userspace processes that are submitting
+> > I/O from those trying to sync it and freezing the former first. We can
+> > thus ensure that syncing processes complete their work more quickly and
+> > the refrigerator is far less likely to incorrectly give up (thinking a
+> > syncing process is completely failing to enter the refrigerator).
 > 
-> A few comments..
+> This patch is ****, and pretty intrusive too. Ouch and then it is
+> unneccessary. We have been over this before, and explained to you in
+> person. Greg explained it to you, too. This one is NOT GOING IN. Drop
+> it from your patches, trying to submit it 10 times will not get it
+> accepted.
 > 
-> > Signed-off by: Nigel Cunningham <nigel@suspend2.net>
-> >
-> >  drivers/acpi/osl.c          |    2 +-
-> >  drivers/block/ll_rw_blk.c   |    2 +-
-> >  drivers/char/hvc_console.c  |    2 +-
-> >  drivers/char/hvcs.c         |    2 +-
-> >  drivers/input/serio/serio.c |    2 +-
-> >  drivers/md/dm-crypt.c       |    2 +-
-> >  drivers/scsi/hosts.c        |    2 +-
-> >  drivers/usb/net/pegasus.c   |    2 +-
+> [For the record, simple solution for this one is 
 > 
-> If you want some practice splitting things up, submit the patches above
-> individually to the maintainers o the relevant code once the patches you
-> submit below get merged to -mm.
-
-Ok. Thanks for telling me.
-
-> >  include/linux/kthread.h     |   20 ++++++++++++++++++--
-> >  include/linux/workqueue.h   |    9 ++++++---
-> >  kernel/kmod.c               |    4 ++++
-> >  kernel/kthread.c            |   23 ++++++++++++++++++++++-
-> >  kernel/sched.c              |    4 ++--
-> >  kernel/softirq.c            |    3 +--
-> >  kernel/workqueue.c          |   21 ++++++++++++---------
-> >  15 files changed, 73 insertions(+), 27 deletions(-)
+> sys_sync();
 > 
-> 
-> You should make sure that you get an explicit ACK from people (Ingo et al)
-> about whether this is an acceptable interface.
+> and only then start refrigeration].
 
-Ok. How do I know who to ask? (Who besides Ingo, and could I learn who
-without help - Maintainers?)
+That's not right.
 
-> > --- 400-workthreads.patch-old/include/linux/kthread.h	2004-11-03 21:51:12.000000000 +1100
-> > +++ 400-workthreads.patch-new/include/linux/kthread.h	2005-07-20 15:11:37.000000000 +1000
-> > @@ -27,6 +27,14 @@ struct task_struct *kthread_create(int (
-> >  				   void *data,
-> >  				   const char namefmt[], ...);
-> >
-> > +struct task_struct *_kthread_create(int (*threadfn)(void *data),
-> > +				   void *data,
-> > +				   unsigned long freezer_flags,
-> > +				   const char namefmt[], ...);
-> > +
-> 
-> This should be __kthread_create(...)
+Greg said he believed the right thing to do was to sync in the kernel,
+but he also said he agreed with you. I thought at the time he was
+confused about who was suggesting what - let's check with him.
 
-Ok. Fixed. Is one underscore ever right?
+Anyway, we discussed before that sync_sync before starting refrigerating
+is insufficient. Remember that since processes aren't refrigerated yet,
+there is absolutely nothing to stop other processes submitting I/O
+between the two actions and thus making the sync pointless. The sync
+needs to be done after the userspace processes that might submit I/O
+have been frozen, to ensure that all the dirty data is actually synced
+to disk.
 
-> > -#define kthread_run(threadfn, data, namefmt, ...)			   \
-> > +#define kthread_run(threadfn, data, namefmt, args...)			   \
-> >  ({									   \
-> >  	struct task_struct *__k						   \
-> > -		= kthread_create(threadfn, data, namefmt, ## __VA_ARGS__); \
-> > +		= kthread_create(threadfn, data, namefmt, ##args);	   \
-> >  	if (!IS_ERR(__k))						   \
-> >  		wake_up_process(__k);					   \
-> >  	__k;								   \
-> >  })
-> >
-> > +#define kthread_nofreeze_run(threadfn, data, namefmt, args...)		   \
-> > +({									   \
-> > +	struct task_struct *__k	= kthread_nofreeze_create(threadfn, data,  \
-> > +			namefmt, ##args);				   \
-> > +	if (!IS_ERR(__k))						   \
-> > +		wake_up_process(__k);					   \
-> > +	__k;								   \
-> > +})
-> 
-> Do these functions need to be inlined?
+Remember also that it is important that we do need to sync all dirty
+buffers. In the case of not resuming, data loss should nil.
 
-I tried to find out how to pass the va_list on nicely without using a
-#define, but could find the info. If you're able to tell me, I'll make
-them inline. Perhaps I could also improve the kthread_create call Pavel
-and Ingo commented on.
-
-> > @@ -86,6 +87,10 @@ static int kthread(void *_create)
-> >  	/* By default we can run anywhere, unlike keventd. */
-> >  	set_cpus_allowed(current, CPU_MASK_ALL);
-> >
-> > +	/* Set our freezer flags */
-> > +	current->flags &= ~(PF_SYNCTHREAD | PF_NOFREEZE);
-> > +	current->flags |= (create->freezer_flags & PF_NOFREEZE);
-> > +
-> 
-> Maybe these should be encapsulated in a helper in include/linux/sched.h
-> like some other flags manipulations are?
-
-This would be the only place it's used. Does that matter? (And note from
-the updated patch that the SYNCTHREAD wouldn't be there).
-
-> > diff -ruNp 400-workthreads.patch-old/kernel/sched.c 400-workthreads.patch-new/kernel/sched.c
-> > --- 400-workthreads.patch-old/kernel/sched.c	2005-07-21 04:00:02.000000000 +1000
-> > +++ 400-workthreads.patch-new/kernel/sched.c	2005-07-21 04:00:19.000000000 +1000
-> > @@ -4580,10 +4580,10 @@ static int migration_call(struct notifie
-> >
-> >  	switch (action) {
-> >  	case CPU_UP_PREPARE:
-> > -		p = kthread_create(migration_thread, hcpu, "migration/%d",cpu);
-> > +		p = kthread_create(migration_thread, hcpu,
-> > +				"migration/%d",cpu);
-> 
-> This is unnecessary.
-
-Oops. Comes from adding an extra parameter, fixing line length and then
-removing it. Fixed.
-
-> Overall, it looks pretty good.
-
-Thanks!
+Regards,
 
 Nigel
-
-> Thanks,
-> 
-> 
-> 
-> 	Pat
 -- 
 Evolution.
 Enumerate the requirements.
