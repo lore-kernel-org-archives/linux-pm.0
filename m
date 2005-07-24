@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFT] solve "swsusp plays yoyo" with disks
-Date: Sat, 23 Jul 2005 19:20:28 +0200
-Message-ID: <200507231920.29336.rjw@sisk.pl>
-References: <20050705172953.GA18748@elf.ucw.cz>
-	<42DFBFA8.5060800@stud.feec.vutbr.cz>
-	<20050721192015.GA6367@atrey.karlin.mff.cuni.cz>
+From: <sampsa.fabritius@nokia.com>
+Subject: power management studies
+Date: Sun, 24 Jul 2005 18:36:31 +0300
+Message-ID: <84B4951D219BE54EABDFAA091DC32C989823CB@trebe101.NOE.Nokia.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============60605845272921832=="
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050721192015.GA6367@atrey.karlin.mff.cuni.cz>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,53 +18,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
-Cc: B.Zolnierkiewicz@elka.pw.edu.pl, Michal Schmidt <xschmi00@stud.feec.vutbr.cz>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============60605845272921832==
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 Hi,
 
-On Thursday, 21 of July 2005 21:20, Pavel Machek wrote:
-> hi!
-> 
-> > >>I'd like to get this tested under as many configurations as
-> > >>possible. With this, your hdd should no longer do "yoyo" (spindown,
-> > >>spinup, spindown) during suspend...
-> > >
-> > >
-> > >It looks like the patch is now in -mm (I use 2.6.13-rc3-mm1).
-> > >But my disks still yoyo during suspend. What more is needed? Some patch 
-> > >to ide-disk.c ?
-> > 
-> > I think I've found the problem.
-> > The attached patch stops the disks from spinning down and up on suspend.
-> > The patch applies to 2.6.13-rc3-mm1.
-> > 
-> > Signed-off-by: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
-> 
-> Thanks, applied, I'll eventually propagate it.
+Participants of PM BOF in Ottawa detected that collecting a few references to 
+power management studies and papers would help to continue run time PM work.
+Thus, wanted to send a couple of pointers.
 
-FYI, tested and works (on 2.6.13-rc3). :-)
+1) This is a brief survey that derive system requirements from policy level analysis,
+and eventually maps those requirements to three embedded (SOC) processors.
 
-Greets,
-Rafael
+Towards Energy Aware System Design:
+http://www.nokia.com/nokia/0,,53712,00.html
 
+Please note that survey is build on top of measurements presented on referenced papers.
+You probably find most of them with google.
 
--- 
-- Would you tell me, please, which way I ought to go from here?
-- That depends a good deal on where you want to get to.
-		-- Lewis Carroll "Alice's Adventures in Wonderland"
+2) This power management PhD (Johan Pouwelse) has very wide scope and thus
+it may be good food for thinking process. Some of the concepts are very ambitious.
 
---===============60605845272921832==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Power Management for Portable Devices:
+http://www.st.ewi.tudelft.nl/~pouwelse/
 
+Again, I want to emphasise, please see these as concepts and ideas rather than
+any kind of direct proposal to actually implement all of these ideas.
 
---===============60605845272921832==--
+Anyhow, it's about the time to start peaceful 15 hours journey back to home =)
+
+Greetings,
+	Sampsa
+ 
