@@ -1,15 +1,16 @@
-From: Shaohua Li <shaohua.li@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: sysdev suspend/resume
-Date: Wed, 27 Jul 2005 17:30:10 +0800
-Message-ID: <1122456610.3000.5.camel@linux-hp.sh.intel.com>
+Date: Wed, 27 Jul 2005 11:40:57 +0200
+Message-ID: <20050727094057.GC4270@elf.ucw.cz>
 References: <1122356554.5479.4.camel@linux-hp.sh.intel.com>
 	<20050726101409.GA1950@openzaurus.ucw.cz>
 	<1122454220.7414.3.camel@linux-hp.sh.intel.com>
 	<20050727090748.GB4270@elf.ucw.cz>
+	<1122456610.3000.5.camel@linux-hp.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============12345258049808039=="
+Content-Type: multipart/mixed; boundary="===============77478420659861635=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050727090748.GB4270@elf.ucw.cz>
+In-Reply-To: <1122456610.3000.5.camel@linux-hp.sh.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,233 +20,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
+To: Shaohua Li <shaohua.li@intel.com>
 Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============12345258049808039==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--===============77478420659861635==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi,
-On Wed, 2005-07-27 at 11:07 +0200, Pavel Machek wrote:
-> > > > The return value of sysdev's suspend/resume methods is ignored, is this
-> > > > intended (it should not fail?) or just a bug? I'd like to abort the
-> > > > suspend process if one device fails.
-> > > 
-> > > I guess patch would be accepted... but please make sure you test those
-> > > error paths, and printk name of failing driver.
-> > It's a challenge to me, so many loops :). Below patch is a little ugly,
-> > but should cover all error paths.
-> 
-> It is indeed quite ugly. Could we get SYSDEV_RESUME inline function
-> instead of ugly macro?
-It make senses. Thanks for your comments.
+Hi!
 
-> 
-> > diff -puN drivers/base/sys.c~sysdev drivers/base/sys.c
-> > --- linux-2.6.13-rc3/drivers/base/sys.c~sysdev	2005-07-27 10:49:52.831538832 +0800
-> > +++ linux-2.6.13-rc3-root/drivers/base/sys.c	2005-07-27 16:25:49.154312008 +0800
-> > @@ -288,6 +288,22 @@ void sysdev_shutdown(void)
-> >  	up(&sysdev_drivers_lock);
-> >  }
-> >  
-> > +#define SYSDEV_RESUME(cls, dev, drv)			\
-> > +	/* First, call the class-specific one */ 	\
-> > +	if (cls->resume)				\
-> > +		cls->resume(dev);			\
-> > +							\
-> > +	/* Call auxillary drivers next. */ 		\
-> > +	list_for_each_entry(drv, &cls->drivers, entry) {\
-> > +		if (drv->resume) 			\
-> > +			drv->resume(dev); 		\
-> > +	}						\
-> > +							\
-> > +	/* Call global drivers. */			\
-> > +	list_for_each_entry(drv, &sysdev_drivers, entry) {\
-> > +		if (drv->resume)			\
-> > +			drv->resume(dev);		\
-> > +	}
-> 
-> Are you sure you are resuming already-resumed devices?
-What's your point? if sysdev_suspend failed, sysdev_resume isn't called,
-so it will not be resumed twice.
+> > > +#define SYSDEV_RESUME(cls, dev, drv)			\
+> > > +	/* First, call the class-specific one */ 	\
+> > > +	if (cls->resume)				\
+> > > +		cls->resume(dev);			\
+> > > +							\
+> > > +	/* Call auxillary drivers next. */ 		\
+> > > +	list_for_each_entry(drv, &cls->drivers, entry) {\
+> > > +		if (drv->resume) 			\
+> > > +			drv->resume(dev); 		\
+> > > +	}						\
+> > > +							\
+> > > +	/* Call global drivers. */			\
+> > > +	list_for_each_entry(drv, &sysdev_drivers, entry) {\
+> > > +		if (drv->resume)			\
+> > > +			drv->resume(dev);		\
+> > > +	}
+> > 
+> > Are you sure you are resuming already-resumed devices?
+> What's your point? if sysdev_suspend failed, sysdev_resume isn't called,
+> so it will not be resumed twice.
 
-Thanks,
-Shaohua
+Probably nothing then, sorry for noise.
+									Pavel
 
+-- 
+teflon -- maybe it is a trademark, but it should not be.
 
-Signed-off-by: Shaohua Li<shaohua.li@intel.com>
-
----
-
- linux-2.6.13-rc3-root/drivers/base/sys.c |  107 ++++++++++++++++++++++++-------
- 1 files changed, 83 insertions(+), 24 deletions(-)
-
-diff -puN drivers/base/sys.c~sysdev drivers/base/sys.c
---- linux-2.6.13-rc3/drivers/base/sys.c~sysdev	2005-07-27 10:49:52.831538832 +0800
-+++ linux-2.6.13-rc3-root/drivers/base/sys.c	2005-07-27 17:22:57.447132280 +0800
-@@ -288,6 +288,25 @@ void sysdev_shutdown(void)
- 	up(&sysdev_drivers_lock);
- }
- 
-+static void inline do_sysdev_resume(struct sysdev_class *cls,
-+	struct sys_device *dev, struct sysdev_driver *drv)
-+{
-+	/* First, call the class-specific one */
-+	if (cls->resume)
-+		cls->resume(dev);
-+
-+	/* Call auxillary drivers next. */
-+	list_for_each_entry(drv, &cls->drivers, entry) {
-+		if (drv->resume)
-+			drv->resume(dev);
-+	}
-+
-+	/* Call global drivers. */
-+	list_for_each_entry(drv, &sysdev_drivers, entry) {
-+		if (drv->resume)
-+			drv->resume(dev);
-+	}
-+}
- 
- /**
-  *	sysdev_suspend - Suspend all system devices.
-@@ -305,38 +324,93 @@ void sysdev_shutdown(void)
- int sysdev_suspend(pm_message_t state)
- {
- 	struct sysdev_class * cls;
-+	struct sys_device *sysdev, *err_dev;
-+	struct sysdev_driver *drv, *err_drv;
-+	int ret;
- 
- 	pr_debug("Suspending System Devices\n");
- 
- 	list_for_each_entry_reverse(cls, &system_subsys.kset.list,
- 				    kset.kobj.entry) {
--		struct sys_device * sysdev;
- 
- 		pr_debug("Suspending type '%s':\n",
- 			 kobject_name(&cls->kset.kobj));
- 
- 		list_for_each_entry(sysdev, &cls->kset.list, kobj.entry) {
--			struct sysdev_driver * drv;
- 			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
- 
- 			/* Call global drivers first. */
- 			list_for_each_entry(drv, &sysdev_drivers, entry) {
--				if (drv->suspend)
--					drv->suspend(sysdev, state);
-+				if (drv->suspend) {
-+					ret = drv->suspend(sysdev, state);
-+					if (ret)
-+						goto gbl_driver;
-+				}
- 			}
- 
- 			/* Call auxillary drivers next. */
- 			list_for_each_entry(drv, &cls->drivers, entry) {
--				if (drv->suspend)
--					drv->suspend(sysdev, state);
-+				if (drv->suspend) {
-+					ret = drv->suspend(sysdev, state);
-+					if (ret)
-+						goto aux_driver;
-+				}
- 			}
- 
- 			/* Now call the generic one */
--			if (cls->suspend)
--				cls->suspend(sysdev, state);
-+			if (cls->suspend) {
-+				ret = cls->suspend(sysdev, state);
-+				if (ret)
-+					goto cls_driver;
-+			}
- 		}
- 	}
- 	return 0;
-+	/* resume current sysdev */
-+cls_driver:
-+	drv = NULL;
-+	printk(KERN_ERR "Class suspend failed for %s\n",
-+		kobject_name(&sysdev->kobj));
-+
-+aux_driver:
-+	if (drv)
-+		printk(KERN_ERR "Class driver suspend failed for %s\n",
-+				kobject_name(&sysdev->kobj));
-+	list_for_each_entry(err_drv, &cls->drivers, entry) {
-+		if (err_drv == drv)
-+			break;
-+		if (err_drv->resume)
-+			err_drv->resume(sysdev);
-+	}
-+	drv = NULL;
-+
-+gbl_driver:
-+	if (drv)
-+		printk(KERN_ERR "sysdev driver suspend failed for %s\n",
-+				kobject_name(&sysdev->kobj));
-+	list_for_each_entry(err_drv, &sysdev_drivers, entry) {
-+		if (err_drv == drv)
-+			break;
-+		if (err_drv->resume)
-+			err_drv->resume(sysdev);
-+	}
-+	/* resume other sysdevs in current class */
-+	list_for_each_entry(err_dev, &cls->kset.list, kobj.entry) {
-+		if (err_dev == sysdev)
-+			break;
-+		pr_debug(" %s\n", kobject_name(&err_dev->kobj));
-+		do_sysdev_resume(cls, err_dev, err_drv);
-+	}
-+
-+	/* resume other classes */
-+	list_for_each_entry_continue(cls, &system_subsys.kset.list,
-+					kset.kobj.entry) {
-+		list_for_each_entry(err_dev, &cls->kset.list, kobj.entry) {
-+			pr_debug(" %s\n", kobject_name(&err_dev->kobj));
-+			do_sysdev_resume(cls, err_dev, err_drv);
-+		}
-+	}
-+	return ret;
- }
- 
- 
-@@ -365,22 +439,7 @@ int sysdev_resume(void)
- 			struct sysdev_driver * drv;
- 			pr_debug(" %s\n", kobject_name(&sysdev->kobj));
- 
--			/* First, call the class-specific one */
--			if (cls->resume)
--				cls->resume(sysdev);
--
--			/* Call auxillary drivers next. */
--			list_for_each_entry(drv, &cls->drivers, entry) {
--				if (drv->resume)
--					drv->resume(sysdev);
--			}
--
--			/* Call global drivers. */
--			list_for_each_entry(drv, &sysdev_drivers, entry) {
--				if (drv->resume)
--					drv->resume(sysdev);
--			}
--
-+			do_sysdev_resume(cls, sysdev, drv);
- 		}
- 	}
- 	return 0;
-_
-
-
-
---===============12345258049808039==
+--===============77478420659861635==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============12345258049808039==--
+--===============77478420659861635==--
