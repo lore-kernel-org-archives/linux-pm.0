@@ -1,11 +1,16 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: Asus L5d S4 resume fix
-Date: Wed, 27 Jul 2005 21:37:38 -0400
-Message-ID: <F7DC2337C7631D4386A2DF6E8FB22B300428CB02@hdsmsx401.amr.corp.intel.com>
+From: david-b@pacbell.net
+Subject: Re: Re: [PATCH 1/23] Add missing
+	device_suspsend(PMSG_FREEZE) calls.
+Date: Wed, 27 Jul 2005 19:21:51 -0700
+Message-ID: <20050728022151.3B048DAA01@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+References: <m1mzo9eb8q.fsf@ebiederm.dsl.xmission.com>
+	<m1iryxeb4t.fsf@ebiederm.dsl.xmission.com>
+	<1122400462.4382.13.camel@localhost>
+	<m1k6jb7myp.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============87875826285382486=="
+Content-Type: multipart/mixed; boundary="===============82335900871963641=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <m1k6jb7myp.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,30 +20,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.osdl.org
+To: ncunningham@cyclades.com, ebiederm@xmission.com
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============87875826285382486==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8bit
+--===============82335900871963641==
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-Pavel,
-shall I push this fix to Linus for 2.6.13, or are you already?
+> And there is of course the puzzle of why there exists simultaneously
+> driver shutdown() and suspend(PMSG_FREEZE) methods as I believed they
+> are defined to do exactly the same thing.
 
-thanks,
--Len
+No puzzle; that's not how they're defined.  Both of them cause the
+device to quiesce that device's activity.  But:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=4416
+ - shutdown() is a "dirty shutdown OK" heads-up for some level
+   of restart/reboot; hardware will be completely re-initialized
+   later, normally with hardware level resets and OS rebooting.
+
+ - freeze() is a "clean shutdown only" that normally sees hardware
+   state preserved, and is followed by suspend() or resume().
+
+Or so I had understood.  That does suggest why having FREEZE in the
+reboot path could be trouble:  you could be rebooting because that
+hardware won't do a clean shutdown!
+
+- Dave
 
 
---===============87875826285382486==
+--===============82335900871963641==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============87875826285382486==--
+--===============82335900871963641==--
