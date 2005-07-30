@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH] swsusp: simpler calculation of number of pages
 	in PBE list
-Date: Sat, 30 Jul 2005 15:16:31 +0200
-Message-ID: <200507301516.32003.rjw@sisk.pl>
+Date: Sat, 30 Jul 2005 15:13:56 +0200
+Message-ID: <20050730131356.GE1830@elf.ucw.cz>
 References: <Pine.LNX.4.44L0.0507292126390.16749-100000@netrider.rowland.org>
+	<200507301516.32003.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============044709697217943711=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0507292126390.16749-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200507301516.32003.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,67 +18,50 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.osdl.org, Michal Schmidt <xschmi00@stud.feec.vutbr.cz>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 30 of July 2005 03:35, Alan Stern wrote:
-> On Fri, 29 Jul 2005, Michal Schmidt wrote:
-> 
-> > Rafael J. Wysocki wrote:
-> > > On Friday, 29 of July 2005 21:46, Michal Schmidt wrote:
-> > > 
-> > >>The function calc_nr uses an iterative algorithm to calculate the number 
-> > >>of pages needed for the image and the pagedir. Exactly the same result 
-> > >>can be obtained with a one-line expression.
-> > > 
-> > > 
-> > > Could you please post the proof?
-> > > 
-> > > Rafael
+--===============044709697217943711==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi!
+
+> > 	px >= n + x
 > > 
-> > OK, attached is a proof-by-brute-force program. It compares the results 
-> > of the original function and the simplified one.
+> > or
+> > 
+> > 	(p-1)x >= n
+> > 
+> > or
+> > 
+> > 	x >= n / (p-1).
+> > 
+> > The obvious solution is
+> > 
+> > 	x = ceiling(n / (p-1)),
+> > 
+> > so calc_nr should return n + ceiling(n / (p-1)), which is exactly what 
+> > Michal's patch computes.
 > 
-> Here's a more general proof.
+> Nice. :-)
 > 
-> As I understand it, calc_nr is given nr_copy, the number of data pages
-> that need to be written out, and it has to return the number of pages
-> needed to hold the image data plus a bunch of PBE pagedir indexes, where
-> each page gets one index (and pages containing PBEs need their own indexes
-> as well).
-> 
-> For brevity, let n = nr_copy, let p = PBES_PER_PAGE, and let x be the 
-> number of pagdir pages needed.  Since each page can hold p PBEs, there 
-> will be room to store px PBEs.  The total number of pages is n + x, so 
-> the routine needs to find the smallest value of x for which
-> 
-> 	px >= n + x
-> 
-> or
-> 
-> 	(p-1)x >= n
-> 
-> or
-> 
-> 	x >= n / (p-1).
-> 
-> The obvious solution is
-> 
-> 	x = ceiling(n / (p-1)),
-> 
-> so calc_nr should return n + ceiling(n / (p-1)), which is exactly what 
-> Michal's patch computes.
+> Could we perhaps add your proof to the Michal's patch as a comment,
+> for reference?
 
-Nice. :-)
-
-Could we perhaps add your proof to the Michal's patch as a comment,
-for reference?
-
-Rafael
-
-
+No, thanks. It only proves that it is equivalent to old code, but says
+nothing about quality of code, and we really do not want to keep old
+code around.
+								Pavel
 -- 
-- Would you tell me, please, which way I ought to go from here?
-- That depends a good deal on where you want to get to.
-		-- Lewis Carroll "Alice's Adventures in Wonderland"
+teflon -- maybe it is a trademark, but it should not be.
+
+--===============044709697217943711==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============044709697217943711==--
