@@ -1,12 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] swsusp: simpler calculation of number of pages
-	in PBE list
-Date: Fri, 29 Jul 2005 23:53:38 +0200
-Message-ID: <200507292353.39282.rjw@sisk.pl>
-References: <42EA87A0.908@stud.feec.vutbr.cz> <200507292243.28276.rjw@sisk.pl>
-	<42EA9C38.90905@stud.feec.vutbr.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] swsusp: simpler calculation of number of
+	pages in PBE list
+Date: Fri, 29 Jul 2005 21:35:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0507292126390.16749-100000@netrider.rowland.org>
+References: <42EA9C38.90905@stud.feec.vutbr.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============96167922699261599=="
+Content-Type: multipart/mixed; boundary="===============90403795773266515=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <42EA9C38.90905@stud.feec.vutbr.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -22,13 +21,11 @@ To: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
 Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============96167922699261599==
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--===============90403795773266515==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Friday, 29 of July 2005 23:14, Michal Schmidt wrote:
+On Fri, 29 Jul 2005, Michal Schmidt wrote:
+
 > Rafael J. Wysocki wrote:
 > > On Friday, 29 of July 2005 21:46, Michal Schmidt wrote:
 > > 
@@ -43,55 +40,45 @@ On Friday, 29 of July 2005 23:14, Michal Schmidt wrote:
 > 
 > OK, attached is a proof-by-brute-force program. It compares the results 
 > of the original function and the simplified one.
-> 
-> This is its output:
-> 
-> $ ./calc_nr2
-> checked 0 ...
-> checked 100000000 ...
-> checked 200000000 ...
-> checked 300000000 ...
-> checked 400000000 ...
-> checked 500000000 ...
-> checked 600000000 ...
-> checked 700000000 ...
-> checked 800000000 ...
-> checked 900000000 ...
-> checked 1000000000 ...
-> checked 1100000000 ...
-> checked 1200000000 ...
-> checked 1300000000 ...
-> checked 1400000000 ...
-> checked 1500000000 ...
-> checked 1600000000 ...
-> checked 1700000000 ...
-> checked 1800000000 ...
-> checked 1900000000 ...
-> checked 2000000000 ...
-> checked 2100000000 ...
-> First difference at 2130706433:  -2147483646 x -2147483647
-> 
-> It means that the two functions give the same results for sensible 
-> values of the input argument.
-> They results only differ when they overflow into negative values. At 
-> this point both of the results are useless.
 
-Thanks, fine. :-)
+Here's a more general proof.
 
-Greets,
-Rafael
+As I understand it, calc_nr is given nr_copy, the number of data pages
+that need to be written out, and it has to return the number of pages
+needed to hold the image data plus a bunch of PBE pagedir indexes, where
+each page gets one index (and pages containing PBEs need their own indexes
+as well).
+
+For brevity, let n = nr_copy, let p = PBES_PER_PAGE, and let x be the 
+number of pagdir pages needed.  Since each page can hold p PBEs, there 
+will be room to store px PBEs.  The total number of pages is n + x, so 
+the routine needs to find the smallest value of x for which
+
+	px >= n + x
+
+or
+
+	(p-1)x >= n
+
+or
+
+	x >= n / (p-1).
+
+The obvious solution is
+
+	x = ceiling(n / (p-1)),
+
+so calc_nr should return n + ceiling(n / (p-1)), which is exactly what 
+Michal's patch computes.
+
+Alan Stern
 
 
--- 
-- Would you tell me, please, which way I ought to go from here?
-- That depends a good deal on where you want to get to.
-		-- Lewis Carroll "Alice's Adventures in Wonderland"
-
---===============96167922699261599==
+--===============90403795773266515==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============96167922699261599==--
+--===============90403795773266515==--
