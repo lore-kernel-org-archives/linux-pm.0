@@ -1,22 +1,12 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [patch 2.6.13-rc3] pci: restore BAR values after
-	D3hot->D0 for devices that need it
-Date: Sun, 31 Jul 2005 20:36:53 +0100
-Message-ID: <20050731193653.GA4501@linux-mips.org>
-References: <20050708095104.A612@den.park.msu.ru>
-	<20050707.233530.85417983.davem@davemloft.net>
-	<20050708110358.A8491@jurassic.park.msu.ru>
-	<20050708.003333.28789082.davem@davemloft.net>
-	<20050708122043.A8779@jurassic.park.msu.ru>
-	<20050708183452.GB13445@tuxdriver.com>
-	<20050726234934.GA6584@kroah.com>
-	<20050727013601.GA13958@tuxdriver.com>
-	<20050727141202.GA22686@tuxdriver.com>
-	<20050727141942.GB22686@tuxdriver.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH]Trival patch for swsusp
+Date: Mon, 1 Aug 2005 09:07:19 +0200
+Message-ID: <20050801070719.GH27580@elf.ucw.cz>
+References: <1122871734.8216.4.camel@linux-hp.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============50746720789526334=="
+Content-Type: multipart/mixed; boundary="===============4252401722693917=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050727141942.GB22686@tuxdriver.com>
+In-Reply-To: <1122871734.8216.4.camel@linux-hp.sh.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,44 +16,85 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, "David S. Miller" <davem@davemloft.net>, rmk+lkml@arm.linux.org.uk, matthew@wil.cx, grundler@parisc-linux.org, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, ambx1@neo.rr.com
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============50746720789526334==
+--===============4252401722693917==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Wed, Jul 27, 2005 at 10:19:44AM -0400, John W. Linville wrote:
+Hi!
 
-> Some PCI devices (e.g. 3c905B, 3c556B) lose all configuration
-> (including BARs) when transitioning from D3hot->D0.  This leaves such
-> a device in an inaccessible state.  The patch below causes the BARs
-> to be restored when enabling such a device, so that its driver will
-> be able to access it.
-> 
-> The patch also adds pci_restore_bars as a new global symbol, and adds a
-> correpsonding EXPORT_SYMBOL_GPL for that.
-> 
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> A trival patch for swsusp.
+
+Aha, it is trying to protect swsusp_resume_device from two users
+banging  it from userspace at the same time. Ok, altrough changelog
+might be better. ACK. Will you push it or do you want me to?
+
+								Pavel
+
+> Signed-off-by: Shaohua Li<shaohua.li@intel.com>
 > ---
-> Some firmware (e.g. Thinkpad T21) leaves devices in D3hot after a
-> (re)boot.  Most drivers call pci_enable_device very early, so devices
-> left in D3hot that lose configuration during the D3hot->D0 transition
-> will be inaccessible to their drivers.
+> 
+>  linux-2.6.13-rc4-root/kernel/power/disk.c |   10 +++++++++-
+>  1 files changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff -puN kernel/power/disk.c~swsusp-trival kernel/power/disk.c
+> --- linux-2.6.13-rc4/kernel/power/disk.c~swsusp-trival	2005-08-01 11:02:47.706757448 +0800
+> +++ linux-2.6.13-rc4-root/kernel/power/disk.c	2005-08-01 11:11:13.363885880 +0800
+> @@ -233,9 +233,12 @@ static int software_resume(void)
+>  {
+>  	int error;
+>  
+> +	down(&pm_sem);
+>  	if (!swsusp_resume_device) {
+> -		if (!strlen(resume_file))
+> +		if (!strlen(resume_file)) {
+> +			up(&pm_sem);
+>  			return -ENOENT;
+> +		}
+>  		swsusp_resume_device = name_to_dev_t(resume_file);
+>  		pr_debug("swsusp: Resume From Partition %s\n", resume_file);
+>  	} else {
+> @@ -248,6 +251,7 @@ static int software_resume(void)
+>  		 * FIXME: If noresume is specified, we need to find the partition
+>  		 * and reset it back to normal swap space.
+>  		 */
+> +		up(&pm_sem);
+>  		return 0;
+>  	}
+>  
+> @@ -284,6 +288,8 @@ static int software_resume(void)
+>   Cleanup:
+>  	unprepare_processes();
+>   Done:
+> +	/* For success case, the suspend path will release the lock */
+> +	up(&pm_sem);
+>  	pr_debug("PM: Resume from disk failed.\n");
+>  	return 0;
+>  }
+> @@ -390,7 +396,9 @@ static ssize_t resume_store(struct subsy
+>  	if (sscanf(buf, "%u:%u", &maj, &min) == 2) {
+>  		res = MKDEV(maj,min);
+>  		if (maj == MAJOR(res) && min == MINOR(res)) {
+> +			down(&pm_sem);
+>  			swsusp_resume_device = res;
+> +			up(&pm_sem);
+>  			printk("Attempting manual resume\n");
+>  			noresume = 0;
+>  			software_resume();
+> _
+> 
 
-Tested with the 3com 3c556B Hurricane mini-PCI card in the IBM A21P.  Without
-this patch the 3c59x driver has not been able to read the MAC address of
-the card's EEPROM with ACPI enabled, now it works with and without ACPI
-support.  This patch should settle at least some of the issues in
-http://bugzilla.kernel.org/show_bug.cgi?id=1188.
+-- 
+if you have sharp zaurus hardware you don't need... you know my address
 
-  Ralf
-
---===============50746720789526334==
+--===============4252401722693917==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============50746720789526334==--
+--===============4252401722693917==--
