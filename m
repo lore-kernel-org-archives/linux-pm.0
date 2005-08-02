@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Toward runtime power management in Linux
-Date: Mon, 1 Aug 2005 11:23:10 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0508011119080.4961-100000@iolanthe.rowland.org>
-References: <20050801151023.GA12097@cosmic.amd.com>
+Subject: Re: Toward runtime power management in Linux
+Date: Tue, 2 Aug 2005 10:35:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0508021018440.4931-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.50.0508012316380.2764-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============034303735940496516=="
+Content-Type: multipart/mixed; boundary="===============93507733801138926=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050801151023.GA12097@cosmic.amd.com>
+In-Reply-To: <Pine.LNX.4.50.0508012316380.2764-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,46 +16,71 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: linux-pm@lists.osdl.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============034303735940496516==
+--===============93507733801138926==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Mon, 1 Aug 2005, Jordan Crouse wrote:
+On Mon, 1 Aug 2005, Patrick Mochel wrote:
 
-> While I don't agree that it will be a horrible drain on performance, I do
-> see a large potential for abuse with a big kernel thread.  Things like the
-> page-flush thread are well known and (hopefully) optimized entities -
-> the RTPM thread will have to depend on hundreds of driver writers to be kind
-> to not suck time and resources from the system.  About the time that somebody
-> puts a large udelay into their AC97 driver to turn off the DAC, then I'm sure
-> we will question our motives in this regard.
+> > I agree that a parent may have to cope with situations where two children
+> > are trying to change state at the same time.  struct device->semaphore
+> > should help there.  This doesn't affect what I wrote, however.  Link-state
+> > changes don't involve races, because a link state describes the
+> > connection between one specific parent and one specific child.  If two
+> > different links change state at the same time, that's not a race.
+> 
+> For two children changing state at the same time, it is not a race. But,
+> there could be potentially racy conditions when notifying the parent.
+> Maybe. As I think about it more, I'm not sure it's possible to get mixed
+> up, since there should always be _some_ delay between a parent receiving a
+> notification that a child has suspended and the parent actually suspending
+> itself.
 
-Hmmm...  A large delay in a suspend pathway will cause problems no matter 
-how it gets invoked, right?  If we have a separate kernel thread for RTPM, 
-then at least the only things affected will be other RTPM activities.  
-Whereas if we use keventd instead to provide a process context, lots of 
-other things would be affected as well.
+This is why we want the driver to lock the parent before notifying it.  
+And since the driver will already be holding the child's lock, this is a 
+case where we need to acquire locks in the wrong order (going up the 
+tree).
 
-> That said, I think I tend to favor the big kernel thread, or at least timeout
-> threads on a bus level.  The single entity handling the idle math timeout
-> would facilitate future issues such as priority in handling idle timeouts 
-> (do we address certain buses/devices before others, for example), plus it
-> would help centralize the functionality, and make it easier to control with
-> any future power management policy concepts.
+> > Me neither.  In fact, I would go so far as to say that this is the main
+> > impediment to RTPM implementations at the moment.  If I knew the answer to
+> > the locking-order problem, I could fix up the USB RTPM code right now.
+> 
+> What exactly is the impediment? The locking constraints?
 
-Those are good ideas.
+Yes.  In a separate message you worried about what happens when there are 
+multiple parents.  I don't see that being a problem here, because for 
+power-state notifications we will only need to lock one parent at a time:
+the one currently being notified.
+
+Right now I'm leaning toward a solution that explicitly allows acquiring
+locks in either order (up or down), with the proviso that a process trying
+to lock upward will lose if another process is trying to lock the same
+devices downward.  That is, if A > B, P1 has locked A, P2 has locked B,
+and P2 is trying to lock A while P1 is trying to lock B, then P2's locking
+attempt will fail rather than block.  That should be sufficient to avoid 
+deadlock.
+
+I think this is the sort of behavior we want to see.  Lock acquisition
+going down the tree tends to be for more important reasons, like unbinding
+drivers and unregistering devices.  Lock acquisition going up tends to be
+for less important things (like RTPM) which will usually be made
+irrelevant by the downward-going process anyhow.  After all, there's no
+point having a thread trying to change a power state block another thread
+that wants to unregister the device!
+
+Now I just need to come up with a clean way to implement it...
 
 Alan Stern
 
 
---===============034303735940496516==
+--===============93507733801138926==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============034303735940496516==--
+--===============93507733801138926==--
