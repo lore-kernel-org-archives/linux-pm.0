@@ -1,22 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [patch 2.6.13-rc3] pci: restore BAR values after
-	D3hot->D0 for devices that need it
-Date: Tue, 2 Aug 2005 10:31:46 -0700
-Message-ID: <20050802173146.GA1799@kroah.com>
-References: <20050707.233530.85417983.davem@davemloft.net>
-	<20050708110358.A8491@jurassic.park.msu.ru>
-	<20050708.003333.28789082.davem@davemloft.net>
-	<20050708122043.A8779@jurassic.park.msu.ru>
-	<20050708183452.GB13445@tuxdriver.com>
-	<20050726234934.GA6584@kroah.com>
-	<20050727013601.GA13958@tuxdriver.com>
-	<20050727141202.GA22686@tuxdriver.com>
-	<20050727141942.GB22686@tuxdriver.com>
-	<20050731193653.GA4501@linux-mips.org>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: Toward runtime power management in Linux
+Date: Tue, 02 Aug 2005 10:45:29 -0700
+Message-ID: <42EFB139.3080406@am.sony.com>
+References: <Pine.LNX.4.44L0.0507302219250.13423-100000@netrider.rowland.org>
+	<Pine.LNX.4.50.0508011712220.2764-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============040073160875496061=="
+Content-Type: multipart/mixed; boundary="===============68860964695467897=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050731193653.GA4501@linux-mips.org>
+In-Reply-To: <Pine.LNX.4.50.0508011712220.2764-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,50 +17,84 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: rmk+lkml@arm.linux.org.uk, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, grundler@parisc-linux.org, matthew@wil.cx, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============040073160875496061==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============68860964695467897==
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Sun, Jul 31, 2005 at 08:36:53PM +0100, Ralf Baechle wrote:
-> On Wed, Jul 27, 2005 at 10:19:44AM -0400, John W. Linville wrote:
+Patrick Mochel wrote:
+> - Automatic (or Dynamic) Suspend
 > 
-> > Some PCI devices (e.g. 3c905B, 3c556B) lose all configuration
-> > (including BARs) when transitioning from D3hot->D0.  This leaves such
-> > a device in an inaccessible state.  The patch below causes the BARs
-> > to be restored when enabling such a device, so that its driver will
-> > be able to access it.
-> > 
-> > The patch also adds pci_restore_bars as a new global symbol, and adds a
-> > correpsonding EXPORT_SYMBOL_GPL for that.
-> > 
-> > Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> > ---
-> > Some firmware (e.g. Thinkpad T21) leaves devices in D3hot after a
-> > (re)boot.  Most drivers call pci_enable_device very early, so devices
-> > left in D3hot that lose configuration during the D3hot->D0 transition
-> > will be inaccessible to their drivers.
+>   This is where a device will enter a low power state after a certain
+>   amount of time has elapsed without any activity.
 > 
-> Tested with the 3com 3c556B Hurricane mini-PCI card in the IBM A21P.  Without
-> this patch the 3c59x driver has not been able to read the MAC address of
-> the card's EEPROM with ACPI enabled, now it works with and without ACPI
-> support.  This patch should settle at least some of the issues in
-> http://bugzilla.kernel.org/show_bug.cgi?id=1188.
+>   The amount of time should be configurable on a per-device basis through
+>   a sysfs interface.
+> 
+>   What defines "inactivity" is driver-dependent, and we expect to be
+>   class-dependent (some classes may define inactivity as the device not
+>   being opened; others may define it as having no read()/write() calls;
+>   still others may define it as not having any network packets besides
+>   ARP requests; you get the idea..) IOW, it doesn't matter to the core.
+> 
+>   The device should enter a low-power state that it supports. It doesn't
+>   matter what state this is, and it's debatable whether or not it should
+>   be exported/configurable via sysfs. (It's possible that a userspace-
+>   based policy may wish to adjust this based on its extra knowledge about
+>   system features/bugs, or based on the desired latency/consumption
+>   tradeoff for the particular system or configuration (plugged, unplugged,
+>   etc).
+>   The device must be powered back on when a new request comes in. Again,
+>   whether this is on open(), read(), or socket() is up to the class and
+>   the drivers of that class.
+> 
+> - Directed Suspend
+> 
+>   This where a user or an application specifies a device to enter a lower
+>   power state.
+> 
+>   The states that a device exports (allows to be set) should be exported.
+>   The application should specify which state to enter.
+> 
+>   By default, the device may not respond to I/O requests. There must be a
+>   flag exported to control this.
+> 
+> - Performance
+> 
+>   (This was not covered in detail, but based on the specified interface
+>   above, it's pretty easy.)
+> 
+>   The states a device (and its driver) support should be exported via
+>   sysfs.
+> 
+>   A user or application specifies which state to enter.
+> 
+>   This may turn on/off different functional components of the device. The
+>   drivers need to be prepared to handle that.
+> 
 
-Thanks for testing.  I'm still going to hold off sending this in for
-2.6.13 and wait for 2.6.14, unless people really think it should go in
-now.
+As you hint on, there is a question of the interface between a policy 
+manager and the devices.  Many embedded devices need to aggressively manage 
+power, so need to have an interface that allows device specific monitoring 
+and control, yet for an average system a more generic policy manager included 
+in a vendor's distribution could provide usable PM on a range of systems 
+through a generic interface.
 
-greg k-h
+So a question is how to support this.  I suppose the PM system could allow 
+both system specific interfaces and a 'generic standard' interface to be 
+exported, with some mapping between.
 
---===============040073160875496061==
+-Geoff
+
+
+--===============68860964695467897==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============040073160875496061==--
+--===============68860964695467897==--
