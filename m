@@ -1,14 +1,10 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [PATCH] Workqueue freezer support.
-Date: Fri, 5 Aug 2005 22:06:49 -0700 (PDT)
-Message-ID: <Pine.LNX.4.50.0508052148280.19501-100000@monsoon.he.net>
-References: <1121923059.2936.224.camel@localhost>
-	<Pine.LNX.4.50.0507211221550.12779-100000@monsoon.he.net>
-	<1123243967.3266.2.camel@localhost>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Runtime PM and device locking
+Date: Sat, 6 Aug 2005 15:28:09 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0508061527220.5101-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============58495856750096298=="
+Content-Type: multipart/mixed; boundary="===============66789008369642744=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1123243967.3266.2.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,92 +14,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Greg KH <greg@kroah.com>, Patrick Mochel <mochel@digitalimplant.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============58495856750096298==
+--===============66789008369642744==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
+Pat:
 
-On Fri, 5 Aug 2005, Nigel Cunningham wrote:
+After considerable thought, this is the only way I can figure out to
+handle device locking while doing runtime PM (RTPM).
 
-> Hi.
->
-> I finally found some time to finish this off. I don't really like the
-> end result - the macros looked clearer to me - but here goes. If it
-> looks okay, I'll seek sign offs from each of the affected driver
-> maintainers and from Ingo. Anyone else?
+Brief recap: To avoid races, the RTPM code in a driver will need to
+lock the device while it does its work.  The locking-order
+requirement for dev->sem is that locks can only be acquired going
+_down_ the device tree: a thread that owns a child's lock may not try
+to lock the parent.  However RTPM involves notifications that go _up_
+the tree.  This makes it impossible to acquire the locks we need.
 
-What are your feelings about this: http://lwn.net/Articles/145417/ ?
+There doesn't appear to be any way to make this work as stated.  So
+instead, we add a second semaphore to struct device: dev->power_sem.
+The rule for locking is that power_sem's can only be acquired going
+_up_ the power DAG.  In addition, if a thread holds a device's
+power_sem then it may not try to lock any device's regular semaphore.
+(That is, first lock dev->sem, then lock dev->power_sem, then go up
+the DAG only acquiring power_sem's.)
 
-It seems like a cleaner way to do things. How would these patches change
-if that were merged?
+If a driver needs to prevent power changes while it's doing some other
+work, it must lock dev->power_sem.  That's not so bad.  However it
+must release power_sem before doing anything that would affect the
+device's children.  It can safely hold dev->sem the whole time.
+However an RTPM notification routine can never acquire dev->sem.
 
-Concerning the patch specifically:
+The lack of full synchronization between RTPM notifications and other
+activities means we need a few special precautions.  In particular, we
+have to worry about a notification racing with an unbind.  To prevent
+such races, we will need to add to struct device a field that
+indicates the condition of driver binding: UNBOUND, BINDING, BOUND, or
+UNBINDING.  (There already is a private field like this in USB's
+struct interface.)  When sending a notification, a process must
+acquire parent->power_sem and then immediately check to see whether
+the parent's condition is UNBINDING or UNBOUND.  If it is then the
+process must release parent->power_sem without trying to send the
+notification.  Of course, we can create helper functions to care of
+these things.
 
-> diff -ruNp 400-workthreads.patch-old/include/linux/kthread.h 400-workthreads.patch-new/include/linux/kthread.h
-> --- 400-workthreads.patch-old/include/linux/kthread.h	2004-11-03 21:51:12.000000000 +1100
-> +++ 400-workthreads.patch-new/include/linux/kthread.h	2005-08-03 11:52:01.000000000 +1000
-> @@ -23,10 +23,20 @@
->   *
->   * Returns a task_struct or ERR_PTR(-ENOMEM).
->   */
-> +struct task_struct *__kthread_create(int (*threadfn)(void *data),
-> +				   void *data,
-> +				   unsigned long freezer_flags,
-> +				   const char namefmt[],
-> +				   va_list * args);
-> +
+There will be a lot of tricky details, but I think it can be made to
+work.  What's your opinion?
 
-When comparing this to this:
-
-> diff -ruNp 400-workthreads.patch-old/include/linux/workqueue.h 400-workthreads.patch-new/include/linux/workqueue.h
-> --- 400-workthreads.patch-old/include/linux/workqueue.h	2005-06-20 11:47:30.000000000 +1000
-> +++ 400-workthreads.patch-new/include/linux/workqueue.h	2005-08-03 11:49:34.000000000 +1000
-> @@ -51,9 +51,12 @@ struct work_struct {
->  	} while (0)
->
->  extern struct workqueue_struct *__create_workqueue(const char *name,
-> -						    int singlethread);
-> -#define create_workqueue(name) __create_workqueue((name), 0)
-> -#define create_singlethread_workqueue(name) __create_workqueue((name), 1)
-> +						    int singlethread,
-> +						    unsigned long freezer_flag);
-> +#define create_workqueue(name) __create_workqueue((name), 0, 0)
-> +#define create_nofreeze_workqueue(name) __create_workqueue((name), 0, PF_NOFREEZE)
-> +#define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
-> +#define create_nofreeze_singlethread_workqueue(name) __create_workqueue((name), 1, PF_NOFREEZE)
-
-And to this:
+Alan Stern
 
 
->  static struct task_struct *create_workqueue_thread(struct workqueue_struct *wq,
-> -						   int cpu)
-> +						   int cpu,
-> +						   unsigned long freezer_flags)
->  {
-
-There is a slight discrepancy in the API changes. Obviously, we don't want
-to change every caller of create_workqueue() to support this. But, perhaps
-you could standardize the handling of the freezer flags (by e.g. creating
-a separate _nofreeze version for each).
-
-Also, functions that take a va_list parameter pass the structure (array)
-rather than the pointer. See the definition of vprintk() in
-include/linux/kernel.h for an example.
-
-
-Thanks,
-
-
-	Pat
-
---===============58495856750096298==
+--===============66789008369642744==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============58495856750096298==--
+--===============66789008369642744==--
