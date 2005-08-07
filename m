@@ -1,10 +1,32 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Runtime PM and device locking
-Date: Sat, 6 Aug 2005 15:28:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0508061527220.5101-100000@netrider.rowland.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: FYI: device_suspend(...) in kernel_power_off().
+Date: Sun, 07 Aug 2005 06:48:40 -0600
+Message-ID: <m13bplykt3.fsf_-_@ebiederm.dsl.xmission.com>
+References: <m1mzo9eb8q.fsf@ebiederm.dsl.xmission.com>
+	<20050727025923.7baa38c9.akpm@osdl.org>
+	<m1k6jc9sdr.fsf@ebiederm.dsl.xmission.com>
+	<20050727104123.7938477a.akpm@osdl.org>
+	<m18xzs9ktc.fsf@ebiederm.dsl.xmission.com>
+	<20050727224711.GA6671@elf.ucw.cz>
+	<20050727155118.6d67d48e.akpm@osdl.org>
+	<20050727225442.GD6529@elf.ucw.cz> <1123125850.948.9.camel@localhost>
+	<20050804214520.GF1780@elf.ucw.cz>
+	<1123193791.9025.77.camel@localhost>
+	<m1ackah4r3.fsf@ebiederm.dsl.xmission.com>
+	<20050725161548.274d3d67.akpm@osdl.org>	<dnpst4v5px.fsf@magla.zg.iskon.hr>
+	<m1oe8o9stl.fsf@ebiederm.dsl.xmission.com>
+	<dny87s6oe9.fsf@magla.zg.iskon.hr>
+	<m1r7dk82a4.fsf@ebiederm.dsl.xmission.com>
+	<42E8439E.9030103@ribosome.natur.cuni.cz>
+	<20050727193911.2cb4df88.akpm@osdl.org>
+	<42F121CD.5070903@ribosome.natur.cuni.cz>
+	<20050803200514.3ddb8195.akpm@osdl.org>	<20050805140837.GA5556@localhost>
+	<42F52
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============66789008369642744=="
+Content-Type: multipart/mixed; boundary="===============77897113877826696=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1123193791.9025.77.camel@localhost> (Nigel Cunningham's
+	message of "Fri, 05 Aug 2005 08:16:31 +1000")
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,63 +36,88 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>, Patrick Mochel <mochel@digitalimplant.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, =?iso-8859-4?q?Martin_MOKREJ=A9?= <mmokrejs@ribosome.natur.cuni.cz>, john@illhostit.com, sjordet@gmail.com, fastboot@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zlatko Calusic <zlatko.calusic@iskon.hr>, Linus Torvalds <torvalds@osdl.org>, =?iso-8859-1?q?Jos=E9_Luis_Domingo_L=F3pez?= <jdomingo@24x7linux.com>, ncunningham@cyclades.com, linux-kernel@24x7linux.com
 List-Id: linux-pm@vger.kernel.org
 
---===============66789008369642744==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-
-Pat:
-
-After considerable thought, this is the only way I can figure out to
-handle device locking while doing runtime PM (RTPM).
-
-Brief recap: To avoid races, the RTPM code in a driver will need to
-lock the device while it does its work.  The locking-order
-requirement for dev->sem is that locks can only be acquired going
-_down_ the device tree: a thread that owns a child's lock may not try
-to lock the parent.  However RTPM involves notifications that go _up_
-the tree.  This makes it impossible to acquire the locks we need.
-
-There doesn't appear to be any way to make this work as stated.  So
-instead, we add a second semaphore to struct device: dev->power_sem.
-The rule for locking is that power_sem's can only be acquired going
-_up_ the power DAG.  In addition, if a thread holds a device's
-power_sem then it may not try to lock any device's regular semaphore.
-(That is, first lock dev->sem, then lock dev->power_sem, then go up
-the DAG only acquiring power_sem's.)
-
-If a driver needs to prevent power changes while it's doing some other
-work, it must lock dev->power_sem.  That's not so bad.  However it
-must release power_sem before doing anything that would affect the
-device's children.  It can safely hold dev->sem the whole time.
-However an RTPM notification routine can never acquire dev->sem.
-
-The lack of full synchronization between RTPM notifications and other
-activities means we need a few special precautions.  In particular, we
-have to worry about a notification racing with an unbind.  To prevent
-such races, we will need to add to struct device a field that
-indicates the condition of driver binding: UNBOUND, BINDING, BOUND, or
-UNBINDING.  (There already is a private field like this in USB's
-struct interface.)  When sending a notification, a process must
-acquire parent->power_sem and then immediately check to see whether
-the parent's condition is UNBINDING or UNBOUND.  If it is then the
-process must release parent->power_sem without trying to send the
-notification.  Of course, we can create helper functions to care of
-these things.
-
-There will be a lot of tricky details, but I think it can be made to
-work.  What's your opinion?
-
-Alan Stern
+--===============77897113877826696==
+Content-Type: text/plain; charset=us-ascii
 
 
---===============66789008369642744==
+Early in the 2.6.13 process my kexec related patches were introduced
+into the reboot path, and under the rule you touch it you fix it
+it I have been involved in tracking quite a few regressions
+on the reboot path.
+
+Recently with Benjamin Herrenschmidt's removal of
+device_suppend(PMSG_SUPPEND) from kernel_power_off(),
+it seems the last of the issues went away.  I asked
+for confirmation that reintroducing the patch below 
+would break systems and I received it.
+
+The experimental evidence then is that calling 
+device_suspend(PMSG_SUSPEND) in kernel_power_off
+when performing an acpi_power_off is actively harmful.
+
+There as been a fair amount of consensus that calling
+device_suspend(...) in the reboot path was inappropriate now, because
+the device suspend code was too immature.   With this latest
+piece of evidence it seems to me that introducing device_suspend(...)
+in kernel_power_off, kernel_halt, kernel_reboot, or kernel_kexec
+can never be appropriate.  I am including as many people as
+I can on this so we in our collective wisdom don't forget this
+lesson.
+
+What lead us to this situation was a real problem, and a desire
+to fix it.  Currently linux has a proliferation of interfaces
+to place devices in different states.  The reboot notifiers,
+device_suspend(...), device_shutdown+system_state, remove_one,
+module_exit, and probably a few I'm not aware of.  Each interface
+introduced by a different author wanting to solve a different problem.
+Just writing this list of interfaces is confusing.  The implementation
+task for device driver writers appears even harder as simultaneously
+implementing all of these interfaces correctly seems not to happen.
+
+The lesson: fixing this problem is heavy lifting, and that
+device_suspend() in the reboot path is not the answer.
+
+Eric
+
+
+This is the patch that subtly and mysterously broke things.
+> diff --git a/kernel/sys.c b/kernel/sys.c
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -404,6 +404,7 @@ void kernel_halt(void)
+>  {
+>  	notifier_call_chain(&reboot_notifier_list, SYS_HALT, NULL);
+>  	system_state = SYSTEM_HALT;
+> +	device_suspend(PMSG_SUSPEND);
+>  	device_shutdown();
+>  	printk(KERN_EMERG "System halted.\n");
+>  	machine_halt();
+> @@ -414,6 +415,7 @@ void kernel_power_off(void)
+>  {
+>  	notifier_call_chain(&reboot_notifier_list, SYS_POWER_OFF, NULL);
+>  	system_state = SYSTEM_POWER_OFF;
+> +	device_suspend(PMSG_SUSPEND);
+>  	device_shutdown();
+>  	printk(KERN_EMERG "Power down.\n");
+>  	machine_power_off();
+> 
+> 
+
+
+
+
+
+
+
+--===============77897113877826696==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============66789008369642744==--
+--===============77897113877826696==--
