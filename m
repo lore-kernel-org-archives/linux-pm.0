@@ -1,11 +1,12 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: RE: Re: Runtime PM and device locking
-Date: Mon, 8 Aug 2005 16:15:57 -0500
-Message-ID: <EA12F909C0431D458B9D18A176BEE4A5017B6CC0@dlee02.ent.ti.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: swsusp limits
+Date: Tue, 9 Aug 2005 00:07:47 +0200
+Message-ID: <20050808220746.GA1821@elf.ucw.cz>
+References: <Pine.LNX.4.50.0508081248540.1704-100000@shark.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0044996515044861685=="
+Content-Type: multipart/mixed; boundary="===============48719930476653461=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.50.0508081248540.1704-100000@shark.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,43 +16,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>, Adam Belay <ambx1@neo.rr.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============0044996515044861685==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+--===============48719930476653461==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> (Not to mention the
-> fact that in any particular case we never need both pre- and post-
-> notifications.)
+Hi!
 
-For voltage and frequency scaling in embedded devices we defiantly have
-used both pre and post notifications.
+> Is there a maximum system RAM size that is supported by swsusp?
 
-Tell drivers to 'prepare' for change.  This in some cases means
-suspending master peripheral DMA operations to DDR.  Next the power
-manager does the DVFS switch.  Finally a "post" notification is sent
-which allows master drivers to resume their DMA accesses.
+It should work okay with highmem.
 
-Some devices are part of smarter busses which have some notion of these.
-Others don't.  In general you provide the list entries in the generic
-structure.  Whether a specific device registers a local call back is
-something else all together.
+> Does swsusp (to disk) use only one swap partition or can it use
+> multiple swap partitions (aggregate them into one logical space)?
 
-Regards,
-Richard W. 
+Only one swap partition, sorry.
 
+> Is there an option or possibility of using a dedicated swap
+> partition for suspend to disk?
+> Or maybe there is no reason to think that this might help?
 
+I don't see how it could help.
 
---===============0044996515044861685==
+> If my application(s) causes lots of memory & swap space
+> to be used (over half of the total system RAM), is it correct
+> that it is likely to be useless to try to suspend to disk
+> while that app is running?
+
+No, it should work okay, as long as you do not mlock() it. Just prepare
+big enough swap partition.
+
+[I'll add your questions to FAQ...]
+								Pavel
+-- 
+if you have sharp zaurus hardware you don't need... you know my address
+
+--===============48719930476653461==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============0044996515044861685==--
+--===============48719930476653461==--
