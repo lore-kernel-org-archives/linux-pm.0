@@ -1,21 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: FYI: device_suspend(...) in kernel_power_off().
-Date: Sun, 7 Aug 2005 23:11:04 +0200
-Message-ID: <20050807211104.GE3100@elf.ucw.cz>
-References: <42E8439E.9030103@ribosome.natur.cuni.cz>
-	<20050727193911.2cb4df88.akpm@osdl.org>
-	<42F121CD.5070903@ribosome.natur.cuni.cz>
-	<20050803200514.3ddb8195.akpm@osdl.org>
-	<20050805140837.GA5556@localhost>
-	<42F52AC5.1060109@ribosome.natur.cuni.cz>
-	<m1hde2xy74.fsf@ebiederm.dsl.xmission.com>
-	<m13bplykt3.fsf_-_@ebiederm.dsl.xmission.com>
-	<20050807190222.GF1024@openzaurus.ucw.cz>
-	<m1u0i1wmvr.fsf@ebiederm.dsl.xmission.com>
+From: Nigel Cunningham <ncunningham@cyclades.com>
+Subject: Re: [PATCH] Workqueue freezer support.
+Date: Mon, 08 Aug 2005 10:46:55 +1000
+Message-ID: <1123462015.3969.98.camel@localhost>
+References: <1121923059.2936.224.camel@localhost>
+	<Pine.LNX.4.50.0507211221550.12779-100000@monsoon.he.net>
+	<1123243967.3266.2.camel@localhost>
+	<Pine.LNX.4.50.0508052148280.19501-100000@monsoon.he.net>
+Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============92665871661308641=="
+Content-Type: multipart/mixed; boundary="===============87375330726207601=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <m1u0i1wmvr.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <Pine.LNX.4.50.0508052148280.19501-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,64 +20,143 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>, john@illhostit.com, sjordet@gmail.com, fastboot@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zlatko Calusic <zlatko.calusic@iskon.hr>, Linus Torvalds <torvalds@osdl.org>, =?iso-8859-1?Q?Jos=E9_Luis_Domingo_L=F3pez?= <jdomingo@24x7linux.com>, ncunningham@cyclades.com, linux-kernel@24x7linux.com
+To: Patrick Mochel <mochel@digitalimplant.org>, Christoph Lameter <christoph@lameter.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============92665871661308641==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============87375330726207601==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Hi!
+Hi.
 
-> >> There as been a fair amount of consensus that calling
-> >> device_suspend(...) in the reboot path was inappropriate now, because
-> >> the device suspend code was too immature.   With this latest
-> >> piece of evidence it seems to me that introducing device_suspend(...)
-> >> in kernel_power_off, kernel_halt, kernel_reboot, or kernel_kexec
-> >> can never be appropriate.
-> >
-> > Code is not ready now => it can never be fixed? Thats quite a strange
-> > conclusion to make.
+Sorry for the slow response. Busy still.
+
+On Sat, 2005-08-06 at 15:06, Patrick Mochel wrote:
+> On Fri, 5 Aug 2005, Nigel Cunningham wrote:
 > 
-> It seems there is an fundamental incompatibility with ACPI power off.
-> As best as I can tell the normal case of device_suspend(PMSG_SUSPEND)
-> works reasonably well in 2.6.x.
+> > Hi.
+> >
+> > I finally found some time to finish this off. I don't really like the
+> > end result - the macros looked clearer to me - but here goes. If it
+> > looks okay, I'll seek sign offs from each of the affected driver
+> > maintainers and from Ingo. Anyone else?
+> 
+> What are your feelings about this: http://lwn.net/Articles/145417/ ?
 
-Powerdown is going to have the same problems as the powerdown at the
-end of suspend-to-disk. Can you ask people reporting broken shutdown
-to try suspend-to-disk?
+I'm sure it could work, but I do worry a little about the possibilities
+for exploits. It seems to me that if someone can get root, they an
+insmod a module that could schedule any kind of work via any process.
+Tracing that sort of security hole could be intractable. Christoph, is
+that something you've considered/have thoughts on? Perhaps I'm just
+being paranoid :>
 
-> >From what I can tell there are some fairly fundamental semantic
-> differences, on that code path.  The most peculiar problem I tracked
-> is someone had a machine that would go into power off state and then
-> wake right back up because of the device_suspend(PMSG_SUSPEND)
-> change.
+> It seems like a cleaner way to do things. How would these patches change
+> if that were merged?
 
-So something is wrong with ACPI wakeup GPEs. It would hurt in
-suspend-to-disk case, too.
+We would still need some way to mark which threads to freeze, so we'd
+still need the same sort of thing as far as kthread_run etc goes.
 
-> I won't call it impossible to resolve the problems, but the people
+We'd also still mark unfreezable threads with NOFREEZE and not mark
+other threads, so no change there.
 
-Good.
+The first substantial change I can see would be switching from
+try_to_freeze to try_todo_list (could this be 'run_todo_list'? Try
+implies failure is possible - if it is possible, why do we ignore
+whether it fails?).
 
-> So yes without a darn good argument as to why it should work.  I will
-> go with the experimental evidence that it fails miserably and
-> trivially because of semantic incompatibility and can therefore
-> never be fixed.
+The second substantial change would be in the area of the refrigeration
+code itself, ala Christoph's patch.
 
-I do not think any "semantic" issues exist. We need to pass detailed
-info down to the drivers that care, and we need to fix all the bugs in
-the drivers. That should be pretty much it.
-								Pavel
+One more question regarding Christoph's patch - would it be worth moving
+the refrigerator related code from sched.h to a separate file? We
+already have so many things that depend on sched.h, and this will add
+more. It will also make maintenance less painful because you won't have
+to recompile everything that depends on sched.h when all you did was
+modify (say) freezing().
+
+> Concerning the patch specifically:
+> 
+> > diff -ruNp 400-workthreads.patch-old/include/linux/kthread.h 400-workthreads.patch-new/include/linux/kthread.h
+> > --- 400-workthreads.patch-old/include/linux/kthread.h	2004-11-03 21:51:12.000000000 +1100
+> > +++ 400-workthreads.patch-new/include/linux/kthread.h	2005-08-03 11:52:01.000000000 +1000
+> > @@ -23,10 +23,20 @@
+> >   *
+> >   * Returns a task_struct or ERR_PTR(-ENOMEM).
+> >   */
+> > +struct task_struct *__kthread_create(int (*threadfn)(void *data),
+> > +				   void *data,
+> > +				   unsigned long freezer_flags,
+> > +				   const char namefmt[],
+> > +				   va_list * args);
+> > +
+> 
+> When comparing this to this:
+> 
+> > diff -ruNp 400-workthreads.patch-old/include/linux/workqueue.h 400-workthreads.patch-new/include/linux/workqueue.h
+> > --- 400-workthreads.patch-old/include/linux/workqueue.h	2005-06-20 11:47:30.000000000 +1000
+> > +++ 400-workthreads.patch-new/include/linux/workqueue.h	2005-08-03 11:49:34.000000000 +1000
+> > @@ -51,9 +51,12 @@ struct work_struct {
+> >  	} while (0)
+> >
+> >  extern struct workqueue_struct *__create_workqueue(const char *name,
+> > -						    int singlethread);
+> > -#define create_workqueue(name) __create_workqueue((name), 0)
+> > -#define create_singlethread_workqueue(name) __create_workqueue((name), 1)
+> > +						    int singlethread,
+> > +						    unsigned long freezer_flag);
+> > +#define create_workqueue(name) __create_workqueue((name), 0, 0)
+> > +#define create_nofreeze_workqueue(name) __create_workqueue((name), 0, PF_NOFREEZE)
+> > +#define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
+> > +#define create_nofreeze_singlethread_workqueue(name) __create_workqueue((name), 1, PF_NOFREEZE)
+> 
+> And to this:
+> 
+> 
+> >  static struct task_struct *create_workqueue_thread(struct workqueue_struct *wq,
+> > -						   int cpu)
+> > +						   int cpu,
+> > +						   unsigned long freezer_flags)
+> >  {
+> 
+> There is a slight discrepancy in the API changes. Obviously, we don't want
+> to change every caller of create_workqueue() to support this. But, perhaps
+> you could standardize the handling of the freezer flags (by e.g. creating
+> a separate _nofreeze version for each).
+
+Missed that one, sorry.
+
+> Also, functions that take a va_list parameter pass the structure (array)
+> rather than the pointer. See the definition of vprintk() in
+> include/linux/kernel.h for an example.
+
+Thanks for the pointer.
+
+Nigel
+
+> 
+> Thanks,
+> 
+> 
+> 	Pat
+> 
+> ______________________________________________________________________
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
 -- 
-if you have sharp zaurus hardware you don't need... you know my address
+Evolution.
+Enumerate the requirements.
+Consider the interdependencies.
+Calculate the probabilities.
 
---===============92665871661308641==
+
+--===============87375330726207601==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============92665871661308641==--
+--===============87375330726207601==--
