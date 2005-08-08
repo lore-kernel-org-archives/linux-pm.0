@@ -1,16 +1,12 @@
-From: Nigel Cunningham <ncunningham@cyclades.com>
-Subject: Re: [PATCH] Workqueue freezer support.
-Date: Mon, 08 Aug 2005 11:38:07 +1000
-Message-ID: <1123465087.3969.152.camel@localhost>
-References: <1121923059.2936.224.camel@localhost>
-	<Pine.LNX.4.50.0508052148280.19501-100000@monsoon.he.net>
-	<1123462015.3969.98.camel@localhost>
-	<200508081127.48432.kernel@kolivas.org>
-Reply-To: ncunningham@cyclades.com
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: Re: Runtime PM and device locking
+Date: Mon, 8 Aug 2005 12:40:51 -0700 (PDT)
+Message-ID: <Pine.LNX.4.50.0508081238490.26635-100000@monsoon.he.net>
+References: <Pine.LNX.4.44L0.0508061527220.5101-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7566326124970626=="
+Content-Type: multipart/mixed; boundary="===============76186666091479482=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200508081127.48432.kernel@kolivas.org>
+In-Reply-To: <Pine.LNX.4.44L0.0508061527220.5101-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,60 +16,45 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Christoph Lameter <christoph@lameter.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============7566326124970626==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Hi.
-
-On Mon, 2005-08-08 at 11:27, Con Kolivas wrote:
-> On Mon, 8 Aug 2005 10:46 am, Nigel Cunningham wrote:
-> > Hi.
-> >
-> > Sorry for the slow response. Busy still.
-> >
-> > On Sat, 2005-08-06 at 15:06, Patrick Mochel wrote:
-> > > On Fri, 5 Aug 2005, Nigel Cunningham wrote:
-> > > > Hi.
-> > > >
-> > > > I finally found some time to finish this off. I don't really like the
-> > > > end result - the macros looked clearer to me - but here goes. If it
-> > > > looks okay, I'll seek sign offs from each of the affected driver
-> > > > maintainers and from Ingo. Anyone else?
-> > >
-> > > What are your feelings about this: http://lwn.net/Articles/145417/ ?
-> >
-> > I'm sure it could work, but I do worry a little about the possibilities
-> > for exploits. It seems to me that if someone can get root, they an
-> > insmod a module that could schedule any kind of work via any process.
-> > Tracing that sort of security hole could be intractable. Christoph, is
-> > that something you've considered/have thoughts on? Perhaps I'm just
-> > being paranoid :>
-> 
-> If someone gets root access it means you're already exploited.
-
-Yeah, true. Ok. Lame thought :>
-
-Nigel
-
-> Cheers,
-> Con
--- 
-Evolution.
-Enumerate the requirements.
-Consider the interdependencies.
-Calculate the probabilities.
+--===============76186666091479482==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
---===============7566326124970626==
+On Sat, 6 Aug 2005, Alan Stern wrote:
+
+> Brief recap: To avoid races, the RTPM code in a driver will need to
+> lock the device while it does its work.  The locking-order
+> requirement for dev->sem is that locks can only be acquired going
+> _down_ the device tree: a thread that owns a child's lock may not try
+> to lock the parent.  However RTPM involves notifications that go _up_
+> the tree.  This makes it impossible to acquire the locks we need.
+>
+> There doesn't appear to be any way to make this work as stated.  So
+> instead, we add a second semaphore to struct device: dev->power_sem.
+> The rule for locking is that power_sem's can only be acquired going
+> _up_ the power DAG.  In addition, if a thread holds a device's
+> power_sem then it may not try to lock any device's regular semaphore.
+> (That is, first lock dev->sem, then lock dev->power_sem, then go up
+> the DAG only acquiring power_sem's.)
+
+At first thought, it seems Ok with the caveat that it should go in to a
+separate object (the power object with which to create the power DAG).
+This should make it a bit easier to understand and follow.
+
+Thanks,
+
+
+	Pat
+
+--===============76186666091479482==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============7566326124970626==--
+--===============76186666091479482==--
