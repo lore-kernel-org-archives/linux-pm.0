@@ -1,12 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: swsusp limits
-Date: Tue, 9 Aug 2005 00:07:47 +0200
-Message-ID: <20050808220746.GA1821@elf.ucw.cz>
-References: <Pine.LNX.4.50.0508081248540.1704-100000@shark.he.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: Re: Runtime PM and device locking
+Date: Mon, 8 Aug 2005 18:17:08 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0508081809130.4470-100000@iolanthe.rowland.org>
+References: <EA12F909C0431D458B9D18A176BEE4A5017B6CC0@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============48719930476653461=="
+Content-Type: multipart/mixed; boundary="===============72224346499362824=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0508081248540.1704-100000@shark.he.net>
+In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A5017B6CC0@dlee02.ent.ti.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,49 +16,60 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: linux-pm@lists.osdl.org
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============48719930476653461==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============72224346499362824==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Hi!
+On Mon, 8 Aug 2005, Woodruff, Richard wrote:
 
-> Is there a maximum system RAM size that is supported by swsusp?
+> > (Not to mention the
+> > fact that in any particular case we never need both pre- and post-
+> > notifications.)
+> 
+> For voltage and frequency scaling in embedded devices we defiantly have
+> used both pre and post notifications.
+> 
+> Tell drivers to 'prepare' for change.  This in some cases means
+> suspending master peripheral DMA operations to DDR.  Next the power
 
-It should work okay with highmem.
+Master peripheral?  DDR?
 
-> Does swsusp (to disk) use only one swap partition or can it use
-> multiple swap partitions (aggregate them into one logical space)?
+> manager does the DVFS switch.  Finally a "post" notification is sent
 
-Only one swap partition, sorry.
+DVFS?
 
-> Is there an option or possibility of using a dedicated swap
-> partition for suspend to disk?
-> Or maybe there is no reason to think that this might help?
+> which allows master drivers to resume their DMA accesses.
 
-I don't see how it could help.
+Master drivers?
 
-> If my application(s) causes lots of memory & swap space
-> to be used (over half of the total system RAM), is it correct
-> that it is likely to be useless to try to suspend to disk
-> while that app is running?
+> Some devices are part of smarter busses which have some notion of these.
+> Others don't.  In general you provide the list entries in the generic
+> structure.  Whether a specific device registers a local call back is
+> something else all together.
 
-No, it should work okay, as long as you do not mlock() it. Just prepare
-big enough swap partition.
+Even without understanding a lot of your terms, I think hat you're talking
+about comes closer to system PM than runtime PM, in that involves a
+centrally-directed change to an entire subsystem.  It's not a case of one
+driver deciding its device can be suspended and then propagating that
+information upward.
 
-[I'll add your questions to FAQ...]
-								Pavel
--- 
-if you have sharp zaurus hardware you don't need... you know my address
+The situation you described involves a new concept: a driver that cannot 
+change its power usage without first asking all its clients to temporarily 
+suspend operations.  Note that the messages you described are not the same 
+kind of "notifications" as I've been talking about, because they go down 
+the tree instead of up.
 
---===============48719930476653461==
+Alan Stern
+
+
+--===============72224346499362824==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============48719930476653461==--
+--===============72224346499362824==--
