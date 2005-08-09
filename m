@@ -1,14 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: swsusp limits
-Date: Tue, 9 Aug 2005 00:47:47 +0200
-Message-ID: <20050808224747.GB2012@elf.ucw.cz>
-References: <Pine.LNX.4.50.0508081248540.1704-100000@shark.he.net>
-	<20050808220746.GA1821@elf.ucw.cz>
-	<1123540613.7296.2.camel@localhost>
+From: Todd Poynor <tpoynor@mvista.com>
+Subject: PowerOP 0/3: System power operating point management API
+Date: Mon, 8 Aug 2005 19:49:07 -0700
+Message-ID: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============061049506513913387=="
+Content-Type: multipart/mixed; boundary="===============63336108363823307=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1123540613.7296.2.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,78 +14,65 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, cpufreq@www.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
---===============061049506513913387==
+--===============63336108363823307==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi!
+PowerOP is a system power parameter management API submitted for
+discussion.  PowerOP writes and reads power "operating points",
+comprised of arbitrary integer-valued values, called power parameters,
+that correspond to registers, clocks, dividers, voltage regulators,
+etc. that may be modified to set a basic power/performance point for the
+system.  The core basically passes an array of integer-valued power
+parameters (with very little additional structure imposed by the core)
+to a platform-specific backend that interprets those values and makes
+the requested adjustments.  PowerOP is intended to leave all power
+policy decisions to higher layers.  An optional sysfs representation of
+power parameters is also available, primarily for diagnostic use.
 
-> > > Is there an option or possibility of using a dedicated swap
-> > > partition for suspend to disk?
-> > > Or maybe there is no reason to think that this might help?
-> > 
-> > I don't see how it could help.
-> 
-> If it was turned on at the right time, it might not be used by other
-> things that could get swapped out by high memory usage and/or the memory
-> eating process.
+PowerOP can be thought of as a layer below cpufreq that actually
+accesses the hardware to make cpu frequency, voltage, core bus, and
+perhaps other modifications to set a power point, leaving cpufreq to
+manage the interfaces based around the "cpu frequency" abstraction, the
+policies and governors that select the frequency, its notifiers, and so
+forth.  An example hooking up support for one cpufreq platform to
+PowerOP is in patch 3/3.
 
-Yes, but if it is used all the time, it will work okay, too.
+Depending on the ability of the hardware to make software-controlled
+power/performance adjustments, this may be useful to select custom
+voltages, bus speeds, etc. in desktop/server systems.  Various embedded
+systems have several parameters that can be set.  For example, an XScale
+PXA27x could be considered to have six basic power parameters (mainly
+cpu run mode and memory and bus dividers) that for the most part should
+be set in tandem to known good sets of values as validated by the
+silicon vendor, plus other parameters possible for disabling PLLs during
+low-speed execution, and so forth.  PowerOP is aimed at supporting this
+kind of system, where the cpu frequency abstraction specifies only part
+of the operating point that may be managed from software.  It also
+pushes the hardware-level power parameter management down to a level
+that can be shared with other power management policy frameworks, in use
+in some embedded systems, that wish to deal with entire operating points
+as the basic unit of system power management..
 
-> > > If my application(s) causes lots of memory & swap space
-> > > to be used (over half of the total system RAM), is it correct
-> > > that it is likely to be useless to try to suspend to disk
-> > > while that app is running?
-> > 
-> > No, it should work okay, as long as you do not mlock() it. Just prepare
-> > big enough swap partition.
-> 
-> Will he even need to worry about the size of his swap partition? I
-> though swsusp discarded everything it could anyway. (Perhaps you could
-> add this question to the FAQ too).
+There are many ways to tackle those issues, of course, and a new API
+layer is arguably rather heavyweight.  This is one suggested way that
+tries to minimize disturbing existing power management code.  Comments
+very much appreciated.
 
-If he has *lot* of data, he needs big swap partition. Of course,
-everything I _can_ discard will be discarded.
+Patch 2/3 is a desktop-oriented example of PowerOP; embedded examples
+will follow soon.
 
-This is what I ended up:
-							Pavel
+--
+Todd
 
-diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
---- a/Documentation/power/swsusp.txt
-+++ b/Documentation/power/swsusp.txt
-@@ -334,3 +334,18 @@ some kind of "really read-only!" option.
- image (and blocksize), with resume parameter pointing directly to
- suspend header.
- 
-+Q: Is there a maximum system RAM size that is supported by swsusp?
-+
-+A: It should work okay with highmem.
-+
-+Q: Does swsusp (to disk) use only one swap partition or can it use
-+multiple swap partitions (aggregate them into one logical space)?
-+
-+A: Only one swap partition, sorry.
-+
-+Q: If my application(s) causes lots of memory & swap space to be used
-+(over half of the total system RAM), is it correct that it is likely
-+to be useless to try to suspend to disk while that app is running?
-+
-+No, it should work okay, as long as your app does not mlock() it. Just
-+prepare big enough swap partition.
-
-
--- 
-if you have sharp zaurus hardware you don't need... you know my address
-
---===============061049506513913387==
+--===============63336108363823307==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============061049506513913387==--
+--===============63336108363823307==--
