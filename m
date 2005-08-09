@@ -1,71 +1,53 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: PowerOP 1/3: PowerOP core
-Date: Tue, 9 Aug 2005 00:32:35 -0700
-Message-ID: <20050809073234.GB13203@kroah.com>
-References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: PowerOP 2/3: Intel Centrino support
+Date: Tue, 9 Aug 2005 09:59:19 +0200
+Message-ID: <20050809075919.GA18309@elte.hu>
+References: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============82001034654388527=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: Todd Poynor <tpoynor@mvista.com>
 Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============82001034654388527==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Mon, Aug 08, 2005 at 07:51:57PM -0700, Todd Poynor wrote:
-> +static void powerop_kobj_release(struct kobject *kobj)
+* Todd Poynor <tpoynor@mvista.com> wrote:
+
+> +static int
+> +powerop_centrino_get_point(struct powerop_point *point)
 > +{
-> +	return;
+> +	unsigned l, h;
+> +	unsigned cpu_freq;
+> +
+> +	rdmsr(MSR_IA32_PERF_STATUS, l, h);
+> +	if (unlikely((cpu_freq = ((l >> 8) & 0xff) * 100) == 0)) {
+> +		/*
+> +		 * On some CPUs, we can see transient MSR values (which are
+> +		 * not present in _PSS), while CPU is doing some automatic
+> +		 * P-state transition (like TM2). Get the last freq set 
+> +		 * in PERF_CTL.
+> +		 */
+> +		rdmsr(MSR_IA32_PERF_CTL, l, h);
+> +		cpu_freq = ((l >> 8) & 0xff) * 100;
+> +	}
+> +
+> +	point->param[POWEROP_CPU + smp_processor_id()] = cpu_freq;
+> +	point->param[POWEROP_V + smp_processor_id()] = ((l & 0xff) * 16) + 700;
+> +	return 0;
 > +}
 
-Hint, if your release function is just a noop like this, your code is
-wrong.  The kernel requires you to have a release function for a reason.
-Please fix it.
+doesnt seem to be SMP-safe, nor PREEMPT-safe. You probably want to do 
+the locking in the highlevel functions.
 
-> +struct powerop_param_attribute {
-> +	int index;
-> +        struct attribute        attr;
-> +};
-
-space vs. tab issue.
-
-> +static ssize_t
-> +powerop_param_attr_show(struct kobject * kobj, struct attribute * attr,
-> +			char * buf)
-> +{
-> +	struct powerop_param_attribute * param_attr = to_param_attr(attr);
-> +	struct powerop_point point;
-> +	ssize_t ret = 0;
-> +
-> +	if ((ret = powerop_get_point(&point)) == 0)
-> +		ret = sprintf(buf, "%d\n", point.param[param_attr->index]);
-
-Please break this up into 3 lines instead of 2 to make it easier to read
-and maintain over time.
-
-You do this in other places too, please fix them too.
-
-thanks,
-
-greg k-h
-
---===============82001034654388527==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============82001034654388527==--
+	Ingo
