@@ -1,53 +1,86 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: PowerOP 2/3: Intel Centrino support
-Date: Tue, 9 Aug 2005 09:59:19 +0200
-Message-ID: <20050809075919.GA18309@elte.hu>
-References: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: Re: Runtime PM and device locking
+Date: Tue, 9 Aug 2005 10:13:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0508091010040.4643-100000@iolanthe.rowland.org>
+References: <EA12F909C0431D458B9D18A176BEE4A501851AED@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============79500919529142822=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A501851AED@dlee02.ent.ti.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+--===============79500919529142822==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-* Todd Poynor <tpoynor@mvista.com> wrote:
+On Mon, 8 Aug 2005, Woodruff, Richard wrote:
 
-> +static int
-> +powerop_centrino_get_point(struct powerop_point *point)
-> +{
-> +	unsigned l, h;
-> +	unsigned cpu_freq;
-> +
-> +	rdmsr(MSR_IA32_PERF_STATUS, l, h);
-> +	if (unlikely((cpu_freq = ((l >> 8) & 0xff) * 100) == 0)) {
-> +		/*
-> +		 * On some CPUs, we can see transient MSR values (which are
-> +		 * not present in _PSS), while CPU is doing some automatic
-> +		 * P-state transition (like TM2). Get the last freq set 
-> +		 * in PERF_CTL.
-> +		 */
-> +		rdmsr(MSR_IA32_PERF_CTL, l, h);
-> +		cpu_freq = ((l >> 8) & 0xff) * 100;
-> +	}
-> +
-> +	point->param[POWEROP_CPU + smp_processor_id()] = cpu_freq;
-> +	point->param[POWEROP_V + smp_processor_id()] = ((l & 0xff) * 16) + 700;
-> +	return 0;
-> +}
+...
 
-doesnt seem to be SMP-safe, nor PREEMPT-safe. You probably want to do 
-the locking in the highlevel functions.
+Thanks for explaining the terminology.
 
-	Ingo
+> Yes, I'm talking about what it takes to do runtime power management of
+> shared clocks.  It at times does take a central coordinator to allow a
+> clock change.
+> 
+> Devices can auto idle at times or ask for gating of their local clocks.
+> This is the kind of thing which you must be thinking of.   Along with
+> idling/gating devices can scale their clocks to save power.
+
+Right, that's what I had in mind.  Centralized clock control is a 
+different, more difficult problem -- as you know!
+
+> With scaling the CPU is the device which comes to mind first but need
+> not be the only case.  For many embedded systems, scaling the CPU also
+> means adjusting device clock notions.  In order to due this you need
+> coordination.  
+> 
+> A device can also request a clock speed change which also forces the
+> need for a sub tree recalculation if the request changes a common clock.
+> Related drivers may be able to react by adjusting local dividers if
+> given a chance.
+> 
+> > The situation you described involves a new concept: a driver that
+> cannot
+> > change its power usage without first asking all its clients to
+> temporarily
+> > suspend operations.  Note that the messages you described are not the
+> same
+> > kind of "notifications" as I've been talking about, because they go
+> down
+> > the tree instead of up.
+> 
+> Yes.  That is true.  I'm presently looking at some clock code, and going
+> up and down trees is an issue.  There are few possible use cases from
+> devices wanting a change which requires a notification going up which
+> cause a change coming back down to other drivers.  
+> 
+> To do run time frequency scaling of the CPU requires a notification
+> structure down to the drivers.  Why not use the same or extended
+> structure to propagate clock request from drivers.
+
+At the moment I'm inclined to leave clock control somewhat separate from 
+other aspects of runtime PM.  There are other people already working on 
+it, as we've seen from recent activity in the mailing list.
+
+Alan Stern
+
+
+--===============79500919529142822==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============79500919529142822==--
