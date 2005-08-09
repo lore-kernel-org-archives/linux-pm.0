@@ -1,10 +1,10 @@
 From: Todd Poynor <tpoynor@mvista.com>
-Subject: PowerOP 1/3: PowerOP core
-Date: Mon, 8 Aug 2005 19:51:57 -0700
-Message-ID: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
+Subject: PowerOP 2/3: Intel Centrino support
+Date: Mon, 8 Aug 2005 19:54:19 -0700
+Message-ID: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,81 +14,66 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, cpufreq@lists.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-The PowerOP core provides the struct powerop_point that defines an
-operating point, and trivial routines for calling the platform-specific
-backend to read and set operating points and for registering a single
-machine-dependent backend.
+Minimal PowerOP support for Intel Enhanced Speedstep "Centrino"
+notebooks.  These systems run at an operating point comprised of a cpu
+frequency and a core voltage.  The voltage could be set from the values
+recommended in the datasheets if left unspecified (-1) in the operating
+point, as cpufreq does.
 
-Operating points are an array of 32-bit integer-valued power parameters,
-almost entirely interpreted by the platform-specific backend.
-Higher-layer software shares information on the power parameters made
-available by the backend (that is, the interpretation of the integers in
-the array) via header files.  The value -1 is commonly used to denote an
-unspecified value, but in situations where all ones is a valid power
-parameter value some extra smarts may be needed.
 
-It optionally adds sysfs attributes for reading and writing individual
-power parameter values, mainly for diagnostic purposes.  For example,
-using the Intel Centrino patch that follows, parameters for frequency
-and core voltage for CPU #0 appear:
-
-   # ls /sys/powerop/param/
-   cpu0 v0
-
-Index: linux-2.6.12/drivers/Makefile
+Index: linux-2.6.12/arch/i386/Kconfig
 ===================================================================
---- linux-2.6.12.orig/drivers/Makefile	2005-06-30 01:32:17.000000000 +0000
-+++ linux-2.6.12/drivers/Makefile	2005-07-29 00:39:44.000000000 +0000
-@@ -58,6 +58,7 @@
- obj-$(CONFIG_ISDN)		+= isdn/
- obj-$(CONFIG_MCA)		+= mca/
- obj-$(CONFIG_EISA)		+= eisa/
-+obj-$(CONFIG_POWEROP)		+= powerop/
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_MMC)		+= mmc/
- obj-$(CONFIG_INFINIBAND)	+= infiniband/
-Index: linux-2.6.12/drivers/powerop/Kconfig
+--- linux-2.6.12.orig/arch/i386/Kconfig	2005-08-02 23:39:05.000000000 +0000
++++ linux-2.6.12/arch/i386/Kconfig	2005-08-03 01:11:21.000000000 +0000
+@@ -1098,6 +1098,7 @@
+ endmenu
+ 
+ source "arch/i386/kernel/cpu/cpufreq/Kconfig"
++source "arch/i386/kernel/cpu/powerop/Kconfig"
+ 
+ endmenu
+ 
+Index: linux-2.6.12/arch/i386/kernel/cpu/Makefile
 ===================================================================
---- linux-2.6.12.orig/drivers/powerop/Kconfig	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.12/drivers/powerop/Kconfig	2005-07-28 07:27:26.000000000 +0000
-@@ -0,0 +1,17 @@
-+#
-+# powerop
-+#
-+
-+menu "Platform Core Power Management"
-+
-+config POWEROP
-+	bool "PowerOP Platform Core Power Management"
-+	help
-+
-+config POWEROP_SYSFS
-+	bool "  Enable PowerOP sysfs interface"
-+	depends on POWEROP && SYSFS
-+	help
-+
-+endmenu
-+
-Index: linux-2.6.12/drivers/powerop/Makefile
+--- linux-2.6.12.orig/arch/i386/kernel/cpu/Makefile	2005-08-02 23:39:05.000000000 +0000
++++ linux-2.6.12/arch/i386/kernel/cpu/Makefile	2005-08-03 01:11:21.000000000 +0000
+@@ -17,3 +17,4 @@
+ 
+ obj-$(CONFIG_MTRR)	+= 	mtrr/
+ obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
++obj-$(CONFIG_POWEROP)	+=	powerop/
+Index: linux-2.6.12/arch/i386/kernel/cpu/powerop/Kconfig
 ===================================================================
---- linux-2.6.12.orig/drivers/powerop/Makefile	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.12/drivers/powerop/Makefile	2005-07-28 07:29:04.000000000 +0000
+--- linux-2.6.12.orig/arch/i386/kernel/cpu/powerop/Kconfig	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.12/arch/i386/kernel/cpu/powerop/Kconfig	2005-08-03 01:11:21.000000000 +0000
+@@ -0,0 +1,6 @@
++source "drivers/powerop/Kconfig"
++
++config POWEROP_CENTRINO
++       tristate "PowerOP for Intel Centrino Enhanced Speedstep"
++       depends on POWEROP
++       default n
+Index: linux-2.6.12/arch/i386/kernel/cpu/powerop/Makefile
+===================================================================
+--- linux-2.6.12.orig/arch/i386/kernel/cpu/powerop/Makefile	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.12/arch/i386/kernel/cpu/powerop/Makefile	2005-08-03 01:11:21.000000000 +0000
 @@ -0,0 +1,2 @@
-+obj-$(CONFIG_POWEROP)		+= powerop.o
++obj-$(CONFIG_POWEROP_CENTRINO)	+=	powerop-centrino.o
 +
-Index: linux-2.6.12/drivers/powerop/powerop.c
+Index: linux-2.6.12/arch/i386/kernel/cpu/powerop/powerop-centrino.c
 ===================================================================
---- linux-2.6.12.orig/drivers/powerop/powerop.c	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.12/drivers/powerop/powerop.c	2005-08-04 19:50:38.000000000 +0000
-@@ -0,0 +1,253 @@
+--- linux-2.6.12.orig/arch/i386/kernel/cpu/powerop/powerop-centrino.c	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.12/arch/i386/kernel/cpu/powerop/powerop-centrino.c	2005-08-03 06:41:37.000000000 +0000
+@@ -0,0 +1,160 @@
 +/*
-+ * PowerOP generic core functions
++ * PowerOP support for Intel Enhanced Speedstep "Centrino" platforms.
 + *
-+ * Author: Todd Poynor <tpoynor@mvista.com>
++ * Based heavily on speedstep-centrino.c of cpufreq Copyright (c) 2003
++ * by Jeremy Fitzhardinge <jeremy@goop.org>
 + *
 + * 2005 (c) MontaVista Software, Inc. This file is licensed under
 + * the terms of the GNU General Public License version 2. This program
@@ -96,257 +81,161 @@ Index: linux-2.6.12/drivers/powerop/powerop.c
 + * or implied.
 + */
 +
-+#include <linux/config.h>
-+#include <linux/module.h>
 +#include <linux/powerop.h>
-+#include <linux/init.h>
-+#include <linux/kobject.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
 +#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/smp.h>
++#include <linux/threads.h>
++#include <linux/slab.h>
 +
-+static struct powerop_driver *powerop_driver;
-+static int powerop_subsys_init;
++#include <asm/msr.h>
++#include <asm/processor.h>
++#include <asm/cpufeature.h>
 +
-+int
-+powerop_set_point(struct powerop_point *point)
++static int
++powerop_centrino_get_point(struct powerop_point *point)
 +{
-+	return powerop_driver && powerop_driver->set_point ? 
-+		powerop_driver->set_point(point) : -EINVAL;
++	unsigned l, h;
++	unsigned cpu_freq;
++
++	rdmsr(MSR_IA32_PERF_STATUS, l, h);
++	if (unlikely((cpu_freq = ((l >> 8) & 0xff) * 100) == 0)) {
++		/*
++		 * On some CPUs, we can see transient MSR values (which are
++		 * not present in _PSS), while CPU is doing some automatic
++		 * P-state transition (like TM2). Get the last freq set 
++		 * in PERF_CTL.
++		 */
++		rdmsr(MSR_IA32_PERF_CTL, l, h);
++		cpu_freq = ((l >> 8) & 0xff) * 100;
++	}
++
++	point->param[POWEROP_CPU + smp_processor_id()] = cpu_freq;
++	point->param[POWEROP_V + smp_processor_id()] = ((l & 0xff) * 16) + 700;
++	return 0;
 +}
 +
-+
-+int
-+powerop_get_point(struct powerop_point *point)
++static int
++powerop_centrino_set_point(struct powerop_point *point)
 +{
-+	return powerop_driver && powerop_driver->get_point ? 
-+		powerop_driver->get_point(point) : -EINVAL;
-+}
++	unsigned int msr = 0, oldmsr, h, mask = 0;
 +
++	if (point->param[POWEROP_CPU + smp_processor_id()] != -1) {
++		msr |= (point->param[POWEROP_CPU + smp_processor_id()]/100)
++			<< 8;
++		mask |= 0xff00;
++	}
 +
-+EXPORT_SYMBOL_GPL(powerop_set_point);
-+EXPORT_SYMBOL_GPL(powerop_get_point);
++	if (point->param[POWEROP_V + smp_processor_id()] != -1) {
++		msr |= ((point->param[POWEROP_V + smp_processor_id()] - 700)
++			/ 16);
++		mask |= 0xff;
++	}
 +
-+#ifdef CONFIG_POWEROP_SYSFS
-+decl_subsys(powerop, NULL, NULL);
++	rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
 +
-+static void powerop_kobj_release(struct kobject *kobj)
-+{
-+	return;
-+}
-+
-+struct powerop_param_attribute {
-+	int index;
-+        struct attribute        attr;
-+};
-+
-+#define to_param_attr(_attr) container_of(_attr,\
-+	struct powerop_param_attribute,attr)
-+
-+static ssize_t
-+powerop_param_attr_show(struct kobject * kobj, struct attribute * attr,
-+			char * buf)
-+{
-+	struct powerop_param_attribute * param_attr = to_param_attr(attr);
-+	struct powerop_point point;
-+	ssize_t ret = 0;
-+
-+	if ((ret = powerop_get_point(&point)) == 0)
-+		ret = sprintf(buf, "%d\n", point.param[param_attr->index]);
-+	return ret;
-+}
-+
-+static ssize_t
-+powerop_param_attr_store(struct kobject * kobj, struct attribute * attr, 
-+			 const char * buf, size_t count)
-+{
-+	struct powerop_param_attribute * param_attr = to_param_attr(attr);
-+	struct powerop_point point;
-+	int i;
-+	ssize_t ret = 0;
-+
-+	for (i = 0; i < powerop_driver->nr_params; i++) 
-+		if (i == param_attr->index)
-+			point.param[i] = simple_strtol(buf,NULL,0);
-+		else
-+			point.param[i] = -1;
-+
-+	if ((ret = powerop_set_point(&point)) == 0)
-+		ret = count;
-+
-+	return ret;
-+}
-+
-+static struct sysfs_ops powerop_param_attr_sysfs_ops = {
-+	.show	= powerop_param_attr_show,
-+	.store	= powerop_param_attr_store,
-+};
-+
-+static struct kobj_type ktype_powerop_driver = {
-+	.release        = powerop_kobj_release,
-+	.sysfs_ops	= &powerop_param_attr_sysfs_ops,
-+};
-+
-+static struct powerop_param_attribute *param_attr[POWEROP_DRIVER_MAX_PARAMS];
-+
-+static int powerop_driver_sysfs_register(struct powerop_driver *powerop_driver)
-+{
-+        int error, i;
-+
-+	if (! powerop_subsys_init)
++	if (msr == (oldmsr & mask))
 +		return 0;
 +
-+	kobject_set_name(&powerop_driver->kobj, "param");
-+	powerop_driver->kobj.ktype = &ktype_powerop_driver;
-+	powerop_driver->kobj.kset = &powerop_subsys.kset;
-+
-+	if ((error = kobject_register(&powerop_driver->kobj))) {
-+		printk(KERN_ERR "kobject_register for PowerOP driver failed.\n");
-+		return error;
-+	}
-+
-+	for (i = 0; i < powerop_driver->nr_params; i++) {
-+		if (! (param_attr[i] = 
-+		       kmalloc(sizeof(struct powerop_param_attribute),
-+			       GFP_KERNEL))) {
-+			printk(KERN_ERR "PowerOP: kmalloc failed.\n");
-+			return -ENOMEM;
-+		}
-+
-+		memset(param_attr[i], 0, 
-+		       sizeof(struct powerop_param_attribute));
-+		param_attr[i]->index = i;
-+		param_attr[i]->attr.name = 
-+			powerop_driver->param_names[i];
-+		param_attr[i]->attr.mode = 0644;
-+		if ((error = sysfs_create_file(&powerop_driver->kobj,
-+					       &param_attr[i]->attr))) {
-+			printk(KERN_ERR "sysfs_create_file for PowerOP param failed.\n");
-+			return error;
-+		}
-+	}
-+
-+        return error;
-+}
-+
-+static int __init powerop_sysfs_init(void)
-+{
-+        int error;
-+
-+	if ((error = subsystem_register(&powerop_subsys)))
-+		printk(KERN_ERR "PowerOP subsystem register failed.\n");
-+	else
-+		powerop_subsys_init = 1;
++	/* all but 16 LSB are "reserved", so treat them with
++	   care */
++	oldmsr &= ~mask;
++	msr &= mask;
++	oldmsr |= msr;
 +	
-+
-+	if (! error && powerop_driver)
-+		error = powerop_driver_sysfs_register(powerop_driver);
-+
-+
-+        return error;
++	wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++	return 0;
 +}
 +
-+static void powerop_driver_sysfs_unregister(struct powerop_driver *powerop_driver)
++#ifdef CONFIG_POWEROP_SYSFS
++static char *powerop_param_names[POWEROP_DRIVER_MAX_PARAMS];
++
++static int __init powerop_centrino_sysfs_init(void)
 +{
 +	int i;
 +
-+	if (! powerop_subsys_init || ! powerop_driver)
-+		return;
++	for (i = 0; i < NR_CPUS; i++) {
++		if (! (powerop_param_names[POWEROP_CPU + i] = 
++		       kmalloc(5 + i / 10, GFP_KERNEL)) ||
++		    ! (powerop_param_names[POWEROP_V + i] = 
++		       kmalloc(3 + i / 10, GFP_KERNEL)))
++			goto nomem;
 +
-+	for (i = 0; i < powerop_driver->nr_params; i++) {
-+		if (param_attr[i]) {
-+			sysfs_remove_file(&powerop_driver->kobj,
-+					  &param_attr[i]->attr);
-+			kfree(param_attr[i]);
-+			param_attr[i] = 0;
++		sprintf(powerop_param_names[POWEROP_CPU + i], "cpu%d", i);
++		sprintf(powerop_param_names[POWEROP_V + i], "v%d", i);
++	}
++
++	return 0;
++
++nomem:
++	printk(KERN_ERR "power-centrino malloc failed\n");
++
++	for (i = 0; i < NR_CPUS; i++) {
++		kfree(powerop_param_names[POWEROP_CPU + i]);
++		kfree(powerop_param_names[POWEROP_V + i]);
++	}
++
++	return -ENOMEM;
++}
++#else
++static int __init powerop_centrino_sysfs_init(void)
++{
++	return 0;
++}
++#endif
++
++static struct powerop_driver power_driver_centrino = {
++	.name		= "centrino",
++	.nr_params	= POWEROP_DRIVER_MAX_PARAMS,
++#ifdef CONFIG_POWEROP_SYSFS
++	.param_names    = powerop_param_names,
++#endif
++	.get_point	= powerop_centrino_get_point,
++	.set_point	= powerop_centrino_set_point,
++};
++
++static int __init powerop_centrino_init(void)
++{
++	struct cpuinfo_x86 *cpu = cpu_data;
++	unsigned l, h;
++
++	if (!cpu_has(cpu, X86_FEATURE_EST))
++		return -ENODEV;
++
++	/* Check to see if Enhanced SpeedStep is enabled, and try to
++	   enable it if not. */
++	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++		
++	if (!(l & (1<<16))) {
++		l |= (1<<16);
++		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
++		
++		/* check to see if it stuck */
++		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++		if (!(l & (1<<16))) {
++			printk(KERN_INFO "PowerOP: Couldn't enable Enhanced SpeedStep\n");
++			return -ENODEV;
 +		}
 +	}
-+
-+	kobject_unregister(&powerop_driver->kobj);
++	
++	return powerop_centrino_sysfs_init() || 
++		powerop_driver_register(&power_driver_centrino);
 +}
 +
-+static void __exit powerop_sysfs_exit(void)
++static void __exit powerop_centrino_exit(void)
 +{
-+	powerop_driver_sysfs_unregister(powerop_driver);
-+
-+	if (powerop_subsys_init)
-+		subsystem_unregister(&powerop_subsys);
++	powerop_driver_unregister(&power_driver_centrino);
 +}
 +
-+#else /* CONFIG_POWEROP_SYSFS */
-+static int powerop_driver_sysfs_init(struct powerop_driver *powerop_driver)
-+{
-+	return 0;
-+}
-+
-+static int __init powerop_sysfs_init(void)
-+{
-+	return 0;
-+}
-+
-+static void powerop_driver_sysfs_unregister(struct powerop_driver *powerop_driver)
-+{
-+}
-+
-+static void __exit powerop_sysfs_exit(void)
-+{
-+}
-+#endif /* CONFIG_POWEROP_SYSFS */
-+
-+int powerop_driver_register(struct powerop_driver *p)
-+{
-+	int error;
-+
-+	if (! powerop_driver) {
-+		printk(KERN_INFO "PowerOP registering driver %s.\n", p->name);
-+		if ((error = powerop_driver_sysfs_register(p)))
-+			powerop_driver_sysfs_unregister(p);
-+		else
-+			powerop_driver = p;
-+
-+	} else
-+		error = -EBUSY;
-+
-+	return error;
-+}
-+
-+
-+void powerop_driver_unregister(struct powerop_driver *p)
-+{
-+	if (powerop_driver == p) {
-+		printk(KERN_INFO "PowerOP unregistering driver %s.\n", p->name);
-+		powerop_driver_sysfs_unregister(powerop_driver);
-+		powerop_driver = NULL;
-+	}
-+}
-+
-+EXPORT_SYMBOL_GPL(powerop_driver_register);
-+EXPORT_SYMBOL_GPL(powerop_driver_unregister);
-+
-+static int __init powerop_init(void)
-+{
-+        return powerop_sysfs_init();
-+}
-+
-+static void __exit powerop_exit(void)
-+{
-+	powerop_sysfs_exit();
-+}
-+
-+module_init(powerop_init);
-+module_exit(powerop_exit);
-+
-+MODULE_DESCRIPTION("PowerOP Power Management");
-+MODULE_LICENSE("GPL");
-Index: linux-2.6.12/include/linux/powerop.h
++module_init(powerop_centrino_init);
++module_exit(powerop_centrino_exit);
+Index: linux-2.6.12/include/asm-i386/powerop-centrino.h
 ===================================================================
---- linux-2.6.12.orig/include/linux/powerop.h	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.12/include/linux/powerop.h	2005-08-03 01:10:55.000000000 +0000
-@@ -0,0 +1,36 @@
+--- linux-2.6.12.orig/include/asm-i386/powerop-centrino.h	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.12/include/asm-i386/powerop-centrino.h	2005-08-03 01:24:16.000000000 +0000
+@@ -0,0 +1,20 @@
 +/*
-+ * PowerOP core definitions
-+ *
-+ * Author: Todd Poynor <tpoynor@mvista.com>
++ * PowerOP support for Intel Enhanced Speedstep "Centrino" platforms.
 + *
 + * 2005 (c) MontaVista Software, Inc. This file is licensed under
 + * the terms of the GNU General Public License version 2. This program
@@ -354,28 +243,38 @@ Index: linux-2.6.12/include/linux/powerop.h
 + * or implied.
 + */
 +
-+#ifndef __POWEROP_H__
-+#define __POWEROP_H__
++#ifndef __ASM_POWEROP_CENTRINO_H__
++#define __ASM_POWEROP_CENTRINO_H__
 +
-+#include <linux/kobject.h>
-+#include <asm/powerop.h>
++#include <linux/threads.h>
 +
-+struct powerop_point {
-+	int param[POWEROP_DRIVER_MAX_PARAMS];
-+};
++#define POWEROP_CPU		0	/* CPU freq in MHz*/
++#define POWEROP_V		NR_CPUS /* core voltage */
 +
-+struct powerop_driver {
-+	char *name;
-+	struct kobject kobj;
-+	int nr_params;
-+	char **param_names;
-+	int (*set_point)(struct powerop_point *point);
-+	int (*get_point)(struct powerop_point *point);
-+};
++#define POWEROP_DRIVER_MAX_PARAMS	2*NR_CPUS	/* max # params */
 +
-+int powerop_set_point(struct powerop_point *point);
-+int powerop_get_point(struct powerop_point *point);
-+int powerop_driver_register(struct powerop_driver *p);
-+void powerop_driver_unregister(struct powerop_driver *p);
++#endif /* __ASM_POWEROP_CENTRINO_H__ */
+Index: linux-2.6.12/include/asm-i386/powerop.h
+===================================================================
+--- linux-2.6.12.orig/include/asm-i386/powerop.h	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.12/include/asm-i386/powerop.h	2005-08-03 01:23:03.000000000 +0000
+@@ -0,0 +1,19 @@
++/*
++ * PowerOP support for i386 platforms.
++ *
++ * 2005 (c) MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
 +
-+#endif /*__POWEROP_H__*/
++#ifndef __ASM_POWEROP_H__
++#define __ASM_POWEROP_H__
++
++#include <linux/config.h>
++
++#ifdef CONFIG_POWEROP_CENTRINO
++#include <asm/powerop-centrino.h>
++#endif
++
++#endif /* __ASM_POWEROP_H__ */
