@@ -1,21 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: FYI: device_suspend(...) in kernel_power_off().
-Date: Wed, 10 Aug 2005 15:08:03 +0200
-Message-ID: <20050810130803.GA2004@elf.ucw.cz>
-References: <42F121CD.5070903@ribosome.natur.cuni.cz>
-	<20050803200514.3ddb8195.akpm@osdl.org>
-	<20050805140837.GA5556@localhost>
-	<42F52AC5.1060109@ribosome.natur.cuni.cz>
-	<m1hde2xy74.fsf@ebiederm.dsl.xmission.com>
-	<m13bplykt3.fsf_-_@ebiederm.dsl.xmission.com>
-	<20050807190222.GF1024@openzaurus.ucw.cz>
-	<m1u0i1wmvr.fsf@ebiederm.dsl.xmission.com>
-	<20050807211104.GE3100@elf.ucw.cz>
-	<m1pssnvx84.fsf@ebiederm.dsl.xmission.com>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: RE: Re: PowerOP 0/3: System power operating point
+	managementAPI
+Date: Wed, 10 Aug 2005 08:35:03 -0500
+Message-ID: <EA12F909C0431D458B9D18A176BEE4A501852767@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6418427163212479=="
+Content-Type: multipart/mixed; boundary="===============76398581291642187=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <m1pssnvx84.fsf@ebiederm.dsl.xmission.com>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,48 +16,90 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>, john@illhostit.com, sjordet@gmail.com, fastboot@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zlatko Calusic <zlatko.calusic@iskon.hr>, Linus Torvalds <torvalds@osdl.org>, =?iso-8859-1?Q?Jos=E9_Luis_Domingo_L=F3pez?= <jdomingo@24x7linux.com>, ncunningham@cyclades.com, linux-kernel@24x7linux.com
+To: Pavel Machek <pavel@ucw.cz>, Todd Poynor <tpoynor@mvista.com>
+Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
---===============6418427163212479==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============76398581291642187==
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 
-Hi!
-
-> >> > Code is not ready now => it can never be fixed? Thats quite a strange
-> >> > conclusion to make.
-> >> 
-> >> It seems there is an fundamental incompatibility with ACPI power off.
-> >> As best as I can tell the normal case of device_suspend(PMSG_SUSPEND)
-> >> works reasonably well in 2.6.x.
-> >
-> > Powerdown is going to have the same problems as the powerdown at the
-> > end of suspend-to-disk. Can you ask people reporting broken shutdown
-> > to try suspend-to-disk?
+> > Depending on the ability of the hardware to make software-controlled
+> > power/performance adjustments, this may be useful to select custom
+> > voltages, bus speeds, etc. in desktop/server systems.  Various
+embedded
+> > systems have several parameters that can be set.  For example, an
+XScale
+> > PXA27x could be considered to have six basic power parameters
+(mainly
+> > cpu run mode and memory and bus dividers) that for the most part
+> > should
 > 
-> Everyone I know of who is affected has been copied on this thread.
-> However your request is just nonsense.  There is a device_resume in
-> the code before we get to the device_shutdown so there should be no
-> effect at all.  Are we looking at the same kernel?
+> This scares me a bit. Is table enough to handle this? I'm afraid that
+> table will get very large on systems that allow you to do "almost
+> anything".
 
-Sorry, my fault. kernel/power/disk.c:power_down(): it calls
-device_shutdown even in PM_DISK_PLATFORM case. I thought it would do
-device_suspend() to enable drivers doing something more clever.
+You have use something abstract enough such that multiple systems can
+use it.  If turns out to be big, another more user friendly/generic
+layer would probably need to be built atop it.  In a closed system this
+table is generally small and just describes a fundamental set of
+parameters.
 
-So only missing piece of puzzle seems to be making sure disks are
-properly spinned down in device_shutdown... and even that seems to be
-there, not sure why it was broken before.
-								Pavel
--- 
-if you have sharp zaurus hardware you don't need... you know my address
 
---===============6418427163212479==
+One why which this is handled for an entire system in the DPM case might
+be:
+
+You can flexibly create operating point sets in user space which are
+appropriate for the underlying platform which the in kernel platform
+specific back end knows how to interpret. This list of tuples in theory
+might be big, but in practice it is not so large.
+
+Now, to keep higher level user space code from having to understand all
+the details of the architecture specific tuple list, DPM allows you to
+create states which can be consistent across platforms (if you choose).
+Each state will map to that lower architecture specific list.  The
+policy manager sets the state to arch specific table list.
+
+States : (fast->c0, mid->c1, slow->c2, idle->c2, off->s1)
+
+Arch table: [["c0", a, b, c, e, f]
+		 ["c1", a, b, c, e, f]
+             ["c2", a, b, c, e, f]
+		 ["t1", a, b, c, e, f]
+		 ["t7", a, b, c, e, f]
+		 ["s1", a, b, c, e, f]
+		 ["s2", a, b, c, e, f]]
+
+Now, how you move from state to state is up to the policy manager.  In
+DPM you can set things up such that the kernel scheduler drives state
+transitions or if that doesn't make sense you for your system, you can
+control the change from else where, this can be from user state or
+kernel state.  In any case the state to arch table mapping is done by
+the policy manager best in user space.
+
+To have fine grained control you probably need to make state changes at
+the kernel level as there are timing realities.  If something a bit
+coarser grained if desired it can all be done from user space.
+
+By describing a very simple state diagram which just knows
+fast/slow/idle you can potentially save a lot of power.  More elaborate
+states can be built but that becomes very application specific. 
+
+It seems Todd's PowerOP idea is a good one in that it allows multiple
+mechanisms to be used.  Whether that is the current or evolved CPUFREQ
+one, a DPM one, or some other one.
+
+Regards,
+Richard Woodruff
+
+
+--===============76398581291642187==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============6418427163212479==--
+--===============76398581291642187==--
