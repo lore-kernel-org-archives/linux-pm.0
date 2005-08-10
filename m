@@ -1,12 +1,12 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: PowerOP 2/3: Intel Centrino support
-Date: Wed, 10 Aug 2005 12:01:33 +0200
-Message-ID: <20050810100133.GA1945@elf.ucw.cz>
-References: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
+Subject: Re: PowerOP 3/3: Intel Centrino cpufreq integration
+Date: Wed, 10 Aug 2005 12:03:39 +0200
+Message-ID: <20050810100339.GB1945@elf.ucw.cz>
+References: <20050809025727.GD25064@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============53438091708394664=="
+Content-Type: multipart/mixed; boundary="===============12429388947023523=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
+In-Reply-To: <20050809025727.GD25064@slurryseal.ddns.mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,30 +20,30 @@ To: Todd Poynor <tpoynor@mvista.com>
 Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============53438091708394664==
+--===============12429388947023523==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-> Minimal PowerOP support for Intel Enhanced Speedstep "Centrino"
-> notebooks.  These systems run at an operating point comprised of a cpu
-> frequency and a core voltage.  The voltage could be set from the values
-> recommended in the datasheets if left unspecified (-1) in the operating
-> point, as cpufreq does.
+> A minimal example of modifying cpufreq to use PowerOP for reading and
+> writing power parameters on Intel Centrino platforms.  It would be
+> possible to move voltage table lookups to the PowerOP layer.
 
-Eh? I thought these are handled okay by cpufreq already? What is
-advantage of this over cpufreq?
+Aha, ok, sorry for my previous comment. It looks like powerop
+framework can cleanup speedstep-centrino a tiny bit. Where else is it
+used?
+
 								Pavel
 
 -- 
 if you have sharp zaurus hardware you don't need... you know my address
 
---===============53438091708394664==
+--===============12429388947023523==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============53438091708394664==--
+--===============12429388947023523==--
