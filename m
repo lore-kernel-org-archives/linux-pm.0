@@ -1,64 +1,120 @@
-From: Nikolay Pelov <ns@pelov.name>
-Subject: Re: [linux-pm] Re: PowerOP 2/3: Intel Centrino support
-Date: Fri, 12 Aug 2005 14:38:43 +0200 (MEST)
-Message-ID: <Pine.GSO.4.10.10508121406280.26851-100000@billie.cs.kuleuven.ac.be>
-References: <20050810184445.GB14350@redhat.com>
+From: david-b@pacbell.net
+Subject: Re: PowerOP 1/3: PowerOP core
+Date: Fri, 12 Aug 2005 09:23:15 -0700
+Message-ID: <20050812162315.16671E2E9B__42969.9773005725$1123863950$gmane$org@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
+	<42F8D4C5.2090800@am.sony.com> <42F94B68.6060107@mvista.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050810184445.GB14350@redhat.com>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-Cc: Dave Jones <davej@redhat.com>, Bruno Ducrot <ducrot@poupinou.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: multipart/mixed; boundary="===============10651096255524983=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <42F94B68.6060107@mvista.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: tpoynor@mvista.com, geoffrey.levand@am.sony.com
+Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 10 Aug 2005, Dave Jones wrote:
+--===============10651096255524983==
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-> 
-> For example, most of the x86 drivers, if you set a speed, and then
-> start fiddling with the voltage, you can pretty much guarantee
-> you'll crash within the next few seconds.  They have to match,
-> or at the least, be within a very small margin.
-> 
-> Given how long its taken us to get sane userspace parts for cpufreq,
-> I'm loathe to changing the interfaces yet again unless there's
-> a clear advantage to doing so, as it'll take at least another 12 months
-> for userspace to catch up.
-> 
+How well would _this_ notion of an operating point scale up?
 
-I'm one of those x86 folks undervolting their Pentium M laptops,
-so let me share my experience/opinion. About a week after I bought my
-laptop (Acer Aspire 1690, Intel Pentium M 740 at 1.7GHz), I was at the
-point of returning it to the dealer because the fan was constantly on
-and making too much noise even when running at 800MHz. Then I discovered
-that in the windows world, folks are routinely undervolting their CPUs and
-obtaining significant improvements in reduced heat and battery life.
-There are a number of howto's and software tools on the topic. 
-After I did the excercise myself I ended up with an almost 30% reduction
-in voltage for every frequency. I didn't make measurments how much this
-extends the battery life but the fan certainly spins less often.
+I have this feeling that it's maybe better attuned to "scale down"
+sorts of problems (maybe cell phones) than to a big NUMA box.  I can
+see how a batch scheduled server might want to fire up only enough
+components to run the next simulation, but I wonder if maybe systems
+dynamically managing lots of resources might not be better off with
+some other model ... where userspace makes higher level decisions,
+and the kernel is adaptive within a potentially big solution space.
+(Likewise, maybe some of the smaller systems would too.)
 
-When I wanted to do this excersise on linux I discovered that there
-wasn't any support for changing voltages on centrino - only some patches
-flying around on this mailing list, many of them for AMD. So, I wrote
-a very simple patch myself which works as follows. Currently, there is a
-table with avaliable frequencies which the cpu governors use for dynamic
-frequency switching. In this table every frequency is paired with a voltage
-setting so whenever someone sets a frequency, the driver also sets the
-corresponding voltage. I guess that this pair is what you refer to as a
-power point. The patch I wrote simply overrides the default voltages in
-this pair. I may send the patch in the coming days but its just a quick
-hack and not a serious solution.
+Also, I suspect everyone would be happier if cpufreq were left
+responsible for the CPU-specific parts of an operating point.
+That could mean system-specific hooks, e.g. to rule out certain
+voltages based on available power or what devices are running.
 
-To summarize, undervolting the cpu of your laptop is becoming an important
-task and it would be nice to have support for it in one way or another.
+Unfortunately, examples of non-CPUfreq part of an operating point
+may be tricky to come by on desktop systems.
 
-Nik.
+
+> Date: Tue, 09 Aug 2005 17:33:44 -0700
+> From: Todd Poynor <tpoynor@mvista.com>
+>
+> Geoff Levand wrote:
+>
+> > I'm wondering if anything could be gained by having the whole 
+> > struct powerop_point defined in asm/powerop.h, and treat it as an 
+> > opaque structure at this level.  That way, things other than just 
+> > ints could be passed between the policy manager and the backend, 
+> > although I guess that breaks the beauty of the simplicity and would 
+> > complicate the sys-fs interface, etc.  I'm interested to hear your 
+> > comments.
+>
+> Making the "operating point" data structure entirely platform-specific 
+> should be OK.  There's a little value to having generic pieces handle 
+> some common chores (such as the sysfs interfaces), but even for integers 
+> decimal vs. hex formatting is nicer depending on the type of value. 
+
+Taking a more extreme position or two:
+
+  - Why have any parsing at all?  It's opaque data; so insist that
+    the kernel just get raw bytes.  That's the traditional solution,
+    not having the kernel parse arrays of integers.
+
+  - Why try to standardize a data-based abstraction at all?  Surely
+    it'd be easier to use modprobe, and have it register operating
+    points that include not just the data, but its interpretation.
+
+  - If those numbers are needed, having single-valued sysfs attributes
+    (maybe /sys/power/runstate/policy_name/XXX) would be preferable
+    to relying on getting position right within a multivalued input.
+
+What I've had in mind is that "modprobe" would register some code
+implementing one or more named runtime policies.  Now one way to use
+such code would be to equate "policy" and "operating point"; a static
+mapping, as I think I see Todd suggesting, but compiled.  (Or maybe
+tuned using individual sysfs attributes.)
+
+But another way would be to have that code pick some operating point
+that matches various constraints fed in from userspace ... maybe from
+sysfs attribute files managed by that code.  It could use all sorts
+of kernel APIs while choosing the point, and would clearly need to
+use them in order to actually _set_ some new point.
+
+It's easier for me to see how "echo policy_name > /sys/power/runtime"
+would scale up and down (given pluggable policy_name components!)
+than "echo 0 35 98 141 66 -3 0x7efc0 > /sys/power/foo" would.
+
+
+> Since most values that have been managed using similar interfaces thus 
+> far have been flags, register values, voltages, etc. using integers has 
+> worked well and nicely simplified the platform backend, but if there's a 
+> need for other data types then should be doable.
+
+Sysfs already has all that infrastructure, if you adopt the policy
+that such system-specific constraints show up in system-specific
+attributes somewhere ... matching the system-specific knowledge that's
+used to interpret them.  That'd also be less error prone than "whoops,
+there wasn't supposed to be a space between 35 and 98" or "darn, I
+switched the 141 and 66 around again".
+
+- Dave
+
+
+
+--===============10651096255524983==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============10651096255524983==--
