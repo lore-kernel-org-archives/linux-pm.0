@@ -1,15 +1,14 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: PowerOP 1/3: PowerOP core
-Date: Fri, 12 Aug 2005 18:06:41 -0700
-Message-ID: <42FD47A1.6070506@mvista.com>
-References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
-	<42F8D4C5.2090800@am.sony.com> <42F94B68.6060107@mvista.com>
-	<20050812162315.16671E2E9B@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+From: Dave Jones <davej@redhat.com>
+Subject: Software suspend support in Fedora.
+Date: Sat, 13 Aug 2005 01:16:42 -0400
+Message-ID: <20050813051642.GB11456@redhat.com>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3004311E37@hdsmsx401.amr.corp.intel.com>
+	<20050731222751.GA28907@redhat.com>
+	<20050803092301.GA1352@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============31603962820833242=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050812162315.16671E2E9B@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+In-Reply-To: <20050803092301.GA1352@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,101 +18,62 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: david-b@pacbell.net
-Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-david-b@pacbell.net wrote:
-> How well would _this_ notion of an operating point scale up?
-> 
-> I have this feeling that it's maybe better attuned to "scale down"
-> sorts of problems (maybe cell phones) than to a big NUMA box.  I can
-> see how a batch scheduled server might want to fire up only enough
-> components to run the next simulation, but I wonder if maybe systems
-> dynamically managing lots of resources might not be better off with
-> some other model ... where userspace makes higher level decisions,
-> and the kernel is adaptive within a potentially big solution space.
-> (Likewise, maybe some of the smaller systems would too.)
+--===============31603962820833242==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If I understand correctly, that does seem to describe how such systems 
-are used today: out of a potentially large number of choices (and some 
-embedded SOCs do have a good variety of clocking, core voltage, and 
-power domain choices), configure only those useful for the problem at 
-hand into the kernel and then userspace gives marching orders to the 
-kernel to activate whatever's appropriate according to system-specific 
-logic in userspace.
+On Wed, Aug 03, 2005 at 11:23:01AM +0200, Pavel Machek wrote:
 
->   - Why have any parsing at all?  It's opaque data; so insist that
->     the kernel just get raw bytes.  That's the traditional solution,
->     not having the kernel parse arrays of integers.
-> 
->   - Why try to standardize a data-based abstraction at all?  Surely
->     it'd be easier to use modprobe, and have it register operating
->     points that include not just the data, but its interpretation.
+ > > The outcome: I'm no more enthusiastic about enabling this in Red Hat
+ > > kernels than I ever was before.  It seems to have real issues with LVM
+ > > setups (which is default on Red Hat/Fedora installs these days).
+ > > After convincing it where to suspend/resume from by feeding it
+ > > the major/minor of my swap partition, it did actually seem
+ > > to suspend. And resume (though it did spew lots of 'sleeping whilst
+ > > atomic warnings, but thats trivial compared to whats coming up
+ > > next).
+ > 
+ > I do not know much about LVM. How exactly did you resume= command line
+ > look like? You were not resuming from initrd, right?
 
-Configuring the definitions of desired operating points (and updating 
-these on-the-fly) from userspace has its advantages, but inserting into 
-the kernel as a module should work fine and avoids some awkward 
-userspace interfaces.  In the current code it is intended that both 
-in-kernel interfaces (without parsing) and userspace interfaces are 
-available, but I think non-diagnostic userspace interfaces could easily 
-be dropped.  One of the nice things about having it done from userspace 
-is that apps can be in charge of configuring operating points and 
-activating those operating points in response to changes in system state 
-(with reduced chance of mismatched app + module).  And since it can be 
-done in userspace it's nice to simplify the kernel that way, which some 
-folks feel strongly about.  But not a big deal to me.
+Indeed, this was very likely the problem. Doing a resume if I had
+any partition mounted was *bad* news.  We implemented the necessary
+bits in our initrd today to detect resume partitions, and erm.. resume them.
+So far so good, no repeats of the corruption I saw.
 
-Standard data structures have small benefits for implementing some code 
-once instead of per-platform.  Another possibility in addition to the 
-configuration or diagnostic interfaces is the concept of "constraints" 
-on operating points according to device needs that you and others have 
-alluded to: the constraints can be expressed in a form that can be 
-checked by platform-independent code ("check the value at this power 
-parameter index in the array for this range of integer values").  Also 
-not a big deal.
+As of tomorrow rawhide kernels (for the unenlightened: these will
+eventually be FC5) will have software suspend support.
 
-All in all, it sounds like the next version of this should not have a 
-userspace configuration interface and should not provide a 
-platform-independent structure for the operating points.  The operating 
-point get and set functions are in machine-specific code and take an 
-operating point argument defined in header files shared between the 
-machine-specific code and whatever kernel code is creating and 
-activating operating points.  Any diagnostic interfaces need to be 
-machine-dependent as well.
+Our initial experiments with it have been fairly positive, though as
+expected there are a number of drivers that don't survive the resume
+correctly. http://www.livejournal.com/users/kernelslacker/22975.html
+has more info on this.  As we start getting users jumping on this, I
+imagine more of these bugs will appear. But without testing, these are
+never going to get fixed eh ? :)
 
-Now that the operating points are created without a generic layer or 
-structure, if one wants a generic interface to set (activate) one of 
-those operating points, probably identified by name, from userspace then 
-a little extra is needed.  Can worry about that later.
+ > Could you try to suspend on plain old swap-partition, first, to verify
+ > that your drivers cooperate?
+ 
+So, we've tested in on a /dev/hdaX, /dev/sdaX, and /dev/mapper/VolGroup00-LogVol01
+so far, and its done the right thing every time.
 
->   - If those numbers are needed, having single-valued sysfs attributes
->     (maybe /sys/power/runstate/policy_name/XXX) would be preferable
->     to relying on getting position right within a multivalued input.
+It's looking pretty good, and unless something catastrophic happens,
+we'll be supporting this feature from now on.
+Whilst it's likely still got some niggles that need working out, 
+It's come a long way since I last spent time looking into this, and
+I'm sure it'll get there.  Kudos to all involved.
 
-In case it helps, the code thus far and proposed interfaces use 
-single-valued sysfs interfaces.  Since you also mentioned:
-
-> It's easier for me to see how "echo policy_name > /sys/power/runtime"
-> would scale up and down (given pluggable policy_name components!)
-> than "echo 0 35 98 141 66 -3 0x7efc0 > /sys/power/foo" would.
-
-and:
-
-> That'd also be less error prone than "whoops,
-> there wasn't supposed to be a space between 35 and 98" or "darn, I
-> switched the 141 and 66 around again".
-
-It may be worth pointing out that these interfaces wouldn't do that (a 
-two level hierarchy of operating point name and single power parameter 
-attribute would be used, and the ordering into the array is handled by 
-the generic PowerOP core, which knows how to associate parameter names 
-with array indices).  Older versions of DPM did use interfaces similar 
-to what you describe, in case you've got that in mind.  They weren't 
-intended to be used interactively.
-
-Thanks,
+		Dave
 
 
--- 
-Todd
+--===============31603962820833242==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============31603962820833242==--
