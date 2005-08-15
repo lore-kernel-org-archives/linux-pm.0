@@ -1,16 +1,17 @@
-From: Alan Cox <alan@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Software suspend support in Fedora.
-Date: Mon, 15 Aug 2005 08:29:27 -0400
-Message-ID: <20050815122927.GA15481@devserv.devel.redhat.com>
+Date: Mon, 15 Aug 2005 14:34:17 +0200
+Message-ID: <20050815123417.GA4003@elf.ucw.cz>
 References: <F7DC2337C7631D4386A2DF6E8FB22B3004311E37@hdsmsx401.amr.corp.intel.com>
 	<20050731222751.GA28907@redhat.com>
 	<20050803092301.GA1352@elf.ucw.cz>
 	<20050813051642.GB11456@redhat.com>
 	<20050815122000.GB15382@elf.ucw.cz>
+	<20050815122927.GA15481@devserv.devel.redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============36398569334683462=="
+Content-Type: multipart/mixed; boundary="===============25122724721527767=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050815122000.GB15382@elf.ucw.cz>
+In-Reply-To: <20050815122927.GA15481@devserv.devel.redhat.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,35 +21,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: alan@redhat.com, linux-pm@lists.osdl.org
+To: Alan Cox <alan@redhat.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============36398569334683462==
+--===============25122724721527767==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Mon, Aug 15, 2005 at 02:20:00PM +0200, Pavel Machek wrote:
-> Suspend should work okay on PATA [what areas do you think it is
-> incomplete in?]. Recently, it was made to work on SATA, too
+Hi!
 
-ACPI requires that the ACPI taskfiles are sent to the drivers. That isn't
-done. We then don't restore all the drive state correctly so parts of your
-disk can just "vanish".
+> > Suspend should work okay on PATA [what areas do you think it is
+> > incomplete in?]. Recently, it was made to work on SATA, too
+> 
+> ACPI requires that the ACPI taskfiles are sent to the drivers. That isn't
+> done. We then don't restore all the drive state correctly so parts of your
+> disk can just "vanish".
 
-> [experimental, I'd say]. It did not eat data recently due to SATA/PATA
-> problems. It is broken on most SCSI drivers (well, probably all of
+We have had done normal boot, so drive should be in sane state. With
+echo "shutdown"  > /sys/power/disk, ACPI is not even involved (it
+thinks it is regular powerdown). With echo "platform" > ..., yes, we
+tell ACPI, and that means that we should follow the specs. Maybe you
+want to make "shutdown" the default, then...
 
-It does for various people I know. In some cases we even know why. SATA has
-the same basic problems as PATA although the infrastructure to handle it looks
-ok with the scsi/sata pm patch that appeared.
+Do you agree that suspend/resume PATA support is okay on system
+without ACPI enabled?
+								Pavel
 
+-- 
+if you have sharp zaurus hardware you don't need... you know my address
 
---===============36398569334683462==
+--===============25122724721527767==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============36398569334683462==--
+--===============25122724721527767==--
