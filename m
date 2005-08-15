@@ -1,14 +1,15 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: Fwd: PM summit sponsor by CELF?
-Date: Mon, 15 Aug 2005 18:14:22 +1000
-Message-ID: <1124093662.5183.234.camel@localhost>
-References: <6555429d05081121514379bdb7@mail.gmail.com>
-	<6555429d050815005053f780a3@mail.gmail.com>
-Reply-To: ncunningham@linuxmail.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Software suspend support in Fedora.
+Date: Mon, 15 Aug 2005 14:06:35 +0200
+Message-ID: <20050815120635.GA15382@elf.ucw.cz>
+References: <F7DC2337C7631D4386A2DF6E8FB22B3004311E37@hdsmsx401.amr.corp.intel.com>
+	<20050731222751.GA28907@redhat.com>
+	<20050803092301.GA1352@elf.ucw.cz>
+	<20050813051642.GB11456@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============79181355282815069=="
+Content-Type: multipart/mixed; boundary="===============67495154517736822=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <6555429d050815005053f780a3@mail.gmail.com>
+In-Reply-To: <20050813051642.GB11456@redhat.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,82 +19,89 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Shawn Soon-Son Kwon <ksoonson@gmail.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>, Tim Bird <tim.bird@am.sony.com>
+To: Dave Jones <davej@redhat.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============79181355282815069==
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id j7F8FLjA004761
+--===============67495154517736822==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi Shawn.
+Hi!
 
-On Mon, 2005-08-15 at 17:50, Shawn Soon-Son Kwon wrote:
-> I have sent this email on Aug 12 but did not get any reply yet.
+>  > > The outcome: I'm no more enthusiastic about enabling this in Red Hat
+>  > > kernels than I ever was before.  It seems to have real issues with LVM
+>  > > setups (which is default on Red Hat/Fedora installs these days).
+>  > > After convincing it where to suspend/resume from by feeding it
+>  > > the major/minor of my swap partition, it did actually seem
+>  > > to suspend. And resume (though it did spew lots of 'sleeping whilst
+>  > > atomic warnings, but thats trivial compared to whats coming up
+>  > > next).
+>  > 
+>  > I do not know much about LVM. How exactly did you resume= command line
+>  > look like? You were not resuming from initrd, right?
+> 
+> Indeed, this was very likely the problem. Doing a resume if I had
+> any partition mounted was *bad* news.  We implemented the necessary
+> bits in our initrd today to detect resume partitions, and erm.. resume them.
+> So far so good, no repeats of the corruption I saw.
 
-Sorry. I didn't receive the previous email. I'll forward your email to
-the Power Management list. Patrick, Pavel and I are members of it, but
-we're by no means the whole group of people you're after.
+Aha, good.
 
-Regards,
+> As of tomorrow rawhide kernels (for the unenlightened: these will
+> eventually be FC5) will have software suspend support.
+> 
+> Our initial experiments with it have been fairly positive, though as
+> expected there are a number of drivers that don't survive the resume
+> correctly. http://www.livejournal.com/users/kernelslacker/22975.html
 
-Nigel
+I see, having ext3 (or anything else) mounted when doing resume is
+going to kill you data, fast. I thought warning in docs was good
+enough :-).
 
-> If any of you can answer to the following questions, feel free
-> to reply to me or you may discuss it first.
->=20
-> Thanks
->=20
->=20
-> ---------- Forwarded message ----------
-> From: Shawn Soon-Son Kwon <ksoonson@gmail.com>
-> Date: 2005. 8. 12 =EC=98=A4=ED=9B=84 1:51
-> Subject: PM summit sponsor by CELF?
-> To: mochel@digitalimplant.org
->=20
->=20
-> Hello, this is Shawn Kwon from Korea.
-> I am working at Samsung, one of member company of CE Linux Forum.
-> I heard from Tim Bird that you guys are looking for sponsor for PM summ=
-it.
-> I volunteered to coordinate it as a member of CELF.
->=20
-> I volunteered because I believe the forum needs to be more F/OSS friend=
-ly.
-> Personally I have been maintained Korean LDP(Linux Documentation Projec=
-t)
-> since 1996. So you may think of me 51% community guy and 49% company gu=
-y. :-)
->=20
-> To help you to have PM summit, I need some information from you
-> and will eventually request budget to the forum to get final approval.
-> (Yes, it is not confirmed as of now but we are in the middle of it.)
->=20
-> I need the following information as of now.
->=20
-> - Who will attend the summit? Please list them.
-> - Will they need to be sponsored travel budget if the place is San Jose=
-?
-> - How long will it take from their place to San Jose?
-> - When would like to hold the summit? Rough date range please.
-> - Agenda for the summit?
->=20
-> Thanks very much. Your quick reply will be very appreciated.
-> --
-> http://kldp.org/~kss
---=20
-Evolution.
-Enumerate the requirements.
-Consider the interdependencies.
-Calculate the probabilities.
+Anyway, if you want to make this idiot-proof, I think the preferred
+way is to kill suspend signature during the boot [it is must-have for
+failsafe boot, so you can recover system if resume crashes it]. That
+way user can echo whatever to resume, but having no signature means he
+is not going to cause big damage.
+
+[Actually there are more easy ways to kill some data. Suspend, do
+normal boot next time, change something on disk, reboot and make it
+resume. Bye-bye data.]
+
+Okay, I realized I had too many warnings in there, and some things
+(like no driver support) is not _that_ dangerous, while resuming with
+filesystems mounted clearly is. I'll probably change the warning to:
+
+ * BIG FAT WARNING *********************************************************
+ *
+ * If you touch anything on disk between suspend and resume...
+ *                              ...kiss your data goodbye.
+ *
+ * If you do resume from initrd after your filesystems are mounted...
+ *                              ...bye bye root partition.
+ *                      [this is actually same case as above]
+ *
+ * If you have unsupported (*) devices using DMA, you may have some
+ * problems. If your disk driver does not support suspend... (IDE does),
+ * it may cause some problems, too. If you change kernel command line
+ * between suspend and resume, it may do something wrong. If you change
+ * your hardware while system is suspended... well, it was not good idea;
+ * but it wil probably only crash.
+ *
+ * (*) suspend/resume support is needed to make it safe.
 
 
---===============79181355282815069==
+
+								Pavel
+-- 
+if you have sharp zaurus hardware you don't need... you know my address
+
+--===============67495154517736822==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
---===============79181355282815069==--
+--===============67495154517736822==--
