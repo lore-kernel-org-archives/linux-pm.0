@@ -1,16 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: Toward runtime power management in Linux
-Date: Sun, 14 Aug 2005 21:53:18 +0200
-Message-ID: <20050814195317.GE1686@openzaurus.ucw.cz>
-References: <Pine.LNX.4.44L0.0507302219250.13423-100000@netrider.rowland.org>
-	<20050801021054.GA30859@best.com>
-	<1122896686.2647.32.camel@localhost>
-	<20050802024415.C3518DB57B@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
-	<20050804080649.GF22000@atomide.com>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: Fwd: PM summit sponsor by CELF?
+Date: Mon, 15 Aug 2005 18:14:22 +1000
+Message-ID: <1124093662.5183.234.camel@localhost>
+References: <6555429d05081121514379bdb7@mail.gmail.com>
+	<6555429d050815005053f780a3@mail.gmail.com>
+Reply-To: ncunningham@linuxmail.org
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============52731819377603695=="
+Content-Type: multipart/mixed; boundary="===============79181355282815069=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050804080649.GF22000@atomide.com>
+In-Reply-To: <6555429d050815005053f780a3@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,37 +18,82 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: david-b@pacbell.net, linux-pm@lists.osdl.org
+To: Shawn Soon-Son Kwon <ksoonson@gmail.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>, Tim Bird <tim.bird@am.sony.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============52731819377603695==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============79181355282815069==
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id j7F8FLjA004761
 
-Hi!
+Hi Shawn.
 
-> > >	to power down, couldn't the PM framework take care of
-> > > recursively sending 'power down' message to all children, wait for
-> > > confirmation, and then power itself down?
-> > 
-> > Could, arguably should -- but doesn't, just now.  I don't
-> > think I'd try to manage all system devices' power through
-> > sysfs from usermode yet ... :)
-> 
-> There are some cases where the whole bus can be powered down, but
-> a device on the bus needs to be left on to provide wake-up events.
+On Mon, 2005-08-15 at 17:50, Shawn Soon-Son Kwon wrote:
+> I have sent this email on Aug 12 but did not get any reply yet.
 
-such device can be "off" as far as driver model knows.			Pavel
--- 
-64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
+Sorry. I didn't receive the previous email. I'll forward your email to
+the Power Management list. Patrick, Pavel and I are members of it, but
+we're by no means the whole group of people you're after.
+
+Regards,
+
+Nigel
+
+> If any of you can answer to the following questions, feel free
+> to reply to me or you may discuss it first.
+>=20
+> Thanks
+>=20
+>=20
+> ---------- Forwarded message ----------
+> From: Shawn Soon-Son Kwon <ksoonson@gmail.com>
+> Date: 2005. 8. 12 =EC=98=A4=ED=9B=84 1:51
+> Subject: PM summit sponsor by CELF?
+> To: mochel@digitalimplant.org
+>=20
+>=20
+> Hello, this is Shawn Kwon from Korea.
+> I am working at Samsung, one of member company of CE Linux Forum.
+> I heard from Tim Bird that you guys are looking for sponsor for PM summ=
+it.
+> I volunteered to coordinate it as a member of CELF.
+>=20
+> I volunteered because I believe the forum needs to be more F/OSS friend=
+ly.
+> Personally I have been maintained Korean LDP(Linux Documentation Projec=
+t)
+> since 1996. So you may think of me 51% community guy and 49% company gu=
+y. :-)
+>=20
+> To help you to have PM summit, I need some information from you
+> and will eventually request budget to the forum to get final approval.
+> (Yes, it is not confirmed as of now but we are in the middle of it.)
+>=20
+> I need the following information as of now.
+>=20
+> - Who will attend the summit? Please list them.
+> - Will they need to be sponsored travel budget if the place is San Jose=
+?
+> - How long will it take from their place to San Jose?
+> - When would like to hold the summit? Rough date range please.
+> - Agenda for the summit?
+>=20
+> Thanks very much. Your quick reply will be very appreciated.
+> --
+> http://kldp.org/~kss
+--=20
+Evolution.
+Enumerate the requirements.
+Consider the interdependencies.
+Calculate the probabilities.
 
 
---===============52731819377603695==
+--===============79181355282815069==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
---===============52731819377603695==--
+--===============79181355282815069==--
