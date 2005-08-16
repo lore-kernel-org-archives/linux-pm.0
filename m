@@ -1,17 +1,19 @@
-From: Alan Cox <alan@redhat.com>
-Subject: Re: Software suspend support in Fedora.
-Date: Mon, 15 Aug 2005 19:34:04 -0400
-Message-ID: <20050815233404.GB8205@devserv.devel.redhat.com>
-References: <F7DC2337C7631D4386A2DF6E8FB22B3004311E37@hdsmsx401.amr.corp.intel.com>
-	<20050731222751.GA28907@redhat.com>
-	<20050803092301.GA1352@elf.ucw.cz>
-	<20050813051642.GB11456@redhat.com>
-	<20050815122000.GB15382@elf.ucw.cz>
-	<1124148218.5183.282.camel@localhost>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: PowerOP 0/3: System power operating point management
+	API
+Date: Tue, 16 Aug 2005 10:53:45 +0200
+Message-ID: <20050816085345.GJ9150@dominikbrodowski.de>
+References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
+	<20050810100718.GC1945@elf.ucw.cz> <42FA796A.4080205@mvista.com>
+	<20050809024907.GA25064@slurryseal.ddns.mvista.com>
+	<Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
+	<42F963F6.60209@mvista.com>
+	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============54163511407879783=="
+Content-Type: multipart/mixed; boundary="===============20013142868981104=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1124148218.5183.282.camel@localhost>
+In-Reply-To: <42FA796A.4080205@mvista.com> <42F963F6.60209@mvista.com>
+	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,28 +23,103 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: alan@redhat.com, Dave Jones <DaveJ@redhat.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: cpufreq@lists.linux.org.uk, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============54163511407879783==
+--===============20013142868981104==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Tue, Aug 16, 2005 at 09:23:39AM +1000, Nigel Cunningham wrote:
-> I'm always bemused when I see reports of problems with SATA. I've been
-> using it for 18 months with suspending and it's always just worked.
-> Maybe I just have a good chipset.
+Hi!
 
-Its essentially pot luck depending on the hardware/bios configuration if ACPI 
-is involved. Nothing to do with hardware quality.
+The PowerOP infrastructure you suggest surely is one path to better runtime
+power management in the Linux kernel. However, I don't like it at all in its
+current implementation. Here are a few suggestions for improvements,
+rewrites, and so on:
+
+First, the table interface you suggest is ugly. If there's indeed the need for
+such an abstraction, I'd favour something like
+
+	struct powerop {
+		struct list_head	powerop_values; /* linked list of powerop_values */
+		...
+	}
+
+	struct powerop_value {
+		unsigned long		value_cur;
+		unsigned long		value_min;
+		unsigned long		value_max;
+		struct list_head	next;
+		u16			type;
+		struct powerop_value	*cross_dependency;
+		struct powerop_driver	*driver;
+	}
+
+	#define POWEROP_TYPE_CPU_FREQUENCY		0x00000001
+	#define POWEROP_TYPE_CPU_VOLTAGE		0x00000002
+	#define POWEROP_TYPE_FRONT_SIDE_BUS_SPEED	0x00000004
+	...
+	#define POWEROP_TYPE_GPU_FREQUENCY	0x00010000
+	...
+
+and if CPU_VOLTAGE and CPU_FREQEUNCY can only be modified at the same time, (as
+most cpufreq drivers require), type is 0x00000003.
 
 
---===============54163511407879783==
+Secondly, you do not adress the cross-relationships between operation points
+correctly. If you change the CPU frequency, you may have to switch other
+(memory, video) settings; you might even have to validate the frequency
+settings for these or even additional reasons (thermal and battery reasons -
+ACPI _PPC).
+
+Thirdly, who is to decide on the power management settings? The first and
+intuitive answer is the kernel. Therefore, kernel-space cpufreq governors
+exist. Only under rare circumstances, you want full userspace control --
+that's what the userspace cpufreq governor is for.
+
+Foruthly, the code duplication which your implementation leads to is obvious
+for the speedstep-centrino case. And in contrast to Pavel, I do not consider
+it a "tiny cleanup".
+
+
+
+I'd suggest that you try upgrading the cpufreq infrastructure to provide
+full support for multiple types of POWEROPs:
+
+a)	Setting of "policies"
+	- New "min" or "max" values for all powerop_values are set, verified
+	  by powerop lowlevel drivers, powerop governors and external
+	  notifiers. E.g. if a new frequency min/max pair is required, the
+	  voltage level gets a new min and max value as well --> you need to
+	  handle recursion.
+	- If necessary a new "powerop governor" is started.
+	   - Each powerop governor specifies which POWEROPs it can handle
+		- current cpufreq governors can handle CPU_FREQUENCY,
+		  CPU_VOLTAGE and FRONT_SIDE_BUS_SPEED
+		- an userspace fallback-governor always "handles" the
+		  parameters no other governor handles
+
+b)	Setting of "values"
+	- Each governor can initiate transitions between the "min" and "max"
+	  values for operationg points it aquired ownership for.
+	- The new setting is notified to all other governors and to external
+	  notifiers. If some entitiy decides it cannot live well with this
+	  new setting, it breaks out. Note that this should not happen quite
+	  often, as the "normal" verification takes place in a) above.
+	  Nonetheless, if you want to break out CPU_VOLTAGE and CPU_FREQUENCY, you
+	  need it. And as it makes life for the kernel so much more
+	  difficult, I'm against doing so.
+	- The low-level driver handling the powerop_value is called
+
+Thanks,
+	Dominik
+
+--===============20013142868981104==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============54163511407879783==--
+--===============20013142868981104==--
