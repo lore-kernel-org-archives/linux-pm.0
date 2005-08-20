@@ -1,68 +1,29 @@
-From: Khalid Aziz <khalid_aziz@hp.com>
-Subject: Re: [Fastboot] Re: Re: tg3: issue for reboot/kexec
-Date: Thu, 18 Aug 2005 13:06:05 -0600
-Message-ID: <1124391965.2274.17.camel@lyra.fc.hp.com>
-References: <42BC9F09.1060002@us.ibm.com>
-	<20050624174652.159f26ce.rdunlap@xenotime.net>
-	<20050625033328.GC3934@kroah.com>
-	<m18y0rl9bq.fsf@ebiederm.dsl.xmission.com>
-	<20050630233354.GA22287@kroah.com>
-	<m1vf3vjtbc.fsf@ebiederm.dsl.xmission.com>
-	<1124389821.2274.11.camel@lyra.fc.hp.com>
-	<m1wtmjulxe.fsf@ebiederm.dsl.xmission.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] simplify SOFTWARE_SUSPEND dependencies
+Date: Sat, 20 Aug 2005 06:07:23 +0200
+Message-ID: <20050820040723.GN3615@stusta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============42281730325357136=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <m1wtmjulxe.fsf@ebiederm.dsl.xmission.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-pm@lists.osdl.org, Fastboot mailing list <fastboot@lists.osdl.org>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030204AbVHTEHb@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: pavel@suse.cz
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============42281730325357136==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Thu, 2005-08-18 at 12:42 -0600, Eric W. Biederman wrote:
-> Khalid Aziz <khalid_aziz@hp.com> writes:
-> > As soon as I have all the issues sorted out with kexec'ing on INIT on
-> > ia64, I will post a fully updated kexec patch for ia64. I now have kexec
-> > working solid on INIT with e1000 driver and it can handle multiple back
-> > to back INITs and come up in kexec'd kernel every time. I am now trying
-> > to sort some issues out with tg3 driver (another driver with no shutdown
-> > routine :(
-> 
-> In the normal case (not kexec on panic) user space should down the interfaces
-> before calling kexec.  Is your user space doing that?
-
-Yes, I am down'ing the interface from userspace in normal kexec case,
-but that does not happen on INIT on ia64. 
-
--- 
-Khalid
-
-====================================================================
-Khalid Aziz                       Open Source and Linux Organization
-(970)898-9214                                        Hewlett-Packard
-khalid.aziz@hp.com                                  Fort Collins, CO
-
-"The Linux kernel is subject to relentless development" 
-                                - Alessandro Rubini
+This patch expresses the same dependencies in a more simple way.
 
 
---===============42281730325357136==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-
---===============42281730325357136==--
+--- linux-2.6.13-rc6-mm1-full/kernel/power/Kconfig.old	2005-08-20 06:02:49.000000000 +0200
++++ linux-2.6.13-rc6-mm1-full/kernel/power/Kconfig	2005-08-20 06:03:13.000000000 +0200
+@@ -28,7 +28,7 @@
+ 
+ config SOFTWARE_SUSPEND
+ 	bool "Software Suspend"
+-	depends on EXPERIMENTAL && PM && SWAP && ((X86 && SMP) || ((FVR || PPC32 || X86) && !SMP))
++	depends on EXPERIMENTAL && PM && SWAP && (X86 || ((FVR || PPC32) && !SMP))
+ 	---help---
+ 	  Enable the possibility of suspending the machine.
+ 	  It doesn't need APM.
