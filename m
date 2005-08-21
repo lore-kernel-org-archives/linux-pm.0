@@ -1,12 +1,12 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [2.6 patch] simplify SOFTWARE_SUSPEND dependencies
-Date: Sat, 20 Aug 2005 10:28:55 +0200
-Message-ID: <20050820082855.GA1829@elf.ucw.cz>
-References: <20050820040723.GN3615@stusta.de>
+Subject: Re: [RFC] power trees
+Date: Sun, 21 Aug 2005 16:00:35 +0200
+Message-ID: <20050821140034.GA3039@openzaurus.ucw.cz>
+References: <1123735844.4380.64.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============16388485207241166=="
+Content-Type: multipart/mixed; boundary="===============91639912372182031=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050820040723.GN3615@stusta.de>
+In-Reply-To: <1123735844.4380.64.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,49 +16,87 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
+To: Adam Belay <abelay@novell.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============16388485207241166==
+--===============91639912372182031==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-> This patch expresses the same dependencies in a more simple way.
-
-I have this currently in my tree:
-
-        depends on PM && SWAP && (X86 || ((FVR || PPC32) && !SMP))
-
-(I really want to remove experimental), but it is not urgent enough to
-push heavily.
-								Pavel
-
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> My implementation has two primary goals:
 > 
-> --- linux-2.6.13-rc6-mm1-full/kernel/power/Kconfig.old	2005-08-20 06:02:49.000000000 +0200
-> +++ linux-2.6.13-rc6-mm1-full/kernel/power/Kconfig	2005-08-20 06:03:13.000000000 +0200
-> @@ -28,7 +28,7 @@
->  
->  config SOFTWARE_SUSPEND
->  	bool "Software Suspend"
-> -	depends on EXPERIMENTAL && PM && SWAP && ((X86 && SMP) || ((FVR || PPC32 || X86) && !SMP))
-> +	depends on EXPERIMENTAL && PM && SWAP && (X86 || ((FVR || PPC32) && !SMP))
->  	---help---
->  	  Enable the possibility of suspending the machine.
->  	  It doesn't need APM.
+> 1.) To help device drivers track and control their device's power state
 > 
+> 2.) To bubble power state dependency changes from a leaf node to the
+> last affected parent node in the chain.
+> 
+> The basic unit of the tree is referred to as a "pm_node".  Each
+> "pm_node" has a list of states it supports, a current state, and a
+> driver to handle state transitions.  Any "pm_node" can have children and
+> therefore act as a power container.
+> 
+> struct pm_state {
+> 	char			*name;
+> 	unsigned long		index;
+> 	unsigned long		link_req;
+> 	void			*link_data;
+> };
+> 
+> "index" is a driver specific value that indicates the state.  "link_req"
+> is a set of flags that indicate requirements from the parent "pm_node".
+> "link_data" provides additional requirement information.
+> 
+> struct pm_node {
+> 	struct semaphore	sem;
+> 	struct list_head	children;
+> 	struct list_head	child_list;
+> 	struct pm_node		*parent;
+> 	struct pm_node		*tmp_path;
+> 	struct device		*dev;
+> 
+> 	struct pm_node_driver	*drv;
+> 	unsigned int		current_state;
+> 	unsigned int		target_state;
+
+Would not it be cleaner to have struct pm_state *current_state, target state?
+
+> "states" is a list of power states sorted from most functional to least
+> functional.  "current_state" and "target_state" are index values for
+> that list.
+> 
+> struct pm_node_driver {
+> 	int (*set_state) 	(struct pm_node *node);
+> 	int (*raise_event)	(struct pm_node *domain,
+> 				 struct pm_node *child,
+> 				 unsigned long *new_state);
+
+struct pm_state here, too?
+
+> 	void (*lower_event)	(struct pm_node *domain);
+> };
+> 
+> "raise_event" notifies the power domain when a child has increased its
+
+"Increase" == went more power hungry?
+
+> I apologize for the unpolished/untested state of the code as it's
+> primarily intended to illustrate a concept.  I'll need to look over the
+> problem more carefully if we decide this is the right direction.  Power
+
+Seems ok to me.
 
 -- 
-if you have sharp zaurus hardware you don't need... you know my address
+64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
 
---===============16388485207241166==
+
+--===============91639912372182031==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============16388485207241166==--
+--===============91639912372182031==--
