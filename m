@@ -1,208 +1,81 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: PowerOP Take 2 3/3: OMAP1 sysfs UI
-Date: Wed, 24 Aug 2005 19:57:11 -0700
-Message-ID: <20050825025711.GD28662@slurryseal.ddns.mvista.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Toward runtime power management in Linux
+Date: Thu, 25 Aug 2005 13:12:56 +1000
+Message-ID: <1124939576.7876.4.camel@gaston>
+References: <Pine.LNX.4.44L0.0507302219250.13423-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932504AbVHYC5Q@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============0030959369357503874=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0507302219250.13423-100000@netrider.rowland.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-A PowerOP sysfs UI backend for OMAP1 platforms, adding sysfs attributes
-and show/store functions that correspond to the platform power
-parameters.  
-
-An example usage on an OMAP1510 Innovator which does not have voltage
-scaling and ignoring the DSP:
-
-# echo -n 168-168-84 > /sys/powerop/new # DPLL 168MHz, ARM 168MHz, TC 84MHz
-# echo -n 14 > /sys/powerop/168-168-84/dpllmult
-# echo -n 0 > /sys/powerop/168-168-84/dplldiv
-# echo -n 0 > /sys/powerop/168-168-84/armdiv
-# echo -n 1 > /sys/powerop/168-168-84/tcdiv
-# echo -n -1 > /sys/powerop/168-168-84/dspdiv
-# echo -n -1 > /sys/powerop/168-168-84/lowpwr
-
-# echo -n 60-60-60 > /sys/powerop/new # DPLL 60MHz, ARM 60MHz, TC 60MHz
-# echo -n 5 > /sys/powerop/60-60-60/dpllmult
-# echo -n 0 > /sys/powerop/60-60-60/dplldiv
-# echo -n 0 > /sys/powerop/60-60-60/armdiv
-# echo -n 0 > /sys/powerop/60-60-60/tcdiv
-# echo -n -1 > /sys/powerop/60-60-60/dspdiv
-# echo -n -1 > /sys/powerop/60-60-60/lowpwr
-
-# echo -n 60-60-60 > /sys/powerop/active
-# cat /sys/powerop/hw/dpllmult
-5
-
-The lower-powered operating point consumes about .07A less power using
-my .config (it should be noted this is not a proper low-power evaluation
-platform).
+--===============0030959369357503874==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
 
-Index: linux-2.6.13-rc4/arch/arm/mach-omap1/Kconfig
-===================================================================
---- linux-2.6.13-rc4.orig/arch/arm/mach-omap1/Kconfig
-+++ linux-2.6.13-rc4/arch/arm/mach-omap1/Kconfig
-@@ -155,3 +155,5 @@ source "arch/arm/plat-omap/dsp/Kconfig"
- config	POWEROP
- 	bool "PowerOP Platform Core Power Management for OMAP1"
- 	help
-+
-+source "drivers/powerop/Kconfig"
-Index: linux-2.6.13-rc4/arch/arm/mach-omap1/powerop.c
-===================================================================
---- linux-2.6.13-rc4.orig/arch/arm/mach-omap1/powerop.c
-+++ linux-2.6.13-rc4/arch/arm/mach-omap1/powerop.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/errno.h>
- #include <linux/init.h>
-+#include <linux/powerop_sysfs.h>
- 
- #include <asm/arch/powerop.h>
- #include <asm/hardware.h>
-@@ -144,13 +145,141 @@ powerop_set_point(struct powerop_point *
- EXPORT_SYMBOL_GPL(powerop_get_point);
- EXPORT_SYMBOL_GPL(powerop_set_point);
- 
-+#ifdef CONFIG_POWEROP_SYSFS
-+
-+ssize_t lowpwr_show(struct powerop_point *op, char * buf)
-+{
-+	return sprintf(buf,"%d\n",op->lowpwr);
-+}
-+
-+ssize_t lowpwr_store(struct powerop_point *op, const char * buf, size_t count)
-+{
-+	int error;
-+
-+	if ((error = sscanf(buf, "%d", &op->lowpwr)) == 1)
-+		return count;
-+	return error;
-+}
-+
-+powerop_param_attr(lowpwr);
-+
-+ssize_t dpllmult_show(struct powerop_point *op, char * buf)
-+{
-+	return sprintf(buf,"%d\n",op->dpllmult);
-+}
-+
-+ssize_t dpllmult_store(struct powerop_point *op, const char * buf, size_t count)
-+{
-+	int error;
-+
-+	if ((error = sscanf(buf, "%d", &op->dpllmult)) == 1)
-+		return count;
-+	return error;
-+}
-+
-+powerop_param_attr(dpllmult);
-+
-+ssize_t dplldiv_show(struct powerop_point *op, char * buf)
-+{
-+	return sprintf(buf,"%d\n",op->dplldiv);
-+}
-+
-+ssize_t dplldiv_store(struct powerop_point *op, const char * buf, size_t count)
-+{
-+	int error;
-+
-+	if ((error = sscanf(buf, "%d", &op->dplldiv)) == 1)
-+		return count;
-+	return error;
-+}
-+
-+powerop_param_attr(dplldiv);
-+
-+ssize_t armdiv_show(struct powerop_point *op, char * buf)
-+{
-+	return sprintf(buf,"%d\n",op->armdiv);
-+}
-+
-+ssize_t armdiv_store(struct powerop_point *op, const char * buf, size_t count)
-+{
-+	int error;
-+
-+	if ((error = sscanf(buf, "%d", &op->armdiv)) == 1)
-+		return count;
-+	return error;
-+}
-+
-+powerop_param_attr(armdiv);
-+
-+ssize_t dspdiv_show(struct powerop_point *op, char * buf)
-+{
-+	return sprintf(buf,"%d\n",op->dspdiv);
-+}
-+
-+ssize_t dspdiv_store(struct powerop_point *op, const char * buf, size_t count)
-+{
-+	int error;
-+
-+	if ((error = sscanf(buf, "%d", &op->dspdiv)) == 1)
-+		return count;
-+	return error;
-+}
-+
-+powerop_param_attr(dspdiv);
-+
-+ssize_t tcdiv_show(struct powerop_point *op, char * buf)
-+{
-+	return sprintf(buf,"%d\n",op->tcdiv);
-+}
-+
-+ssize_t tcdiv_store(struct powerop_point *op, const char * buf, size_t count)
-+{
-+	int error;
-+
-+	if ((error = sscanf(buf, "%d", &op->tcdiv)) == 1)
-+		return count;
-+	return error;
-+}
-+
-+powerop_param_attr(tcdiv);
-+
-+static struct attribute *powerop_sysfs_param_attrs[] = {
-+	&lowpwr_attr.attr,
-+	&dpllmult_attr.attr,
-+	&dplldiv_attr.attr,
-+	&armdiv_attr.attr,
-+	&dspdiv_attr.attr,
-+	&tcdiv_attr.attr,
-+	NULL,
-+};
-+
-+static void powerop_omap1_sysfs_init()
-+{
-+	powerop_sysfs_register(powerop_sysfs_param_attrs);
-+}
-+
-+static void powerop_omap1_sysfs_exit()
-+{
-+	powerop_sysfs_unregister(powerop_sysfs_param_attrs);
-+}
-+#else /* CONFIG_POWEROP_SYSFS */
-+static void powerop_omap1_sysfs_init()
-+{
-+}
-+static void powerop_omap1_sysfs_exit()
-+{
-+}
-+#endif /* CONFIG_POWEROP_SYSFS */
-+
- static int __init powerop_init(void)
- {
-+	powerop_omap1_sysfs_init();
- 	return 0;
- }
- 
- static void __exit powerop_exit(void)
- {
-+	powerop_omap1_sysfs_exit();
- }
- 
- module_init(powerop_init);
+> RTPM core: The scheme described above doesn't necessarily involve the
+> PM core.  The notifications can be simple subroutine calls, perhaps
+> with support from the bus subsystem.  It's not obvious how much core
+> support we will need for RTPM, apart from the sysfs interface.
+> 
+> Recursion: A consequence of doing things this way is that the
+> notifications can potentially use a lot of stack space as they
+> progress up the device tree.  (I can't think of any simple
+> non-recursive technique for implementing the scheme.)  Fortunately
+> this probably won't be too bad; the notifications will stop when they
+> reach a device that doesn't want to change its state (because it has
+> other children).  So the recursion should not involve too many levels.
+> Still, it is something to watch out for.
+
+I think the locking is unmanageable if we do synchronous notification. I
+think devices should issue a "request for link state change" and be
+asynchronously notified of the actual change, though they might be
+allowed to block if they are doing that from process and/or probe()
+context (most of the time). I think the actual tree walking should be
+done by a separate thread. That simplifies locking tremendously by
+suppressing most deadlock conditions.
+
+Another problem is the whole racyness of tree & list walking vs.
+add/remove. We try to work around it in various ways that I think can't
+work. See the small thread about pci_walk_bus() on lkml that exposes
+that kind of races vs. device removal. I think we really need to
+indroduce proper iterator objects that get notified on removal.
+
+Racing with device addition is a different issue altogether. It means we
+may add devices to already-walked part of the tree, thus have
+inconsistent states... unless drivers are made properly aware that the
+link state may not be full-on at probe time and deal with that.
+
+> Context: A relatively recent change to the driver model core added a
+> semaphore to struct device, and we will want to hold this semaphore
+> while making state changes.  This immediately implies that RTPM needs
+> a process context to run in.  Should we have a kernel thread or work
+> queue specially devoted to RTPM activities (idle autosuspend and so
+> forth)?
+
+Might help.
+
+Ben.
+
+
+
+--===============0030959369357503874==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0030959369357503874==--
