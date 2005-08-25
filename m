@@ -1,115 +1,62 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] power trees
-Date: Sun, 21 Aug 2005 12:15:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0508211205180.28564-100000@netrider.rowland.org>
-References: <20050821140034.GA3039@openzaurus.ucw.cz>
+From: Todd Poynor <tpoynor@mvista.com>
+Subject: PowerOP Take 2 0/3 Intro
+Date: Wed, 24 Aug 2005 19:51:58 -0700
+Message-ID: <20050825025158.GA28662@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============88932734704178307=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050821140034.GA3039@openzaurus.ucw.cz>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <abelay@novell.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932497AbVHYCwF@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============88932734704178307==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+PowerOP is a system power parameter management API submitted for
+discussion.  PowerOP writes and reads power "operating points",
+comprised of arbitrary values, called power parameters, that correspond
+to registers, clocks, dividers, voltage regulators, etc. that may be
+modified to set a basic power/performance point for the system.
+Higher-layer power management software passes a platform-specific struct
+of power parameters to a backend that makes the requested adjustments.
 
-Sorry it's taken me so long to respond to this.
+PowerOP can be thought of as a layer below cpufreq that actually
+accesses the hardware to make cpu frequency, voltage, core bus, and
+perhaps other modifications to set a power point.  The main goal is to
+open up interfaces to operating points comprised of arbitrary power
+parameters, as an alternative to the "cpu frequency" parameter that
+cpufreq is designed around.  It pushes the hardware-level power
+parameter management down to a level that can be shared with other power
+management policy frameworks that deal with entire operating points as
+the basic unit of system power management for reasons described below,
+and that 
 
-> > My implementation has two primary goals:
-> > 
-> > 1.) To help device drivers track and control their device's power state
-> > 
-> > 2.) To bubble power state dependency changes from a leaf node to the
-> > last affected parent node in the chain.
-> > 
-> > The basic unit of the tree is referred to as a "pm_node".  Each
-> > "pm_node" has a list of states it supports, a current state, and a
-> > driver to handle state transitions.  Any "pm_node" can have children and
-> > therefore act as a power container.
+The new layer is intended to leave all power policy decisions, and
+various other power management chores such as driver notification, to
+higher layers in a power management software stack.
 
-I think it's a mistake to make this a tree.  The natural structure is a 
-DAG, where nodes can have multiple parents.  It might not be worthwhile 
-trying to store the parent/child/sibling pointers in the structures.
+This work is aimed in part at supporting embedded systems, which often
+have several parameters that can be set and the cpu frequency
+abstraction specifies only part of the operating point that may be
+managed from software.  For example, an XScale PXA27x could be
+considered to have six basic power parameters (mainly cpu run mode and
+memory and bus dividers) that for the most part should be set in tandem
+to known good sets of values as validated by the silicon vendor.
+Embedded systems typically handle more hardware clock manipulation
+directly in Linux than do, for example, desktop/server systems based on
+ACPI interfaces.  Desktop/server systems may also benefit from the
+ability to select custom voltages, bus speeds, etc., although deviating
+from values validated by the hardware vendor is risky and controversial.
 
-> > struct pm_state {
-> > 	char			*name;
-> > 	unsigned long		index;
-> > 	unsigned long		link_req;
-> > 	void			*link_data;
-> > };
-> > 
-> > "index" is a driver specific value that indicates the state.  "link_req"
-> > is a set of flags that indicate requirements from the parent "pm_node".
-> > "link_data" provides additional requirement information.
+An optional sysfs interface to create and activate operating points is
+also submitted for discussion.  This interface could be used in an
+actual power management stack, or at least can serve as a starting point
+for discussing how to manage operating points at the next higher layer
+in the power management soctware stack.
 
-Given that there can be multiple parents, the link_* members of this 
-structure won't be useful.  Also, I don't see that index expresses any 
-information not already present in name.
-
-> > struct pm_node {
-> > 	struct semaphore	sem;
-> > 	struct list_head	children;
-> > 	struct list_head	child_list;
-> > 	struct pm_node		*parent;
-> > 	struct pm_node		*tmp_path;
-> > 	struct device		*dev;
-> > 
-> > 	struct pm_node_driver	*drv;
-> > 	unsigned int		current_state;
-> > 	unsigned int		target_state;
-> 
-> Would not it be cleaner to have struct pm_state *current_state, target state?
-
-I don't see the point of having target_state at all.
-
-> > "states" is a list of power states sorted from most functional to least
-> > functional.
-
-In general it's not possible to sort states in that way.  Some states 
-might permit one subset of the complete set of functions while other 
-states permit a different, partially overlapping, subset.
-
-> >   "current_state" and "target_state" are index values for
-> > that list.
-> > 
-> > struct pm_node_driver {
-> > 	int (*set_state) 	(struct pm_node *node);
-> > 	int (*raise_event)	(struct pm_node *domain,
-> > 				 struct pm_node *child,
-> > 				 unsigned long *new_state);
-> 
-> struct pm_state here, too?
-> 
-> > 	void (*lower_event)	(struct pm_node *domain);
-> > };
-> > 
-> > "raise_event" notifies the power domain when a child has increased its
-> 
-> "Increase" == went more power hungry?
-
-There's no need to have separate raise_event and lower_event entry points.  
-In fact you might not want to have those entry points at all, since the 
-information they convey will be so bus-specific.  It might be better to 
-rely on bus-specific entry points.  I'm not sure about this.
-
-Alan Stern
-
-
---===============88932734704178307==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============88932734704178307==--
+cpufreq is another possible interface. PowerOP can fit below cpufreq to
+make cpu frequency, voltage, core bus, and perhaps other modifications
+to set a power point, leaving cpufreq to manage the interfaces based
+around the "cpu frequency" abstraction, the policies and governors that
+select the frequency, its notifiers, and so forth.  An example hooking
+up support for one cpufreq platform to PowerOP has been previously
+submitted.  Some discussion regarding incorporating an expanded set of
+power parameters into the cpufreq interfaces has also taken place.
