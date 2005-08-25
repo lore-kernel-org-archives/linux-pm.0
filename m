@@ -1,12 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Toward runtime power management in Linux
-Date: Fri, 26 Aug 2005 07:42:34 +1000
-Message-ID: <1125006155.12538.21.camel@gaston>
-References: <Pine.LNX.4.44L0.0508251107280.4918-100000@iolanthe.rowland.org>
+From: Todd Poynor <tpoynor@mvista.com>
+Subject: Re: PowerOP Take 2 0/3 Intro
+Date: Thu, 25 Aug 2005 15:08:55 -0700
+Message-ID: <430E4177.10600@mvista.com>
+References: <20050825025158.GA28662@slurryseal.ddns.mvista.com>
+	<20050825210940.GX31472@cosmic.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8507343110035972=="
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0508251107280.4918-100000@iolanthe.rowland.org>
+In-Reply-To: <20050825210940.GX31472@cosmic.amd.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,51 +18,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============8507343110035972==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Jordan Crouse wrote:
+> Todd - do you have a ChangeLog from Take 1? :)
 
-On Thu, 2005-08-25 at 11:27 -0400, Alan Stern wrote:
+Right, here's what's changed in this version...
 
-> But it complicates the structure of drivers by forcing them to use a
-> state-machine approach with a bunch of tedious intermediate states ("link
-> change request issued, waiting for notification").  
+The generic structure of an operating point as an array of integers is 
+dropped.  A struct powerop_point is now an entirely backend-defined 
+struct of arbitrary fields.
 
-Not necessarily. The driver could do synchronous blocking wait if it's
-not running inside the context of the iterator thread which won't be the
-case most of the time.
+There is no more PowerOP core layer; all data structures and functions 
+for core functionality are provided by the machine-specific backend.
 
-> It also introduces
-> complications from the possible arrival of several change requests or
-> notifications at once, since there's no locking to guarantee mutual
-> exclusion among them.
+The diagnostic sysfs UI has been split out into a separate, optional 
+patch.  A more full-featured UI allowing operating point creation and 
+activation via sysfs has also been provided in that patch.  This UI 
+primarily serves as an example for experimentation purposes, but is 
+pretty close to what a basic userspace-based policy manager might need 
+to switch operating points in response to infrequent changes in system 
+state.
 
-Who else but the driver is allowed to request a link state change on the
-device ? That specific race can be dealt with or considered as a
-programming error.
+The UI also embodies the notion of a list of "named operating points" 
+that could be registered by other means, such as loading a module with 
+data structures that encode the desired operating points (as David 
+Brownell has suggested).  The named operating points registered from 
+such other interfaces can also be activated from the sysfs UI (that is, 
+the hardware can be told to run at that operating point), as an example 
+of how to tie in userspace policy managers with such a scheme.
 
-> 	Device removal racing with power state changes.  During device
-> 	removal the PM lock should be held; this will prevent the two
-> 	operations from overlapping.  You might end up trying to carry
-> 	out a power-state change on an already-removed device; that's
-> 	not a problem -- it will simply fail.
+The example platform backend this time is for an embedded system: the TI 
+OMAP1 family of processors used for numerous mobile phones and PDAs.  It 
+may better illustrate why managing multiple power parameters might be a 
+useful capability.  I haven't put out an example of cpufreq integration 
+this time, but the idea has changed little from before.
 
-Those locks are a wonderful deadlock scenario as soon as the driver end
-up triggering add/remove events while they are held and that does
-happen. I'm really not fan of those global and/or cascaded locks, I find
-the approach very deadlock prone.
+In case it's getting lost in all these details, the main point of all 
+this is to pose the question: "are arbitrary power parameters arranged 
+into a set with mutually consistent values (called here an operating 
+point) a good low-level abstraction for system power management of a 
+wide variety of platforms?"  Thanks,
 
-
-
---===============8507343110035972==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============8507343110035972==--
+-- 
+Todd
