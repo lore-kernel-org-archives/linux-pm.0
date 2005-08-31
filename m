@@ -1,106 +1,73 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] PowerOP Take 2 1/3: ARM OMAP1 platform support
-Date: Tue, 30 Aug 2005 13:35:21 -0700
-Message-ID: <20050830203521.D39DDC10C1@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
-References: <20050825025357.GB28662@slurryseal.ddns.mvista.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC] power trees
+Date: Wed, 31 Aug 2005 13:42:44 +0300
+Message-ID: <20050831104243.GB6496@atomide.com>
+References: <Pine.LNX.4.44L0.0508211205180.28564-100000@netrider.rowland.org>
+	<20050827024256.81A0AC1644@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932444AbVH3Ufg@vger.kernel.org>
-In-Reply-To: <20050825025357.GB28662@slurryseal.ddns.mvista.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: tpoynor@mvista.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============83181859071938957=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20050827024256.81A0AC1644@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org, abelay@novell.com, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-Interesting.  I start to like this shape better; it moves more of the
-logic to operating point code, where it can make the sysfs interface
-talk in terms of meaningful abstractions, not cryptic numeric offsets.
-But it was odd to see the first patch be platform-specific support,
-rather than be a neutral framework into which platform-aware code plugs
-different kinds of things...
+--===============83181859071938957==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-One part I don't like is that the platform would be limited to tweaking
-a predefined set of fields in registers.  That seems insufficient for
-subsystems that may not be present on all boards.  Plus, to borrow some
-terms from cpufreq, it only facilitates "usermode" governor models, never
-"ondemand" or any other efficient quick-response adaptive algorithms.
+* David Brownell <david-b@pacbell.net> [050827 05:43]:
+> > > > My implementation has two primary goals:
+> > > > 
+> > > > 1.) To help device drivers track and control their device's power state
+> 
+> What do you see happening with "struct dev_pm_info", which is the current
+> (and needs-work) approach for this?
+> 
+> 
+> > > > 2.) To bubble power state dependency changes from a leaf node to the
+> > > > last affected parent node in the chain.
+> > > > 
+> > > > The basic unit of the tree is referred to as a "pm_node".  Each
+> > > > "pm_node" has a list of states it supports, a current state, and a
+> > > > driver to handle state transitions.  Any "pm_node" can have children and
+> > > > therefore act as a power container.
+> >
+> > I think it's a mistake to make this a tree.  The natural structure is a 
+> > DAG, where nodes can have multiple parents.  It might not be worthwhile 
+> > trying to store the parent/child/sibling pointers in the structures.
+> 
+> Plus, the current driver model already builds a power tree, with node
+> type "struct dev_pm_info".  What would be the goal of adding another,
+> normally parallel, tree?  Rather than just sorting out how to use
+> that one, and dev_pm_info.pm_parent.  (Which we need to do anyway!)
 
-The PM modules I imagine loading would define things that look more like:
+I agree. I think we should do this in the driver model. And considering
+that a lot of the PM device states are machine specific, we should register
+the driver specific PM states and limitations as resources.
 
-	struct thing {
-		char thing[THING_NAME_LEN];
+This allows defining machine specific driver PM states and limitations
+withouth having to shove them into the driver code. And it should be
+also easy to add new PM states via sysfs if needed.
 
-		/* there'd be sysfs hooks here
-		 *  - the thing's directory node (kobject)
-		 *  - array of attributes and matching get/set code
-		 *  - ... memory management fun too ...
-		 */
+Regards,
 
-		/* these wrap all relevant platform-specific knowledge: */
-		int	(*set_thing)(struct thing *);
-		void	*data;
-	};
+Tony
 
-That "data" could maybe be values directly matching your predefined
-list of registers on the SOC ... or it could start with them, then add
-stuff specific to a given board.  (Of course it would provide its own
-sysfs API.)   Let's call that the "static operating point" model.
-
-Alternatively, the "thing" could implement some adaptive algorithm
-using local measurements, predictions, and feedback to adjust any
-platform power parameters dynamically.  Maybe it'd delegate management
-of the ARM clock to "cpufreq", and focus on managing power for other
-board components that might never get really reusable code.  Switching
-between operating points wouldn't require userspace instruction;
-call it a "dynamic operating point" selection model.
-
-
-
-> Date: Wed, 24 Aug 2005 19:53:57 -0700
-> From: Todd Poynor <tpoynor@mvista.com>
->
-> PowerOP support for OMAP1 platforms.  Currently handles these power
-> parameters:
->
->    dpllmult	DPLL_CTL reg PLL MULT bits
->    dplldiv	DPLL_CTL reg PLL DIV bits
->    armdiv	ARM_CKCTL reg ARMDIV bits
->    dspdiv	ARM_CKCTL reg DSPDIV bits
-
-The ARM clock is already managed by arch/arm/plat-omap/clocks.c,
-which is used by cpufreq through whatever governor is active.
-This would just be another kind of "usermode" governor.
-
-The DSP clock might benefit from some support though.  I've never
-much looked at this, beyond noting that SPUs on CELL should have
-similar issues.  Wouldn't it be nice to have "ondemand" style
-governors for DSPs or SPUs?  That's got to be easy. ;)
+--===============83181859071938957==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
->    tcdiv	ARM_CKCTL reg TCDIV bits
-
-Affecting bandwidth on one of the main I/O busses ... does the
-PC world usually change things like that outside of maybe in
-BIOS/ACPI PM code?
-
-
->    lowpwr	1 = assert ULPD LOW_PWR, voltage scale low
-
-Could you describe the policy effect of this bit?  I suspect
-a good "PCs don't work like that!" example is lurking here.
-That interacts with some other bits, and code ... when would
-setting this be good, or bad?
-
-
-> Other parameters such as DSPMMUDIV, LCDDIV, and ARM_PERDIV might also be
-> useful.
-
-Again, PERDIV changes would need to involve clock.c to cascade
-the changes through the clock tree.  Change PERDIV and you'll
-need to recalculate the peripheral clocks that derive from it...
-better not do it while an I/O operation is actively using it!
-
-As with TCDIV, that makes a useful example of something that is
-clearly not within the "cpufreq" domain.  
-
-- Dave
+--===============83181859071938957==--
