@@ -1,14 +1,14 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: swsusp3: system suspend/resume from userspace
-Date: Fri, 02 Sep 2005 07:13:32 +1000
-Message-ID: <1125609211.4785.32.camel@localhost>
-References: <F7DC2337C7631D4386A2DF6E8FB22B30047B8E51@hdsmsx401.amr.corp.intel.com>
-	<20050901201714.GA2027@openzaurus.ucw.cz>
-Reply-To: ncunningham@linuxmail.org
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: PowerOP Take 2 1/3: ARM OMAP1 platform support
+Date: Thu, 01 Sep 2005 17:58:09 -0700
+Message-ID: <20050902005809.D62E385EEC@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+References: <20050825025357.GB28662@slurryseal.ddns.mvista.com>
+	<20050830203521.D39DDC10C1@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+	<43166FDE.90708@mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============81513388354347349=="
+Content-Type: multipart/mixed; boundary="===============84791085992151383=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050901201714.GA2027@openzaurus.ucw.cz>
+In-Reply-To: <43166FDE.90708@mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,46 +18,130 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: tpoynor@mvista.com
+Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============81513388354347349==
-Content-Type: text/plain
+--===============84791085992151383==
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 
-Hi.
+> Date: Wed, 31 Aug 2005 20:05:02 -0700
+> From: Todd Poynor <tpoynor@mvista.com>
+>
+> David Brownell wrote:
+> > Interesting.  I start to like this shape better; it moves more of the
+> > logic to operating point code, where it can make the sysfs interface
+> > talk in terms of meaningful abstractions, not cryptic numeric offsets.
+> > But it was odd to see the first patch be platform-specific support,
+> > rather than be a neutral framework into which platform-aware code plugs
+> > different kinds of things...
+>
+> Since it is at a low layer below a number of possible interfaces, and 
+> since there is no generic processing performed at this low layer (it's 
+> pretty much set or get an opaque structure), there isn't any 
+> higher-layer framework to plug into at the moment.
 
-On Fri, 2005-09-02 at 06:17, Pavel Machek wrote:
-> Hi!
-> 
-> > > shrink kernel a bit at the same time.
-> > 
-> > got numbers (or predicted numbers)?
-> 
-> 30-50% of swsusp.c deals with swap writing, and with swsusp3, they could
-> be removed.  Of course, removal would take some time before people install userland
-> "write image" programs.
-
-You're also going to have to add code to interface with userspace and
-pass the data. I wouldn't be surprised if the net effect is a growth in
-the code.
-
-Regards,
-
-Nigel
--- 
-Evolution.
-Enumerate the requirements.
-Consider the interdependencies.
-Calculate the probabilities.
+You're presenting PowerOP as a multi-platform thing in its own right.
+I think that's my missing "higher level framework".  Although given the
+other two patches in this group, maybe it was the sysfs API?  :)
 
 
---===============81513388354347349==
+>	If something like 
+> these abstractions of power parameters and operating points are felt to 
+> be a good foundation for a runtime power management stack then turning 
+> our attentions to the next layer up (perhaps cpufreq or a new 
+> embedded-oriented stack) would create that generic structure.
+
+Something like -- certainly.  I suspect what I'm thinking about as the
+API-visible structure is what you might want to call a range of operating
+points, not just a single one ... example, "any CPU rate, low voltage, with
+audio and display off".
+
+In that example, suppose there are five choices for the CPU clock setting.
+One way defines a different point for each choice, leading to five times
+as many states as the one that just says "doesn't matter".
+
+Come to think of it, I'm not clear how you think device drivers (a common
+generic structure!) would interact with changes to power constraints.
+Would you see the display driver being responsible for turning its power on
+and off?  Or would code that switches operating points handle that too?
+Should drivers get "here's the next operating point" calls?
+
+
+> > One part I don't like is that the platform would be limited to tweaking
+> > a predefined set of fields in registers.  That seems insufficient for
+> > subsystems that may not be present on all boards.  
+>
+> Yes, the code currently assumes it would be tweaked for different 
+> variants of platforms, partly due to the difficulty of implementing a 
+> lean and mean way of integrating the different pieces.
+
+Surely at least drawing a line between the on-chip hardware and
+the drivers for external stuff is simple enough, though.  This
+current construction would make it hard to draw that line, since
+there's no distinction between the SOC logic (potentially very
+reusable) and the board specific details (often less so) including
+discrete devices and their drivers.
+
+
+>	It sounds like 
+> registering multiple handlers for multiple sets of power parameters may 
+> be in order, although a single opaque structure shared between upper 
+> layers and the handlers probably won't be sufficient any more.
+
+I'm not sure why you say either of those things.  Surely the point
+of the "echo pointname >file" operation is to change several
+power constraints at once?  And I don't think you've talked much
+about the layers on either side of PowerOP ... except maybe to say
+they should exist.  :)
+
+
+>  > Plus, to borrow some
+> > terms from cpufreq, it only facilitates "usermode" governor models, never
+> > "ondemand" or any other efficient quick-response adaptive algorithms.
+>
+> The sysfs interface does not itself handle such schemes, but the PowerOP 
+> layer is fine with inserting beneath in-kernel algorithms.  Low-latency, 
+> very frequent adjustments to power parameters are very much in mind for 
+> what I'm trying to do, assuming embedded hardware will increasingly be 
+> able to take advantage of aggressive runtime power management for 
+> battery savings.
+
+So you see why I want the "thing" seen by userspace to cover a range
+of power states:  otherwise those "very frequent" adjustments would
+always involve userspace transition and scheduling delays.
+
+
+> ...
+> > Alternatively, the "thing" could implement some adaptive algorithm
+> > using local measurements, predictions, and feedback to adjust any
+> > platform power parameters dynamically.  Maybe it'd delegate management
+> > of the ARM clock to "cpufreq", and focus on managing power for other
+> > board components that might never get really reusable code.  Switching
+> > between operating points wouldn't require userspace instruction;
+> > call it a "dynamic operating point" selection model.
+>
+> Interesting, although such close coordination of changing various clocks 
+> and voltages is required on some platforms that it would be hard to 
+> distribute it much among kernel components.
+
+Much less "usermode" ones.  ;)
+
+There will certainly be globs of functionality on a given platform
+that don't factor nicely, and demand more monolithic approaches.
+Groups of interrelated clocks seem to give good examples.
+
+Then there will be other globs that _do_ factor more politely.
+
+- Dave
+
+
+--===============84791085992151383==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============81513388354347349==--
+--===============84791085992151383==--
