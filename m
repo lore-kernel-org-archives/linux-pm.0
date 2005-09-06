@@ -1,12 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Suspended devices and drivers
-Date: Tue, 6 Sep 2005 11:46:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0509061134280.5078-100000@iolanthe.rowland.org>
-References: <20050906151845.03BD2D480C@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+Date: Tue, 6 Sep 2005 21:47:30 +0200
+Message-ID: <200509062147.31349.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0509061037520.5078-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0018173575200277625=="
+Content-Type: multipart/mixed; boundary="===============73904913430967079=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050906151845.03BD2D480C@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+In-Reply-To: <Pine.LNX.4.44L0.0509061037520.5078-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,75 +16,96 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: David Brownell <david-b@pacbell.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============0018173575200277625==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============73904913430967079==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Tue, 6 Sep 2005, David Brownell wrote:
+Hi,
 
-> > > > With the USB device, things are more interesting.  If you unplug the
-> > > > device (even while it's not in use), Windows warns you not to do this
-> > > > ...
-> > > 
-> > > So it's inconsistent in behavior, since this isn't how it handles
-> > > the same thing during resume-from-hibernate ...
-> >
-> > ...
-> > If you describe the behavior as "Windows warns you whenever it learns that
-> > you ejected removable media without permission", then Windows _is_
-> > consistent.
+On Tuesday, 6 of September 2005 16:50, Alan Stern wrote:
+> On Mon, 5 Sep 2005, David Brownell wrote:
 > 
-> No, it's inconsistent ... when you ejected the media before that
-> resume-from-snapshot, it could tell.  And it ignored it, even though
-> you'd not told Windows you were going to do that.
-
-It sounds like we've got a failure to communicate.  There were two 
-experiments.  In the first, I simply unplugged the device.  Windows did 
-detect this and did warn me.  In the second experiment, I first did the 
-snapshot-and-poweroff, then removed the device, then replaced the device, 
-then did resume-from-snapshot.  In that experiment Windows could _not_ 
-tell and did not warn me.
-
-In none of the experiments was there a case where Windows could have
-realized that I unplugged the device and failed to warn me about it.
-
-
-> > I say this is a case where we should try, at least to some extent; users 
-> > will feel that "Powerdown-swsusp automatically removes all hot-pluggable 
-> > devices" is too Draconian.
+> > > With the USB device, things are more interesting.  If you unplug the
+> > > device (even while it's not in use), Windows warns you not to do this
+> > > without first getting permission by using the "Eject Removable Devices"
+> > > button.  If you try to press that button while a program has a file open
+> > > on the device, Windows says that you can't remove the device right now and
+> > > advises you to try again later.
+> > 
+> > So it's inconsistent in behavior, since this isn't how it handles
+> > the same thing during resume-from-hibernate ...
 > 
-> The simple solution is to use _real_ suspend states if you're going
-> to expect real suspend/resume behavior ... :)
+> Obviously because Windows isn't aware of anything that happens during
+> hibernate while the power is turned off.  How could it possibly warn you
+> about unplugging a device when it doesn't know whether you unplugged the
+> device or not?
+> 
+> If you describe the behavior as "Windows warns you whenever it learns that
+> you ejected removable media without permission", then Windows _is_
+> consistent.
+> 
+> > > However...  I put the laptop into Hibernate mode.  To be absolutely sure
+> > > this was a true snapshot-poweroff-resume cycle, I also unplugged the power
+> > > cord and removed the battery.  Then I removed and replaced the USB device
+> > > and restarted the laptop.  Everything worked smoothly; the file remained
+> > > open and the program was able to continue reading it, well past the point
+> > > where the I/O buffers needed to be refilled.
+> > 
+> > So basically there's a special case somewhere to treat _this_ disconnect
+> > differently than other ones.
+> 
+> Yes, there must be.
+> 
+> > How does real suspend behave (like STR)?  How does it handle cases where you
+> > plug in a different instance of the same device ... example, different CF
+> > card in a CF reader?  Or when you move the device to another port?  And
+> > does XP behave identically?
+> 
+> I'll try doing some of those experiments when I have a chance.
+> 
+> > > If Windows ME can do this, Linux should be able to do it too.
+> > 
+> > That argument can be stretched too far!  Though from time to time I have
+> > indeed wished for something more like a BSOD.  An oops hidden in a logfile
+> > that never gets flushed to disk, with an X desktop, gives no clues ... :)
+> > 
+> > Linux certainly _could_ try to emulate up all the fault handling of some
+> > version of Windows.  But whether it _should_ is a different story.
+> 
+> I say this is a case where we should try, at least to some extent; users 
+> will feel that "Powerdown-swsusp automatically removes all hot-pluggable 
+> devices" is too Draconian.
+> 
+> What do other people on the PM list think?
 
-It will probably be easier to add the code needed to verify devices and 
-media after restore-from-snapshot than it would be to educate users about 
-the difference between suspend/resume vs. snapshot/restore!  :-)
+I think it is analogous to leaving a mounted CD in the drive and suspending.
 
-> Note that for things like HID devices (mice etc), users rarely notice
-> this since the HID driver masks enumeration through /dev/input/mice.
+If you resume the box without ejecting the CD, it remains mounted and all is fine
+(I actually tested this).  I don't know what happens if you remove the CD from
+the drive while suspended (from the Linux' point of view), but this is a different
+kettle of fish.  Anyway, IMO, the behavior should be consistent across all
+devices or users will get confused.
 
-Yes, certainly.  Mostly I'm concerned about storage devices.  Although the 
-same concerns affect other things too, like audio/video devices.
-
-> Also, that we've been aiming at that "removes devices" as the default
-> for drivers without suspend()/resume() support, because it's the ONLY
-> choice that's both reliable (all drivers can handle it) and safe (since
-> users and applications must already handle "live" unplug).
-
-Yes.  Eventually it would be good to get suspend/resume support into all 
-the drivers that could stand to benefit from it.
-
-Alan Stern
+Greetings,
+Rafael
 
 
---===============0018173575200277625==
+-- 
+- Would you tell me, please, which way I ought to go from here?
+- That depends a good deal on where you want to get to.
+		-- Lewis Carroll "Alice's Adventures in Wonderland"
+
+--===============73904913430967079==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============0018173575200277625==--
+--===============73904913430967079==--
