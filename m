@@ -1,31 +1,59 @@
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: swsusp doesn't suspend devices
-Date: Wed, 07 Sep 2005 22:17:08 +0200
-Message-ID: <431F4AC4.9030206@drzeus.cx>
-References: <431ECCE3.8080408@drzeus.cx> <200509072203.19283.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFH] Freeing IRQs on APM-driven suspend
+Date: Wed, 7 Sep 2005 22:22:48 +0200
+Message-ID: <200509072222.48947.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751306AbVIGURM@vger.kernel.org>
-In-Reply-To: <200509072203.19283.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@osdl.org
+Content-Type: multipart/mixed; boundary="===============20871083704336613=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+--===============20871083704336613==
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->On Wednesday, 7 of September 2005 13:20, Pierre Ossman wrote:
->  
->
->>It would seem that swsusp doesn't properly suspend devices, or more
->>precisely it wakes them up again before suspending the machine.
->>    
->>
->
->Yes, it does.  By design.
->
->  
->
+Hi,
 
-That seems counter-productive, so I'm obviously missing something.
+I hope you remember the problem with the Hugh Dickins' notebook that
+freeing an IRQ during APM-driven suspend in the yenta driver made the
+box hang solid during resume.
+
+We (Hugh and me) have investigated this a bit further and it turns out that
+the problem is related to the sharing of the IRQ between the yenta and
+3c59x drivers.  However, it is not enough to free the IRQ in both drivers
+on suspend and request it on resume, because the box hangs anyway
+(during resume) if the drivers' *_resume() routines are not called in the
+right order.  Namely, it evidently is necessary to call the yenta's resume()
+before the 3c59x' resume() so that the box does not hang.
+
+Could you please advise me what may be the reason of this behavior and
+what can be done to prevent it?
+
+Greetings,
+Rafael
+
+
+-- 
+- Would you tell me, please, which way I ought to go from here?
+- That depends a good deal on where you want to get to.
+		-- Lewis Carroll "Alice's Adventures in Wonderland"
+
+--===============20871083704336613==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============20871083704336613==--
