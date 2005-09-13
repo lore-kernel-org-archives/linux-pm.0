@@ -1,13 +1,12 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 1/3] driver model wakeup flags
-Date: Mon, 12 Sep 2005 19:39:34 -0700
-Message-ID: <200509121939.35026.david-b@pacbell.net>
-References: <200509121923.58993.david-b@pacbell.net>
+Subject: [patch 0/3] driver model wakeup flags
+Date: Mon, 12 Sep 2005 19:23:58 -0700
+Message-ID: <200509121923.58993.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_nvjJDsOgL7Q7TYB"
+  boundary="Boundary-00=_+gjJDHuP8JC2gF8"
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200509121923.58993.david-b@pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,204 +19,151 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_nvjJDsOgL7Q7TYB
+--Boundary-00=_+gjJDHuP8JC2gF8
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-I think we need "wakeup" infrastructure in the driver model core,
-so there's consistent support for userspace being able to
+This is a refresh of the patch to add wakeup infrastructure to the
+driver model, in three parts.  Comments?  Merge?
 
-  (a) tell if the device can be a wakeup source;
-  (b) change the default wakeup policy for any device.
+	pm-wake.patch ... adds the flags, and sysfs support
+	pm-usb.patch ... usb devices use it
+	pm-pci.patch ... pci devices use it
 
-For example, I have a USB mouse that lies about being able to
-issue wakeup events, so if Linux is ever going to suspend mice
-(for that save-2-Watts-with-usb-mouse-on-laptop scenario), it's
-got to prevent that from happening with this one.
+The default gives the current behavior:  wakeup is enabled on all
+devices that support it.  (Assuming ACPI etc don't get in the way...)
 
-So this is a fairly minimal patch doing just that.
+This goes back to having the sysfs "wakeup" file be tristate.
+Wakeup can be "enabled" or "disabled", and toggled from userspace.
+Or it can be unavailable, value "", if the hardware doesn't support
+wakeup or if no software has marked the device as supporting wakeup.
+
+I attach a simple script I wrote to show what devices are capable
+of wakeup events.  On one system, it reports wakeup allowed for
+several builtin devices and a USB keyboard/hub:
+
+  lan        on  pci0000:00/0000:00:0a.0/0000:02:01.0
+  modem      on  pci0000:00/0000:00:06.1
+  hub        on  pci0000:00/0000:00:02.2/usb1
+  usb_host   on  pci0000:00/0000:00:02.2
+  input      on  pci0000:00/0000:00:02.1/usb3/3-1/3-1.1
+  hub        on  pci0000:00/0000:00:02.1/usb3/3-1
+  hub        on  pci0000:00/0000:00:02.1/usb3
+  usb_host   on  pci0000:00/0000:00:02.1
+  hub        on  pci0000:00/0000:00:02.0/usb2
+  usb_host   on  pci0000:00/0000:00:02.0
+  i2c        on  pci0000:00/0000:00:01.1
+
+On this system /proc/acpi/wakeup says
+
+  Device  Sleep state     Status
+  USB0       3            disabled
+  USB1       3            disabled
+  USB2       3            disabled
+  MAC0       3            disabled
+
+I'm guessing those are the 00:02.* and 02:01.0 nodes.  The hubs and
+input device (USB keyboard) use USB-internal wakeups and kick the
+usb_host nodes ... ACPI wouldn't know about them.  (I understand
+that firewire could do the same sort of thing too.)  The I2C device
+is actually SMBUS, waking up from D3hot or D3cold; I suspect that's
+handled by ACPI somehow.
 
 - Dave
 
 
---Boundary-00=_nvjJDsOgL7Q7TYB
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="pm-wake.patch"
+--Boundary-00=_+gjJDHuP8JC2gF8
+Content-Type: application/x-shellscript;
+  name="pm-wake"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="pm-wake.patch"
+	filename="pm-wake"
 
-This is a refresh of an earlier patch to add "wakeup" support to the
-PM core model.  This provides per-device bus-neutral control of the
-use of wakeup events.
+#!/bin/bash
 
-  * "struct device_pm_info" has two bits that are initialized as
-    part of setting up the enclosing struct device:
-      - "can_wakeup", reflecting hardware capabilities
-      - "may_wakeup", the policy setting (when CONFIG_PM)
+# devtype $PATH ==> $type
+devtype ()
+{
+	local F T
 
-  * There's a writeable sysfs "wakeup" file, with one of two values:
-      - "enabled", when the policy is to allow wakeup 
-      - "disabled", when the policy is not to allow it
-      - "" if the device can't currently issue wakeups
+	# fixed length, currently ten spaces
+	type=""
 
-By default, wakeup is enabled on all devices that support it.  If its
-driver doesn't support it ... treat it as a bug.  :)
+	for F in $(cd $1; echo *:*)
+	do
+		case $F in
+		# ignore device names by recognizing specific patterns
+		net:eth*)	type="lan       "; return;;
+		net:*)		type="net       "; return;;
+		usb_host:*)	type="usb_host  "; return;;
+		sound:*)	type="modem     "; return;;
+		i2c-dev:*)	type="i2c       "; return;;
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+		# avoid really generic labels
+		usb_device:*)
+			read T < $1/maxchild
+			if [ 0 -lt $T ]
+			then
+				type="hub       "
+				return
+			fi
+			# REVISIT this ignores Ethernet adapters...
+			for T in $(cd $1; echo */input:*)
+			do
+				type="input     "
+				return
+			done
+			type="(usb)     "
+			continue;;
+		esac
+	done
 
---- g26.orig/include/linux/pm.h	2005-09-11 16:12:54.000000000 -0700
-+++ g26/include/linux/pm.h	2005-09-12 11:45:52.000000000 -0700
-@@ -219,7 +219,9 @@ typedef struct pm_message {
- 
- struct dev_pm_info {
- 	pm_message_t		power_state;
-+	unsigned		can_wakeup:1;
- #ifdef	CONFIG_PM
-+	unsigned		should_wakeup:1;
- 	pm_message_t		prev_state;
- 	void			* saved_state;
- 	atomic_t		pm_users;
-@@ -236,13 +238,35 @@ extern void device_resume(void);
- 
- #ifdef CONFIG_PM
- extern int device_suspend(pm_message_t state);
--#else
-+
-+#define device_set_wakeup_enable(dev,val) \
-+	((dev)->power.should_wakeup = !!(val))
-+#define device_may_wakeup(dev) \
-+	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
-+
-+#else /* !CONFIG_PM */
-+
- static inline int device_suspend(pm_message_t state)
- {
- 	return 0;
- }
-+
-+#define device_set_wakeup_enable(dev,val)	do{}while(0)
-+#define device_may_wakeup(dev)			(0)
-+
- #endif
- 
-+/* changes to device_may_wakeup take effect on the next pm state change.
-+ * by default, devices should wakeup if they can.
-+ */
-+#define device_can_wakeup(dev) \
-+	((dev)->power.can_wakeup)
-+#define device_init_wakeup(dev,val) \
-+	do { \
-+		device_can_wakeup(dev) = !!(val); \
-+		device_set_wakeup_enable(dev,val); \
-+	} while(0)
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _LINUX_PM_H */
---- g26.orig/drivers/base/core.c	2005-09-11 16:12:54.000000000 -0700
-+++ g26/drivers/base/core.c	2005-09-11 16:13:06.000000000 -0700
-@@ -225,6 +225,7 @@ void device_initialize(struct device *de
- 		   klist_children_put);
- 	INIT_LIST_HEAD(&dev->dma_pools);
- 	init_MUTEX(&dev->sem);
-+	device_init_wakeup(dev, 0);
- }
- 
- /**
---- g26.orig/drivers/base/power/sysfs.c	2005-09-11 16:12:54.000000000 -0700
-+++ g26/drivers/base/power/sysfs.c	2005-09-11 16:13:06.000000000 -0700
-@@ -48,8 +48,81 @@ static ssize_t state_store(struct device
- static DEVICE_ATTR(state, 0644, state_show, state_store);
- 
- 
-+/*
-+ *	wakeup - Report/change current wakeup option for device
-+ *
-+ *	Some devices support "wakeup" events, which are hardware signals
-+ *	used to activate devices from suspended or low power states.  Such
-+ *	devices have one of three values for the sysfs power/wakeup file:
-+ *
-+ *	 + "enabled\n" to issue the events;
-+ *	 + "disabled\n" not to do so; or
-+ *	 + "\n" for temporary or permanent inability to issue wakeup.
-+ *
-+ *	(For example, unconfigured USB devices can't issue wakeups.)
-+ *
-+ *	Familiar examples of devices that can issue wakeup events include
-+ *	keyboards and mice (both PS2 and USB styles), power buttons, modems,
-+ *	"Wake-On-LAN" Ethernet links, GPIO lines, and more.  Some events
-+ *	will wake the entire system from a suspend state; others may just
-+ *	wake up the device (if the system as a whole is already active).
-+ *	Some wakeup events use normal IRQ lines; other use special out
-+ *	of band signaling.
-+ *
-+ *	It is the responsibility of device drivers to enable (or disable)
-+ *	wakeup signaling as part of changing device power states, respecting
-+ *	the policy choices provided through the driver model.
-+ *
-+ *	Devices may not be able to generate wakeup events from all power
-+ *	states.  Also, the events may be ignored in some configurations;
-+ *	for example, they might need help from other devices that aren't
-+ *	active, or which may have wakeup disabled.  Some drivers rely on
-+ *	wakeup events internally (unless they are disabled), keeping
-+ *	their hardware in low power modes whenever they're unused.  This
-+ *	saves runtime power, without requiring system-wide sleep states.
-+ */
-+
-+static const char enabled[] = "enabled";
-+static const char disabled[] = "disabled";
-+
-+static ssize_t
-+wake_show(struct device * dev, struct device_attribute *attr, char * buf)
-+{
-+	return sprintf(buf, "%s\n", device_can_wakeup(dev)
-+		? (device_may_wakeup(dev) ? enabled : disabled)
-+		: "");
-+}
-+
-+static ssize_t
-+wake_store(struct device * dev, struct device_attribute *attr,
-+	const char * buf, size_t n)
-+{
-+	char *cp;
-+	int len = n;
-+
-+	if (!device_can_wakeup(dev))
-+		return -EINVAL;
-+
-+	cp = memchr(buf, '\n', n);
-+	if (cp)
-+		len = cp - buf;
-+	if (len == sizeof enabled - 1
-+			&& strncmp(buf, enabled, sizeof enabled - 1) == 0)
-+		device_set_wakeup_enable(dev, 1);
-+	else if (len == sizeof disabled - 1
-+			&& strncmp(buf, disabled, sizeof disabled - 1) == 0)
-+		device_set_wakeup_enable(dev, 0);
-+	else
-+		return -EINVAL;
-+	return n;
-+}
-+
-+static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
-+
-+
- static struct attribute * power_attrs[] = {
- 	&dev_attr_state.attr,
-+	&dev_attr_wakeup.attr,
- 	NULL,
- };
- static struct attribute_group pm_attr_group = {
+	if [ "$type" = "" ]
+	then
+		for T in $(cd $1; echo fw-host*/ieee1394_host:*)
+		do
+			type="firewire  "
+			return
+		done
+	fi
 
---Boundary-00=_nvjJDsOgL7Q7TYB
+	if [ "$type" = "" ]
+		then
+		type="          "
+	fi
+}
+
+cd /sys/devices
+for F in $(find * -name 'wakeup')
+do
+	# F=.../power/wakeup
+	read value < $F
+	if [ "$value" = "" ]
+	then
+		continue
+	fi
+
+	# F=...
+	F=$(dirname $(dirname $F))
+	devtype $F
+
+	# for each entry that actually supports wakeup, one line with:
+	#  - device type (if recognized)
+	#  - wake on/OFF
+	#  - /sys/devices/... path
+	case "$value" in
+	"disabled")	echo "$type OFF $F" ;;
+	"enabled")	echo "$type on  $F" ;;
+	esac
+done
+
+--Boundary-00=_+gjJDHuP8JC2gF8
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Boundary-00=_nvjJDsOgL7Q7TYB--
+--Boundary-00=_+gjJDHuP8JC2gF8--
