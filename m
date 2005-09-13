@@ -1,11 +1,11 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 3/3] pci device wakeup flags
-Date: Mon, 12 Sep 2005 19:48:14 -0700
-Message-ID: <200509121948.14849.david-b@pacbell.net>
+Subject: [patch 1/3] driver model wakeup flags
+Date: Mon, 12 Sep 2005 19:39:34 -0700
+Message-ID: <200509121939.35026.david-b@pacbell.net>
 References: <200509121923.58993.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_u3jJDvDPXE1eiJA"
+  boundary="Boundary-00=_nvjJDsOgL7Q7TYB"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <200509121923.58993.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -20,116 +20,204 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_u3jJDvDPXE1eiJA
+--Boundary-00=_nvjJDsOgL7Q7TYB
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-And here's the PCI support, as driven by PCI PM capabilities.  On systems
-using ACPI, most of these will be reported through ACPI.  (But there will
-often also be PS/2 mouse and keyboard devices ...)
+I think we need "wakeup" infrastructure in the driver model core,
+so there's consistent support for userspace being able to
 
-Two minor notes here.  One, the PCI spec says we should init some PM
-stuff that we don't; that'll matter for wakeup from D3cold (but not now).
-Two, some oddness in the PCI device init sequence.  Evidently some PPC
-patches are on the way, but nothing in the current tree will care about
-reverting that part of a recent patch.
+  (a) tell if the device can be a wakeup source;
+  (b) change the default wakeup policy for any device.
+
+For example, I have a USB mouse that lies about being able to
+issue wakeup events, so if Linux is ever going to suspend mice
+(for that save-2-Watts-with-usb-mouse-on-laptop scenario), it's
+got to prevent that from happening with this one.
+
+So this is a fairly minimal patch doing just that.
 
 - Dave
 
---Boundary-00=_u3jJDvDPXE1eiJA
+
+--Boundary-00=_nvjJDsOgL7Q7TYB
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="pm-wake-pci.patch"
+  name="pm-wake.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="pm-wake-pci.patch"
+	filename="pm-wake.patch"
 
-This patch teaches "pci_dev" about the new driver model wakeup support:
+This is a refresh of an earlier patch to add "wakeup" support to the
+PM core model.  This provides per-device bus-neutral control of the
+use of wakeup events.
 
- - It marks devices as supporting wakeup when "can issue PME#" is
-   listed in its PCI PM capability.
+  * "struct device_pm_info" has two bits that are initialized as
+    part of setting up the enclosing struct device:
+      - "can_wakeup", reflecting hardware capabilities
+      - "may_wakeup", the policy setting (when CONFIG_PM)
 
- - pci_enable_wake() refuses to enable wake if that's been disabled
-   (e.g. through sysfs).
+  * There's a writeable sysfs "wakeup" file, with one of two values:
+      - "enabled", when the policy is to allow wakeup 
+      - "disabled", when the policy is not to allow it
+      - "" if the device can't currently issue wakeups
 
-NOTE that a recent patch changed PCI probing, and this reverts part
-of that change ... so that driver model initialization is again done
-before the PCI setup.
-
-(One issue is that the driver model "init + add == register" pattern isn't
-being used inside PCI ...  and that probe change worsened the problem by
-making "add" do some "init" too.  Maybe PCI should match the driver model
-more closely, and just grow a new "pci_dev_init" function.)
+By default, wakeup is enabled on all devices that support it.  If its
+driver doesn't support it ... treat it as a bug.  :)
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
---- g26.orig/drivers/pci/probe.c	2005-09-11 18:24:11.000000000 -0700
-+++ g26/drivers/pci/probe.c	2005-09-12 11:38:01.000000000 -0700
-@@ -571,6 +571,7 @@ static void pci_read_irq(struct pci_dev 
- static int pci_setup_device(struct pci_dev * dev)
+--- g26.orig/include/linux/pm.h	2005-09-11 16:12:54.000000000 -0700
++++ g26/include/linux/pm.h	2005-09-12 11:45:52.000000000 -0700
+@@ -219,7 +219,9 @@ typedef struct pm_message {
+ 
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
++	unsigned		can_wakeup:1;
+ #ifdef	CONFIG_PM
++	unsigned		should_wakeup:1;
+ 	pm_message_t		prev_state;
+ 	void			* saved_state;
+ 	atomic_t		pm_users;
+@@ -236,13 +238,35 @@ extern void device_resume(void);
+ 
+ #ifdef CONFIG_PM
+ extern int device_suspend(pm_message_t state);
+-#else
++
++#define device_set_wakeup_enable(dev,val) \
++	((dev)->power.should_wakeup = !!(val))
++#define device_may_wakeup(dev) \
++	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
++
++#else /* !CONFIG_PM */
++
+ static inline int device_suspend(pm_message_t state)
  {
- 	u32 class;
-+	u16 pm;
- 
- 	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
- 		dev->bus->number, PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
-@@ -598,6 +599,19 @@ static int pci_setup_device(struct pci_d
- 		pci_read_bases(dev, 6, PCI_ROM_ADDRESS);
- 		pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
- 		pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
+ 	return 0;
+ }
 +
-+		/* PCI PM capable devices may be able to issue PME# (wakeup) */
-+		pm = pci_find_capability(dev, PCI_CAP_ID_PM);
-+		if (pm) {
-+			pci_read_config_word(dev, pm + PCI_PM_PMC, &pm);
-+			if (pm & PCI_PM_CAP_PME_MASK)
-+				device_init_wakeup(&dev->dev, 1);
++#define device_set_wakeup_enable(dev,val)	do{}while(0)
++#define device_may_wakeup(dev)			(0)
 +
-+			/* REVISIT: if (pm & PCI_PM_CAP_PME_D3cold) then
-+			 * pci pm spec 1.2, section 3.2.4 says we should
-+			 * init PCI_PM_CTRL_PME_{STATUS,ENABLE} ...
-+			 */
-+		}
- 		break;
+ #endif
  
- 	case PCI_HEADER_TYPE_BRIDGE:		    /* bridge header */
-@@ -737,6 +751,7 @@ pci_scan_device(struct pci_bus *bus, int
- 	memset(dev, 0, sizeof(struct pci_dev));
- 	dev->bus = bus;
- 	dev->sysdata = bus->sysdata;
-+	device_initialize(&dev->dev);
- 	dev->dev.parent = bus->bridge;
- 	dev->dev.bus = &pci_bus_type;
- 	dev->devfn = devfn;
-@@ -759,7 +774,6 @@ pci_scan_device(struct pci_bus *bus, int
- 
- void __devinit pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
- {
--	device_initialize(&dev->dev);
- 	dev->dev.release = pci_release_dev;
- 	pci_dev_get(dev);
- 
---- g26.orig/drivers/pci/pci.c	2005-09-11 18:24:11.000000000 -0700
-+++ g26/drivers/pci/pci.c	2005-09-11 18:25:12.000000000 -0700
-@@ -531,6 +531,10 @@ int pci_enable_wake(struct pci_dev *dev,
- 	if (!pm) 
- 		return enable ? -EIO : 0; 
- 
-+	/* don't enable unless policy set through driver core allows it */
-+	if (!device_may_wakeup(&dev->dev) && enable)
-+		return -EROFS;
++/* changes to device_may_wakeup take effect on the next pm state change.
++ * by default, devices should wakeup if they can.
++ */
++#define device_can_wakeup(dev) \
++	((dev)->power.can_wakeup)
++#define device_init_wakeup(dev,val) \
++	do { \
++		device_can_wakeup(dev) = !!(val); \
++		device_set_wakeup_enable(dev,val); \
++	} while(0)
 +
- 	/* Check device's ability to generate PME# */
- 	pci_read_config_word(dev,pm+PCI_PM_PMC,&value);
+ #endif /* __KERNEL__ */
  
+ #endif /* _LINUX_PM_H */
+--- g26.orig/drivers/base/core.c	2005-09-11 16:12:54.000000000 -0700
++++ g26/drivers/base/core.c	2005-09-11 16:13:06.000000000 -0700
+@@ -225,6 +225,7 @@ void device_initialize(struct device *de
+ 		   klist_children_put);
+ 	INIT_LIST_HEAD(&dev->dma_pools);
+ 	init_MUTEX(&dev->sem);
++	device_init_wakeup(dev, 0);
+ }
+ 
+ /**
+--- g26.orig/drivers/base/power/sysfs.c	2005-09-11 16:12:54.000000000 -0700
++++ g26/drivers/base/power/sysfs.c	2005-09-11 16:13:06.000000000 -0700
+@@ -48,8 +48,81 @@ static ssize_t state_store(struct device
+ static DEVICE_ATTR(state, 0644, state_show, state_store);
+ 
+ 
++/*
++ *	wakeup - Report/change current wakeup option for device
++ *
++ *	Some devices support "wakeup" events, which are hardware signals
++ *	used to activate devices from suspended or low power states.  Such
++ *	devices have one of three values for the sysfs power/wakeup file:
++ *
++ *	 + "enabled\n" to issue the events;
++ *	 + "disabled\n" not to do so; or
++ *	 + "\n" for temporary or permanent inability to issue wakeup.
++ *
++ *	(For example, unconfigured USB devices can't issue wakeups.)
++ *
++ *	Familiar examples of devices that can issue wakeup events include
++ *	keyboards and mice (both PS2 and USB styles), power buttons, modems,
++ *	"Wake-On-LAN" Ethernet links, GPIO lines, and more.  Some events
++ *	will wake the entire system from a suspend state; others may just
++ *	wake up the device (if the system as a whole is already active).
++ *	Some wakeup events use normal IRQ lines; other use special out
++ *	of band signaling.
++ *
++ *	It is the responsibility of device drivers to enable (or disable)
++ *	wakeup signaling as part of changing device power states, respecting
++ *	the policy choices provided through the driver model.
++ *
++ *	Devices may not be able to generate wakeup events from all power
++ *	states.  Also, the events may be ignored in some configurations;
++ *	for example, they might need help from other devices that aren't
++ *	active, or which may have wakeup disabled.  Some drivers rely on
++ *	wakeup events internally (unless they are disabled), keeping
++ *	their hardware in low power modes whenever they're unused.  This
++ *	saves runtime power, without requiring system-wide sleep states.
++ */
++
++static const char enabled[] = "enabled";
++static const char disabled[] = "disabled";
++
++static ssize_t
++wake_show(struct device * dev, struct device_attribute *attr, char * buf)
++{
++	return sprintf(buf, "%s\n", device_can_wakeup(dev)
++		? (device_may_wakeup(dev) ? enabled : disabled)
++		: "");
++}
++
++static ssize_t
++wake_store(struct device * dev, struct device_attribute *attr,
++	const char * buf, size_t n)
++{
++	char *cp;
++	int len = n;
++
++	if (!device_can_wakeup(dev))
++		return -EINVAL;
++
++	cp = memchr(buf, '\n', n);
++	if (cp)
++		len = cp - buf;
++	if (len == sizeof enabled - 1
++			&& strncmp(buf, enabled, sizeof enabled - 1) == 0)
++		device_set_wakeup_enable(dev, 1);
++	else if (len == sizeof disabled - 1
++			&& strncmp(buf, disabled, sizeof disabled - 1) == 0)
++		device_set_wakeup_enable(dev, 0);
++	else
++		return -EINVAL;
++	return n;
++}
++
++static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
++
++
+ static struct attribute * power_attrs[] = {
+ 	&dev_attr_state.attr,
++	&dev_attr_wakeup.attr,
+ 	NULL,
+ };
+ static struct attribute_group pm_attr_group = {
 
---Boundary-00=_u3jJDvDPXE1eiJA
+--Boundary-00=_nvjJDsOgL7Q7TYB
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Boundary-00=_u3jJDvDPXE1eiJA--
+--Boundary-00=_nvjJDsOgL7Q7TYB--
