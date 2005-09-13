@@ -1,11 +1,11 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2/3] usb device wakeup flags
-Date: Mon, 12 Sep 2005 19:39:39 -0700
-Message-ID: <200509121939.39358.david-b@pacbell.net>
+Subject: [patch 3/3] pci device wakeup flags
+Date: Mon, 12 Sep 2005 19:48:14 -0700
+Message-ID: <200509121948.14849.david-b@pacbell.net>
 References: <200509121923.58993.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_rvjJD5T6x0sbnxr"
+  boundary="Boundary-00=_u3jJDvDPXE1eiJA"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <200509121923.58993.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -20,85 +20,116 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_rvjJD5T6x0sbnxr
+--Boundary-00=_u3jJDvDPXE1eiJA
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Here's a patch showing how USB can detect wakeup-capable devices,
-such as hubs, keyboards, mice, and Ethernet adapters ... and use
-the policy setting to enable remote wakeup only when appropriate.
+And here's the PCI support, as driven by PCI PM capabilities.  On systems
+using ACPI, most of these will be reported through ACPI.  (But there will
+often also be PS/2 mouse and keyboard devices ...)
 
-There's another USB patch on the way, switching the HCDs over to
-use the new driver model bits rather than the USB-only bits that
-do the same thing.  I'm holding back on that till more of the
-HCD level PM updates get made.
+Two minor notes here.  One, the PCI spec says we should init some PM
+stuff that we don't; that'll matter for wakeup from D3cold (but not now).
+Two, some oddness in the PCI device init sequence.  Evidently some PPC
+patches are on the way, but nothing in the current tree will care about
+reverting that part of a recent patch.
 
 - Dave
 
-
---Boundary-00=_rvjJD5T6x0sbnxr
+--Boundary-00=_u3jJDvDPXE1eiJA
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="pm-wake-usb.patch"
+  name="pm-wake-pci.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="pm-wake-usb.patch"
+	filename="pm-wake-pci.patch"
 
-This patch teaches "usb_device" about the new driver model wakeup support:
+This patch teaches "pci_dev" about the new driver model wakeup support:
 
- - It updates device wakeup capabilities when entering a configuration
-   with the WAKEUP attribute;
+ - It marks devices as supporting wakeup when "can issue PME#" is
+   listed in its PCI PM capability.
 
- - During suspend processing it consults the policy bit to see
-   whether it should enable wakeup for that device.  (This resolves
-   a FIXME to not assume the answer is always "yes"; some devices
-   lie about supporting remote wakeup.)
+ - pci_enable_wake() refuses to enable wake if that's been disabled
+   (e.g. through sysfs).
 
-Support for root hubs and the HCDs is separate (and more complex).
+NOTE that a recent patch changed PCI probing, and this reverts part
+of that change ... so that driver model initialization is again done
+before the PCI setup.
+
+(One issue is that the driver model "init + add == register" pattern isn't
+being used inside PCI ...  and that probe change worsened the problem by
+making "add" do some "init" too.  Maybe PCI should match the driver model
+more closely, and just grow a new "pci_dev_init" function.)
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
---- g26.orig/drivers/usb/core/hub.c	2005-09-11 18:24:17.000000000 -0700
-+++ g26/drivers/usb/core/hub.c	2005-09-12 11:43:16.000000000 -0700
-@@ -1020,9 +1020,15 @@ void usb_set_device_state(struct usb_dev
- 	spin_lock_irqsave(&device_state_lock, flags);
- 	if (udev->state == USB_STATE_NOTATTACHED)
- 		;	/* do nothing */
--	else if (new_state != USB_STATE_NOTATTACHED)
-+	else if (new_state != USB_STATE_NOTATTACHED) {
- 		udev->state = new_state;
--	else
-+		if (new_state == USB_STATE_CONFIGURED)
-+			device_init_wakeup(&udev->dev,
-+				(udev->actconfig->desc.bmAttributes
-+				 & USB_CONFIG_ATT_WAKEUP));
-+		else if (new_state != USB_STATE_SUSPENDED)
-+			device_init_wakeup(&udev->dev, 0);
-+	} else
- 		recursively_mark_NOTATTACHED(udev);
- 	spin_unlock_irqrestore(&device_state_lock, flags);
- }
-@@ -1546,11 +1552,7 @@ static int hub_port_suspend(struct usb_h
- 	 * NOTE:  OTG devices may issue remote wakeup (or SRP) even when
- 	 * we don't explicitly enable it here.
- 	 */
--	if (udev->actconfig
--			// && FIXME (remote wakeup enabled on this bus)
--			// ... currently assuming it's always appropriate
--			&& (udev->actconfig->desc.bmAttributes
--				& USB_CONFIG_ATT_WAKEUP) != 0) {
-+	if (device_may_wakeup(&udev->dev)) {
- 		status = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
- 				USB_REQ_SET_FEATURE, USB_RECIP_DEVICE,
- 				USB_DEVICE_REMOTE_WAKEUP, 0,
+--- g26.orig/drivers/pci/probe.c	2005-09-11 18:24:11.000000000 -0700
++++ g26/drivers/pci/probe.c	2005-09-12 11:38:01.000000000 -0700
+@@ -571,6 +571,7 @@ static void pci_read_irq(struct pci_dev 
+ static int pci_setup_device(struct pci_dev * dev)
+ {
+ 	u32 class;
++	u16 pm;
+ 
+ 	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
+ 		dev->bus->number, PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
+@@ -598,6 +599,19 @@ static int pci_setup_device(struct pci_d
+ 		pci_read_bases(dev, 6, PCI_ROM_ADDRESS);
+ 		pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
+ 		pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
++
++		/* PCI PM capable devices may be able to issue PME# (wakeup) */
++		pm = pci_find_capability(dev, PCI_CAP_ID_PM);
++		if (pm) {
++			pci_read_config_word(dev, pm + PCI_PM_PMC, &pm);
++			if (pm & PCI_PM_CAP_PME_MASK)
++				device_init_wakeup(&dev->dev, 1);
++
++			/* REVISIT: if (pm & PCI_PM_CAP_PME_D3cold) then
++			 * pci pm spec 1.2, section 3.2.4 says we should
++			 * init PCI_PM_CTRL_PME_{STATUS,ENABLE} ...
++			 */
++		}
+ 		break;
+ 
+ 	case PCI_HEADER_TYPE_BRIDGE:		    /* bridge header */
+@@ -737,6 +751,7 @@ pci_scan_device(struct pci_bus *bus, int
+ 	memset(dev, 0, sizeof(struct pci_dev));
+ 	dev->bus = bus;
+ 	dev->sysdata = bus->sysdata;
++	device_initialize(&dev->dev);
+ 	dev->dev.parent = bus->bridge;
+ 	dev->dev.bus = &pci_bus_type;
+ 	dev->devfn = devfn;
+@@ -759,7 +774,6 @@ pci_scan_device(struct pci_bus *bus, int
+ 
+ void __devinit pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+ {
+-	device_initialize(&dev->dev);
+ 	dev->dev.release = pci_release_dev;
+ 	pci_dev_get(dev);
+ 
+--- g26.orig/drivers/pci/pci.c	2005-09-11 18:24:11.000000000 -0700
++++ g26/drivers/pci/pci.c	2005-09-11 18:25:12.000000000 -0700
+@@ -531,6 +531,10 @@ int pci_enable_wake(struct pci_dev *dev,
+ 	if (!pm) 
+ 		return enable ? -EIO : 0; 
+ 
++	/* don't enable unless policy set through driver core allows it */
++	if (!device_may_wakeup(&dev->dev) && enable)
++		return -EROFS;
++
+ 	/* Check device's ability to generate PME# */
+ 	pci_read_config_word(dev,pm+PCI_PM_PMC,&value);
+ 
 
---Boundary-00=_rvjJD5T6x0sbnxr
+--Boundary-00=_u3jJDvDPXE1eiJA
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Boundary-00=_rvjJD5T6x0sbnxr--
+--Boundary-00=_u3jJDvDPXE1eiJA--
