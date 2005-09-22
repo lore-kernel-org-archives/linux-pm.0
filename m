@@ -1,17 +1,15 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: swsusp3: system suspend/resume from userspace
-Date: Wed, 21 Sep 2005 05:53:22 -0700
-Message-ID: <20050921125322.GA13371@kroah.com>
-References: <F7DC2337C7631D4386A2DF6E8FB22B30047B8E51@hdsmsx401.amr.corp.intel.com>
-	<20050901201714.GA2027@openzaurus.ucw.cz>
-	<1127259699.4386.82.camel@gaston>
-	<20050921101811.GC25297@atrey.karlin.mff.cuni.cz>
-	<1127298751.4386.114.camel@gaston>
-	<20050921124523.GB2013@elf.ucw.cz>
+From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Subject: Re: Re: Oops 2.6.14-rc1, AMD Sempton
+Date: Thu, 22 Sep 2005 22:12:01 +0200
+Message-ID: <200509222212.01814.Rafal.Wysocki@fuw.edu.pl>
+References: <43289FAF.5040009@iliana.nl> <432EDCDC.9070605@iliana.nl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============86906464125382965=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050921124523.GB2013@elf.ucw.cz>
+In-Reply-To: <432EDCDC.9070605@iliana.nl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,38 +19,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>
+To: linux-pm@lists.osdl.org
+Cc: Joost Witteveen <joostje@iliana.nl>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============86906464125382965==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-On Wed, Sep 21, 2005 at 02:45:23PM +0200, Pavel Machek wrote:
+On Monday, 19 of September 2005 17:44, Joost Witteveen wrote:
+> Joost Witteveen wrote:
 > 
-> swsusp3 is likely easier way to go than transforming suspend2 into
-> something mergeable. [Ouch and BTW it works now :-)]
+> > The Oops below happend while swsuspending my Sempron laptop. The 
+> > system freezes afterwards.
+> 
+> OK, replying to my own email as I haven't had any reply yet (I'm not 
+> subscribed to the list).
+> 
+> Since I sent the email, I've had two more oopses (they don't happen as 
+> often as before), which I've added to:
+> 
+> http://www.komputilo.org/~joostje/linux/swsuspend/
 
-I agree.  One of the main things that people really like with suspend2
-is all of the "pretty" things.  With the logic moving to userspace, we
-can now implement them if we want to.  Otherwise, if we keep everything
-in the kernel, there is no way we will ever get them.
+There sometimes is not enough memory to suspend on your box, and
+the BUG() triggers because nr_copy_pages_check is initialized too late.
+The following patch should fix it.  Could you please test?
 
-And besides, it's such a cool hack!
-
-(I saw Pavel demo it yesterday, so I can vouch for the fact that it does
-work.)
-
-thanks,
-
-greg k-h
-
---===============86906464125382965==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Greetings,
+Rafael 
 
 
---===============86906464125382965==--
+Index: linux-2.6.14-rc1/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.14-rc1.orig/kernel/power/swsusp.c	2005-09-22 22:05:52.000000000 +0200
++++ linux-2.6.14-rc1/kernel/power/swsusp.c	2005-09-22 22:08:14.000000000 +0200
+@@ -918,6 +918,7 @@
+ 
+ 	pagedir_nosave = NULL;
+ 	nr_copy_pages = calc_nr(nr_copy_pages);
++	nr_copy_pages_check = nr_copy_pages;
+ 
+ 	pr_debug("suspend: (pages needed: %d + %d free: %d)\n",
+ 		 nr_copy_pages, PAGES_FOR_IO, nr_free_pages());
+@@ -940,7 +941,6 @@
+ 		return error;
+ 	}
+ 
+-	nr_copy_pages_check = nr_copy_pages;
+ 	return 0;
+ }
+ 
+
+-- 
+Rafael J. Wysocki, Ph.D.
+Institute of Theoretical Physics
+Faculty of Physics of Warsaw University
+ul. Hoza 69, 00-681 Warsaw
+[tel: +48 22 55 32 263]
+[mob: +48 60 50 53 693]
+----------------------------
+One should not increase, beyond what is necessary,
+the number of entities required to explain anything.
+			-- William of Ockham
