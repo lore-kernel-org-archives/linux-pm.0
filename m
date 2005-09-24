@@ -1,15 +1,10 @@
-From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Subject: Re: Re: Oops 2.6.14-rc1, AMD Sempton
-Date: Thu, 22 Sep 2005 22:12:01 +0200
-Message-ID: <200509222212.01814.Rafal.Wysocki@fuw.edu.pl>
-References: <43289FAF.5040009@iliana.nl> <432EDCDC.9070605@iliana.nl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Problems with PM_FREEZE
+Date: Fri, 23 Sep 2005 22:09:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0509232155380.23428-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============033837837450140462=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <432EDCDC.9070605@iliana.nl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,63 +14,55 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: Joost Witteveen <joostje@iliana.nl>, linux-pm@osdl.org
+To: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============033837837450140462==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Monday, 19 of September 2005 17:44, Joost Witteveen wrote:
-> Joost Witteveen wrote:
-> 
-> > The Oops below happend while swsuspending my Sempron laptop. The 
-> > system freezes afterwards.
-> 
-> OK, replying to my own email as I haven't had any reply yet (I'm not 
-> subscribed to the list).
-> 
-> Since I sent the email, I've had two more oopses (they don't happen as 
-> often as before), which I've added to:
-> 
-> http://www.komputilo.org/~joostje/linux/swsuspend/
+A problem with the PM_FREEZE state has surfaced recently.
 
-There sometimes is not enough memory to suspend on your box, and
-the BUG() triggers because nr_copy_pages_check is initialized too late.
-The following patch should fix it.  Could you please test?
+It has to do with the device state recorded in the memory image.  When the 
+image is made, devices are in the FREEZE state, and that's what gets 
+recorded.  But then the image is written to disk and devices are put into 
+SUSPEND.
 
-Greetings,
-Rafael 
+Later on, when the system wakes up and the image is restored, drivers are 
+asked to resume the devices.  The problem is that now the drivers think 
+the devices are in FREEZE when in fact they are really in SUSPEND.  The 
+difference is significant and it can cause errors in the resume procedure.
+
+What's the correct way to handle this?  On possible solution would be to
+let drivers know when a resume call is returning from a system sleep.  
+When that happens drivers can safely assume that the devices really are
+in SUSPEND, no matter what the recorded states say.
 
 
-Index: linux-2.6.14-rc1/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.14-rc1.orig/kernel/power/swsusp.c	2005-09-22 22:05:52.000000000 +0200
-+++ linux-2.6.14-rc1/kernel/power/swsusp.c	2005-09-22 22:08:14.000000000 +0200
-@@ -918,6 +918,7 @@
- 
- 	pagedir_nosave = NULL;
- 	nr_copy_pages = calc_nr(nr_copy_pages);
-+	nr_copy_pages_check = nr_copy_pages;
- 
- 	pr_debug("suspend: (pages needed: %d + %d free: %d)\n",
- 		 nr_copy_pages, PAGES_FOR_IO, nr_free_pages());
-@@ -940,7 +941,6 @@
- 		return error;
- 	}
- 
--	nr_copy_pages_check = nr_copy_pages;
- 	return 0;
- }
- 
+Here's another, slightly more far-fetched problem.  I don't know if this 
+can come up in actual practice.
 
--- 
-Rafael J. Wysocki, Ph.D.
-Institute of Theoretical Physics
-Faculty of Physics of Warsaw University
-ul. Hoza 69, 00-681 Warsaw
-[tel: +48 22 55 32 263]
-[mob: +48 60 50 53 693]
-----------------------------
-One should not increase, beyond what is necessary,
-the number of entities required to explain anything.
-			-- William of Ockham
+When a disk device is put in FREEZE, there may be pending write requests
+in its I/O queue.  After the image has been made, the device is resumed in
+order to write the image to a swap partition.  When that happens the I/O
+queue will start running again, briefly.  Those pending writes will be 
+carried out.
+
+Then when the system wakes up, the pending requests will be restored along
+with the rest of the image.  But they have already been recorded on the
+disk.  I can imagine that with some kinds of filesystem this might lead to
+an error (although I don't know how).
+
+
+Any comments?
+
+Alan Stern
+
+
+--===============033837837450140462==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============033837837450140462==--
