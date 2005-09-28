@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Problems with PM_FREEZE
-Date: Wed, 28 Sep 2005 17:12:58 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0509281710460.5193-100000@iolanthe.rowland.org>
-References: <20050928205106.GA2506@elf.ucw.cz>
+Date: Wed, 28 Sep 2005 17:15:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0509281713490.5193-100000@iolanthe.rowland.org>
+References: <20050928205319.GC2506@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============98733505953533918=="
+Content-Type: multipart/mixed; boundary="===============8049697066246484=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050928205106.GA2506@elf.ucw.cz>
+In-Reply-To: <20050928205319.GC2506@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,33 +17,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org
+Cc: Nigel Cunningham <ncunningham@cyclades.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============98733505953533918==
+--===============8049697066246484==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 On Wed, 28 Sep 2005, Pavel Machek wrote:
 
-> > But that's not what it should do when it's being resumed just after the
-> > memory image was created, in order to write out the image.  In this case
-> > the device is known to be in FREEZE, not SUSPEND, and to save time we
-> > would like the driver not to go through a full resume procedure.
+> > You need to state these things carefully.  A complete power-off does
+> > reset/disconnect USB devices.  However, turning off your computer
+> > might not do a complete power-off; it may well leave suspend current 
+> > available.  If that's true, USB devices won't be disconnected.
 > 
-> Do you have any driver which can save some significant ammount of time
-> that way?
+> Examples, please. Thinkpad X32 certainly does not provide power on USB
+> when turned off.
 
-All USB devices require several 10's of milliseconds to resume.  Whether 
-that amount is "significant" is a matter of personal opinion.
+I don't have any examples.  However you're more likely to find suspend 
+current available on a desktop system than on a laptop, I imagine.  Those 
+big power supplies don't really turn off all the way unless you unplug 
+them from the wall socket.
 
 Alan Stern
 
 
---===============98733505953533918==
+--===============8049697066246484==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============98733505953533918==--
+--===============8049697066246484==--
