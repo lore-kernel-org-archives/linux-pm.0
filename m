@@ -1,10 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Update on USB PM state (2.6.15 queue)
-Date: Wed, 28 Sep 2005 09:57:06 -0700
-Message-ID: <200509280957.06073.david-b@pacbell.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Problems with PM_FREEZE
+Date: Wed, 28 Sep 2005 14:54:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0509281451010.5193-100000@iolanthe.rowland.org>
+References: <200509281551.30587.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============51162960500994714=="
+Content-Type: multipart/mixed; boundary="===============06043864348978456=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200509281551.30587.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,69 +16,39 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============51162960500994714==
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--===============06043864348978456==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-I just thought I'd provide a quick update on the state of USB PM,
-at least according to my testing(*)  after the patches that are now
-in Greg's 2.6.15 queue(**) ... I just forwarded the patch overviews
-to this list, the details are on linux-usb-devel.
+On Wed, 28 Sep 2005, Rafael J. Wysocki wrote:
 
-  - Suspend/resume of the PCI devices through sysfs behaves again ...
-    it seems to have broken badly sometime after 2.6.10 or 2.6.11
+> IMO if the driver is a module it should not make any assumptions
+> on the state of the device when its resume routine is called.  Instead,
+> it should assume the device can be in an arbitrary state and proceed
+> in the safest way possible.  Which is 3.
 
-  - Likewise it behaves through swsusp "shutdown/reboot", both with
-    and without devices attached.
+That's what it should do when resuming from disk.
 
-  - I have one system on which S1 suspend/resume works, at
-    least if I use PS/2 keyboard to trigger wakeup.
+But that's not what it should do when it's being resumed just after the
+memory image was created, in order to write out the image.  In this case
+the device is known to be in FREEZE, not SUSPEND, and to save time we
+would like the driver not to go through a full resume procedure.
 
-  - On some other systems, both S1 and S3 suspend fail; the
-    system dies in ACPI during wakeup processing.
+The problem is that currently the driver has no way to tell the difference
+between the two types of resume.  What's needed is a way for driver to 
+tell, and that can be added easily enough.
 
-As for remote wakeup, using a USB keyboard, that still looks OK
-(no regressions needed fixing) except when ACPI kicks in:
+Alan Stern
 
-  - For "runtime PM" scenarios where individual devices and
-    hubs (including root hubs) are suspended, the relevant
-    parts of the device tree wake up just fine.
 
-  - For "system PM" scenarios, and with /proc/acpi/wakeup
-    tweaked to enable all wakeup events, mixed results:
-
-        * The system where S1 works seems to run into some
-          ACPI bugs; the last messages relate to overflow,
-          evidently the wakeup signal is never acknowledged.
-
-        * Those other systems don't have any better luck
-          when the S1/S3 resume signal is a USB wakeup than
-          any other kind of wakeup.
-
-Compared to the last time I tested this, it's good to at least
-see the USB remote wakeup signals waking the system up; those
-seem to be ACPI improvements.  But it still looks like the
-cases I most want to see working (S1, S3) are failing on PCs.
-
-There are a few small USB PM updates on the way from me (call
-it all cleanups), and Alan's planning some updates too.
-
-- Dave
-
-(*)  EHCI and OHCI only; no UHCI boxes.
-
-(**) http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
---===============51162960500994714==
+--===============06043864348978456==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============51162960500994714==--
+--===============06043864348978456==--
