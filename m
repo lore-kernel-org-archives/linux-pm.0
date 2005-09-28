@@ -1,13 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: Problems with PM_FREEZE
-Date: Wed, 28 Sep 2005 08:28:07 -0700
-Message-ID: <20050928152807.19B67E36F3@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
-References: <Pine.LNX.4.44L0.0509271455140.636-100000@iolanthe.rowland.org>
-	<1127855345.4802.13.camel@localhost> <20050927220110.GB2381@elf.ucw.cz>
+Date: Wed, 28 Sep 2005 08:46:09 -0700
+Message-ID: <20050928154609.5FBA2E36F2@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+References: <Pine.LNX.4.44L0.0509272236580.15378-100000@netrider.rowland.org>
+	<1127877808.4802.74.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============35900153114896938=="
+Content-Type: multipart/mixed; boundary="===============9313213406641303=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050927220110.GB2381@elf.ucw.cz>
+In-Reply-To: <1127877808.4802.74.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,88 +17,76 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: pavel@ucw.cz, ncunningham@cyclades.com
-Cc: linux-pm@lists.osdl.org
+To: stern@rowland.harvard.edu, ncunningham@cyclades.com
+Cc: linux-pm@lists.osdl.org, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
---===============35900153114896938==
+--===============9313213406641303==
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 
-> > > > > Later on, when the system wakes up and the image is restored,
-> > > > > drivers are asked to
-> > > > > resume the devices.  The problem is that now the drivers think 
-> > > > > the devices are in FREEZE when in fact they are really in SUSPEND.
-> > > > > The difference is significant and it can cause errors in the
-> > > > > resume procedure.
-> > > > 
-> > > > No; devices are in FREEZE if their driver was in kernel, and in some kind
-> > > > of power up state when not. Drivers should just handle both.
-> > > 
-> > > For USB, that "some kind of power up state" will in fact be SUSPEND.
+> > 	If the image doesn't contain USB drivers, the device state
+> > 	doesn't matter.
 > > 
-> > Excuse me taking a step back, but I think you guys might be solving a
-> > problem that doesn't exist...
-
-I see the problem as being the latest definition of FREEZE:
-
-  FREEZE -- stop DMA and interrupts, and be prepared to reinit HW from
-  scratch. That probably means ...
-
-  SUSPEND -- like FREEZE, but also put hardware into low-power state.
-
-Definitions like those are "probably" imprecise enough to be useless
-to implementors.
-
-And since drivers are free to put hardware into low power states any
-time it's convenient to them, there is really no practical difference
-between those two notions.
-
-(This is different from earlier notions of FREEZE I remember being
-discussed.  In particular the one that viewed it as just quiescing.)
-
-
-> > How do USB drivers get into a suspend state?
-
-There's driver state ... and there's device state.  For USB the two are
-very cleanly separated, since drivers are bound to usb_interface objects,
-while only usb_device objects (or root hubs) can have real power state.
-
-
-> >	At suspend time, before the
-> > atomic copy is made they have been told to FREEZE. At resume time, prior
-> > to the atomic restore, they have been told to FREEZE. The state
+> > 	If the image does contain USB drivers and the boot kernel
+> > 	did not meddle with the device states, then the devices
+> > 	will be suspended even though the image thinks they are
+> > 	frozen.
 >
-> They have been told to freeze _if you have usb built in_, and not
-> modular.
+> So a power off or reboot doesn't reset the USB devices?
 
-Pavel, there's no such "is it built in" logic I've seen anywhere in
-the PM framework.  It may be appropriate to add some at some point;
-but that'd notion would need to be decently thought through.
+Those would reset them, yes ... or more to the point, disconnect
+them.  All the checkpoint/resume style PM scenarios should trigger
+disconnection for every USB device.  (And in fact they do, with
+the USB PM fixes upcoming for 2.6.15 ... that seems to have been
+broken in the past few releases.)
 
 
->	Imagine kernel with usb as a module, doing resume from kernel
-> command line. usb will be in "just powered on" state.
+> > 	If the image does contain USB drivers and the boot kernel
+> > 	did meddle with the device states, then the devices probably
+> > 	will not be resumable by the image kernel.  They will have
+> > 	to be rediscovered.
+>
+> Even if frozen? They should end up in the same state.
 
-Well, "from kernel command line" all but guarantees a reset has
-been done, and so the USB devices will not be suspended.  Remember,
-you may be typing that command line on a USB keyboard, which BIOS
-had to re-initialize.  Linux and BIOS won't share USB device state.
+No ... the fact that there **WAS** a boot kernel implies a reset,
+hence disconnect.  The BIOS may have re-enumerated things and
+changed device state.  (And of course the USER may have switched
+cables around too...)
 
-Now if it's a real resume transition -- from suspend-to-RAM, or
-something similar that doesn't load a new Linux kernel -- then
-hardware can often maintain the USB suspend state while the
-system is in its low power state.  The cost is normally 500 uA
-per device, though some may consume a bit more.
+
+> > Better than (A) would be to tell the boot kernel that it _is_ only a boot 
+> > kernel, so that its drivers will know not to mess up the state of any 
+> > devices.  This would have the side effect of making it impossible to 
+> > reload an image from a USB drive, but that's pretty much unavoidable 
+> > anyway.
+
+Actually, reloading an image from a USB drive should be easy;
+I don't understand the difficulty.  These comments seem to be
+circling around the fact that such "resume from swsusp" cases
+are not real PM resumes.
+
+
+> I would like to be able to get suspend to and resuming from usb going at
+> some stage. No chance?
+
+Have a look at the USB PM patches now in Greg's tree; I'll
+be posting a note to this list about them soonish.
+
+Briefly, status for me is that while I see resume from swsusp
+snapshots working, there seems to be difficulty (a) getting
+remote wakeup signals through ACPI after they wake the system
+up, (b) often resuming from S1 or S3 in general.  None of those
+issues appear to be from USB code.
 
 - Dave
 
 
---===============35900153114896938==
+--===============9313213406641303==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============35900153114896938==--
+--===============9313213406641303==--
