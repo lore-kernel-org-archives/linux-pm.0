@@ -1,12 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Problems with PM_FREEZE
-Date: Wed, 28 Sep 2005 12:17:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0509281151140.4491-100000@iolanthe.rowland.org>
-References: <1127877808.4802.74.camel@localhost>
+From: David Brownell <david-b@pacbell.net>
+Subject: Fwd: [patch 2.6.14-rc2 0/12] USB updates,
+	mostly for suspend/resume
+Date: Wed, 28 Sep 2005 09:26:42 -0700
+Message-ID: <200509280926.42922.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============48196296500334013=="
+Content-Type: multipart/mixed; boundary="===============15669350390971282=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1127877808.4802.74.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,127 +15,94 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============48196296500334013==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============15669350390971282==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-[Replying to two people at once]
+This stuff isn't yet in the MM tree, but it's in Greg's USB queue.
 
-On Wed, 28 Sep 2005, Nigel Cunningham wrote:
-On Wed, 28 Sep 2005, David Brownell wrote:
+----------  Forwarded Message  ----------
 
-> > 	If the image does contain USB drivers and the boot kernel
-> > 	did not meddle with the device states, then the devices
-> > 	will be suspended even though the image thinks they are
-> > 	frozen.
-> 
-> So a power off or reboot doesn't reset the USB devices?
+Subject: [patch 0/12] USB updates, mostly for suspend/resume
+Date: Thursday 22 September 2005 10:29 pm
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net
+Cc: Greg KH <greg@kroah.com>
 
-> Those would reset them, yes ... or more to the point, disconnect
-> them.  All the checkpoint/resume style PM scenarios should trigger
-> disconnection for every USB device.  (And in fact they do, with
-> the USB PM fixes upcoming for 2.6.15 ... that seems to have been
-> broken in the past few releases.)
+Here are a bunch of USB updates, many making power management
+become simpler, for 2.6.15.early merging.  They go on top of
+2.6.14-rc2 with the patches already in Greg's queue [1].
 
-You need to state these things carefully.  A complete power-off does
-reset/disconnect USB devices.  However, turning off your computer
-might not do a complete power-off; it may well leave suspend current 
-available.  If that's true, USB devices won't be disconnected.
+The patches can be grouped roughly into three subsequences:
 
-Reboot is yet another hurdle.  If the BIOS takes control of a USB
-controller before the OS can load, then all the devices attached to
-it effectively get disconnected.  If the BIOS is smart enough not to
-do that, and the boot kernel is smart enough not to initialize the
-controllers, then the attached devices will remain safely suspended.
+   * Stuff that's pretty isolated; the first two listed here don't
+     actually affect anything else in this series.
 
+	- pm-shrink.patch ... saves a word per struct device, when
+		CONFIG_PM is enabled.  Actually, safe for 2.6.14 ...
 
-> > 	If the image does contain USB drivers and the boot kernel
-> > 	did meddle with the device states, then the devices probably
-> > 	will not be resumable by the image kernel.  They will have
-> > 	to be rediscovered.
-> 
-> Even if frozen? They should end up in the same state. But then USB
-> suspend/resume hasn't worked reliably for me, so I'm still in
-> unload-usb-while-suspending mode.
+	- quirk-ohci.patch ... builds on the PCI quirk patch, fixing
+		some problems in "early handoff" code for OHCI.
+		(Depends on the "quirk.patch" that needs some
+		minor build fixes.)
 
-> No ... the fact that there **WAS** a boot kernel implies a reset,
-> hence disconnect.  The BIOS may have re-enumerated things and
-> changed device state.  (And of course the USER may have switched
-> cables around too...)
+	- ehci-mporter.patch ... Matt Porter's patch to split out
+		the PCI-specific  bits from the ehci-hcd.  Minor
+		updates included, making it build with CONFIG_PM.
 
-Like Dave says, the power level of the device isn't as important as the
-state of the USB controller and the device's internal state.  If those
-remain unchanged, we can recover the device no matter what its power
-level is.
+	- pm-hub.patch ... now with CONFIG_PM, all HCDs provide
+		access to their root hub suspend/resume methods.
+		Mostly an issue for some non-PCI OHCI code.
 
-> > No.  The best answer is to
-> > 
-> > 	(A) tell the boot kernel that the impending freeze is for a
-> > 	restore-from-disk, so that it can wipe out the state of any
-> > 	devices it has changed, and
-> > 
-> > 	(B) tell the image kernel that it is resuming from disk, so
-> > 	that it can know that the devices are really suspended even
-> > 	though its internal records say they are frozen.
-> 
-> But if the drivers are loaded, we will tell them to freeze, so the state
-> will be frozen.
+   * PM updates for usbcore.  This is the stuff that simplifies
+     things by making CONFIG_USB_SUSPEND mean a lot less.
 
-I assume you mean "if the drivers are loaded in the boot kernel".  This
-statement is misleading.  If the boot kernel is aware of the devices at
-all then it has already reset the USB controller and the devices.  Hence
-no matter what their power level is, they will not be resumable by the
-image kernel.
+	- pm-root1.patch ... a handful of PM updates that don't
+		directly affect much else; e.g. a new method that
+		can make OHCI autosuspend work again.
 
+	- pm-root2.patch ... gets rid of lots of special cases
+		and merges most of the USB_SUSPEND logic in
+		with normal PM support.
 
-> > Better than (A) would be to tell the boot kernel that it _is_ only a boot 
-> > kernel, so that its drivers will know not to mess up the state of any 
-> > devices.  This would have the side effect of making it impossible to 
-> > reload an image from a USB drive, but that's pretty much unavoidable 
-> > anyway.
+	- pm-rootpci.patch ... make the PCI bus glue catch up
+		to pm-root2.patch changes
 
-> Actually, reloading an image from a USB drive should be easy;
-> I don't understand the difficulty.  These comments seem to be
-> circling around the fact that such "resume from swsusp" cases
-> are not real PM resumes.
+	- pm-usbsusp2.patch ... we don't want to export these
+		two routines any more
 
-I should have said that it's not possible to load the image from a USB
-device and still have USB devices be resumable by the image kernel.  If
-the boot kernel initializes the USB controllers then it will destroy the
-state preserved by the suspend.  If it doesn't initialize the controllers
-then of course it can't restore the image from a USB drive.
+   * HCD updates to match pm-root2.patch; mostly minor/obvious
+     removal of code.  Also included:  updates to make some more
+     swsusp special cases work. 
 
-> I would like to be able to get suspend to and resuming from usb going at
-> some stage. No chance?
+	- pm-ohci.patch
+	- pm-ehci.patch
+	- pm-uhci.patch
+	- pm-isp116x.patch
 
-There's no way the boot kernel can preserve the state information,
-because it doesn't know what that information is and so is forced to
-destroy it during initialization.  There's no way, for example, for
-the boot kernel to guarantee that the user hasn't swapped USB drives
-while the system was asleep -- and the boot kernel will erase the
-information the image kernel needs to detect such things.
+The stack has been tested on a handful of strategic OHCI and EHCI
+configurations, involving remote wakeup (1..3 hubs involved),
+swsusp disk snapshot/resume, and both USB_SUSPEND settings.  But
+I'd not be surprised to find a few configurations with bugs,
+not necessarily involving UHCI or ISP116x hardware.  :)
 
-> The problem with telling the kernel it is only a boot kernel is that we
-> don't know that until we look and see if there's an image, which may
-> involve running an initramfs/initrd first (encryption, eg).
+- Dave
 
-Isn't there a command-line parameter that tells you whether or not to
-try loading an image?  The problem is, what do you do if that
-parameter is present but the image isn't.  Depending on how early you
-learn this, you could decide not to be a boot kernel (i.e., be a
-normal kernel) or you could force a reboot.
-
-Alan Stern
+[1] http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
---===============48196296500334013==
+-------------------------------------------------------
+
+--===============15669350390971282==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============48196296500334013==--
+--===============15669350390971282==--
