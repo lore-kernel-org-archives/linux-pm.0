@@ -1,10 +1,12 @@
-From: Daniel Gollub <dgollub@suse.de>
-Subject: RTPM allowing trailing newline in state_store()
-Date: Wed, 28 Sep 2005 18:12:16 +0200
-Message-ID: <20050928181216.4fe42a8a@yang-old.suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Problems with PM_FREEZE
+Date: Wed, 28 Sep 2005 12:17:33 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0509281151140.4491-100000@iolanthe.rowland.org>
+References: <1127877808.4802.74.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1127923904-13385-327"
+Content-Type: multipart/mixed; boundary="===============48196296500334013=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1127877808.4802.74.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,87 +16,127 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: Nigel Cunningham <ncunningham@cyclades.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+--===============48196296500334013==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-------------=_1127923904-13385-327
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id j8SGBd4s017859
+[Replying to two people at once]
 
-hi,
+On Wed, 28 Sep 2005, Nigel Cunningham wrote:
+On Wed, 28 Sep 2005, David Brownell wrote:
 
-is there a special way reserved for writing on power/state in the device
-directories?
-a simple echo {0,1,2,3} doesn't work, because of the trailing newline.
-only with echo -n it works.
-i was very confused about that... i needed two days to figure this out
-:)
-maybe it's a good idea to allow an value with \n=A0 .. because other stat=
-e
-files like /sys/power/state also allows trailing newlines.
+> > 	If the image does contain USB drivers and the boot kernel
+> > 	did not meddle with the device states, then the devices
+> > 	will be suspended even though the image thinks they are
+> > 	frozen.
+> 
+> So a power off or reboot doesn't reset the USB devices?
 
-can you please give me a hint, if there is another special way to set a
-single device in suspend. or is there a reason for ignoring trailing
-newline?
+> Those would reset them, yes ... or more to the point, disconnect
+> them.  All the checkpoint/resume style PM scenarios should trigger
+> disconnection for every USB device.  (And in fact they do, with
+> the USB PM fixes upcoming for 2.6.15 ... that seems to have been
+> broken in the past few releases.)
 
-thanks,
-daniel
+You need to state these things carefully.  A complete power-off does
+reset/disconnect USB devices.  However, turning off your computer
+might not do a complete power-off; it may well leave suspend current 
+available.  If that's true, USB devices won't be disconnected.
 
-simple patch for allowing trailing newlines in state_strore in sysfs.c :
+Reboot is yet another hurdle.  If the BIOS takes control of a USB
+controller before the OS can load, then all the devices attached to
+it effectively get disconnected.  If the BIOS is smart enough not to
+do that, and the boot kernel is smart enough not to initialize the
+controllers, then the attached devices will remain safely suspended.
 
---- linux/drivers/base/power/sysfs.c.orig=A0=A0=A0=A0=A0=A0 2005-09-20
-17:07:42.000000000 +0200
-+++ linux/drivers/base/power/sysfs.c=A0=A0=A0 2005-09-20 17:09:42.0000000=
-00
-+0200
-@@ -36,7 +36,7 @@ static ssize_t state_store(struct device
-=A0=A0=A0=A0=A0=A0=A0 int error =3D 0;
-=A0
-=A0=A0=A0=A0=A0=A0=A0 state =3D simple_strtoul(buf, &rest, 10);
--=A0=A0=A0=A0=A0=A0 if (*rest)
-+=A0=A0=A0=A0=A0=A0 if (*rest && *rest !=3D '\n')
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 return -EINVAL;
-=A0=A0=A0=A0=A0=A0=A0 if (state)
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 error =3D dpm_runtime_suspe=
-nd(dev, state);
 
-_______________________________________________
-linux-pm mailing list
-linux-pm@lists.osdl.org
-https://lists.osdl.org/mailman/listinfo/linux-pm
+> > 	If the image does contain USB drivers and the boot kernel
+> > 	did meddle with the device states, then the devices probably
+> > 	will not be resumable by the image kernel.  They will have
+> > 	to be rediscovered.
+> 
+> Even if frozen? They should end up in the same state. But then USB
+> suspend/resume hasn't worked reliably for me, so I'm still in
+> unload-usb-while-suspending mode.
 
-------------=_1127923904-13385-327
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
+> No ... the fact that there **WAS** a boot kernel implies a reset,
+> hence disconnect.  The BIOS may have re-enumerated things and
+> changed device state.  (And of course the USER may have switched
+> cables around too...)
+
+Like Dave says, the power level of the device isn't as important as the
+state of the USB controller and the device's internal state.  If those
+remain unchanged, we can recover the device no matter what its power
+level is.
+
+> > No.  The best answer is to
+> > 
+> > 	(A) tell the boot kernel that the impending freeze is for a
+> > 	restore-from-disk, so that it can wipe out the state of any
+> > 	devices it has changed, and
+> > 
+> > 	(B) tell the image kernel that it is resuming from disk, so
+> > 	that it can know that the devices are really suspended even
+> > 	though its internal records say they are frozen.
+> 
+> But if the drivers are loaded, we will tell them to freeze, so the state
+> will be frozen.
+
+I assume you mean "if the drivers are loaded in the boot kernel".  This
+statement is misleading.  If the boot kernel is aware of the devices at
+all then it has already reset the USB controller and the devices.  Hence
+no matter what their power level is, they will not be resumable by the
+image kernel.
+
+
+> > Better than (A) would be to tell the boot kernel that it _is_ only a boot 
+> > kernel, so that its drivers will know not to mess up the state of any 
+> > devices.  This would have the side effect of making it impossible to 
+> > reload an image from a USB drive, but that's pretty much unavoidable 
+> > anyway.
+
+> Actually, reloading an image from a USB drive should be easy;
+> I don't understand the difficulty.  These comments seem to be
+> circling around the fact that such "resume from swsusp" cases
+> are not real PM resumes.
+
+I should have said that it's not possible to load the image from a USB
+device and still have USB devices be resumable by the image kernel.  If
+the boot kernel initializes the USB controllers then it will destroy the
+state preserved by the suspend.  If it doesn't initialize the controllers
+then of course it can't restore the image from a USB drive.
+
+> I would like to be able to get suspend to and resuming from usb going at
+> some stage. No chance?
+
+There's no way the boot kernel can preserve the state information,
+because it doesn't know what that information is and so is forced to
+destroy it during initialization.  There's no way, for example, for
+the boot kernel to guarantee that the user hasn't swapped USB drives
+while the system was asleep -- and the boot kernel will erase the
+information the image kernel needs to detect such things.
+
+> The problem with telling the kernel it is only a boot kernel is that we
+> don't know that until we look and see if there's an image, which may
+> involve running an initramfs/initrd first (encryption, eg).
+
+Isn't there a command-line parameter that tells you whether or not to
+try loading an image?  The problem is, what do you do if that
+parameter is present but the image isn't.  Depending on how early you
+learn this, you could decide not to be a boot kernel (i.e., be a
+normal kernel) or you could force a reboot.
+
+Alan Stern
+
+
+--===============48196296500334013==
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-Content-Transfer-Encoding: 7bit
-
-Spam detection software, running on the system "fire-1.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or block
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  hi, is there a special way reserved for writing on
-  power/state in the device directories? a simple echo {0,1,2,3} doesn't
-  work, because of the trailing newline. only with echo -n it works. i
-  was very confused about that... i needed two days to figure this out :)
-  maybe it's a good idea to allow an value with \n .. because other state
-  files like /sys/power/state also allows trailing newlines. [...] 
-
-Content analysis details:   (6.0 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 2.0 OSDL_HIGH_ASCII_6      BODY: 6 high-ASCII characters in a row
- 2.0 OSDL_HIGH_ASCII_7      BODY: 7 high-ASCII characters in a row
- 2.0 OSDL_HIGH_ASCII_15     BODY: 15 or more high-ASCII characters in a row
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
-
-------------=_1127923904-13385-327--
+--===============48196296500334013==--
