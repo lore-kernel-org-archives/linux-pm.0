@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Problems with PM_FREEZE
-Date: Wed, 28 Sep 2005 15:04:05 +0200
-Message-ID: <20050928130405.GB2118@elf.ucw.cz>
+Date: Wed, 28 Sep 2005 15:51:30 +0200
+Message-ID: <200509281551.30587.rjw@sisk.pl>
 References: <Pine.LNX.4.44L0.0509271455140.636-100000@iolanthe.rowland.org>
-	<1127855345.4802.13.camel@localhost>
-	<20050927220110.GB2381@elf.ucw.cz>
 	<1127863145.4802.40.camel@localhost>
+	<20050928130405.GB2118@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============026435605547927565=="
+Content-Type: multipart/mixed; boundary="===============36974400711493161=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1127863145.4802.40.camel@localhost>
+In-Reply-To: <20050928130405.GB2118@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,38 +18,47 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: linux-pm@lists.osdl.org
+Cc: Nigel Cunningham <ncunningham@cyclades.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============026435605547927565==
-Content-Type: text/plain; charset=us-ascii
+--===============36974400711493161==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi!
+Hi,
 
-> I guess there are three possible solutions:
-> 1) Leave things as they are and say it is the user's problem if they
-> make the state inconsistent.
-> 2) Keep knowledge of the device states across the atomic restore and use
-> that information in deciding what to do in device resume/powerup.
-> 3) Make device drivers handle the situation properly without knowledge
-> of what state the hardware is really in (or check the real state - where
-> possible - and rely on that in deciding what to do).
+On Wednesday, 28 of September 2005 15:04, Pavel Machek wrote:
+> Hi!
 > 
-> 2 seems to me to make for the most reliable solution.
+> > I guess there are three possible solutions:
+> > 1) Leave things as they are and say it is the user's problem if they
+> > make the state inconsistent.
+> > 2) Keep knowledge of the device states across the atomic restore and use
+> > that information in deciding what to do in device resume/powerup.
+> > 3) Make device drivers handle the situation properly without knowledge
+> > of what state the hardware is really in (or check the real state - where
+> > possible - and rely on that in deciding what to do).
+> > 
+> > 2 seems to me to make for the most reliable solution.
+> 
+> I actually like 3 most -- it does not need core changes.
 
-I actually like 3 most -- it does not need core changes.
+IMO if the driver is a module it should not make any assumptions
+on the state of the device when its resume routine is called.  Instead,
+it should assume the device can be in an arbitrary state and proceed
+in the safest way possible.  Which is 3.
 
-								Pavel
--- 
-if you have sharp zaurus hardware you don't need... you know my address
+Greetings,
+Rafael
 
---===============026435605547927565==
+--===============36974400711493161==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============026435605547927565==--
+--===============36974400711493161==--
