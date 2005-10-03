@@ -1,12 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC 3/3] Runtime PM support for named power states
-Date: Mon, 03 Oct 2005 11:18:57 -0700
-Message-ID: <20051003181857.A7DA4EA569@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
-References: <Pine.LNX.4.44L0.0509301627170.4470-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC 2/3] Runtime PM support for named power states
+Date: Mon, 3 Oct 2005 15:19:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0510031515370.5909-100000@iolanthe.rowland.org>
+References: <20051003181406.06C97EE8D4@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============32400846921612536=="
+Content-Type: multipart/mixed; boundary="===============21173356359471662=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0509301627170.4470-100000@iolanthe.rowland.org>
+In-Reply-To: <20051003181406.06C97EE8D4@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,36 +16,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: stern@rowland.harvard.edu, linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============32400846921612536==
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+--===============21173356359471662==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-> This patch adds support for named power states to the USB device drivers.  
-> It's fairly simple and well-contained because USB devices have only two 
-> states: on and suspended.  Even so, the confusion over which field in 
-> dev->power.power_state should represent the true state remains.
+On Mon, 3 Oct 2005, David Brownell wrote:
 
-Hmm, what confusion is that?  You may have mentioned it elsewhere.
+> Actually, the line below should use "level" not "PCI_D3hot", since the
+> reason to enable wake from D3hot is that D3hot was the target state.
+> 
+> And if the target isn't D3hot, it may not be necessary to enable wake
+> from D3cold ... the reason to enable wake from D3cold is that it's
+> not currently knowable if system suspend is going to morph the D3hot
+> into a D3cold.
+> 
+> IMO it's probably fair to ignore D3cold except if the target is D3hot.
 
-There are two different notions of "device" inside USB.  One is that
-of a "usb_interface" ... something that doesn't actually have any
-kind of power state, it's only got "driver has quiesced".
+And for now we probably want to ignore the whole thing for runtime 
+suspends, since Linux doesn't properly handle PME signals.  Unless the 
+system is going to sleep, we should avoid generating them.
 
-The other is that of "usb_device", which can have real power states
-when CONFIG_USB_SUSPEND is defined.  But otherwise, it's got the
-same "quiesced or not" dimension as a usb_interface.
-
-- Dave
+Alan Stern
 
 
---===============32400846921612536==
+--===============21173356359471662==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============32400846921612536==--
+--===============21173356359471662==--
