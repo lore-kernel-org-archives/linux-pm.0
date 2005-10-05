@@ -1,10 +1,14 @@
-From: "Temple Palko" <templepalko@logproducts.com>
-Subject: Re: Mwanajuma ionospheric
-Date: Wed, 5 Oct 2005 18:21:29 -0500
-Message-ID: <001a01c5ca03$83826280$dff9a8c0@mustard>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC 0/3] Runtime PM support for named power states
+Date: Wed, 5 Oct 2005 16:24:39 -0700
+Message-ID: <200510051624.40033.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0509301536560.4470-100000@iolanthe.rowland.org>
+	<20051005060435.628B0EA5EC@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+	<20051005074445.GB3306@neo.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============56960645355253203=="
+Content-Type: multipart/mixed; boundary="===============48770062252884772=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20051005074445.GB3306@neo.rr.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,95 +18,55 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Swithun Marcantonio <linux-pm@lists.osdl.org>
+To: Adam Belay <ambx1@neo.rr.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
-
---===============56960645355253203==
-Content-Type: multipart/alternative;
-    boundary="----------=_1128554487-30744-729"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-
-This is a multi-part message in MIME format...
-
-------------=_1128554487-30744-729
+--===============48770062252884772==
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Heyo, Do you wan
-nd less On yo
-ons?
-t to spe
-ur Meddicati
-It's very easy -  - Read morre
-ViVaAmCiLeXa
-iagalibbiialvviana
-ra $um $enis $trax
-3.333.75 1.21
-Many Other
-Best regards
+On Wednesday 05 October 2005 12:44 am, Adam Belay wrote:
+> On Tue, Oct 04, 2005 at 11:04:35PM -0700, David Brownell wrote: 
+> > 
+> > The PM core should just tell drivers to become compatible with some
+> > new constraint (like ACPI S3, generally implying devices in PCI D2
+> > or D3; while S1 doesn't) ... and not worry about whether that involves
+> > a state change or not.
+> > 
+> > Maybe they're already _in_ that state for example.
+> 
+> Yeah, the thought occurred to me.  One way of approaching the problem is to
+> have the PM core use logical states such as the following:
+> 
+> 1.) ON
+> 2.) FREEZE
+> 3.) SUSPEND
+> 
+> others?
+> 
+> This is similar to our current implementation.
 
+Which is a problem, as I've described before.  The logical states
+must be system-specific.  Some systems have more states than just
+those three ... and in particular, the states have ** SOLID **
+and ** PRECISE ** definitions.  Unlike those three.
 
-------------=_1128554487-30744-729
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+At the risk of sounding like a broken record, I'll give the
+same example I've given before:  some states may not support
+particular clocks, like the 48 MHz USB clock.  So the driver
+needs to know which ** PRECISE ** system-specific state is
+being entered ... so it can turn off the clock if need be.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1106" name=3DGENERATOR>
-<DEFANGED_style_0 </STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><P><FONT face=3DArial><TABLE DEFANGED_style=3D"MARGIN-LEFT: 0px; PADDI=
-NG-BOTTOM: 0px;" cellSpacing=3D0 cellPadding=3D0>
-  <TR DEFANGED_style=3D"PADDING-TOP: 0px;" vAlign=3D"bottom">
-    <TD rowSpan=3D"2" DEFANGED_style=3D"BORDER-BOTTOM: 0px;">Heyo, Do you w=
-an</TD>
-    <TD></TD>
-    <TD rowSpan=3D"2" DEFANGED_style=3D"BORDER-BOTTOM: 0px;">nd less On yo<=
-/TD>
-    <TD></TD>
-    <TD rowSpan=3D"2" DEFANGED_style=3D"BORDER-BOTTOM: 0px;">ons?</TD>
-    <TD></TD></TR>
-  <TR DEFANGED_style=3D"PADDING-TOP: 0px;">
-    <TD>t to spe</TD>
-    <TD>ur Meddicati</TD></TR></TABLE></FONT></P></DIV>
-<SPAN><P>It's very easy -  - <A href=3D"http://quidnunclam.wodupal.com">Rea=
-d morre</A></P></SPAN>
-<TABLE DEFANGED_style=3D"MARGIN-LEFT: 0px; PADDING-BOTTOM: 0px;" cellSpacin=
-g=3D0 cellPadding=3D0>
-  <TR><TD DEFANGED_style=3D"BORDER-BOTTOM: 0px; FONT-FAMILY: courier;"><STR=
-ONG>Vi</STRONG><BR><STRONG>Va</STRONG><BR>Am<BR><STRONG>Ci</STRONG><BR>Le<B=
-R>Xa</TD>
-<TD DEFANGED_style=3D"BORDER-RIGHT-WIDTH: 0px; FONT-FAMILY: courier;"><STRO=
-NG>iag</STRONG><BR><STRONG>ali</STRONG><BR>bbi<BR><STRONG>ial</STRONG><BR>v=
-vi<BR>ana</TD>
-<TD DEFANGED_style=3D"BORDER-RIGHT-WIDTH: 0px; FONT-FAMILY: courier;"><STRO=
-NG>ra&nbsp;$</STRONG><BR><STRONG>um&nbsp;$</STRONG><BR>en<BR><STRONG>is&nbs=
-p;$</STRONG><BR>tra<BR>x</TD>
-<TD DEFANGED_style=3D"BORDER-BOTTOM: 0px; FONT-FAMILY: courier;">3.33<BR>3.=
-75<BR>&nbsp;<BR>1.21<BR>&nbsp;<BR>&nbsp;</TD>
-<TD DEFANGED_style=3D"MARGIN-LEFT: 0px;" width=3D"25px"></TD><TD DEFANGED_s=
-tyle=3D"MARGIN-LEFT: 0px;"><SPAN><BR>Many Other</SPAN><DIV>&nbsp;<BR></DIV>=
-</TD></TR></TABLE>
-<SPAN><BR>Best regards</SPAN><DIV>&nbsp;<BR></DIV>
-</BODY></HTML>
+- Dave
 
-------------=_1128554487-30744-729--
-
---===============56960645355253203==
+--===============48770062252884772==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============56960645355253203==--
+--===============48770062252884772==--
