@@ -1,11 +1,11 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+From: Richard Purdie <rpurdie@rpsys.net>
 Subject: Re: [RFC] Adding board access to struct pm_ops pxa_pm_ops
-Date: Mon, 10 Oct 2005 19:06:45 +0100
-Message-ID: <20051010180645.GB9811@flint.arm.linux.org.uk>
+Date: Mon, 10 Oct 2005 21:49:20 +0100
+Message-ID: <1128977360.8356.56.camel@localhost.localdomain>
 References: <1128868700.8704.66.camel@localhost.localdomain>
 	<434AAB04.50806@mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============12636471648981251=="
+Content-Type: multipart/mixed; boundary="===============082166555179685297=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <434AAB04.50806@mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -17,21 +17,16 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Richard Purdie <rpurdie@rpsys.net>, linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+To: Russell King <rmk@arm.linux.org.uk>, Todd Poynor <tpoynor@mvista.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============12636471648981251==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============082166555179685297==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 10, 2005 at 10:55:16AM -0700, Todd Poynor wrote:
-> cc'ing linux-pm list.
-
-And thereby breaking the etiquette, thanks.  For folks on linux-pm,
-please drop the linux-arm-kernel cc:
-
-> A cell phone maker has expressed interest in 
+On Mon, 2005-10-10 at 10:55 -0700, Todd Poynor wrote:
+> cc'ing linux-pm list.  A cell phone maker has expressed interest in 
 > approximately the same thing, in their case to barely wake from suspend, 
 > update the time and other display info, check to see if they need to 
 > fully resume, and if not go back to suspend.
@@ -43,18 +38,88 @@ please drop the linux-arm-kernel cc:
 > support), and would avoid global access to pm_ops and the fragile 
 > process of inserting new routines into the suspend/resume callback 
 > paths.  I can float a patch for that if that sounds suitable.  Thanks -- 
-> Todd
 
-FYI I don't like the patch below - it makes working out what's going
-on rather problematical.  Override the registered pm_ops completely
-instead.  Don't fiddle with structures you don't own (thereby breaking
-the modularity of the code) by making them global.
+[I've taken arm off the cc but have sent a similar email to the arm
+list]
 
---===============12636471648981251==
+I think the best solution is going to be for board specific drivers to
+set their own pm_ops function which replaces the generic board provided
+one. I've included a sample patch below which exports enough
+functionality to do this (and should give other flexibility should
+anyone need it in future).
+
+Richard
+
+
+Allow access to the PXA pm_ops functions so boards can add custom power
+handlers. Decrease the initcall level so any board specific code has a
+chance to register.
+
+Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
+
+Index: git/arch/arm/mach-pxa/pm.c
+===================================================================
+--- git.orig/arch/arm/mach-pxa/pm.c     2005-10-09 00:11:21.000000000 +0100
++++ git/arch/arm/mach-pxa/pm.c  2005-10-10 21:38:17.000000000 +0100
+@@ -72,7 +72,7 @@
+ };
+ 
+ 
+-static int pxa_pm_enter(suspend_state_t state)
++int pxa_pm_enter(suspend_state_t state)
+ {
+        unsigned long sleep_save[SLEEP_SAVE_SIZE];
+        unsigned long checksum = 0;
+@@ -191,6 +191,8 @@
+        return 0;
+ }
+ 
++EXPORT_SYMBOL_GPL(pxa_pm_enter);
++
+ unsigned long sleep_phys_sp(void *sp)
+ {
+        return virt_to_phys(sp);
+@@ -199,21 +201,25 @@
+ /*
+  * Called after processes are frozen, but before we shut down devices.
+  */
+-static int pxa_pm_prepare(suspend_state_t state)
++int pxa_pm_prepare(suspend_state_t state)
+ {
+        extern int pxa_cpu_pm_prepare(suspend_state_t state);
+ 
+        return pxa_cpu_pm_prepare(state);
+ }
+ 
++EXPORT_SYMBOL_GPL(pxa_pm_prepare);
++
+ /*
+  * Called after devices are re-setup, but before processes are thawed.
+  */
+-static int pxa_pm_finish(suspend_state_t state)
++int pxa_pm_finish(suspend_state_t state)
+ {
+        return 0;
+ }
+ 
++EXPORT_SYMBOL_GPL(pxa_pm_finish);
++
+ /*
+  * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
+  */
+@@ -230,4 +236,4 @@
+        return 0;
+ }
+ 
+-late_initcall(pxa_pm_init);
++subsys_initcall(pxa_pm_init);
+
+
+--===============082166555179685297==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============12636471648981251==--
+--===============082166555179685297==--
