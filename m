@@ -1,12 +1,12 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.14-rc4-mm1: USB suspend regression
-Date: Wed, 19 Oct 2005 23:21:37 -0400
-Message-ID: <43570D41.80505@rtr.ca>
-References: <Pine.LNX.4.44L0.0510191156520.5049-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Threads shouldn't inherit PF_NOFREEZE
+Date: Thu, 20 Oct 2005 10:42:05 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0510201036530.4977-100000@iolanthe.rowland.org>
+References: <1129755676.4577.51.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============24719444931646284=="
+Content-Type: multipart/mixed; boundary="===============51934287142553881=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0510191156520.5049-100000@iolanthe.rowland.org>
+In-Reply-To: <1129755676.4577.51.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,38 +16,61 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Nigel Cunningham <ncunningham@cyclades.com>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============24719444931646284==
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+--===============51934287142553881==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Alan Stern wrote:
->
->>None of the recent kernels can resume-from-ram reliably for me
->>if I use CONFIG_USB_SUSPEND (set).   But with that option UNset,
->>suspend/resume to/from RAM works very well.
->
-> Try applying this patch:
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=112966405019175&w=2
+On Thu, 20 Oct 2005, Nigel Cunningham wrote:
 
-I have already adopted that patch independently,
-and it has done wonders for stability with 2.6.14-rc4
-coming back from suspend-to-ram.  Or is that just my imagination?
+> Hi Alan.
+> 
+> On Wed, 2005-10-19 at 05:29, Alan Stern wrote:
+> > The PF_NOFREEZE process flag should not be inherited when a thread is 
+> > forked.  This patch (as585) removes the flag from the child.
+> > 
+> > This problem is starting to show up more and more as drivers turn to the
+> > kthread API instead of using kernel_thread().  As a result, their kernel
+> > threads are now children of the kthread worker instead of modprobe, and
+> > they inherit the PF_NOFREEZE flag.  This can cause problems during system
+> > suspend; the kernel threads are not getting frozen as they ought to be.
+> > 
+> > Alan Stern
+> 
+> I have this in kthread instead, so that multithreaded userspace
+> processes only need to have NOFREEZE set once (before forking). Yes, I
+> have one that fits this scenario - I'm working on a userspace storage
+> maanger, which will setup and tear down a network connection at
+> appropriate times during a suspend-to-disk cycle. The initial version is
+> based on nbd and uses two threads because the one that sets up storage
+> blocks in a syscall as Pavel & others have written it.
+> 
+> Anyway, I agree that the general need you're trying to address is real.
 
-But I have not yet tried reenabling CONFIG_USB_SUSPEND in conjunction
-with that patch -- just too much grief and wasted time every round
-I try with CONFIG_USB_SUSPEND.  I'll get to it again eventually though.
+Thanks.
 
-Cheers
+I had in mind that any process needing NOFREEZE would have to set it 
+shortly after starting up.  That's what all the kernel threads do (the 
+ones I've read, anyway).
 
---===============24719444931646284==
+Yes, this does make life more difficult for user threads.  If you're 
+already got some mechanism for setting NOFREEZE in the initial thread, 
+then it shouldn't be too hard to have the child arrange to set it as well.  
+Of course, this does open up the possibility of a race if the child 
+thread is created just as processes are being frozen.
+
+Hope this doesn't add a lot of extra trouble to your work...
+
+Alan Stern
+
+
+--===============51934287142553881==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============24719444931646284==--
+--===============51934287142553881==--
