@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.14-rc4-mm1: USB suspend regression (was: Re:
-	2.6.14-rc1-mm1: usb breaks suspend)
-Date: Thu, 20 Oct 2005 00:16:25 +0200
-Message-ID: <200510200016.26197.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0510191638250.4439-100000@iolanthe.rowland.org>
+From: Mark Lord <lkml@rtr.ca>
+Subject: Re: 2.6.14-rc4-mm1: USB suspend regression
+Date: Wed, 19 Oct 2005 23:21:37 -0400
+Message-ID: <43570D41.80505@rtr.ca>
+References: <Pine.LNX.4.44L0.0510191156520.5049-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; boundary="===============24719444931646284=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0510191638250.4439-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0510191156520.5049-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,44 +17,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============24719444931646284==
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wednesday, 19 of October 2005 22:46, Alan Stern wrote:
-> On Wed, 19 Oct 2005, Rafael J. Wysocki wrote:
-}-- snip --{
-> There has been a lot of development on USB  
-> suspend/resume in 2.6.14, and you don't have all the patches applied.  In 
-> particular, you are missing usb-pm-05.patch (probably a bunch of others as 
-> well).
+Alan Stern wrote:
+>
+>>None of the recent kernels can resume-from-ram reliably for me
+>>if I use CONFIG_USB_SUSPEND (set).   But with that option UNset,
+>>suspend/resume to/from RAM works very well.
+>
+> Try applying this patch:
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=112966405019175&w=2
 
-If I'm missing any patches that's becasue they are not in 2.6.14-rc4-mm1
-for some reason (I assume an important one).
+I have already adopted that patch independently,
+and it has done wonders for stability with 2.6.14-rc4
+coming back from suspend-to-ram.  Or is that just my imagination?
 
-> Take my advice: Start from 2.6.14-rc4, apply gregkh-all-2.6.14-rc4.patch 
-> (it gets updated fairly often, so retrieve a fresh copy), and also apply 
-> the PF_NOFREEZE patch (as585) I posted on lkml and linux-pm.
+But I have not yet tried reenabling CONFIG_USB_SUSPEND in conjunction
+with that patch -- just too much grief and wasted time every round
+I try with CONFIG_USB_SUSPEND.  I'll get to it again eventually though.
 
->From my POV this means there's no point in testing USB suspend/resume
-on 2.6.14-rc4-mm1, because it's potentially broken.  Which is fair enough,
-BTW.
+Cheers
 
-> > > These errors occurred, naturally enough, because the driver for usb3 
-> > > refused to suspend since one of the children -- namely 3-0:1.0 -- wasn't 
-> > > suspended.
-> > 
-> > I've figured out that too.  However, if something has no _suspend() routine,
-> > verify_suspended() could return 0 for it, I think, instead of -EBUSY.
-> 
-> Dave Brownell would probably give you an argument, but I tend to agree.  
-> Alternatively, if something has no ->suspend then we could just set its 
-> ->power.power_state value directly so it would _appear_ to be suspended.
+--===============24719444931646284==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Well, that depends.  If the driver has a _resume() routine, it's ->power.power_state
-should be set on suspend.  However, if it has neither _resume() nor _suspend(),
-it's ->power.power_state is not really well defined, so it's just easier to ignore it.
 
-Greetings,
-Rafael
+--===============24719444931646284==--
