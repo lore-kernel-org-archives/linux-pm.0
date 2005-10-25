@@ -1,13 +1,10 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: 2.6.14-rc4-mm1: USB suspend regression (was: Re:
- 2.6.14-rc1-mm1: usb breaks suspend)
-Date: Thu, 20 Oct 2005 11:30:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0510201122290.4977-100000@iolanthe.rowland.org>
-References: <200510200016.26197.rjw@sisk.pl>
+From: "Daley Scanlon" <scanlodaley@tsra.com>
+Subject: Re: George's Boston story
+Date: Mon, 24 Oct 2005 23:01:35 -0500
+Message-ID: <003e01c5d918$ca83b980$b478a8c0@significant>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============20583076750273666=="
+Content-Type: multipart/mixed; boundary="===============25587524480659285=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200510200016.26197.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,69 +14,76 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+To: Anna Turley <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============20583076750273666==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+This is a multi-part message in MIME format...
 
-On Thu, 20 Oct 2005, Rafael J. Wysocki wrote:
+--===============25587524480659285==
+Content-Type: multipart/alternative;
+    boundary="----------=_1130212977-30255-455"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-> Hi,
-> 
-> On Wednesday, 19 of October 2005 22:46, Alan Stern wrote:
-> > On Wed, 19 Oct 2005, Rafael J. Wysocki wrote:
-> }-- snip --{
-> > There has been a lot of development on USB  
-> > suspend/resume in 2.6.14, and you don't have all the patches applied.  In 
-> > particular, you are missing usb-pm-05.patch (probably a bunch of others as 
-> > well).
-> 
-> If I'm missing any patches that's becasue they are not in 2.6.14-rc4-mm1
-> for some reason (I assume an important one).
+This is a multi-part message in MIME format...
 
-You'll have to get the details from Greg.  The stuff in his tree generally 
-does end up in -mm after only a short delay, but maybe some patches get 
-lost somehow.  Or maybe some of them didn't make it in time for -mm1.
+------------=_1130212977-30255-455
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > Take my advice: Start from 2.6.14-rc4, apply gregkh-all-2.6.14-rc4.patch 
-> > (it gets updated fairly often, so retrieve a fresh copy), and also apply 
-> > the PF_NOFREEZE patch (as585) I posted on lkml and linux-pm.
-> 
-> From my POV this means there's no point in testing USB suspend/resume
-> on 2.6.14-rc4-mm1, because it's potentially broken.  Which is fair enough,
-> BTW.
+I am a 39 year old male and in good health and fairly fit, but realized a w=
+hile back that sometimes I had a hard time maintaining an erection.
+I am single, but I do date a lot and I believe many times the problem was d=
+ue to anxiety and pressure to perform with someone new.
+I bought Vjaggra online http://www.godeih.com and decided to give it a go.
+WOW WOW WOW it kicked in after about 20-30 minutes and that was just perfec=
+t, as I knew where the evening was going.
+She is a beautiful woman with a great body and I did not think I needed it =
+with her, but let me just say After the 5th time
+I am not kidding ;) she said: Please no more  lol unbelievable.
+It was like being a teenager over again. Amazing!
 
-If 2.6.14-rc4-mm1 still has hub_suspend and hub_resume preprocessed away,
-then you're right -- it's too old to be worth testing.
+------------=_1130212977-30255-455
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > > I've figured out that too.  However, if something has no _suspend() routine,
-> > > verify_suspended() could return 0 for it, I think, instead of -EBUSY.
-> > 
-> > Dave Brownell would probably give you an argument, but I tend to agree.  
-> > Alternatively, if something has no ->suspend then we could just set its 
-> > ->power.power_state value directly so it would _appear_ to be suspended.
-> 
-> Well, that depends.  If the driver has a _resume() routine, it's ->power.power_state
-> should be set on suspend.  However, if it has neither _resume() nor _suspend(),
-> it's ->power.power_state is not really well defined, so it's just easier to ignore it.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1106" name=3DGENERATOR>
+<DEFANGED_style_0 </STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV>I am a 39 year old male and in good health and fairly fit, but realize=
+d a while back that sometimes I had a hard time maintaining an erection.</D=
+IV>
+<DIV>I am single, but I do date a lot and I believe many times the problem =
+was due to anxiety and pressure to perform with someone new. </DIV>
+<DIV>&nbsp;</DIV>
+<DIV>I bought Vjaggra online <A href=3D"http://www.godeih.com">http://www.g=
+odeih.com</A> and decided to give it a go.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>WOW WOW WOW it kicked in after about 20-30 minutes and that was just p=
+erfect, as I knew where the evening was going.</DIV>
+<DIV>She is a beautiful woman with a great body and I did not think I neede=
+d it with her, but let me just say <STRONG>After the 5th time</STRONG></DIV>
+<DIV>&nbsp; I am not kidding ;) she said: <STRONG>Please no more </STRONG> =
+lol unbelievable.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>It was like being a teenager over again. Amazing!</DIV></BODY></HTML>
 
-I don't want to change this without talking to Dave first, and
-unfortunately he's incommunicado at the moment.  Wasn't it Groucho Marx
-who said that "communicado" was a small country in Latin America?  In
-Dave's case the country isn't so small (Brazil) and all the emails
-I've sent him in the last few days have bounced.  So we'll have to wait 
-until he gets back and straightens things out with his service provider.
+------------=_1130212977-30255-455--
 
-Alan Stern
-
-
---===============20583076750273666==
+--===============25587524480659285==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============20583076750273666==--
+--===============25587524480659285==--
