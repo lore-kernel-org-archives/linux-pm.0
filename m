@@ -1,9 +1,10 @@
-From: "Daley Scanlon" <scanlodaley@tsra.com>
-Subject: Re: George's Boston story
-Date: Mon, 24 Oct 2005 23:01:35 -0500
-Message-ID: <003e01c5d918$ca83b980$b478a8c0@significant>
+From: "Richard Moore" <richard_moore2005@msn.com>
+Subject: Hello
+Date: Fri, 28 Oct 2005 11:51:05 +0000
+Message-ID: <BAY5-F8ACF812076FA43D47E3A4806B0@phx.gbl>
+Reply-To: richard_moore2005@yahoo.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============25587524480659285=="
+Content-Type: multipart/mixed; boundary="===============18144146147995532=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -14,76 +15,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Anna Turley <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+--===============18144146147995532==
+Content-Type: text/plain; format=flowed
 
---===============25587524480659285==
-Content-Type: multipart/alternative;
-    boundary="----------=_1130212977-30255-455"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+Hello  Dear Friend,
 
-This is a multi-part message in MIME format...
+I strongly regret any inconvenience the receipt of this letter may cause 
+you, bearing in mind the nature of its content coming from a person without 
+any referral, but please read and assimilate its content and objectively 
+consider if we can work together.
+I am the head of the account department of a Private Bank in the United 
+Kingdom and I would like to intimate you with certain facts that I believe 
+would be of interest to you.
+This involves a client who shared the same last name with you and had an 
+investment placed under our bank's management years ago, the circumstances 
+surrounding the investment made by this client who died interstate, with no 
+known nominated successor in title over this investment made with the 
+Private Banking Branch of my bank has made it very difficult to locate 
+anyone who is directly related to the deceased.
+With the very strong feeling that no one will ever come forward to claim the 
+funds and the investigation coming to a close after several months, the need 
+for an assistance becomes crucial, as a next of kin to the depositor is 
+earnestly being searched for, I have already developed a foolproof, legal 
+and totally risk free means through which the fund can be released to your 
+nominated bank account within a very short time after due
+documentation and authentication process.
+The strategy is to use my position and influence as the Head of the branch 
+and Personal Account office of the deceased to present you as a next of Kin 
+and beneficiary of the deposit. I want to assure you that I have concluded 
+all local modalities for the successful completion of this within 10 banking 
+days of your agreement to proceed with me as the required assistance is 
+perfected to be 100% risk free.
+I expect your urgent response and if in the affirmative, I shall advice you 
+on what we need to do.
+Please reach me through my direct email:richard_moore2005@yahoo.com
+Best regards,
 
-------------=_1130212977-30255-455
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Richard Moore
 
-I am a 39 year old male and in good health and fairly fit, but realized a w=
-hile back that sometimes I had a hard time maintaining an erection.
-I am single, but I do date a lot and I believe many times the problem was d=
-ue to anxiety and pressure to perform with someone new.
-I bought Vjaggra online http://www.godeih.com and decided to give it a go.
-WOW WOW WOW it kicked in after about 20-30 minutes and that was just perfec=
-t, as I knew where the evening was going.
-She is a beautiful woman with a great body and I did not think I needed it =
-with her, but let me just say After the 5th time
-I am not kidding ;) she said: Please no more  lol unbelievable.
-It was like being a teenager over again. Amazing!
 
-------------=_1130212977-30255-455
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1106" name=3DGENERATOR>
-<DEFANGED_style_0 </STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV>I am a 39 year old male and in good health and fairly fit, but realize=
-d a while back that sometimes I had a hard time maintaining an erection.</D=
-IV>
-<DIV>I am single, but I do date a lot and I believe many times the problem =
-was due to anxiety and pressure to perform with someone new. </DIV>
-<DIV>&nbsp;</DIV>
-<DIV>I bought Vjaggra online <A href=3D"http://www.godeih.com">http://www.g=
-odeih.com</A> and decided to give it a go.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>WOW WOW WOW it kicked in after about 20-30 minutes and that was just p=
-erfect, as I knew where the evening was going.</DIV>
-<DIV>She is a beautiful woman with a great body and I did not think I neede=
-d it with her, but let me just say <STRONG>After the 5th time</STRONG></DIV>
-<DIV>&nbsp; I am not kidding ;) she said: <STRONG>Please no more </STRONG> =
-lol unbelievable.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>It was like being a teenager over again. Amazing!</DIV></BODY></HTML>
-
-------------=_1130212977-30255-455--
-
---===============25587524480659285==
+--===============18144146147995532==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============25587524480659285==--
+--===============18144146147995532==--
