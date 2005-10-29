@@ -1,46 +1,156 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 4/6] swsusp: move swap check out of
-	swsusp_suspend
-Date: Sun, 30 Oct 2005 01:21:34 +0200
-Message-ID: <20051029232134.GG14209@elf.ucw.cz>
-References: <200510292158.11089.rjw@sisk.pl> <200510292236.47960.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 3/6] swsusp: introduce the swap map structure and interface functions
+Date: Sun, 30 Oct 2005 01:20:31 +0200
+Message-ID: <20051029232031.GF14209@elf.ucw.cz>
+References: <200510292158.11089.rjw@sisk.pl> <200510292232.35403.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============45543092105894223=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200510292236.47960.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
-
---===============45543092105894223==
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932724AbVJ2XU4@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <200510292232.35403.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@osdl.org
+List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> This is a non-essential step making the next patch possible.  No functionality
-> changes.
+> Index: linux-2.6.14-rc5-mm1/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.14-rc5-mm1.orig/kernel/power/snapshot.c	2005-10-29 13:24:56.000000000 +0200
+> +++ linux-2.6.14-rc5-mm1/kernel/power/snapshot.c	2005-10-29 14:11:17.000000000 +0200
+> +
+> +unsigned snapshot_pages_to_save(void)
+> +{
+> +	return nr_copy_pages + nr_pb_pages;
+> +}
+> +
+> +unsigned snapshot_image_pages(void)
+> +{
+> +	return nr_copy_pages;
+> +}
+> +
+> +static unsigned current_page = 0;
+> +static struct pbe *current_pbe;
+> +static struct pbe *current_pblist;
+> +
+> +void snapshot_send_init(void)
+> +{
+> +	current_page = 0;
+> +	current_pbe = pagedir_nosave;
+> +	current_pblist = NULL;
+> +}
+> +
+> +static void prepare_next_pb_page(unsigned long *buf)
+> +{
+> +	struct pbe *p;
+> +	unsigned n;
+> +
+> +	p  = current_pbe;
+> +	for (n = 0; n < PAGE_SIZE/sizeof(long) && p; n++) {
+> +		buf[n] = p->orig_address;
+> +		p = p->next;
+> +	}
+> +	current_pbe = p;
+> +}
+> +
+> +int snapshot_send_page(void *buf)
+> +{
+> +	if (current_page >= nr_copy_pages + nr_pb_pages)
+> +		return -EINVAL;
+> +	if (current_page < nr_pb_pages) {
+> +		prepare_next_pb_page(buf);
+> +		if (!current_pbe)
+> +			current_pbe = pagedir_nosave;
+> +	} else {
+> +		memcpy(buf, (void *)current_pbe->address, PAGE_SIZE);
+> +		current_pbe = current_pbe->next;
+> +	}
+> +	current_page++;
+> +	return 0;
+> +}
+> +
+> +int snapshot_recv_init(unsigned nr_pages, unsigned img_pages)
+> +{
+> +	struct pbe *pblist;
+> +
+> +	if (nr_pages <= img_pages)
+> +		return -EINVAL;
+> +	/* We have to create a PBE list here */
+> +	pblist = alloc_pagedir(img_pages);
+> +	if (!pblist)
+> +		return -ENOMEM;
+> +	create_pbe_list(pblist, img_pages);
+> +	current_pblist = pblist;
+> +	current_pbe = pblist;
+> +	current_page = 0;
+> +	nr_copy_pages = img_pages;
+> +	nr_pb_pages = nr_pages - img_pages;
+> +	return 0;
+> +}
+> +
+> +static void load_next_pb_page(unsigned long *buf)
+> +{
+> +	struct pbe *p;
+> +	unsigned n;
+> +
+> +	p  = current_pbe;
+> +	for (n = 0; n < PAGE_SIZE/sizeof(long) && p; n++) {
+> +		p->orig_address = buf[n];
+> +		p = p->next;
+> +	}
+> +	current_pbe = p;
+> +}
+> +
+> +int snapshot_recv_page(void *buf)
+> +{
+> +	if (!current_pblist ||
+> +	    current_page >= nr_copy_pages + nr_pb_pages)
+> +		return -EINVAL;
+> +	if (current_page < nr_pb_pages) {
+> +		load_next_pb_page(buf);
+> +		if (!current_pbe) {
+> +			current_pblist = relocate_pbe_list(current_pblist);
+> +			if (!current_pblist) {
+> +				printk(KERN_ERR "\nswsusp: Not enough memory for relocating PBEs\n");
+> +				return -ENOMEM;
+> +			}
+> +			current_pbe = current_pblist;
+> +		}
+> +	} else {
+> +		current_pbe->address = get_safe_page(GFP_ATOMIC);
+> +		if (!current_pbe->address) {
+> +			printk(KERN_ERR "\nswsusp: Not enough memory for the image\n");
+> +			return -ENOMEM;
+> +		}
+> +		memcpy((void *)current_pbe->address, buf, PAGE_SIZE);
+> +		current_pbe = current_pbe->next;
+> +	}
+> +	current_page++;
+> +	return 0;
+> +}
+> +
+> +int snapshot_finish(void)
+> +{
+> +	if (current_pbe)
+> +		return -EINVAL;
+> +	current_page = 0;
+> +	if (current_pblist)
+> +		pagedir_nosave = current_pblist;
+> +	current_pblist = NULL;
+> +	return 0;
+> +}
 
-If you can push this before 3/6, that would be nice.
+No, sorry, I don't like that. I like existing interface better. It
+should be something like...
 
-								Pavel
+system_snapshot(), returns structure to save and nr_pages.
+
+system_restore() takes struct pbe * (or something like that) and
+nr_pages, and takes care. 
+
+snapshot_send_init()...snapshot_finish() interface is too complex in
+my eyes, and will be hard to get right.
+							Pavel
 -- 
 Thanks, Sharp!
-
---===============45543092105894223==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============45543092105894223==--
