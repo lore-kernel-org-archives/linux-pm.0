@@ -1,12 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 1/6] swsusp: rework swsusp_suspend
-Date: Sun, 30 Oct 2005 00:25:00 +0200
-Message-ID: <20051029222500.GB14209@elf.ucw.cz>
-References: <200510292158.11089.rjw@sisk.pl> <200510292201.05724.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 2/6] swsusp: move snapshot-handling
+	functions to snapshot.c
+Date: Sun, 30 Oct 2005 00:27:48 +0200
+Message-ID: <20051029222748.GC14209@elf.ucw.cz>
+References: <200510292158.11089.rjw@sisk.pl> <200510292206.23166.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============55064947081185855=="
+Content-Type: multipart/mixed; boundary="===============45892769763949381=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200510292201.05724.rjw@sisk.pl>
+In-Reply-To: <200510292206.23166.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,27 +21,27 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============55064947081185855==
+--===============45892769763949381==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-
-> This is a preliminary step.  It makes only the functions in swsusp.c call
-> functions in snapshot.c and not both ways.  Basically, it moves the code
-> without changing its functionality.
+On So 29-10-05 22:06:22, Rafael J. Wysocki wrote:
+> This is another preliminary step.  It moves the snapshot-handling functions
+> remaining in swsusp.c to snapshot.c (moving the code without changing
+> the functionality) and makes the next patch be more clear (in my opinion).
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACK, nice.
+ACK and thanks.
 								Pavel
 -- 
 Thanks, Sharp!
 
---===============55064947081185855==
+--===============45892769763949381==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============55064947081185855==--
+--===============45892769763949381==--
