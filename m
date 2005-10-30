@@ -1,31 +1,61 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 0/6] swsusp: rework swap handling
-Date: Sun, 30 Oct 2005 13:17:20 +0100
-Message-ID: <20051030121719.GA19134@elf.ucw.cz>
-References: <200510292158.11089.rjw@sisk.pl> <20051029230515.GE14209@elf.ucw.cz>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC][PATCH 5/6] swsusp: move swap-handling functions to separate file
+Date: Sun, 30 Oct 2005 14:33:25 +0100
+Message-ID: <20051030133325.GE657@openzaurus.ucw.cz>
+References: <200510292158.11089.rjw@sisk.pl> <200510292241.05312.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932143AbVJ3MRg@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932235AbVJ3TcS@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20051029230515.GE14209@elf.ucw.cz>
+In-Reply-To: <200510292241.05312.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@osdl.org, ast@domdv.de
+Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > I have divided the changes into some more or less logical steps for clarity.
-> > Although the code has been designed as proof-of-concept, it is functional
-> > and has been tested on x86-64, except for the cryptographic functionality
-> > and error paths.
+> This patch is to show that the swap-handling part of swsusp is really independent
+> and it can be moved entirely to a separate file.  It introduces the file swap.c
+> containing all of the swap-handling code.
 > 
-> Don't worry about crypto paths too much. It is my fault, I should not
-> have taken them in the first place. Just ask ast for testing when you
-> are reasonably confident it will work.
+> After the change swsusp.c contains the functions that in my opinion do not
+> belong to either the snapshot-handling part or the swap-handling part
+> (swsusp_suspend(), swsusp_resume() and the functions related to highmem).
 
-We exchanged few emails with ast, and he'll probably not kill me if I
-remove crypto swsusp support. That's good news ;-).
-								Pavel
+Highmem handling should go to snapshot.c. Other parts do not need to know about
+it.
+
+
+linux-2.6.14-rc5-mm1/kernel/power/swap.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.14-rc5-mm1/kernel/power/swap.c	2005-10-29 13:26:26.000000000 +0200
+> @@ -0,0 +1,915 @@
+> +/*
+> + * linux/kernel/power/snapshot.c
+
+wrong name.
+
+> +static void dump_info(void)
+> +{
+> +	pr_debug(" swsusp: Version: %u\n",swsusp_info.version_code);
+> +	pr_debug(" swsusp: Num Pages: %ld\n",swsusp_info.num_physpages);
+> +	pr_debug(" swsusp: UTS Sys: %s\n",swsusp_info.uts.sysname);
+> +	pr_debug(" swsusp: UTS Node: %s\n",swsusp_info.uts.nodename);
+> +	pr_debug(" swsusp: UTS Release: %s\n",swsusp_info.uts.release);
+> +	pr_debug(" swsusp: UTS Version: %s\n",swsusp_info.uts.version);
+> +	pr_debug(" swsusp: UTS Machine: %s\n",swsusp_info.uts.machine);
+> +	pr_debug(" swsusp: UTS Domain: %s\n",swsusp_info.uts.domainname);
+> +	pr_debug(" swsusp: CPUs: %d\n",swsusp_info.cpus);
+> +	pr_debug(" swsusp: Image: %ld Pages\n",swsusp_info.image_pages);
+> +	pr_debug(" swsusp: Total: %ld Pages\n", swsusp_info.pages);
+> +}
+
+I'd rather get rid of this, or at least made it *way* more terse.
+
+Ok, that probably belongs to separate patch.
+
+				Pavel
 -- 
-Thanks, Sharp!
+64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
