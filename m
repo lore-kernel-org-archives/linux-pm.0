@@ -1,32 +1,31 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 4/6] swsusp: move swap check out of swsusp_suspend
-Date: Sun, 30 Oct 2005 12:46:58 +0100
-Message-ID: <20051030114658.GG16684@elf.ucw.cz>
-References: <200510292158.11089.rjw@sisk.pl> <200510292236.47960.rjw@sisk.pl> <20051029232134.GG14209@elf.ucw.cz> <200510301340.20959.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/6] swsusp: rework swap handling
+Date: Sun, 30 Oct 2005 13:17:20 +0100
+Message-ID: <20051030121719.GA19134@elf.ucw.cz>
+References: <200510292158.11089.rjw@sisk.pl> <20051029230515.GE14209@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932097AbVJ3LrN@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932143AbVJ3MRg@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200510301340.20959.rjw@sisk.pl>
+In-Reply-To: <20051029230515.GE14209@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@osdl.org
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@osdl.org, ast@domdv.de
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > This is a non-essential step making the next patch possible.  No functionality
-> > > changes.
-> > 
-> > If you can push this before 3/6, that would be nice.
+> > I have divided the changes into some more or less logical steps for clarity.
+> > Although the code has been designed as proof-of-concept, it is functional
+> > and has been tested on x86-64, except for the cryptographic functionality
+> > and error paths.
 > 
-> Sure.  I think I'll send the two patches you have already acked and this one
-> to Andrew as a separate series.  Then I'll get back to the 3/6 etc.
+> Don't worry about crypto paths too much. It is my fault, I should not
+> have taken them in the first place. Just ask ast for testing when you
+> are reasonably confident it will work.
 
-Splitting swsusp.c into swsusp.c and swap.c looked nice, too, btw. We
-may finally get rid of "swsusp" name :-). But, in the long term, I'd
-like to see swap reading/writing support removed from kernel. That
-2.8.0 or something, through...
+We exchanged few emails with ast, and he'll probably not kill me if I
+remove crypto swsusp support. That's good news ;-).
 								Pavel
 -- 
 Thanks, Sharp!
