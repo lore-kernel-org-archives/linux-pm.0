@@ -1,13 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.14 suspend fails with "Strange,
-	firmware/dell_r not stopped"
-Date: Wed, 9 Nov 2005 22:48:07 +0100
-Message-ID: <20051109214807.GC12459@elf.ucw.cz>
-References: <436F3609.2050907@naurel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC/RFT][PATCH 2/2] swsusp: improve freeing of
+	memory
+Date: Wed, 9 Nov 2005 23:38:48 +0100
+Message-ID: <200511092338.49034.rjw@sisk.pl>
+References: <200511082355.43984.rjw@sisk.pl> <200511090011.53125.rjw@sisk.pl>
+	<20051109144647.GA1909@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============25346893096671863=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <436F3609.2050907@naurel.org>
+In-Reply-To: <20051109144647.GA1909@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,42 +21,27 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: =?iso-8859-1?Q?Aur=E9lien?= Francillon <aurel@naurel.org>
-Cc: linux-pm@osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============25346893096671863==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-Hi!
-
-> suspending to ram or disk fails on 2.6.14, with
-> CONFIG_DELL_RBU=y
+On Wednesday, 9 of November 2005 15:46, Pavel Machek wrote:
+> Hi!
 > 
-> in logs i have :
+> > This patch makes swsusp free only as much memory as needed and not as much
+> > as possible.
 > 
-> Stopping tasks: ==============================
->  stopping tasks failed (1 tasks remaining)
-> Restarting tasks...<6> Strange, firmware/dell_r not stopped
->  done
-> 
-> with CONFIG_DELL_RBU=n everything is fine
+> Is there a way to get old behaviour (== free as much memory as
+> possible)?
 
-Apparently, DELL_RBU runs some kernel thread. Find a place in that
-kernel thread where it is okay to sleep, and add try_to_freeze()
-there.
+Not really.  At least not in this patch.  In principle I can add a kconfig
+option for that ...
 
-(Or forward this to dell rbu people.)
-							Pavel
--- 
-Thanks, Sharp!
+> For console users, it may be preferable... 
 
---===============25346893096671863==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Well, that depends on what the user is doing in general, but do you have
+any specific scenario in mind?
 
-
---===============25346893096671863==--
+Rafael
