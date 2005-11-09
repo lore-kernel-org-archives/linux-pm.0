@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC/RFT][PATCH 0/2] swsusp: improve freeing of
 	memory
-Date: Wed, 9 Nov 2005 23:55:34 +0100
-Message-ID: <200511092355.34903.rjw@sisk.pl>
-References: <200511082355.43984.rjw@sisk.pl> <20051109143040.GA1852@elf.ucw.cz>
+Date: Wed, 9 Nov 2005 23:49:03 +0100
+Message-ID: <200511092349.03702.rjw@sisk.pl>
+References: <200511082355.43984.rjw@sisk.pl>
+	<20051109003221.GA22540@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051109143040.GA1852@elf.ucw.cz>
+In-Reply-To: <20051109003221.GA22540@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -26,48 +27,59 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On Wednesday, 9 of November 2005 15:30, Pavel Machek wrote:
+Thanks a lot for the review.
+
+On Wednesday, 9 of November 2005 01:32, Pavel Machek wrote:
 > Hi!
 > 
-> > The patches are on top of 2.6.14-mm1 with the three additional patches of mine
-> > that went to Andrew after 2.6.14-mm1.  For your convenience the whole
-> > series of patches is available at:
-> > 
-> > http://www.sisk.pl/kernel/patches/2.6.14-mm1/
-> > 
-> > as:
-> > 
-> > swsusp-reduce-code-duplication.patch
-> > swsusp-improve-relocation.patch
-> > swsusp-rework-swsusp_suspend.patch
-> > swsusp-introduce-swap-map.patch
-> > swsusp-improve-freeing-memory.patch
+> > The following two patches are designed to make swsusp free only as much
+> > memory as needed for suspend and not as much as possible.  This speeds
+> > up the suspend and resume significantly and causes the system to be much
+> > more responsive after resume.
 > 
-> I got
+> Yep, users will love you :-). But you need to let them know, and that
+> probably means cc: on linux-kernel.
+
+Well, that's the first iteration. ;-)
+
+> If you want someone to test crypto swsusp, ask ast@domdv.de. But
+> removing that option is okay, too.
+
+And which one do you prefer?
+
+> I still miss those "a"s in "swap".
+
+Ahh, _these_ "a"s.  OK, no problem, I'll add them (I didn't get it
+previously, sorry).
+
+> +
+> +unsigned int snapshot_nr_pages(void)
+> +{
+> +       return nr_copy_pages;
+> +}
+> +
+> +struct pbe *snapshot_pblist(void)
+> +{
+> +       return pagedir_nosave;
+> +}
+> +
+> +void snapshot_pblist_set(struct pbe *pblist)
+> +{
+> +       pagedir_nosave = pblist;
+> +}
 > 
->   CC      kernel/power/snapshot.o
-> kernel/power/snapshot.c:38: error: static declaration of
-> 'nr_copy_pages' follows non-static declaration
-> kernel/power/power.h:56: error: previous declaration of
-> 'nr_copy_pages' was here
-> kernel/power/snapshot.c: In function 'count_highmem_pages':
-> kernel/power/snapshot.c:49: error: 'zone_pfn' undeclared (first use in
-> this function)
-> kernel/power/snapshot.c:49: error: (Each undeclared identifier is
-> reported only once
-> kernel/power/snapshot.c:49: error: for each function it appears in.)
+> I really hate these. pblist_set( is the worst one. [Still improvement
+> from previous versions, through.] Perhaps you can just access the
+> variables directly?
+
+Yes.  pagedir_nosave is global anyway, so it's not a big deal.  I've tried to
+keep nr_copy_pages static, but it can be global as well, I think.
+
+> If you really want to clean this up, swsusp_save should probably be 
 > 
-> I tried turning off HIGMEM, that got me rid of snapshot.c:49
-> problem. I killed nr_copy_pages from power.h. I tried suspending
-> twice, and it seems to work okay.
+> int swsusp_save(struct pbe **pblist, int *nr_pages)
 
-Thanks a lot for testing!  The compilation errors mean I should have tried
-to compile it on i386.  Sorry for the trouble.
-
-> I guess they are ready for lkml testing...
-
-Well, they'll go there after I get rid of the compilation problems and
-make the changes you have suggested.  Still I'm afraid they won't
-get enough testing unless they go into -mm for some time ...
+Then I'll have to mess up with the assembly parts, which I'd like to avoid
+as long as reasonable, especially as far as it gets to the ppc one ...
 
 Rafael
