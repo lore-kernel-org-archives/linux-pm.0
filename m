@@ -1,15 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC/RFT][PATCH 0/2] swsusp: improve freeing of
 	memory
-Date: Thu, 10 Nov 2005 00:19:30 +0100
-Message-ID: <20051109231930.GJ12459@elf.ucw.cz>
-References: <200511082355.43984.rjw@sisk.pl>
-	<20051109003221.GA22540@elf.ucw.cz>
-	<200511092349.03702.rjw@sisk.pl>
+Date: Thu, 10 Nov 2005 00:22:30 +0100
+Message-ID: <20051109232230.GK12459@elf.ucw.cz>
+References: <200511082355.43984.rjw@sisk.pl> <20051109143040.GA1852@elf.ucw.cz>
+	<200511092355.34903.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============39068305470437492=="
+Content-Type: multipart/mixed; boundary="===============48556460765659581=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200511092349.03702.rjw@sisk.pl>
+In-Reply-To: <200511092355.34903.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,52 +22,32 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============39068305470437492==
+--===============48556460765659581==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-> > If you want someone to test crypto swsusp, ask ast@domdv.de. But
-> > removing that option is okay, too.
+> > I guess they are ready for lkml testing...
 > 
-> And which one do you prefer?
+> Well, they'll go there after I get rid of the compilation problems and
+> make the changes you have suggested.  Still I'm afraid they won't
+> get enough testing unless they go into -mm for some time ...
 
-Remove, I need something to encourage people to move reading/writing
-of image to userland ;-).
+Well, for -mm, you will not get any feedback on successfull tests. If
+you post it on lkml, you have chance for success reports, too.
 
-> > I still miss those "a"s in "swap".
-> 
-> Ahh, _these_ "a"s.  OK, no problem, I'll add them (I didn't get it
-> previously, sorry).
-
-:-).
-
-> > +void snapshot_pblist_set(struct pbe *pblist)
-> > +{
-> > +       pagedir_nosave = pblist;
-> > +}
-....
-> > If you really want to clean this up, swsusp_save should probably be 
-> > 
-> > int swsusp_save(struct pbe **pblist, int *nr_pages)
-> 
-> Then I'll have to mess up with the assembly parts, which I'd like to avoid
-> as long as reasonable, especially as far as it gets to the ppc one ...
-
-No, I do not think you have to. Make swsusp_save() assign to
-pagedir_nosave; that's okay. But swsusp_save is part of snapshot.c,
-and assembly parts belong logically there, too, so you at least do not
-export pagedir_nosave uglyness outside snapshot.c.
+[And given popularity of suspend2; I'd say you are likely to get some
+good testers.]
 								Pavel
 -- 
 Thanks, Sharp!
 
---===============39068305470437492==
+--===============48556460765659581==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============39068305470437492==--
+--===============48556460765659581==--
