@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC/RFT][PATCH 0/2] swsusp: improve freeing of
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC/RFT][PATCH 2/2] swsusp: improve freeing of
 	memory
-Date: Thu, 10 Nov 2005 00:07:09 +0100
-Message-ID: <200511100007.09518.rjw@sisk.pl>
-References: <200511082355.43984.rjw@sisk.pl> <20051109143040.GA1852@elf.ucw.cz>
-	<20051109210402.GA12461@elf.ucw.cz>
+Date: Thu, 10 Nov 2005 00:15:44 +0100
+Message-ID: <20051109231544.GI12459@elf.ucw.cz>
+References: <200511082355.43984.rjw@sisk.pl> <200511090011.53125.rjw@sisk.pl>
+	<20051109144647.GA1909@elf.ucw.cz> <200511092338.49034.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============57343369882016659=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051109210402.GA12461@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200511092338.49034.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,49 +18,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============57343369882016659==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Wednesday, 9 of November 2005 22:04, Pavel Machek wrote:
-> Hi!
+Hi!
+
+> > For console users, it may be preferable... 
 > 
-> > > The patches are on top of 2.6.14-mm1 with the three additional patches of mine
-> > > that went to Andrew after 2.6.14-mm1.  For your convenience the whole
-> > > series of patches is available at:
-> > > 
-> > > http://www.sisk.pl/kernel/patches/2.6.14-mm1/
-> > > 
-> > > as:
-> > > 
-> > > swsusp-reduce-code-duplication.patch
-> > > swsusp-improve-relocation.patch
-> > > swsusp-rework-swsusp_suspend.patch
-> > > swsusp-introduce-swap-map.patch
-> > > swsusp-improve-freeing-memory.patch
-> > 
-> > I got
-> > 
-> >   CC      kernel/power/snapshot.o
-> ...
-> > kernel/power/snapshot.c:49: error: for each function it appears in.)
-> > 
-> > I tried turning off HIGMEM, that got me rid of snapshot.c:49
-> > problem. I killed nr_copy_pages from power.h. I tried suspending
-> > twice, and it seems to work okay. I guess they are ready for lkml
-> > testing...
-> 
-> I put it under a bit heavier test (attached), and it survive for a
-> hour. Looks good.
+> Well, that depends on what the user is doing in general, but do you have
+> any specific scenario in mind?
 
-Great, thanks a lot.  I've got two days of uptime with it now with several
-suspend/resume cycles and some production work in between, so it
-looks promising to me too.
+Well, when I'm working on console, little latency does not hurt. I
+can't work at all while system is reading image, but I can work quite
+well while system is swapping in... on the console, that is.
 
-BTW, the new USB suspend/resume behaves very well here.  I haven't got any
-problems with it so far, although it was under heavy stress in the early
-phase of testing of my patches.  Kudos to everyone involved.
+In X, userland is needed for switching windows etc, and that makes
+"work while swapping-in" painfull.
 
-Rafael
+								Pavel
+-- 
+Thanks, Sharp!
+
+--===============57343369882016659==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============57343369882016659==--
