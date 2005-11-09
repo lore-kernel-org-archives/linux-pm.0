@@ -1,11 +1,11 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC/RFT][PATCH 0/2] swsusp: improve freeing of
 	memory
-Date: Wed, 9 Nov 2005 01:32:21 +0100
-Message-ID: <20051109003221.GA22540@elf.ucw.cz>
+Date: Wed, 9 Nov 2005 15:30:40 +0100
+Message-ID: <20051109143040.GA1852@elf.ucw.cz>
 References: <200511082355.43984.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============31591115623486155=="
+Content-Type: multipart/mixed; boundary="===============81107966928933517=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <200511082355.43984.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -21,64 +21,53 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============31591115623486155==
+--===============81107966928933517==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi!
 
-> The following two patches are designed to make swsusp free only as much
-> memory as needed for suspend and not as much as possible.  This speeds
-> up the suspend and resume significantly and causes the system to be much
-> more responsive after resume.
+> The patches are on top of 2.6.14-mm1 with the three additional patches of mine
+> that went to Andrew after 2.6.14-mm1.  For your convenience the whole
+> series of patches is available at:
+> 
+> http://www.sisk.pl/kernel/patches/2.6.14-mm1/
+> 
+> as:
+> 
+> swsusp-reduce-code-duplication.patch
+> swsusp-improve-relocation.patch
+> swsusp-rework-swsusp_suspend.patch
+> swsusp-introduce-swap-map.patch
+> swsusp-improve-freeing-memory.patch
 
-Yep, users will love you :-). But you need to let them know, and that
-probably means cc: on linux-kernel.
+I got
 
-If you want someone to test crypto swsusp, ask ast@domdv.de. But
-removing that option is okay, too.
+  CC      kernel/power/snapshot.o
+kernel/power/snapshot.c:38: error: static declaration of
+'nr_copy_pages' follows non-static declaration
+kernel/power/power.h:56: error: previous declaration of
+'nr_copy_pages' was here
+kernel/power/snapshot.c: In function 'count_highmem_pages':
+kernel/power/snapshot.c:49: error: 'zone_pfn' undeclared (first use in
+this function)
+kernel/power/snapshot.c:49: error: (Each undeclared identifier is
+reported only once
+kernel/power/snapshot.c:49: error: for each function it appears in.)
 
-I still miss those "a"s in "swap".
-
-+
-+unsigned int snapshot_nr_pages(void)
-+{
-+       return nr_copy_pages;
-+}
-+
-+struct pbe *snapshot_pblist(void)
-+{
-+       return pagedir_nosave;
-+}
-+
-+void snapshot_pblist_set(struct pbe *pblist)
-+{
-+       pagedir_nosave = pblist;
-+}
-
-I really hate these. pblist_set( is the worst one. [Still improvement
-from previous versions, through.] Perhaps you can just access the
-variables directly?
-
-If you really want to clean this up, swsusp_save should probably be 
-
-int swsusp_save(struct pbe **pblist, int *nr_pages)
-
-[that should make snapshot_nr_pages and snapshot_pblist obsolete,
-right?] 
-
-Getting rid of snapshot_pblist_set may require a bit more surgery, but
-should be doable, too. swsusp_resume() should probably get struct pbe *argument...
-
-								Pavel
+I tried turning off HIGMEM, that got me rid of snapshot.c:49
+problem. I killed nr_copy_pages from power.h. I tried suspending
+twice, and it seems to work okay. I guess they are ready for lkml
+testing...
+							Pavel
 -- 
 Thanks, Sharp!
 
---===============31591115623486155==
+--===============81107966928933517==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============31591115623486155==--
+--===============81107966928933517==--
