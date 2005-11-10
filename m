@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/RFT][PATCH 0/2] swsusp: improve freeing of
-	memory
-Date: Thu, 10 Nov 2005 00:22:30 +0100
-Message-ID: <20051109232230.GK12459@elf.ucw.cz>
-References: <200511082355.43984.rjw@sisk.pl> <20051109143040.GA1852@elf.ucw.cz>
-	<200511092355.34903.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Aur=E9lien_Francillon?= <aurel@naurel.org>
+Subject: Re: 2.6.14 suspend fails with "Strange,
+	firmware/dell_r not stopped"
+Date: Thu, 10 Nov 2005 04:42:16 +0100
+Message-ID: <4372C198.8010506@naurel.org>
+References: <436F3609.2050907@naurel.org> <20051109214807.GC12459@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============48556460765659581=="
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200511092355.34903.rjw@sisk.pl>
+In-Reply-To: <20051109214807.GC12459@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,36 +18,55 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@osdl.org, abhay_salunke@dell.com
 List-Id: linux-pm@vger.kernel.org
 
---===============48556460765659581==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Pavel Machek wrote:
+> Hi!
+>=20
+>=20
+>>suspending to ram or disk fails on 2.6.14, with
+>>CONFIG_DELL_RBU=3Dy
+>>
+>>in logs i have :
+>>
+>>Stopping tasks: =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> stopping tasks failed (1 tasks remaining)
+>>Restarting tasks...<6> Strange, firmware/dell_r not stopped
+>> done
+>>
+>>with CONFIG_DELL_RBU=3Dn everything is fine
+>=20
+>=20
+> Apparently, DELL_RBU runs some kernel thread. Find a place in that
+> kernel thread where it is okay to sleep, and add try_to_freeze()
+> there.
+>=20
+> (Or forward this to dell rbu people.)
+> 							Pavel
 
-Hi!
+Thanks a lot for your quick answer and for the hint,
+after some investigation, it looks like it's not directly due to the
+dell_rbu driver but to firmware_class, when using request_firmware_nowait=
+ :
 
-> > I guess they are ready for lkml testing...
-> 
-> Well, they'll go there after I get rid of the compilation problems and
-> make the changes you have suggested.  Still I'm afraid they won't
-> get enough testing unless they go into -mm for some time ...
+dell_rbu
+ -> request_firmware_nowait
+  -> request_firmware_work_func (new kernel thread)
+   -> _request_firmware
+    -> wait_for_completion
 
-Well, for -mm, you will not get any feedback on successfull tests. If
-you post it on lkml, you have chance for success reports, too.
+and there is no timeout when _request_firmware is called with hotplug
+disabled. I have added try_to_freeze() in the loop of
+wait_for_completion near the call to schedule but it didn't help...
+It's maybe unsafe to suspend while loading firmware this case  should
+also be handled?
+Another issue is that the rbu driver updates the bios, once it is
+configured with the new binary it's probably unsafe to suspend because
+the kernel will resume on a different bios, i don't know much of
+the kernel/bios interactions but i guess it could be a buggy situation...
 
-[And given popularity of suspend2; I'd say you are likely to get some
-good testers.]
-								Pavel
--- 
-Thanks, Sharp!
-
---===============48556460765659581==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============48556460765659581==--
+cheers,
+Aur=E9lien
