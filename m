@@ -1,13 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: [RFC] userland swsusp
-Date: Wed, 16 Nov 2005 00:32:01 +0100
-Message-ID: <20051115233201.GA10143@elf.ucw.cz>
+Date: Tue, 15 Nov 2005 18:40:07 -0500
+Message-ID: <20051115234007.GO17023@redhat.com>
 References: <20051115212942.GA9828@elf.ucw.cz>
 	<20051115222549.GF17023@redhat.com>
+	<20051115233201.GA10143@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============41595498283372923=="
+Content-Type: multipart/mixed; boundary="===============25785901316227644=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051115222549.GF17023@redhat.com>
+In-Reply-To: <20051115233201.GA10143@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,44 +18,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dave Jones <davej@redhat.com>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============41595498283372923==
+--===============25785901316227644==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi!
+On Wed, Nov 16, 2005 at 12:32:01AM +0100, Pavel Machek wrote:
 
->  > This is prototype of userland swsusp. I'd like kernel parts to go in,
->  > probably for 2.6.16. Now, I'm not sure about the interface, ioctls are
->  > slightly ugly, OTOH it would be probably overkill to introduce
->  > syscalls just for this. (I'll need to add an ioctl for freeing memory
->  > in future).
-> 
-> Just for info: If this goes in, Red Hat/Fedora kernels will fork
-> swsusp development, as this method just will not work there.
-> (We have a restricted /dev/mem that prevents writes to arbitary
->  memory regions, as part of a patchset to prevent rootkits)
+ > If this goes in, you can still keep using old method... I'll not
+ > remove it anytime soon.
 
-If this goes in, you can still keep using old method... I'll not
-remove it anytime soon.
+Ok.
 
-> Even it were not for this, the whole idea seems misconcieved to me
-> anyway.
+ > > Even it were not for this, the whole idea seems misconcieved to me
+ > > anyway.
+ > 
+ > ...but how do you provide nice, graphical progress bar for swsusp
+ > without this? People want that, and "esc to abort", compression,
+ > encryption. Too much to be done in kernel space, IMNSHO.
+ 
+I'll take "rootkit doesnt work" over "bells and whistles".
 
-...but how do you provide nice, graphical progress bar for swsusp
-without this? People want that, and "esc to abort", compression,
-encryption. Too much to be done in kernel space, IMNSHO.
-							Pavel
--- 
-Thanks, Sharp!
+I think most users actually care more about "works" than
+"looks pretty, and then fails spectacularly".
 
---===============41595498283372923==
+		Dave
+
+
+--===============25785901316227644==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============41595498283372923==--
+--===============25785901316227644==--
