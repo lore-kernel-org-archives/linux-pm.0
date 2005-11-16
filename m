@@ -1,43 +1,51 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Nigel Cunningham <ncunningham@cyclades.com>
 Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Wed, 16 Nov 2005 23:05:00 +0100
-Message-ID: <20051116220500.GF12505@elf.ucw.cz>
-References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com> <20051116164429.GA5630@kroah.com> <1132172445.25230.73.camel@localhost>
+Date: Thu, 17 Nov 2005 08:13:20 +1100
+Message-ID: <1132175574.25230.111.camel@localhost>
+References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
+	 <20051116164429.GA5630@kroah.com> <1132172445.25230.73.camel@localhost>
+	 <20051116220500.GF12505@elf.ucw.cz>
+Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030522AbVKPWFT@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1132172445.25230.73.camel@localhost>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030535AbVKPWZv@vger.kernel.org>
+In-Reply-To: <20051116220500.GF12505@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
+To: Pavel Machek <pavel@suse.cz>
 Cc: Greg KH <greg@kroah.com>, "Gross, Mark" <mark.gross@intel.com>, Dave Jones <DaveJ@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi.
 
-> > Please, everyone realize that Nigel's code is not going to be merged
-> > into mainline as it is today.  He knows it, and everyone else involved
-> > knows it.  Nigel also knows the proper procedure for getting his changes
-> > into mainline, if he so desires, as we all sat in a room last July and
-> > discussed this (lwn.net has a summary somewhere about it too...)
+On Thu, 2005-11-17 at 09:05, Pavel Machek wrote:
+> Hi!
 > 
-> Do you mean "as it was in July"? I haven't been sitting on my hands
-> since July :)  My wife will testify to that!
-...
-> I've also split the one patch that most people see into what is
-> currently about 225 smaller patches, each adding only one small part, am
-> writing descriptions for them all and am preparing to build a git tree
-> from it.
+> > > Please, everyone realize that Nigel's code is not going to be merged
+> > > into mainline as it is today.  He knows it, and everyone else involved
+> > > knows it.  Nigel also knows the proper procedure for getting his changes
+> > > into mainline, if he so desires, as we all sat in a room last July and
+> > > discussed this (lwn.net has a summary somewhere about it too...)
+> > 
+> > Do you mean "as it was in July"? I haven't been sitting on my hands
+> > since July :)  My wife will testify to that!
+> ...
+> > I've also split the one patch that most people see into what is
+> > currently about 225 smaller patches, each adding only one small part, am
+> > writing descriptions for them all and am preparing to build a git tree
+> > from it.
+> 
+> I'm not sure that gets suspend2 any closer to merging. 225 small
+> patches is still awful lot of code :-(. Now... if something can be
+> done in userspace, it probably should. And I'm trying to show that
+> suspend2 functionality can indeed be done in userspace.
+> 
+> So... to get 225 patches in, you'll need to explain that
+> userland-swsusp can't work. If you can do that, please be nice and do
+> it soon, so that I don't waste too much time on userland-swsusp.
 
-I'm not sure that gets suspend2 any closer to merging. 225 small
-patches is still awful lot of code :-(. Now... if something can be
-done in userspace, it probably should. And I'm trying to show that
-suspend2 functionality can indeed be done in userspace.
+I thought Dave already did that.
 
-So... to get 225 patches in, you'll need to explain that
-userland-swsusp can't work. If you can do that, please be nice and do
-it soon, so that I don't waste too much time on userland-swsusp.
+Regards,
 
-								Pavel
--- 
-Thanks, Sharp!
+Nigel
