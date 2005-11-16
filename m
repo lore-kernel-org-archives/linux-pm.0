@@ -1,118 +1,53 @@
-From: Nigel Cunningham <ncunningham@cyclades.com>
-Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Thu, 17 Nov 2005 08:13:18 +1100
-Message-ID: <1132175248.25230.104.camel@localhost>
-References: <20051115212942.GA9828@elf.ucw.cz>
-	 <20051115222549.GF17023@redhat.com> <20051115233201.GA10143@elf.ucw.cz>
-	 <1132115730.2499.37.camel@localhost> <20051116061459.GA31181@kroah.com>
-	 <1132120845.25230.13.camel@localhost> <20051116165023.GB5630@kroah.com>
-	 <1132171051.25230.53.camel@localhost>  <20051116213517.GD12505@elf.ucw.cz>
-Reply-To: ncunningham@cyclades.com
+From: Greg KH <greg@kroah.com>
+Subject: Re: [RFC] userland swsusp
+Date: Wed, 16 Nov 2005 14:10:47 -0800
+Message-ID: <20051116221047.GA12830@kroah.com>
+References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
+	<20051116164429.GA5630@kroah.com>
+	<1132172445.25230.73.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030536AbVKPWZu@vger.kernel.org>
-In-Reply-To: <20051116213517.GD12505@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============17398150228656917=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1132172445.25230.73.camel@localhost>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Nigel Cunningham <ncunningham@cyclades.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Dave Jones <DaveJ@redhat.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi
+--===============17398150228656917==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Thu, 2005-11-17 at 08:35, Pavel Machek wrote:
-> Hi, all!
+On Thu, Nov 17, 2005 at 07:20:45AM +1100, Nigel Cunningham wrote:
 > 
-> > > > > It's also implemented in the kernel, which is exactly the wrong place
-> > > > > for this.  Pavel is doing this properly, why do you doubt him?
-> > > > 
-> > > > You yourself called it a hack not long ago.
-> > > 
-> > > I did, in the proud tradition of neat hacks.  It's a very nice
-> > > accomplishment that this even works, and I'm impressed.
-> > > 
-> > > > I'm not sure why you think the userspace is the right place for
-> > > > suspending.
-> > > 
-> > > If he can come up with an implementation that works, and puts stuff like
-> > > the pretty spinning wheels and progress bars and encryption in
-> > > userspace, that's great.  That stuff doesn't belong in the kerenel if we
-> > > can possibly help it.
-> > 
-> > I can agree with putting splash screens and userspace stuff in
-> > userspace. Suspend2 has had that too, since March. But the guts of
-> > the
-> 
-> Well, I'd say that having to resort to netlink is ... not quite
-> nice. You get all the complexity of having userspace running during
-> suspend, and get very little benefit.
+> I've also split the one patch that most people see into what is
+> currently about 225 smaller patches, each adding only one small part, am
+> writing descriptions for them all and am preparing to build a git tree
+> from it.
 
-Mmm, but less complexity than with trying to do the whole suspend from
-userspace. (I don't need to export pageflags, bio routines etc or work
-around it by using /dev/kmem).
+That's great, I didn't know you were doing this.
 
-> > code is a different thing. Encryption - well, I think we're both using
-> > cryptoapi now, so that's more easily done in the kernel.
-> 
-> Its not only encryption. It is encryption, compression, support for
-> suspend over network, support for suspend into file. That's quite a
-> lot of stuff.
-> 
-> > > Then propose a better way to do this, if you can see one.
-> > 
-> > We've done the user interface in userspace using netlink to
-> > communication.
-> > 
-> > We've done storing a full image of memory by storing the page cache
-> > separately to the rest of the image, so that it doesn't need to have an
-> > atomic copy made. (Nothing that uses the page cache is running anyway).
-> > Having done this, we can use the memory occupied by the page cache for
-> > our atomic copy, and just reread the overwritten page cache pages if we
-> > need to cancel the suspend. Suspend2 has done this since... beta18 I
-> > think.
-> 
-> ...at expense of complexity, and hooks all over the kernel. Yes, if
-> you modify kernel a bit, nothing will use the page cache.
+I'd recommend using quilt instead of git for something like this,
+because the odds that you will need to change something in patch number
+132 out of 225 is pretty good :)
 
-Could you back your "hooks all over the kernel" statement up? I do have
-some BUG_ON()s aimed at double checking that nothing bad happens, but
-they never get hit and obviously aren't required to stop processes using
-the page cache. All that's really required is to freeze processes.
+thanks,
 
-> Anyway, I believe we have solution for that one. See Rafael's recent
-> patches -- "only free as much memory as neccessary" should do the
-> trick, without excessive complexity.
+greg k-h
 
-That's still imposing a 1/2 of memory limit, though.
+--===============17398150228656917==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > > > I know that Pavel and I have such different ideas about what should be
-> > > > done that it's not worth the effort.
-> > > 
-> > > I'm sorry that you feel this way.  I thought that after our meeting in
-> > > July that things were different.
-> > 
-> > I'm sorry you came away with that impression. I want to work together,
-> > but I'm not willing to settle for a minimalist implementation. Pavel, on
-> > the other hand, wanted a minimalist implementation at first. He seems to
-> > be changing his mind a bit now, but I'm not sure how far that will go.
-> 
-> Well, I do not want the complexity of two page sets. I think Rafael's
-> patches will provide almost equivalent functionality. Other than that,
-> all your features should be doable. I'm not saying I'm going to write
-> those patches myself, but I'll certainly not reject them just because
-> they are too big.
 
-I'm sorry for making you think that having two pagesets is a complex
-issues. I know that when I first did it, I put tight restrictions on
-memory usage while the first pageset was written and used a separate
-memory pool. Since then, I've realised a far simpler way of handling
-this, and the code has been greatly simplified. In essence, all you need
-to do is make your I/O code generic enough that it can be passed a list
-of pages to write and put page cache pages in a separate list when
-figuring out what pages need to be saved. Then you save those pages
-before doing your atomic copy of the other pages, and reload them after
-restoring the atomic copy at resume time.
-
-Regards,
-
-Nigel
+--===============17398150228656917==--
