@@ -1,111 +1,66 @@
 From: Nigel Cunningham <ncunningham@cyclades.com>
 Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Thu, 17 Nov 2005 06:57:31 +1100
-Message-ID: <1132171051.25230.53.camel@localhost>
-References: <20051115212942.GA9828@elf.ucw.cz>
-	 <20051115222549.GF17023@redhat.com> <20051115233201.GA10143@elf.ucw.cz>
-	 <1132115730.2499.37.camel@localhost> <20051116061459.GA31181@kroah.com>
-	 <1132120845.25230.13.camel@localhost>  <20051116165023.GB5630@kroah.com>
+Date: Thu, 17 Nov 2005 07:20:45 +1100
+Message-ID: <1132172445.25230.73.camel@localhost>
+References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
+	 <20051116164429.GA5630@kroah.com>
 Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030506AbVKPVKI@vger.kernel.org>
-In-Reply-To: <20051116165023.GB5630@kroah.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030513AbVKPVdS@vger.kernel.org>
+In-Reply-To: <20051116164429.GA5630@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg KH <greg@kroah.com>
-Cc: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Cc: "Gross, Mark" <mark.gross@intel.com>, Pavel Machek <pavel@ucw.cz>, Dave Jones <DaveJ@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg.
+Hi.
 
-On Thu, 2005-11-17 at 03:50, Greg KH wrote:
-> On Wed, Nov 16, 2005 at 05:00:45PM +1100, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Wed, 2005-11-16 at 17:14, Greg KH wrote:
-> > > On Wed, Nov 16, 2005 at 06:35:30AM +0200, Dumitru Ciobarcianu wrote:
-> > > > ??n data de Mi, 16-11-2005 la 00:32 +0100, Pavel Machek a scris:
-> > > > > ...but how do you provide nice, graphical progress bar for swsusp
-> > > > > without this? People want that, and "esc to abort", compression,
-> > > > > encryption. Too much to be done in kernel space, IMNSHO.
-> > > > 
-> > > > Pavel, you really should _listen_ when someone else is talking about the
-> > > > same things in different implementations. suspend2 has this feature
-> > > > (nice graphical progress bars in userspace) for a long time now and it's
-> > > > compatible with the fedora kernels.
-> > > 
-> > > It's also implemented in the kernel, which is exactly the wrong place
-> > > for this.  Pavel is doing this properly, why do you doubt him?
-> > 
-> > You yourself called it a hack not long ago.
-> 
-> I did, in the proud tradition of neat hacks.  It's a very nice
-> accomplishment that this even works, and I'm impressed.
-> 
-> > I'm not sure why you think the userspace is the right place for
-> > suspending.
-> 
-> If he can come up with an implementation that works, and puts stuff like
-> the pretty spinning wheels and progress bars and encryption in
-> userspace, that's great.  That stuff doesn't belong in the kerenel if we
-> can possibly help it.
+On Thu, 2005-11-17 at 03:44, Greg KH wrote:
+> Please, everyone realize that Nigel's code is not going to be merged
+> into mainline as it is today.  He knows it, and everyone else involved
+> knows it.  Nigel also knows the proper procedure for getting his changes
+> into mainline, if he so desires, as we all sat in a room last July and
+> discussed this (lwn.net has a summary somewhere about it too...)
 
-I can agree with putting splash screens and userspace stuff in
-userspace. Suspend2 has had that too, since March. But the guts of the
-code is a different thing. Encryption - well, I think we're both using
-cryptoapi now, so that's more easily done in the kernel.
+Do you mean "as it was in July"? I haven't been sitting on my hands
+since July :)  My wife will testify to that!
 
-> > It seems to me that the very fact that it requires access to
-> > structures that are normally only visible to the kernel is pretty
-> > telling.
-> 
-> So it needs some work :)
+I've been working on implementing the last new features I want in,
+fixing bugs and generally making it as stable and reliable as I can.
+(Sorry Andrew, but I'm being a perfectionist). At the same time, many of
+the parts that made Suspend2 be considered huge and ugly have been
+merged. The pm_message_t stuff, for example, was adopted early by
+Suspend2 and part of those stats you saw in July. The patch currently
+still includes the workqueue nofreeze patch, Christoph's todo list
+freezer modifications. These account for virtually all of the changes
+outside of kernel/power.
 
-rm :)
+I've also split the one patch that most people see into what is
+currently about 225 smaller patches, each adding only one small part, am
+writing descriptions for them all and am preparing to build a git tree
+from it.
 
-> > To be fair, it is true at the same time that graphical interfaces
-> > don't belong in the kernel - but the vast majority of it - calculating
-> > what to write and doing the writing does. It's only by hamstringing
-> > himself and the user - limiting the image to half of memory that Pavel
-> > (and dropping support for writing to swap) that Pavel can make this
-> > work.
-> 
-> Then propose a better way to do this, if you can see one.
-
-We've done the user interface in userspace using netlink to
-communication.
-
-We've done storing a full image of memory by storing the page cache
-separately to the rest of the image, so that it doesn't need to have an
-atomic copy made. (Nothing that uses the page cache is running anyway).
-Having done this, we can use the memory occupied by the page cache for
-our atomic copy, and just reread the overwritten page cache pages if we
-need to cancel the suspend. Suspend2 has done this since... beta18 I
-think.
-
-> > > > Why don't you and Nigel (of suspend2) can just work together on this ?
-> > > > It's a shame that much work is wasted in duplicated effort.
-> > > 
-> > > It's not duplicated, Nigel knows what need to be done to work together,
-> > > if he so desires.
-> > 
-> > I know that Pavel and I have such different ideas about what should be
-> > done that it's not worth the effort.
-> 
-> I'm sorry that you feel this way.  I thought that after our meeting in
-> July that things were different.
-
-I'm sorry you came away with that impression. I want to work together,
-but I'm not willing to settle for a minimalist implementation. Pavel, on
-the other hand, wanted a minimalist implementation at first. He seems to
-be changing his mind a bit now, but I'm not sure how far that will go.
+Hopefully that shows that I am working toward merging, just maybe not in
+the way that you were imagining. You'll remember that I've argued before
+that trying to patch swsusp into Suspend2 is infeasible. I'm not even
+trying to do it.
 
 Regards,
 
 Nigel
 
+> So, here's Pavel trying to make things better and people are complaining
+> about it.  Argue that the technical points are invalid (like Dave did.)
+> But don't just sit around and kvetch, that doesn't help out anyone.
+> 
 > thanks,
 > 
 > greg k-h
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 -- 
