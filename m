@@ -1,67 +1,104 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC] userland swsusp
-Date: Wed, 16 Nov 2005 23:50:47 +0100
-Message-ID: <20051116225047.GJ12505@elf.ucw.cz>
-References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
-	<20051116164429.GA5630@kroah.com>
-	<1132172445.25230.73.camel@localhost>
-	<20051116220500.GF12505@elf.ucw.cz>
-	<1132175574.25230.111.camel@localhost>
+From: Nigel Cunningham <ncunningham@cyclades.com>
+Subject: Re: [linux-pm] [RFC] userland swsusp
+Date: Thu, 17 Nov 2005 08:53:26 +1100
+Message-ID: <1132177835.25230.129.camel@localhost>
+References: <20051115212942.GA9828@elf.ucw.cz>
+	 <20051115222549.GF17023@redhat.com> <20051115233201.GA10143@elf.ucw.cz>
+	 <1132115730.2499.37.camel@localhost> <20051116061459.GA31181@kroah.com>
+	 <1132120845.25230.13.camel@localhost> <20051116165023.GB5630@kroah.com>
+	 <1132171051.25230.53.camel@localhost> <20051116213517.GD12505@elf.ucw.cz>
+	 <1132175248.25230.104.camel@localhost>  <20051116224728.GI12505@elf.ucw.cz>
+Reply-To: ncunningham@cyclades.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============084785951108535595=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1132175574.25230.111.camel@localhost>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Dave Jones <DaveJ@redhat.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030570AbVKPXGE@vger.kernel.org>
+In-Reply-To: <20051116224728.GI12505@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: Greg KH <greg@kroah.com>, Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============084785951108535595==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi.
 
-Hi!
-
-> > > I've also split the one patch that most people see into what is
-> > > currently about 225 smaller patches, each adding only one small part, am
-> > > writing descriptions for them all and am preparing to build a git tree
-> > > from it.
-> > 
-> > I'm not sure that gets suspend2 any closer to merging. 225 small
-> > patches is still awful lot of code :-(. Now... if something can be
-> > done in userspace, it probably should. And I'm trying to show that
-> > suspend2 functionality can indeed be done in userspace.
-> > 
-> > So... to get 225 patches in, you'll need to explain that
-> > userland-swsusp can't work. If you can do that, please be nice and do
-> > it soon, so that I don't waste too much time on userland-swsusp.
+On Thu, 2005-11-17 at 09:47, Pavel Machek wrote:
+> Hi!
 > 
-> I thought Dave already did that.
+> > > > I can agree with putting splash screens and userspace stuff in
+> > > > userspace. Suspend2 has had that too, since March. But the guts of
+> > > > the
+> > > 
+> > > Well, I'd say that having to resort to netlink is ... not quite
+> > > nice. You get all the complexity of having userspace running during
+> > > suspend, and get very little benefit.
+> > 
+> > Mmm, but less complexity than with trying to do the whole suspend from
+> > userspace. (I don't need to export pageflags, bio routines etc or work
+> > around it by using /dev/kmem).
+> 
+> Well, userland swsusp has pretty low impact on kernel code -- it adds
+> something like 150 lines:
+> 
+>  drivers/char/mem.c      |   42 +
+>  include/linux/suspend.h |   23
+>  kernel/power/console.c  |    1
+>  kernel/power/disk.c     |   19
+>  kernel/power/swsusp.c   |   78 +
+>  usr/swsusp-init         |    9
+>  8 files changed, 2696 insertions(+), 4 deletions(-)
+> 
+> i don't think you can do much better than that...
+> 
+> > > ...at expense of complexity, and hooks all over the kernel. Yes, if
+> > > you modify kernel a bit, nothing will use the page cache.
+> > 
+> > Could you back your "hooks all over the kernel" statement up? I do have
+> > some BUG_ON()s aimed at double checking that nothing bad happens, but
+> > they never get hit and obviously aren't required to stop processes using
+> > the page cache. All that's really required is to freeze processes.
+> 
+> Are you willing to merge the code without BUG_ONs?
 
-No, I do not think so. He did not like the user<->kernel interface;
-but that can be changed (and Rafael has plans to do that). I think we
-can present nicer interface to userland without much code. Or maybe
-not; but we can certainly limit /dev/kmem for suspend only -- and that
-should make it acceptable security-wise.
+Yes.
 
-                                                                Pavel
+> > > Anyway, I believe we have solution for that one. See Rafael's recent
+> > > patches -- "only free as much memory as neccessary" should do the
+> > > trick, without excessive complexity.
+> > 
+> > That's still imposing a 1/2 of memory limit, though.
+> 
+> Yes, hopefully users will not notice.
 
--- 
-Thanks, Sharp!
+Users with more memory probably won't care so much, depending on what
+apps they want to run and how responsive they want the system to be
+post-resume.
 
---===============084785951108535595==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > > Well, I do not want the complexity of two page sets. I think Rafael's
+> > > patches will provide almost equivalent functionality. Other than that,
+> > > all your features should be doable. I'm not saying I'm going to write
+> > > those patches myself, but I'll certainly not reject them just because
+> > > they are too big.
+> > 
+> > I'm sorry for making you think that having two pagesets is a complex
+> > issues. I know that when I first did it, I put tight restrictions on
+> > memory usage while the first pageset was written and used a separate
+> > memory pool. Since then, I've realised a far simpler way of handling
+> > this, and the code has been greatly simplified. In essence, all you need
+> > to do is make your I/O code generic enough that it can be passed a list
+> > of pages to write and put page cache pages in a separate list when
+> > figuring out what pages need to be saved. Then you save those pages
+> > before doing your atomic copy of the other pages, and reload them after
+> > restoring the atomic copy at resume time.
+> 
+> Okay, it may have gotten better. Anyway, this is the only part that
+> really needs to be in-kernel. Saving 50% of memory is still going to
+> produce *way* more responsive system than "save as little as
+> possible", and I hope it will be good enough.
 
+I agree about the 'way more responsive system'. Good enough will depend
+on the user and which way the wind is blowing at the time. I guess if
+that's the only option they have, it's still better than rebooting.
 
---===============084785951108535595==--
+Regards,
+
+Nigel
