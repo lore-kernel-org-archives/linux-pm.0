@@ -1,67 +1,76 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC] userland swsusp
-Date: Wed, 16 Nov 2005 08:44:29 -0800
-Message-ID: <20051116164429.GA5630@kroah.com>
-References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
+Subject: Re: [linux-pm] [RFC] userland swsusp
+Date: Wed, 16 Nov 2005 08:50:24 -0800
+Message-ID: <20051116165023.GB5630@kroah.com>
+References: <20051115212942.GA9828@elf.ucw.cz> <20051115222549.GF17023@redhat.com> <20051115233201.GA10143@elf.ucw.cz> <1132115730.2499.37.camel@localhost> <20051116061459.GA31181@kroah.com> <1132120845.25230.13.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============86667985033027484=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751484AbVKPRGi@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1132120845.25230.13.camel@localhost>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nigel Cunningham <ncunningham@cyclades.com>
+Cc: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============86667985033027484==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Wed, Nov 16, 2005 at 05:00:45PM +1100, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Wed, 2005-11-16 at 17:14, Greg KH wrote:
+> > On Wed, Nov 16, 2005 at 06:35:30AM +0200, Dumitru Ciobarcianu wrote:
+> > > ??n data de Mi, 16-11-2005 la 00:32 +0100, Pavel Machek a scris:
+> > > > ...but how do you provide nice, graphical progress bar for swsusp
+> > > > without this? People want that, and "esc to abort", compression,
+> > > > encryption. Too much to be done in kernel space, IMNSHO.
+> > > 
+> > > Pavel, you really should _listen_ when someone else is talking about the
+> > > same things in different implementations. suspend2 has this feature
+> > > (nice graphical progress bars in userspace) for a long time now and it's
+> > > compatible with the fedora kernels.
+> > 
+> > It's also implemented in the kernel, which is exactly the wrong place
+> > for this.  Pavel is doing this properly, why do you doubt him?
+> 
+> You yourself called it a hack not long ago.
 
-On Wed, Nov 16, 2005 at 08:10:19AM -0800, Gross, Mark wrote:
-> I worry that this is just adding more thrash to a historically unstable
-> implementation.  How long do we users have to wait for a swsusp
-> implementation where we don't have to worry about breaking from one
-> kernel release to the next?
+I did, in the proud tradition of neat hacks.  It's a very nice
+accomplishment that this even works, and I'm impressed.
 
-Never, you are hereby consigned to always have a broken swsusp
-implementation on your machines.
+> I'm not sure why you think the userspace is the right place for
+> suspending.
 
-There, feel better?  Or perhaps you could join in and help with the
-current effort to make things better...
+If he can come up with an implementation that works, and puts stuff like
+the pretty spinning wheels and progress bars and encryption in
+userspace, that's great.  That stuff doesn't belong in the kerenel if we
+can possibly help it.
 
-> I agree with this post http://lkml.org/lkml/2005/9/15/125 and note that
-> making too large of a change thrashes the users a lot and if it doesn't
-> solve a real problem or enable something critical, why make the changes?
+> It seems to me that the very fact that it requires access to
+> structures that are normally only visible to the kernel is pretty
+> telling.
 
-Ok, so you are happy with what we currently have in the kernel tree
-today?  Great, use that, I know it works for me and I'm happy with it...
+So it needs some work :)
 
-Please, everyone realize that Nigel's code is not going to be merged
-into mainline as it is today.  He knows it, and everyone else involved
-knows it.  Nigel also knows the proper procedure for getting his changes
-into mainline, if he so desires, as we all sat in a room last July and
-discussed this (lwn.net has a summary somewhere about it too...)
+> To be fair, it is true at the same time that graphical interfaces
+> don't belong in the kernel - but the vast majority of it - calculating
+> what to write and doing the writing does. It's only by hamstringing
+> himself and the user - limiting the image to half of memory that Pavel
+> (and dropping support for writing to swap) that Pavel can make this
+> work.
 
-So, here's Pavel trying to make things better and people are complaining
-about it.  Argue that the technical points are invalid (like Dave did.)
-But don't just sit around and kvetch, that doesn't help out anyone.
+Then propose a better way to do this, if you can see one.
+
+> > > Why don't you and Nigel (of suspend2) can just work together on this ?
+> > > It's a shame that much work is wasted in duplicated effort.
+> > 
+> > It's not duplicated, Nigel knows what need to be done to work together,
+> > if he so desires.
+> 
+> I know that Pavel and I have such different ideas about what should be
+> done that it's not worth the effort.
+
+I'm sorry that you feel this way.  I thought that after our meeting in
+July that things were different.
 
 thanks,
 
 greg k-h
-
---===============86667985033027484==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============86667985033027484==--
