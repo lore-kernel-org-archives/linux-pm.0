@@ -1,70 +1,57 @@
 From: Greg KH <gregkh@suse.de>
-Subject: Re: [RFC][PATCH 2/6] PCI PM: capability probing and setup
-Date: Wed, 16 Nov 2005 10:07:48 -0800
-Message-ID: <20051116180748.GD6908@suse.de>
-References: <1132111878.9809.52.camel@localhost.localdomain>
-	<20051116062154.GB31375@suse.de>
-	<1132125661.3656.7.camel@localhost.localdomain>
+Subject: Re: [RFC][PATCH 6/6] PCI PM: pci_save/restore_state improvements
+Date: Wed, 16 Nov 2005 10:06:55 -0800
+Message-ID: <20051116180655.GC6908@suse.de>
+References: <1132111902.9809.59.camel@localhost.localdomain> <20051116063125.GE31375@suse.de> <1132125965.3656.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============011030090663825654=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1132125661.3656.7.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030412AbVKPSX2@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1132125965.3656.15.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Adam Belay <abelay@novell.com>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============011030090663825654==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Wed, Nov 16, 2005 at 02:26:04AM -0500, Adam Belay wrote:
+> On Tue, 2005-11-15 at 22:31 -0800, Greg KH wrote:
+> > On Tue, Nov 15, 2005 at 10:31:42PM -0500, Adam Belay wrote:
+> > > This patch makes some improvements to pci_save_state and
+> > > pci_restore_state.  Instead of saving and restoring all standard
+> > > registers (even read-only ones), it only restores necessary registers.
+> > > Also, the command register is handled more carefully.  Let me know if
+> > > I'm missing anything important.
+> > > 
+> > > 
+> > > --- a/drivers/pci/pm.c	2005-11-13 20:32:24.000000000 -0500
+> > > +++ b/drivers/pci/pm.c	2005-11-13 20:29:32.000000000 -0500
+> > > @@ -53,10 +53,13 @@
+> > >   */
+> > >  int pci_save_state(struct pci_dev *dev)
+> > >  {
+> > > -	int i;
+> > > -	/* XXX: 100% dword access ok here? */
+> > > -	for (i = 0; i < 16; i++)
+> > > -		pci_read_config_dword(dev, i * 4,&dev->saved_config_space[i]);
+> > > +	struct pci_dev_config * conf = &dev->saved_config;
+> > > +
+> > > +	pci_read_config_word(dev, PCI_COMMAND, &conf->command);
+> > > +	pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &conf->cacheline_size);
+> > > +	pci_read_config_byte(dev, PCI_LATENCY_TIMER, &conf->latency_timer);
+> > > +	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &conf->interrupt_line);
+> > 
+> > Why are we saving and restoring smaller ammounts of config space now?
+> 
+> After looking at the spec, it seems that most of the registers we were
+> restoring were read-only and couldn't possibly need to be restored.
+> Also, the PCI PM spec suggests that only a subset of the registers
+> should be restored.  Finally, things like BIST should probably never be
+> touched.
 
-On Wed, Nov 16, 2005 at 02:21:01AM -0500, Adam Belay wrote:
-> On Tue, 2005-11-15 at 22:21 -0800, Greg KH wrote:
-> > On Tue, Nov 15, 2005 at 10:31:17PM -0500, Adam Belay wrote:
-> > > +int pci_setup_device_pm(struct pci_dev *dev)
-> > 
-> > Care to give kernel doc for this new function?
-> 
-> Absolutely.  I was planing to do this but must have forgotten.
-> 
-> > > +	unsigned char	state_mask;	/* a mask of supported power states */
-> > > +	unsigned char	pme_mask;	/* a mask of power states that allow #PME */ 
-> > 
-> > Trailing space, use quilt it strips this :)
-> 
-> Sorry about that :)
-> 
-> > 
-> > > +	struct pci_dev_pm *pm;		/* power management information */
-> > 
-> > Why make this a pointer and not just part of this structure?  Don't all
-> > pci devices need this?
-> 
-> Actually, not every PCI device supports the PCI PM spec.  There are many
-> devices, even in modern systems, that can only be in D0.  I was thinking
-> we could save some memory and allocate this structure when PCI PM is
-> detected.  Would that be ok?
-
-That would be ok, but you better remember to check for the pointer when
-doing things like suspend and resume of the config space.
+Ok, but be aware that this _might_ cause problems for some cards/drivers
+that were relying on the old way...  As long as you don't mind me
+assigning those bugs to you, I don't have a problem with this :)
 
 thanks,
 
 greg k-h
-
---===============011030090663825654==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============011030090663825654==--
