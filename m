@@ -1,76 +1,70 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Wed, 16 Nov 2005 08:50:24 -0800
-Message-ID: <20051116165023.GB5630@kroah.com>
-References: <20051115212942.GA9828@elf.ucw.cz> <20051115222549.GF17023@redhat.com> <20051115233201.GA10143@elf.ucw.cz> <1132115730.2499.37.camel@localhost> <20051116061459.GA31181@kroah.com> <1132120845.25230.13.camel@localhost>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [RFC][PATCH 2/6] PCI PM: capability probing and setup
+Date: Wed, 16 Nov 2005 10:07:48 -0800
+Message-ID: <20051116180748.GD6908@suse.de>
+References: <1132111878.9809.52.camel@localhost.localdomain>
+	<20051116062154.GB31375@suse.de>
+	<1132125661.3656.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751484AbVKPRGi@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1132120845.25230.13.camel@localhost>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: multipart/mixed; boundary="===============011030090663825654=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1132125661.3656.7.camel@localhost.localdomain>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Adam Belay <abelay@novell.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 16, 2005 at 05:00:45PM +1100, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Wed, 2005-11-16 at 17:14, Greg KH wrote:
-> > On Wed, Nov 16, 2005 at 06:35:30AM +0200, Dumitru Ciobarcianu wrote:
-> > > ??n data de Mi, 16-11-2005 la 00:32 +0100, Pavel Machek a scris:
-> > > > ...but how do you provide nice, graphical progress bar for swsusp
-> > > > without this? People want that, and "esc to abort", compression,
-> > > > encryption. Too much to be done in kernel space, IMNSHO.
-> > > 
-> > > Pavel, you really should _listen_ when someone else is talking about the
-> > > same things in different implementations. suspend2 has this feature
-> > > (nice graphical progress bars in userspace) for a long time now and it's
-> > > compatible with the fedora kernels.
+--===============011030090663825654==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Nov 16, 2005 at 02:21:01AM -0500, Adam Belay wrote:
+> On Tue, 2005-11-15 at 22:21 -0800, Greg KH wrote:
+> > On Tue, Nov 15, 2005 at 10:31:17PM -0500, Adam Belay wrote:
+> > > +int pci_setup_device_pm(struct pci_dev *dev)
 > > 
-> > It's also implemented in the kernel, which is exactly the wrong place
-> > for this.  Pavel is doing this properly, why do you doubt him?
+> > Care to give kernel doc for this new function?
 > 
-> You yourself called it a hack not long ago.
-
-I did, in the proud tradition of neat hacks.  It's a very nice
-accomplishment that this even works, and I'm impressed.
-
-> I'm not sure why you think the userspace is the right place for
-> suspending.
-
-If he can come up with an implementation that works, and puts stuff like
-the pretty spinning wheels and progress bars and encryption in
-userspace, that's great.  That stuff doesn't belong in the kerenel if we
-can possibly help it.
-
-> It seems to me that the very fact that it requires access to
-> structures that are normally only visible to the kernel is pretty
-> telling.
-
-So it needs some work :)
-
-> To be fair, it is true at the same time that graphical interfaces
-> don't belong in the kernel - but the vast majority of it - calculating
-> what to write and doing the writing does. It's only by hamstringing
-> himself and the user - limiting the image to half of memory that Pavel
-> (and dropping support for writing to swap) that Pavel can make this
-> work.
-
-Then propose a better way to do this, if you can see one.
-
-> > > Why don't you and Nigel (of suspend2) can just work together on this ?
-> > > It's a shame that much work is wasted in duplicated effort.
+> Absolutely.  I was planing to do this but must have forgotten.
+> 
+> > > +	unsigned char	state_mask;	/* a mask of supported power states */
+> > > +	unsigned char	pme_mask;	/* a mask of power states that allow #PME */ 
 > > 
-> > It's not duplicated, Nigel knows what need to be done to work together,
-> > if he so desires.
+> > Trailing space, use quilt it strips this :)
 > 
-> I know that Pavel and I have such different ideas about what should be
-> done that it's not worth the effort.
+> Sorry about that :)
+> 
+> > 
+> > > +	struct pci_dev_pm *pm;		/* power management information */
+> > 
+> > Why make this a pointer and not just part of this structure?  Don't all
+> > pci devices need this?
+> 
+> Actually, not every PCI device supports the PCI PM spec.  There are many
+> devices, even in modern systems, that can only be in D0.  I was thinking
+> we could save some memory and allocate this structure when PCI PM is
+> detected.  Would that be ok?
 
-I'm sorry that you feel this way.  I thought that after our meeting in
-July that things were different.
+That would be ok, but you better remember to check for the pointer when
+doing things like suspend and resume of the config space.
 
 thanks,
 
 greg k-h
+
+--===============011030090663825654==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============011030090663825654==--
