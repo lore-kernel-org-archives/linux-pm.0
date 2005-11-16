@@ -1,14 +1,21 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [RFC] userland swsusp
-Date: Wed, 16 Nov 2005 23:41:03 +0100
-Message-ID: <200511162341.04652.rjw@sisk.pl>
-References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
-	<20051116220500.GF12505@elf.ucw.cz>
-	<1132175574.25230.111.camel@localhost>
+Date: Wed, 16 Nov 2005 23:47:28 +0100
+Message-ID: <20051116224728.GI12505@elf.ucw.cz>
+References: <20051115212942.GA9828@elf.ucw.cz>
+	<20051115222549.GF17023@redhat.com>
+	<20051115233201.GA10143@elf.ucw.cz>
+	<1132115730.2499.37.camel@localhost>
+	<20051116061459.GA31181@kroah.com>
+	<1132120845.25230.13.camel@localhost>
+	<20051116165023.GB5630@kroah.com>
+	<1132171051.25230.53.camel@localhost>
+	<20051116213517.GD12505@elf.ucw.cz>
+	<1132175248.25230.104.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3540581371503797=="
+Content-Type: multipart/mixed; boundary="===============26821793242912584=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1132175574.25230.111.camel@localhost>
+In-Reply-To: <1132175248.25230.104.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,42 +25,89 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: ncunningham@cyclades.com
-Cc: Dave Jones <DaveJ@redhat.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Nigel Cunningham <ncunningham@cyclades.com>
+Cc: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============3540581371503797==
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+--===============26821793242912584==
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi,
+Hi!
 
-On Wednesday, 16 of November 2005 22:13, Nigel Cunningham wrote:
-> On Thu, 2005-11-17 at 09:05, Pavel Machek wrote:
-}-- snip --{
-> > So... to get 225 patches in, you'll need to explain that
-> > userland-swsusp can't work. If you can do that, please be nice and do
-> > it soon, so that I don't waste too much time on userland-swsusp.
+> > > I can agree with putting splash screens and userspace stuff in
+> > > userspace. Suspend2 has had that too, since March. But the guts of
+> > > the
+> > 
+> > Well, I'd say that having to resort to netlink is ... not quite
+> > nice. You get all the complexity of having userspace running during
+> > suspend, and get very little benefit.
 > 
-> I thought Dave already did that.
+> Mmm, but less complexity than with trying to do the whole suspend from
+> userspace. (I don't need to export pageflags, bio routines etc or work
+> around it by using /dev/kmem).
 
-Not as far as I'm concerned.  He criticised the implementation,
-which I generally agree with, but IMO the overall idea is not wrong.
+Well, userland swsusp has pretty low impact on kernel code -- it adds
+something like 150 lines:
 
-BTW, you don't need to export the page flags, use /dev/kmem etc. to implement
-it.  The only concern that I have wrt it is the writing of the image _after_ the
-system has been snapshotted.
+ drivers/char/mem.c      |   42 +
+ include/linux/suspend.h |   23
+ kernel/power/console.c  |    1
+ kernel/power/disk.c     |   19
+ kernel/power/swsusp.c   |   78 +
+ usr/swsusp-init         |    9
+ 8 files changed, 2696 insertions(+), 4 deletions(-)
 
-Greetings,
-Rafael
+i don't think you can do much better than that...
 
---===============3540581371503797==
+> > ...at expense of complexity, and hooks all over the kernel. Yes, if
+> > you modify kernel a bit, nothing will use the page cache.
+> 
+> Could you back your "hooks all over the kernel" statement up? I do have
+> some BUG_ON()s aimed at double checking that nothing bad happens, but
+> they never get hit and obviously aren't required to stop processes using
+> the page cache. All that's really required is to freeze processes.
+
+Are you willing to merge the code without BUG_ONs?
+
+> > Anyway, I believe we have solution for that one. See Rafael's recent
+> > patches -- "only free as much memory as neccessary" should do the
+> > trick, without excessive complexity.
+> 
+> That's still imposing a 1/2 of memory limit, though.
+
+Yes, hopefully users will not notice.
+
+> > Well, I do not want the complexity of two page sets. I think Rafael's
+> > patches will provide almost equivalent functionality. Other than that,
+> > all your features should be doable. I'm not saying I'm going to write
+> > those patches myself, but I'll certainly not reject them just because
+> > they are too big.
+> 
+> I'm sorry for making you think that having two pagesets is a complex
+> issues. I know that when I first did it, I put tight restrictions on
+> memory usage while the first pageset was written and used a separate
+> memory pool. Since then, I've realised a far simpler way of handling
+> this, and the code has been greatly simplified. In essence, all you need
+> to do is make your I/O code generic enough that it can be passed a list
+> of pages to write and put page cache pages in a separate list when
+> figuring out what pages need to be saved. Then you save those pages
+> before doing your atomic copy of the other pages, and reload them after
+> restoring the atomic copy at resume time.
+
+Okay, it may have gotten better. Anyway, this is the only part that
+really needs to be in-kernel. Saving 50% of memory is still going to
+produce *way* more responsive system than "save as little as
+possible", and I hope it will be good enough.
+								Pavel
+-- 
+Thanks, Sharp!
+
+--===============26821793242912584==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============3540581371503797==--
+--===============26821793242912584==--
