@@ -1,57 +1,52 @@
-From: Jacek Kawa <jfk@zeus.polsl.gliwice.pl>
-Subject: Re: [RFC] userland swsusp
-Date: Thu, 17 Nov 2005 21:15:09 +0100
-Message-ID: <20051117201509.GA25250@finwe.eu.org>
+From: Lee Revell <rlrevell@joe-job.com>
+Subject: Re: [linux-pm] [RFC] userland swsusp
+Date: Thu, 17 Nov 2005 15:20:55 -0500
+Message-ID: <1132258855.4438.11.camel@mindpipe>
 References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
-	<20051116191051.GG2193@spitz.ucw.cz>
-	<20051117165437.GA10402@dspnet.fr.eu.org>
-	<20051117164451.GA27178@kroah.com>
+	 <20051116164429.GA5630@kroah.com> <1132172445.25230.73.camel@localhost>
+	 <20051116220500.GF12505@elf.ucw.cz>
+	 <20051117170202.GB10402@dspnet.fr.eu.org>
+	 <1132257432.4438.8.camel@mindpipe>
+	 <20051117201204.GA32376@dspnet.fr.eu.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6246456953180195=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051117164451.GA27178@kroah.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964909AbVKQUVF@vger.kernel.org>
+In-Reply-To: <20051117201204.GA32376@dspnet.fr.eu.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Olivier Galibert <galibert@pobox.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============6246456953180195==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Thu, 2005-11-17 at 21:12 +0100, Olivier Galibert wrote:
+> On Thu, Nov 17, 2005 at 02:57:11PM -0500, Lee Revell wrote:
+> > On Thu, 2005-11-17 at 18:02 +0100, Olivier Galibert wrote:
+> > > On Wed, Nov 16, 2005 at 11:05:00PM +0100, Pavel Machek wrote:
+> > > > Now... if something can be
+> > > > done in userspace, it probably should.
+> > > 
+> > > And that usually means it just isn't done.  Cases in point:
+> > > multichannel audio software mixing, video pixel formats conversion.
+> > 
+> > What are you talking about?  ALSA does mixing in userspace, it works
+> > great.
+> 
+> You have an interesting definition of "great".
+> 
+> 1- It doesn't work without an annoyingly complex, extremely badly
+>    documented user configuration. To the point that it doesn't work in
+>    either an out-of-the-box, updated Fedora Core 3 nor an
+>    out-of-the-box gentoo.
+> 
 
-Greg KH wrote:
+File a bug report with your distro then.  This is supposed to work OOTB.
 
-> > > What unstable implementation? swsusp had very little regressions over past
-> > > year or so. Drivers were different story, but nothing changes w.r.t. drivers.
-> > Do you mean swsusp is actually supposed to work?  Suspend-to-ram,
-> > suspend-to-disk or both?
-> Both.  -to-ram depends on your video chip, but to-disk should work just
-> fine.  If not, please report bugs.
+> 2- It doesn't work for programs that do not use the annoyingly complex
+>    and horribly documented alsa library, which includes everything
+>    that still uses OSS[1].
+> 
 
-Thanks, I've just realized, that I probably forgot to CC anyone last time... 
-:)
+There's plenty of ALSA documentation.  Anyway mixing for OSS apps does
+work, they just have to use the aoss wrapper.
 
-So, may I kindly ask to look on:
-http://www.ussg.iu.edu/hypermail/linux/kernel/0511.1/1863.html ?
-
-Thanks!
-
--- 
-Jacek Kawa
-
---===============6246456953180195==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============6246456953180195==--
+Lee
