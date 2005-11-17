@@ -1,20 +1,21 @@
-From: Lee Revell <rlrevell@joe-job.com>
+From: Chris Wright <chrisw@osdl.org>
 Subject: Re: [RFC] userland swsusp
-Date: Thu, 17 Nov 2005 16:16:07 -0500
-Message-ID: <1132262168.5959.24.camel@mindpipe>
-References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
-	<20051116164429.GA5630@kroah.com> <1132172445.25230.73.camel@localhost>
+Date: Thu, 17 Nov 2005 13:18:56 -0800
+Message-ID: <20051117211856.GS5856@shell0.pdx.osdl.net>
+References: <1132172445.25230.73.camel@localhost>
 	<20051116220500.GF12505@elf.ucw.cz>
 	<20051117170202.GB10402@dspnet.fr.eu.org>
 	<1132257432.4438.8.camel@mindpipe>
 	<20051117201204.GA32376@dspnet.fr.eu.org>
-	<1132258855.4438.11.camel@mindpipe> <1132258855.4438.11.camel@mindpipe>
+	<1132258855.4438.11.camel@mindpipe>
 	<20051117203731.GG5772@redhat.com>
-	<E1Ecr0F-0003TC-00@chiark.greenend.org.uk>
+	<1132260851.5959.15.camel@mindpipe>
+	<20051117210643.GG7991@shell0.pdx.osdl.net>
+	<1132262060.5959.21.camel@mindpipe>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============63677679173083301=="
+Content-Type: multipart/mixed; boundary="===============53968820309609189=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <E1Ecr0F-0003TC-00@chiark.greenend.org.uk>
+In-Reply-To: <1132262060.5959.21.camel@mindpipe>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,40 +25,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Garrett <mgarrett@chiark.greenend.org.uk>
-Cc: linux-pm@lists.osdl.org, Olivier Galibert <galibert@pobox.com>, linux-kernel@vger.kernel.org
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Chris Wright <chrisw@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Olivier Galibert <galibert@pobox.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============63677679173083301==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--===============53968820309609189==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Thu, 2005-11-17 at 21:09 +0000, Matthew Garrett wrote:
-> Dave Jones <davej@redhat.com> wrote:
-> 
-> > I don't know about other distros, but here's how that usually goes for Fedora users..
-> 
-> It Works in Ubuntu(TM)[0]. More seriously: recent alsa-libs should
-> provide a pile of stuff in /usr/share/alsa/cards which switches dmix on
-> by default in most cards[1]. Obviously, for this to work usefully, your
-> application needs to be using libalsa (either natively or using the aoss
-> wrapper).
-> 
-> [0] The only patch is to enable symbol versioning
-> [1] Not ones with hardware mixing
+* Lee Revell (rlrevell@joe-job.com) wrote:
+> OK I should not single out Red Hat or OSDL, it just seems like we get a
+> lot more general gripes about ALSA regressions than we see good bug
+> reports.  All I am saying is that maybe someone from a distro with
+> access to bug reports from a huge user base has some ideas for how we
+> could better deal with these regressions.  The ALSA project does not get
+> many good bug reports because we are farther from the users.
 
-[1] is already done for most of the hardware that needs it.  No user
-configuration at all should be required.  Please, let us know if you
-find a device it does not work that way for.
+Yeah, bad bug reports are indeed a pain.  One thing that may help ALSA is
+more frequent merging with mainline.  Then the delta between ALSA cvs
+(and hence ALSA developers) and mainline (users) is smaller.
 
-Lee
-
-
---===============63677679173083301==
+--===============53968820309609189==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============63677679173083301==--
+--===============53968820309609189==--
