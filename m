@@ -1,11 +1,15 @@
-From: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>
-Subject: RE: [RFC] userland swsusp
-Date: Thu, 17 Nov 2005 21:50:21 +0300
-Message-ID: <6694B22B6436BC43B429958787E45498D551A7@mssmsx402nb>
+From: Lee Revell <rlrevell@joe-job.com>
+Subject: Re: [RFC] userland swsusp
+Date: Thu, 17 Nov 2005 14:57:11 -0500
+Message-ID: <1132257432.4438.8.camel@mindpipe>
+References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
+	<20051116164429.GA5630@kroah.com> <1132172445.25230.73.camel@localhost>
+	<20051116220500.GF12505@elf.ucw.cz>
+	<20051117170202.GB10402@dspnet.fr.eu.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4187615926847954=="
+Content-Type: multipart/mixed; boundary="===============85627334286266965=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <20051117170202.GB10402@dspnet.fr.eu.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,28 +19,33 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Olivier Galibert <galibert@pobox.com>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Olivier Galibert <galibert@pobox.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============4187615926847954==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+--===============85627334286266965==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
- 
+On Thu, 2005-11-17 at 18:02 +0100, Olivier Galibert wrote:
+> On Wed, Nov 16, 2005 at 11:05:00PM +0100, Pavel Machek wrote:
+> > Now... if something can be
+> > done in userspace, it probably should.
+> 
+> And that usually means it just isn't done.  Cases in point:
+> multichannel audio software mixing, video pixel formats conversion.
 
->-----Original Message-----
->Is the acpi problem with PWRF used over PWRC and PWRF not sending
->events (hence no wakeup) solved?
-It should be, look at #1920 in bugzilla.kernel.org
+What are you talking about?  ALSA does mixing in userspace, it works
+great.
+
+Lee
 
 
---===============4187615926847954==
+--===============85627334286266965==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============4187615926847954==--
+--===============85627334286266965==--
