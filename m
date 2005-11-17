@@ -1,52 +1,35 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: Re: [RFC][PATCH 6/6] PCI PM: pci_save/restore_state
-	improvements
-Date: Thu, 17 Nov 2005 15:39:58 -0800
-Message-ID: <20051117233957.GB10464@kroah.com>
-References: <1132111902.9809.59.camel@localhost.localdomain>
-	<20051116063125.GE31375@suse.de>
-	<1132125965.3656.15.camel@localhost.localdomain>
-	<20051116180655.GC6908@suse.de>
-	<1132271430.3656.23.camel@localhost.localdomain>
+Subject: Re: [linux-pm] [RFC] userland swsusp
+Date: Thu, 17 Nov 2005 13:56:13 -0800
+Message-ID: <20051117215612.GA8797@kroah.com>
+References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com> <20051116191051.GG2193@spitz.ucw.cz> <20051117165437.GA10402@dspnet.fr.eu.org> <20051117164451.GA27178@kroah.com> <20051117201509.GA25250@finwe.eu.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============94965556467074563=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1132271430.3656.23.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <abelay@novell.com>
-Cc: Greg KH <gregkh@suse.de>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965140AbVKQXzW@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20051117201509.GA25250@finwe.eu.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============94965556467074563==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Thu, Nov 17, 2005 at 06:50:30PM -0500, Adam Belay wrote:
+On Thu, Nov 17, 2005 at 09:15:09PM +0100, Jacek Kawa wrote:
+> Greg KH wrote:
 > 
-> I'm probably going to regret this, but I'd be happy to take on any PCI
-> PM subsystem bug reports.  Unless I forgot a register we need to
-> restore, I'm not expecting this to cause too many problems.  A little
-> time in -mm should shake out any issues out rather quickly.
+> > > > What unstable implementation? swsusp had very little regressions over past
+> > > > year or so. Drivers were different story, but nothing changes w.r.t. drivers.
+> > > Do you mean swsusp is actually supposed to work?  Suspend-to-ram,
+> > > suspend-to-disk or both?
+> > Both.  -to-ram depends on your video chip, but to-disk should work just
+> > fine.  If not, please report bugs.
+> 
+> Thanks, I've just realized, that I probably forgot to CC anyone last time... 
+> :)
+> 
+> So, may I kindly ask to look on:
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0511.1/1863.html ?
 
-Ok, respin them and I'll be glad to add them to my tree.
+Care to file this in bugzilla.kernel.org and assign it to Pavel?
 
 thanks,
 
 greg k-h
-
---===============94965556467074563==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============94965556467074563==--
