@@ -1,65 +1,68 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC] userland swsusp
-Date: Thu, 17 Nov 2005 08:14:22 +0100
-Message-ID: <1132211663.2840.3.camel@laptopd505.fenrus.org>
-References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com>
-	<20051116164429.GA5630@kroah.com> <1132172445.25230.73.camel@localhost>
-	<20051116221047.GA12830@kroah.com>
-	<1132176329.25230.125.camel@localhost>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 6/6] PCI PM: pci_save/restore_state
+ improvements
+Date: Thu, 17 Nov 2005 08:55:29 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0511170849060.6343-100000@monsoon.he.net>
+References: <1132111902.9809.59.camel@localhost.localdomain>
+ <20051116063125.GE31375@suse.de> <1132125965.3656.15.camel@localhost.localdomain>
+ <20051116180655.GC6908@suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============77703551688527961=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1132176329.25230.125.camel@localhost>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: ncunningham@cyclades.com
-Cc: Pavel Machek <pavel@ucw.cz>, Dave Jones <DaveJ@redhat.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932408AbVKQQzl@vger.kernel.org>
+In-Reply-To: <20051116180655.GC6908@suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg KH <gregkh@suse.de>
+Cc: Adam Belay <abelay@novell.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============77703551688527961==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Thu, 2005-11-17 at 08:25 +1100, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Thu, 2005-11-17 at 09:10, Greg KH wrote:
-> > On Thu, Nov 17, 2005 at 07:20:45AM +1100, Nigel Cunningham wrote:
-> > > 
-> > > I've also split the one patch that most people see into what is
-> > > currently about 225 smaller patches, each adding only one small part, am
-> > > writing descriptions for them all and am preparing to build a git tree
-> > > from it.
-> > 
-> > That's great, I didn't know you were doing this.
-> > 
-> > I'd recommend using quilt instead of git for something like this,
-> > because the odds that you will need to change something in patch number
-> > 132 out of 225 is pretty good :)
-> 
-> Yeah. :) I actually wrote my own 'makepatch' script long before I ever
-> heard of quilt, and am still using that. It lets me do the same sort of
-> thing. Unfortunately I tend to accumulate further changes at the end of
-> the series and then have to shift them back into the right place. It
-> would be nice to be able to automate that :)
-
-patch-utils have a 'movepatch' option... which flips 2 patches in order,
-even when they overlap.
 
 
+On Wed, 16 Nov 2005, Greg KH wrote:
 
---===============77703551688527961==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> On Wed, Nov 16, 2005 at 02:26:04AM -0500, Adam Belay wrote:
+> > On Tue, 2005-11-15 at 22:31 -0800, Greg KH wrote:
+> > > On Tue, Nov 15, 2005 at 10:31:42PM -0500, Adam Belay wrote:
+> > > > This patch makes some improvements to pci_save_state and
+> > > > pci_restore_state.  Instead of saving and restoring all standard
+> > > > registers (even read-only ones), it only restores necessary registers.
+> > > > Also, the command register is handled more carefully.  Let me know if
+> > > > I'm missing anything important.
+> > > >
+> > > >
+> > > > --- a/drivers/pci/pm.c	2005-11-13 20:32:24.000000000 -0500
+> > > > +++ b/drivers/pci/pm.c	2005-11-13 20:29:32.000000000 -0500
+> > > > @@ -53,10 +53,13 @@
+> > > >   */
+> > > >  int pci_save_state(struct pci_dev *dev)
+> > > >  {
+> > > > -	int i;
+> > > > -	/* XXX: 100% dword access ok here? */
+> > > > -	for (i = 0; i < 16; i++)
+> > > > -		pci_read_config_dword(dev, i * 4,&dev->saved_config_space[i]);
+> > > > +	struct pci_dev_config * conf = &dev->saved_config;
+> > > > +
+> > > > +	pci_read_config_word(dev, PCI_COMMAND, &conf->command);
+> > > > +	pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &conf->cacheline_size);
+> > > > +	pci_read_config_byte(dev, PCI_LATENCY_TIMER, &conf->latency_timer);
+> > > > +	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &conf->interrupt_line);
+> > >
+> > > Why are we saving and restoring smaller ammounts of config space now?
+> >
+> > After looking at the spec, it seems that most of the registers we were
+> > restoring were read-only and couldn't possibly need to be restored.
+> > Also, the PCI PM spec suggests that only a subset of the registers
+> > should be restored.  Finally, things like BIST should probably never be
+> > touched.
+>
+> Ok, but be aware that this _might_ cause problems for some cards/drivers
+> that were relying on the old way...  As long as you don't mind me
+> assigning those bugs to you, I don't have a problem with this :)
+
+If any drivers have bugs in that area, then they most likely only worked
+by accident in the first place. The confg space is mostly read-only
+anyway, and there could be things we don't want to blindly overwrite. If
+any drivers need more, they should save it themselves.
 
 
---===============77703551688527961==--
+
+	Pat
