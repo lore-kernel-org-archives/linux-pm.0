@@ -1,50 +1,26 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC] userland swsusp
-Date: Fri, 18 Nov 2005 13:20:32 -0800
-Message-ID: <20051118212032.GA23950@kroah.com>
-References: <20051115212942.GA9828@elf.ucw.cz>
-	<20051115222549.GF17023@redhat.com>
-	<1132342590.25914.86.camel@localhost.localdomain>
-	<20051118211847.GA3881@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [RFC] userland swsusp
+Date: Fri, 18 Nov 2005 23:22:07 +0000
+Message-ID: <20051118232206.GB2359@spitz.ucw.cz>
+References: <F760B14C9561B941B89469F59BA3A8470BDD12EB@orsmsx401.amr.corp.intel.com> <20051116191051.GG2193@spitz.ucw.cz> <20051117165437.GA10402@dspnet.fr.eu.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============16825505755326997=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051118211847.GA3881@redhat.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dave Jones <davej@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751192AbVKRXjh@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20051117165437.GA10402@dspnet.fr.eu.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Olivier Galibert <galibert@pobox.com>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============16825505755326997==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi!
 
-On Fri, Nov 18, 2005 at 04:18:47PM -0500, Dave Jones wrote:
-> Even if that was capable however, it still doesn't solve the problem.
-> Pavel's implementation wants to write to arbitary address spaces, which is
-> what we're trying to prevent. The two are at odds with each other.
+> > What unstable implementation? swsusp had very little regressions over past
+> > year or so. Drivers were different story, but nothing changes w.r.t. drivers.
+> 
+> Do you mean swsusp is actually supposed to work?  Suspend-to-ram,
+> suspend-to-disk or both?
 
-I agree, he needs to find a different way to get that information into
-and out of the kernel than that device node for it to be accepted into
-mainline.  But for now, it's a nice way to mock up the fuctionality
-needed.
+Read the docs. swsusp is suspend-to-disk, of course.
 
-thanks,
-
-greg k-h
-
---===============16825505755326997==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============16825505755326997==--
+-- 
+64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
