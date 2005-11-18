@@ -1,33 +1,41 @@
-From: Dave Jones <davej@redhat.com>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Fri, 18 Nov 2005 16:18:47 -0500
-Message-ID: <20051118211847.GA3881@redhat.com>
-References: <20051115212942.GA9828@elf.ucw.cz> <20051115222549.GF17023@redhat.com> <1132342590.25914.86.camel@localhost.localdomain>
+Date: Fri, 18 Nov 2005 22:23:17 +0100
+Message-ID: <1132348998.2830.80.camel@laptopd505.fenrus.org>
+References: <20051115212942.GA9828@elf.ucw.cz>
+	 <20051115222549.GF17023@redhat.com>
+	 <1132342590.25914.86.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750950AbVKRVTN@vger.kernel.org>
-Content-Disposition: inline
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161221AbVKRVXa@vger.kernel.org>
 In-Reply-To: <1132342590.25914.86.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: Dave Jones <davej@redhat.com>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 18, 2005 at 07:36:29PM +0000, Alan Cox wrote:
- > On Maw, 2005-11-15 at 17:25 -0500, Dave Jones wrote:
- > > Just for info: If this goes in, Red Hat/Fedora kernels will fork
- > > swsusp development, as this method just will not work there.
- > > (We have a restricted /dev/mem that prevents writes to arbitary
- > >  memory regions, as part of a patchset to prevent rootkits)
- > 
- > Perhaps it is trying to tell you that you should be using SELinux rules
- > not kernel hacks for this purpose ?
+On Fri, 2005-11-18 at 19:36 +0000, Alan Cox wrote:
+> On Maw, 2005-11-15 at 17:25 -0500, Dave Jones wrote:
+> > Just for info: If this goes in, Red Hat/Fedora kernels will fork
+> > swsusp development, as this method just will not work there.
+> > (We have a restricted /dev/mem that prevents writes to arbitary
+> >  memory regions, as part of a patchset to prevent rootkits)
+> 
+> Perhaps it is trying to tell you that you should be using SELinux rules
+> not kernel hacks for this purpose ?
 
-I don't think selinux can give you the granularity to say
-"process can access this bit of the file only", at least not yet.
+actually no. SELinux can't work, we've looked at that bigtime. Basically
+/dev/mem has 3 types in one, and to apply security you need different
+roles for each in selinux. so the only option to apply selinux
+*anything* is to first split /dev/mem up.
 
-Even if that was capable however, it still doesn't solve the problem.
-Pavel's implementation wants to write to arbitary address spaces, which is
-what we're trying to prevent. The two are at odds with each other.
+types:
+1) accessing non-ram memory (eg PCI mmio space) by X and the likes
+   (ideally should use sysfs but hey, changing X for this will take 
+   forever)
+2) accessing bios memory in the lower 1Gb for various emulation like
+   purposes (including vbetool and X mode setting)
+3) accessing things the kernel sees as RAM
 
-		Dave
+they are very distinct security wise.
