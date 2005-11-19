@@ -1,39 +1,39 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Fri, 18 Nov 2005 20:18:21 -0800
-Message-ID: <200511182018.22060.jbarnes@virtuousgeek.org>
-References: <20051115212942.GA9828@elf.ucw.cz> <1132348998.2830.80.camel@laptopd505.fenrus.org> <1132351635.5238.12.camel@localhost.localdomain>
+Date: Sat, 19 Nov 2005 09:44:25 +0100
+Message-ID: <1132389865.2829.2.camel@laptopd505.fenrus.org>
+References: <20051115212942.GA9828@elf.ucw.cz>
+	 <20051115222549.GF17023@redhat.com>
+	 <1132342590.25914.86.camel@localhost.localdomain>
+	 <1132348998.2830.80.camel@laptopd505.fenrus.org>
+	 <1132351635.5238.12.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-6"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750932AbVKSFyR@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750973AbVKSIoh@vger.kernel.org>
 In-Reply-To: <1132351635.5238.12.camel@localhost.localdomain>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: Dave Jones <davej@redhat.com>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 18, 2005 2:07 pm, Alan Cox wrote:
+On Fri, 2005-11-18 at 22:07 +0000, Alan Cox wrote:
 > On Gwe, 2005-11-18 at 22:23 +0100, Arjan van de Ven wrote:
 > > 1) accessing non-ram memory (eg PCI mmio space) by X and the likes
-> >    (ideally should use sysfs but hey, changing X for this will take
+> >    (ideally should use sysfs but hey, changing X for this will take 
 > >    forever)
->
-> Once sysfs supports the relevant capabilities fixing X actually
-> doesn't look too horrible, the PCI mapping routines are abstracted
-> and done by PCITAG (ie PCI device). You would need the ISA hole too
-> in some cases.
+> 
+> Once sysfs supports the relevant capabilities fixing X actually doesn't
+> look too horrible
 
-It's actually partly done already (at least for ia64, but the code I put 
-together works on x86 too, iirc, and should work elsewhere).  The ISA 
-stuff is exported on a per-bus basis in legacy_io and legacy_mem files.
+I think the kernel already supports this since at least july if not
+earlier. If there's something missing... someone needs to speak up..
 
-If vbetool and friends want to get at the ROM, they can use the sysfs 
-rom file like everyone else.  There are problems with this however, on 
-systems where the ROM is unpacked at 0xc0000 or something, especially 
-if the unpacked version is modified by the BIOS at startup time, not 
-sure how to address that reliably.
+(yes vga arbitrage is missing but well that's not there today by any
+means either so not a regression)
 
-Jesse
+> , the PCI mapping routines are abstracted and done by
+> PCITAG (ie PCI device). You would need the ISA hole too in some cases.
+
+this may need /dev/mem a bit longer, but hopefully is rarer. Once the
+pci side is fixed I bet this only is easy to do as well
