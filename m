@@ -1,39 +1,56 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Sat, 19 Nov 2005 09:44:25 +0100
-Message-ID: <1132389865.2829.2.camel@laptopd505.fenrus.org>
+From: Rob Landley <rob@landley.net>
+Subject: Re: [RFC] userland swsusp
+Date: Sat, 19 Nov 2005 03:32:26 -0600
+Message-ID: <200511190332.29150.rob@landley.net>
 References: <20051115212942.GA9828@elf.ucw.cz>
-	 <20051115222549.GF17023@redhat.com>
-	 <1132342590.25914.86.camel@localhost.localdomain>
-	 <1132348998.2830.80.camel@laptopd505.fenrus.org>
-	 <1132351635.5238.12.camel@localhost.localdomain>
+	<20051116061459.GA31181@kroah.com>
+	<1132120845.25230.13.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750973AbVKSIoh@vger.kernel.org>
-In-Reply-To: <1132351635.5238.12.camel@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dave Jones <davej@redhat.com>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Content-Type: multipart/mixed; boundary="===============74455314634682956=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1132120845.25230.13.camel@localhost>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: ncunningham@cyclades.com
+Cc: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2005-11-18 at 22:07 +0000, Alan Cox wrote:
-> On Gwe, 2005-11-18 at 22:23 +0100, Arjan van de Ven wrote:
-> > 1) accessing non-ram memory (eg PCI mmio space) by X and the likes
-> >    (ideally should use sysfs but hey, changing X for this will take 
-> >    forever)
-> 
-> Once sysfs supports the relevant capabilities fixing X actually doesn't
-> look too horrible
+--===============74455314634682956==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I think the kernel already supports this since at least july if not
-earlier. If there's something missing... someone needs to speak up..
+On Wednesday 16 November 2005 00:00, Nigel Cunningham wrote:
+> > It's not duplicated, Nigel knows what need to be done to work together,
+> > if he so desires.
+>
+> I know that Pavel and I have such different ideas about what should be
+> done that it's not worth the effort.
 
-(yes vga arbitrage is missing but well that's not there today by any
-means either so not a regression)
+So first it was Pavel and Patrick Mochel...
 
-> , the PCI mapping routines are abstracted and done by
-> PCITAG (ie PCI device). You would need the ISA hole too in some cases.
+Then Pavel and Nigel...
 
-this may need /dev/mem a bit longer, but hopefully is rarer. Once the
-pci side is fixed I bet this only is easy to do as well
+Recently Dave Jones rumbled about a suspend fork...
+
+You sure you software suspend guys haven't been hanging out with the IDE 
+maintainers?
+
+Rob
+
+--===============74455314634682956==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============74455314634682956==--
