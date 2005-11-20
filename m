@@ -1,60 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [RFC] userland swsusp
-Date: Sun, 20 Nov 2005 23:09:04 +0100
-Message-ID: <20051120220904.GB24132@elf.ucw.cz>
-References: <20051115212942.GA9828@elf.ucw.cz> <20051115222549.GF17023@redhat.com> <1132342590.25914.86.camel@localhost.localdomain> <20051118211847.GA3881@redhat.com> <20051119234331.GA1952@spitz.ucw.cz> <20051120214832.GC28918@redhat.com>
+From: Matthew Percival <matthew@capgo.com>
+Subject: Powering down a device...
+Date: Mon, 21 Nov 2005 09:44:45 +1100
+Message-ID: <1132526685.8816.19.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932100AbVKTWJg@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20051120214832.GC28918@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Jones <davej@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Content-Type: multipart/mixed; boundary="===============89944817121302445=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+--===============89944817121302445==
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
->  > >  > > Just for info: If this goes in, Red Hat/Fedora kernels will fork
->  > >  > > swsusp development, as this method just will not work there.
->  > >  > > (We have a restricted /dev/mem that prevents writes to arbitary
->  > >  > >  memory regions, as part of a patchset to prevent rootkits)
->  > >  > 
->  > >  > Perhaps it is trying to tell you that you should be using SELinux rules
->  > >  > not kernel hacks for this purpose ?
->  > > 
->  > > I don't think selinux can give you the granularity to say
->  > > "process can access this bit of the file only", at least not yet.
->  > > 
->  > > Even if that was capable however, it still doesn't solve the problem.
->  > > Pavel's implementation wants to write to arbitary address spaces, which is
->  > > what we're trying to prevent. The two are at odds with each other.
->  > 
->  > I do not think thats a security problem. By definition, suspending code
->  > can change arbitrary things in memory -- it could just write image with
->  > changes it desires, then resume from it. Whether this code is in kernel
->  > or not, it has to be trusted.
-> 
-> Stop thinking about the suspend usage case for a minute.
-> 
-> With your proposed changes, an attacker can scribble over random
-> bits of /dev/mem without suspending in order to do whatever he
-> wants.
+G'Day,
 
-Well, without my changes, an attacker can scribble over random bits of
-memory, too; I was not the one that introduced /dev/mem :-).
+	I was directed here from the linux-omap-open-source mailing list.
 
-> With what we have in-kernel, and a restricted /dev/mem, achieving the
-> attack you mention is a lot less feasible, as the attacker has no access
-> to the memory being written out to the suspend partition, even as root.
-> Even if they did, people tend to notice boxes shutting down pretty quickly
-> making this a not-very-stealthy attack.
+	I am using an OMAP5912, and have been looking at what power savings I
+get when using Deep Sleep (echo -n "standby" > /sys/power/state), and
+noticed that there is no change in vmain.  I am hoping that turning the
+Ethernet controller off before entering deep sleep will make a
+significant difference, but I do not know how to do this.
 
-Can I read somewhere about security model you are using? Would it be
-enough to restrict /dev/[k]mem to those people that have right to
-update kernel anyway? Or your approach is "noone, absolutely noone has
-right to modify running kernel"? [Do you still use loadable modules?]
+	If I look in drivers/net/smc91x.c, there is already a suspend function
+written, which apparently powers the device down.  I do not believe this
+is currently being used anywhere, and I am not sure how exactly it is
+supposed to be used to begin with.  I was hoping that someone here would
+be able to give me some information on using device_driver->suspend()
+functions.
 
-								Pavel
+	As an aside, is there anyone here who knows how to use Big Sleep in an
+OMAP environment?  I have worked out how to configure it, but not how to
+enter it.  As this is not an OMAP mailing list, I am not expecting
+anyone here to know the answer to that one, but it cannot hurt to ask.
 
--- 
-Thanks, Sharp!
+	Thanks for your time,
+
+	Matthew
+
+
+--===============89944817121302445==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============89944817121302445==--
