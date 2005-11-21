@@ -1,15 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] userland swsusp
-Date: Mon, 21 Nov 2005 15:19:54 +0100
-Message-ID: <20051121141954.GB1655@elf.ucw.cz>
-References: <20051115212942.GA9828@elf.ucw.cz>
-	<20051120214832.GC28918@redhat.com>
-	<20051120220904.GB24132@elf.ucw.cz>
-	<200511211247.45558.rjw@sisk.pl>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: Powering down a device...
+Date: Mon, 21 Nov 2005 14:26:10 -0800
+Message-ID: <43824982.1070406@am.sony.com>
+References: <EA12F909C0431D458B9D18A176BEE4A5030D5E61@dlee02.ent.ti.com>
+	<1132536373.8816.34.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2525613012467629=="
+Content-Type: multipart/mixed; boundary="===============14444991686885689=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200511211247.45558.rjw@sisk.pl>
+In-Reply-To: <1132536373.8816.34.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,44 +17,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Percival <matthew@capgo.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============2525613012467629==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============14444991686885689==
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi!
+Matthew Percival wrote:
 
-> > > With what we have in-kernel, and a restricted /dev/mem, achieving the
-> > > attack you mention is a lot less feasible, as the attacker has no access
-> > > to the memory being written out to the suspend partition, even as root.
-> > > Even if they did, people tend to notice boxes shutting down pretty quickly
-> > > making this a not-very-stealthy attack.
-> > 
-> > Can I read somewhere about security model you are using? Would it be
-> > enough to restrict /dev/[k]mem to those people that have right to
-> > update kernel anyway? Or your approach is "noone, absolutely noone has
-> > right to modify running kernel"? [Do you still use loadable modules?]
-> 
-> The problem is that, whatever the security model, if you have access to the
-> kernel memory (eg. via /dev/kmem), you can modify the security rules
-> themselves, so this should better be avoided.
+> 	I tried `standby', `mem' and `disc'
+> with /sys/devices/platform/smc91x/power/state and saw no change; there
+> was nothing printed on the terminal either. I guess it must not be
+> implemented with this driver at the moment, which I guess is why there
+> is no change when I put the whole system to sleep (please correct me if
+> my assumptions are wrong).  If it is nothing too difficult to add to the
+> driver, would you be able to direct me to where I may find out how to do
+> this?
 
-Well, under current linux security model, root has all permissions,
-including inserting modifying running kernel, touching hardware
-directly, and installing rootkits. Fedora may be trying to change
-that... but if so, I'd like to know what they are planning.
-								Pavel
--- 
-Thanks, Sharp!
+H. Kaminaga from Sony is maintaining some OSK 5912 PM support:
 
---===============2525613012467629==
+  http://lists.osdl.org/pipermail/linux-pm/2005-July/001077.html
+
+-Geoff
+
+
+--===============14444991686885689==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============2525613012467629==--
+--===============14444991686885689==--
