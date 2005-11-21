@@ -1,68 +1,44 @@
-From: Matthew Percival <matthew@capgo.com>
-Subject: RE: Powering down a device...
-Date: Mon, 21 Nov 2005 12:26:13 +1100
-Message-ID: <1132536373.8816.34.camel@localhost.localdomain>
-References: <EA12F909C0431D458B9D18A176BEE4A5030D5E61@dlee02.ent.ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] [RFC] userland swsusp
+Date: Mon, 21 Nov 2005 12:47:44 +0100
+Message-ID: <200511211247.45558.rjw@sisk.pl>
+References: <20051115212942.GA9828@elf.ucw.cz> <20051120214832.GC28918@redhat.com> <20051120220904.GB24132@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============79793471778186276=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A5030D5E61@dlee02.ent.ti.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932216AbVKULq5@vger.kernel.org>
+In-Reply-To: <20051120220904.GB24132@elf.ucw.cz>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dave Jones <davej@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============79793471778186276==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hi,
 
-G'Day,
+On Sunday, 20 of November 2005 23:09, Pavel Machek wrote:
+}-- snip --{ 
+> > With what we have in-kernel, and a restricted /dev/mem, achieving the
+> > attack you mention is a lot less feasible, as the attacker has no access
+> > to the memory being written out to the suspend partition, even as root.
+> > Even if they did, people tend to notice boxes shutting down pretty quickly
+> > making this a not-very-stealthy attack.
+> 
+> Can I read somewhere about security model you are using? Would it be
+> enough to restrict /dev/[k]mem to those people that have right to
+> update kernel anyway? Or your approach is "noone, absolutely noone has
+> right to modify running kernel"? [Do you still use loadable modules?]
 
-	Thanks for your reply.  I have tried your suggestions out, but have not
-been able to conserve any additional power.
+The problem is that, whatever the security model, if you have access to the
+kernel memory (eg. via /dev/kmem), you can modify the security rules
+themselves, so this should better be avoided.
 
-> For device sleeps you just do an 'echo mem > /sys/power/state'.  Pm.c
-> will map which sleep and wake this takes you to.
+Apart from this, IMO, if it's necessary to access the kernel memory directly
+from a userland process, this means that the process' functionality really
+belongs to the kernel.  Consequently, the code in swsusp that needs
+to access the kernel memory should stay in the kernel, and the rest
+can go to the userland.
 
-	I just tried comparing `standby' with `mem', and there was no
-difference in vmain --- or anywhere else for that matter, though I was
-no expecting to see any change elsewhere.
-
-> Each individual device will also have a power/state file in the sysfs
-> directory structure.  You can echo a device power state down to the
-> driver and it will react how if it knows how to enter that state.
-
-	I tried `standby', `mem' and `disc'
-with /sys/devices/platform/smc91x/power/state and saw no change; there
-was nothing printed on the terminal either. I guess it must not be
-implemented with this driver at the moment, which I guess is why there
-is no change when I put the whole system to sleep (please correct me if
-my assumptions are wrong).  If it is nothing too difficult to add to the
-driver, would you be able to direct me to where I may find out how to do
-this?
-
-> Also, in sleeps where you want a good effect, you will need to configure
-> the external pins to the optimal sleep state.  Any floating inputs will
-> consume a lot of power.... how you drive the pin states really depends
-> on what it is connected to.
-
-	That sounds like a rather good tip, thanks!
-
-	-- Matthew
-
-
---===============79793471778186276==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============79793471778186276==--
+Greetings,
+Rafael
