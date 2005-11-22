@@ -1,13 +1,11 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: RE: Powering down a device...
-Date: Tue, 22 Nov 2005 09:15:57 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0511220909390.20910-100000@monsoon.he.net>
-References: <EA12F909C0431D458B9D18A176BEE4A5030D5E61@dlee02.ent.ti.com>
-	<1132536373.8816.34.camel@localhost.localdomain>
+From: Tim Bird <tim.bird@am.sony.com>
+Subject: [ANNOUNCE] CELF Embedded Linux Conference - call for
+	presentations
+Date: Tue, 22 Nov 2005 14:08:30 -0800
+Message-ID: <438396DE.1070304@am.sony.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============65385575904564308=="
+Content-Type: multipart/mixed; boundary="===============32339004118488224=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1132536373.8816.34.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,65 +15,90 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Percival <matthew@capgo.com>
-Cc: linux-pm@lists.osdl.org
+To: CE Linux Developers List <celinux-dev@tree.celinuxforum.org>, MEMBERS@list.celinuxforum.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============65385575904564308==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============32339004118488224==
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+The CE Linux Forum would like to invite you to make a presentation
+at our upcoming Embedded Linux Conference. The conference will be
+held April 11 and 12 in San Jose, California. (See
+http://tree.celinuxforum.org/CelfPubWiki/EmbeddedLinuxConference2006
+for general information about the conference.)
 
-On Mon, 21 Nov 2005, Matthew Percival wrote:
+= Guidelines =
+Presentations should be of a technical nature, covering topics
+related to use of Linux in embedded systems. The CE Linux Forum
+is focused on the use of Linux in consumer electronics products,
+but presentations may cover use of Linux in other embedded
+areas, as long as the topic is of general relevance to most
+embedded developers.
 
-> G'Day,
->
-> 	Thanks for your reply.  I have tried your suggestions out, but have not
-> been able to conserve any additional power.
->
-> > For device sleeps you just do an 'echo mem > /sys/power/state'.  Pm.c
-> > will map which sleep and wake this takes you to.
->
-> 	I just tried comparing `standby' with `mem', and there was no
-> difference in vmain --- or anywhere else for that matter, though I was
-> no expecting to see any change elsewhere.
+Presentations that are commercial advertisements or sales
+pitches are not appropriate for this conference.
 
-The system power states depend on what the platform port has implemented.
-It may be that the OSK has not implemented those states.
+Presentations on the following topics are encouraged:
 
-> > Each individual device will also have a power/state file in the sysfs
-> > directory structure.  You can echo a device power state down to the
-> > driver and it will react how if it knows how to enter that state.
->
-> 	I tried `standby', `mem' and `disc'
-> with /sys/devices/platform/smc91x/power/state and saw no change; there
-> was nothing printed on the terminal either. I guess it must not be
-> implemented with this driver at the moment, which I guess is why there
-> is no change when I put the whole system to sleep (please correct me if
-> my assumptions are wrong).  If it is nothing too difficult to add to the
-> driver, would you be able to direct me to where I may find out how to do
-> this?
+    * Audio, Video, and Graphics systems for embedded products
+    * Security
+    * System size
+    * Bootup time
+    * Meeting real-time constraints
+    * Power management
+    * Streaming media
+    * Flash memory devices and filesystems
+    * Technologies related to cell phones, digital settop
+      boxes, handheld devices, or other CE products
+    * Development tools for embedded users
+    * Use of Linux in actual products, practical experience and
+      war stories
+    * Standards for CE products
 
-Unfortunately, device power management is a bit incomplete (and a bit
-rough). One would not write "standby", "mem", or "disk" to a device power
-file, but rather a numeric value that is equal to the power state that the
-device should enter, e.g. 1, 2, 3, etc.. (The fact that this numeric value
-may not correlate to a power state relevant to that device was overlooked
-by the designers of the generic interface).
+Most presentation slots are 50 minutes long, including time for
+questions. A few shorter 40-minute slots are also available.
 
-It could also be that the smc91x does not support power management at all,
-or that the right infrastructure is not in place for it to work.
+No paper submission is required in conjunction with the presentation.
+
+You may also submit a request to present a tutorial. Tutorials are
+intended to be longer, interactive learning sessions. A tutorial may
+occupy more than one session slot at the conference.
+
+We prefer presentations that have not been previously presented, but
+exceptions will be made for material that is either of great interest,
+or has been seen previously only by a limited audience.
+
+A single person may submit more than one proposal. However, since
+the number of slots is limited, it is likely that at most one
+proposal from an individual will be accepted.
+
+For examples of presentations from last year's conference, see:
+http://tree.celinuxforum.org/CelfPubWiki/TechConference2005Docs
+
+Full details, including the e-mail address to use to submit
+a proposal, are at:
+http://tree.celinuxforum.org/CelfPubWiki/ELC2006CallForPresentations
 
 Thanks,
+ -- Tim
+
+P.S. For those on the linux-pm list, Patrick M. said I could
+cross-post this.  Anyone have an idea whether it would be kosher
+to announce this on LKML??  Do other events do this?
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Electronics
+=============================
 
 
-	Pat
-
-
---===============65385575904564308==
+--===============32339004118488224==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============65385575904564308==--
+--===============32339004118488224==--
