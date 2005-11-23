@@ -1,176 +1,137 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: [Patch 1/6] [OSS] Remove deprecated PM interface from ad1848 driver.
-Date: Wed, 23 Nov 2005 12:23:28 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0511231215370.16769-100000@monsoon.he.net>
+Subject: [Patch 5/6] [OSS] Remove deprecated PM interface from nm256 driver.
+Date: Wed, 23 Nov 2005 12:23:39 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0511231221290.16769-100000@monsoon.he.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932304AbVKWUXh@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-sound-owner@vger.kernel.org>
+Sender: linux-sound-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, linux-sound@vger.kernel.org
 Cc: akpm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
-diff-tree ce8c2299f594d1d1c115b629e541208919be9b3f (from 2d0ebb36038c0626cde662a3b06da9787cfb68c3)
+diff-tree a653f4aea340869b6482dce578901c2d40c95912 (from d4637f6330e57390156e151d15c06247cca7c78f)
 Author: Patrick Mochel <mochel@linux.intel.com>
-Date:   Wed Nov 23 11:43:46 2005 -0800
+Date:   Wed Nov 23 11:56:13 2005 -0800
 
-    [OSS] Remove deprecated PM interface from ad1848 driver.
+    [OSS] Remove deprecated PM interface from nm256 driver.
 
     This change removes the old, deprecated interface from the
-    ad1848 driver, including the pm_{,un}register() calls, the
+    nm256 driver, including the pm_{,un}register() calls, the
     local storage of the pmdev object and the reference to the
     old header files. This change is done to assist in eradicating
     the users of the legacy interface so as to help facilitate
     the removal of the interface itself.
 
+    Note that this driver has been obsoleted by an ALSA equivalent.
+
     Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
 
-:040000 040000 1372bdfc1c79b8bb6b5669fef7d00995eec4ed00 90c9c18df1a44670e4d5c9777ba3abde96ffb73d M	sound
+:040000 040000 87f4944625899f3a0bbd1656f1ca1546ef304b29 22cf5552bbabece21464a9c3e27a05412fce6418 M	sound
 
 diffstat:
 
- sound/oss/ad1848.c |   92 -----------------------------------------------------
- 1 files changed, 92 deletions(-)
+ sound/oss/nm256_audio.c |   47 -----------------------------------------------
+ 1 files changed, 47 deletions(-)
 
 ---
 
-ce8c2299f594d1d1c115b629e541208919be9b3f
-diff --git a/sound/oss/ad1848.c b/sound/oss/ad1848.c
-index 3f30c57..49796be 100644
---- a/sound/oss/ad1848.c
-+++ b/sound/oss/ad1848.c
-@@ -46,8 +46,6 @@
+a653f4aea340869b6482dce578901c2d40c95912
+diff --git a/sound/oss/nm256_audio.c b/sound/oss/nm256_audio.c
+index 0ce2c40..42d8f05 100644
+--- a/sound/oss/nm256_audio.c
++++ b/sound/oss/nm256_audio.c
+@@ -24,8 +24,6 @@
  #include <linux/interrupt.h>
+ #include <linux/kernel.h>
  #include <linux/module.h>
- #include <linux/stddef.h>
 -#include <linux/pm.h>
 -#include <linux/pm_legacy.h>
- #include <linux/isapnp.h>
- #include <linux/pnp.h>
+ #include <linux/delay.h>
  #include <linux/spinlock.h>
-@@ -105,9 +103,6 @@ typedef struct
- 	int             irq_ok;
- 	mixer_ents     *mix_devices;
- 	int             mixer_output_port;
--
--	/* Power management */
--	struct		pm_dev *pmdev;
- } ad1848_info;
+ #include "sound_config.h"
+@@ -49,7 +47,6 @@ static int nm256_grabInterrupt (struct n
+ static int nm256_releaseInterrupt (struct nm256_info *card);
+ static irqreturn_t nm256_interrupt (int irq, void *dev_id, struct pt_regs *dummy);
+ static irqreturn_t nm256_interrupt_zx (int irq, void *dev_id, struct pt_regs *dummy);
+-static int handle_pm_event (struct pm_dev *dev, pm_request_t rqst, void *data);
 
- typedef struct ad1848_port_info
-@@ -201,7 +196,6 @@ static void     ad1848_halt(int dev);
- static void     ad1848_halt_input(int dev);
- static void     ad1848_halt_output(int dev);
- static void     ad1848_trigger(int dev, int bits);
--static int	ad1848_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data);
-
- #ifndef EXCLUDE_TIMERS
- static int ad1848_tmr_install(int dev);
-@@ -2027,10 +2021,6 @@ int ad1848_init (char *name, struct reso
-
- 	nr_ad1848_devs++;
-
--	devc->pmdev = pm_register(PM_ISA_DEV, my_dev, ad1848_pm_callback);
--	if (devc->pmdev)
--		devc->pmdev->data = devc;
--
- 	ad1848_init_hw(devc);
-
- 	if (irq > 0)
-@@ -2197,9 +2187,6 @@ void ad1848_unload(int io_base, int irq,
- 		if(mixer>=0)
- 			sound_unload_mixerdev(mixer);
-
--		if (devc->pmdev)
--			pm_unregister(devc->pmdev);
--
- 		nr_ad1848_devs--;
- 		for ( ; i < nr_ad1848_devs ; i++)
- 			adev_info[i] = adev_info[i+1];
-@@ -2811,85 +2798,6 @@ static int ad1848_tmr_install(int dev)
+ /* These belong in linux/pci.h. */
+ #define PCI_DEVICE_ID_NEOMAGIC_NM256AV_AUDIO 0x8005
+@@ -992,15 +989,6 @@ nm256_install_mixer (struct nm256_info *
+     return 0;
  }
- #endif /* EXCLUDE_TIMERS */
 
--static int ad1848_suspend(ad1848_info *devc)
+-/* Perform a full reset on the hardware; this is invoked when an APM
+-   resume event occurs.  */
+-static void
+-nm256_full_reset (struct nm256_info *card)
 -{
--	unsigned long flags;
--
--	spin_lock_irqsave(&devc->lock,flags);
--
--	ad_mute(devc);
--
--	spin_unlock_irqrestore(&devc->lock,flags);
--	return 0;
+-    nm256_initHw (card);
+-    ac97_reset (&(card->mdev));
 -}
 -
--static int ad1848_resume(ad1848_info *devc)
+ /*
+  * See if the signature left by the NM256 BIOS is intact; if so, we use
+  * the associated address as the end of our audio buffer in the video
+@@ -1053,7 +1041,6 @@ static int __devinit
+ nm256_install(struct pci_dev *pcidev, enum nm256rev rev, char *verstr)
+ {
+     struct nm256_info *card;
+-    struct pm_dev *pmdev;
+     int x;
+
+     if (pci_enable_device(pcidev))
+@@ -1234,43 +1221,10 @@ nm256_install(struct pci_dev *pcidev, en
+
+     nm256_install_mixer (card);
+
+-    pmdev = pm_register(PM_PCI_DEV, PM_PCI_ID(pcidev), handle_pm_event);
+-    if (pmdev)
+-        pmdev->data = card;
+-
+     return 1;
+ }
+
+
+-/*
+- * PM event handler, so the card is properly reinitialized after a power
+- * event.
+- */
+-static int
+-handle_pm_event (struct pm_dev *dev, pm_request_t rqst, void *data)
 -{
--	int mixer_levels[32], i;
--
--	/* Thinkpad is a bit more of PITA than normal. The BIOS tends to
--	   restore it in a different config to the one we use.  Need to
--	   fix this somehow */
--
--	/* store old mixer levels */
--	memcpy(mixer_levels, devc->levels, sizeof (mixer_levels));
--	ad1848_init_hw(devc);
--
--	/* restore mixer levels */
--	for (i = 0; i < 32; i++)
--		ad1848_mixer_set(devc, devc->dev_no, mixer_levels[i]);
--
--	if (!devc->subtype) {
--		static signed char interrupt_bits[12] = { -1, -1, -1, -1, -1, 0x00, -1, 0x08, -1, 0x10, 0x18, 0x20 };
--		static char dma_bits[4] = { 1, 2, 0, 3 };
--		unsigned long flags;
--		signed char bits;
--		char dma2_bit = 0;
--
--		int config_port = devc->base + 0;
--
--		bits = interrupt_bits[devc->irq];
--		if (bits == -1) {
--			printk(KERN_ERR "MSS: Bad IRQ %d\n", devc->irq);
--			return -1;
--		}
--
--		spin_lock_irqsave(&devc->lock,flags);
--
--		outb((bits | 0x40), config_port);
--
--		if (devc->dma2 != -1 && devc->dma2 != devc->dma1)
--			if ( (devc->dma1 == 0 && devc->dma2 == 1) ||
--			     (devc->dma1 == 1 && devc->dma2 == 0) ||
--			     (devc->dma1 == 3 && devc->dma2 == 0))
--				dma2_bit = 0x04;
--
--		outb((bits | dma_bits[devc->dma1] | dma2_bit), config_port);
--		spin_unlock_irqrestore(&devc->lock,flags);
+-    struct nm256_info *crd = (struct nm256_info*) dev->data;
+-    if (crd) {
+-        switch (rqst) {
+-	case PM_SUSPEND:
+-	    break;
+-	case PM_RESUME:
+-            {
+-                int playing = crd->playing;
+-                nm256_full_reset (crd);
+-                /*
+-                 * A little ugly, but that's ok; pretend the
+-                 * block we were playing is done.
+-                 */
+-                if (playing)
+-                    DMAbuf_outputintr (crd->dev_for_play, 1);
+-            }
+-	    break;
 -	}
--
--	return 0;
+-    }
+-    return 0;
 -}
 -
--static int ad1848_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data)
--{
--	ad1848_info *devc = dev->data;
--	if (devc) {
--		DEB(printk("ad1848: pm event received: 0x%x\n", rqst));
--
--		switch (rqst) {
--		case PM_SUSPEND:
--			ad1848_suspend(devc);
--			break;
--		case PM_RESUME:
--			ad1848_resume(devc);
--			break;
--		}
--	}
--	return 0;
--}
--
--
- EXPORT_SYMBOL(ad1848_detect);
- EXPORT_SYMBOL(ad1848_init);
- EXPORT_SYMBOL(ad1848_unload);
+ static int __devinit
+ nm256_probe(struct pci_dev *pcidev,const struct pci_device_id *pciid)
+ {
+@@ -1696,7 +1650,6 @@ static int __init do_init_nm256(void)
+ static void __exit cleanup_nm256 (void)
+ {
+     pci_unregister_driver(&nm256_pci_driver);
+-    pm_unregister_all (&handle_pm_event);
+ }
+
+ module_init(do_init_nm256);
