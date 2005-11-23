@@ -1,69 +1,176 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] userland swsusp
-Date: Wed, 23 Nov 2005 13:02:48 +0100
-Message-ID: <20051123120248.GB18403@elf.ucw.cz>
-References: <20051115233201.GA10143@elf.ucw.cz>
-	<1132115730.2499.37.camel@localhost>
-	<20051116061459.GA31181@kroah.com>
-	<1132120845.25230.13.camel@localhost>
-	<20051116165023.GB5630@kroah.com>
-	<1132171051.25230.53.camel@localhost>
-	<20051116213517.GD12505@elf.ucw.cz>
-	<1132175248.25230.104.camel@localhost>
-	<20051116224728.GI12505@elf.ucw.cz> <4384417B.9040201@colitti.com>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: [Patch 1/6] [OSS] Remove deprecated PM interface from ad1848 driver.
+Date: Wed, 23 Nov 2005 12:23:28 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0511231215370.16769-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============22689204285473519=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <4384417B.9040201@colitti.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Lorenzo Colitti <lorenzo@colitti.com>
-Cc: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>, Nigel Cunningham <ncunningham@cyclades.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932304AbVKWUXh@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, linux-sound@vger.kernel.org
+Cc: akpm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============22689204285473519==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On St 23-11-05 11:16:27, Lorenzo Colitti wrote:
-> Pavel Machek wrote:
-> >Yes, hopefully users will not notice.
-> 
-> ? So the idea is to merge inferior code and "hope users won't notice"?
-> 
-> Users  might not notice that half their memory is gone, but they *will* 
-> notice that their system is dog slow when it resumes because all their 
-> caches are gone and a most of their stuff is swapped out.
-> 
-> Non-responsive system on resume is one of the main reasons that swsusp2 
-> is much better than swsusp1, and yes, users *do* notice (I was one of 
-> them, as I pointed out a while back). Yes, 50% is better than nothing, 
-> but it's still a pretty poor show.
+diff-tree ce8c2299f594d1d1c115b629e541208919be9b3f (from 2d0ebb36038c0626cde662a3b06da9787cfb68c3)
+Author: Patrick Mochel <mochel@linux.intel.com>
+Date:   Wed Nov 23 11:43:46 2005 -0800
 
-Did you actually benchmark it?
+    [OSS] Remove deprecated PM interface from ad1848 driver.
 
-> Seen from the perspective of a user, the situation is simple: suspend2 
-> works, it's fast, and it's rock-solid. Just use it.
+    This change removes the old, deprecated interface from the
+    ad1848 driver, including the pm_{,un}register() calls, the
+    local storage of the pmdev object and the reference to the
+    old header files. This change is done to assist in eradicating
+    the users of the legacy interface so as to help facilitate
+    the removal of the interface itself.
 
-About as helpful as "Windows XP works, it's fast, and it's
-rock-solid".
+    Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
 
-							Pavel
--- 
-Thanks, Sharp!
+:040000 040000 1372bdfc1c79b8bb6b5669fef7d00995eec4ed00 90c9c18df1a44670e4d5c9777ba3abde96ffb73d M	sound
 
---===============22689204285473519==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+diffstat:
 
+ sound/oss/ad1848.c |   92 -----------------------------------------------------
+ 1 files changed, 92 deletions(-)
 
---===============22689204285473519==--
+---
+
+ce8c2299f594d1d1c115b629e541208919be9b3f
+diff --git a/sound/oss/ad1848.c b/sound/oss/ad1848.c
+index 3f30c57..49796be 100644
+--- a/sound/oss/ad1848.c
++++ b/sound/oss/ad1848.c
+@@ -46,8 +46,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/stddef.h>
+-#include <linux/pm.h>
+-#include <linux/pm_legacy.h>
+ #include <linux/isapnp.h>
+ #include <linux/pnp.h>
+ #include <linux/spinlock.h>
+@@ -105,9 +103,6 @@ typedef struct
+ 	int             irq_ok;
+ 	mixer_ents     *mix_devices;
+ 	int             mixer_output_port;
+-
+-	/* Power management */
+-	struct		pm_dev *pmdev;
+ } ad1848_info;
+
+ typedef struct ad1848_port_info
+@@ -201,7 +196,6 @@ static void     ad1848_halt(int dev);
+ static void     ad1848_halt_input(int dev);
+ static void     ad1848_halt_output(int dev);
+ static void     ad1848_trigger(int dev, int bits);
+-static int	ad1848_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data);
+
+ #ifndef EXCLUDE_TIMERS
+ static int ad1848_tmr_install(int dev);
+@@ -2027,10 +2021,6 @@ int ad1848_init (char *name, struct reso
+
+ 	nr_ad1848_devs++;
+
+-	devc->pmdev = pm_register(PM_ISA_DEV, my_dev, ad1848_pm_callback);
+-	if (devc->pmdev)
+-		devc->pmdev->data = devc;
+-
+ 	ad1848_init_hw(devc);
+
+ 	if (irq > 0)
+@@ -2197,9 +2187,6 @@ void ad1848_unload(int io_base, int irq,
+ 		if(mixer>=0)
+ 			sound_unload_mixerdev(mixer);
+
+-		if (devc->pmdev)
+-			pm_unregister(devc->pmdev);
+-
+ 		nr_ad1848_devs--;
+ 		for ( ; i < nr_ad1848_devs ; i++)
+ 			adev_info[i] = adev_info[i+1];
+@@ -2811,85 +2798,6 @@ static int ad1848_tmr_install(int dev)
+ }
+ #endif /* EXCLUDE_TIMERS */
+
+-static int ad1848_suspend(ad1848_info *devc)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&devc->lock,flags);
+-
+-	ad_mute(devc);
+-
+-	spin_unlock_irqrestore(&devc->lock,flags);
+-	return 0;
+-}
+-
+-static int ad1848_resume(ad1848_info *devc)
+-{
+-	int mixer_levels[32], i;
+-
+-	/* Thinkpad is a bit more of PITA than normal. The BIOS tends to
+-	   restore it in a different config to the one we use.  Need to
+-	   fix this somehow */
+-
+-	/* store old mixer levels */
+-	memcpy(mixer_levels, devc->levels, sizeof (mixer_levels));
+-	ad1848_init_hw(devc);
+-
+-	/* restore mixer levels */
+-	for (i = 0; i < 32; i++)
+-		ad1848_mixer_set(devc, devc->dev_no, mixer_levels[i]);
+-
+-	if (!devc->subtype) {
+-		static signed char interrupt_bits[12] = { -1, -1, -1, -1, -1, 0x00, -1, 0x08, -1, 0x10, 0x18, 0x20 };
+-		static char dma_bits[4] = { 1, 2, 0, 3 };
+-		unsigned long flags;
+-		signed char bits;
+-		char dma2_bit = 0;
+-
+-		int config_port = devc->base + 0;
+-
+-		bits = interrupt_bits[devc->irq];
+-		if (bits == -1) {
+-			printk(KERN_ERR "MSS: Bad IRQ %d\n", devc->irq);
+-			return -1;
+-		}
+-
+-		spin_lock_irqsave(&devc->lock,flags);
+-
+-		outb((bits | 0x40), config_port);
+-
+-		if (devc->dma2 != -1 && devc->dma2 != devc->dma1)
+-			if ( (devc->dma1 == 0 && devc->dma2 == 1) ||
+-			     (devc->dma1 == 1 && devc->dma2 == 0) ||
+-			     (devc->dma1 == 3 && devc->dma2 == 0))
+-				dma2_bit = 0x04;
+-
+-		outb((bits | dma_bits[devc->dma1] | dma2_bit), config_port);
+-		spin_unlock_irqrestore(&devc->lock,flags);
+-	}
+-
+-	return 0;
+-}
+-
+-static int ad1848_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data)
+-{
+-	ad1848_info *devc = dev->data;
+-	if (devc) {
+-		DEB(printk("ad1848: pm event received: 0x%x\n", rqst));
+-
+-		switch (rqst) {
+-		case PM_SUSPEND:
+-			ad1848_suspend(devc);
+-			break;
+-		case PM_RESUME:
+-			ad1848_resume(devc);
+-			break;
+-		}
+-	}
+-	return 0;
+-}
+-
+-
+ EXPORT_SYMBOL(ad1848_detect);
+ EXPORT_SYMBOL(ad1848_init);
+ EXPORT_SYMBOL(ad1848_unload);
