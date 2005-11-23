@@ -1,164 +1,231 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: [Patch 3/6] [OSS] Remove deprecated PM interface from cs46xx driver.
-Date: Wed, 23 Nov 2005 12:23:33 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0511231219180.16769-100000@monsoon.he.net>
+Subject: [Patch 4/6] [OSS] Remove deprecated PM interface from maestro driver.
+Date: Wed, 23 Nov 2005 12:23:36 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0511231220440.16769-100000@monsoon.he.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-sound-owner@vger.kernel.org>
-Sender: linux-sound-owner@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932317AbVKWUYX@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, linux-sound@vger.kernel.org
 Cc: akpm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
-diff-tree 879a82d748d397be6dce2d4cafaa98c06a71acf2 (from aa92446260fcefe1a74c849e55f19d219f78f563)
+diff-tree d4637f6330e57390156e151d15c06247cca7c78f (from 879a82d748d397be6dce2d4cafaa98c06a71acf2)
 Author: Patrick Mochel <mochel@linux.intel.com>
-Date:   Wed Nov 23 11:51:41 2005 -0800
+Date:   Wed Nov 23 11:54:22 2005 -0800
 
-    [OSS] Remove deprecated PM interface from cs46xx driver.
+    [OSS] Remove deprecated PM interface from maestrodriver.
 
     This change removes the old, deprecated interface from the
-    cs46xx driver, including the pm_{,un}register() calls, the
+    maestro driver, including the pm_{,un}register() calls, the
     local storage of the pmdev object and the reference to the
     old header files. This change is done to assist in eradicating
     the users of the legacy interface so as to help facilitate
     the removal of the interface itself.
 
-    Note this driver has PCI PM hooks which are set properly.
-    It also has the ability to trigger suspend/resume from an
-    ioctl. This functionality was not touched, though it could
-    use a serious review if this driver continues to persist
-    in the mainline tree..
+    The check_suspend() function and associated logic was not
+    removed, even though it is now unnecessary.
 
     Note that this driver has been obsoleted by an ALSA equivalent.
 
+    Acked-By Zach Brown <zab@zabbo.net>
     Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
 
-:040000 040000 a8246728e19c02094c7d8150836f7c0f7b9a1d02 6820ab87e68259b3602ecd3290fad6d7960b12bc M	sound
+:040000 040000 6820ab87e68259b3602ecd3290fad6d7960b12bc 87f4944625899f3a0bbd1656f1ca1546ef304b29 M	sound
 
 diffstat:
 
- sound/oss/cs46xx.c      |   60 ------------------------------------------------
- sound/oss/cs46xxpm-24.h |    4 ---
- 2 files changed, 64 deletions(-)
+ sound/oss/maestro.c |  149 ----------------------------------------------------
+ 1 files changed, 149 deletions(-)
 
 ---
 
-879a82d748d397be6dce2d4cafaa98c06a71acf2
-diff --git a/sound/oss/cs46xx.c b/sound/oss/cs46xx.c
-index cb998e8..0da4d93 100644
---- a/sound/oss/cs46xx.c
-+++ b/sound/oss/cs46xx.c
-@@ -391,10 +391,6 @@ static void cs461x_clear_serial_FIFOs(st
- static int cs46xx_suspend_tbl(struct pci_dev *pcidev, pm_message_t state);
- static int cs46xx_resume_tbl(struct pci_dev *pcidev);
+d4637f6330e57390156e151d15c06247cca7c78f
+diff --git a/sound/oss/maestro.c b/sound/oss/maestro.c
+index 3abd354..f9ac5b1 100644
+--- a/sound/oss/maestro.c
++++ b/sound/oss/maestro.c
+@@ -230,10 +230,6 @@
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
 
--#ifndef CS46XX_ACPI_SUPPORT
--static int cs46xx_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data);
--#endif
+-#include <linux/pm.h>
+-#include <linux/pm_legacy.h>
+-static int maestro_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *d);
 -
- #if CSDEBUG
+ #include "maestro.h"
 
- /* DEBUG ROUTINES */
-@@ -5320,7 +5316,6 @@ static const char fndmsg[] = KERN_INFO "
- static int __devinit cs46xx_probe(struct pci_dev *pci_dev,
- 				  const struct pci_device_id *pciid)
- {
+ static struct pci_driver maestro_pci_driver;
+@@ -3404,7 +3400,6 @@ maestro_probe(struct pci_dev *pcidev,con
+ 	int i, ret;
+ 	struct ess_card *card;
+ 	struct ess_state *ess;
 -	struct pm_dev *pmdev;
- 	int i,j;
- 	u16 ss_card, ss_vendor;
- 	struct cs_card *card;
-@@ -5530,22 +5525,6 @@ static int __devinit cs46xx_probe(struct
- 	PCI_SET_DMA_MASK(pci_dev, dma_mask);
- 	list_add(&card->list, &cs46xx_devs);
+ 	int num = 0;
 
--	pmdev = cs_pm_register(PM_PCI_DEV, PM_PCI_ID(pci_dev), cs46xx_pm_callback);
+ /* when built into the kernel, we only print version if device is found */
+@@ -3450,11 +3445,6 @@ maestro_probe(struct pci_dev *pcidev,con
+ 	memset(card, 0, sizeof(*card));
+ 	card->pcidev = pcidev;
+
+-	pmdev = pm_register(PM_PCI_DEV, PM_PCI_ID(pcidev),
+-			maestro_pm_callback);
 -	if (pmdev)
--	{
--		CS_DBGOUT(CS_INIT | CS_PM, 4, printk(KERN_INFO
--			 "cs46xx: probe() pm_register() succeeded (%p).\n",
--				pmdev));
 -		pmdev->data = card;
--	}
--	else
--	{
--		CS_DBGOUT(CS_INIT | CS_PM | CS_ERROR, 2, printk(KERN_INFO
--			 "cs46xx: probe() pm_register() failed (%p).\n",
--				pmdev));
--		card->pm.flags |= CS46XX_PM_NOT_REGISTERED;
--	}
 -
- 	CS_DBGOUT(CS_PM, 9, printk(KERN_INFO "cs46xx: pm.flags=0x%x card=%p\n",
- 		(unsigned)card->pm.flags,card));
-
-@@ -5727,7 +5706,6 @@ static int __init cs46xx_init_module(voi
- static void __exit cs46xx_cleanup_module(void)
- {
- 	pci_unregister_driver(&cs46xx_pci_driver);
--	cs_pm_unregister_all(cs46xx_pm_callback);
- 	CS_DBGOUT(CS_INIT | CS_FUNCTION, 2,
- 		  printk(KERN_INFO "cs46xx: cleanup_cs46xx() finished\n"));
+ 	card->iobase = iobase;
+ 	card->card_type = card_type;
+ 	card->irq = pcidev->irq;
+@@ -3670,7 +3660,6 @@ static int maestro_notifier(struct notif
+ static void cleanup_maestro(void) {
+ 	M_printk("maestro: unloading\n");
+ 	pci_unregister_driver(&maestro_pci_driver);
+-	pm_unregister_all(maestro_pm_callback);
+ 	unregister_reboot_notifier(&maestro_nb);
  }
-@@ -5735,44 +5713,6 @@ static void __exit cs46xx_cleanup_module
- module_init(cs46xx_init_module);
- module_exit(cs46xx_cleanup_module);
 
--#ifndef CS46XX_ACPI_SUPPORT
--static int cs46xx_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data)
+@@ -3691,143 +3680,5 @@ check_suspend(struct ess_card *card)
+ 	current->state = TASK_RUNNING;
+ }
+
+-static int
+-maestro_suspend(struct ess_card *card)
 -{
--	struct cs_card *card;
+-	unsigned long flags;
+-	int i,j;
 -
--	CS_DBGOUT(CS_PM, 2, printk(KERN_INFO
--		"cs46xx: cs46xx_pm_callback dev=%p rqst=0x%x card=%p\n",
--			dev,(unsigned)rqst,data));
--	card = (struct cs_card *) dev->data;
--	if (card) {
--		switch(rqst) {
--			case PM_SUSPEND:
--				CS_DBGOUT(CS_PM, 2, printk(KERN_INFO
--					"cs46xx: PM suspend request\n"));
--				if(cs46xx_suspend(card, PMSG_SUSPEND))
--				{
--				    CS_DBGOUT(CS_ERROR, 2, printk(KERN_INFO
--					"cs46xx: PM suspend request refused\n"));
--					return 1;
--				}
--				break;
--			case PM_RESUME:
--				CS_DBGOUT(CS_PM, 2, printk(KERN_INFO
--					"cs46xx: PM resume request\n"));
--				if(cs46xx_resume(card))
--				{
--				    CS_DBGOUT(CS_ERROR, 2, printk(KERN_INFO
--					"cs46xx: PM resume request refused\n"));
--					return 1;
--				}
--				break;
+-	spin_lock_irqsave(&card->lock,flags); /* over-kill */
+-
+-	M_printk("maestro: apm in dev %p\n",card);
+-
+-	/* we have to read from the apu regs, need
+-		to power it up */
+-	maestro_power(card,ACPI_D0);
+-
+-	for(i=0;i<NR_DSPS;i++) {
+-		struct ess_state *s = &card->channels[i];
+-
+-		if(s->dev_audio == -1)
+-			continue;
+-
+-		M_printk("maestro: stopping apus for device %d\n",i);
+-		stop_dac(s);
+-		stop_adc(s);
+-		for(j=0;j<6;j++)
+-			card->apu_map[s->apu[j]][5]=apu_get_register(s,j,5);
+-
+-	}
+-
+-	/* get rid of interrupts? */
+-	if( card->dsps_open > 0)
+-		stop_bob(&card->channels[0]);
+-
+-	card->in_suspend++;
+-
+-	spin_unlock_irqrestore(&card->lock,flags);
+-
+-	/* we trust in the bios to power down the chip on suspend.
+-	 * XXX I'm also not sure that in_suspend will protect
+-	 * against all reg accesses from here on out.
+-	 */
+-	return 0;
+-}
+-static int
+-maestro_resume(struct ess_card *card)
+-{
+-	unsigned long flags;
+-	int i;
+-
+-	spin_lock_irqsave(&card->lock,flags); /* over-kill */
+-
+-	card->in_suspend = 0;
+-
+-	M_printk("maestro: resuming card at %p\n",card);
+-
+-	/* restore all our config */
+-	maestro_config(card);
+-	/* need to restore the base pointers.. */
+-	if(card->dmapages)
+-		set_base_registers(&card->channels[0],card->dmapages);
+-
+-	mixer_push_state(card);
+-
+-	/* set each channels' apu control registers before
+-	 * restoring audio
+-	 */
+-	for(i=0;i<NR_DSPS;i++) {
+-		struct ess_state *s = &card->channels[i];
+-		int chan,reg;
+-
+-		if(s->dev_audio == -1)
+-			continue;
+-
+-		for(chan = 0 ; chan < 6 ; chan++) {
+-			wave_set_register(s,s->apu[chan]<<3,s->apu_base[chan]);
+-			for(reg = 1 ; reg < NR_APU_REGS ; reg++)
+-				apu_set_register(s,chan,reg,s->card->apu_map[s->apu[chan]][reg]);
+-		}
+-		for(chan = 0 ; chan < 6 ; chan++)
+-			apu_set_register(s,chan,0,s->card->apu_map[s->apu[chan]][0] & 0xFF0F);
+-	}
+-
+-	/* now we flip on the music */
+-
+-	if( card->dsps_open <= 0) {
+-		/* this card's idle */
+-		maestro_power(card,ACPI_D2);
+-	} else {
+-		/* ok, we're actually playing things on
+-			this card */
+-		maestro_power(card,ACPI_D0);
+-		start_bob(&card->channels[0]);
+-		for(i=0;i<NR_DSPS;i++) {
+-			struct ess_state *s = &card->channels[i];
+-
+-			/* these use the apu_mode, and can handle
+-				spurious calls */
+-			start_dac(s);
+-			start_adc(s);
 -		}
 -	}
 -
+-	spin_unlock_irqrestore(&card->lock,flags);
+-
+-	/* all right, we think things are ready,
+-		wake up people who were using the device
+-		when we suspended */
+-	wake_up(&(card->suspend_queue));
+-
 -	return 0;
 -}
--#endif
 -
- #if CS46XX_ACPI_SUPPORT
- static int cs46xx_suspend_tbl(struct pci_dev *pcidev, pm_message_t state)
- {
-diff --git a/sound/oss/cs46xxpm-24.h b/sound/oss/cs46xxpm-24.h
-index e220bd7..ad82db8 100644
---- a/sound/oss/cs46xxpm-24.h
-+++ b/sound/oss/cs46xxpm-24.h
-@@ -38,13 +38,9 @@
- */
- static int cs46xx_suspend_tbl(struct pci_dev *pcidev, pm_message_t state);
- static int cs46xx_resume_tbl(struct pci_dev *pcidev);
--#define cs_pm_register(a, b, c)  NULL
--#define cs_pm_unregister_all(a)
- #define CS46XX_SUSPEND_TBL cs46xx_suspend_tbl
- #define CS46XX_RESUME_TBL cs46xx_resume_tbl
- #else
--#define cs_pm_register(a, b, c) pm_register((a), (b), (c));
--#define cs_pm_unregister_all(a) pm_unregister_all((a));
- #define CS46XX_SUSPEND_TBL cs46xx_null
- #define CS46XX_RESUME_TBL cs46xx_null
- #endif
+-int
+-maestro_pm_callback(struct pm_dev *dev, pm_request_t rqst, void *data)
+-{
+-	struct ess_card *card = (struct ess_card*) dev->data;
+-
+-	if ( ! card ) goto out;
+-
+-	M_printk("maestro: pm event 0x%x received for card %p\n", rqst, card);
+-
+-	switch (rqst) {
+-		case PM_SUSPEND:
+-			maestro_suspend(card);
+-		break;
+-		case PM_RESUME:
+-			maestro_resume(card);
+-		break;
+-		/*
+-		 * we'd also like to find out about
+-		 * power level changes because some biosen
+-		 * do mean things to the maestro when they
+-		 * change their power state.
+-		 */
+-        }
+-out:
+-	return 0;
+-}
+-
+ module_init(init_maestro);
+ module_exit(cleanup_maestro);
