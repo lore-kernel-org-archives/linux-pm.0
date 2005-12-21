@@ -1,10 +1,12 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: XScale PXA27x wakeup info
-Date: Tue, 20 Dec 2005 17:27:31 -0800
-Message-ID: <20051221012731.GA18246@slurryseal.ddns.mvista.com>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: Re: What woke system up?
+Date: Tue, 20 Dec 2005 18:11:40 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0512201809520.21656-100000@monsoon.he.net>
+References: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============34813027152254072=="
+Content-Type: multipart/mixed; boundary="===============16174661349655128=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,130 +16,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============34813027152254072==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Here's an embedded implementation of the proposed /sys/power/waker
-attribute.  In this case, several potential wakeup sources as defined by
-the SoC are checked and strings identifying these are added to
-/sys/power/waker.  Most are numbered GPIO lines.
-
-A nicer way of implementing this would be to have real drivers for each
-actually-used wakeup source ("the red power button driver" instead of an
-arch-level check for GPIO42), and the driver resume method writes its
-sysfs bus/device identifier to /sys/power/waker.  I'm not sure what the
-state of the art is in representing raw GPIO drivers in the driver
-model, but how to selectively enable wakeup from specific GPIO lines
-will be another topic floated real soon now.
-
-Thanks - Todd
-
-Intel XScale PXA27x support for wakeup source identification via
-/sys/power/waker.
-
-Index: linux-2.6.15-rc4/arch/arm/mach-pxa/pxa27x.c
-===================================================================
---- linux-2.6.15-rc4.orig/arch/arm/mach-pxa/pxa27x.c
-+++ linux-2.6.15-rc4/arch/arm/mach-pxa/pxa27x.c
-@@ -133,6 +133,78 @@ int pxa_cpu_pm_prepare(suspend_state_t s
- 	}
- }
- 
-+static void set_wakeinfo(void)
-+{
-+	char wakeinfo[128];
-+	u32 gpioed;
-+	int i;
-+
-+	wakeinfo[0] = '\0';
-+
-+	if (PKSR)
-+		strlcat(wakeinfo, "keypad ", sizeof(wakeinfo));
-+
-+	gpioed = PEDR;
-+
-+	if (gpioed & (1 << 31))
-+		strlcat(wakeinfo, "rtc ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 30))
-+		strlcat(wakeinfo, "pi ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 28))
-+		strlcat(wakeinfo, "usbhost2 ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 27))
-+		strlcat(wakeinfo, "usbhost1 ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 26))
-+		strlcat(wakeinfo, "usbclient ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 25))
-+		strlcat(wakeinfo, "msl ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 24))
-+		strlcat(wakeinfo, "gpio35 ", sizeof(wakeinfo));
-+	if (gpioed & (1 << 20)) {
-+		u32 wemux3 = (PWER & 0x180000) >> 19;
-+
-+		switch (wemux3) {
-+		case 1:
-+			strlcat(wakeinfo, "gpio31 ", sizeof(wakeinfo));
-+			break;
-+		case 2:
-+			strlcat(wakeinfo, "gpio113 ", sizeof(wakeinfo));
-+			break;
-+		}
-+	}
-+	if (gpioed & (1 << 17)) {
-+		u32 wemux2 = (PWER & 0x70000) >> 16;
-+
-+		switch (wemux2) {
-+		case 1:
-+			strlcat(wakeinfo, "gpio38 ", sizeof(wakeinfo));
-+			break;
-+		case 2:
-+			strlcat(wakeinfo, "gpio53 ", sizeof(wakeinfo));
-+			break;
-+		case 3:
-+			strlcat(wakeinfo, "gpio40 ", sizeof(wakeinfo));
-+			break;
-+		case 4:
-+			strlcat(wakeinfo, "gpio36 ", sizeof(wakeinfo));
-+			break;
-+		}
-+	}
-+
-+
-+	gpioed &= 0xfffffe1b; /* clear reserved bits 8:5, 2 */
-+
-+	for (i = 15; i >= 0; i--)
-+		if (gpioed & (1 << i)) {
-+			char name[32];
-+
-+			sprintf(name, "gpio%d ", i);
-+			strlcat(wakeinfo, name, sizeof(wakeinfo));
-+		}
-+
-+	pm_add_waker(wakeinfo);
-+}
-+
- void pxa_cpu_pm_enter(suspend_state_t state)
- {
- 	extern void pxa_cpu_standby(void);
-@@ -160,6 +232,8 @@ void pxa_cpu_pm_enter(suspend_state_t st
- 		pxa_cpu_suspend(PWRMODE_SLEEP);
- 		break;
- 	}
-+
-+	set_wakeinfo();
- }
- 
- #endif
+--===============16174661349655128==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
---===============34813027152254072==
+On Tue, 20 Dec 2005, Todd Poynor wrote:
+
+> Next in our series of wakeup patches: a consumer electronics maker asked
+> for a userspace interface to inquire what woke the system up, in order
+> to present different behaviors depending on the wakeup source.  This is
+> to be encouraged, as it places these kinds of policy decisions into the
+> power policy application and out of the kernel.
+>
+> So here's a quick try at adding a /sys/power/waker attribute and a
+> pm_add_waker() kernel function that either drivers or board PM code can
+> use to add (so far format-free) strings useful for telling what woke the
+> system up.  The idea is that a buffer of these strings is cleared at
+> each suspend and added to by the platform's resume path and/or driver
+> resume methods.
+>
+> I'll send a patch or two for embedded boards showing how
+> this could be used for SoC-specific wakeup sources.
+>
+> Any interest in this or something like it for Linux in general, or any
+> other suggestions?  Thanks -- Todd
+
+What about stashing a pointer to the device that did the wakeup, then
+using a symlink to point to the sysfs directory of that device? That way,
+instead of some arbitrary string, like "wake wake wake", you can
+definitively know what device it was, as well as any other status..
+
+You can remove the symlink on suspend, just like you could clear the
+string, and re-add it on resume.
+
+Thanks,
+
+
+	Patrick
+
+
+--===============16174661349655128==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============34813027152254072==--
+--===============16174661349655128==--
