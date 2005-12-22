@@ -1,12 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: What woke system up?
-Date: Thu, 22 Dec 2005 11:58:00 +0100
-Message-ID: <20051222105800.GA9838@elf.ucw.cz>
-References: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Hotplug events during sleep transition
+Date: Thu, 22 Dec 2005 09:28:16 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0512220920500.10513-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============024626344614204321=="
+Content-Type: multipart/mixed; boundary="===============86171487070388142=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,69 +14,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: linux-pm@osdl.org
+To: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============024626344614204321==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============86171487070388142==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Hi!
+Pavel & Greg:
 
-> Next in our series of wakeup patches: a consumer electronics maker asked
-> for a userspace interface to inquire what woke the system up, in order
-> to present different behaviors depending on the wakeup source.  This is
-> to be encouraged, as it places these kinds of policy decisions into the
-> power policy application and out of the kernel.
-> 
-> So here's a quick try at adding a /sys/power/waker attribute and a
-> pm_add_waker() kernel function that either drivers or board PM code can
-> use to add (so far format-free) strings useful for telling what woke the
-> system up.  The idea is that a buffer of these strings is cleared at
-> each suspend and added to by the platform's resume path and/or driver
-> resume methods.
-> 
-> I'll send a patch or two for embedded boards showing how
-> this could be used for SoC-specific wakeup sources.
-> 
-> Any interest in this or something like it for Linux in general, or any
-> other suggestions?  Thanks -- Todd
+I recently worked on a patch to unbind USB drivers that don't have 
+suspend/resume methods, and then rebind them when the system comes back 
+up.  There was an unexpected effect: In some cases the unbind or rebind 
+operations caused hotplug events, which started up new user processes at a 
+time when everything was supposed to be frozen.  Obviously this is not a 
+good thing.
 
-Well, idea may be okay but patch is ugly.
+Is there some other way these sorts of events can be handled?  For
+instance, can the hotplug system be smart enough to delay creating the new
+processes?  Or can they be created already in a frozen state?
 
-> Index: linux-2.6.15-rc4/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.15-rc4.orig/kernel/power/main.c
-> +++ linux-2.6.15-rc4/kernel/power/main.c
-> @@ -103,11 +103,18 @@ static int suspend_prepare(suspend_state
->  }
->  
->  
-> +#define WAKERINFO_LEN 1024
-> +
-> +static char *wakerinfo;
+Alan Stern
 
-Can you just allocate it statically? And use some reasonable length.
 
-> +void pm_add_waker(char * buf)
-
-char *buf
-
-> +{
-> +	if (! wakerinfo) {
-
-Please don't use space between "!" and variable.
-
-								Pavel
--- 
-Thanks, Sharp!
-
---===============024626344614204321==
+--===============86171487070388142==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============024626344614204321==--
+--===============86171487070388142==--
