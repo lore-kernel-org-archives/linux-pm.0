@@ -1,16 +1,10 @@
-From: Dmitry Torokhov <dtor_core@ameritech.net>
-Subject: Re: Re: Hotplug events during sleep transition
-Date: Thu, 22 Dec 2005 22:52:55 -0500
-Message-ID: <200512222252.55553.dtor_core@ameritech.net>
-References: <Pine.LNX.4.44L0.0512221703280.17705-100000@netrider.rowland.org>
-	<Pine.LNX.4.50.0512221947250.23983-100000@monsoon.he.net>
+From: Holger Macht <hmacht@suse.de>
+Subject: Runtime device power management in userspace
+Date: Fri, 23 Dec 2005 15:30:47 +0100
+Message-ID: <20051223143047.GC16463@f192.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============41546095293791274=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0512221947250.23983-100000@monsoon.he.net>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,29 +14,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 22 December 2005 22:49, Patrick Mochel wrote:
-> 
-> On Thu, 22 Dec 2005, Alan Stern wrote:
-> 
-> > I'm not so sure this approach really qualifies as a "hack".  If a driver
-> > doesn't have explicit support for suspend/resume, the best way to quiesce
-> > it is to unbind it.  The only alternative is to fail all of its I/O
-> > requests, which seems much less reliable.
-> 
-> Hmm, the best way to queisce it seems to be to fix the driver. Sure, that
-> doesn't solve your problems now, but that is the ideal solution, no? Until
-> then, band-aids like unbinding the device from the driver is only a remedy
-> to a symptom; not a cure..
->
+--===============41546095293791274==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Quite often unbinding is easiest and also correct way. I would love to be
-able to just unbind serio port/input device and have it recreated later.
-Unfortunately X/GPM do not [yet?] support hotplugging of devices so kernel
-has to compensate.
+Hi,
 
--- 
-Dmitry
+We implemented device runtime power management in a userspace application
+(the powersave daemon). In this specific case, it means to successively
+put pci devices into D3 powersave mode with writing a numerical '3' to the
+corresponding power state file.
+
+There are two main reasons for us to even doing this:
+
+  1. At first, the obvious reason. As mentioned in our research regarding
+     power consumption on this list, there is a very huge potential to
+     save battery power.
+
+  2. Due to the fact that this is AFAIK a heavily untested area, as a side
+     effect, we like to get reports about broken modules/drivers and maybe
+     get them fixed.
+
+It is explicitly ment as an expert option and will be handled in a very
+special way in our frontends. The normal user will be warned loud enough
+before he can enable this "feature" ;-) We are also seriously aware of the
+fact that all this should be done in kernel space one day.
+
+Before starting implementation, we tested on different machines with
+different hardware and got surprisingly few problems. The only module we
+are at the moment aware of that it is broken, is e100. Sure, there might
+be more...
+
+Now that we get more and more votes that this could be very dangerous and
+problematic because of the current kernel implementation, we decided to
+gather some more comments from involved people and experts in this
+area. That's the aim of my post to this list. Opinions are welcome!
+
+Thanks in advance,
+       Holger
+
+--===============41546095293791274==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============41546095293791274==--
