@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime device power management in userspace
-Date: Fri, 23 Dec 2005 10:17:45 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0512231016170.15462-100000@netrider.rowland.org>
-References: <20051223143047.GC16463@f192.suse.de>
+Subject: Re: Re: Hotplug events during sleep transition
+Date: Fri, 23 Dec 2005 10:20:32 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0512231018040.15462-100000@netrider.rowland.org>
+References: <200512222252.55553.dtor_core@ameritech.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============27297948394684934=="
+Content-Type: multipart/mixed; boundary="===============99487976746659301=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051223143047.GC16463@f192.suse.de>
+In-Reply-To: <200512222252.55553.dtor_core@ameritech.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,38 +16,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Holger Macht <hmacht@suse.de>
-Cc: linux-pm@lists.osdl.org
+To: Dmitry Torokhov <dtor_core@ameritech.net>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============27297948394684934==
+--===============99487976746659301==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Fri, 23 Dec 2005, Holger Macht wrote:
+On Thu, 22 Dec 2005, Dmitry Torokhov wrote:
 
-> Hi,
+> On Thursday 22 December 2005 22:49, Patrick Mochel wrote:
+> > 
+> > On Thu, 22 Dec 2005, Alan Stern wrote:
+> > 
+> > > I'm not so sure this approach really qualifies as a "hack".  If a driver
+> > > doesn't have explicit support for suspend/resume, the best way to quiesce
+> > > it is to unbind it.  The only alternative is to fail all of its I/O
+> > > requests, which seems much less reliable.
+> > 
+> > Hmm, the best way to queisce it seems to be to fix the driver. Sure, that
+> > doesn't solve your problems now, but that is the ideal solution, no? Until
+> > then, band-aids like unbinding the device from the driver is only a remedy
+> > to a symptom; not a cure..
+> >
 > 
-> We implemented device runtime power management in a userspace application
-> (the powersave daemon). In this specific case, it means to successively
-> put pci devices into D3 powersave mode with writing a numerical '3' to the
-> corresponding power state file.
+> Quite often unbinding is easiest and also correct way. I would love to be
+> able to just unbind serio port/input device and have it recreated later.
+> Unfortunately X/GPM do not [yet?] support hotplugging of devices so kernel
+> has to compensate.
 
-> Now that we get more and more votes that this could be very dangerous and
-> problematic because of the current kernel implementation, we decided to
-> gather some more comments from involved people and experts in this
-> area. That's the aim of my post to this list. Opinions are welcome!
-
-Remember that you're likely to run into trouble if you try to suspend a 
-device that has unsuspended children.
+I agree with Dmitry.  Many drivers don't need to do anything special for 
+suspend, or only need to cancel an outstanding input request.  Rather than 
+go through every single driver and add a minimal (and possibly erroneous) 
+suspend routine, it's much easier just to unbind these drivers.
 
 Alan Stern
 
 
---===============27297948394684934==
+--===============99487976746659301==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============27297948394684934==--
+--===============99487976746659301==--
