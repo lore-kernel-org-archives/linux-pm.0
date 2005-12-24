@@ -1,15 +1,12 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: Runtime device power management in userspace
-Date: Sat, 24 Dec 2005 01:43:14 +0100
-Message-ID: <20051224004314.GE16043@elf.ucw.cz>
-References: <20051223143047.GC16463@f192.suse.de>
-	<Pine.LNX.4.44L0.0512231016170.15462-100000@netrider.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: Hotplug events during sleep transition
+Date: Sat, 24 Dec 2005 10:11:13 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0512241001500.23067-100000@netrider.rowland.org>
+References: <20051223212827.GA17350@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============91772248061930251=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0512231016170.15462-100000@netrider.rowland.org>
+In-Reply-To: <20051223212827.GA17350@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,40 +16,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org
+To: Greg KH <greg@kroah.com>
+Cc: Nigel Cunningham <ncunningham@cyclades.com>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On P=E1 23-12-05 10:17:45, Alan Stern wrote:
-> On Fri, 23 Dec 2005, Holger Macht wrote:
->=20
-> > Hi,
-> >=20
-> > We implemented device runtime power management in a userspace applica=
-tion
-> > (the powersave daemon). In this specific case, it means to successive=
-ly
-> > put pci devices into D3 powersave mode with writing a numerical '3' t=
-o the
-> > corresponding power state file.
->=20
-> > Now that we get more and more votes that this could be very dangerous=
- and
-> > problematic because of the current kernel implementation, we decided =
-to
-> > gather some more comments from involved people and experts in this
-> > area. That's the aim of my post to this list. Opinions are welcome!
->=20
-> Remember that you're likely to run into trouble if you try to suspend a=
-=20
-> device that has unsuspended children.
+--===============91772248061930251==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+On Fri, 23 Dec 2005, Greg KH wrote:
+
+> On Fri, Dec 23, 2005 at 04:22:44PM -0500, Alan Stern wrote:
+> > On Fri, 23 Dec 2005, Pavel Machek wrote:
+> > 
+> > > Well, if you can find some elegant solution in the core, I think thats
+> > > the best way.
+> > > 
+> > > You could set system_state to "suspending" or something like that, and
+> > > just if() out notifications in that case.
+> > 
+> > How about simply adding a call to try_to_freeze() somewhere inside 
+> > kernel/kmod.c:____call_usermodehelper()?  That ought to do pretty much 
+> > what I want, in theory.  The hotplug processes would get frozen before 
+> > /sbin/hotplug is exec'ed.
+> 
+> On modern distros, /sbin/hotplug is set to NULL, so this isn't an issue.
+> We use netlink to send the data out, so this might not even be a problem
+> anymore...
+
+Indeed it might not.  On my older FC3 system I end up with unwanted 
+processes, but under FC4 that doesn't happen.  (Note however that even on 
+the FC4 system, /sbin/hotplug is not empty and /proc/sys/kernel/hotplug 
+does point to /sbin/hotplug.)
+
+The ideal situation would be to have PF_FREEZE automatically set for every
+new process created while userspace was frozen.  Kernel threads could
+remove the flag and set PF_NOFREEZE if they wanted, while user processes
+would automatically get frozen before returning to userspace.  This
+approach would eliminate all the loopholes at once.
+
+Alan Stern
 
 
-...network drivers should be easy targets -- we can copy suspend
-handling from _close() routine. OTOH for example b44.c does
-have quite different code between _close() and _suspend()...
+--===============91772248061930251==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-								Pavel
 
---=20
-Thanks, Sharp!
+--===============91772248061930251==--
