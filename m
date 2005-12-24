@@ -1,7 +1,7 @@
 From: Pavel Machek <pavel@suse.cz>
 Subject: Re: Runtime device power management in userspace
-Date: Sat, 24 Dec 2005 01:41:08 +0100
-Message-ID: <20051224004108.GD16043@elf.ucw.cz>
+Date: Sat, 24 Dec 2005 01:43:14 +0100
+Message-ID: <20051224004314.GE16043@elf.ucw.cz>
 References: <20051223143047.GC16463@f192.suse.de>
 	<Pine.LNX.4.44L0.0512231016170.15462-100000@netrider.rowland.org>
 Mime-Version: 1.0
@@ -47,8 +47,11 @@ to
 =20
 > device that has unsuspended children.
 
-I guess we only want to suspend, leaf PCI devices for now. There's
-where the lowest-hanging fruit is.
+
+...network drivers should be easy targets -- we can copy suspend
+handling from _close() routine. OTOH for example b44.c does
+have quite different code between _close() and _suspend()...
+
 								Pavel
 
 --=20
