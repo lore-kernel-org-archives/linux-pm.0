@@ -1,10 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: [patch] pm: fix runtime powermanagement's /sys interface
-Date: Tue, 27 Dec 2005 22:34:39 +0100
-Message-ID: <20051227213439.GA1884@elf.ucw.cz>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Re: Hotplug events during sleep transition
+Date: Tue, 27 Dec 2005 16:45:17 -0500
+Message-ID: <d120d5000512271345t6e3e0117j7852bd29668d6abe@mail.gmail.com>
+References: <200512261750.26186.dtor_core@ameritech.net>
+	<Pine.LNX.4.44L0.0512261755280.10595-100000@netrider.rowland.org>
+Reply-To: dtor_core@ameritech.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============63584531616570672=="
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0512261755280.10595-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,67 +20,46 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============63584531616570672==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On 12/26/05, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 26 Dec 2005, Dmitry Torokhov wrote:
+>
+> > Device removal could happen at any point, even during suspend transition.
+> > The kernel should be able to handle this scenario therefore implementation
+> > that assumes that device tree is frozen in flawed. As far as I understand
+> > the only thing that does not work at the moment is invoking hotplug handler.
+>
+> The situation isn't all that bad.
+>
+> The device tree can be changed only by calling device_add or device_del
+> (or the corresponding register/unregister routines).  That can only be
+> done in process context; hence if processes are frozen it can't happen.
+> Or rather, it can happen only if a suspend() or resume() method tries to
+> do it.
+>
+> If those methods don't try to handle device removal or addition -- which
+> in most cases they shouldn't -- then there's nothing to worry about.  It's
+> only oddball situations (like calling the remove method when the driver
+> doesn't define a suspend method) that cause problems.
+>
 
-/sys/devices/..../power interface is currently very broken. It takes
-integer from user, and passes it to drivers as pm_message_t.event
-... without even checking it. This changes the interface to pass
-strings, and introduces checks.
+Hmm, I am confused. What should ->resume() method do when it fails to
+resume a device? I would say kill it, espacially if it is bus-generic
+method. How else would we clean up after removed devices? And here we
+have a problem because swsuspend likes to resume all devices before
+writing the image and drivers don't rellay know if they are woken up
+for real or just to complete suspend transition.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> And even then, with most drivers you don't get a hotplug event when the
+> driver is unbound.  It happens only with things like usb-storage, that
+> define child devices.
+>
 
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -27,22 +27,25 @@
- 
- static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
- {
--	return sprintf(buf, "%u\n", dev->power.power_state.event);
-+	if (dev->power.power_state.event)
-+		return sprintf(buf, "suspend\n");
-+	else
-+		return sprintf(buf, "on\n");
- }
- 
- static ssize_t state_store(struct device * dev, struct device_attribute *attr, const char * buf, size_t n)
- {
- 	pm_message_t state;
--	char * rest;
--	int error = 0;
-+	int error = -EINVAL;
- 
--	state.event = simple_strtoul(buf, &rest, 10);
--	if (*rest)
--		return -EINVAL;
--	if (state.event)
--		error = dpm_runtime_suspend(dev, state);
--	else
-+	state.event = PM_EVENT_SUSPEND;
-+	if ((n == 2) && !strncmp(buf, "on", 2)) {
- 		dpm_runtime_resume(dev);
-+		error = 0;
-+	}
-+	if ((n == 7) && !strncmp(buf, "suspend", 7))
-+		error = dpm_runtime_suspend(dev, state);
-+
- 	return error ? error : n;
- }
- 
+No, I'd say most drivers generate hotplug events because most of them
+create/destroy class devices nowadays.
 
--- 
-Thanks, Sharp!
-
---===============63584531616570672==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============63584531616570672==--
+--
+Dmitry
