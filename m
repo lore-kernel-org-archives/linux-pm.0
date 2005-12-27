@@ -1,15 +1,21 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Patrick Mochel <mochel@digitalimplant.org>
 Subject: Re: Runtime device power management in userspace
-Date: Tue, 27 Dec 2005 21:04:18 +0100
-Message-ID: <20051227200418.GA4769@elf.ucw.cz>
+Date: Tue, 27 Dec 2005 12:40:10 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0512271229510.4933-100000@monsoon.he.net>
 References: <20051223143047.GC16463@f192.suse.de>
 	<Pine.LNX.4.50.0512230706530.13289-100000@monsoon.he.net>
-	<20051224153119.GA9721@work.suse.de>
-	<Pine.LNX.4.50.0512261244200.12383-100000@monsoon.he.net>
+	<20051224004029.GC16043@elf.ucw.cz>
+	<Pine.LNX.4.50.0512261234350.12383-100000@monsoon.he.net>
+	<20051226223325.GE1974@elf.ucw.cz>
+	<Pine.LNX.4.50.0512271054350.30915-100000@monsoon.he.net>
+	<20051227192254.GJ1822@elf.ucw.cz>
+	<20051227192956.GA10704@digitalimplant.org>
+	<20051227194100.GL1822@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============71516292785310975=="
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0512261244200.12383-100000@monsoon.he.net>
+In-Reply-To: <20051227194100.GL1822@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,64 +25,61 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
+To: Pavel Machek <pavel@suse.cz>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============71516292785310975==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Po 26-12-05 12:58:02, Patrick Mochel wrote:
-> On Sat, 24 Dec 2005, Holger Macht wrote:
-> > On Fr 23. Dez - 07:12:35, Patrick Mochel wrote:
-> 
-> > > How do you determine the idleness of a device? Or, is it based purely on
-> > > user direction?
-> >
-> > That's one of the main problems. For some devices, for instance network
-> > cards, we can query the NetworkManager (as far as available) via DBus if
-> > the device is currently in use or not. But we don't have that possiblity
-> > for all devices. The even more problematic point is the other way
-> > round. How to figure out if we have to resume a device as soon as another
-> > application wants to access it? I have currently no clue how to do this.
-> 
-> That is definitely a devlish detail (or rather, several of them). In
-> general, you want a device to resume as soon as it's needed by an
-> application. There's no way of knowing this from a 3rd party app, and
-> there is no way of changing every application to first power up a device.
-> So, it must happen in the kernel.
+On Tue, 27 Dec 2005, Pavel Machek wrote:
 
-While we want to implement that someday, we should fix the easy stuff. 
+> On =DAt 27-12-05 11:29:56, Patrick Mochel wrote:
 
-> Where in the kernel is dependent on the type (class) of device. For some,
-> it will be on open(2), others will be connect(2), and others will be the
-> set of read(2)/write(2)/select(2)/poll(2). To this effect, I think that
-> the individual classes need to be changed to do e.g.
+> > But, in some cases, peple are going to care about the intermediate
+> > states, and we'll need to support them. It's simple enought to know
+> > what states a PCI device supports, so I don't understand where the
+> > complexity comes in.. ?
+>
+> Someone has to test all that... Unless we have in-tree driver that
+> wants use intermediate states, I think supporting them is bad idea.
 
-And for some, it is not possible to keep them functional and powered
-down. Take ethernet interface: if you power it down, you'll not see
-incoming packets.
+I don't understand what your issue is; perhaps you could explain it a bit
+better. There is no additional work on the part of the core, nor any
+additional complication in supporting 4 possible power states vs
+supporting 2 vs supporting any arbitrary number that the driver and devic=
+e
+implement.
 
-> Implementing all of this will take time and collaboration with the
-> different device classes, but I think that this is a direction which most
-> distros would like to head. Is that even remotely correct?
+I did not suggest that we make the drivers support intermediate states; I
+only stated that there are some drivers and devices that can and will
+implement them, and that there are cases in which it will make sense to
+enter them from userpsace.
 
-Would like to head is correct... but that's year+ away. For now, we'd
-like to get the simpler "power this piece of hardware down, return
-errors to userspace", first.
+If the sysfs files are simply checking string values and making a
+driver-based call based on the validity of the string, then it doesn't
+matter a) what the strings are or b) how many there are.
 
-Example usage is... you are traveling by train, so you know you are
-not using ethernet and wifi... so you just force it down. 
-								Pavel
--- 
-Thanks, Sharp!
-
---===============71516292785310975==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+I admit I made a mistake in suggesting the interface - we wouldn't want t=
+o
+simply export all the PM states that are present in the device's config
+space. We would really only want to export the states that the driver say=
+s
+it supports. But, that could be any number of states, above and beyond (o=
+r
+a subset of) D1/D2/D3/etc (or whatever the bus spec says are standard
+states).
 
 
---===============71516292785310975==--
+As far as testing, how does that factor into the picture? Do you feel tha=
+t
+we currently (or will) lack coverage testing? If so, I agree. However, I
+do not think that should prevent us from thinking clearly about what the
+best possible solution is.
+
+If there is a need for more and/or better testing then we can collectivel=
+y
+gather the resources to accomplish it.
+
+Thanks,
+
+
+	Patrick
