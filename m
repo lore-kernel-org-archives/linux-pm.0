@@ -1,21 +1,15 @@
 From: Pavel Machek <pavel@suse.cz>
 Subject: Re: Runtime device power management in userspace
-Date: Tue, 27 Dec 2005 20:41:00 +0100
-Message-ID: <20051227194100.GL1822@elf.ucw.cz>
+Date: Tue, 27 Dec 2005 21:04:18 +0100
+Message-ID: <20051227200418.GA4769@elf.ucw.cz>
 References: <20051223143047.GC16463@f192.suse.de>
 	<Pine.LNX.4.50.0512230706530.13289-100000@monsoon.he.net>
-	<20051224004029.GC16043@elf.ucw.cz>
-	<Pine.LNX.4.50.0512261234350.12383-100000@monsoon.he.net>
-	<20051226223325.GE1974@elf.ucw.cz>
-	<Pine.LNX.4.50.0512271054350.30915-100000@monsoon.he.net>
-	<20051227192254.GJ1822@elf.ucw.cz>
-	<20051227192956.GA10704@digitalimplant.org>
+	<20051224153119.GA9721@work.suse.de>
+	<Pine.LNX.4.50.0512261244200.12383-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============71516292785310975=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20051227192956.GA10704@digitalimplant.org>
+In-Reply-To: <Pine.LNX.4.50.0512261244200.12383-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -29,34 +23,60 @@ To: Patrick Mochel <mochel@digitalimplant.org>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On =DAt 27-12-05 11:29:56, Patrick Mochel wrote:
-> On Tue, Dec 27, 2005 at 08:22:54PM +0100, Pavel Machek wrote:
->=20
-> > I don't really think we want complexity of putting PCI device into
-> > D0/D1/D2/D3hot/D3cold. All that userspace should care about is device
-> > working/device suspended, and we could not test all 5 states, anyway.
->=20
-> What do you mean?=20
->=20
-> The devices and drivers should support various states, and that's the
-> whole point of having multiple states - to make a choice based on the
-> power saving required vs. the latency requirements of bringing it back.
->=20
-> Granted, for most things, the latency to return from D3 (hot only, cold
-> is irrelevant during runtime) is not going to be noticable, so that's
-> probably the only state most devices will ever enter.=20
+--===============71516292785310975==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Exactly. And for these "most devices", having to test/debug/support
-D1/D2 is not worth the effort.
+On Po 26-12-05 12:58:02, Patrick Mochel wrote:
+> On Sat, 24 Dec 2005, Holger Macht wrote:
+> > On Fr 23. Dez - 07:12:35, Patrick Mochel wrote:
+> 
+> > > How do you determine the idleness of a device? Or, is it based purely on
+> > > user direction?
+> >
+> > That's one of the main problems. For some devices, for instance network
+> > cards, we can query the NetworkManager (as far as available) via DBus if
+> > the device is currently in use or not. But we don't have that possiblity
+> > for all devices. The even more problematic point is the other way
+> > round. How to figure out if we have to resume a device as soon as another
+> > application wants to access it? I have currently no clue how to do this.
+> 
+> That is definitely a devlish detail (or rather, several of them). In
+> general, you want a device to resume as soon as it's needed by an
+> application. There's no way of knowing this from a 3rd party app, and
+> there is no way of changing every application to first power up a device.
+> So, it must happen in the kernel.
 
-> But, in some cases, peple are going to care about the intermediate
-> states, and we'll need to support them. It's simple enought to know
-> what states a PCI device supports, so I don't understand where the
-> complexity comes in.. ?
+While we want to implement that someday, we should fix the easy stuff. 
 
-Someone has to test all that... Unless we have in-tree driver that
-wants use intermediate states, I think supporting them is bad idea.
+> Where in the kernel is dependent on the type (class) of device. For some,
+> it will be on open(2), others will be connect(2), and others will be the
+> set of read(2)/write(2)/select(2)/poll(2). To this effect, I think that
+> the individual classes need to be changed to do e.g.
 
+And for some, it is not possible to keep them functional and powered
+down. Take ethernet interface: if you power it down, you'll not see
+incoming packets.
+
+> Implementing all of this will take time and collaboration with the
+> different device classes, but I think that this is a direction which most
+> distros would like to head. Is that even remotely correct?
+
+Would like to head is correct... but that's year+ away. For now, we'd
+like to get the simpler "power this piece of hardware down, return
+errors to userspace", first.
+
+Example usage is... you are traveling by train, so you know you are
+not using ethernet and wifi... so you just force it down. 
 								Pavel
---=20
+-- 
 Thanks, Sharp!
+
+--===============71516292785310975==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============71516292785310975==--
