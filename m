@@ -1,15 +1,10 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: Re: Hotplug events during sleep transition
-Date: Tue, 27 Dec 2005 13:09:53 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0512271300560.4933-100000@monsoon.he.net>
-References: <Pine.LNX.4.44L0.0512242115030.9591-100000@netrider.rowland.org>
-	<Pine.LNX.4.50.0512261301090.12383-100000@monsoon.he.net>
-	<200512261750.26186.dtor_core@ameritech.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: [patch] pm: fix runtime powermanagement's /sys interface
+Date: Tue, 27 Dec 2005 22:34:39 +0100
+Message-ID: <20051227213439.GA1884@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============63584531616570672=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200512261750.26186.dtor_core@ameritech.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,55 +14,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dmitry Torokhov <dtor_core@ameritech.net>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+--===============63584531616570672==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, 26 Dec 2005, Dmitry Torokhov wrote:
+/sys/devices/..../power interface is currently very broken. It takes
+integer from user, and passes it to drivers as pm_message_t.event
+... without even checking it. This changes the interface to pass
+strings, and introduces checks.
 
-> On Monday 26 December 2005 16:20, Patrick Mochel wrote:
-> > > > =A0Unbinding and
-> > > > rebinding do a whole lot more. A device does an entire round trip=
- through
-> > > > the driver core, which does a lot of crap. There are several memo=
-ry
-> > > > allocations, perhaps dozens of sysfs files created, and a handful=
- of locks
-> > > > taken adn lists traversed.
-> > >
-> > > No, you're thinking of unregistering and re-registering a device or
-> > > driver. =A0Unbinding and rebinding is much simpler, although still =
-somewhat
-> > > complex.
-> >
-> > Ah, point taken; I was thinking that all USB devices were still
-> > disconnected during a suspend transition..
-> >
->
-> Device removal could happen at any point, even during suspend transitio=
-n.
-> The kernel should be able to handle this scenario therefore implementat=
-ion
-> that assumes that device tree is frozen in flawed. As far as I understa=
-nd
-> the only thing that does not work at the moment is invoking hotplug han=
-dler.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-I don't think that the tree should be assumed to be frozen. I just think
-that we should try to avoid doing a full add or remove of a device (or
-really, any object) while in a suspend or resume transition.
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -27,22 +27,25 @@
+ 
+ static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
+ {
+-	return sprintf(buf, "%u\n", dev->power.power_state.event);
++	if (dev->power.power_state.event)
++		return sprintf(buf, "suspend\n");
++	else
++		return sprintf(buf, "on\n");
+ }
+ 
+ static ssize_t state_store(struct device * dev, struct device_attribute *attr, const char * buf, size_t n)
+ {
+ 	pm_message_t state;
+-	char * rest;
+-	int error = 0;
++	int error = -EINVAL;
+ 
+-	state.event = simple_strtoul(buf, &rest, 10);
+-	if (*rest)
+-		return -EINVAL;
+-	if (state.event)
+-		error = dpm_runtime_suspend(dev, state);
+-	else
++	state.event = PM_EVENT_SUSPEND;
++	if ((n == 2) && !strncmp(buf, "on", 2)) {
+ 		dpm_runtime_resume(dev);
++		error = 0;
++	}
++	if ((n == 7) && !strncmp(buf, "suspend", 7))
++		error = dpm_runtime_suspend(dev, state);
++
+ 	return error ? error : n;
+ }
+ 
 
-During normal system operation, how does a USB device get removed? Does i=
-t
-happen via the USB hub thread? Forgive me for asking a question that's
-probably been asked countless times, but is this thread running during a
-suspend transition?
+-- 
+Thanks, Sharp!
 
-Would it be possible to simply mark the device as 'removed' and ignore it
-until we resumed, and then clean it up (hotplug events and everything)?
-
-Thanks,
+--===============63584531616570672==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
-	Patrick
+--===============63584531616570672==--
