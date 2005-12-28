@@ -1,15 +1,16 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [patch] pm: fix runtime powermanagement's /sys
-	interface
-Date: Tue, 27 Dec 2005 20:22:04 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
-References: <20051227213439.GA1884@elf.ucw.cz>
-	<d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com>
-	<20051227220533.GA1914@elf.ucw.cz>
+Subject: Re: Re: Hotplug events during sleep transition
+Date: Tue, 27 Dec 2005 20:36:39 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0512272026140.6491-100000@monsoon.he.net>
+References: <Pine.LNX.4.44L0.0512242115030.9591-100000@netrider.rowland.org>
+	<Pine.LNX.4.50.0512261301090.12383-100000@monsoon.he.net>
+	<200512261750.26186.dtor_core@ameritech.net>
+	<Pine.LNX.4.50.0512271300560.4933-100000@monsoon.he.net>
+	<d120d5000512271351s766ef783j6d32ea802f5ee3cd@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============031598741614710324=="
+Content-Type: multipart/mixed; boundary="===============21284003771506166=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051227220533.GA1914@elf.ucw.cz>
+In-Reply-To: <d120d5000512271351s766ef783j6d32ea802f5ee3cd@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,84 +20,71 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+To: dtor_core@ameritech.net
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============031598741614710324==
+--===============21284003771506166==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
 
-On Tue, 27 Dec 2005, Pavel Machek wrote:
+On Tue, 27 Dec 2005, Dmitry Torokhov wrote:
 
-> Hi!
->
-> > >  static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
-> > >  {
-> > > -       return sprintf(buf, "%u\n", dev->power.power_state.event);
-> > > +       if (dev->power.power_state.event)
-> > > +               return sprintf(buf, "suspend\n");
-> > > +       else
-> > > +               return sprintf(buf, "on\n");
-> > >  }
+> On 12/27/05, Patrick Mochel <mochel@digitalimplant.org> wrote:
+
+> > Would it be possible to simply mark the device as 'removed' and ignore it
+> > until we resumed, and then clean it up (hotplug events and everything)?
 > >
-> > Are you sure that having only 2 options (suspend/on) is enough at the
-> > core level? I could envision having more levels, like "poweroff", etc?
 >
-> Note that interface is 0/2, currently, so this is improvement :-).
+> Unfortunately swsusp resumes devices in the middle of suspend process
+> with everything frozen and drivers don't know if they may clean up or
+> have to postpone doing so. To do it uniformly you'd need to introduce
+> threads and offload cleanups. I doubt it is good idea to require each
+> subsystem to define cleanup thread or [ab]used keventd?
 
-Heh, not really. You're not really solving any problems, only giving the
-illusion that you've actually fixed something.
+Blech, I forgot about the caveman-like way of making sure the swap device
+is resumed. :)
 
-As I mentioned in the thread (currently happening, BTW) on the linux-pm
-list, what you want to do is accept a string that reflects an actual state
-that the device supports. For PCI devices that support low-power states,
-this would be "D1", "D2", "D3", etc. For USB devices, which only support
-an "on" and "suspended" state, the values that this patch parses would
-actually work.
+Nevertheless, it shouldn't matter, and you bring up a point that exists,
+and is actually more prevalent - the case of trying to resume a device
+that doesn't exist any more.
 
-One way or another, you want the drivers to export the power states that
-they support in some fashion. Not all devices support PM, and the current
-interface is admittedly lacking in that respect. As I mentioned, the
-proper thing to do would be to not add this file for *every* device, but
-leave it up to the buses to add it for devices that support PM (and that
-have drivers bound to them that implement it).
+Last week, I suggested that all devices that are thought to be present
+should be resumed. Those that have gone away should be removed once the
+system is resumed, then new devices should be discovered. In this, I am
+implying that devices that are thought to be there, but really aren't
+(have been removed, unplugged, or undocked) should be marked as such
+(somehow) and taken care of later.
 
-The reason is that some drivers and devices will support more than just
-"on" and "suspended". which states those are, the power savings that they
-offer, and the tradeoff in latency for resuming from those states are real
-values and things to be considered for wanting to enter those states.
+When swsusp resumes every device before writing the image, it should
+ignore devices that aren't present anymore. They can still exist in
+software (in the various object hiearchies), but they should just be
+skipped. Ditto for when we 'suspend' them again, and on the real resume.
 
-Your patch does nothing to actually help support those things, and doesn't
-do anything to improve the broken interface.
+When the system is back up and userspace is started again, something
+should walk the device tree and reap the devices that are no longer
+present. The core could do this, so long as the flag was in struct device,
+though I'm not sure that it would know about the hooks to trigger a
+removal on the device's bus (or would it need to?). Then, we can free all
+the memory, do all the unregistering, and generate all the hotplug events.
 
-> One day, when we find device that needs it, we may want to add more
-> states. I don't know about such device currently.
+Of course, at that point, we'll need to discover any new devices, which is
+going to be bus-speciifc. But, with a few extra bits of infrastructure
+(per-bus objects, and a ->scan() method in struct bus_type), this will
+relatively simple..
 
-There are many devices already do - there are PCI, PCI-X, PCI Express,
-ACPI devices, etc that do. But, you simply cannot create a single decent
-runtime power management interface for every single type of device. The
-power states are inherently specific to the bus that they are on. Some of
-them are specific to the device.
-
-This is not suspend - you won't be able to get away with a few arbitrary
-values that work for most systems. The proper interface should allow the
-buses and drivers to use *factual* identifiers to express the states they
-support. Anything else (including the current interface, which I wrote) is
-simply a hack.
-
-Thanks,
+Thoughts?
 
 
 	Patrick
 
 
---===============031598741614710324==
+--===============21284003771506166==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============031598741614710324==--
+--===============21284003771506166==--
