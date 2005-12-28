@@ -1,386 +1,280 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC/RFT][PATCH -mm 2/4] swsusp: userland interface
-Date: Wed, 28 Dec 2005 01:25:08 +0100
-Message-ID: <200512280125.08706.rjw@sisk.pl>
+Subject: [RFC/RFT][PATCH -mm 4/4] swsusp: move highmem-handling code to swsusp.c
+Date: Wed, 28 Dec 2005 01:36:53 +0100
+Message-ID: <200512280136.56663.rjw@sisk.pl>
 References: <200512280108.47253.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============87072460566675902=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200512280108.47253.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linux PM <linux-pm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
-
---===============87072460566675902==
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932425AbVL1Alp@vger.kernel.org>
+In-Reply-To: <200512280108.47253.rjw@sisk.pl>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds a user space interface for swsusp.  The interface is based
-on the special character device allowing user space processes to perform
-suspend and resume-related operations with the help of some ioctls and
-the read()/write() functions.  Additionally it allows these processes to
-allocate and/or free swap pages so that they know which sectors of
-the resume partition are available to them.
+This patch moves all of the highmem-related functions from snapshot.c to
+swsusp.c.
 
-Currently the major number of the device is allocated dynamically,
-so it is exported via sysfs for convenience, but I'd like the device to
-have a well-defined major number, if possible/acceptable.
-
-The interface uses the same low-level snapshot-handling functions that
-are used by the in-kernel swap-writing and reading code of swsusp.
+These functions are only called by the code in swsusp.c and are not related
+to the snapshot-handling code, so they can be moved from snapshot.c,
+especially that swsusp.c is much smaller after the swap-writing/reading
+code has been moved to another file.
 
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
- init/do_mounts_initrd.c |    1 
- kernel/power/Makefile   |    2 
- kernel/power/power.h    |   11 +
- kernel/power/user.c     |  276 ++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 289 insertions(+), 1 deletion(-)
+ kernel/power/snapshot.c |  113 ------------------------------------------------
+ kernel/power/swsusp.c   |  113 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 110 insertions(+), 116 deletions(-)
 
-Index: linux-2.6.15-rc5-mm3/kernel/power/user.c
+Index: linux-2.6.15-rc5-mm3/kernel/power/snapshot.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.15-rc5-mm3/kernel/power/user.c	2005-12-28 01:17:31.000000000 +0100
-@@ -0,0 +1,276 @@
-+/*
-+ * linux/kernel/power/user.c
-+ *
-+ * This file provides the user space interface for software suspend/resume.
-+ *
-+ * Copyright (C) 2005 Rafael J. Wysocki <rjw@sisk.pl>
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ */
-+
-+#include <linux/suspend.h>
-+#include <linux/syscalls.h>
-+#include <linux/string.h>
-+#include <linux/device.h>
-+#include <linux/cdev.h>
-+#include <linux/mm.h>
-+#include <linux/swap.h>
-+#include <linux/swapops.h>
-+#include <linux/pm.h>
-+#include <linux/uaccess.h>
-+#include <linux/fs.h>
-+
-+#include "power.h"
-+
-+extern int swsusp_get_swap_index(void);
-+extern unsigned int swsusp_available_swap(unsigned int swap);
-+extern int swsusp_shrink_memory(void);
-+extern int swsusp_suspend(void);
-+extern int swsusp_resume(void);
-+
-+struct snapshot_dev {
-+	char *name;
-+	dev_t devno;
-+	struct cdev cdev;
-+	struct snapshot_handle handle;
-+	int swap;
-+	int mode;
-+	int frozen;
-+};
-+
-+static atomic_t device_available = ATOMIC_INIT(1);
-+
-+int snapshot_open(struct inode *inode, struct file *filp)
+--- linux-2.6.15-rc5-mm3.orig/kernel/power/snapshot.c	2005-12-28 01:16:43.000000000 +0100
++++ linux-2.6.15-rc5-mm3/kernel/power/snapshot.c	2005-12-28 01:18:06.000000000 +0100
+@@ -38,119 +38,6 @@ struct pbe *pagedir_nosave;
+ unsigned int nr_copy_pages;
+ unsigned int nr_meta_pages;
+ 
+-#ifdef CONFIG_HIGHMEM
+-unsigned int count_highmem_pages(void)
+-{
+-	struct zone *zone;
+-	unsigned long zone_pfn;
+-	unsigned int n = 0;
+-
+-	for_each_zone (zone)
+-		if (is_highmem(zone)) {
+-			mark_free_pages(zone);
+-			for (zone_pfn = 0; zone_pfn < zone->spanned_pages; zone_pfn++) {
+-				struct page *page;
+-				unsigned long pfn = zone_pfn + zone->zone_start_pfn;
+-				if (!pfn_valid(pfn))
+-					continue;
+-				page = pfn_to_page(pfn);
+-				if (PageReserved(page))
+-					continue;
+-				if (PageNosaveFree(page))
+-					continue;
+-				n++;
+-			}
+-		}
+-	return n;
+-}
+-
+-struct highmem_page {
+-	char *data;
+-	struct page *page;
+-	struct highmem_page *next;
+-};
+-
+-static struct highmem_page *highmem_copy;
+-
+-static int save_highmem_zone(struct zone *zone)
+-{
+-	unsigned long zone_pfn;
+-	mark_free_pages(zone);
+-	for (zone_pfn = 0; zone_pfn < zone->spanned_pages; ++zone_pfn) {
+-		struct page *page;
+-		struct highmem_page *save;
+-		void *kaddr;
+-		unsigned long pfn = zone_pfn + zone->zone_start_pfn;
+-
+-		if (!(pfn%1000))
+-			printk(".");
+-		if (!pfn_valid(pfn))
+-			continue;
+-		page = pfn_to_page(pfn);
+-		/*
+-		 * This condition results from rvmalloc() sans vmalloc_32()
+-		 * and architectural memory reservations. This should be
+-		 * corrected eventually when the cases giving rise to this
+-		 * are better understood.
+-		 */
+-		if (PageReserved(page)) {
+-			printk("highmem reserved page?!\n");
+-			continue;
+-		}
+-		BUG_ON(PageNosave(page));
+-		if (PageNosaveFree(page))
+-			continue;
+-		save = kmalloc(sizeof(struct highmem_page), GFP_ATOMIC);
+-		if (!save)
+-			return -ENOMEM;
+-		save->next = highmem_copy;
+-		save->page = page;
+-		save->data = (void *) get_zeroed_page(GFP_ATOMIC);
+-		if (!save->data) {
+-			kfree(save);
+-			return -ENOMEM;
+-		}
+-		kaddr = kmap_atomic(page, KM_USER0);
+-		memcpy(save->data, kaddr, PAGE_SIZE);
+-		kunmap_atomic(kaddr, KM_USER0);
+-		highmem_copy = save;
+-	}
+-	return 0;
+-}
+-
+-int save_highmem(void)
+-{
+-	struct zone *zone;
+-	int res = 0;
+-
+-	pr_debug("swsusp: Saving Highmem\n");
+-	for_each_zone (zone) {
+-		if (is_highmem(zone))
+-			res = save_highmem_zone(zone);
+-		if (res)
+-			return res;
+-	}
+-	return 0;
+-}
+-
+-int restore_highmem(void)
+-{
+-	printk("swsusp: Restoring Highmem\n");
+-	while (highmem_copy) {
+-		struct highmem_page *save = highmem_copy;
+-		void *kaddr;
+-		highmem_copy = save->next;
+-
+-		kaddr = kmap_atomic(save->page, KM_USER0);
+-		memcpy(kaddr, save->data, PAGE_SIZE);
+-		kunmap_atomic(kaddr, KM_USER0);
+-		free_page((long) save->data);
+-		kfree(save);
+-	}
+-	return 0;
+-}
+-#endif
+-
+ static int pfn_is_nosave(unsigned long pfn)
+ {
+ 	unsigned long nosave_begin_pfn = __pa(&__nosave_begin) >> PAGE_SHIFT;
+Index: linux-2.6.15-rc5-mm3/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.15-rc5-mm3.orig/kernel/power/swsusp.c	2005-12-28 01:18:04.000000000 +0100
++++ linux-2.6.15-rc5-mm3/kernel/power/swsusp.c	2005-12-28 01:34:59.000000000 +0100
+@@ -63,9 +63,116 @@ unsigned int image_size = 500;
+ int in_suspend __nosavedata = 0;
+ 
+ #ifdef CONFIG_HIGHMEM
+-unsigned int count_highmem_pages(void);
+-int save_highmem(void);
+-int restore_highmem(void);
++static unsigned int count_highmem_pages(void)
 +{
-+	struct snapshot_dev *data;
++	struct zone *zone;
++	unsigned long zone_pfn;
++	unsigned int n = 0;
 +
-+	if (!atomic_dec_and_test(&device_available)) {
-+		atomic_inc(&device_available);
-+		return -EBUSY;
-+	}
-+
-+	if ((filp->f_flags & O_ACCMODE) == O_RDWR)
-+		return -ENOSYS;
-+
-+	nonseekable_open(inode, filp);
-+	data = container_of(inode->i_cdev, struct snapshot_dev, cdev);
-+	filp->private_data = data;
-+	memset(&data->handle, 0, sizeof(struct snapshot_handle));
-+	if ((filp->f_flags & O_ACCMODE) == O_RDONLY) {
-+		data->swap = swsusp_get_swap_index();
-+		data->mode = O_RDONLY;
-+	} else {
-+		data->swap = -1;
-+		data->mode = O_WRONLY;
-+	}
-+	data->frozen = 0;
-+
-+	return 0;
-+}
-+
-+int snapshot_release(struct inode *inode, struct file *filp)
-+{
-+	swsusp_free();
-+	atomic_inc(&device_available);
-+	return 0;
-+}
-+
-+static ssize_t snapshot_read(struct file *filp, char __user *buf,
-+                             size_t count, loff_t *offp)
-+{
-+	struct snapshot_dev *data;
-+	ssize_t res;
-+
-+	data = filp->private_data;
-+	res = snapshot_read_next(&data->handle, count);
-+	if (res > 0) {
-+		if (copy_to_user(buf, data_of(data->handle), res))
-+			res = -EFAULT;
-+		else
-+			*offp = data->handle.offset;
-+	}
-+	return res;
-+}
-+
-+static ssize_t snapshot_write(struct file *filp, const char __user *buf,
-+                              size_t count, loff_t *offp)
-+{
-+	struct snapshot_dev *data;
-+	ssize_t res;
-+
-+	data = filp->private_data;
-+	res = snapshot_write_next(&data->handle, count);
-+	if (res > 0) {
-+		if (copy_from_user(data_of(data->handle), buf, res))
-+			res = -EFAULT;
-+		else
-+			*offp = data->handle.offset;
-+	}
-+	return res;
-+}
-+
-+static int snapshot_ioctl(struct inode *inode, struct file *filp,
-+                          unsigned int cmd, unsigned long arg)
-+{
-+	int error = 0;
-+	struct snapshot_dev *data;
-+	unsigned long offset;
-+	unsigned int n;
-+
-+	if (_IOC_TYPE(cmd) != SNAPSHOT_IOC_MAGIC)
-+		return -ENOTTY;
-+	if (_IOC_NR(cmd) > SNAPSHOT_IOC_MAXNR)
-+		return -ENOTTY;
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	data = filp->private_data;
-+
-+	switch (cmd) {
-+
-+	case SNAPSHOT_IOCFREEZE:
-+		sys_sync();
-+		down(&pm_sem);
-+		disable_nonboot_cpus();
-+		if (freeze_processes())
-+			error = -EBUSY;
-+		up(&pm_sem);
-+		if (!error)
-+			data->frozen = 1;
-+		break;
-+
-+	case SNAPSHOT_IOCUNFREEZE:
-+		down(&pm_sem);
-+		thaw_processes();
-+		enable_nonboot_cpus();
-+		up(&pm_sem);
-+		data->frozen = 0;
-+		break;
-+
-+	case SNAPSHOT_IOCATOMIC_SNAPSHOT:
-+		if (data->mode != O_RDONLY || !data->frozen) {
-+			error = -EPERM;
-+			break;
-+		}
-+		down(&pm_sem);
-+		pm_prepare_console();
-+		/* Free memory before shutting down devices. */
-+		error = swsusp_shrink_memory();
-+		if (!error) {
-+			error = device_suspend(PMSG_FREEZE);
-+			if (!error) {
-+				in_suspend = 1;
-+				error = swsusp_suspend();
-+				device_resume();
++	for_each_zone (zone)
++		if (is_highmem(zone)) {
++			mark_free_pages(zone);
++			for (zone_pfn = 0; zone_pfn < zone->spanned_pages; zone_pfn++) {
++				struct page *page;
++				unsigned long pfn = zone_pfn + zone->zone_start_pfn;
++				if (!pfn_valid(pfn))
++					continue;
++				page = pfn_to_page(pfn);
++				if (PageReserved(page))
++					continue;
++				if (PageNosaveFree(page))
++					continue;
++				n++;
 +			}
 +		}
-+		pm_restore_console();
-+		up(&pm_sem);
-+		if (!error)
-+			error = put_user(in_suspend, (unsigned int __user *)arg);
-+		break;
++	return n;
++}
 +
-+	case SNAPSHOT_IOCATOMIC_RESTORE:
-+		if (data->mode != O_WRONLY || !data->frozen ||
-+		    !snapshot_image_ready(&data->handle)) {
-+			error = -EPERM;
-+			break;
++struct highmem_page {
++	char *data;
++	struct page *page;
++	struct highmem_page *next;
++};
++
++static struct highmem_page *highmem_copy;
++
++static int save_highmem_zone(struct zone *zone)
++{
++	unsigned long zone_pfn;
++	mark_free_pages(zone);
++	for (zone_pfn = 0; zone_pfn < zone->spanned_pages; ++zone_pfn) {
++		struct page *page;
++		struct highmem_page *save;
++		void *kaddr;
++		unsigned long pfn = zone_pfn + zone->zone_start_pfn;
++
++		if (!(pfn%1000))
++			printk(".");
++		if (!pfn_valid(pfn))
++			continue;
++		page = pfn_to_page(pfn);
++		/*
++		 * This condition results from rvmalloc() sans vmalloc_32()
++		 * and architectural memory reservations. This should be
++		 * corrected eventually when the cases giving rise to this
++		 * are better understood.
++		 */
++		if (PageReserved(page)) {
++			printk("highmem reserved page?!\n");
++			continue;
 +		}
-+		down(&pm_sem);
-+		pm_prepare_console();
-+		error = device_suspend(PMSG_FREEZE);
-+		if (!error) {
-+			mb();
-+			error = swsusp_resume();
-+			device_resume();
++		BUG_ON(PageNosave(page));
++		if (PageNosaveFree(page))
++			continue;
++		save = kmalloc(sizeof(struct highmem_page), GFP_ATOMIC);
++		if (!save)
++			return -ENOMEM;
++		save->next = highmem_copy;
++		save->page = page;
++		save->data = (void *) get_zeroed_page(GFP_ATOMIC);
++		if (!save->data) {
++			kfree(save);
++			return -ENOMEM;
 +		}
-+		pm_restore_console();
-+		up(&pm_sem);
-+		break;
-+
-+	case SNAPSHOT_IOCSET_IMAGE_SIZE:
-+		image_size = arg;
-+		break;
-+
-+	case SNAPSHOT_IOCAVAIL_SWAP:
-+		n = swsusp_available_swap(data->swap);
-+		error = put_user(n, (unsigned int __user *)arg);
-+		break;
-+
-+	case SNAPSHOT_IOCGET_SWAP_PAGE:
-+		if (data->swap >= 0 && data->swap < MAX_SWAPFILES) {
-+			offset = swp_offset(get_swap_page_of_type(data->swap));
-+			if (offset)
-+				error = put_user(offset, (unsigned long __user *)arg);
-+			else
-+				error = -ENOSPC;
-+		} else {
-+			error = -ENODEV;
-+		}
-+		break;
-+
-+	case SNAPSHOT_IOCFREE_SWAP_PAGE:
-+		if (data->swap >= 0 && data->swap < MAX_SWAPFILES)
-+			swap_free(swp_entry(data->swap, arg));
-+		else
-+			error = -ENODEV;
-+		break;
-+
-+	default:
-+		error = -ENOTTY;
-+
++		kaddr = kmap_atomic(page, KM_USER0);
++		memcpy(save->data, kaddr, PAGE_SIZE);
++		kunmap_atomic(kaddr, KM_USER0);
++		highmem_copy = save;
 +	}
-+
-+	return error;
++	return 0;
 +}
 +
-+static struct file_operations snapshot_fops = {
-+	.open = snapshot_open,
-+	.release = snapshot_release,
-+	.read = snapshot_read,
-+	.write = snapshot_write,
-+	.llseek = no_llseek,
-+	.ioctl = snapshot_ioctl,
-+};
-+
-+static struct snapshot_dev interface = {
-+	.name = "snapshot",
-+};
-+
-+static ssize_t snapshot_show(struct subsystem * subsys, char *buf)
++static int save_highmem(void)
 +{
-+	return sprintf(buf, "%d:%d\n", MAJOR(interface.devno),
-+		       MINOR(interface.devno));
++	struct zone *zone;
++	int res = 0;
++
++	pr_debug("swsusp: Saving Highmem\n");
++	for_each_zone (zone) {
++		if (is_highmem(zone))
++			res = save_highmem_zone(zone);
++		if (res)
++			return res;
++	}
++	return 0;
 +}
 +
-+static struct subsys_attribute snapshot_attr = {
-+	.attr = {
-+		.name = __stringify(snapshot),
-+		.mode = S_IRUGO,
-+	},
-+	.show = snapshot_show,
-+};
-+
-+static int __init snapshot_dev_init(void)
++static int restore_highmem(void)
 +{
-+	int error;
++	printk("swsusp: Restoring Highmem\n");
++	while (highmem_copy) {
++		struct highmem_page *save = highmem_copy;
++		void *kaddr;
++		highmem_copy = save->next;
 +
-+	error =  alloc_chrdev_region(&interface.devno, 0, 1, interface.name);
-+	if (error)
-+		return error;
-+	cdev_init(&interface.cdev, &snapshot_fops);
-+	interface.cdev.ops = &snapshot_fops;
-+	error = cdev_add(&interface.cdev, interface.devno, 1);
-+	if (error)
-+		goto Unregister;
-+	error = sysfs_create_file(&power_subsys.kset.kobj, &snapshot_attr.attr);
-+	if (!error)
-+		return 0;
-+	cdev_del(&interface.cdev);
-+Unregister:
-+	unregister_chrdev_region(interface.devno, 1);
-+	return error;
-+};
-+
-+late_initcall(snapshot_dev_init);
-Index: linux-2.6.15-rc5-mm3/kernel/power/Makefile
-===================================================================
---- linux-2.6.15-rc5-mm3.orig/kernel/power/Makefile	2005-12-28 01:16:46.000000000 +0100
-+++ linux-2.6.15-rc5-mm3/kernel/power/Makefile	2005-12-28 01:17:31.000000000 +0100
-@@ -5,7 +5,7 @@ endif
- 
- obj-y				:= main.o process.o console.o
- obj-$(CONFIG_PM_LEGACY)		+= pm.o
--obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o disk.o snapshot.o
-+obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o disk.o snapshot.o user.o
- 
- obj-$(CONFIG_SUSPEND_SMP)	+= smp.o
- 
-Index: linux-2.6.15-rc5-mm3/init/do_mounts_initrd.c
-===================================================================
---- linux-2.6.15-rc5-mm3.orig/init/do_mounts_initrd.c	2005-12-28 01:16:46.000000000 +0100
-+++ linux-2.6.15-rc5-mm3/init/do_mounts_initrd.c	2005-12-28 01:17:31.000000000 +0100
-@@ -56,6 +56,7 @@ static void __init handle_initrd(void)
- 	sys_chroot(".");
- 	mount_devfs_fs ();
- 
-+	current->flags |= PF_NOFREEZE;
- 	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
- 	if (pid > 0) {
- 		while (pid != sys_wait4(-1, NULL, 0, NULL))
-Index: linux-2.6.15-rc5-mm3/kernel/power/power.h
-===================================================================
---- linux-2.6.15-rc5-mm3.orig/kernel/power/power.h	2005-12-28 01:17:06.000000000 +0100
-+++ linux-2.6.15-rc5-mm3/kernel/power/power.h	2005-12-28 01:17:53.000000000 +0100
-@@ -77,3 +77,14 @@ struct snapshot_handle {
- extern int snapshot_read_next(struct snapshot_handle *handle, size_t count);
- extern int snapshot_write_next(struct snapshot_handle *handle, size_t count);
- int snapshot_image_ready(struct snapshot_handle *handle);
-+
-+#define SNAPSHOT_IOC_MAGIC	'3'
-+#define SNAPSHOT_IOCFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 1)
-+#define SNAPSHOT_IOCUNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
-+#define SNAPSHOT_IOCATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
-+#define SNAPSHOT_IOCATOMIC_RESTORE	_IO(SNAPSHOT_IOC_MAGIC, 4)
-+#define SNAPSHOT_IOCSET_IMAGE_SIZE	_IOW(SNAPSHOT_IOC_MAGIC, 5, unsigned long)
-+#define SNAPSHOT_IOCAVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 6, void *)
-+#define SNAPSHOT_IOCGET_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
-+#define SNAPSHOT_IOCFREE_SWAP_PAGE	_IOW(SNAPSHOT_IOC_MAGIC, 8, unsigned long)
-+#define SNAPSHOT_IOC_MAXNR	8
-
-
---===============87072460566675902==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============87072460566675902==--
++		kaddr = kmap_atomic(save->page, KM_USER0);
++		memcpy(kaddr, save->data, PAGE_SIZE);
++		kunmap_atomic(kaddr, KM_USER0);
++		free_page((long) save->data);
++		kfree(save);
++	}
++	return 0;
++}
+ #else
+ static int save_highmem(void) { return 0; }
+ static int restore_highmem(void) { return 0; }
