@@ -1,13 +1,15 @@
-From: Nigel Cunningham <ncunningham@cyclades.com>
+From: Dmitry Torokhov <dtor_core@ameritech.net>
 Subject: Re: Re: Hotplug events during sleep transition
-Date: Thu, 29 Dec 2005 12:55:33 +1000
-Message-ID: <1135824932.4774.20.camel@localhost>
-References: <Pine.LNX.4.44L0.0512282113550.3218-100000@netrider.rowland.org>
-Reply-To: ncunningham@cyclades.com
+Date: Thu, 29 Dec 2005 00:20:14 -0500
+Message-ID: <200512290020.16246.dtor_core@ameritech.net>
+References: <Pine.LNX.4.44L0.0512282108100.3218-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============63693542512134815=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0512282113550.3218-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0512282108100.3218-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,54 +23,34 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============63693542512134815==
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Hi Alan.
-
-On Thu, 2005-12-29 at 12:18, Alan Stern wrote:
-> On Wed, 28 Dec 2005, Rafael J. Wysocki wrote:
+On Wednesday 28 December 2005 21:10, Alan Stern wrote:
+> On Tue, 27 Dec 2005, Dmitry Torokhov wrote:
 > 
-> > I think for a (suspended) device that can be removed, unplugged, undocked,
-> > etc. (call it "removable") the most natural place in which we can detect
-> > that the device is no longer accessible is the device driver's .resume()
-> > routine, at least as far as swsusp is concerned.
+> > > Would it be possible to simply mark the device as 'removed' and ignore it
+> > > until we resumed, and then clean it up (hotplug events and everything)?
+> > >
+> > 
+> > Unfortunately swsusp resumes devices in the middle of suspend process
+> > with everything frozen and drivers don't know if they may clean up or
+> > have to postpone doing so.
 > 
-> No.  The most natural place in which we can detect that a device is no 
-> longer accessible is the place where we already do these detections.  Not 
-> in the resume routine.
+> Drivers should strive to avoid cleaning up after removed devices during 
+> their resume methods in any case.  Such cleanups shouldn't happen until 
+> userspace has been unfrozen.
 > 
-> > IMO .resume() should check if the device is still there and if not, it should
-> > put the device on a list of "no-longer-present devices" and just return.
-> > After the .resume() routines of all devices have completed, the list can
-> > be processed by something (a kernel thread?) that will do the changes
-> > on whatever level is necessary.
+> >  To do it uniformly you'd need to introduce
+> > threads and offload cleanups. I doubt it is good idea to require each
+> > subsystem to define cleanup thread or [ab]used keventd?
 > 
-> Often the device-specific resume routine doesn't have the information
-> needed for checking whether the device is still there.  Such checks are 
-> done by generic bus-oriented routines.
+> Why do you need a new cleanup thread?  What's wrong with the existing 
+> strategy for handling removed devices -- i.e., the procedure that would 
+> have been followed if there was no suspend/resume transition?
 > 
-> Yes, the bus's resume handler can do such a check.  Why should it bother,
-> when other parts of the bus code will detect the device removal in the
-> normal course of events?  Or alternatively, why shouldn't the bus's resume
-> handler simply invoke those other parts of the bus code when it determines
-> that a device has been removed?
 
-I guess because the resume routine is almost certainly the first piece
-of code that will try to access the hardware (and possibly choke and die
-it it's not there).
+Sometimes there is no such procedure. For example if you yank PS/2 mouse
+there is no way for the system to detect it's missing. Only when you try
+to resume and mouse does not respond you realize it's gone. I bet there
+are other devices like that. 
 
-Regards,
-
-Nigel
-
-
---===============63693542512134815==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============63693542512134815==--
+-- 
+Dmitry
