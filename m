@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Hotplug events during sleep transition
-Date: Wed, 28 Dec 2005 21:13:14 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0512282111290.3218-100000@netrider.rowland.org>
-References: <Pine.LNX.4.50.0512272026140.6491-100000@monsoon.he.net>
+Date: Wed, 28 Dec 2005 21:18:38 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0512282113550.3218-100000@netrider.rowland.org>
+References: <200512281159.14645.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============46781962028689783=="
+Content-Type: multipart/mixed; boundary="===============76246191780021588=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0512272026140.6491-100000@monsoon.he.net>
+In-Reply-To: <200512281159.14645.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,42 +16,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============46781962028689783==
+--===============76246191780021588==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Tue, 27 Dec 2005, Patrick Mochel wrote:
+On Wed, 28 Dec 2005, Rafael J. Wysocki wrote:
 
-> When the system is back up and userspace is started again, something
-> should walk the device tree and reap the devices that are no longer
-> present. The core could do this, so long as the flag was in struct device,
-> though I'm not sure that it would know about the hooks to trigger a
-> removal on the device's bus (or would it need to?). Then, we can free all
-> the memory, do all the unregistering, and generate all the hotplug events.
+> I think for a (suspended) device that can be removed, unplugged, undocked,
+> etc. (call it "removable") the most natural place in which we can detect
+> that the device is no longer accessible is the device driver's .resume()
+> routine, at least as far as swsusp is concerned.
 
-Why do we need to do this?  Why can't we rely on devices being 
-unregistered by the same mechanism that would operate in the absence of 
-any suspend/resume?
+No.  The most natural place in which we can detect that a device is no 
+longer accessible is the place where we already do these detections.  Not 
+in the resume routine.
 
-> Of course, at that point, we'll need to discover any new devices, which is
-> going to be bus-speciifc. But, with a few extra bits of infrastructure
-> (per-bus objects, and a ->scan() method in struct bus_type), this will
-> relatively simple..
+> IMO .resume() should check if the device is still there and if not, it should
+> put the device on a list of "no-longer-present devices" and just return.
+> After the .resume() routines of all devices have completed, the list can
+> be processed by something (a kernel thread?) that will do the changes
+> on whatever level is necessary.
 
-Again, why do we need anything special?  What's wrong with the existing 
-method for discovering new hotplugged devices?
+Often the device-specific resume routine doesn't have the information
+needed for checking whether the device is still there.  Such checks are 
+done by generic bus-oriented routines.
+
+Yes, the bus's resume handler can do such a check.  Why should it bother,
+when other parts of the bus code will detect the device removal in the
+normal course of events?  Or alternatively, why shouldn't the bus's resume
+handler simply invoke those other parts of the bus code when it determines
+that a device has been removed?
 
 Alan Stern
 
 
---===============46781962028689783==
+--===============76246191780021588==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============46781962028689783==--
+--===============76246191780021588==--
