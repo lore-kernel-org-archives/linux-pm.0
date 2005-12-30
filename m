@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Hotplug events during sleep transition
-Date: Fri, 30 Dec 2005 12:46:52 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0512301243540.32015-100000@netrider.rowland.org>
-References: <1135824932.4774.20.camel@localhost>
+Date: Fri, 30 Dec 2005 13:26:09 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0512301323000.32015-100000@netrider.rowland.org>
+References: <200512290020.16246.dtor_core@ameritech.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============89063050593145832=="
+Content-Type: multipart/mixed; boundary="===============93462826795787302=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1135824932.4774.20.camel@localhost>
+In-Reply-To: <200512290020.16246.dtor_core@ameritech.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,47 +16,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
+To: Dmitry Torokhov <dtor_core@ameritech.net>
 Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============89063050593145832==
+--===============93462826795787302==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Thu, 29 Dec 2005, Nigel Cunningham wrote:
+On Thu, 29 Dec 2005, Dmitry Torokhov wrote:
 
-> > Often the device-specific resume routine doesn't have the information
-> > needed for checking whether the device is still there.  Such checks are 
-> > done by generic bus-oriented routines.
+> > Why do you need a new cleanup thread?  What's wrong with the existing 
+> > strategy for handling removed devices -- i.e., the procedure that would 
+> > have been followed if there was no suspend/resume transition?
 > > 
-> > Yes, the bus's resume handler can do such a check.  Why should it bother,
-> > when other parts of the bus code will detect the device removal in the
-> > normal course of events?  Or alternatively, why shouldn't the bus's resume
-> > handler simply invoke those other parts of the bus code when it determines
-> > that a device has been removed?
 > 
-> I guess because the resume routine is almost certainly the first piece
-> of code that will try to access the hardware (and possibly choke and die
-> it it's not there).
+> Sometimes there is no such procedure. For example if you yank PS/2 mouse
+> there is no way for the system to detect it's missing. Only when you try
+> to resume and mouse does not respond you realize it's gone. I bet there
+> are other devices like that. 
 
-Obviously we want the resume routine to be robust enough not to die if the 
-device was removed while the system was suspended.  :-)
+There may indeed be other devices like that.  If you can't handle device 
+removal while the system is running normally, why should you be able to 
+handle device removal while the system is suspended?
 
-As for the rest, however, it simply is not resume()'s job to check whether 
-the device is still there.  That job belongs to another piece of code.
-
-Consider this: What would happen if the system _hadn't_ been suspended 
-when the device was removed?  Why shouldn't the same thing happen if the 
-system _is_ suspended when the device is removed?
+Conversely, even if the resume routine does detect somehow that the device 
+was removed, there's nothing it can do with that information if you don't 
+have a mechanism in place for handling device removals.
 
 Alan Stern
 
 
---===============89063050593145832==
+--===============93462826795787302==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============89063050593145832==--
+--===============93462826795787302==--
