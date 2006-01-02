@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Hotplug events during sleep transition
-Date: Fri, 30 Dec 2005 15:13:07 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0512301511190.3145-100000@netrider.rowland.org>
-References: <200512301442.25442.dtor_core@ameritech.net>
+From: <rasmit.ranjan@wipro.com>
+Subject: RE: swsusp1 not working
+Date: Mon, 2 Jan 2006 10:03:42 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB2012F5083@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============64340811044516855=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200512301442.25442.dtor_core@ameritech.net>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,32 +15,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dmitry Torokhov <dtor_core@ameritech.net>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: rjw@sisk.pl
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 30 Dec 2005, Dmitry Torokhov wrote:
+--===============64340811044516855==
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 
-> > In that case, I would say that it is appropriate to use keventd or so=
-me=20
-> > other worker thread to handle device removal detected during resume. =
-=A0
-> > Since these threads will be frozen along with everything else, the=20
-> > unregister calls wouldn't be made until the system was once again awa=
-ke.
-> >
->=20
-> Input (well, actually serio) devices are already handled via kseriod th=
-read,
-> but that's because it was already there. I was saying that driver core =
-should
-> not require a reaper thread if there isn't one yet.
+ 
+Hi Rafael,
+	I tried with resume=/dev/hdb2.
+In this case while booting its giving
 
-The driver core doesn't make this requirement.  If you don't want to reap=
-=20
-those devices during resume then you don't need the thread.  And after=20
-all, if you don't reap the devices at other times then why bother reaping=
-=20
-them during resume?
+	swsusp:Suspend partition has wrong signature?
 
-Alan Stern
+And after suspending using
+
+	echo shutdown > /sys/power/disk
+	echo disk > /sys/power/state
+
+It gives kernel panic.
+I am not able to get what is happening !!!
+Do I need to add anything in my init file( like adding echo >
+/proc/suspend2/do_resume in case of suspend2 )? 
+
+-----Original Message-----
+From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+Sent: Friday, December 30, 2005 8:13 PM
+To: linux-pm@lists.osdl.org
+Cc: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
+Subject: Re: [linux-pm] swsusp1 not working
+
+Hi,
+
+On Friday, 30 December 2005 05:27, rasmit.ranjan@wipro.com wrote:
+> Hello,
+>     i am new to linux power management system. my requirement is to 
+> put my system in low power mode.
+> so i tried swsusp1 and suspend2. in my system suspend2 works properly.
+> but i am getting problem with
+> swsusp1.
+> i am using linux-2.6.13.3. stpes i followed for swsusp1 are:
+>     -- compiled my kernel with software suspend,power management and 
+> acpi enabled
+>     -- added the following line to my grub.conf as kernel parameter.
+>             resume=swap:/dev/hdb2     ( /dev/hdb2 is my swap partition
+)
+
+Please try changing it to resume=/dev/hdb2
+
+Greetings,
+Rafael
+
+
+--===============64340811044516855==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============64340811044516855==--
