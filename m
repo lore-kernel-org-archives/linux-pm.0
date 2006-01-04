@@ -1,56 +1,60 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: Hotplug events during sleep transition
-Date: Thu, 5 Jan 2006 00:31:58 +0100
-Message-ID: <20060104233158.GA1796@elf.ucw.cz>
-References: <200512281159.14645.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0512282113550.3218-100000@netrider.rowland.org>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [linux-pm] [RFC/RFT][PATCH -mm 2/5] swsusp: userland interface (rev. 2)
+Date: Wed, 4 Jan 2006 15:49:18 -0800
+Message-ID: <20060104234918.GA15983@kroah.com>
+References: <200601042340.42118.rjw@sisk.pl> <200601042351.58667.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============95687647366140505=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0512282113550.3218-100000@netrider.rowland.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750764AbWADXyo@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200601042351.58667.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============95687647366140505==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Wed, Jan 04, 2006 at 11:51:58PM +0100, Rafael J. Wysocki wrote:
+> +static struct snapshot_dev interface = {
+> +	.name = "snapshot",
+> +};
+> +
+> +static ssize_t snapshot_show(struct subsystem * subsys, char *buf)
+> +{
+> +	return sprintf(buf, "%d:%d\n", MAJOR(interface.devno),
+> +		       MINOR(interface.devno));
+> +}
+> +
+> +static struct subsys_attribute snapshot_attr = {
+> +	.attr = {
+> +		.name = __stringify(snapshot),
+> +		.mode = S_IRUGO,
+> +	},
+> +	.show = snapshot_show,
+> +};
+> +
+> +static int __init snapshot_dev_init(void)
+> +{
+> +	int error;
+> +
+> +	error =  alloc_chrdev_region(&interface.devno, 0, 1, interface.name);
+> +	if (error)
+> +		return error;
+> +	cdev_init(&interface.cdev, &snapshot_fops);
+> +	interface.cdev.ops = &snapshot_fops;
+> +	error = cdev_add(&interface.cdev, interface.devno, 1);
+> +	if (error)
+> +		goto Unregister;
+> +	error = sysfs_create_file(&power_subsys.kset.kobj, &snapshot_attr.attr);
 
-On St 28-12-05 21:18:38, Alan Stern wrote:
-> On Wed, 28 Dec 2005, Rafael J. Wysocki wrote:
-> 
-> > I think for a (suspended) device that can be removed, unplugged, undocked,
-> > etc. (call it "removable") the most natural place in which we can detect
-> > that the device is no longer accessible is the device driver's .resume()
-> > routine, at least as far as swsusp is concerned.
-> 
-> No.  The most natural place in which we can detect that a device is no 
-> longer accessible is the place where we already do these detections.  Not 
-> in the resume routine.
+Heh, that's a neat hack, register a sysfs file that contains the
+major:minor (there is a function that will print that the correct way,
+if you really want to do that), in sysfs.  It's better to just register
+a misc character device with the name "snapshot", and then udev will
+create your userspace node with the proper major:minor all automatically
+for you.
 
-...for reasonable buses, like usb. For something like ps/2, .resume is
-the place to check, I'm afraid.
+Unless you want to turn these into syscalls :)
 
-								Pavel
+thanks,
 
-
--- 
-Thanks, Sharp!
-
---===============95687647366140505==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============95687647366140505==--
+greg k-h
