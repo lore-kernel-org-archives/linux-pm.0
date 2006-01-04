@@ -1,65 +1,77 @@
-From: "Leo L. Schwab" <ewhac@best.com>
-Subject: Re: What woke system up?
-Date: Wed, 4 Jan 2006 10:21:16 -0800
-Message-ID: <20060104182116.GA17218@best.com>
-References: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
-	<Pine.LNX.4.50.0512201809520.21656-100000@monsoon.he.net>
-	<20051222034630.GA4320@slurryseal.ddns.mvista.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys interface
+Date: Wed, 4 Jan 2006 22:34:05 +0100
+Message-ID: <20060104213405.GC1761@elf.ucw.cz>
+References: <20051227213439.GA1884@elf.ucw.cz> <d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com> <20051227220533.GA1914@elf.ucw.cz> <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============56438228921800349=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20051222034630.GA4320@slurryseal.ddns.mvista.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751770AbWADVeQ@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: dtor_core@ameritech.net, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============56438228921800349==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On =DAt 27-12-05 20:22:04, Patrick Mochel wrote:
+>=20
+>=20
+> On Tue, 27 Dec 2005, Pavel Machek wrote:
+>=20
+> > Hi!
+> >
+> > > >  static ssize_t state_show(struct device * dev, struct device_a=
+ttribute *attr, char * buf)
+> > > >  {
+> > > > -       return sprintf(buf, "%u\n", dev->power.power_state.even=
+t);
+> > > > +       if (dev->power.power_state.event)
+> > > > +               return sprintf(buf, "suspend\n");
+> > > > +       else
+> > > > +               return sprintf(buf, "on\n");
+> > > >  }
+> > >
+> > > Are you sure that having only 2 options (suspend/on) is enough at=
+ the
+> > > core level? I could envision having more levels, like "poweroff",=
+ etc?
+> >
+> > Note that interface is 0/2, currently, so this is improvement :-).
+>=20
+> Heh, not really. You're not really solving any problems, only giving =
+the
+> illusion that you've actually fixed something.
 
-On Wed, Dec 21, 2005 at 07:46:30PM -0800, Todd Poynor wrote:
-> On Tue, Dec 20, 2005 at 06:11:40PM -0800, Patrick Mochel wrote:
-> > What about stashing a pointer to the device that did the wakeup, then
-> > using a symlink to point to the sysfs directory of that device?  [ ... ]
-> 
-> Sounds good, here's a new version that does just that.  [ ... ]
+Except perhaps userspace passing invalid values down to drivers in
+pm_message_t.event?
 
-	I'm entering this discussion late, but if I were putting this
-together:
-	- There would be a single file named /sys/power/wake,
-	- Upon resume, the file would contain lines of plaintext of the
-	  format:
+> As I mentioned in the thread (currently happening, BTW) on the linux-=
+pm
+> list, what you want to do is accept a string that reflects an actual =
+state
+> that the device supports. For PCI devices that support low-power stat=
+es,
+> this would be "D1", "D2", "D3", etc. For USB devices, which only supp=
+ort
+> an "on" and "suspended" state, the values that this patch parses woul=
+d
+> actually work.
 
-		device: reason
+We want _common_ values, anyway. So, we do not want "D0", "D1", "D2",
+"D3hot" in PCI cases. We probably want "on", "D1", "D2", "suspend",
+and I'm not sure about those "D1" and "D2" parts. Userspace should not
+have to know about details, it will mostly use "on"/"suspend" anyway.
 
-	- 'device' names the device that performed the wakeup.  'device'
-	  could be either a sysfs path or a /dev/blah/blah path (sysfs is
-	  probably better, if more verbose, as it remains consistent
-	  regardless of how /dev is configured),
-	- 'reason' is free-form text, supplied by the device performing the
-	  wakeup, and is entirely device-dependent.
+> > One day, when we find device that needs it, we may want to add more
+> > states. I don't know about such device currently.
+>=20
+> There are many devices already do - there are PCI, PCI-X, PCI Express=
+,
+> ACPI devices, etc that do. But, you simply cannot create a single
+> decent
 
-	This approach allows multiple wakeup sources (rare, but possible),
-and also allows a single multifunction device to report multiple reasons for
-a wakeup.  It's also darned simple to parse.
-
-	IMHO, of course.
-
-					Schwab
-
---===============56438228921800349==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============56438228921800349==--
+I asked for an example.
+								Pavel
+--=20
+Thanks, Sharp!
