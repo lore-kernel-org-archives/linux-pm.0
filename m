@@ -1,70 +1,50 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: RE: [patch] pm: fix runtime powermanagement's /sys
-	interface
-Date: Thu, 5 Jan 2006 17:21:38 -0500
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DDD3AD5D@de01exm64.ds.mot.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys interface
+Date: Thu, 5 Jan 2006 23:23:38 +0100
+Message-ID: <20060105222338.GG2095@elf.ucw.cz>
+References: <20051227213439.GA1884@elf.ucw.cz> <d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com> <20051227220533.GA1914@elf.ucw.cz> <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net> <20060104213405.GC1761@elf.ucw.cz> <Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net> <20060105215528.GF2095@elf.ucw.cz> <20060105221334.GA925@isilmar.linta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3283780883713131=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>
-Cc: akpm@osdl.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751425AbWAEWXw@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060105221334.GA925@isilmar.linta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>, Patrick Mochel <mochel@digitalimplant.org>, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============3283780883713131==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8bit
+On =C4=8Ct 05-01-06 23:13:34, Dominik Brodowski wrote:
+> On Thu, Jan 05, 2006 at 10:55:29PM +0100, Pavel Machek wrote:
+> > > I have a firewire controller in a desktop system, and a ATI Radeo=
+n in a
+> > > T42 that support D1 and D2..
+> >=20
+> > Ok, now we have a concrete example. So Radeon supports D1. But putt=
+ing
+> > radeon into D1 means you probably want to blank your screen and tur=
+n
+> > the backlight off; that takes *long* time anyway. So you can simply
+> > put your radeon into D3 and save a bit more power.
+>=20
+> Using your logic, you never want to put your CPU into C2 power-saving=
+ state
+> instead of C3 or C4. Which is ridiculous. There are technical reasons=
+ why
+> you want to put devices into different power-saving states. E.g. wake=
+up
+> latency, ability to receive wakeup signals, snooping and so on.
 
-We do have multiple system-level low-power modes. I believe today they
-differ in turning whole devices on or off, but there are some of those
-devices that could be put in reduced-function/lowered-speed modes if we
-were ready to use a finer-grained distinction.
+Well, yes. Two years before we supported hlt, it would be stupid to
+try to support multiple hlt states. We do not support hlt for any
+devices today.
 
-This is, of course, in an embedded framework rather than a desktop
-framework - we suspend and wakeup automatically, not via user
-intervention. Answering a question asked in another piece of mail, we
-have roughly a dozen different devices that cause the system to wakeup -
-keypad press, touchscreen touch, flip open/close, etc.
+> In addition, your patch breaks pcmcia / pcmciautils which already use=
+s
+> numbers (which I already had to change from "3" to "2" before...).
 
-And, PCI is totally alien to us...
-
-scott  
-
------Original Message-----
-From: Pavel Machek [mailto:pavel@ucw.cz] 
-
-Bring example hardware that needs more than two states, implement driver
-support for that, and then we can talk about adding more than two states
-into core code.
-
+pcmcia actually uses this? Ouch. Do you just read the power file, or
+do you write to it, too?
 								Pavel
 
-
-And from another mail:
-
-Out of curiosity, are there really cases where there is > 1 wakeup
-device?
-
---
+--=20
 Thanks, Sharp!
-
-
---===============3283780883713131==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============3283780883713131==--
