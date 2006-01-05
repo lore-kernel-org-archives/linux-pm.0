@@ -1,66 +1,60 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [patch] pm: fix runtime powermanagement's /sys
-	interface
-Date: Thu, 5 Jan 2006 13:43:33 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0601051342470.17046-100000@monsoon.he.net>
-References: <Pine.LNX.4.44L0.0601041703350.26871-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys interface
+Date: Thu, 5 Jan 2006 22:44:32 +0100
+Message-ID: <20060105214432.GE2095@elf.ucw.cz>
+References: <20060105211446.GD2095@elf.ucw.cz> <Pine.LNX.4.44L0.0601051631200.6460-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============95889666570417242=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0601041703350.26871-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752226AbWAEVpK@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0601051631200.6460-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Cc: "Scott E. Preece" <preece@motorola.com>, akpm@osdl.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============95889666570417242==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+On =C4=8Ct 05-01-06 16:37:52, Alan Stern wrote:
+> > > And it's not all that complex.  Certainly no more complex than fo=
+rcing
+> > > userspace tools to use {"on", "D1, "D2", "suspend"} instead of th=
+e
+> > > much-more-logical {"D0", "D1", "D2", "D3"}.
+> >=20
+> > It is not much more logical. First, noone really needs D1 and
+> > D2. Plus, people want to turn their devices on and off, and don't w=
+ant
+> > and should not have to care about details like D1.
+>=20
+> Who are you to say what people really need?  What about people who wa=
+nt to=20
+> test their PCI device and see if it behaves properly in D1 or D2?  Ho=
+w are=20
+> they going to do that if you don't let them put it in that state?
 
+> What about people with platform-specific non-PCI devices that have a =
+whole
+> bunch of different internal power states?  Why force them to use only=
+ two
+> of those states?
 
-On Wed, 4 Jan 2006, Alan Stern wrote:
+Its okay with me to add more states _when they are needed_. Just now,
+many drivers do not even handle system suspend/resume correctly.
 
-> On Wed, 4 Jan 2006, Pavel Machek wrote:
->
-> > > As I mentioned in the thread (currently happening, BTW) on the linux-pm
-> > > list, what you want to do is accept a string that reflects an actual state
-> > > that the device supports. For PCI devices that support low-power states,
-> > > this would be "D1", "D2", "D3", etc. For USB devices, which only support
-> > > an "on" and "suspended" state, the values that this patch parses would
-> > > actually work.
-> >
-> > We want _common_ values, anyway. So, we do not want "D0", "D1", "D2",
-> > "D3hot" in PCI cases. We probably want "on", "D1", "D2", "suspend",
-> > and I'm not sure about those "D1" and "D2" parts. Userspace should not
-> > have to know about details, it will mostly use "on"/"suspend" anyway.
->
-> It would be good to make the details available so that they are there when
-> needed.  For instance, we might export "D0", "on", "D1", "D2", "D3", and
-> "suspend", treating "on" as a synonym for "D0" and "suspend" as a synonym
-> for "D3".
+> The kernel isn't supposed to prevent people from doing perfectly lega=
+l
+> things.  The kernel should provide mechanisms to help people do what =
+they
+> want.
 
-Do it in userspace; the kernel doesn't need to know about "on" or
-"suspend". It should just validate and forward requests to enter specific
-states.
+We are not adding random crap to kernel just because "someone may need
+it". And yes, having aliases counts as "random crap". Perfectly legal
+but totally useless things count as a random crap, too.
 
-Thanks,
+Bring example hardware that needs more than two states, implement
+driver support for that, and then we can talk about adding more than
+two states into core code.
 
-
-	Patrick
-
-
---===============95889666570417242==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============95889666570417242==--
+								Pavel
+--=20
+Thanks, Sharp!
