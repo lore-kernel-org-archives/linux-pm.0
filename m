@@ -1,70 +1,70 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: RE: [patch] pm: fix runtime powermanagement's /sys
-	interface
-Date: Thu, 5 Jan 2006 17:55:33 -0500
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DDD3AD85@de01exm64.ds.mot.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys interface
+Date: Thu, 5 Jan 2006 23:59:35 +0100
+Message-ID: <20060105225935.GL2095@elf.ucw.cz>
+References: <20051227213439.GA1884@elf.ucw.cz> <d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com> <20051227220533.GA1914@elf.ucw.cz> <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net> <20060104213405.GC1761@elf.ucw.cz> <Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net> <20060105215528.GF2095@elf.ucw.cz> <20060105221334.GA925@isilmar.linta.de> <20060105222338.GG2095@elf.ucw.cz> <20060105222705.GA12242@isilmar.linta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============36762961375639253=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: akpm@osdl.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752289AbWAEXAK@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060105222705.GA12242@isilmar.linta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>, Patrick Mochel <mochel@digitalimplant.org>, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============36762961375639253==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k05MteDZ007456
+On =C4=8Ct 05-01-06 23:27:05, Dominik Brodowski wrote:
+> On Thu, Jan 05, 2006 at 11:23:38PM +0100, Pavel Machek wrote:
+> > > In addition, your patch breaks pcmcia / pcmciautils which already=
+ uses
+> > > numbers (which I already had to change from "3" to "2" before...)=
+=2E
+> >=20
+> > pcmcia actually uses this? Ouch. Do you just read the power file, o=
+r
+> > do you write to it, too?
+>=20
+> Reading and writing. Replacement for "cardctl suspend" and "cardctl r=
+esume".
+>=20
+>=20
+> static int pccardctl_power_one(unsigned long socket_no, unsigned int =
+device,
+>                                unsigned int power)
+> {
+>         int ret;
+>         char file[SYSFS_PATH_MAX];
+>         struct sysfs_attribute *attr;
+>=20
+>         snprintf(file, SYSFS_PATH_MAX,
+>                  "/sys/bus/pcmcia/devices/%lu.%u/power/state",
+>                  socket_no, device);
+>=20
+>         attr =3D sysfs_open_attribute(file);
+>         if (!attr)
+>                 return -ENODEV;
+>=20
+>         ret =3D sysfs_write_attribute(attr, power ? "2" : "0", 1);
+>=20
+>         sysfs_close_attribute(attr);
+>=20
+>         return (ret);
+> }
+>=20
+>=20
+> NB: it will break one day, one way or another, when gregkh makes the
+> /sys/class -> /sys/devices conversion. However, I'd want to try not t=
+o break
+> the new pcmciautils userspace too often...
 
-I shouldn't oversimplify the power management in a cell phone. When I sai=
-d we turned whole devices on/off, I was referring only to what the system=
--level PM (which uses suspend/resume) does. There's a fair amount of subs=
-ystem-specific power management outside the Linux suspend/resume framewor=
-k. Some of it might be handled in the framework, if the framework were mo=
-re capable.
+Do you know how soon that day is?
 
-scott
+I'd really like to change it into strings so that interface will not
+have to change when/if someone will introduce multiple power states.
 
------Original Message-----
-From: Pavel Machek [mailto:pavel@ucw.cz]=20
-Sent: Thursday, January 05, 2006 4:46 PM
-To: Preece Scott-PREECE
-Cc: Alan Stern; akpm@osdl.org; linux-pm@lists.osdl.org; linux-kernel@vger=
-.kernel.org
-Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys in=
-terface
+I could accept both "0" and "on" on input, but have to output single
+value.
+								Pavel=20
 
-On =C8t 05-01-06 17:21:38, Preece Scott-PREECE wrote:
-> We do have multiple system-level low-power modes. I believe today they=20
-> differ in turning whole devices on or off, but there are some of those=20
-> devices that could be put in reduced-function/lowered-speed modes if=20
-> we were ready to use a finer-grained distinction.
-
-I think we were talking multiple off modes for _single device_. It is goo=
-d to know that even cellphones can get away with whole devices on/off tod=
-ay.
-								Pavel
-
---
+--=20
 Thanks, Sharp!
-
-
---===============36762961375639253==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
---===============36762961375639253==--
