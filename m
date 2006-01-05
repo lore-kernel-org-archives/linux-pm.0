@@ -1,11 +1,14 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: RE: [patch] pm: fix runtime powermanagement's /sysinterface
-Date: Thu, 5 Jan 2006 17:28:28 -0500
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DDD3AD6B@de01exm64.ds.mot.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch] pm: fix runtime powermanagement's /sys
+	interface
+Date: Thu, 5 Jan 2006 23:28:49 +0100
+Message-ID: <20060105222849.GH2095@elf.ucw.cz>
+References: <Pine.LNX.4.50.0601051342470.17046-100000@monsoon.he.net>
+	<Pine.LNX.4.44L0.0601051701560.6460-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============078451209643615183=="
+Content-Type: multipart/mixed; boundary="===============73004677257462136=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.44L0.0601051701560.6460-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,62 +18,56 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>, Patrick Mochel <mochel@digitalimplant.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============078451209643615183==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k05MSYDZ005651
+--===============73004677257462136==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-=20
-Not sure if this is the kind of example you're looking for, but...
+> On Thu, 5 Jan 2006, Pavel Machek wrote:
+> 
+> > Its okay with me to add more states _when they are needed_. Just now,
+> > many drivers do not even handle system suspend/resume correctly.
+> 
+> > We are not adding random crap to kernel just because "someone may need
+> > it". And yes, having aliases counts as "random crap". Perfectly legal 
+> > but totally useless things count as a random crap, too.
+> > 
+> > Bring example hardware that needs more than two states, implement
+> > driver support for that, and then we can talk about adding more than
+> > two states into core code.
+> 
+> Embedded devices are a great example.  Consider putting Linux on a 
+> portable phone.  The individual components can have many different power 
+> states, depending on which clock and power lines are enabled.  "on" and 
+> "suspend" won't be sufficient to handle the vendor's needs.
 
-We do have devices that may need to stay alive even though the processor =
-has been suspended - for instance, we keep the display backlight on for h=
-uman-useful periods following the last keypress, but most of the system c=
-an be shut down as soon as the work driven from the keypress is finished.=
- The display needs to be able to maintain itself without the processor's =
-help.
+Consider putting Linux on a portable phone. It could contain 13-bit
+bytes. Does that mean we should support 13-bit bytes in linux?
 
-Scott
+No.
 
------Original Message-----
-From: linux-pm-bounces@lists.osdl.org [mailto:linux-pm-bounces@lists.osdl=
-.org] On Behalf Of Pavel Machek
-Sent: Thursday, January 05, 2006 3:55 PM
-To: Patrick Mochel
-On =C8t 05-01-06 13:42:33, Patrick Mochel wrote:
->=20
+People are running Linux on cellphones today, and they are running for
+weeks in standby, too. And runtime suspend support is still terminally
+broken, so they somehow get around that.
 
-> I have a firewire controller in a desktop system, and a ATI Radeon in=20
-> a
-> T42 that support D1 and D2..
+Do you have example of device that has multiple "sleep states" and it
+makes sense to use them?
 
-Ok, now we have a concrete example. So Radeon supports D1. But putting ra=
-deon into D1 means you probably want to blank your screen and turn the ba=
-cklight off; that takes *long* time anyway. So you can simply put your ra=
-deon into D3 and save a bit more power.
-
-So yes, Radeon supports D1, but we probably do not want to use it.
-
-[You may still want to do D1 on radeon for debugging/testing/something. F=
-ine, but we are trying to build power-management infrastructure, not debu=
-gging one.]
-
+There are examples of devices that have multiple "on states". IIRC
+graphics cards can already control their clock tick rates. I hope we
+are not trying to solve that one here. 
 								Pavel
---
+-- 
 Thanks, Sharp!
 
-
---===============078451209643615183==
+--===============73004677257462136==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
---===============078451209643615183==--
+--===============73004677257462136==--
