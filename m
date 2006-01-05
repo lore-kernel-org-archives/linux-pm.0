@@ -1,95 +1,61 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: What woke system up?
-Date: Thu, 5 Jan 2006 13:28:29 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0601051321550.17046-100000@monsoon.he.net>
-References: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
-	<Pine.LNX.4.50.0512201809520.21656-100000@monsoon.he.net>
-	<20051222034630.GA4320@slurryseal.ddns.mvista.com>
-	<20060104182116.GA17218@best.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys
+ interface
+Date: Thu, 5 Jan 2006 16:37:52 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0601051631200.6460-100000@iolanthe.rowland.org>
+References: <20060105211446.GD2095@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============71779645404706294=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060104182116.GA17218@best.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Leo L. Schwab" <ewhac@best.com>
-Cc: linux-pm@osdl.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751141AbWAEVhy@vger.kernel.org>
+In-Reply-To: <20060105211446.GD2095@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Scott E. Preece" <preece@motorola.com>, akpm@osdl.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============71779645404706294==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+On Thu, 5 Jan 2006, Pavel Machek wrote:
 
+> > > | Why to make it this complex?
+> > > | 
+> > > | I do not think there's any confusion possible. "on" always corresponds
+> > > | to "D0", and "suspend" is "D3". Anyone who knows what "D2" means,
+> > > | should know that, too...
+> > 
+> > Not necessarily.  For instance, a particular driver might want to map 
+> > "suspend" to D1 instead of to D3.
+> 
+> Ok, lets change that to "on" and "off". That way, hopefully all the
+> drivers will agree that "off" means as low Dstate as possible.
 
-On Wed, 4 Jan 2006, Leo L. Schwab wrote:
+Nothing wrong with that.  We could let "off" be another synonym.  Although 
+I don't see the need for it, really.
 
-> On Wed, Dec 21, 2005 at 07:46:30PM -0800, Todd Poynor wrote:
-> > On Tue, Dec 20, 2005 at 06:11:40PM -0800, Patrick Mochel wrote:
-> > > What about stashing a pointer to the device that did the wakeup, then
-> > > using a symlink to point to the sysfs directory of that device?  [ ... ]
-> >
-> > Sounds good, here's a new version that does just that.  [ ... ]
->
-> 	I'm entering this discussion late, but if I were putting this
-> together:
-> 	- There would be a single file named /sys/power/wake,
-> 	- Upon resume, the file would contain lines of plaintext of the
-> 	  format:
->
-> 		device: reason
->
+> > Given that "on" and "suspend" are generic names and not actual states (at 
+> > least, not for PCI devices and presumably not for others as well), I think 
+> > it makes sense to treat them specially.
+> > 
+> > And it's not all that complex.  Certainly no more complex than forcing
+> > userspace tools to use {"on", "D1, "D2", "suspend"} instead of the
+> > much-more-logical {"D0", "D1", "D2", "D3"}.
+> 
+> It is not much more logical. First, noone really needs D1 and
+> D2. Plus, people want to turn their devices on and off, and don't want
+> and should not have to care about details like D1.
 
-Unless it's a single binary blob, we want to keep sysfs files to contain a
-single discrete value.
+Who are you to say what people really need?  What about people who want to 
+test their PCI device and see if it behaves properly in D1 or D2?  How are 
+they going to do that if you don't let them put it in that state?
 
-> 	- 'device' names the device that performed the wakeup.  'device'
-> 	  could be either a sysfs path or a /dev/blah/blah path (sysfs is
-> 	  probably better, if more verbose, as it remains consistent
-> 	  regardless of how /dev is configured),
+What about people with platform-specific non-PCI devices that have a whole
+bunch of different internal power states?  Why force them to use only two
+of those states?
 
-We don't know the /dev path at all from the kernel (and one can't easily
-ascertain the sysfs path from a device node entry). So, it would have to
-be a sysfs path.
+The kernel isn't supposed to prevent people from doing perfectly legal
+things.  The kernel should provide mechanisms to help people do what they
+want.
 
-> 	- 'reason' is free-form text, supplied by the device performing the
-> 	  wakeup, and is entirely device-dependent.
+Besides, as long as the sysfs interface accepts "on" and "suspend" (or 
+"off"), what harm does it do to accept the device-specific names as 
+well?
 
-What is an example of a reason? Is it more explicit than e.g. "button
-pressed"?
-
-> 	This approach allows multiple wakeup sources (rare, but possible),
-> and also allows a single multifunction device to report multiple reasons for
-> a wakeup.  It's also darned simple to parse.
-
-A single multi-function device should have multiple devices in the sysfs
-tree. So, if we allowed multiple symlinks to exist pointing to all of the
-wakeup devices, and provided a "wakeup-reason" file in each of the
-device's directories, then we could provide for multiple wakeup sources.
-
-The reason I push the symlink idea is because it's the easiest way to
-convey a device path via sysfs, and it allows us to stay with one value
-per file, while achieving the functionality you describe.
-
-Out of curiosity, are there really cases where there is > 1 wakeup
-device?
-
-Thanks,
-
-
-	Patrick
-
-
---===============71779645404706294==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============71779645404706294==--
+Alan Stern
