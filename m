@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/RFT][PATCH -mm 2/5] swsusp: userland interface
+Subject: Re: [RFC/RFT][PATCH -mm 0/5] swsusp: userland interface
 	(rev. 2)
-Date: Thu, 5 Jan 2006 01:55:59 +0100
-Message-ID: <20060105005559.GC1751@elf.ucw.cz>
-References: <200601042340.42118.rjw@sisk.pl> <200601042351.58667.rjw@sisk.pl>
-	<20060104234918.GA15983@kroah.com>
-	<20060105001837.GA1751@elf.ucw.cz>
-	<20060105002619.GA16714@kroah.com>
+Date: Thu, 5 Jan 2006 02:05:05 +0100
+Message-ID: <20060105010505.GD1751@elf.ucw.cz>
+References: <200601042340.42118.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============73857485842785908=="
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060105002619.GA16714@kroah.com>
+Content-Disposition: inline
+In-Reply-To: <200601042340.42118.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,38 +19,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@linuxmail.org>, ast@domdv.de
 List-Id: linux-pm@vger.kernel.org
-
---===============73857485842785908==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
 Hi!
 
-> > > Unless you want to turn these into syscalls :)
-> > 
-> > Well, I think we simply want to get static major/minor allocated for
-> > this device. It really uses read/write, IIRC, so no, I do not think we
-> > want to make it a syscall.
-> 
-> Ok, then I'd recommend using the misc device, dynamic for now, and
-> reserve one when you get a bit closer to merging into mainline.
+> This is the second "preview release" of the swsusp userland interface p=
+atches.
+> They have changed quite a bit since the previous post, as I tried to ma=
+ke the
+> interface more robust against some potential user space bugs (or outrig=
+ht
+> attempts to abuse it).
+>=20
+> The swsusp userland interface is based on a special character device al=
+lowing
+> a user space process to initiate suspend or resume using ioctls and to =
+write or read
+> the system memory snapshot from the device (actually more operations ar=
+e
+> defined on the device). =A0The device itself is introduced by the
+> second patch.
+...
+> Any feedback will be very much appreciated.
 
-Actually, misc major (character, major 10) seems to be okay,
-too. There's stuff like /dev/fuse there, already. But it feels little
-crowded there, and /dev/snapshot seems to fit between memory devices
-nicely...
+Pretty please, give it a try. If you think about introducing
+splashscreen/compression/encryption into swsusp, userland parts of
+these patches should be great place for it.
 								Pavel
--- 
+--=20
 Thanks, Sharp!
-
---===============73857485842785908==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============73857485842785908==--
