@@ -1,15 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/RFT][PATCH -mm 0/5] swsusp: userland interface
-	(rev. 2)
-Date: Thu, 5 Jan 2006 02:05:05 +0100
-Message-ID: <20060105010505.GD1751@elf.ucw.cz>
-References: <200601042340.42118.rjw@sisk.pl>
+Subject: Re: What woke system up?
+Date: Thu, 5 Jan 2006 15:08:57 +0000
+Message-ID: <20060105150857.GA2634@ucw.cz>
+References: <20051221002958.GA15851@slurryseal.ddns.mvista.com>
+	<Pine.LNX.4.50.0512201809520.21656-100000@monsoon.he.net>
+	<20051222034630.GA4320@slurryseal.ddns.mvista.com>
+	<20060104182116.GA17218@best.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============87569218000356019=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200601042340.42118.rjw@sisk.pl>
+In-Reply-To: <20060104182116.GA17218@best.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,34 +19,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@linuxmail.org>, ast@domdv.de
+To: "Leo L. Schwab" <ewhac@best.com>
+Cc: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+--===============87569218000356019==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> This is the second "preview release" of the swsusp userland interface p=
-atches.
-> They have changed quite a bit since the previous post, as I tried to ma=
-ke the
-> interface more robust against some potential user space bugs (or outrig=
-ht
-> attempts to abuse it).
->=20
-> The swsusp userland interface is based on a special character device al=
-lowing
-> a user space process to initiate suspend or resume using ioctls and to =
-write or read
-> the system memory snapshot from the device (actually more operations ar=
-e
-> defined on the device). =A0The device itself is introduced by the
-> second patch.
-...
-> Any feedback will be very much appreciated.
+On Wed 04-01-06 10:21:16, Leo L. Schwab wrote:
+> On Wed, Dec 21, 2005 at 07:46:30PM -0800, Todd Poynor wrote:
+> > On Tue, Dec 20, 2005 at 06:11:40PM -0800, Patrick Mochel wrote:
+> > > What about stashing a pointer to the device that did the wakeup, then
+> > > using a symlink to point to the sysfs directory of that device?  [ ... ]
+> > 
+> > Sounds good, here's a new version that does just that.  [ ... ]
+> 
+> 	I'm entering this discussion late, but if I were putting this
+> together:
+> 	- There would be a single file named /sys/power/wake,
+> 	- Upon resume, the file would contain lines of plaintext of the
+> 	  format:
+> 
+> 		device: reason
 
-Pretty please, give it a try. If you think about introducing
-splashscreen/compression/encryption into swsusp, userland parts of
-these patches should be great place for it.
-								Pavel
---=20
+sysfs should be 'one value per file'. 
+						Pavel
+
+-- 
 Thanks, Sharp!
+
+--===============87569218000356019==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============87569218000356019==--
