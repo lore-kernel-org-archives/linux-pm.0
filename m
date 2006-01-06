@@ -1,22 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [patch] pm: fix runtime powermanagement's /sys
 	interface
-Date: Fri, 6 Jan 2006 16:03:34 +0100
-Message-ID: <20060106150334.GB20242@isilmar.linta.de>
-References: <d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com>
-	<20051227220533.GA1914@elf.ucw.cz>
-	<Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
-	<20060104213405.GC1761@elf.ucw.cz>
-	<Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net>
-	<20060105215528.GF2095@elf.ucw.cz>
-	<20060105221334.GA925@isilmar.linta.de>
-	<20060105222338.GG2095@elf.ucw.cz>
-	<20060105222705.GA12242@isilmar.linta.de>
-	<20060106003806.GA29182@kroah.com>
+Date: Fri, 6 Jan 2006 10:42:24 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0601061035090.5127-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.50.0601051729400.30092-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============39880197440184473=="
+Content-Type: multipart/mixed; boundary="===============28730825533184046=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060106003806.GA29182@kroah.com>
+In-Reply-To: <Pine.LNX.4.50.0601051729400.30092-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,35 +17,72 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: Andrew Morton <akpm@osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============39880197440184473==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============28730825533184046==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Thu, Jan 05, 2006 at 04:38:06PM -0800, Greg KH wrote:
-> > NB: it will break one day, one way or another, when gregkh makes the
-> > /sys/class -> /sys/devices conversion. However, I'd want to try not to break
-> > the new pcmciautils userspace too often...
+On Thu, 5 Jan 2006, Patrick Mochel wrote:
+
+> On Fri, 6 Jan 2006, Pavel Machek wrote:
 > 
-> Why would the conversion that I'm working on break this userspace code?
-> You are only using the device directory, which will not change at all.
+> > On 05-01-06 16:04:07, Patrick Mochel wrote:
+> 
+> > > A better point, and one that would actually be useful, would be to remove
+> > > the file altogether. Let Dominik export a power file, with complete
+> > > control over the values, for each pcmcia device. Then you never have to
+> > > worry about breaking PCMCIA again.
+> >
+> > Fine with me.
+> 
+> ACK, you beat me to it.
+> 
+> And, appended is a patch to export PM controls for PCI devices. The file
+> "pm_possible_states" exports the states a device supports, and "pm_state"
+> exports the current state (and provides the interface for entering a
+> state).
+> 
+> Eventually, some drivers will want to fix up those values so that it can
+> mask of states that it doesn't support, as well as offer possible device-
+> specific states.
+> 
+> What's interesting is that with this patch, I can see that two more
+> devices on my system support D1 and D2 -- the cardbus controllers, which
+> are actually bridges whose PM capabilities aren't exported via lspci.
 
-Actually, pcmciautils uses both paths starting with
-/sys/bus/pcmcia/devices/ and /sys/class/pcmcia_socket/pcmcia_socket%d/ --
-and I was expecting that the latter path won't be available somewhen in
-future?
+This trend is extremely alarming!!
 
-Thanks,
-	Dominik
+It's a very bad idea to make bus drivers export and manage the syfs power 
+interface.  It means that lots of code gets repeated and different buses 
+do things differently.
 
---===============39880197440184473==
+Already we have PCI exporting "pm_possible_states" and "pm_state" while 
+PCMCIA exports "suspend".  How many other different schemes are going to 
+crop up?  How much bus-specific information will have to be built into a 
+user utility?
+
+If possible states are represented as arrays of pointers to strings, then 
+the PM core can easily supply the sysfs interface.  If Patrick's patch 
+were re-written so that the sysfs interface were moved into the PM core, 
+leaving only the PCI-specific portions in the PCI drivers, I would be much 
+happier.  This would also mean that Dominik's patch could be replaced by 
+something a good deal smaller.
+
+And it wouldn't hurt to add some mechanism for indicating which of the 
+possible states is the generic "suspend" state (usually D3 for PCI 
+devices, but not necessarily).
+
+Alan Stern
+
+
+
+--===============28730825533184046==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============39880197440184473==--
+--===============28730825533184046==--
