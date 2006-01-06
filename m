@@ -1,76 +1,106 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [patch] pm: fix runtime powermanagement's /sys
-	interface
-Date: Thu, 5 Jan 2006 16:04:07 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0601051602560.10428-100000@monsoon.he.net>
-References: <20051227220533.GA1914@elf.ucw.cz>
-	<Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
-	<20060104213405.GC1761@elf.ucw.cz>
-	<Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net>
-	<20060105215528.GF2095@elf.ucw.cz>
-	<20060105221334.GA925@isilmar.linta.de>
-	<20060105222338.GG2095@elf.ucw.cz>
-	<20060105222705.GA12242@isilmar.linta.de>
-	<20060105230849.GN2095@elf.ucw.cz>
-	<20060105234629.GA7298@isilmar.linta.de>
-	<20060105235838.GC3339@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys interface
+Date: Fri, 6 Jan 2006 01:07:05 +0100
+Message-ID: <20060106000704.GD3339@elf.ucw.cz>
+References: <20051227213439.GA1884@elf.ucw.cz> <d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com> <20051227220533.GA1914@elf.ucw.cz> <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net> <20060104213405.GC1761@elf.ucw.cz> <Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net> <20060105215528.GF2095@elf.ucw.cz> <Pine.LNX.4.50.0601051359290.10834-100000@monsoon.he.net> <20060105224403.GJ2095@elf.ucw.cz> <Pine.LNX.4.50.0601051546380.10428-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060105235838.GC3339@elf.ucw.cz>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932297AbWAFAHY@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.50.0601051546380.10428-100000@monsoon.he.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: dtor_core@ameritech.net, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-On Fri, 6 Jan 2006, Pavel Machek wrote:
-
-> On P=E1 06-01-06 00:46:29, Dominik Brodowski wrote:
-> > On Fri, Jan 06, 2006 at 12:08:49AM +0100, Pavel Machek wrote:
-> > > Ok, so lets at least add value-checking to .../power file, and prev=
-ent
-> > > userspace see changes to PM_EVENT_SUSPEND value. 2 and 0 are now
-> > > "arbitrary cookies". I'd like to use "on" and "off", but pcmcia
-> > > apparently depends on "2" and "0", so...
-> > >
-> > > Any objections?
+On =C4=8Ct 05-01-06 15:54:15, Patrick Mochel wrote:
+>=20
+> On Thu, 5 Jan 2006, Pavel Machek wrote:
+>=20
+> > On =C4=8Ct 05-01-06 14:15:39, Patrick Mochel wrote:
+>=20
+> > > It should be replaced with a file exported by the bus driver that=
+ exports
+> > > the actual states that the device supports. The parsing can easil=
+y happen
+> > > at this point, because the bus knows what a good value is.
 > >
-> > Sorry, but yes -- the same as before, minus the PCMCIA breakage.
->
-> I don't understand at this point.
->
-> Current code takes value from user, and passes it down to driver,
-> without any checking. If user writes 666 into the file, it will
-> happily pass down 666 to the driver. Driver does not expect 666 in
-> pm_message_t.event. It may oops, BUG_ON() or anything like that.
->
-> Shall I change
->
-> #define PM_EVENT_SUSPEND 2
->
-> to
->
-> #define PM_EVENT_SUSPEND 1324
->
-> to get my point across? This is kernel-specific value, it should not
-> be exported to userland.
+> > (1) would change core<->driver interface
+>=20
+> It's broken anyway for runtime power management.
 
-A better point, and one that would actually be useful, would be to remove
-the file altogether. Let Dominik export a power file, with complete
-control over the values, for each pcmcia device. Then you never have to
-worry about breaking PCMCIA again.
+Please explain. As far as I can see, it is fairly simple, but good
+enough. pm_message_t.flags indicating it is runtime suspend would be
+nice, but I do not think it is broken.
 
-Thanks,
+> > (2) is quite a lot of work
+>=20
+> In the long run, it's not.
 
+Nobody fixed it in a year, so apparently it is a lot of work.
 
-	Patrick
+> > (3) ...with very little benefit, until drivers support >2 states
+>=20
+> Without it, you are preventing drivers from being able to support > 2
+> states.
+
+0 drivers support > 2 states. So it is indeed very little benefit.
+
+> > If you want to rewrite driver model for >2 states, great, but that =
+is
+> > going to take at least a year AFAICS, so please let me at least fix
+> > the bugs in meantime.
+>=20
+> It's a band-aid; it is not a long-term solution.
+
+But band-aid is apparently neccessary unless you want drivers to see
+invalid values.
+
+> > > The userspace interface is broken. We can keep it for compatabili=
+ty
+> > > reasons, but there needs to be a new interface.
+> >
+> > I assumed we could fix the interface without actually introducing >=
+2
+> > states support. That can be done in reasonable ammount of code.
+>=20
+> The interface is irreparably broken. You can't fix it with an infinit=
+e
+> number of band aids.
+
+Without "band aids", you'll get BUG()s all over the kernel.
+
+> > > I don't understand what you're saying. If I have a driver that Iw=
+ant to
+> >                                          ~~~~~~~~~~~~~~~~~~
+> > > make support another power state and I'm willing to write that co=
+de, then
+> > > there is a clear benefit to having the infrastructure for it to "=
+just
+> > > work".
+> >
+> > I do not see such drivers around me, that's all. It seems fair to m=
+e
+> > that first driver author wanting that is the one who introduces >2
+> > states support to generic infrastructure.
+>=20
+> Just because you personally have not seen such things does not mean t=
+hey
+> do not exist.
+
+Just because you claim they exist does not mean they exist.
+
+> > Passing "on"/"off" down to radeon lets the driver decide what power
+> > state it should enter.
+>=20
+> Driver implements power state policy? Sounds like that policy would f=
+ind a
+> much more comfortable home in userspace.
+
+Userspace can't know that driver does not support D3 on this
+particular hardware version because of hardware problems... or simply
+because it is not yet implemented.
+								Pavel
+--=20
+Thanks, Sharp!
