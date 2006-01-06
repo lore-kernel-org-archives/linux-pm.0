@@ -1,69 +1,36 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [patch] pm: fix runtime powermanagement's /sys
-	interface
-Date: Fri, 6 Jan 2006 10:00:52 +0100
-Message-ID: <20060106090052.GJ3339@elf.ucw.cz>
-References: <20060105215528.GF2095@elf.ucw.cz>
-	<20060105221334.GA925@isilmar.linta.de>
-	<20060105222338.GG2095@elf.ucw.cz>
-	<20060105222705.GA12242@isilmar.linta.de>
-	<20060105230849.GN2095@elf.ucw.cz>
-	<20060105234629.GA7298@isilmar.linta.de>
-	<20060105235838.GC3339@elf.ucw.cz>
-	<Pine.LNX.4.50.0601051602560.10428-100000@monsoon.he.net>
-	<20060106001252.GE3339@elf.ucw.cz>
-	<Pine.LNX.4.50.0601051729400.30092-100000@monsoon.he.net>
+From: Tom Marshall <tommy@home.tig-grr.com>
+Subject: Re: [linux-pm] [patch] pm: fix runtime powermanagement's /sys interface
+Date: Fri, 6 Jan 2006 06:34:14 -0800
+Message-ID: <20060106143414.GA14043@home.tig-grr.com>
+References: <20051227213439.GA1884@elf.ucw.cz> <d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com> <20051227220533.GA1914@elf.ucw.cz> <Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net> <20060104213405.GC1761@elf.ucw.cz> <Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net> <20060105215528.GF2095@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============68578848265091708=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0601051729400.30092-100000@monsoon.he.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750795AbWAFOff@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060105215528.GF2095@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Patrick Mochel <mochel@digitalimplant.org>, dtor_core@ameritech.net, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============68578848265091708==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-One more nit...
-
-> +	s += sprintf(s, "d0");
-> +	if (dev->poss_states[PCI_D1])
-> +		s += sprintf(s, " d1");
-> +	if (dev->poss_states[PCI_D2])
-> +		s += sprintf(s, " d2");
-> +	if (dev->poss_states[PCI_D3hot])
-> +		s += sprintf(s, " d3");
-...
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -106,6 +106,7 @@ struct pci_dev {
->  					   this if your device has broken DMA
->  					   or supports 64-bit transfers.  */
+> > I have a firewire controller in a desktop system, and a ATI Radeon in a
+> > T42 that support D1 and D2..
 > 
-> +	u32		poss_states[4];
+> Ok, now we have a concrete example. So Radeon supports D1. But putting
+> radeon into D1 means you probably want to blank your screen and turn
+> the backlight off; that takes *long* time anyway. So you can simply
+> put your radeon into D3 and save a bit more power.
+> 
+> So yes, Radeon supports D1, but we probably do not want to use it.
 
-So this probably should be poss_states[PCI_D3hot]; or something,
-instead of explicit "4".
-							Pavel
-
--- 
-Thanks, Sharp!
-
---===============68578848265091708==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============68578848265091708==--
+I understand this is a theoretical argument.  However, in reality, a
+significant number of T42 owners get less than 12 hours of battery life in
+S3 suspend because the Radeon chip sucks a huge amount of power with the
+current code.  We would be eternally grateful if someone could figure out
+why only some models are affected and, more importantly, submit a patch that
+will reliably enter D2 (or D3 if it is supported?) for all Radeon 7500
+chips.  I've found a couple patches that were submitted to this list but,
+for whatever reason, nobody seems to have found a solution that is
+acceptable yet.  I've been manually patching my kernels with code to enter
+D2 for the last year or so, and from the volume of google results, it looks
+like quite a lot of other folks are doing the same... :(
