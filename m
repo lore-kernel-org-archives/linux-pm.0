@@ -1,14 +1,22 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: What woke system up?
-Date: Thu, 05 Jan 2006 18:27:41 -0800
-Message-ID: <43BDD59D.4090400@mvista.com>
-References: <20051221002958.GA15851@slurryseal.ddns.mvista.com>	<Pine.LNX.4.50.0512201809520.21656-100000@monsoon.he.net>	<20051222034630.GA4320@slurryseal.ddns.mvista.com>	<20060104182116.GA17218@best.com>
-	<Pine.LNX.4.50.0601051321550.17046-100000@monsoon.he.net>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [patch] pm: fix runtime powermanagement's /sys
+	interface
+Date: Thu, 5 Jan 2006 16:38:06 -0800
+Message-ID: <20060106003806.GA29182@kroah.com>
+References: <20051227213439.GA1884@elf.ucw.cz>
+	<d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com>
+	<20051227220533.GA1914@elf.ucw.cz>
+	<Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
+	<20060104213405.GC1761@elf.ucw.cz>
+	<Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net>
+	<20060105215528.GF2095@elf.ucw.cz>
+	<20060105221334.GA925@isilmar.linta.de>
+	<20060105222338.GG2095@elf.ucw.cz>
+	<20060105222705.GA12242@isilmar.linta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============65070201790342608=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0601051321550.17046-100000@monsoon.he.net>
+In-Reply-To: <20060105222705.GA12242@isilmar.linta.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,23 +26,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: linux-pm@osdl.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, Patrick Mochel <mochel@digitalimplant.org>, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Patrick Mochel wrote:
-> Out of curiosity, are there really cases where there is > 1 wakeup
-> device?
+--===============65070201790342608==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I will guess there are systems in which software will be presented with 
-more than one candidate device that may have woken the system (for 
-example, more than one interrupt is pending at resume time, and this is 
-the only information available on what the wakeup source was).  But I 
-don't have a definite example of such a system.   So far I've only 
-looked at 2 embedded platforms.  One of 'em devotes registers 
-specifically to what woke up the system, and has not yet turned up 2 
-wakers, but I haven't hit this very hard yet.  The other I can't get 
-useful info out of as of yet.
+On Thu, Jan 05, 2006 at 11:27:05PM +0100, Dominik Brodowski wrote:
+> On Thu, Jan 05, 2006 at 11:23:38PM +0100, Pavel Machek wrote:
+> > > In addition, your patch breaks pcmcia / pcmciautils which already uses
+> > > numbers (which I already had to change from "3" to "2" before...).
+> > 
+> > pcmcia actually uses this? Ouch. Do you just read the power file, or
+> > do you write to it, too?
+> 
+> Reading and writing. Replacement for "cardctl suspend" and "cardctl resume".
+> 
+> 
+> static int pccardctl_power_one(unsigned long socket_no, unsigned int device,
+>                                unsigned int power)
+> {
+>         int ret;
+>         char file[SYSFS_PATH_MAX];
+>         struct sysfs_attribute *attr;
+> 
+>         snprintf(file, SYSFS_PATH_MAX,
+>                  "/sys/bus/pcmcia/devices/%lu.%u/power/state",
+>                  socket_no, device);
+> 
+>         attr = sysfs_open_attribute(file);
+>         if (!attr)
+>                 return -ENODEV;
+> 
+>         ret = sysfs_write_attribute(attr, power ? "2" : "0", 1);
+> 
+>         sysfs_close_attribute(attr);
+> 
+>         return (ret);
+> }
+> 
+> 
+> NB: it will break one day, one way or another, when gregkh makes the
+> /sys/class -> /sys/devices conversion. However, I'd want to try not to break
+> the new pcmciautils userspace too often...
 
--- 
-Todd
+Why would the conversion that I'm working on break this userspace code?
+You are only using the device directory, which will not change at all.
+
+And my goal in the rework is to not break userspace code, although
+libsysfs does need a one line change to handle this, hopefully they have
+intregrated that already...
+
+thanks,
+
+greg k-h
+
+--===============65070201790342608==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============65070201790342608==--
