@@ -1,22 +1,24 @@
-From: Greg KH <greg@kroah.com>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [patch] pm: fix runtime powermanagement's /sys
 	interface
-Date: Thu, 5 Jan 2006 16:38:06 -0800
-Message-ID: <20060106003806.GA29182@kroah.com>
-References: <20051227213439.GA1884@elf.ucw.cz>
-	<d120d5000512271355r48d476canfea2c978c2f82810@mail.gmail.com>
-	<20051227220533.GA1914@elf.ucw.cz>
-	<Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
-	<20060104213405.GC1761@elf.ucw.cz>
-	<Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net>
+Date: Fri, 6 Jan 2006 09:53:18 +0100
+Message-ID: <20060106085318.GH3339@elf.ucw.cz>
+References: <Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net>
 	<20060105215528.GF2095@elf.ucw.cz>
 	<20060105221334.GA925@isilmar.linta.de>
 	<20060105222338.GG2095@elf.ucw.cz>
 	<20060105222705.GA12242@isilmar.linta.de>
+	<20060105230849.GN2095@elf.ucw.cz>
+	<20060105234629.GA7298@isilmar.linta.de>
+	<20060105235838.GC3339@elf.ucw.cz>
+	<Pine.LNX.4.50.0601051602560.10428-100000@monsoon.he.net>
+	<20060106011041.GA23899@isilmar.linta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============65070201790342608=="
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060105222705.GA12242@isilmar.linta.de>
+Content-Disposition: inline
+In-Reply-To: <20060106011041.GA23899@isilmar.linta.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,67 +28,78 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, Patrick Mochel <mochel@digitalimplant.org>, Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============65070201790342608==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On P=E1 06-01-06 02:10:41, Dominik Brodowski wrote:
+> On Thu, Jan 05, 2006 at 04:04:07PM -0800, Patrick Mochel wrote:
+> > A better point, and one that would actually be useful, would be to re=
+move
+> > the file altogether. Let Dominik export a power file, with complete
+> > control over the values, for each pcmcia device. Then you never have =
+to
+> > worry about breaking PCMCIA again.
+>=20
+> Then I'll try to push this into 2.6.16 later on; also I still need to f=
+ix
+> up userspace accordingly...
+>=20
+> BTW, ACK on the removal of power/state from me... PCMCIA shouldn't hold=
+ this
+> removal up.
 
-On Thu, Jan 05, 2006 at 11:27:05PM +0100, Dominik Brodowski wrote:
-> On Thu, Jan 05, 2006 at 11:23:38PM +0100, Pavel Machek wrote:
-> > > In addition, your patch breaks pcmcia / pcmciautils which already uses
-> > > numbers (which I already had to change from "3" to "2" before...).
-> > 
-> > pcmcia actually uses this? Ouch. Do you just read the power file, or
-> > do you write to it, too?
-> 
-> Reading and writing. Replacement for "cardctl suspend" and "cardctl resume".
-> 
-> 
-> static int pccardctl_power_one(unsigned long socket_no, unsigned int device,
->                                unsigned int power)
-> {
->         int ret;
->         char file[SYSFS_PATH_MAX];
->         struct sysfs_attribute *attr;
-> 
->         snprintf(file, SYSFS_PATH_MAX,
->                  "/sys/bus/pcmcia/devices/%lu.%u/power/state",
->                  socket_no, device);
-> 
->         attr = sysfs_open_attribute(file);
->         if (!attr)
->                 return -ENODEV;
-> 
->         ret = sysfs_write_attribute(attr, power ? "2" : "0", 1);
-> 
->         sysfs_close_attribute(attr);
-> 
->         return (ret);
-> }
-> 
-> 
-> NB: it will break one day, one way or another, when gregkh makes the
-> /sys/class -> /sys/devices conversion. However, I'd want to try not to break
-> the new pcmciautils userspace too often...
+Thanks.
 
-Why would the conversion that I'm working on break this userspace code?
-You are only using the device directory, which will not change at all.
+> 	Dominik
+>=20
+>=20
+> diff --git a/drivers/pcmcia/ds.c b/drivers/pcmcia/ds.c
+> index 0252582..a4f3258 100644
+> --- a/drivers/pcmcia/ds.c
+> +++ b/drivers/pcmcia/ds.c
+> @@ -920,6 +920,37 @@ pcmcia_device_stringattr(prod_id2, prod_
+>  pcmcia_device_stringattr(prod_id3, prod_id[2]);
+>  pcmcia_device_stringattr(prod_id4, prod_id[3]);
+> =20
+> +
+> +static ssize_t pcmcia_show_suspend(struct device *dev, struct device_a=
+ttribute *attr, char *buf)
+> +{
+> +	struct pcmcia_device *p_dev =3D to_pcmcia_dev(dev);
+> +
+> +	if (p_dev->dev.power.power_state.event !=3D PM_EVENT_ON)
+> +		return sprintf(buf, "1\n");
+> +	else
+> +		return sprintf(buf, "0\n");
+> +}
 
-And my goal in the rework is to not break userspace code, although
-libsysfs does need a one line change to handle this, hopefully they have
-intregrated that already...
+Could we get something like 'on' / 'off', or something else less
+ambiquous than 0/1?
 
-thanks,
+> +static ssize_t pcmcia_store_suspend(struct device *dev, struct device_=
+attribute *attr,
+> +				    const char *buf, size_t count)
+> +{
+> +	struct pcmcia_device *p_dev =3D to_pcmcia_dev(dev);
+> +	int ret =3D 0;
+> +
+> +        if (!count)
+> +                return -EINVAL;
+> +
+> +	if (p_dev->dev.power.power_state.event =3D=3D PM_EVENT_ON)
+> +		ret =3D dpm_runtime_suspend(dev, PMSG_SUSPEND);
+> +	else
+> +		dpm_runtime_resume(dev);
 
-greg k-h
+So *any* write into this file just toggles suspend status? That seems
+remarkably ugly. The other hunk has same issue.
 
---===============65070201790342608==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> +	return ret ? ret : count;
+> +
+> +	return count;
 
-
---===============65070201790342608==--
+Not reachable.
+								Pavel
+--=20
+Thanks, Sharp!
