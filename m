@@ -1,13 +1,24 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: RE: [patch] pm: fix runtime powermanagement's /sys
+Subject: Re: [patch] pm: fix runtime powermanagement's /sys
 	interface
-Date: Thu, 5 Jan 2006 16:02:29 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0601051558100.10428-100000@monsoon.he.net>
-References: <ADE4D9DBCFC3A345AAA95C195F62B6DDD3AD5D@de01exm64.ds.mot.com>
+Date: Thu, 5 Jan 2006 16:04:07 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0601051602560.10428-100000@monsoon.he.net>
+References: <20051227220533.GA1914@elf.ucw.cz>
+	<Pine.LNX.4.50.0512271957410.6491-100000@monsoon.he.net>
+	<20060104213405.GC1761@elf.ucw.cz>
+	<Pine.LNX.4.50.0601051329590.17046-100000@monsoon.he.net>
+	<20060105215528.GF2095@elf.ucw.cz>
+	<20060105221334.GA925@isilmar.linta.de>
+	<20060105222338.GG2095@elf.ucw.cz>
+	<20060105222705.GA12242@isilmar.linta.de>
+	<20060105230849.GN2095@elf.ucw.cz>
+	<20060105234629.GA7298@isilmar.linta.de>
+	<20060105235838.GC3339@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1062551654343542=="
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DDD3AD5D@de01exm64.ds.mot.com>
+In-Reply-To: <20060105235838.GC3339@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,43 +28,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Preece Scott-PREECE <scott.preece@motorola.com>
-Cc: akpm@osdl.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============1062551654343542==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 
+On Fri, 6 Jan 2006, Pavel Machek wrote:
 
-On Thu, 5 Jan 2006, Preece Scott-PREECE wrote:
+> On P=E1 06-01-06 00:46:29, Dominik Brodowski wrote:
+> > On Fri, Jan 06, 2006 at 12:08:49AM +0100, Pavel Machek wrote:
+> > > Ok, so lets at least add value-checking to .../power file, and prev=
+ent
+> > > userspace see changes to PM_EVENT_SUSPEND value. 2 and 0 are now
+> > > "arbitrary cookies". I'd like to use "on" and "off", but pcmcia
+> > > apparently depends on "2" and "0", so...
+> > >
+> > > Any objections?
+> >
+> > Sorry, but yes -- the same as before, minus the PCMCIA breakage.
+>
+> I don't understand at this point.
+>
+> Current code takes value from user, and passes it down to driver,
+> without any checking. If user writes 666 into the file, it will
+> happily pass down 666 to the driver. Driver does not expect 666 in
+> pm_message_t.event. It may oops, BUG_ON() or anything like that.
+>
+> Shall I change
+>
+> #define PM_EVENT_SUSPEND 2
+>
+> to
+>
+> #define PM_EVENT_SUSPEND 1324
+>
+> to get my point across? This is kernel-specific value, it should not
+> be exported to userland.
 
-> This is, of course, in an embedded framework rather than a desktop
-> framework - we suspend and wakeup automatically, not via user
-> intervention. Answering a question asked in another piece of mail, we
-> have roughly a dozen different devices that cause the system to wakeup -
-> keypad press, touchscreen touch, flip open/close, etc.
-
-Hmm, it would be nice if that comment was in reply to the email in which
-it came. At least if it was in the same thread..
-
-Many systems have > 1 _possible_ wakeup devices (keyboard, touchscreen,
-lid, etc). You implied that when a system wakes up, there could be > 1
-device that actually woke the system up, which is in direct conflict with
-what I've always assumed - that when a system wakes up, it is caused by a
-single device (and if there were multiple events, like a key press *and* a
-mouse movement, it's doesn't really matter)..
+A better point, and one that would actually be useful, would be to remove
+the file altogether. Let Dominik export a power file, with complete
+control over the values, for each pcmcia device. Then you never have to
+worry about breaking PCMCIA again.
 
 Thanks,
 
 
 	Patrick
-
-
---===============1062551654343542==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1062551654343542==--
