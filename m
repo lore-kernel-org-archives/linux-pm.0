@@ -1,17 +1,13 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [patch] pm: fix runtime powermanagement's
-	/sys	interface
-Date: Sat, 7 Jan 2006 08:06:52 -0500
-Message-ID: <20060107130652.GB3972@neo.rr.com>
-References: <Pine.LNX.4.50.0601051729400.30092-100000@monsoon.he.net>
-	<Pine.LNX.4.44L0.0601061035090.5127-100000@iolanthe.rowland.org>
-	<20060107000826.GC20399@elf.ucw.cz>
-	<20060107075851.GD3184@neo.rr.com>
-	<20060107102013.GB9225@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch] pm: fix runtime powermanagement's /sys
+	interface
+Date: Sat, 7 Jan 2006 10:24:49 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0601071016160.8527-100000@netrider.rowland.org>
+References: <20060107074146.GC3184@neo.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============63250368719826722=="
+Content-Type: multipart/mixed; boundary="===============55723159891724938=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060107102013.GB9225@elf.ucw.cz>
+In-Reply-To: <20060107074146.GC3184@neo.rr.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,77 +17,72 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Adam Belay <ambx1@neo.rr.com>
+Cc: Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============63250368719826722==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============55723159891724938==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Sat, Jan 07, 2006 at 11:20:13AM +0100, Pavel Machek wrote:
-> On So 07-01-06 02:58:51, Adam Belay wrote:
-> > The driver core can provide some infustructure, but let's leave the states
-> > up to the drivers.  Afterall, some drivers might only be interested in "on"
-> > during runtime.  Also, drivers might support some sort of partial-off
-> > but not "off".
+On Sat, 7 Jan 2006, Adam Belay wrote:
+
+> In short I'm suggesting the following:
 > 
-> Then they map "off" to "as much off as I can". Big deal.
+> 1.) Every bus and device has its own unique PM mechanisms and specifications.
+> Representing this in a single unified model of any sort is nearly impossible.
+> Therefore, it may be best to allow each bus to define its own PM
+> infustructure and sysfs files (perhaps in a way similar to Pat's recent
+> patch).
 
-Yes, but it may not be the kernel's place to make this generalization.
+Bus and/or driver.  However even though the mechanisms and specifications 
+are all different, that doesn't mean the user interfaces have to be 
+different.  Using simple character string names (like Pat did and like I 
+did several months ago) should be general enough to work everywhere.
 
-> 
-> > And no, this does not allow us to experiment with PCI power
-> > management.
-> 
-> Well, suse was already doing experiments with 2.6.14 sysfs...
+Similarly, the sysfs files themselves should be uniform (even if their
+contents aren't).  The core should provide the user interface mechanism
+and infrastructure, while leaving it up to the bus and the device drivers
+to interpret the meanings of the strings.
 
-Sure one can see how much power is saved by entering D3, but than can
-even be done through userspace.  I think it's more important to
-experiment with schemes that will actually be useful and reliable to the
-end user.
+> 2.) Device drivers on the other hand exist at a more abstract level and,
+> as a result, we have greater flexability and more options.  Therefore, I
+> think this is an excellent place to define power states and driver core PM
+> infustructure.
 
-> 
-> > Also there's nothing "runtime" about the PCMCIA PM API.  It's much more
-> > like calling ->remove() as it disabled the device all together.  
-> 
-> It looks enough runtime to me.
+It's a good place to define and implement power states.  But the driver 
+core PM infrastructure obviously should be defined and implemented in the 
+core, not in the drivers.
 
-As was already discussed, we don't want to modify every userspace
-application to check if the device it needs is "on" (resumed) or
-"off" (suspended).  It's just two painful with third party apps etc.
-Therefore, the kernel needs to handle this more seemlessly.  In my
-opinion, this is what runtime power management is all about, saving
-power without getting in the user's way.
+> 3.) System suspend and runtime power management are not even close to
+> similar.  Trying to use the same ->suspend and ->resume API is
+> ridiculious because it prevents intermediate power states and doesn't
+> properly perpare devices and device classes for a runtime environment.
+> Therefore, I'm in favor of a seperate interface tailored specifically for
+> runtime power management.
 
-> 
-> > I'm more
-> > interested in saving power without crippling functionality.
-> 
-> You are on wrong mailing list, then. Seriously. If you can save power
-> without affecting functionality, then just doing, you don't need any
-> userland interface.
+Personally I don't care much one way or another.  The APIs can be kept 
+separate or overlapped somehow; it doesn't really matter.  Just so long as 
+it's done the same way in all drivers and in the core.
 
-Cool it, affecting functionality and disabling it are not the same
-thing.  I'm fairly certain this mailing list is interested in exploring
-more than suspend/resume (i.e. "on" and "off"), even if it can be hacked
-to happen during runtime.
+> 4.) If we're going to make any meaningful progress, we need to also
+> focus on device classes and class orriented power policy.  For example,
+> the "net" device class should provide infustructure and helper functions
+> for runtime power management of that flavor.  This might include some
+> generic "net" PM sysfs files.
 
-This issue depends on the platform and device class.  Some device
-classes will have more user initiated power transitions than others.
-With that in mind, even drivers with exclusively kernel-space control
-will want to export knobs and tunables for timeout values etc.  A
-userland interface if important regardless of kernel-side
-implementation.
+Can you think of device classes other than "net" requiring this special
+approach?  Network interfaces already get special treatment in some ways
+(for example, they don't have entries in /dev).  This could just be
+another form of special treatment for them.
 
--Adam
+Alan Stern
 
 
---===============63250368719826722==
+--===============55723159891724938==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============63250368719826722==--
+--===============55723159891724938==--
