@@ -1,55 +1,102 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/RFT][PATCH -mm 0/5] swsusp: userland interface (rev. 2)
-Date: Sat, 7 Jan 2006 00:59:34 +0100
-Message-ID: <20060106235934.GA20399@elf.ucw.cz>
-References: <200601042340.42118.rjw@sisk.pl> <200601062217.09012.rjw@sisk.pl> <20060106224430.GC12428@elf.ucw.cz> <200601070041.22497.rjw@sisk.pl>
+Subject: Re: [patch] pm: fix runtime powermanagement's /sys
+	interface
+Date: Sat, 7 Jan 2006 01:08:26 +0100
+Message-ID: <20060107000826.GC20399@elf.ucw.cz>
+References: <Pine.LNX.4.50.0601051729400.30092-100000@monsoon.he.net>
+	<Pine.LNX.4.44L0.0601061035090.5127-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932680AbWAFX75@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200601070041.22497.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0601061035090.5127-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On P=E1 06-01-06 10:42:24, Alan Stern wrote:
+> On Thu, 5 Jan 2006, Patrick Mochel wrote:
+> > On Fri, 6 Jan 2006, Pavel Machek wrote:
+> > > On 05-01-06 16:04:07, Patrick Mochel wrote:
+> >=20
+> > > > A better point, and one that would actually be useful, would be t=
+o remove
+> > > > the file altogether. Let Dominik export a power file, with comple=
+te
+> > > > control over the values, for each pcmcia device. Then you never h=
+ave to
+> > > > worry about breaking PCMCIA again.
+> > >
+> > > Fine with me.
+> >=20
+> > ACK, you beat me to it.
+> >=20
+> > And, appended is a patch to export PM controls for PCI devices. The f=
+ile
+> > "pm_possible_states" exports the states a device supports, and "pm_st=
+ate"
+> > exports the current state (and provides the interface for entering a
+> > state).
+> >=20
+> > Eventually, some drivers will want to fix up those values so that it =
+can
+> > mask of states that it doesn't support, as well as offer possible dev=
+ice-
+> > specific states.
+> >=20
+> > What's interesting is that with this patch, I can see that two more
+> > devices on my system support D1 and D2 -- the cardbus controllers, wh=
+ich
+> > are actually bridges whose PM capabilities aren't exported via lspci.
+>=20
+> This trend is extremely alarming!!
 
-> > > > Perhaps it is time to get 1/4 and 3/4 into -mm? You get my signed-off
-> > > > on them...
-> > > 
-> > > OK, I'll prepare them in a while.
-> > 
-> > Thanks.
-> 
-> I had to remake the 3/4 a bit, as it depended on some changes to power.h
-> and swsusp.c done in the 2/4.  Nothing particularly invasive, basically some
-> definitions go to power.h and some function headers change, but please
-> have a look if the patch is still OK (appended).
+It scares me a bit, too.=20
 
-Still ok :-).
+> It's a very bad idea to make bus drivers export and manage the syfs pow=
+er=20
+> interface.  It means that lots of code gets repeated and different buse=
+s=20
+> do things differently.
+>=20
+> Already we have PCI exporting "pm_possible_states" and "pm_state" while=
+=20
+> PCMCIA exports "suspend".  How many other different schemes are going t=
+o=20
+> crop up?  How much bus-specific information will have to be built into =
+a=20
+> user utility?
+>=20
+> If possible states are represented as arrays of pointers to strings, th=
+en=20
+> the PM core can easily supply the sysfs interface.  If Patrick's patch=20
+> were re-written so that the sysfs interface were moved into the PM core=
+,=20
+> leaving only the PCI-specific portions in the PCI drivers, I would be m=
+uch=20
+> happier.  This would also mean that Dominik's patch could be replaced b=
+y=20
+> something a good deal smaller.
+>=20
+> And it wouldn't hurt to add some mechanism for indicating which of the=20
+> possible states is the generic "suspend" state (usually D3 for PCI=20
+> devices, but not necessarily).
 
-> > If code is simpler, lets stick with misc. You have to obtain minor by
-> > mailing device@lanana.org, see Doc*/devices.txt.
-> 
-> OK, I'll try.
-
-It should be easy.
-
-> > Ok, lets keep it as it is. We can always rename file in future. [I
-> > don't quite understand your reasons for movement, through. Highmem is
-> > part of snapshot we need to make; it is saved in a very different way
-> > than rest of memory, but that is implementation detail...]
-> 
-> I'm seeing this a bit differently.  In my view highmem is handled very much
-> like devices: save_highmem() turns it "off", restore_highmem() turns it "on"
-> back again, they are even called next to device_power_up/down().
-
-Yes, I guess it is possible to view it like that, too.
-
-BTW your "write 500MB to swap" hit mainline few hours
-ago. Congratulations.
-
+I think we should start with string-based interface, with just two
+states ("on" and "off"). That is easily extensible into future, and
+suits current PCMCIA nicely. It also allows us to experiment with PCI
+power management... I can cook up a patch, but it will be simple
+reintroduction of .../power file under different name.
 								Pavel
--- 
+--=20
 Thanks, Sharp!
