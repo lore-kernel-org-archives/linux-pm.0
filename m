@@ -1,45 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC: -mm patch] swsusp: make some code static
-Date: Thu, 12 Jan 2006 17:18:08 +0100
-Message-ID: <200601121718.08959.rjw@sisk.pl>
-References: <20060111042135.24faf878.akpm@osdl.org> <20060112104812.GR29663@stusta.de> <20060112152935.GD9752@elf.ucw.cz>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: [git pull] pcmcia fixes
+Date: Thu, 12 Jan 2006 20:26:22 +0100
+Message-ID: <20060112192622.GA9908@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030456AbWALQQF@vger.kernel.org>
-In-Reply-To: <20060112152935.GD9752@elf.ucw.cz>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-pm@osdl.org
+Content-Type: multipart/mixed; boundary="===============69773423766380094=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: torvalds@osdl.org
+Cc: linux-pcmcia@lists.infradead.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-On Thursday, 12 January 2006 16:29, you wrote:
-> On =C4=8Ct 12-01-06 11:48:12, Adrian Bunk wrote:
-> > On Wed, Jan 11, 2006 at 04:21:35AM -0800, Andrew Morton wrote:
-> > >...
-> > > Changes since 2.6.15-mm2:
-> > >...
-> > > +swsusp-low-level-interface-rev-2.patch
-> > >...
-> > >  swsusp updates
-> > >...
-> >=20
-> > After this patch, we can make some code static.
+--===============69773423766380094==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
+Content-Disposition: inline
 
-Nice catch. ;-)
 
-> >=20
-> >=20
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
->=20
-> Rafael should comment here. It is okay, but Rafael has some patches i=
-n
-> the queue, and it would be better if there were to clashes.
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It doesn't clash with any of my patches (just tested).
+Linus,
 
-Greetings,
-Rafael
+Please pull from
+
+	git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-fixes-2.6.git/
+
+for additional device IDs and a new independet runtime powermanagement
+interface (which was discussed on the linux-pm mailing list as well) for
+PCMCIA cards and devices, as the existing "device/power" one is said to be
+on its way out.
+
+The diffstat and list of changes follows:
+
+----
+ drivers/pcmcia/ds.c           |   37 +++++++++++++++++++++++++++++++++++--
+ drivers/pcmcia/socket_sysfs.c |   25 +++++++++++++++++++++++++
+ drivers/serial/serial_cs.c    |    2 ++
+ 3 files changed, 62 insertions(+), 2 deletions(-)
+----
+Dominik Brodowski:
+      pcmcia: add new IDs for serial_cs.c
+      pcmcia: runtime powermanagement interface
+
+--UugvWAfsgieZRqgk
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDxq1eZ8MDCHJbN8YRAqcCAJ9NMefls/osz2nIY7s1YF3mlIQIIQCfXZaG
+oouJuS+ZSS/SsxlyonVRGIY=
+=jeKm
+-----END PGP SIGNATURE-----
+
+--UugvWAfsgieZRqgk--
+
+--===============69773423766380094==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============69773423766380094==--
