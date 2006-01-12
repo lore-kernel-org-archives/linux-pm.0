@@ -1,76 +1,44 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [git pull] pcmcia fixes
-Date: Thu, 12 Jan 2006 20:26:22 +0100
-Message-ID: <20060112192622.GA9908@dominikbrodowski.de>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: SOFTWARE_SUSPEND: dependency on non-existing FVR symbol
+Date: Thu, 12 Jan 2006 21:43:29 +0100
+Message-ID: <20060112204329.GU29663@stusta.de>
+References: <20060110043627.GD3911@stusta.de> <20060106202948.GB2736@ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============69773423766380094=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: torvalds@osdl.org
-Cc: linux-pcmcia@lists.infradead.org, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161251AbWALUnb@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060106202948.GB2736@ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org, Jean-Luc Leger <reiga@dspnet.fr.eu.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Jan 06, 2006 at 08:29:48PM +0000, Pavel Machek wrote:
+> On Tue 10-01-06 05:36:27, Adrian Bunk wrote:
+> > The following issue in kernel/power/Kconfig was noted by
+> > Jean-Luc Leger <reiga@dspnet.fr.eu.org>:
+> > 
+> > config SOFTWARE_SUSPEND
+> >         bool "Software Suspend"
+> >         depends on PM && SWAP && (X86 && (!SMP || SUSPEND_SMP)) || ((FVR || PPC32) && !SMP)
+> > 
+> > 
+> > The problem is that there is no FVR symbol in the kernel.
+> > 
+> > Is this a misspelling of FRV or something different?
+> 
+> FRV, IIRC, but apparently noone ever tested that.
 
---===============69773423766380094==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-Content-Disposition: inline
+Should my patch remove or rename it to FRV?
 
+> 								Pavel
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+cu
+Adrian
 
-Linus,
+-- 
 
-Please pull from
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-fixes-2.6.git/
-
-for additional device IDs and a new independet runtime powermanagement
-interface (which was discussed on the linux-pm mailing list as well) for
-PCMCIA cards and devices, as the existing "device/power" one is said to be
-on its way out.
-
-The diffstat and list of changes follows:
-
-----
- drivers/pcmcia/ds.c           |   37 +++++++++++++++++++++++++++++++++++--
- drivers/pcmcia/socket_sysfs.c |   25 +++++++++++++++++++++++++
- drivers/serial/serial_cs.c    |    2 ++
- 3 files changed, 62 insertions(+), 2 deletions(-)
-----
-Dominik Brodowski:
-      pcmcia: add new IDs for serial_cs.c
-      pcmcia: runtime powermanagement interface
-
---UugvWAfsgieZRqgk
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDxq1eZ8MDCHJbN8YRAqcCAJ9NMefls/osz2nIY7s1YF3mlIQIIQCfXZaG
-oouJuS+ZSS/SsxlyonVRGIY=
-=jeKm
------END PGP SIGNATURE-----
-
---UugvWAfsgieZRqgk--
-
---===============69773423766380094==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============69773423766380094==--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
