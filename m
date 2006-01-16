@@ -1,14 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [2.6 patch] SOFTWARE_SUSPEND: fix a typo in the
-	dependencies
-Date: Sat, 14 Jan 2006 18:44:53 +0100
-Message-ID: <20060114174453.GB16427@elf.ucw.cz>
-References: <20060110043627.GD3911@stusta.de> <20060106202948.GB2736@ucw.cz>
-	<20060114023515.GJ29663@stusta.de>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Userspace interface breakage in power/state
+Date: Mon, 16 Jan 2006 00:25:17 +0000
+Message-ID: <20060116002516.GB4648@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============62065026298478654=="
+Content-Type: multipart/mixed; boundary="===============040615837112974784=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060114023515.GJ29663@stusta.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,32 +14,28 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org, Jean-Luc Leger <reiga@dspnet.fr.eu.org>
+To: linux-kernel@linux.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============62065026298478654==
+--===============040615837112974784==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On So 14-01-06 03:35:15, Adrian Bunk wrote:
-> This patch fixes a typo in the dependencies of SOFTWARE_SUSPEND.
-> 
-> This patch is based on a report by
-> Jean-Luc Leger <reiga@dspnet.fr.eu.org>.
+In older kernels, power/state for PCI devices took a PCI power state as 
+an argument and so "3" was an entirely sensible thing to echo into it. 
+In current kernels, it hits a BUG() in pci_choose_state and things blow 
+up.
 
-Applied to my tree, but feel free to push it yourself. It will take me
-a while to sync.
-								Pavel
-
+While I realise that the former interface was broken and wrong, would it 
+be possible to move to a new one without breaking existing code? 
 -- 
-Thanks, Sharp!
+Matthew Garrett | mjg59@srcf.ucam.org
 
---===============62065026298478654==
+--===============040615837112974784==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============62065026298478654==--
+--===============040615837112974784==--
