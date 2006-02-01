@@ -1,15 +1,16 @@
-From: Nigel Cunningham <nigel@suspend2.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm][Experimental] swsusp: freeze
 	userspace processes first
-Date: Thu, 2 Feb 2006 07:41:43 +1000
-Message-ID: <200602020741.47262.nigel@suspend2.net>
-References: <200602010141.53974.rjw@sisk.pl>
-	<200602012225.01695.nigel@suspend2.net>
-	<20060201124950.GA2137@elf.ucw.cz>
+Date: Wed, 1 Feb 2006 23:19:20 +0100
+Message-ID: <200602012319.21701.rjw@sisk.pl>
+References: <200602010141.53974.rjw@sisk.pl> <20060201114717.GA1768@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============88727041044823574=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060201124950.GA2137@elf.ucw.cz>
+In-Reply-To: <20060201114717.GA1768@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,133 +21,166 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@osdl.org>
+Cc: Nigel Cunningham <nigel@suspend2.net>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============88727041044823574==
-Content-Type: multipart/signed; boundary="nextPart2149393.kb5EhKucah";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Hi,
 
---nextPart2149393.kb5EhKucah
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wednesday 01 February 2006 12:47, Pavel Machek wrote:
+> > This is an experimantal patch aimed at the "unable to freeze processes under
+> > load" problem.
+> > 
+> > On my box the 2.6.16-rc1-mm4 kernel with this patch applied survives the
+> > "dd if=/dev/hda of=/dev/null" test.
+> > 
+> > Please have a look.
+> 
+> It makes it better (well, I used my own, simpler variant, but that
+> should not matter; patch is attached). I now can't reproduce hangs
+> with simple stress testing,
 
-Hi.
+This means the direction is right ...
 
-On Wednesday 01 February 2006 22:49, Pavel Machek wrote:
-> Hi!
->
-> > > > This is an experimantal patch aimed at the "unable to freeze
-> > > > processes under load" problem.
-> > > >
-> > > > On my box the 2.6.16-rc1-mm4 kernel with this patch applied survives
-> > > > the "dd if=3D/dev/hda of=3D/dev/null" test.
-> > > >
-> > > > Please have a look.
-> > >
-> > > It makes it better (well, I used my own, simpler variant, but that
-> > > should not matter; patch is attached). I now can't reproduce hangs
-> > > with simple stress testing, but running kernel make alongside that
-> > > makes it hang sometimes. Example of non-frozen gcc:
-> > >
-> > > gcc           D EEE06A70     0  1750   1749  1751
-> > > (NOTLB)
-> > > df85df38 00000046 bf878130 eee06a70 00004111 eee06a70 eee06a70
-> > > 003d0900
-> > >        00000000 c0137cf5 df85c000 00000000 c058ada2 c012503e ef2c915c
-> > > ef2c9030
-> > >        c1c0b480 7c3b8500 003d0927 df85c000 00000a98 7c3b8500 003d0927
-> > > c0770800
-> > > Call Trace:
-> > >  [<c0137cf5>] attach_pid+0x25/0xb0
-> > >  [<c058ada2>] _write_unlock_irq+0x12/0x30
-> > >  [<c012503e>] copy_process+0xe5e/0x11b0
-> > >  [<c0588f74>] wait_for_completion+0x94/0xd0
-> > >  [<c0121690>] default_wake_function+0x0/0x10
-> > >  [<c01254d9>] do_fork+0x149/0x210
-> > >  [<c0101218>] sys_vfork+0x28/0x30
-> > >  [<c0103231>] syscall_call+0x7/0xb
-> > >
-> > > ...maybe solving this would solve journalling problems, too? It is
-> > > similar AFAICT.
-> >
-> > What exactly is the journalling problem?
->
-> Hangs by freezing everything at same time only happen with journalling
-> filesystems; there kjournald needs to be running if we want user
-> threads to be stoppable.
+> but running kernel make alongside that 
+> makes it hang sometimes.
 
-Ah. Right. That should be fixed by doing the kernelspace threads after the=
-=20
-usespace ones (as I believe you're now doing?). I have seen XFS still=20
-submitting I/O after the sys_sync is finished (it apparently treats sys_syn=
-c=20
-as a weak and useless indication that it should think about considering=20
-flushing a buffer or two). That's why I'm now using bdev freezing instead o=
-f=20
-sys_sync.
+... but there still is a race here.
 
-> > > @@ -87,7 +87,6 @@ static int prepare_processes(void)
-> > >  	int error;
-> > >
-> > >  	pm_prepare_console();
-> > > -	sys_sync();
-> > >  	disable_nonboot_cpus();
-> > >
-> > >  	if (freeze_processes()) {
-> >
-> > That will help speed up freezing, but it won't help the integrity of yo=
-ur
-> > data if you don't resume.
->
-> See the patch better; it is now done between freezing userspace and
-> kernel threads.
+> Example of non-frozen gcc: 
+> 
+> gcc           D EEE06A70     0  1750   1749  1751
+> (NOTLB)
+> df85df38 00000046 bf878130 eee06a70 00004111 eee06a70 eee06a70
+> 003d0900
+>        00000000 c0137cf5 df85c000 00000000 c058ada2 c012503e ef2c915c
+> ef2c9030
+>        c1c0b480 7c3b8500 003d0927 df85c000 00000a98 7c3b8500 003d0927
+> c0770800
+> Call Trace:
+>  [<c0137cf5>] attach_pid+0x25/0xb0
+>  [<c058ada2>] _write_unlock_irq+0x12/0x30
+>  [<c012503e>] copy_process+0xe5e/0x11b0
+>  [<c0588f74>] wait_for_completion+0x94/0xd0
+>  [<c0121690>] default_wake_function+0x0/0x10
+>  [<c01254d9>] do_fork+0x149/0x210
+>  [<c0101218>] sys_vfork+0x28/0x30
+>  [<c0103231>] syscall_call+0x7/0xb
 
-Ah. So I see. Sorry.
+[I'm trying to understand this trace, but with not much success, so far.
+Apparently sys_vfork() calls do_fork() which calls copy_process(),
+which calls attach_pid().  But what default_wake_function() and
+wait_for_completion() are doing here?  And where it got stuck, actually?]
 
-> > >  /*
-> > >   * Timeout for stopping processes
-> > >   */
-> > > -#define TIMEOUT	(6 * HZ)
-> > > +#define TIMEOUT	(60 * HZ)
-> >
-> > You're kidding, right?
->
-> sync takes long time... and 6 seconds were not enough to deliver
-> signals on highly-loaded ext2.
+I think the problem is related to the kernel make using fork() heavily.
+Namely, if the parent process uses CLONE_VFORK, it will wait for the
+vfork completion.  Now if the child process is frozen _before_
+it completes the vfork completion, the parent will be unfreezeable.
 
-I'm using a timeout per step. Perhaps you could try that approach? 1 minute=
- is=20
-an awfully long time to wait if you do hang.
+> ...maybe solving this would solve journalling problems, too? It is
+> similar AFAICT.
 
-Regards,
+There's a chance, I think. ;-)
 
-Nigel
-=2D-=20
-See our web page for Howtos, FAQs, the Wiki and mailing list info.
-http://www.suspend2.net                IRC: #suspend2 on Freenode
+> diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+> index e24446f..90d6c1a 100644
+> --- a/kernel/power/disk.c
+> +++ b/kernel/power/disk.c
+> @@ -87,7 +87,6 @@ static int prepare_processes(void)
+>  	int error;
+>  
+>  	pm_prepare_console();
+> -	sys_sync();
+>  	disable_nonboot_cpus();
+>  
+>  	if (freeze_processes()) {
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 02a1b3a..bd16e44 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -16,7 +16,7 @@
+>  /* 
+>   * Timeout for stopping processes
+>   */
+> -#define TIMEOUT	(6 * HZ)
+> +#define TIMEOUT	(60 * HZ)
+>  
+>  
+>  static inline int freezeable(struct task_struct * p)
+> @@ -54,32 +54,53 @@ void refrigerator(void)
+>  	current->state = save;
+>  }
+>  
+> +static void freeze_process(struct task_struct *p)
+> +{
+> +       unsigned long flags;
+> +
+> +       freeze(p);
+> +       spin_lock_irqsave(&p->sighand->siglock, flags);
+> +       signal_wake_up(p, 0);
+> +       spin_unlock_irqrestore(&p->sighand->siglock, flags);
+> +}
+> +
+>  /* 0 = success, else # of processes that we failed to stop */
+>  int freeze_processes(void)
+>  {
+> -	int todo;
+> +	int todo, user_frozen, nr_user;
+>  	unsigned long start_time;
+>  	struct task_struct *g, *p;
+>  	unsigned long flags;
+>  
+>  	printk( "Stopping tasks: " );
+>  	start_time = jiffies;
+> +	user_frozen = 0;
+>  	do {
+> -		todo = 0;
+> +		nr_user = todo = 0;
+>  		read_lock(&tasklist_lock);
+>  		do_each_thread(g, p) {
+>  			if (!freezeable(p))
+>  				continue;
+>  			if (frozen(p))
+>  				continue;
+> -
+> -			freeze(p);
+> -			spin_lock_irqsave(&p->sighand->siglock, flags);
+> -			signal_wake_up(p, 0);
+> -			spin_unlock_irqrestore(&p->sighand->siglock, flags);
+> -			todo++;
+> +			if (p->mm) {
 
---nextPart2149393.kb5EhKucah
-Content-Type: application/pgp-signature
+This one is too simplistic, it appears.  We should lock the task to check its mm
+and there may be kernel threads with non-null mm (they have the
+PF_BORROWED_MM flag set though, so we have to check this too).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+> +				/* The task is a user-space one. Freeze it */
+> +				freeze_process(p);
+> +				todo++;
 
-iD8DBQBD4SsbN0y+n1M3mo0RAj7+AKC7SHNDiEbtugBrtDjruS7yC+I6DQCgol60
-UGMv/BsSCJy30SJDSeBglio=
-=BdbP
------END PGP SIGNATURE-----
+I think you can drop this ...
 
---nextPart2149393.kb5EhKucah--
+> +				nr_user++;
+> +			} else {
+> +				/* Freeze only if the user space is frozen */
+> +				if (user_frozen)
+> +					freeze_process(p);
+> +				todo++;
+> +			}
+>  		} while_each_thread(g, p);
+>  		read_unlock(&tasklist_lock);
 
---===============88727041044823574==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+... if you do
 
+ +		todo += nr_user;
+> +		if (!user_frozen && !nr_user) {
+> +			printk("sync");
+> +			sys_sync();
+> +		}
+> +		user_frozen = !nr_user;
+>  		yield();			/* Yield is okay here */
+>  		if (todo && time_after(jiffies, start_time + TIMEOUT)) {
+>  			printk( "\n" );
+}-- debugging stuff snipped --{
 
---===============88727041044823574==--
+Greetings,
+Rafael 
