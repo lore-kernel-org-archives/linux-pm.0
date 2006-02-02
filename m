@@ -1,17 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm][Experimental] swsusp: freeze
+Subject: Re: Re: [RFC][PATCH -mm][Experimental] swsusp: freeze
 	userspace processes first
-Date: Thu, 2 Feb 2006 00:57:34 +0100
-Message-ID: <200602020057.35598.rjw@sisk.pl>
-References: <200602010141.53974.rjw@sisk.pl>
-	<200602012225.01695.nigel@suspend2.net>
-	<20060201124950.GA2137@elf.ucw.cz>
+Date: Thu, 2 Feb 2006 14:55:01 +0100
+Message-ID: <200602021455.01745.rjw@sisk.pl>
+References: <200602010141.53974.rjw@sisk.pl> <20060201124950.GA2137@elf.ucw.cz>
+	<200602020057.35598.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060201124950.GA2137@elf.ucw.cz>
+In-Reply-To: <200602020057.35598.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -28,41 +27,54 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On Wednesday 01 February 2006 13:49, Pavel Machek wrote:
-> > > > This is an experimantal patch aimed at the "unable to freeze processes
-> > > > under load" problem.
-> > > >
-}-- snip --{
-> > >  /*
-> > >   * Timeout for stopping processes
-> > >   */
-> > > -#define TIMEOUT	(6 * HZ)
-> > > +#define TIMEOUT	(60 * HZ)
+On Thursday 02 February 2006 00:57, Rafael J. Wysocki wrote:
+> On Wednesday 01 February 2006 13:49, Pavel Machek wrote:
+> > > > > This is an experimantal patch aimed at the "unable to freeze processes
+> > > > > under load" problem.
+> > > > >
+> }-- snip --{
+> > > >  /*
+> > > >   * Timeout for stopping processes
+> > > >   */
+> > > > -#define TIMEOUT	(6 * HZ)
+> > > > +#define TIMEOUT	(60 * HZ)
+> > > 
+> > > You're kidding, right?
 > > 
-> > You're kidding, right?
+> > sync takes long time... and 6 seconds were not enough to deliver
+> > signals on highly-loaded ext2.
 > 
-> sync takes long time... and 6 seconds were not enough to deliver
-> signals on highly-loaded ext2.
+> The appended modified version of the original patch solves the timeout vs sync
+> problem. ;-)
+> 
+> Seriously speaking I have incoroprated your changes (extended to the userland
+> interface) and made some fixes (the usermodehelper-related part is still
+> there, for completness).
+}-- snip --{  
+> +	mutex_lock(&freezer_lock);
+> +	freezing_processes = 1;
+> +	mutex_unlock(&freezer_lock);
+> +	while (atomic_read(&usermodehelper_waiting))
+> +		schedule();
 
-The appended modified version of the original patch solves the timeout vs sync
-problem. ;-)
+That requires a timeout in case we have a user mode helper in the D state.
+The corrected patch is appended.
 
-Seriously speaking I have incoroprated your changes (extended to the userland
-interface) and made some fixes (the usermodehelper-related part is still
-there, for completness).
+BTW, it contains a change that may help solve the unfreezeable gcc problem
+that has appeared in your tests.  Could you please try it or tell me what I
+should do to reproduce the problem?
 
-Greetings,
 Rafael
 
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
  include/linux/suspend.h |    6 +++
- kernel/kmod.c           |   19 ++++++++++++
+ kernel/kmod.c           |   19 +++++++++++
  kernel/power/disk.c     |    1 
- kernel/power/process.c  |   74 ++++++++++++++++++++++++++++++++++++++----------
+ kernel/power/process.c  |   81 +++++++++++++++++++++++++++++++++++++++---------
  kernel/power/user.c     |    1 
- 5 files changed, 85 insertions(+), 16 deletions(-)
+ 5 files changed, 92 insertions(+), 16 deletions(-)
 
 Index: linux-2.6.16-rc1-mm4/kernel/power/process.c
 ===================================================================
@@ -89,7 +101,7 @@ Index: linux-2.6.16-rc1-mm4/kernel/power/process.c
  
  static inline int freezeable(struct task_struct * p)
  {
-@@ -54,48 +62,86 @@ void refrigerator(void)
+@@ -54,48 +62,93 @@ void refrigerator(void)
  	current->state = save;
  }
  
@@ -112,11 +124,18 @@ Index: linux-2.6.16-rc1-mm4/kernel/power/process.c
  	struct task_struct *g, *p;
  	unsigned long flags;
  
++	start_time = jiffies;
 +	mutex_lock(&freezer_lock);
 +	freezing_processes = 1;
 +	mutex_unlock(&freezer_lock);
-+	while (atomic_read(&usermodehelper_waiting))
++	while (atomic_read(&usermodehelper_waiting)) {
++		if (time_after(jiffies, start_time + TIMEOUT)) {
++			printk(KERN_ERR "Unable to freeze tasks because of "
++				"active user mode helpers\n");
++			return -EBUSY;
++		}
 +		schedule();
++	}
 +
  	printk( "Stopping tasks: " );
  	start_time = jiffies;
@@ -189,7 +208,7 @@ Index: linux-2.6.16-rc1-mm4/kernel/power/process.c
  			if (freezing(p)) {
  				pr_debug("  clean up: %s\n", p->comm);
  				p->flags &= ~PF_FREEZE;
-@@ -103,7 +149,7 @@ int freeze_processes(void)
+@@ -103,7 +156,7 @@ int freeze_processes(void)
  				recalc_sigpending_tsk(p);
  				spin_unlock_irqrestore(&p->sighand->siglock, flags);
  			}
