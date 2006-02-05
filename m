@@ -1,12 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] swsusp: documentation update
-Date: Sun, 5 Feb 2006 12:16:55 +0100
-Message-ID: <20060205111655.GF1790@elf.ucw.cz>
-References: <200602050903.48678.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.15.2: kernel oops with swsusp
+Date: Sun, 5 Feb 2006 14:30:44 +0100
+Message-ID: <200602051430.45478.rjw@sisk.pl>
+References: <1139145074.20895.253576886@webmail.messagingengine.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============90339229164611412=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200602050903.48678.rjw@sisk.pl>
+In-Reply-To: <1139145074.20895.253576886@webmail.messagingengine.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,88 +19,50 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Robert Freund <spinningteacup@ftml.net>
 Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============90339229164611412==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-On Ne 05-02-06 09:03:48, Rafael J. Wysocki wrote:
+Thanks a lot for the report.
+
+On Sunday 05 February 2006 14:11, you wrote:
 > Hi,
 > 
-> This patch updates the swsusp documentation to reflect the recent change
-> that prevented the kernel from setting to console loglevel to 10
-> unconditionally during suspend.  It also removes one obsolete
-> paragraph.
+> I'm emailing you because I believe you're one of the swsusp-maintainers.
+> If this is not the case, please forward this mail.
+> 
+> I'm trying to swsusp my acer travelmate 800, which is a centrino machine
+> using the hibernate script from the suspend2-project, which does an
+> "echo disk > /sys/power/state" as far as I know. This is on a vanilla
+> 2.6.15.2.
+> 
+> Unfortunately I get a kernel oops ("Unable to handle kernel paging
+> request at address...") when doing so. This was the same with 2.6.15.1.
+> Suspend used to work flawlessly with 2.6.14 and before. I exited X and
+> removed all modules I could remove (see the screenshot for what was
+> left), but it still doesn't work.
+> 
+> Here are links to (maybe) relevant information, and a screenshot from my
+> digicam:
+> 
+> http://rffr.de/configs/dmesg-2006-02-05.txt
+> http://rffr.de/configs/lspci-2006-02-05.txt
+> http://rffr.de/configs/config-2.6.15.2.txt
+> http://rffr.de/screens/oops-2006-02-05.jpg (135k)
+> 
+> What else can I do to help solving this?
 
-I'd say that kernel messages are common knowledge and do not deserve
-to be *that* visible.
+Your oops trace suggests this happens while suspending one of devices.
 
-What about this? If you agree, I'll push it to akpm.
+Could you please do the following:
 
-diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-index b28b7f0..96bbe61 100644
---- a/Documentation/power/swsusp.txt
-+++ b/Documentation/power/swsusp.txt
-@@ -27,19 +27,18 @@ echo shutdown > /sys/power/disk; echo di
- 
- echo platform > /sys/power/disk; echo disk > /sys/power/state
- 
-+. If you have SATA disks, you'll need recent kernels with SATA suspend
-+support. For suspend and resume to work, make sure your disk drivers
-+are built into kernel -- not modules. [There's way to make
-+suspend/resume with modular disk drivers, see FAQ, but you probably
-+should not do that.]
-+
- If you want to limit the suspend image size to N bytes, do
- 
- echo N > /sys/power/image_size
- 
- before suspend (it is limited to 500 MB by default).
- 
--Encrypted suspend image:
--------------------------
--If you want to store your suspend image encrypted with a temporary
--key to prevent data gathering after resume you must compile
--crypto and the aes algorithm into the kernel - modules won't work
--as they cannot be loaded at resume time.
--
- 
- Article about goals and implementation of Software Suspend for Linux
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@@ -333,4 +332,19 @@ init=/bin/bash, then swapon and starting
- usually does the trick. Then it is good idea to try with latest
- vanilla kernel.
- 
-+Q: How can distributions ship a swsusp-supporting kernel with modular
-+disk drivers (especially SATA)?
-+
-+A: Well, it can be done, load the drivers, then do echo into
-+/sys/power/disk/resume file from initrd. Be sure not to mount
-+anything, not even read-only mount, or you are going to lose your
-+data.
-+
-+Q: How do I make suspend more verbose?
-+
-+A: If you want to see any non-error kernel messages on the virtual
-+terminal the kernel switches to during suspend, you have to set the
-+kernel console loglevel to at least 4 (KERN_WARNING), for example by
-+doing
- 
-+	echo 4 > /proc/sys/kernel/printk
+1) boot your box with the "init=/bin/bash" kernel command line parameter
+2) do "mount /proc" and "mount /sys"
+3) do "echo disk > /sys/power/state"
 
+and see if the problem occurs?
 
-
--- 
-Thanks, Sharp!
-
---===============90339229164611412==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============90339229164611412==--
+Greetings,
+Rafael
