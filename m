@@ -1,36 +1,61 @@
-From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Subject: Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
-Date: Wed, 8 Feb 2006 23:25:32 +0100
-Message-ID: <20060208222532.GA4824@titan.lahn.de>
-References: <20060208125753.GA25562@srcf.ucam.org> <20060208130422.GB25659@srcf.ucam.org>
+From: Nigel Cunningham <ncunningham@cyclades.com>
+Subject: Re: [PATCH] Complain if driver reenables interrupts during drivers_[suspend|resume] & re-disable
+Date: Thu, 9 Feb 2006 09:58:57 +1000
+Message-ID: <200602090959.02015.ncunningham@cyclades.com>
+References: <200602071906.55281.ncunningham@cyclades.com> <200602080040.41495.dtor_core@ameritech.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060208130422.GB25659@srcf.ucam.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed;
+  boundary="nextPart2320783.6PeMDbYEdH";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422676AbWBIACR@vger.kernel.org>
+In-Reply-To: <200602080040.41495.dtor_core@ameritech.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor_core@ameritech.net>
+Cc: Linux PM <linux-pm@osdl.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+--nextPart2320783.6PeMDbYEdH
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Wed, Feb 08, 2006 at 01:04:22PM +0000, Matthew Garrett wrote:
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-...
-> +void pm_set_ac_status(int (*ac_status_function)(void))
-> +{
-> +	down(&pm_sem);
-> +	get_ac_status = ac_status_function;
-> +	up(&pm_sem);
-> +}
+Hi Dmitry et al.
 
-Why do you need a semaphore/mutex, when you only do one assignment,
-which is atomic by itself?
+On Wednesday 08 February 2006 15:40, Dmitry Torokhov wrote:
+> On Tuesday 07 February 2006 04:06, Nigel Cunningham wrote:
+> > Hi all.
+> >=20
+> > This patch is designed to help with diagnosing and fixing the cause of
+> > problems in suspending/resuming, due to drivers wrongly re-enabling
+> > interrupts in their .suspend or .resume methods.=20
+> >=20
+> > I nearly forgot about it in sending patches in suspend2 that might help
+> > where swsusp fails.
+> >=20
+>=20
+> Only sysdevs are guaranteed to be suspebded/resumed with interrupts off,
+> other devices are suspended with interrupts on (at least on first pass
+> over device list).
 
-BYtE
-Philipp
--- 
-  / /  (_)__  __ ____  __ Philipp Hahn
- / /__/ / _ \/ // /\ \/ /
-/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
+Ok. I guess I missed that outcome of that discussion. Sorry for the=20
+bogusness :(. Is the sysdev bit useful at all?
+
+Regards,
+
+Nigel
+
+--nextPart2320783.6PeMDbYEdH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBD6oXFN0y+n1M3mo0RAuoFAJ94/oBsts/BU8fGeNtMTRJdhBERkwCePsdh
+Vw7rlAXmMISOhLQBmn6k/Ck=
+=WJdf
+-----END PGP SIGNATURE-----
+
+--nextPart2320783.6PeMDbYEdH--
