@@ -1,38 +1,104 @@
-From: Greg KH <greg@kroah.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [linux-pm] Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
-Date: Wed, 8 Feb 2006 09:16:49 -0800
-Message-ID: <20060208171649.GA21373@kroah.com>
-References: <20060208125753.GA25562@srcf.ucam.org> <20060208130422.GB25659@srcf.ucam.org> <20060208165803.GA15239@kroah.com> <20060208170857.GA29818@srcf.ucam.org>
+Date: Wed, 8 Feb 2006 17:49:33 +0000
+Message-ID: <20060208174933.GA30719@srcf.ucam.org>
+References: <20060208125753.GA25562@srcf.ucam.org> <20060208130422.GB25659@srcf.ucam.org> <20060208165803.GA15239@kroah.com> <20060208170857.GA29818@srcf.ucam.org> <20060208171649.GA21373@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030292AbWBHRRD@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20060208170857.GA29818@srcf.ucam.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <20060208171649.GA21373@kroah.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Greg KH <greg@kroah.com>
 Cc: linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 08, 2006 at 05:08:58PM +0000, Matthew Garrett wrote:
-> On Wed, Feb 08, 2006 at 08:58:03AM -0800, Greg KH wrote:
-> > > +{
-> > > +	down(&pm_sem);
-> > 
-> > Shouldn't this be a mutex?
-> 
-> It is, isn't it? The name's somewhat misleading, but I was just using 
-> what already existed...
+On Wed, Feb 08, 2006 at 09:16:49AM -0800, Greg KH wrote:
 
-Ah, ok, nevermind, I thought this was new.
+> kerneldoc will not work with this.  It needs to be a one line, short,
+> description.  Put the full description below the function paramaters, it
+> can be as many lines as you want there.
 
-> +/**
-> + *	pm_set_ac_status - Set the ac status callback. Returns true if the
-> + *                         system is on AC and has a registered callback.
+Ok, how's this one?
 
-kerneldoc will not work with this.  It needs to be a one line, short,
-description.  Put the full description below the function paramaters, it
-can be as many lines as you want there.
+Signed-Off-By: Matthew Garrett <mjg59@srcf.ucam.org>
 
-thanks,
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 5be87ba..59ece0f 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -129,6 +129,8 @@ struct pm_ops {
+ 
+ extern void pm_set_ops(struct pm_ops *);
+ extern struct pm_ops *pm_ops;
++extern void pm_set_ac_status(int (*ac_status_function)(void));
++extern int pm_get_ac_status(void);
+ extern int pm_suspend(suspend_state_t state);
+ 
+ 
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 46110d5..31745fb 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -15,7 +15,7 @@
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/pm.h>
+-
++#include <linux/module.h>
+ 
+ #include "power.h"
+ 
+@@ -25,6 +25,7 @@
+ DECLARE_MUTEX(pm_sem);
+ 
+ struct pm_ops *pm_ops = NULL;
++int (*get_ac_status)(void);
+ suspend_disk_method_t pm_disk_mode = PM_DISK_SHUTDOWN;
+ 
+ /**
+@@ -39,6 +40,41 @@ void pm_set_ops(struct pm_ops * ops)
+ 	up(&pm_sem);
+ }
+ 
++/**
++ *	pm_set_ac_status - Set the ac status callback.
++ *	@ops:	Pointer to function
++ *
++ *      Provide a callback that returns true if the system is currently on
++ *      AC power. This should be called by power management subsystems.
++ */
++
++void pm_set_ac_status(int (*ac_status_function)(void))
++{
++	down(&pm_sem);
++	get_ac_status = ac_status_function;
++	up(&pm_sem);
++}
++EXPORT_SYMBOL_GPL(pm_set_ac_status);
++
++/**
++ *	pm_get_ac_status - return true if the system is on AC
++ *
++ *      Returns true if the system has a registered callback for determining 
++ *      AC state and is currently on AC power, false otherwise.
++ */
++
++int pm_get_ac_status(void)
++{
++	int status=0;
++
++	down (&pm_sem);
++	if (get_ac_status)
++		status = get_ac_status();
++	up (&pm_sem);
++
++	return status;
++}
++EXPORT_SYMBOL_GPL(pm_get_ac_status);
+ 
+ /**
+  *	suspend_prepare - Do prep work before entering low-power state.
 
-greg k-h
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
