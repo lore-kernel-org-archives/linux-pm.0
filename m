@@ -1,61 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Complain if driver reenables interrupts
-	during drivers_[suspend|resume] & re-disable
-Date: Wed, 8 Feb 2006 07:46:09 +0100
-Message-ID: <200602080746.10524.rjw@sisk.pl>
-References: <200602071906.55281.ncunningham@cyclades.com>
-	<200602080040.41495.dtor_core@ameritech.net>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: [PATCH, RFC] [1/3] Generic in-kernel AC status
+Date: Wed, 8 Feb 2006 12:57:53 +0000
+Message-ID: <20060208125753.GA25562@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============40867046855434008=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200602080040.41495.dtor_core@ameritech.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dmitry Torokhov <dtor_core@ameritech.net>
-Cc: Andrew Morton <akpm@osdl.org>, Linux PM <linux-pm@osdl.org>, Nigel Cunningham <ncunningham@cyclades.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030410AbWBHM6Q@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============40867046855434008==
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The included patch adds support for power management methods to register 
+callbacks in order to allow drivers to check if the system is on AC or 
+not. Following patches add support to ACPI and APM. Feedback welcome.
 
-On Wednesday 08 February 2006 06:40, Dmitry Torokhov wrote:
-> On Tuesday 07 February 2006 04:06, Nigel Cunningham wrote:
-> > Hi all.
-> > 
-> > This patch is designed to help with diagnosing and fixing the cause of
-> > problems in suspending/resuming, due to drivers wrongly re-enabling
-> > interrupts in their .suspend or .resume methods. 
-> > 
-> > I nearly forgot about it in sending patches in suspend2 that might help
-> > where swsusp fails.
-> > 
-> 
-> Only sysdevs are guaranteed to be suspebded/resumed with interrupts off,
-> other devices are suspended with interrupts on (at least on first pass
-> over device list).
+Signed-Off-By: Matthew Garrett <mjg59@srcf.ucam.org>
 
-Yes, and AFAICT this is how it's supposed to be.  [There was an LKML thread
-last year that finished with this conclusion.  I think I can find it for reference,
-if necessary.]
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 5be87ba..59ece0f 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -129,6 +129,8 @@ struct pm_ops {
+ 
+ extern void pm_set_ops(struct pm_ops *);
+ extern struct pm_ops *pm_ops;
++extern void pm_set_ac_status(int (*ac_status_function)(void));
++extern int pm_get_ac_status(void);
+ extern int pm_suspend(suspend_state_t state);
+ 
+ 
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 46110d5..a1daafb 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -25,6 +25,7 @@
+ DECLARE_MUTEX(pm_sem);
+ 
+ struct pm_ops *pm_ops = NULL;
++int (*get_ac_status)(void);
+ suspend_disk_method_t pm_disk_mode = PM_DISK_SHUTDOWN;
+ 
+ /**
+@@ -39,6 +40,39 @@ void pm_set_ops(struct pm_ops * ops)
+ 	up(&pm_sem);
+ }
+ 
++/**
++ *	pm_set_ac_status - Set the ac status callback
++ *	@ops:	Pointer to function
++ */
++
++void pm_set_ac_status(int (*ac_status_function)(void))
++{
++	down(&pm_sem);
++	get_ac_status = ac_status_function;
++	up(&pm_sem);
++}
++
++EXPORT_SYMBOL(pm_set_ac_status);
++
++/**
++ *	pm_get_ac_status - return true if the system is on AC
++ */
++
++int pm_get_ac_status(void)
++{
++	int status;
++
++	down (&pm_sem);
++	if (get_ac_status)
++		status = get_ac_status();
++	else
++		status = 0;
++	up (&pm_sem);
++
++	return status;
++}
++
++EXPORT_SYMBOL(pm_get_ac_status);
+ 
+ /**
+  *	suspend_prepare - Do prep work before entering low-power state.
 
-Greetings,
-Rafael
-
---===============40867046855434008==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============40867046855434008==--
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
