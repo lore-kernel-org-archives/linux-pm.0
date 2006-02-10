@@ -1,13 +1,16 @@
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: what handles disk drive(s) shutdown?
-Date: Fri, 10 Feb 2006 14:59:58 -0800 (PST)
-Message-ID: <Pine.LNX.4.58.0602101457460.23838@shark.he.net>
+Date: Sat, 11 Feb 2006 00:06:33 +0100
+Message-ID: <20060210230633.GB1947@elf.ucw.cz>
 References: <Pine.LNX.4.58.0602091407590.7095@shark.he.net>
 	<20060210225605.GB1952@elf.ucw.cz>
+	<Pine.LNX.4.58.0602101457460.23838@shark.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============89704640192042384=="
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060210225605.GB1952@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0602101457460.23838@shark.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,48 +20,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============89704640192042384==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-
-On Fri, 10 Feb 2006, Pavel Machek wrote:
-
-> Hi!
->
-> > in Documentation/power/devices.txt, I read:
+On P=E1 10-02-06 14:59:58, Randy.Dunlap wrote:
+> On Fri, 10 Feb 2006, Pavel Machek wrote:
+>=20
+> > Hi!
 > >
-> > <quote>
-> > System shutdown -- at least disks need to be spun down, or data may be
-> > lost. Quiesce devices, just to make life easier for BIOS. event =
-> > FREEZE, flags = SYSTEM_SHUTDOWN
-> > </quote>
+> > > in Documentation/power/devices.txt, I read:
+> > >
+> > > <quote>
+> > > System shutdown -- at least disks need to be spun down, or data may=
+ be
+> > > lost. Quiesce devices, just to make life easier for BIOS. event =3D
+> > > FREEZE, flags =3D SYSTEM_SHUTDOWN
+> > > </quote>
+> > >
+> > > Is this actually done somewhere?  I can't find /SYSTEM_SHUTDOWN/
+> > > in any kernel .h or .c files.
 > >
-> > Is this actually done somewhere?  I can't find /SYSTEM_SHUTDOWN/
-> > in any kernel .h or .c files.
->
-> I think we do FREEZE during shutdown, but flags never got
-> implemented. It seems nobody really needs them, so...
+> > I think we do FREEZE during shutdown, but flags never got
+> > implemented. It seems nobody really needs them, so...
+>=20
+> I'm not particular about the flags, but I do have a case of
+> needing to do what the comment describes:  spin down disks
+> during shutdown.  Can anyone suggest how that should be done?
+>=20
+> [I'm currently adding code to use register_reboot_notifier()
+> and keeping a table of SATA/PATA controllers/channels for use
+> at shutdown...]
 
-I'm not particular about the flags, but I do have a case of
-needing to do what the comment describes:  spin down disks
-during shutdown.  Can anyone suggest how that should be done?
+No, that is not the right way.
 
-[I'm currently adding code to use register_reboot_notifier()
-and keeping a table of SATA/PATA controllers/channels for use
-at shutdown...]
+void kernel_shutdown_prepare(enum system_states state)
+{
+        notifier_call_chain(&reboot_notifier_list,
+                (state =3D=3D SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
+        system_state =3D state;
+        device_shutdown();
+}
 
-Thanks,
--- 
-~Randy
+device_shutdown() should do it, AFAICT.
 
---===============89704640192042384==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============89704640192042384==--
+If you want to listen to such event, you should just register your
+driver with sysfs and implement .suspend() method. But I believe PATA
+does that already...
+								Pavel
+--=20
+Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
