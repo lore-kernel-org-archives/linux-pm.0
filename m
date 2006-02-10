@@ -1,57 +1,37 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: what handles disk drive(s) shutdown?
-Date: Thu, 9 Feb 2006 21:50:34 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0602092146530.24417-100000@netrider.rowland.org>
-References: <Pine.LNX.4.58.0602091407590.7095@shark.he.net>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
+Date: Fri, 10 Feb 2006 09:06:43 +0100
+Message-ID: <20060210080643.GA14763@suse.de>
+References: <20060208125753.GA25562@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============32563788264226234=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.58.0602091407590.7095@shark.he.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060208125753.GA25562@srcf.ucam.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============32563788264226234==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+On Wed, Feb 08, 2006 at 12:57:53PM +0000, Matthew Garrett wrote:
+> The included patch adds support for power management methods to regis=
+ter=20
+> callbacks in order to allow drivers to check if the system is on AC o=
+r=20
+> not. Following patches add support to ACPI and APM. Feedback welcome.
 
-On Thu, 9 Feb 2006, Randy.Dunlap wrote:
-
-> in Documentation/power/devices.txt, I read:
-> 
-> <quote>
-> System shutdown -- at least disks need to be spun down, or data may be
-> lost. Quiesce devices, just to make life easier for BIOS. event =
-> FREEZE, flags = SYSTEM_SHUTDOWN
-> </quote>
-> 
-> Is this actually done somewhere?  I can't find /SYSTEM_SHUTDOWN/
-> in any kernel .h or .c files.
-
-Just about everything concerning the flags in those documentation files is 
-fictitious.  The flags field doesn't even exist!  Right now there's 
-nothing but the event field.
-
-I guess it's what Pavel intended to implement eventually.  That doesn't 
-mean the final version will actually take the form described in the 
-file...
-
-Alan Stern
-
-
---===============32563788264226234==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============32563788264226234==--
+Ok. Maybe i am not seeing the point. But why do we need this in the ker=
+nel?
+Can't we handles this easily in userspace?
+--=20
+Stefan Seyfried                  \ "I didn't want to write for pay. I
+QA / R&D Team Mobile Devices      \ wanted to be paid for what I write.=
+"
+SUSE LINUX Products GmbH, N=FCrnberg \                    -- Leonard Co=
+hen
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
