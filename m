@@ -1,80 +1,50 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
-Date: Fri, 10 Feb 2006 14:46:38 +0100
-Message-ID: <20060210134638.GA5109@elf.ucw.cz>
-References: <20060208125753.GA25562@srcf.ucam.org> <20060210080643.GA14763@suse.de> <20060210121913.GA4974@elf.ucw.cz> <20060210123259.GB18577@suse.de>
+Subject: Re: [linux-pm] Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
+Date: Fri, 10 Feb 2006 14:54:15 +0100
+Message-ID: <20060210135415.GC5109@elf.ucw.cz>
+References: <20060208125753.GA25562@srcf.ucam.org> <20060208130422.GB25659@srcf.ucam.org> <20060208165803.GA15239@kroah.com> <20060208170857.GA29818@srcf.ucam.org> <20060209085344.GF16052@boogie.lpds.sztaki.hu> <20060210122131.GC4974@elf.ucw.cz> <20060210131337.GD11740@boogie.lpds.sztaki.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20060210123259.GB18577@suse.de>
+In-Reply-To: <20060210131337.GD11740@boogie.lpds.sztaki.hu>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Stefan Seyfried <seife@suse.de>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Gabor Gombas <gombasg@sztaki.hu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>, linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, seife@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On P=E1 10-02-06 13:32:59, Stefan Seyfried wrote:
-> On Fri, Feb 10, 2006 at 01:19:13PM +0100, Pavel Machek wrote:
-> > On P=E1 10-02-06 09:06:43, Stefan Seyfried wrote:
+On P=E1 10-02-06 14:13:38, Gabor Gombas wrote:
+> On Fri, Feb 10, 2006 at 01:21:31PM +0100, Pavel Machek wrote:
 >=20
-> > > Ok. Maybe i am not seeing the point. But why do we need this in t=
-he kernel?
-> > > Can't we handles this easily in userspace?
-> >=20
-> > Some kernel parts need to now: for example powernow-k8: some
+> > Still "set current brightness" operation makes a lot of sense.
 >=20
-> we can tell them from userspace.
+> Yes, but userspace already knows if you are on AC power or not,
+> therefore it can decide what "current" means. If this is the only rea=
+son
+> then adding a new kernel infrastructure is overkill.
 
-No, because battery will explode if you do not slow cpu down fast
-enough. And it would be extremely ugly.
+It is not.
 
-Right now, interfaces we have are:
+powernow-k8 needs to know if ac is plugged, else it can overload
+battery.
 
-/proc/apm -- to get AC/DC info on APM
+backlight code needs it for get current brightness.
 
-/proc/acpi/ac_adapter/*/state -- to get in on ACPI
+on Zauruses, battery charging is done in kernel (not in
+hardware). Battery charging obviously needs to know if ac is
+connected.
 
-=2E..then we have...
+on Zauruses, IIRC backlight control code needs to know ac/dc, because
+voltage differs on some internal buses and backlight power needs to be
+programmed in different way.
 
-in-kernel interface to get AC/DC info on APM, and in-kernel interface
-to get AC/DC info on ACPI (powernow-k8 needs it). Brightness needs to
-use those interfaces, too.
+> Also, doing things differently when on AC power smells like a policy
+> decision, and AFAIK policy handling is not wanted in the kernel.
 
-With your proposed solution, we'd have to add
-/proc/powernow_k8/you_are_on_ac and /proc/backlight/you_are_on_ac and
-=2E.., or something, along with daemon to poll /proc/apm and
-/proc/acpi/*/*/state (and whatever else embedded machines do), and
-feed it back to kernel.
+It is not policy decision, it is protect-hardware-from-damage on
+embedded platorms/pn-k8.
 
-That's clearly wrong thing to do. So Matthew patch is actually
-cleanup. It should allow us to kill special interfaces and have
-something like /sys/power/ac ... and not having to introduce special
-interfaces for pn-k8, backlight and more.
-
-(More responses in separate thread.)
-
-> > frequencies are not allowed when you are running off battery. [Just
-> > now it is solved by not allowing those frequencies at all unless AC=
-PI
-> > is available; quite an ugly solution.]
->=20
-> And this is a reason to include it in the kernel?
-> Pavel? Is it you? What have they done to you? ;-)
-
-=46requency scaling is currently done in kernel, and this is "battery
-blows up" issue.
-
-> I mean - we are moving suspend and everything to userspace, so i wond=
-er
-> why this has to be in kernel.
-
-Unless you want LZF, encryption, and graphical progress bar, suspend
-goes to userspace. But AC/DC knowledge is actually neccessary for
-kernel. You can live without it on most PCs (except powernow-k8
-machines and notebooks that have braindamaged), but embedded platforms
-definitely need it.
-								Pavel
 --=20
 Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted.=
 =2E.
