@@ -1,55 +1,63 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
-Date: Fri, 10 Feb 2006 14:54:15 +0100
-Message-ID: <20060210135415.GC5109@elf.ucw.cz>
-References: <20060208125753.GA25562@srcf.ucam.org> <20060208130422.GB25659@srcf.ucam.org> <20060208165803.GA15239@kroah.com> <20060208170857.GA29818@srcf.ucam.org> <20060209085344.GF16052@boogie.lpds.sztaki.hu> <20060210122131.GC4974@elf.ucw.cz> <20060210131337.GD11740@boogie.lpds.sztaki.hu>
+From: Gabor Gombas <gombasg@sztaki.hu>
+Subject: Re: Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
+Date: Fri, 10 Feb 2006 14:56:22 +0100
+Message-ID: <20060210135622.GI11740@boogie.lpds.sztaki.hu>
+References: <20060208125753.GA25562@srcf.ucam.org>
+	<20060208130422.GB25659@srcf.ucam.org>
+	<20060208165803.GA15239@kroah.com>
+	<20060208170857.GA29818@srcf.ucam.org>
+	<20060209085344.GF16052@boogie.lpds.sztaki.hu>
+	<20060210122131.GC4974@elf.ucw.cz>
+	<20060210131337.GD11740@boogie.lpds.sztaki.hu>
+	<20060210135415.GC5109@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060210131337.GD11740@boogie.lpds.sztaki.hu>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>, linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, seife@suse.de
+Content-Type: multipart/mixed; boundary="===============55412056003603372=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060210135415.GC5109@elf.ucw.cz>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, seife@suse.de, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On P=E1 10-02-06 14:13:38, Gabor Gombas wrote:
-> On Fri, Feb 10, 2006 at 01:21:31PM +0100, Pavel Machek wrote:
->=20
-> > Still "set current brightness" operation makes a lot of sense.
->=20
-> Yes, but userspace already knows if you are on AC power or not,
-> therefore it can decide what "current" means. If this is the only rea=
-son
-> then adding a new kernel infrastructure is overkill.
+--===============55412056003603372==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It is not.
+On Fri, Feb 10, 2006 at 02:54:15PM +0100, Pavel Machek wrote:
 
-powernow-k8 needs to know if ac is plugged, else it can overload
-battery.
+> > Yes, but userspace already knows if you are on AC power or not,
+> > therefore it can decide what "current" means. If this is the only reason
+> > then adding a new kernel infrastructure is overkill.
+> 
+> It is not.
 
-backlight code needs it for get current brightness.
+Ok, fair enough.
 
-on Zauruses, battery charging is done in kernel (not in
-hardware). Battery charging obviously needs to know if ac is
-connected.
+Gabor
 
-on Zauruses, IIRC backlight control code needs to know ac/dc, because
-voltage differs on some internal buses and backlight power needs to be
-programmed in different way.
+-- 
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences,
+     Laboratory of Parallel and Distributed Systems
+     Address   : H-1132 Budapest Victor Hugo u. 18-22. Hungary
+     Phone/Fax : +36 1 329-78-64 (secretary)
+     W3        : http://www.lpds.sztaki.hu
+     ---------------------------------------------------------
 
-> Also, doing things differently when on AC power smells like a policy
-> decision, and AFAIK policy handling is not wanted in the kernel.
+--===============55412056003603372==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It is not policy decision, it is protect-hardware-from-damage on
-embedded platorms/pn-k8.
 
---=20
-Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted.=
-=2E.
--
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--===============55412056003603372==--
