@@ -1,62 +1,25 @@
-From: Gabor Gombas <gombasg@sztaki.hu>
-Subject: Re: Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
-Date: Fri, 10 Feb 2006 14:13:38 +0100
-Message-ID: <20060210131337.GD11740@boogie.lpds.sztaki.hu>
-References: <20060208125753.GA25562@srcf.ucam.org>
-	<20060208130422.GB25659@srcf.ucam.org>
-	<20060208165803.GA15239@kroah.com>
-	<20060208170857.GA29818@srcf.ucam.org>
-	<20060209085344.GF16052@boogie.lpds.sztaki.hu>
-	<20060210122131.GC4974@elf.ucw.cz>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Re: [PATCH, RFC] [1/3] Generic in-kernel AC status
+Date: Fri, 10 Feb 2006 13:19:14 +0000
+Message-ID: <20060210131914.GA7609@srcf.ucam.org>
+References: <20060208125753.GA25562@srcf.ucam.org> <20060208130422.GB25659@srcf.ucam.org> <20060208165803.GA15239@kroah.com> <20060208170857.GA29818@srcf.ucam.org> <20060209085344.GF16052@boogie.lpds.sztaki.hu> <20060210122131.GC4974@elf.ucw.cz> <20060210131337.GD11740@boogie.lpds.sztaki.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============15986744076489634=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060210122131.GC4974@elf.ucw.cz>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060210131337.GD11740@boogie.lpds.sztaki.hu>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Gabor Gombas <gombasg@sztaki.hu>
+Cc: Pavel Machek <pavel@suse.cz>, Greg KH <greg@kroah.com>, linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============15986744076489634==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Fri, Feb 10, 2006 at 02:13:38PM +0100, Gabor Gombas wrote:
 
-On Fri, Feb 10, 2006 at 01:21:31PM +0100, Pavel Machek wrote:
+> Also, doing things differently when on AC power smells like a policy
+> decision, and AFAIK policy handling is not wanted in the kernel.
 
-> Still "set current brightness" operation makes a lot of sense.
-
-Yes, but userspace already knows if you are on AC power or not,
-therefore it can decide what "current" means. If this is the only reason
-then adding a new kernel infrastructure is overkill.
-
-Also, doing things differently when on AC power smells like a policy
-decision, and AFAIK policy handling is not wanted in the kernel.
-
-Gabor
-
+Backlight drivers are supposed to return the current brightness. With 
+some hardware, the only way to do that requires knowing whether the 
+system is on AC or not.
 -- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences,
-     Laboratory of Parallel and Distributed Systems
-     Address   : H-1132 Budapest Victor Hugo u. 18-22. Hungary
-     Phone/Fax : +36 1 329-78-64 (secretary)
-     W3        : http://www.lpds.sztaki.hu
-     ---------------------------------------------------------
-
---===============15986744076489634==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============15986744076489634==--
+Matthew Garrett | mjg59@srcf.ucam.org
