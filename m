@@ -1,22 +1,58 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/5] [pm] Fix locking of device suspend/resume functions
-Date: Sat, 18 Feb 2006 10:22:16 +0100
-Message-ID: <1140254536.2968.14.camel@laptopd505.fenrus.org>
-References: <Pine.LNX.4.50.0602171756520.30811-100000@monsoon.he.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: what handles disk drive(s) shutdown?
+Date: Thu, 16 Feb 2006 00:30:06 +0100
+Message-ID: <20060215233006.GA3490@openzaurus.ucw.cz>
+References: <Pine.LNX.4.58.0602091407590.7095@shark.he.net>
+	<Pine.LNX.4.58.0602101457460.23838@shark.he.net>
+	<20060210230633.GB1947@elf.ucw.cz>
+	<200602102150.38832.dtor_core@ameritech.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751085AbWBRJWW@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.50.0602171756520.30811-100000@monsoon.he.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: greg@kroah.com, torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org, linux-pm@osdl.org
+Content-Type: multipart/mixed; boundary="===============91453836314376313=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200602102150.38832.dtor_core@ameritech.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Dmitry Torokhov <dtor_core@ameritech.net>
+Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-02-17 at 18:03 -0800, Patrick Mochel wrote:
-> This patch removes the unneeded down()/up() calls from
-> suspend_device() and resume_device(). Those functions
-> are already called under the dpm_sem, making this code
-> unconditionally deadlock in SMP kernels.
+--===============91453836314376313==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-this wants to be a mutex as well ;)
+
+> > void kernel_shutdown_prepare(enum system_states state)
+> > {
+> >         notifier_call_chain(&reboot_notifier_list,
+> >                 (state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
+> >         system_state = state;
+> >         device_shutdown();
+> > }
+> > 
+> > device_shutdown() should do it, AFAICT.
+> > 
+> > If you want to listen to such event, you should just register your
+> > driver with sysfs and implement .suspend() method. But I believe PATA
+> > does that already...
+> 
+> You mean .shutdown() method, not .suspend(), right?
+yep, sorry.
+-- 
+64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
+
+
+--===============91453836314376313==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============91453836314376313==--
