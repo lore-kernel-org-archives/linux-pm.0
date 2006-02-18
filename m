@@ -1,57 +1,75 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: [PATCH 0/5] Fix device suspend/resume
-Date: Fri, 17 Feb 2006 18:03:26 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0602171745410.30811-100000@monsoon.he.net>
+Subject: [PATCH 1/5] [pm] Fix locking of device suspend/resume functions
+Date: Fri, 17 Feb 2006 18:03:30 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602171756520.30811-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============052114168102305847=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750706AbWBRCDj@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: greg@kroah.com, torvalds@osdl.org, akpm@osdl.org
-Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============052114168102305847==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+This patch removes the unneeded down()/up() calls from
+suspend_device() and resume_device(). Those functions
+are already called under the dpm_sem, making this code
+unconditionally deadlock in SMP kernels.
+
+Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
+
+---
+
+ drivers/base/power/resume.c  |    3 ---
+ drivers/base/power/suspend.c |    2 --
+ 2 files changed, 0 insertions(+), 5 deletions(-)
+
+applies-to: 55ce8c6305fc70b1b544ce7365abd6054e9b5f61
+1bf4a2adaa1588c3d68038f56e1f7c9cb96a3af9
+diff --git a/drivers/base/power/resume.c b/drivers/base/power/resume.c
+index 317edbf..478e116 100644
+--- a/drivers/base/power/resume.c
++++ b/drivers/base/power/resume.c
+@@ -23,7 +23,6 @@ int resume_device(struct device * dev)
+ {
+ 	int error = 0;
+
+-	down(&dev->sem);
+ 	if (dev->power.pm_parent
+ 			&& dev->power.pm_parent->power.power_state.event) {
+ 		dev_err(dev, "PM: resume from %d, parent %s still %d\n",
+@@ -35,12 +34,10 @@ int resume_device(struct device * dev)
+ 		dev_dbg(dev,"resuming\n");
+ 		error = dev->bus->resume(dev);
+ 	}
+-	up(&dev->sem);
+ 	return error;
+ }
 
 
-Hi there,
+-
+ void dpm_resume(void)
+ {
+ 	down(&dpm_list_sem);
+diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
+index 8660779..a59158c 100644
+--- a/drivers/base/power/suspend.c
++++ b/drivers/base/power/suspend.c
+@@ -38,7 +38,6 @@ int suspend_device(struct device * dev,
+ {
+ 	int error = 0;
 
-Following is a small series of patches to fix up the changes recently made
-to the runtime suspend/resume functionality.
+-	down(&dev->sem);
+ 	if (dev->power.power_state.event) {
+ 		dev_dbg(dev, "PM: suspend %d-->%d\n",
+ 			dev->power.power_state.event, state.event);
+@@ -58,7 +57,6 @@ int suspend_device(struct device * dev,
+ 		dev_dbg(dev, "suspending\n");
+ 		error = dev->bus->suspend(dev, state);
+ 	}
+-	up(&dev->sem);
+ 	return error;
+ }
 
-The sysfs interface was changed so that it dropped the actual state that
-the device was requested to enter. These patches add a state field to
-pm_message_t, so that the bus and device drivers can the use value written
-to the sysfs file to choose the proper state to enter.
-
-pci_choose_state() is fixed up to check for a non-zero value when the
-request is for a PM_EVENT_SUSPEND message and return the appropriate D
-state. This allows D1 and D2 to be used once again (though there are few
-drivers that currently support it). The BUG() is also converted to a more
-friendly WARN_ON(1) when an invalid state is entered.
-
-Finally, the device suspend/resume code is now liberated from an
-unconditional deadlock when SMP is enabled.
-
-Please apply. Thanks,
-
-
-	Pat
-
-
---===============052114168102305847==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============052114168102305847==--
+---
+0.99.9.GIT
