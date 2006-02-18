@@ -1,15 +1,16 @@
-From: Andrew Morton <akpm@osdl.org>
+From: Patrick Mochel <mochel@digitalimplant.org>
 Subject: Re: [PATCH 2/5] [pm] Add state field to pm_message_t (to
  hold actual state device is in)
-Date: Fri, 17 Feb 2006 22:10:09 -0800
-Message-ID: <20060217221009.30f29aa2.akpm@osdl.org>
+Date: Fri, 17 Feb 2006 22:56:52 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602172239570.30097-100000@monsoon.he.net>
 References: <Pine.LNX.4.50.0602171757360.30811-100000@monsoon.he.net>
 	<20060217210900.514b5f4c.akpm@osdl.org>
 	<Pine.LNX.4.50.0602172136240.6792-100000@monsoon.he.net>
+	<20060217221009.30f29aa2.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============71463796867234564=="
+Content-Type: multipart/mixed; boundary="===============36282157871688492=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0602172136240.6792-100000@monsoon.he.net>
+In-Reply-To: <20060217221009.30f29aa2.akpm@osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,88 +20,75 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
+To: Andrew Morton <akpm@osdl.org>
 Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============71463796867234564==
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+--===============36282157871688492==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Patrick Mochel <mochel@digitalimplant.org> wrote:
->
-> 
-> On Fri, 17 Feb 2006, Andrew Morton wrote:
-> 
-> > Patrick Mochel <mochel@digitalimplant.org> wrote:
-> > >
-> > >
-> > > Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
-> > >
-> > > ---
-> > >
-> > >  include/linux/pm.h |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > >
-> > > applies-to: 1ac50ba99ca37c65bdf3643c4056c246e401c18a
-> > > 63b8e7f0896ce93834ac60c15df954b1e6d45e56
-> > > diff --git a/include/linux/pm.h b/include/linux/pm.h
-> > > index 5be87ba..a7324ea 100644
-> > > --- a/include/linux/pm.h
-> > > +++ b/include/linux/pm.h
-> > > @@ -140,6 +140,7 @@ struct device;
-> > >
-> > >  typedef struct pm_message {
-> > >  	int event;
-> > > +	u32 state;
-> > >  } pm_message_t;
-> >
-> > I don't quite understand.  This is a message which is sent to a driver
-> > saying "go into this state", isn't it?
-> 
-> .event is one of these:
-> 
-> #define PM_EVENT_ON 0
-> #define PM_EVENT_FREEZE 1
-> #define PM_EVENT_SUSPEND 2
-> 
-> Which only says what to do - turn on or off (AFAICT, FREEZE and SUSPEND
-> are synonymous). They are designed to work when the entire system is being
-> suspended or resumed, since every device is most likely going into its
-> lowest power state.
-> 
-> However, some devices support >1 low-power state which can be used to save
-> power while the system is otherwise fully up and running. Devices that are
-> not being used will most likely use the lowest power state, but devices
-> that are idle (and that support >1 low power state) can use the other
-> states even when idle.
-> 
-> In reality, there aren't many devices or drivers that support >1 low-power
-> state. But, there are some and likely to be more. And, the interface had
-> always supported it until some time in the 2.6.16 development cycle.
-> 
-> Does that help?
-> 
 
-It does, thanks.
+On Fri, 17 Feb 2006, Andrew Morton wrote:
 
-Would it make sense to enumerate these low-power states, rather than a bare
-u32?
+> Would it make sense to enumerate these low-power states, rather than a bare
+> u32?
 
-How, from the above message, is the driver to know that it's being asked
-for a low-power state rather than an `off' state?   Via `state' I guess.
+The number, name, and meaning of the power states differ on a bus-by-bus
+basis. PCI has D0-D3, which are well defined by the PCI spec. ACPI defines
+states of the same name, but less rigidly defined, for various devices.
+I believe USB has only "on" and "off".
 
-I can see that the kernel would have trouble asking a device to go into a
-particular low-power state because of the variation in capabilities between
-devices.  Perhaps the kernel should send the driver some higher-level piece
-of information informing it what's going on, let the driver choose an
-appropriate power state?
+One generality in all buses that I've seen so far consider state '0' to be
+on and functioning. The low-power states increment from there - the higher
+the number, the less power is being consumed and the longer it takes to
+bring the device back to a functioning state. Even buses with 2 states
+fall into this category, since "on" maps to 0, and "off" maps to anything
+non-zero.
 
---===============71463796867234564==
+To answer your question: yes, it would make sense to enumerate the number,
+but only on a per-bus basis. Ideally, the bus would export the states that
+it supports, either directly to userspace or via the driver core and the
+per-device state file in sysfs.
+
+But, we're not to that point yet. For now, the writer of the file needs to
+know what range of values the bus and/or device is expecting. It would be
+nice to have a silly little program that could make this easier on a
+user..
+
+> How, from the above message, is the driver to know that it's being asked
+> for a low-power state rather than an `off' state?   Via `state' I guess.
+
+For PCI drivers at least, each driver's suspend function calls
+pci_choose_state() to let the PCI core decide what the actual PCI power
+state is that the device should enter. Before these patches, the PCI core
+would always return PCI_D3hot on a suspend request. Now, it looks at
+'state' and uses that as a hint - if it's set and within range, then it's
+treated as a PCI D state; otherwise, the driver gets back PCI_D3hot.
+
+> I can see that the kernel would have trouble asking a device to go into a
+> particular low-power state because of the variation in capabilities between
+> devices.  Perhaps the kernel should send the driver some higher-level piece
+> of information informing it what's going on, let the driver choose an
+> appropriate power state?
+
+The kernel only chooses the state on a system suspend transition, and
+that's exactly what happens - the driver maps a SUSPEND request,
+regardless of what .state will be to the lowest power state it supports.
+
+However, these patches are for device power transitions initated from
+sysfs. With these, there is a user/utility/daemon on the other side that
+knows what power states the device supports and when a good time to enter
+them is. IOW, it's a policy decision that uses the sysfs interface (and
+this plumbing) as the mechanism for implementing it.
+
+
+	Pat
+
+--===============36282157871688492==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============71463796867234564==--
+--===============36282157871688492==--
