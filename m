@@ -1,10 +1,10 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: [PATCH 5/5] [pci pm] Make pci_choose_state() use the
- real device state requested
-Date: Fri, 17 Feb 2006 18:03:49 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0602171759190.30811-100000@monsoon.he.net>
+Subject: [PATCH 4/5] [pm] Minor updates to core suspend/resume
+	functions
+Date: Fri, 17 Feb 2006 18:03:43 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602171758520.30811-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============34820857324888999=="
+Content-Type: multipart/mixed; boundary="===============016724999776934091=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -19,95 +19,148 @@ To: greg@kroah.com, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============34820857324888999==
+--===============016724999776934091==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
-- Look at pm_message_t::state (along with the message event type) to
-determine the PCI power state to return. This allows all of the PCI
-power states to be used with this helper (and with the sysfs runtime
-PM interface).
+- Check the real state the device and parent are in compared
+  to the the real state requested, instead of just checking
+  that the event types are the same.
 
-[ Previously, the returned value was limited to PCI_D0 or PCI_D3hot
-depending on whether PM_EVENT_ON or PM_EVENT_{FREEZE,SUSPEND} were
-specified. ]
+- Update debug and error messages to display the real states.
 
-- Print an error w/ device info when we get an invalid state; use
-  WARN_ON() instead of BUG(), so we don't needlessly crash a machine.
-
-- Print state translation when debug is enabled.
+- Always print the state we're entering when debug is enabled.
 
 Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
 
 ---
 
- drivers/pci/pci.c |   29 +++++++++++++++++++----------
- 1 files changed, 19 insertions(+), 10 deletions(-)
+ drivers/base/power/resume.c  |   11 +++++++----
+ drivers/base/power/runtime.c |   11 ++++++-----
+ drivers/base/power/suspend.c |   34 +++++++++++++++++++---------------
+ 3 files changed, 32 insertions(+), 24 deletions(-)
 
-applies-to: 7b4d08b2816a4aefc2b9891091e6a790526ea15e
-8a658ba724d1f1e71fc951745e091aa1afa4ff6f
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index d2d1879..2f160aa 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -404,30 +404,39 @@ int (*platform_pci_choose_state)(struct
-  * message.
-  */
+applies-to: f7ec3dc82e3cc4661a7aaf32a8a79cef0e10c236
+f78ca60a58439953b4e1fe61a648ed92970d7f1e
+diff --git a/drivers/base/power/resume.c b/drivers/base/power/resume.c
+index 478e116..3101431 100644
+--- a/drivers/base/power/resume.c
++++ b/drivers/base/power/resume.c
+@@ -24,16 +24,19 @@ int resume_device(struct device * dev)
+ 	int error = 0;
 
--pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state)
-+pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t msg)
- {
-+	pci_power_t state = PCI_D3hot;
- 	int ret;
-
- 	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
- 		return PCI_D0;
-
- 	if (platform_pci_choose_state) {
--		ret = platform_pci_choose_state(dev, state);
-+		ret = platform_pci_choose_state(dev, msg);
- 		if (ret >= 0)
--			state.event = ret;
-+			msg.state = ret;
+ 	if (dev->power.pm_parent
+-			&& dev->power.pm_parent->power.power_state.event) {
+-		dev_err(dev, "PM: resume from %d, parent %s still %d\n",
+-			dev->power.power_state.event,
++	    && dev->power.pm_parent->power.power_state.state) {
++		dev_err(dev, "PM: resume from state %u, parent %s still in state %u\n",
++			dev->power.power_state.state,
+ 			dev->power.pm_parent->bus_id,
+-			dev->power.pm_parent->power.power_state.event);
++			dev->power.pm_parent->power.power_state.state);
  	}
-
--	switch (state.event) {
-+	switch (msg.event) {
- 	case PM_EVENT_ON:
--		return PCI_D0;
-+		state = PCI_D0;
-+		break;
- 	case PM_EVENT_FREEZE:
- 	case PM_EVENT_SUSPEND:
--		return PCI_D3hot;
-+		if (msg.state && msg.state <= PCI_D3hot)
-+			state = msg.state;
-+		break;
- 	default:
--		printk("They asked me for state %d\n", state.event);
--		BUG();
--	}
--	return PCI_D0;
-+		dev_err(&dev->dev, "PCI: Invalid PM Event [Event %d] [State %u]\n",
-+			msg.event, msg.state);
-+		WARN_ON(1);
-+		state = PCI_D0;
-+		break;
-+	}
-+	dev_dbg(&dev->dev, "PCI: Translated Power Message %d/%u -> %u\n",
-+		msg.event, msg.state, state);
-+	return state;
+ 	if (dev->bus && dev->bus->resume) {
+ 		dev_dbg(dev,"resuming\n");
+ 		error = dev->bus->resume(dev);
+ 	}
++	dev->power.prev_state = dev->power.power_state;
++	dev->power.power_state.state = 0;
++	dev->power.power_state.event = PM_EVENT_ON;
+ 	return error;
  }
 
- EXPORT_SYMBOL(pci_choose_state);
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 96370ec..d224761 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -45,19 +45,20 @@ EXPORT_SYMBOL(dpm_runtime_resume);
+  *	@state:	State to enter.
+  */
+
+-int dpm_runtime_suspend(struct device * dev, pm_message_t state)
++int dpm_runtime_suspend(struct device * dev, pm_message_t msg)
+ {
+ 	int error = 0;
+
+ 	down(&dpm_sem);
+-	if (dev->power.power_state.event == state.event)
++	if (dev->power.power_state.event == msg.event &&
++	    dev->power.power_state.state == msg.state)
+ 		goto Done;
+
+-	if (dev->power.power_state.event)
++	if (dev->power.power_state.event != PM_EVENT_ON)
+ 		runtime_resume(dev);
+
+-	if (!(error = suspend_device(dev, state)))
+-		dev->power.power_state = state;
++	if (!(error = suspend_device(dev, msg)))
++		dev->power.power_state = msg;
+  Done:
+ 	up(&dpm_sem);
+ 	return error;
+diff --git a/drivers/base/power/suspend.c b/drivers/base/power/suspend.c
+index a59158c..67bc5ce 100644
+--- a/drivers/base/power/suspend.c
++++ b/drivers/base/power/suspend.c
+@@ -34,29 +34,33 @@
+  *	@state:	Power state device is entering.
+  */
+
+-int suspend_device(struct device * dev, pm_message_t state)
++int suspend_device(struct device * dev, pm_message_t msg)
+ {
++	struct device * pm_parent;
+ 	int error = 0;
+
+-	if (dev->power.power_state.event) {
+-		dev_dbg(dev, "PM: suspend %d-->%d\n",
+-			dev->power.power_state.event, state.event);
+-	}
++	dev_dbg(dev, "Suspend [Event %d: %u --> %u]\n",
++		msg.event, dev->power.power_state.state, msg.state);
++
++	pm_parent = dev->power.pm_parent;
+ 	if (dev->power.pm_parent
+-			&& dev->power.pm_parent->power.power_state.event) {
+-		dev_err(dev,
+-			"PM: suspend %d->%d, parent %s already %d\n",
+-			dev->power.power_state.event, state.event,
+-			dev->power.pm_parent->bus_id,
+-			dev->power.pm_parent->power.power_state.event);
++	    && dev->power.pm_parent->power.power_state.state) {
++		dev_err(dev,
++			"Suspend [Event %d: %u --> %u], parent %s already in [State %u]\n",
++			msg.event, dev->power.power_state.state, msg.state,
++			pm_parent->bus_id, pm_parent->power.power_state.state);
+ 	}
+
+-	dev->power.prev_state = dev->power.power_state;
+-
+-	if (dev->bus && dev->bus->suspend && !dev->power.power_state.event) {
++	if (dev->bus && dev->bus->suspend) {
+ 		dev_dbg(dev, "suspending\n");
+-		error = dev->bus->suspend(dev, state);
++		error = dev->bus->suspend(dev, msg);
+ 	}
++
++	if (!error) {
++		dev->power.prev_state = dev->power.power_state;
++		dev->power.power_state = msg;
++	}
++
+ 	return error;
+ }
+
 ---
 0.99.9.GIT
 
---===============34820857324888999==
+--===============016724999776934091==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============34820857324888999==--
+--===============016724999776934091==--
