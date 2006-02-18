@@ -1,10 +1,10 @@
 From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: [PATCH 3/5] [pm] Respect the actual device power states
- in sysfs interface
-Date: Fri, 17 Feb 2006 18:03:40 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0602171758160.30811-100000@monsoon.he.net>
+Subject: [PATCH 5/5] [pci pm] Make pci_choose_state() use the
+ real device state requested
+Date: Fri, 17 Feb 2006 18:03:49 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602171759190.30811-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============97260823409112351=="
+Content-Type: multipart/mixed; boundary="===============34820857324888999=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -19,143 +19,95 @@ To: greg@kroah.com, torvalds@osdl.org, akpm@osdl.org
 Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============97260823409112351==
+--===============34820857324888999==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
 
-Fix the per-device state file to respect the actual state that
-is reported by the device, or written to the file.
+- Look at pm_message_t::state (along with the message event type) to
+determine the PCI power state to return. This allows all of the PCI
+power states to be used with this helper (and with the sysfs runtime
+PM interface).
 
-Using the struct pm_message::state field:
+[ Previously, the returned value was limited to PCI_D0 or PCI_D3hot
+depending on whether PM_EVENT_ON or PM_EVENT_{FREEZE,SUSPEND} were
+specified. ]
 
-On read, report the actual state the device is in by looking at the
-struct pm_message::state field (instead of just "0" or "2"). If the
-device is suspended, but the state is "0", then report PM_STATE_OFF
-(defined as INT_MAX).
+- Print an error w/ device info when we get an invalid state; use
+  WARN_ON() instead of BUG(), so we don't needlessly crash a machine.
 
-On write, assume that the value passed in is the state that the
-user wants the device to enter. Set the struct pm_message::state
-field to that value.
-- When (state != 0), assume a suspend request, and always set the
-  event field to PM_EVENT_SUSPEND
-- When (state == 0), assume a resume request.
-
-[ Previously, only values "0", "2", and "3" were accepted, and the
-actual value passed was silently dropped. ]
-
-Update the comments so they match the functionality.
+- Print state translation when debug is enabled.
 
 Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
 
 ---
 
- drivers/base/power/sysfs.c |   66 ++++++++++++++++++++++++++------------------
- 1 files changed, 39 insertions(+), 27 deletions(-)
+ drivers/pci/pci.c |   29 +++++++++++++++++++----------
+ 1 files changed, 19 insertions(+), 10 deletions(-)
 
-applies-to: c5da8670faf610adc21e38c9d2da5330e9232a37
-0f3eb786f769badd9044117c2976f829d66dec73
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index 40d7242..308baff 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -7,50 +7,62 @@
- #include "power.h"
-
-
-+#define PM_STATE_OFF	INT_MAX
-+
- /**
-  *	state - Control current power state of device
-  *
-  *	show() returns the current power state of the device. '0' indicates
-  *	the device is on. Other values (1-3) indicate the device is in a low
-  *	power state.
-- *
-- *	store() sets the current power state, which is an integer value
-- *	between 0-3. If the device is on ('0'), and the value written is
-- *	greater than 0, then the device is placed directly into the low-power
-- *	state (via its driver's ->suspend() method).
-- *	If the device is currently in a low-power state, and the value is 0,
-- *	the device is powered back on (via the ->resume() method).
-- *	If the device is in a low-power state, and a different low-power state
-- *	is requested, the device is first resumed, then suspended into the new
-- *	low-power state.
-+ *	A value of INT_MAX (0x0fffffff) indicates that the device is off - it is
-+ *	suspended, but the actual state is unknown (for devices and buses that only
-+ *	support "on" and "off").
-+ *
-+ *	store() takes an integer value and changes the current power state of the
-+ *	device. If this value is 0, the device is resumed - a PM message with event
-+ *	type PM_EVENT_ON, and a state of 0 is passed to dpm_runtime_resume().
-+ *	Otherwise, the device is suspended. A PM message with event type
-+ *	PM_EVENT_SUSPEND is passed to the device, with the state being the value
-+ *	written to this file.
-+ *
-+ *	The meaning of the integer value states are bus and/or device specific, with
-+ *	the exception of 0 - that always means "on".
-+ *	The core will not do any further interpretation of the values. It is up to
-+ *	the bus and/or device drivers to both document and check the values that are
-+ *	read and written from this file.
-+ *	For buses and devices that only support "on" and "off", any non-zero number
-+ *	can be used to indicate "off".
+applies-to: 7b4d08b2816a4aefc2b9891091e6a790526ea15e
+8a658ba724d1f1e71fc951745e091aa1afa4ff6f
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index d2d1879..2f160aa 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -404,30 +404,39 @@ int (*platform_pci_choose_state)(struct
+  * message.
   */
 
- static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
+-pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state)
++pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t msg)
  {
--	if (dev->power.power_state.event)
--		return sprintf(buf, "2\n");
--	else
--		return sprintf(buf, "0\n");
-+	u32 state = 0;
-+
-+	if (dev->power.power_state.event == PM_EVENT_SUSPEND) {
-+		state = dev->power.power_state.state;
-+		if (!state)
-+			state = PM_STATE_OFF;
-+	}
-+	return sprintf(buf, "%x\n", dev->power.power_state.state);
- }
++	pci_power_t state = PCI_D3hot;
+ 	int ret;
 
- static ssize_t state_store(struct device * dev, struct device_attribute *attr, const char * buf, size_t n)
- {
--	pm_message_t state;
--	int error = -EINVAL;
-+	pm_message_t msg = {
-+		.event = PM_EVENT_SUSPEND,
-+	};
-+	char * rest;
-+	int error = 0;
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_PM))
+ 		return PCI_D0;
 
--	state.event = PM_EVENT_SUSPEND;
--	/* Older apps expected to write "3" here - confused with PCI D3 */
--	if ((n == 1) && !strcmp(buf, "3"))
--		error = dpm_runtime_suspend(dev, state);
--
--	if ((n == 1) && !strcmp(buf, "2"))
--		error = dpm_runtime_suspend(dev, state);
-+	msg.state = simple_strtoul(buf, &rest, 0);
-+	if (*rest)
-+		return -EINVAL;
+ 	if (platform_pci_choose_state) {
+-		ret = platform_pci_choose_state(dev, state);
++		ret = platform_pci_choose_state(dev, msg);
+ 		if (ret >= 0)
+-			state.event = ret;
++			msg.state = ret;
+ 	}
 
--	if ((n == 1) && !strcmp(buf, "0")) {
-+	if (msg.state)
-+		error = dpm_runtime_suspend(dev, msg);
-+	else
- 		dpm_runtime_resume(dev);
--		error = 0;
+-	switch (state.event) {
++	switch (msg.event) {
+ 	case PM_EVENT_ON:
+-		return PCI_D0;
++		state = PCI_D0;
++		break;
+ 	case PM_EVENT_FREEZE:
+ 	case PM_EVENT_SUSPEND:
+-		return PCI_D3hot;
++		if (msg.state && msg.state <= PCI_D3hot)
++			state = msg.state;
++		break;
+ 	default:
+-		printk("They asked me for state %d\n", state.event);
+-		BUG();
 -	}
--
- 	return error ? error : n;
+-	return PCI_D0;
++		dev_err(&dev->dev, "PCI: Invalid PM Event [Event %d] [State %u]\n",
++			msg.event, msg.state);
++		WARN_ON(1);
++		state = PCI_D0;
++		break;
++	}
++	dev_dbg(&dev->dev, "PCI: Translated Power Message %d/%u -> %u\n",
++		msg.event, msg.state, state);
++	return state;
  }
 
+ EXPORT_SYMBOL(pci_choose_state);
 ---
 0.99.9.GIT
 
---===============97260823409112351==
+--===============34820857324888999==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============97260823409112351==--
+--===============34820857324888999==--
