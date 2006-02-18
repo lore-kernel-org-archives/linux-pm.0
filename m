@@ -1,12 +1,10 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Flames over -- Re: Which is simpler?
-Date: Wed, 15 Feb 2006 10:56:01 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0602151049490.4598-100000@iolanthe.rowland.org>
-References: <200602142141.10545.rjw@sisk.pl>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: [PATCH 0/5] Fix device suspend/resume
+Date: Fri, 17 Feb 2006 18:03:26 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602171745410.30811-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============98527638871829093=="
+Content-Type: multipart/mixed; boundary="===============052114168102305847=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200602142141.10545.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,59 +14,44 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: greg@kroah.com, torvalds@osdl.org, akpm@osdl.org
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============98527638871829093==
+--===============052114168102305847==
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Tue, 14 Feb 2006, Rafael J. Wysocki wrote:
 
-> > Remember that it's always a bad idea to unplug a disk drive containing a
-> > mounted filesystem.  With USB that's true even when your system is asleep!
-> > The safest thing is to unmount all USB-based filesystems before suspending 
-> > and remount them after resuming.
-> 
-> Still, this may be impossible if the box is suspending because of its
-> battery running critical.
+Hi there,
 
-Yes.  When there's nothing you can do... do nothing.  :-)
+Following is a small series of patches to fix up the changes recently made
+to the runtime suspend/resume functionality.
 
-> I'm afraid this behavior will cause support problems to appear in the long
-> run.   [BTW, I wonder if it's USB-only, or some other subsystems behave
-> in a similar way, like ieee1394 or external SATA.  And how about
-> NFS/CIFS/whatever network filesystems mounted on the suspending box?]
+The sysfs interface was changed so that it dropped the actual state that
+the device was requested to enter. These patches add a state field to
+pm_message_t, so that the bus and device drivers can the use value written
+to the sysfs file to choose the proper state to enter.
 
-Some networked filesystems may have this problem, for instance, if they 
-rely on some sort of keep-alive to maintain a connection.  I don't know 
-anything about 1394 or SATA.
+pci_choose_state() is fixed up to check for a non-zero value when the
+request is for a PM_EVENT_SUSPEND message and return the appropriate D
+state. This allows D1 and D2 to be used once again (though there are few
+drivers that currently support it). The BUG() is also converted to a more
+friendly WARN_ON(1) when an invalid state is entered.
 
-> I think one solution to consider could be to add an abstract fs layer
-> on top of the removable filesystem, like subfs in SuSE, with the ability
-> to retain the user information accross device disconnects and to update
-> the fs state from the actual device when it reappears in the system and
-> to resolve possible conflicts (to a reasonable extent).
+Finally, the device suspend/resume code is now liberated from an
+unconditional deadlock when SMP is enabled.
 
-Maybe.  To me this seems an unavoidable policy decision that should be 
-settled by one of the big Linux panjandrums.  Maybe someone can convince 
-Andrew (or even Linus) to offer a ruling...
-
-> > I'm not aware of any warnings about this in the documentation.  If you 
-> > would like to add something, please go ahead.
-> 
-> I'm going to do this.  Can I use your explanation above?
-
-Feel free to use it.
-
-Alan Stern
+Please apply. Thanks,
 
 
---===============98527638871829093==
+	Pat
+
+
+--===============052114168102305847==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============98527638871829093==--
+--===============052114168102305847==--
