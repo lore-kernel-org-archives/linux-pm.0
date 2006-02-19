@@ -1,16 +1,11 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Flames over -- Re: Which is simpler?
-Date: Sun, 19 Feb 2006 13:02:43 -0800
-Message-ID: <20060219130243.52af0782.akpm@osdl.org>
-References: <43F89F55.5070808@cfl.rr.com>
-	<Pine.LNX.4.44L0.0602191142290.9165-100000@netrider.rowland.org>
-	<20060219120221.1d11cee0.akpm@osdl.org>
-	<200602192144.57748.oliver@neukum.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] swsusp: warn about USB devices in
+	documentation
+Date: Sun, 19 Feb 2006 23:06:23 +0100
+Message-ID: <200602192306.25170.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============16213220188883426=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200602192144.57748.oliver@neukum.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,50 +15,77 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: alon.barlev@gmail.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, psusi@cfl.rr.com, torvalds@osdl.org, mrmacman_g4@mac.com
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Oliver Neukum <oliver@neukum.org> wrote:
->
-> Am Sonntag, 19. Februar 2006 21:02 schrieb Andrew Morton:
-> > For a), the current kernel behaviour is what we want - make the thing
-> > appear at a new place in the namespace and in the hierarchy. =A0Then
-> > userspace can do whatever needs to be done to identify the device, an=
-d
-> > apply some sort of policy decision to the result.
->=20
-> How? If you have a running user space the connection to the open files
-> is already severed, as any access in that time window must fail.
+--===============16213220188883426==
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-That's a separate issue, which we haven't discussed yet.  We have a devic=
-e
-which has gone away and which might come back later on.  Presently we wil=
-l
-return an I/O error if I/O is attempted in that window.  Obviously we'll
-need to do something different, such as block reads and block or defer wr=
-ites.
+Hi,
 
-So an overall picture would be something like:
+The appended patch contains a warning about the possiblity to lose data
+if any filesystems on USB devices are mounted before suspend.
 
-- When device is not present, reads block and writes are deferred or bloc=
-k
+The A:-Q: part is from my correspondence with Alan Stern (thanks Alan).
 
-- When device appears (at a new point in the namespace) the hotplug
-  scripts will go off and will identify it and will apply some policy bas=
-ed
-  upon that identification.  That policy could be one of:
+Greetings,
+Rafael
 
-  a) accept device at its new address
 
-  b) accept device at its new address, abandon the old address (all
-     those blocked reads and writes suddenly return -EIO).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/power/swsusp.txt |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+)
 
-  c) remove device from its new address, splice it back to where it
-     used to be, permit those blocked reads and writes to proceed.
+Index: linux-2.6.16-rc3-mm1/Documentation/power/swsusp.txt
+===================================================================
+--- linux-2.6.16-rc3-mm1.orig/Documentation/power/swsusp.txt
++++ linux-2.6.16-rc3-mm1/Documentation/power/swsusp.txt
+@@ -17,6 +17,11 @@ Some warnings, first.
+  * but it will probably only crash.
+  *
+  * (*) suspend/resume support is needed to make it safe.
++ *
++ * If you have any filesystems on USB devices mounted before suspend,
++ * they won't be mounted after resume and you may lose data, as though
++ * you have unplugged the USB devices with mounted filesystems on them
++ * (see the FAQ below for details).
+ 
+ You need to append resume=/dev/your_swap_partition to kernel command
+ line. Then you suspend by
+@@ -347,3 +352,22 @@ terminal the kernel switches to during s
+ kernel console loglevel to at least 5, for example by doing
+ 
+ 	echo 5 > /proc/sys/kernel/printk
++
++Q: Is this true that if I have a mounted filesystem on a USB device and
++I suspend to disk, I can lose data unless the filesystem has been mounted
++with "sync"?
++
++A: That's right.  It depends on your hardware, and it could be true even for
++suspend-to-RAM. In fact, even with "-o sync" you can lose data if your
++programs have information in buffers they haven't written out to disk.
++
++If you're lucky, your hardware will support low-power modes for USB
++controllers while the system is asleep.  Lots of hardware doesn't,
++however.  Shutting off the power to a USB controller is equivalent to 
++unplugging all the attached devices.
++
++Remember that it's always a bad idea to unplug a disk drive containing a
++mounted filesystem.  With USB that's true even when your system is asleep!
++The safest thing is to unmount all USB-based filesystems before suspending 
++and remount them after resuming.
++
 
-- For devices which are absent-and-blocked, provide some ability for both
-  a timeout and manual cancellation, to unblock all those readers and
-  writers, make them get -EIO.
+--===============16213220188883426==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The number of potential races is, of course, huge.
+
+--===============16213220188883426==--
