@@ -1,16 +1,16 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Flames over -- Re: Which is simpler?
-Date: Sun, 19 Feb 2006 23:57:52 -0800
-Message-ID: <20060219235752.2d6e252c.akpm@osdl.org>
-References: <43F89F55.5070808@cfl.rr.com>
-	<200602192144.57748.oliver@neukum.org>
-	<20060219130243.52af0782.akpm@osdl.org>
-	<200602200755.57699.oliver@neukum.org>
-	<20060219232926.256665d6.akpm@osdl.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] swsusp: warn about USB devices in
+	documentation
+Date: Mon, 20 Feb 2006 11:36:24 +0100
+Message-ID: <200602201136.24893.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============41459539374858645=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060219232926.256665d6.akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,42 +20,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: oliver@neukum.org, stern@rowland.harvard.edu, psusi@cfl.rr.com, pavel@suse.cz, torvalds@osdl.org, mrmacman_g4@mac.com, alon.barlev@gmail.com, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============41459539374858645==
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Andrew Morton <akpm@osdl.org> wrote:
->
->  > If you simply block writes, the system will stall random tasks laundering
->  > pages, including those needed to make progress. Even syncing before
->  > suspend won't help you, as a running user space may dirty pages.
+On Monday 20 February 2006 04:50, Alan Stern wrote:
+> On Sun, 19 Feb 2006, Rafael J. Wysocki wrote:
+> > The appended patch contains a warning about the possiblity to lose data
+> > if any filesystems on USB devices are mounted before suspend.
+> > 
+> > The A:-Q: part is from my correspondence with Alan Stern (thanks Alan).
 > 
->  Well of _course_ that will happen.
+> > --- linux-2.6.16-rc3-mm1.orig/Documentation/power/swsusp.txt
+> > +++ linux-2.6.16-rc3-mm1/Documentation/power/swsusp.txt
+> > @@ -17,6 +17,11 @@ Some warnings, first.
+> >   * but it will probably only crash.
+> >   *
+> >   * (*) suspend/resume support is needed to make it safe.
+> > + *
+> > + * If you have any filesystems on USB devices mounted before suspend,
+> > + * they won't be mounted after resume and you may lose data, as though
+> > + * you have unplugged the USB devices with mounted filesystems on them
+> > + * (see the FAQ below for details).
+> 
+> This isn't quite right.  The filesystems _will_ still be mounted, but 
+> inaccessible (as though you have unplugged the USB devices with mounted 
+> filesystems on them).
+> 
+> Furthermore, this may or may not happen depending on your hardware and the
+> type of suspend.  So the "you _may_ lose data" part is good... but the
+> "they _won't_ be mounted" part is bad.  On some types of machines (I've
+> heard that Apple laptops work well) the process is very reliable; so long 
+> as the battery doesn't discharge entirely -- and provided you don't 
+> actually unplug the device while the machine is asleep -- you can resume 
+> safely with filesystems intact.
+> 
+> Can you update the patch to fix this paragraph?
 
-Actually, it won't happen.  There's already logic in there to help pdflush,
-kswapd and memory-allocating tasks avoid blocking on congested queues. 
-It's trivial to extend that to avoidance of hotunplugged queues.
+Sure, I will.
 
-Things like sync(), fsync(), O_SYNC and reads will necessarily block.
+[I should have waited a bit longer before I posted it to Andrew.]
 
-We may or may not decide to block on page-dirtyings.  Again, that's trivial
-to do in balance_dirty_pages().
-
-Race conditions are pretty much unavoidable - if someone goes and disables
-a device when we're partway through and committed to I/O submission then
-things will get very sticky.  But we can have a pretty successful solution
-to all of this without a ton of effort.
-
-But this is all the easy part.
-
---===============41459539374858645==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============41459539374858645==--
+Greetings,
+Rafael
