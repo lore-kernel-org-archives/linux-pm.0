@@ -1,15 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 3/5] [pm] Respect the actual device power
-	states in sysfs interface
-Date: Sun, 19 Feb 2006 16:46:35 -0800
-Message-ID: <20060220004635.GA22576@kroah.com>
-References: <Pine.LNX.4.50.0602171758160.30811-100000@monsoon.he.net>
-	<20060218155543.GE5658@openzaurus.ucw.cz>
-	<Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] swsusp: warn about USB devices in
+	documentation
+Date: Sun, 19 Feb 2006 22:50:44 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
+References: <200602192306.25170.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============858955717132317=="
+Content-Type: multipart/mixed; boundary="===============84414492648320172=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
+In-Reply-To: <200602192306.25170.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,43 +17,56 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: akpm@osdl.org, linux-pm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============858955717132317==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============84414492648320172==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-On Sun, Feb 19, 2006 at 03:59:25PM -0800, Patrick Mochel wrote:
+On Sun, 19 Feb 2006, Rafael J. Wysocki wrote:
+
+> Hi,
 > 
-> On Sat, 18 Feb 2006, Pavel Machek wrote:
+> The appended patch contains a warning about the possiblity to lose data
+> if any filesystems on USB devices are mounted before suspend.
 > 
-> > Hi!
-> >
-> > > Fix the per-device state file to respect the actual state that
-> > > is reported by the device, or written to the file.
-> >
-> > Can we let "state" file die? You actually suggested that at one point.
-> >
-> > I do not think passing states in u32 is good idea. New interface that passes
-> > state as string would probably be better.
-> 
-> Yup, in the future that will be better. For now, let's work with what we
-> got and fix 2.6.16 to be compatible with previous versions..
+> The A:-Q: part is from my correspondence with Alan Stern (thanks Alan).
 
-It's _way_ too late in the 2.6.16 cycle for this series of patches, if
-that is what you are proposing.
+> --- linux-2.6.16-rc3-mm1.orig/Documentation/power/swsusp.txt
+> +++ linux-2.6.16-rc3-mm1/Documentation/power/swsusp.txt
+> @@ -17,6 +17,11 @@ Some warnings, first.
+>   * but it will probably only crash.
+>   *
+>   * (*) suspend/resume support is needed to make it safe.
+> + *
+> + * If you have any filesystems on USB devices mounted before suspend,
+> + * they won't be mounted after resume and you may lose data, as though
+> + * you have unplugged the USB devices with mounted filesystems on them
+> + * (see the FAQ below for details).
 
-thanks,
+This isn't quite right.  The filesystems _will_ still be mounted, but 
+inaccessible (as though you have unplugged the USB devices with mounted 
+filesystems on them).
 
-greg k-h
+Furthermore, this may or may not happen depending on your hardware and the
+type of suspend.  So the "you _may_ lose data" part is good... but the
+"they _won't_ be mounted" part is bad.  On some types of machines (I've
+heard that Apple laptops work well) the process is very reliable; so long 
+as the battery doesn't discharge entirely -- and provided you don't 
+actually unplug the device while the machine is asleep -- you can resume 
+safely with filesystems intact.
 
---===============858955717132317==
+Can you update the patch to fix this paragraph?
+
+Alan Stern
+
+
+--===============84414492648320172==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============858955717132317==--
+--===============84414492648320172==--
