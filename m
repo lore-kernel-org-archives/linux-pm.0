@@ -1,19 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Greg KH <greg@kroah.com>
 Subject: Re: [PATCH 3/5] [pm] Respect the actual device power
 	states in sysfs interface
-Date: Mon, 20 Feb 2006 01:41:42 +0100
-Message-ID: <20060220004142.GI15608@elf.ucw.cz>
+Date: Sun, 19 Feb 2006 16:46:35 -0800
+Message-ID: <20060220004635.GA22576@kroah.com>
 References: <Pine.LNX.4.50.0602171758160.30811-100000@monsoon.he.net>
 	<20060218155543.GE5658@openzaurus.ucw.cz>
 	<Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
-	<20060220000907.GE15608@elf.ucw.cz>
-	<Pine.LNX.4.50.0602191611130.8676-100000@monsoon.he.net>
-	<20060220002053.GF15608@elf.ucw.cz>
-	<Pine.LNX.4.50.0602191628270.8676-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============73346125992722699=="
+Content-Type: multipart/mixed; boundary="===============858955717132317=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0602191628270.8676-100000@monsoon.he.net>
+In-Reply-To: <Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,47 +20,42 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-pm@osdl.org
+Cc: akpm@osdl.org, linux-pm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============73346125992722699==
+--===============858955717132317==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Ne 19-02-06 16:36:34, Patrick Mochel wrote:
+On Sun, Feb 19, 2006 at 03:59:25PM -0800, Patrick Mochel wrote:
 > 
-> On Mon, 20 Feb 2006, Pavel Machek wrote:
+> On Sat, 18 Feb 2006, Pavel Machek wrote:
 > 
-> > On Ne 19-02-06 16:17:01, Patrick Mochel wrote:
-> 
-> > > I really fail to see what your fundamental objection is. This restores
-> > > compatability, makes the core simpler, and adds the ability to use the
-> > > additional states, should drivers choose to implement them; all for
-> > > relatively little code. It seems a like a good thing to me..
+> > Hi!
 > >
-> > Compatibility is already restored.
+> > > Fix the per-device state file to respect the actual state that
+> > > is reported by the device, or written to the file.
+> >
+> > Can we let "state" file die? You actually suggested that at one point.
+> >
+> > I do not think passing states in u32 is good idea. New interface that passes
+> > state as string would probably be better.
 > 
-> No, the interface is currently broken. The driver core does not
-> dictate
+> Yup, in the future that will be better. For now, let's work with what we
+> got and fix 2.6.16 to be compatible with previous versions..
 
-There were two different interfaces, one accepted 0 and 2, everything
-else was invalid, and second accepted 0, 1, 2, 3.
+It's _way_ too late in the 2.6.16 cycle for this series of patches, if
+that is what you are proposing.
 
-If you enter D2 on echo 2, you are breaking compatibility with 2.6.15
-or something like that.
+thanks,
 
-Please let this interface die and create new one. (And notice that
-this is exactly same advice you gave me month ago).
-								Pavel
+greg k-h
 
--- 
-Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
-
---===============73346125992722699==
+--===============858955717132317==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============73346125992722699==--
+--===============858955717132317==--
