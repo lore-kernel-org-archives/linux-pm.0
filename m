@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC][PATCH] swsusp: warn about USB devices in
 	documentation
-Date: Mon, 20 Feb 2006 11:36:24 +0100
-Message-ID: <200602201136.24893.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
+Date: Mon, 20 Feb 2006 11:34:24 +0100
+Message-ID: <20060220103424.GA16042@elf.ucw.cz>
+References: <200602192306.25170.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============27306257667901424=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,10 +22,12 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============27306257667901424==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Monday 20 February 2006 04:50, Alan Stern wrote:
-> On Sun, 19 Feb 2006, Rafael J. Wysocki wrote:
+Hi!
+
 > > The appended patch contains a warning about the possiblity to lose data
 > > if any filesystems on USB devices are mounted before suspend.
 > > 
@@ -59,9 +59,19 @@ On Monday 20 February 2006 04:50, Alan Stern wrote:
 > 
 > Can you update the patch to fix this paragraph?
 
-Sure, I will.
+Well, this is talking about suspend-to-disk... That is expected to
+power down machine, without providing USB bus power. If box
+suspends-to-disk and leaves USB up, something is wrong with the
+machine.
+								Pavel
+-- 
+Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
 
-[I should have waited a bit longer before I posted it to Andrew.]
+--===============27306257667901424==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Greetings,
-Rafael
+
+--===============27306257667901424==--
