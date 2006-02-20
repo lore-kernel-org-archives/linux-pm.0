@@ -1,60 +1,79 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] [PATCH 3/5] [pm] Respect the actual device power states in sysfs interface
-Date: Mon, 20 Feb 2006 19:10:40 +0100
-Message-ID: <20060220181040.GI19156@elf.ucw.cz>
-References: <20060218155543.GE5658@openzaurus.ucw.cz> <Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net> <20060220000907.GE15608@elf.ucw.cz> <Pine.LNX.4.50.0602191611130.8676-100000@monsoon.he.net> <20060220002053.GF15608@elf.ucw.cz> <Pine.LNX.4.50.0602191628270.8676-100000@monsoon.he.net> <20060220004142.GI15608@elf.ucw.cz> <Pine.LNX.4.50.0602200938320.12708-100000@monsoon.he.net> <20060220175842.GH19156@elf.ucw.cz> <Pine.LNX.4.50.0602201006230.12708-100000@monsoon.he.net>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: Re: Re: [RFC][PATCH] swsusp: warn about USB devices in
+	documentation
+Date: Mon, 20 Feb 2006 10:23:28 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602201020420.12708-100000@monsoon.he.net>
+References: <Pine.LNX.4.44L0.0602201139480.18560-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161083AbWBTSLJ@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.50.0602201006230.12708-100000@monsoon.he.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: greg@kroah.com, torvalds@osdl.org, akpm@osdl.org, linux-pm@osdl.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============15413258727086476=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0602201139480.18560-100000@netrider.rowland.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM <linux-pm@osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Po 20-02-06 10:08:36, Patrick Mochel wrote:
-> 
+--===============15413258727086476==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+
+On Mon, 20 Feb 2006, Alan Stern wrote:
+
 > On Mon, 20 Feb 2006, Pavel Machek wrote:
-> 
+>
 > > Hi!
-> >
-> > > > > > Compatibility is already restored.
-> > > > >
-> > > > > No, the interface is currently broken. The driver core does not
-> > > > > dictate
+> > > > > Can you update the patch to fix this paragraph?
 > > > >
-> > > > There were two different interfaces, one accepted 0 and 2, everything
-> > > > else was invalid, and second accepted 0, 1, 2, 3.
-> > > >
-> > > > If you enter D2 on echo 2, you are breaking compatibility with 2.6.15
-> > > > or something like that.
+> > > > Well, this is talking about suspend-to-disk... That is expected to
+> > > > power down machine, without providing USB bus power. If box
+> > > > suspends-to-disk and leaves USB up, something is wrong with the
+> > > > machine.
 > > >
-> > > I don't see how this is true. If a process writes "2" to a PCI device's
-> > > state file, what else are sane things to do?
+> > > Oh, sorry, I didn't realize that.
+> > >
+> > > Isn't there an ACPI mode that powers down most things (including RAM) but
+> > > is able to respond to wakeup events?  I can't remember the mode's name,
+> > > except that it's almost certainly "S" followed by some meaningless number
+> > > followed by some unhelpful word. :-)  Since USB plug/unplug is potentially
+> > > a wakeup event, such a mode must provide suspend power to the USB
+> > > controller.
 > >
-> > In some kernel version (2.6.15, iirc), device entered D3 if you wrote
-> > "2" to state file, and there are programs out there that depend on
-> > it.
-> 
-> Like what?
-
-Search archives. Some PCMCIA, IIRC.
-
-> > > You dropped the fundamental point, and I don't understand why you disagree
-> > > with it - the driver core should not be dictating policy to the downstream
-> > > drivers. It is currently doing this by filtering the power state that is
-> > > passed in via the "state" file.
+> > Maybe S4 does that, but I'm not sure...
 > >
-> > That's best we can do to stay compatible. Please introduce new file,
-> > and make states string-based.
-> 
-> You are still overlooking the point - the core should not be filtering the
-> values. It currently is, but it's trivial to fix. What is your issue with
-> that?
+> > > Does swsusp still support these not-completely-powered-off modes?
+> >
+> > Yes. echo platform > /sys/power/disk.
+>
+> So if you did that, you could suspend-to-disk while leaving USB up, right?
+> Without anything being wrong with the machine.
 
-That you are breaking compatibility in middle of 2.6 series. And very
-close to 2.6.16 at that.
-								Pavel
--- 
-Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
+No, not likely. S4 is +/- equivalent to a "soft off", except that it
+responds to more wake-up events than a soft off will (which BTW is defined
+as "S5").
+
+Even S3 will power down all of the PCI buses, including the USB host
+controllers. The chances of having any low-power system state that will
+still power the USB ports (by design) is pretty slim.
+
+Thanks,
+
+
+	Pat
+
+
+--===============15413258727086476==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============15413258727086476==--
