@@ -1,14 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] swsusp: warn about USB devices in
 	documentation
-Date: Mon, 20 Feb 2006 17:37:07 +0100
-Message-ID: <20060220163707.GA19156@elf.ucw.cz>
-References: <20060220103424.GA16042@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0602201022120.17612-100000@netrider.rowland.org>
+Date: Mon, 20 Feb 2006 11:41:49 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0602201139480.18560-100000@netrider.rowland.org>
+References: <20060220163707.GA19156@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0038689611853230943=="
+Content-Type: multipart/mixed; boundary="===============83945753152863078=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0602201022120.17612-100000@netrider.rowland.org>
+In-Reply-To: <20060220163707.GA19156@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,45 +17,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============0038689611853230943==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--===============83945753152863078==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Hi!
-> > > Can you update the patch to fix this paragraph?
+On Mon, 20 Feb 2006, Pavel Machek wrote:
+
+> Hi!
+> > > > Can you update the patch to fix this paragraph?
+> > > 
+> > > Well, this is talking about suspend-to-disk... That is expected to
+> > > power down machine, without providing USB bus power. If box
+> > > suspends-to-disk and leaves USB up, something is wrong with the
+> > > machine.
 > > 
-> > Well, this is talking about suspend-to-disk... That is expected to
-> > power down machine, without providing USB bus power. If box
-> > suspends-to-disk and leaves USB up, something is wrong with the
-> > machine.
+> > Oh, sorry, I didn't realize that.
+> > 
+> > Isn't there an ACPI mode that powers down most things (including RAM) but
+> > is able to respond to wakeup events?  I can't remember the mode's name,
+> > except that it's almost certainly "S" followed by some meaningless number
+> > followed by some unhelpful word. :-)  Since USB plug/unplug is potentially
+> > a wakeup event, such a mode must provide suspend power to the USB
+> > controller.
 > 
-> Oh, sorry, I didn't realize that.
+> Maybe S4 does that, but I'm not sure...
 > 
-> Isn't there an ACPI mode that powers down most things (including RAM) but
-> is able to respond to wakeup events?  I can't remember the mode's name,
-> except that it's almost certainly "S" followed by some meaningless number
-> followed by some unhelpful word. :-)  Since USB plug/unplug is potentially
-> a wakeup event, such a mode must provide suspend power to the USB
-> controller.
+> > Does swsusp still support these not-completely-powered-off modes?
+> 
+> Yes. echo platform > /sys/power/disk.
 
-Maybe S4 does that, but I'm not sure...
+So if you did that, you could suspend-to-disk while leaving USB up, right?  
+Without anything being wrong with the machine.
 
-> Does swsusp still support these not-completely-powered-off modes?
+Alan Stern
 
-Yes. echo platform > /sys/power/disk.
-								Pavel
--- 
-Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
 
---===============0038689611853230943==
+--===============83945753152863078==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============0038689611853230943==--
+--===============83945753152863078==--
