@@ -1,72 +1,49 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] swsusp: warn about USB devices in
-	documentation
-Date: Sun, 19 Feb 2006 22:50:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0602192243020.29356-100000@netrider.rowland.org>
-References: <200602192306.25170.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Flames over -- Re: Which is simpler?
+Date: Mon, 20 Feb 2006 07:55:57 +0100
+Message-ID: <200602200755.57699.oliver@neukum.org>
+References: <43F89F55.5070808@cfl.rr.com> <200602192144.57748.oliver@neukum.org> <20060219130243.52af0782.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============84414492648320172=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200602192306.25170.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932676AbWBTG5y@vger.kernel.org>
+In-Reply-To: <20060219130243.52af0782.akpm@osdl.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: stern@rowland.harvard.edu, psusi@cfl.rr.com, pavel@suse.cz, torvalds@osdl.org, mrmacman_g4@mac.com, alon.barlev@gmail.com, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============84414492648320172==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Am Sonntag, 19. Februar 2006 22:02 schrieb Andrew Morton:
+> Oliver Neukum <oliver@neukum.org> wrote:
+> >
+> > Am Sonntag, 19. Februar 2006 21:02 schrieb Andrew Morton:
+> > > For a), the current kernel behaviour is what we want - make the t=
+hing
+> > > appear at a new place in the namespace and in the hierarchy. =A0T=
+hen
+> > > userspace can do whatever needs to be done to identify the device=
+, and
+> > > apply some sort of policy decision to the result.
+> >=20
+> > How? If you have a running user space the connection to the open fi=
+les
+> > is already severed, as any access in that time window must fail.
+>=20
+> That's a separate issue, which we haven't discussed yet. =A0We have a=
+ device
+> which has gone away and which might come back later on. =A0Presently =
+we will
+> return an I/O error if I/O is attempted in that window. =A0Obviously =
+we'll
+> need to do something different, such as block reads and block or defe=
+r writes.
 
-On Sun, 19 Feb 2006, Rafael J. Wysocki wrote:
+But how do you handle memory management?
+If you simply block writes, the system will stall random tasks launderi=
+ng
+pages, including those needed to make progress. Even syncing before
+suspend won't help you, as a running user space may dirty pages.
+And what about the rootfs?
 
-> Hi,
-> 
-> The appended patch contains a warning about the possiblity to lose data
-> if any filesystems on USB devices are mounted before suspend.
-> 
-> The A:-Q: part is from my correspondence with Alan Stern (thanks Alan).
-
-> --- linux-2.6.16-rc3-mm1.orig/Documentation/power/swsusp.txt
-> +++ linux-2.6.16-rc3-mm1/Documentation/power/swsusp.txt
-> @@ -17,6 +17,11 @@ Some warnings, first.
->   * but it will probably only crash.
->   *
->   * (*) suspend/resume support is needed to make it safe.
-> + *
-> + * If you have any filesystems on USB devices mounted before suspend,
-> + * they won't be mounted after resume and you may lose data, as though
-> + * you have unplugged the USB devices with mounted filesystems on them
-> + * (see the FAQ below for details).
-
-This isn't quite right.  The filesystems _will_ still be mounted, but 
-inaccessible (as though you have unplugged the USB devices with mounted 
-filesystems on them).
-
-Furthermore, this may or may not happen depending on your hardware and the
-type of suspend.  So the "you _may_ lose data" part is good... but the
-"they _won't_ be mounted" part is bad.  On some types of machines (I've
-heard that Apple laptops work well) the process is very reliable; so long 
-as the battery doesn't discharge entirely -- and provided you don't 
-actually unplug the device while the machine is asleep -- you can resume 
-safely with filesystems intact.
-
-Can you update the patch to fix this paragraph?
-
-Alan Stern
-
-
---===============84414492648320172==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============84414492648320172==--
+	Oliver
