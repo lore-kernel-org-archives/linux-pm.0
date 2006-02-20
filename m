@@ -1,51 +1,75 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [linux-pm] [PATCH 3/5] [pm] Respect the actual device power
- states in sysfs interface
-Date: Mon, 20 Feb 2006 09:58:27 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0602200955030.12708-100000@monsoon.he.net>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 3/5] [pm] Respect the actual device power
+	states in sysfs interface
+Date: Mon, 20 Feb 2006 18:58:42 +0100
+Message-ID: <20060220175842.GH19156@elf.ucw.cz>
 References: <Pine.LNX.4.50.0602171758160.30811-100000@monsoon.he.net>
- <20060218155543.GE5658@openzaurus.ucw.cz> <Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
- <20060220004635.GA22576@kroah.com>
+	<20060218155543.GE5658@openzaurus.ucw.cz>
+	<Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
+	<20060220000907.GE15608@elf.ucw.cz>
+	<Pine.LNX.4.50.0602191611130.8676-100000@monsoon.he.net>
+	<20060220002053.GF15608@elf.ucw.cz>
+	<Pine.LNX.4.50.0602191628270.8676-100000@monsoon.he.net>
+	<20060220004142.GI15608@elf.ucw.cz>
+	<Pine.LNX.4.50.0602200938320.12708-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161090AbWBTR6h@vger.kernel.org>
-In-Reply-To: <20060220004635.GA22576@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: Pavel Machek <pavel@suse.cz>, torvalds@osdl.org, akpm@osdl.org, linux-pm@osdl.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============88313872625566969=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.50.0602200938320.12708-100000@monsoon.he.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+--===============88313872625566969==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Sun, 19 Feb 2006, Greg KH wrote:
+Hi!
 
-> On Sun, Feb 19, 2006 at 03:59:25PM -0800, Patrick Mochel wrote:
-> >
-> > On Sat, 18 Feb 2006, Pavel Machek wrote:
-> >
-> > > Hi!
+> > > > Compatibility is already restored.
 > > >
-> > > > Fix the per-device state file to respect the actual state that
-> > > > is reported by the device, or written to the file.
-> > >
-> > > Can we let "state" file die? You actually suggested that at one point.
-> > >
-> > > I do not think passing states in u32 is good idea. New interface that passes
-> > > state as string would probably be better.
+> > > No, the interface is currently broken. The driver core does not
+> > > dictate
 > >
-> > Yup, in the future that will be better. For now, let's work with what we
-> > got and fix 2.6.16 to be compatible with previous versions..
->
-> It's _way_ too late in the 2.6.16 cycle for this series of patches, if
-> that is what you are proposing.
+> > There were two different interfaces, one accepted 0 and 2, everything
+> > else was invalid, and second accepted 0, 1, 2, 3.
+> >
+> > If you enter D2 on echo 2, you are breaking compatibility with 2.6.15
+> > or something like that.
+> 
+> I don't see how this is true. If a process writes "2" to a PCI device's
+> state file, what else are sane things to do?
 
-Would you mind commmenting on why, as well as your opinion on the validity
-of the patches themselves?
+In some kernel version (2.6.15, iirc), device entered D3 if you wrote
+"2" to state file, and there are programs out there that depend on
+it. And there are some older programs that write "3" and expect D3. So
+this interface really needs to die.
 
-This static, hardcoded policy was introduced into the core ~2 weeks ago,
-and it doesn't seem like it belongs there at all. This seems like the
-easiest way to fixing it, but I'm open to alternative suggestions..
+> You dropped the fundamental point, and I don't understand why you disagree
+> with it - the driver core should not be dictating policy to the downstream
+> drivers. It is currently doing this by filtering the power state that is
+> passed in via the "state" file.
 
-Thanks,
+That's best we can do to stay compatible. Please introduce new file,
+and make states string-based.
+								Pavel
+-- 
+Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
+
+--===============88313872625566969==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
-	Pat
+--===============88313872625566969==--
