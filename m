@@ -1,9 +1,9 @@
 From: <kaustav.majumdar@wipro.com>
-Subject: Regarding multifunction PC Card power management
-Date: Tue, 21 Feb 2006 14:30:47 +0530
-Message-ID: <05B7784238A51247A0A9FB4B348CECAE016F0581@PNE-HJN-MBX01.wipro.com>
+Subject: power management for pcmcia based USB hc driver
+Date: Tue, 21 Feb 2006 15:42:59 +0530
+Message-ID: <05B7784238A51247A0A9FB4B348CECAE016F05CE@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============026300039407713083=="
+Content-Type: multipart/mixed; boundary="===============13069861725741294=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -15,10 +15,10 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pcmcia@lists.infradead.org, linux-pm@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============026300039407713083==
+--===============13069861725741294==
 Content-class: urn:content-classes:message
 Content-Type: text/plain;
 	charset="us-ascii"
@@ -26,50 +26,36 @@ Content-Transfer-Encoding: 8bit
 
 Hi all,
 
-I had noted from the Linux 2.6 PCMCIA mini Howto that
+We are facing an issue regarding power management of a PCMCIA based USB
+Host Controller driver. 
 
-pccardctl suspend  <---->  echo -n 3 >
-/sys/class/pcmcia-socket/pcmcia-socket*/device/power/state
+When we are issuing the command "echo -n "3" >
+/sys/class/pcmcia-socket/pcmcia-socket1/device/power/state" from the
+command line (the PC Card was in socket 1), we received the "PM_SUSPEND"
+event in the event handler of the PCMCIA client driver. On getting that,
+inside the client driver, we are releasing the configuration by calling
+pcmcia_release_configuration.
 
-where * is socket number 0 or like that.
+When we debugged the code, we noted that though we are getting suspend
+event in the pcmcia client driver, the suspend entry points in the hc
+driver are not being called.
 
-and on doing so, we are getting the PM_SUSPEND event in the pcmcia
-client driver and the card is powered off. So it is working absolutely
-fine.
+So from that I think a mechanism is needed to communicate this event to
+the hc driver. One possible solution is to set a variable in the PCMCIA
+client driver on suspend and polling that variable from the hc driver.
 
-But I had found inside
-/sys/class/pcmcia_socket/pcmcia_socket*/device/*-0 directory which I
-think represents the function of the card, which is always 0 in case of
-a single function card. 
-
-I had tried 
-echo -n 3 > /sys/class/pcmcia_socket/pcmcia_socket*/*-0/power/state
-
-but had not got any event inside the PCMCIA client driver's event
-handler, whereas I think we should get a PM_SUSPEND event in the event
-handler.
-
-As per as my understanding, if the
-/sys/class/pcmcia_socket/pcmcia_socket*/*-0/ represents the function 0
-of the card, then for a multifunction card we will have *-0/ and *-1/
-directories, representing the function0 and function 1. And by "echo"ing
-3 in the power/state of the function representing directories, we should
-be able to suspend a specific function (function 0 or function 1) of the
-card.
-
-I want to validate my understanding. Thank you in advance for any
-suggestion.
+Pl. suggest a better solution. Looking forward to your suggestions.
 
 Thank you,
 With Regards,
 Kaustav Majumdar
 
 
---===============026300039407713083==
+--===============13069861725741294==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============026300039407713083==--
+--===============13069861725741294==--
