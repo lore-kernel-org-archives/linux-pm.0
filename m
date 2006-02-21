@@ -1,12 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: power management for pcmcia based USB hc driver
-Date: Tue, 21 Feb 2006 10:19:29 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0602211008500.5266-100000@iolanthe.rowland.org>
-References: <05B7784238A51247A0A9FB4B348CECAE016F05CE@PNE-HJN-MBX01.wipro.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/4] [pm] Add state filed to pm_message_t (to
+	hold actual state device is in).
+Date: Tue, 21 Feb 2006 09:50:43 -0800
+Message-ID: <20060221175043.GB23054@kroah.com>
+References: <Pine.LNX.4.50.0602201652430.21145-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============37376057601587376=="
+Content-Type: multipart/mixed; boundary="===============80666175039573718=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <05B7784238A51247A0A9FB4B348CECAE016F05CE@PNE-HJN-MBX01.wipro.com>
+In-Reply-To: <Pine.LNX.4.50.0602201652430.21145-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,55 +17,47 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: kaustav.majumdar@wipro.com
-Cc: linux-pm@lists.osdl.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: akpm@osdl.org, linux-pm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============37376057601587376==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============80666175039573718==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Tue, 21 Feb 2006 kaustav.majumdar@wipro.com wrote:
-
-> Hi all,
+On Mon, Feb 20, 2006 at 04:55:37PM -0800, Patrick Mochel wrote:
 > 
-> We are facing an issue regarding power management of a PCMCIA based USB
-> Host Controller driver. 
+> Signed-off-by: Patrick Mochel <mochel@linux.intel.com>
 > 
-> When we are issuing the command "echo -n "3" >
-> /sys/class/pcmcia-socket/pcmcia-socket1/device/power/state" from the
-> command line (the PC Card was in socket 1), we received the "PM_SUSPEND"
-> event in the event handler of the PCMCIA client driver. On getting that,
-> inside the client driver, we are releasing the configuration by calling
-> pcmcia_release_configuration.
+> ---
 > 
-> When we debugged the code, we noted that though we are getting suspend
-> event in the pcmcia client driver, the suspend entry points in the hc
-> driver are not being called.
+>  include/linux/pm.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> So from that I think a mechanism is needed to communicate this event to
-> the hc driver. One possible solution is to set a variable in the PCMCIA
-> client driver on suspend and polling that variable from the hc driver.
+> applies-to: 55ce8c6305fc70b1b544ce7365abd6054e9b5f61
+> 7af37561812f4599841ade4abee067b808b40054
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 5be87ba..a7324ea 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -140,6 +140,7 @@ struct device;
 > 
-> Pl. suggest a better solution. Looking forward to your suggestions.
+>  typedef struct pm_message {
+>  	int event;
+> +	u32 state;
 
-Suspend messages sent via sysfs are not propagated down to child devices
-and drivers.  Your userspace program has to make sure to suspend all the
-children before trying to suspend a device.  That means suspending all the 
-descendants (interfaces and devices) of the host controller, then the host 
-controller itself, then the PCMCIA client driver.
+Can we _please_ make this an enumerated type that is able to be
+type-checked by sparse?  A "raw" u32 is not a good thing to have here.
 
-The same is true of resume messages sent via sysfs.  They don't get 
-propagated either, so again your userspace program must resume all the 
-children in the device tree.
+thanks,
 
-Alan Stern
+greg k-h
 
-
---===============37376057601587376==
+--===============80666175039573718==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============37376057601587376==--
+--===============80666175039573718==--
