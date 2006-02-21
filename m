@@ -1,13 +1,11 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 3/4] [pm] Minor updates to core
-	suspend/resume functions
-Date: Tue, 21 Feb 2006 04:42:44 -0800
-Message-ID: <20060221044244.686df618.akpm@osdl.org>
-References: <Pine.LNX.4.50.0602201653580.21145-100000@monsoon.he.net>
+From: <rasmit.ranjan@wipro.com>
+Subject: Order of suspension for pcmcia based usb host controller
+Date: Tue, 21 Feb 2006 18:15:26 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB20169F10E@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============70331450448874366=="
+Content-Type: multipart/mixed; boundary="===============32820882405349261=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.50.0602201653580.21145-100000@monsoon.he.net>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,32 +15,130 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Patrick Mochel <mochel@digitalimplant.org>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-pm@osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============70331450448874366==
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+This is a multi-part message in MIME format...
 
-Patrick Mochel <mochel@digitalimplant.org> wrote:
->
-> - Check the real state the device and parent are in compared
->    to the the real state requested, instead of just checking
->    that the event types are the same.
-> 
->  - Update debug and error messages to display the real states.
+--===============32820882405349261==
+Content-Type: multipart/alternative;
+    boundary="----------=_1140525955-6465-584"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-This patch causes resume failures here.  suspend-to-ram, resume and the
-long-suffering USB wireless mouse is dead - the power light on the USB
-gadget is off and nothing I can do will persuade it to come back on.
+This is a multi-part message in MIME format...
 
+------------=_1140525955-6465-584
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---===============70331450448874366==
+Hi all,=20
+=20
+   I have a PCMCIA card which has a usb Host Controller (HC) on it. I am
+writing Host Controller Driver (HCD) for this. I have pcmcia client
+driver which is registering HC as a platform device.i.e. my HCD is a
+platform driver. The device representation in linux-2.6.15.4 is given
+below.
+=20
+=20
+/sys/class/pcmcia-socket/pcmcia-socket1/device/1.0/myhcd/usb5/5-0:1.0
+=20
+In my pcmcia client driver i get suspend event when i do selective
+suspend of the card (pcmcia-socket1/device in device tree ) .  Platform
+driver`s suspend entry point is getting called when i do selective
+suspend of myhcd. Now if i do global suspend will Power Management
+sub-system follow the device tree to suspend the card ? Which means PM
+sub-system will suspend 5-0:1.0 , then it will suspend usb5, then myhcd
+and then the pcmcia-socket1/device. So does it mean that in global
+suspend platform driver`s suspend entry point will be getting called
+before the pcmcia client driver`s suspend event ?=20=20
+Please suggest.
+=20
+Thanks and regards,
+Rasmit Ranjan swain.
+
+------------=_1140525955-6465-584
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D890351412-21022006><FONT face=3DA=
+rial><FONT=20
+size=3D2>Hi all,<SPAN class=3D942444112-21022006><FONT=20
+color=3D#0000ff>&nbsp;</FONT></SPAN></FONT></FONT></SPAN></DIV>
+<DIV><SPAN class=3D890351412-21022006><FONT face=3DArial><FONT size=3D2><SP=
+AN=20
+class=3D942444112-21022006>&nbsp;</SPAN></FONT></FONT></SPAN></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D890351412-21022006>&nbsp;&nb=
+sp; I have=20
+a PCMCIA card which has a usb&nbsp;Host Controller (HC)&nbsp;on it. I am=20
+writing&nbsp;Host Controller Driver (HCD)&nbsp;for this. I have pcmcia clie=
+nt=20
+driver which is registering&nbsp;HC as a platform device.</SPAN></FONT><FON=
+T=20
+face=3DArial size=3D2><SPAN class=3D890351412-21022006>i.e.</SPAN></FONT><F=
+ONT=20
+face=3DArial size=3D2><SPAN class=3D890351412-21022006>&nbsp;my HCD is a pl=
+atform=20
+driver. The device representation in linux-2.6.15.4 is given=20
+below.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D890351412-21022006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D890351412-21022006>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+<STRONG>/sys/class/pcmcia-socket/pcmcia-socket1/device/1.0/myhcd/usb5/5-0:1=
+.0</STRONG></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D890351412-21022006><STRONG></STRONG></SPAN></FONT>&nbsp;</DIV>
+<DIV><SPAN class=3D890351412-21022006><FONT face=3DArial><FONT size=3D2>In =
+my pcmcia=20
+client driver i get suspend event when i do selective suspend of the card=
+=20
+(<STRONG>pcmcia-socket1/device&nbsp;</STRONG>in device=20
+tree&nbsp;)&nbsp;.&nbsp;&nbsp;Platform driver`s suspend entry point is gett=
+ing=20
+called when i do selective suspend of <STRONG>myhcd</STRONG>.&nbsp;Now if i=
+ do=20
+global suspend will&nbsp;Power Management&nbsp;sub-system follow the device=
+ tree=20
+to suspend the card ? Which means PM sub-system will suspend=20
+<STRONG>5-0:1.0</STRONG> , then it will suspend <STRONG>usb5</STRONG>, then=
+=20
+<STRONG>myhcd</STRONG> and then the <STRONG>pcmcia-socket1/device</STRONG>.=
+ So=20
+does it mean that in global suspend platform driver`s&nbsp;suspend entry po=
+int=20
+will be getting called before the pcmcia client driver`s suspend event ?<SP=
+AN=20
+class=3D942444112-21022006><FONT=20
+color=3D#0000ff>&nbsp;&nbsp;</FONT></SPAN></FONT></FONT></SPAN></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D890351412-21022006>Please=20
+suggest.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D890351412-21022006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D890351412-21022006>Thanks an=
+d=20
+regards,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D890351412-21022006>Rasmit Ra=
+njan=20
+swain.</SPAN></FONT></DIV></BODY></HTML>
+
+------------=_1140525955-6465-584--
+
+--===============32820882405349261==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============70331450448874366==--
+--===============32820882405349261==--
