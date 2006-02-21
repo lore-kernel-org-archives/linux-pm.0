@@ -1,11 +1,19 @@
-From: <kaustav.majumdar@wipro.com>
-Subject: power management for pcmcia based USB hc driver
-Date: Tue, 21 Feb 2006 15:42:59 +0530
-Message-ID: <05B7784238A51247A0A9FB4B348CECAE016F05CE@PNE-HJN-MBX01.wipro.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 3/5] [pm] Respect the actual device power
+	states in sysfs interface
+Date: Tue, 21 Feb 2006 11:57:11 +0100
+Message-ID: <20060221105711.GK21557@elf.ucw.cz>
+References: <Pine.LNX.4.50.0602171758160.30811-100000@monsoon.he.net>
+	<20060218155543.GE5658@openzaurus.ucw.cz>
+	<Pine.LNX.4.50.0602191557520.8676-100000@monsoon.he.net>
+	<20060220004635.GA22576@kroah.com>
+	<Pine.LNX.4.50.0602200955030.12708-100000@monsoon.he.net>
+	<20060220220404.GA25746@kroah.com>
+	<Pine.LNX.4.50.0602201655580.21145-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============13069861725741294=="
+Content-Type: multipart/mixed; boundary="===============35320309926752791=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.50.0602201655580.21145-100000@monsoon.he.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,47 +23,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: Patrick Mochel <mochel@digitalimplant.org>
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============13069861725741294==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+--===============35320309926752791==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Hi all,
+On Po 20-02-06 17:09:26, Patrick Mochel wrote:
+> 
+> On Mon, 20 Feb 2006, Greg KH wrote:
+> 
+> > On Mon, Feb 20, 2006 at 09:58:27AM -0800, Patrick Mochel wrote:
+> 
+> > > Would you mind commmenting on why, as well as your opinion on the validity
+> > > of the patches themselves?
+> > >
+> > > This static, hardcoded policy was introduced into the core ~2 weeks ago,
+> > > and it doesn't seem like it belongs there at all.
+> >
+> > That patch was accepted as it fixed a oops.  It also went in for
+> > 2.6.16-rc2, which is much earlier than 2.6.16-rc4, and it had been in
+> > the -mm tree for quite a while for people to test it out and verify that
+> > it didn't break anything.  I didn't hear any complaints about it, so
+> > that is why it went in.
+> >
+> > In contrast, this patch series creates a new api and doesn't necessarily
+> > fix any reported bugs.  It also has not had the time to be tested in the
+> > -mm tree, and there is quite a lot of disagreement about the patches on
+> > the lists.  All of that combinded makes it not acceptable for so late in
+> > the -rc cycle (remember, -rc4 means only serious bug fixes.)
+> 
+> Thanks.
+> 
+> However, there are a couple of things to note:
+> 
+> - These patches don't create a new API; they fix the semantics of an
+>   existing API by restoring them to its originally designed semantics.
 
-We are facing an issue regarding power management of a PCMCIA based USB
-Host Controller driver. 
+They may reintroduce "original" semantics, but they'll break
+applications needing 2.6.15 semantic (where 2 meant D3hot).
 
-When we are issuing the command "echo -n "3" >
-/sys/class/pcmcia-socket/pcmcia-socket1/device/power/state" from the
-command line (the PC Card was in socket 1), we received the "PM_SUSPEND"
-event in the event handler of the PCMCIA client driver. On getting that,
-inside the client driver, we are releasing the configuration by calling
-pcmcia_release_configuration.
+> - The BUG() still exists and is relatively easily triggerable (by calling
+>   pci_choose_state() with the wrong value). The fact that the BUG() was
+>   allowed into the kernel is surprising - the mantra for a long time has
+>   been that no new BUG()s should be added. This one is easily made nicer
+>   (see patch 4/4 in the next series), so I don't see why it wasn't
+>   targeted before..
 
-When we debugged the code, we noted that though we are getting suspend
-event in the pcmcia client driver, the suspend entry points in the hc
-driver are not being called.
+I don't know what you are talking about here. "No new BUGs"?! It is
+bad to have bug triggerable from userspace, but that was fixed.
 
-So from that I think a mechanism is needed to communicate this event to
-the hc driver. One possible solution is to set a variable in the PCMCIA
-client driver on suspend and polling that variable from the hc driver.
+								Pavel
+-- 
+Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
 
-Pl. suggest a better solution. Looking forward to your suggestions.
-
-Thank you,
-With Regards,
-Kaustav Majumdar
-
-
---===============13069861725741294==
+--===============35320309926752791==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============13069861725741294==--
+--===============35320309926752791==--
