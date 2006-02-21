@@ -1,14 +1,10 @@
-From: Nigel Cunningham <ncunningham@cyclades.com>
-Subject: Re: suspend-to-ram fails resume.
-Date: Tue, 21 Feb 2006 09:37:12 +1000
-Message-ID: <200602210937.16338.ncunningham@cyclades.com>
-References: <43EE824B.20609@superbug.co.uk>
-	<20060215233300.GB3490@openzaurus.ucw.cz>
-	<43F8B1DC.7060204@superbug.co.uk>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: [PATCH 0/4] Fix runtime device suspend/resumre interface
+Date: Mon, 20 Feb 2006 16:55:34 -0800 (PST)
+Message-ID: <Pine.LNX.4.50.0602201641380.21145-100000@monsoon.he.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============31711728660941674=="
+Content-Type: multipart/mixed; boundary="===============52613298125766894=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <43F8B1DC.7060204@superbug.co.uk>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,79 +14,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: Pavel Machek <pavel@ucw.cz>
+To: greg@kroah.com, akpm@osdl.org, torvalds@osdl.org
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============31711728660941674==
-Content-Type: multipart/signed; boundary="nextPart7777127.JDM8HYtsaV";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+--===============52613298125766894==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
---nextPart7777127.JDM8HYtsaV
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi.
+Hi there,
 
-On Monday 20 February 2006 03:58, James Courtier-Dutton wrote:
-> Pavel Machek wrote:
-> >> "hibernate" and restore to/from disk works fine.
-> >> I have been trying to resume after running a "hibernate-ram" script.
-> >> Just using a text console, no X.
-> >>
-> >> I attach a log with comments in it.
-> >> I have a Nvidia FX5200 video card.
-> >>
-> >> After resume the display is blank. ping works from a remote machine, b=
-ut
-> >> ssh does not work.
-> >>
-> >> What can I do to help diagnose this problem?
-> >
-> > get video to work - see Doc*/power/video.txt and see
-> > what are last messages on console.
->
-> I have sort of solved my problem.
-> I can exit from suspend ok now, but I have to disable the detection of
-> the power button in the /etc/acpi scripts.
-> So, I now need some way of disabling detection of the power button while
-> it is exiting from suspend.
-> Does anyone have any ideas how to?
+Here is an updated version of the patches to fix the sysfs interface for
+runtime device power management by restoring the file to its originally
+designed behavior - to place devices in the power state specified by the
+user process writing to the file.
 
-Is it doing an init 0 because of the power button press? If so, you might t=
-ry=20
-one or both of the following:
+Recently, the interface was changed to filter out values to prevent a
+BUG() that was introduced in the PCI power management code. While a valid
+fix, it makes the driver core filter values that might otherwise be used
+by the bus/device drivers. This behavior enforces a hard-coded,
+non-configurable policy in the driver core, and prevents any other power
+state besides "on" and "off" from being used.
 
-=2D Remove the acpi button module while suspending.
-=2D Assuming this is the result of an acpi event, edit the /etc/acpi* file=
-=20
-that's telling acpi to shutdown when it sees the power button press.
+These patches implement a solution to that problem by introducing a
+"state" field to the pm_message_t structure, which is passed to the bus
+drivers for each suspend request. The sysfs interface is modified to
+forward the value written to the file in the .state field. The bus and
+device drivers can use that field as guidance for which power state to
+enter.
 
-Hope that helps!
+While not the only solution to the problem, this solution should restore
+the desired functionality to the per-device "state" file with the least
+amount of impact.
 
-Nigel
+Thanks,
 
---nextPart7777127.JDM8HYtsaV
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+	Pat
 
-iD8DBQBD+lKsN0y+n1M3mo0RAorXAJ9gmz4cHlT1qMBpz9qqbpApUoFrdwCg9L01
-kUBjIl46A5vhYdVFc7m9eKg=
-=B7l0
------END PGP SIGNATURE-----
-
---nextPart7777127.JDM8HYtsaV--
-
---===============31711728660941674==
+--===============52613298125766894==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============31711728660941674==--
+--===============52613298125766894==--
