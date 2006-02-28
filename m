@@ -1,14 +1,11 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: [PATCH 0/4] Fix runtime device suspend/resumre
-	interface
-Date: Mon, 27 Feb 2006 11:18:43 -0800 (PST)
-Message-ID: <Pine.LNX.4.50.0602271111101.28882-100000@monsoon.he.net>
-References: <Pine.LNX.4.50.0602201641380.21145-100000@monsoon.he.net>
-	<20060221174950.GA23054@kroah.com>
+From: <rasmit.ranjan@wipro.com>
+Subject: suspend/resume of pcmcia
+Date: Tue, 28 Feb 2006 16:44:04 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB2016FF52A@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2963432485943529=="
+Content-Type: multipart/mixed; boundary="===============27925939901172736=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060221174950.GA23054@kroah.com>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,69 +15,129 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: akpm@osdl.org, linux-pm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============2963432485943529==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+This is a multi-part message in MIME format...
 
+--===============27925939901172736==
+Content-Type: multipart/alternative;
+    boundary="----------=_1141125302-9742-105"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-On Tue, 21 Feb 2006, Greg KH wrote:
+This is a multi-part message in MIME format...
 
-> On Mon, Feb 20, 2006 at 04:55:34PM -0800, Patrick Mochel wrote:
-> >
-> > Hi there,
-> >
-> > Here is an updated version of the patches to fix the sysfs interface for
-> > runtime device power management by restoring the file to its originally
-> > designed behavior - to place devices in the power state specified by the
-> > user process writing to the file.
-> >
-> > Recently, the interface was changed to filter out values to prevent a
-> > BUG() that was introduced in the PCI power management code. While a valid
-> > fix, it makes the driver core filter values that might otherwise be used
-> > by the bus/device drivers.
->
-> Are there any existing bus/device drivers that are currently broken
-> because of this change?
+------------=_1141125302-9742-105
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It's difficult to tell. There are several devices that support multiple
-PCI power states, and several drivers that will attempt to put the device
-into whatever state is passed to their ->suspend() method. But, there are
-not many that handle D1 or D2 specially.
+Hi,
+    For pci based host controller when we do global suspend it is the PM
+sub-system which takes care of the sequence of suspend i.e. PM traverses
+the device tree and suspends the child devices first and subsequently
+suspends the controller.
+I have a pcmcia based host controller what i mean is i have a pcmcia
+card which has a usb host controller. Now two things come to picture.
+One is the client driver and other is the HCD. The client driver
+receives a suspend event when i suspend the card by pccardctl suspend.
+In this case ther is no mechanism provided to communicate to the HCD
+about the suspned which has to handled by the user i.e. the client
+driver and hcd. Now if i do global suspend, is it the PM sub-system
+which takes care of the suspend sequence ? Here what i mean is PM will
+traverse the device tree, it suspends the child devices, then it
+suspends the controller and finally sends the suspend event to the
+client driver or only the suspend event is sent to the client driver
+with out suspendung the controller.=20
+        In case of resume, when i resume the card by pccardctl resume (
+not global ), only the resume event of the client driver is getting
+called thats all. So here again the user has to take care of resuming
+the hcd. So for the global resume does PM sub-system take care of
+sending the resume event to the client driver and as well as resuming
+the controller ?
+=20
+Please suggest.
+=20
+Thanks and regards,
+Rasmit.
 
-The point of the patches was to restore the functionality of the sysfs
-file to its documented interface, which had been that way since the file
-was created (early in 2.6). In the last year, since the conversion to the
-pm_message_t in driver suspend methods, it is not behaved as it was
-advertised to do.
+------------=_1141125302-9742-105
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-One solution is to prohibit any suspend/resume commands besides "on" and
-"off", and to change the documented semantics of the file. But, it seems
-much more useful to enable the use of the intermediate states, so long as
-it doesn't do any serious harm. Put another way, it doesn't seem to make
-sense to intentionally prevent the use of intermediate power states.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D874174110-28022006>Hi,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D874174110-28022006>&nbsp;&nb=
+sp;&nbsp;=20
+For pci based host controller when we do global suspend it is the PM sub-sy=
+stem=20
+which takes care of the sequence of suspend i.e. PM traverses the device tr=
+ee=20
+and suspends the child devices first and subsequently suspends the=20
+controller.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D874174110-28022006>I&nbsp;ha=
+ve a pcmcia=20
+based host controller what i mean is i have a pcmcia card which has a usb h=
+ost=20
+controller. Now two things come to picture. One is the client driver and ot=
+her=20
+is the HCD. The client driver receives a suspend event when i suspend the c=
+ard=20
+by pccardctl suspend. In this case ther is no mechanism provided to communi=
+cate=20
+to the HCD about the suspned which has to handled by the user i.e. the clie=
+nt=20
+driver and hcd. Now if i do global suspend, is it the PM sub-system which t=
+akes=20
+care of the suspend sequence ? Here what i mean is PM will traverse the dev=
+ice=20
+tree, it suspends the child devices, then it suspends the controller and fi=
+nally=20
+sends the suspend event to the client driver or only the suspend&nbsp;event=
+ is=20
+sent to the client driver with out suspendung the controller.=20
+</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D874174110-28022006>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In ca=
+se of=20
+resume, when i resume the card by pccardctl resume ( not global ), only the=
+=20
+resume event of the client driver is getting called thats all. So here agai=
+n the=20
+user has to take care of resuming the hcd. So for the global resume does PM=
+=20
+sub-system take care of sending the resume event to the client driver and a=
+s=20
+well as resuming the controller ?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D874174110-28022006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D874174110-28022006>Please=20
+suggest.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D874174110-28022006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D874174110-28022006>Thanks an=
+d=20
+regards,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D874174110-28022006>Rasmit.</SPAN></FONT></DIV></BODY></HTML>
 
-What is also a bit wonky is the handling of those intermediate power
-states now. If someone has a PCI device that advertises D1/D2 support, and
-he/she knows the driver supports it (or is writing the driver support for
-it), a write of "1" or "2" to the device's state file is not going to
-provide the type of behavior that one would expect..
+------------=_1141125302-9742-105--
 
-Does that help at all?
-
-Thanks,
-
-
-	Pat
-
-
---===============2963432485943529==
+--===============27925939901172736==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============2963432485943529==--
+--===============27925939901172736==--
