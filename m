@@ -1,12 +1,10 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: suspend/resume of pcmcia
-Date: Tue, 28 Feb 2006 09:53:08 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0602280951450.4892-100000@iolanthe.rowland.org>
-References: <380D9721A8E2114485644D71E87C6AB2016FF52A@PNE-HJN-MBX01.wipro.com>
+From: jessica lawson <smartmailstore@yahoo.com>
+Subject: International mail order
+Date: Tue, 28 Feb 2006 07:10:18 -0800 (PST)
+Message-ID: <20060228151018.60055.qmail@web37812.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============76635210701613121=="
+Content-Type: multipart/mixed; boundary="===============98460694693579387=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB2016FF52A@PNE-HJN-MBX01.wipro.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,57 +14,58 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rasmit.ranjan@wipro.com
-Cc: linux-pm@lists.osdl.org
+To: einkauf@kct-online.de
 List-Id: linux-pm@vger.kernel.org
 
---===============76635210701613121==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+This is a multi-part message in MIME format...
 
-On Tue, 28 Feb 2006 rasmit.ranjan@wipro.com wrote:
+--===============98460694693579387==
+Content-Type: multipart/alternative;
+    boundary="----------=_1141139463-18836-390"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-> Hi,
->     For pci based host controller when we do global suspend it is the PM
-> sub-system which takes care of the sequence of suspend i.e. PM traverses
-> the device tree and suspends the child devices first and subsequently
-> suspends the controller.
-> I have a pcmcia based host controller what i mean is i have a pcmcia
-> card which has a usb host controller. Now two things come to picture.
-> One is the client driver and other is the HCD. The client driver
-> receives a suspend event when i suspend the card by pccardctl suspend.
-> In this case ther is no mechanism provided to communicate to the HCD
-> about the suspned which has to handled by the user i.e. the client
-> driver and hcd. Now if i do global suspend, is it the PM sub-system
-> which takes care of the suspend sequence ?
+This is a multi-part message in MIME format...
 
-Yes.
+------------=_1141139463-18836-390
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
 
-> Here what i mean is PM will
-> traverse the device tree, it suspends the child devices, then it
-> suspends the controller and finally sends the suspend event to the
-> client driver or only the suspend event is sent to the client driver
-> with out suspendung the controller. 
+Hello Seller,
+ 
+  My name is Jessica Lawson i am located in Usa, But we just open a new small store in Nigeria, we got your advert online about the items you sell in your store and we just want to make an URGENT ORDER on it, to our new store in nigeria, 
+   
+       we will want you to know if you can ship ditectly down to nigeria so every thing can be easy for both of us and we are ready to pay for the shipping fees, (FEDEX,DHL,UPS, 2-3 days),
+    
+   
+  payment will be made by USA Valid Credit Card,(Master Card, Visa Card) .
 
-The PM subsystem sends suspend messages to every driver in the device 
-tree.
-
->         In case of resume, when i resume the card by pccardctl resume (
-> not global ), only the resume event of the client driver is getting
-> called thats all. So here again the user has to take care of resuming
-> the hcd. So for the global resume does PM sub-system take care of
-> sending the resume event to the client driver and as well as resuming
-> the controller ?
-
-Yes.
-
-Alan Stern
+  Thanks
 
 
---===============76635210701613121==
+		
+---------------------------------
+Yahoo! Mail
+Bring photos to life! New PhotoMail  makes sharing a breeze. 
+------------=_1141139463-18836-390
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+
+<DIV><STRONG>Hello Seller,<BR>&nbsp;</STRONG></DIV>  <DIV><STRONG>My name is Jessica Lawson i am located in Usa, But we just open a new </STRONG><STRONG>small store in Nigeria, we got your advert online about the items you </STRONG><STRONG>sell in your store and we just want to make an URGENT ORDER on it, to </STRONG><STRONG>our new store in nigeria, </STRONG></DIV>  <DIV><STRONG></STRONG>&nbsp;</DIV>  <DIV><STRONG>&nbsp;&nbsp;&nbsp;&nbsp; we will want you to know if you can ship </STRONG><STRONG>ditectly down to nigeria so every thing can be easy for both of us and </STRONG><STRONG>we are ready to pay for the shipping fees, (FEDEX,DHL,UPS, 2-3 </STRONG><STRONG>days),</STRONG></DIV>  <DIV><STRONG>&nbsp; </STRONG></DIV>  <DIV><STRONG></STRONG>&nbsp;</DIV>  <DIV><STRONG>payment will be made by USA Valid Credit Card,(Master Card, Visa </STRONG><STRONG>Card) .<BR></DIV></STRONG>  <DIV><STRON
+ G>Thanks<BR></DIV></STRONG><p>
+		<hr size=1>Yahoo! Mail<br>
+Bring photos to life! <a href="http://pa.yahoo.com/*http://us.rd.yahoo.com/evt=39174/*http://photomail.mail.yahoo.com">New PhotoMail </a> makes sharing a breeze. 
+
+------------=_1141139463-18836-390--
+
+--===============98460694693579387==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============76635210701613121==--
+--===============98460694693579387==--
