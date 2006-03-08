@@ -1,14 +1,15 @@
-From: Tehn Yit Chin <tehn-yit.chin@greyinnovation.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: apm for individual devices
-Date: Tue, 07 Mar 2006 15:06:40 +1100
-Message-ID: <440D06D0.2020206@greyinnovation.com>
+Date: Wed, 8 Mar 2006 16:50:43 +0100
+Message-ID: <20060308155043.GA3669@elf.ucw.cz>
 References: <440CD773.6010401@greyinnovation.com>
-	<20060307035043.GA4312@neo.rr.com>
+	<440CE22E.8060601@greyinnovation.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060307035043.GA4312@neo.rr.com>
+Content-Disposition: inline
+In-Reply-To: <440CE22E.8060601@greyinnovation.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,51 +19,38 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <ambx1@neo.rr.com>
+To: Tehn Yit Chin <tehn-yit.chin@greyinnovation.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Adam Belay wrote:
-> On Tue, Mar 07, 2006 at 11:44:35AM +1100, Tehn Yit Chin wrote:
-> 
->>Hi all,
->>
->>How does one use the sysfs entry of power/state that I can find for each 
->>registered device? Eg, for the i2c device on my s3c2410 cpu, I find the 
->>following entry,
->>
->>/sys/devices/platform/s3c2410-i2c/power/state
->>
->>I tried echoing "mem" into it, but nothing seems to happen.
->>
->>What I am looking for is a way of suspending and resuming individual 
->>devices within the PM architecture?
->>
->>Any pointers would be greatly appreciated.
->>--
-> 
-> 
-> Out of curiousity, why do you need to suspend this individual device?
-> In other words, what practical runtime power management gains would this
-> sort of low level and specific power management control provide for your
-> purposes?
-> 
-> Thanks,
-> Adam
-> 
-> 
+On =DAt 07-03-06 12:30:22, Tehn Yit Chin wrote:
+>=20
+> Tehn Yit Chin wrote:
+> >Hi all,
+> >
+> >How does one use the sysfs entry of power/state that I can find for ea=
+ch=20
+> >registered device? Eg, for the i2c device on my s3c2410 cpu, I find th=
+e=20
+> >following entry,
+> >
+> >/sys/devices/platform/s3c2410-i2c/power/state
+> >
+> >I tried echoing "mem" into it, but nothing seems to happen.
+> >
+> >What I am looking for is a way of suspending and resuming individual=20
+> >devices within the PM architecture?
+> >
+> >Any pointers would be greatly appreciated.
+>=20
+> After reading through the mailing list archives, I sort of work it out.=
+ ie
+>=20
+> echo -n 1 > /sys/devices/platform/s3c2410-i2c/power/state
 
-The example that I use is probably a bad example.
+Actually, it is controlled by 0 and 3 these days. (0 =3D=3D on, 3 =3D=3D =
+off).
 
-We are developing a  consumer electronic product where we need to shut 
-down various devices in the product's several operating mode to maximise 
-battery life. Eg: in one of its operating mode, we are not using the 
-audio codec so we should suspend it to maximise battery life. There are 
-also several similar scenarios where this could apply.
-
-A better example might have been
-
-echo -n 1 > /dev/devices/platform/product-codec/power/state
-
-cheers,
-tyc
+								Pavel
+--=20
+Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
