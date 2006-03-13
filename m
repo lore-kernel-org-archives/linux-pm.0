@@ -1,18 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Nigel Cunningham <nigel@suspend2.net>
 Subject: Re: Re: standby to disk transition
-Date: Mon, 13 Mar 2006 22:46:53 +0100
-Message-ID: <20060313214652.GJ10348@elf.ucw.cz>
+Date: Tue, 14 Mar 2006 07:59:07 +1000
+Message-ID: <200603140759.15754.nigel@suspend2.net>
 References: <E1FIctI-0000jE-00@porton.narod.ru>
-	<20060313083037.GA3495@elf.ucw.cz>
-	<20060313084811.GC20569@neo.rr.com>
-	<20060313085042.GB3495@elf.ucw.cz>
-	<20060313090759.GA20930@neo.rr.com>
-	<20060313091332.GC3495@elf.ucw.cz>
-	<20060313183318.GB26234@redhat.com>
 	<20060313212420.GG10348@elf.ucw.cz>
 	<20060313212856.GA16874@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============52172747305780198=="
+Content-Type: multipart/mixed; boundary="===============99738322551801495=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <20060313212856.GA16874@redhat.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -25,75 +19,81 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Dave Jones <davej@redhat.com>
-Cc: linux-pm@osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>, "Victor Porton, , , " <porton@ex-code.com>
+Cc: linux-pm@osdl.org, "Victor Porton, , , " <porton@ex-code.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============52172747305780198==
-Content-Type: text/plain; charset=us-ascii
+--===============99738322551801495==
+Content-Type: multipart/signed; boundary="nextPart1559119.egA1TnWxqu";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+
+--nextPart1559119.egA1TnWxqu
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-On Po 13-03-06 16:28:56, Dave Jones wrote:
+Hi Dave.
+
+On Tuesday 14 March 2006 07:28, Dave Jones wrote:
 > On Mon, Mar 13, 2006 at 10:24:20PM +0100, Pavel Machek wrote:
-> 
 >  > > if suspend-to-disk is fast enough, you could just *always* write
 >  > > to disk, even if we're doing S3.  If power runs out, you then have a
 >  > > valid resume image on-disk.  iirc, this is what Windows does.
->  > 
+>  >
 >  > Yep, I call that suspend-to-both. It is planned, but not really
 >  > trivial, and I'm a little busy. If someone wants to help....
-> 
+>
 > I was thinking a few days ago. With your move of all this stuff to
 > userspace, if it was done in multiple stages, we could implement
 > a form of checkpointing this way.
-
-It is possible...
-
+>
 > So instead of doing the 'suspend to disk/ram' after 'write out all pages',
 > we just continue.
+>
+> Why is this useful ?  We've seen bugs reported that only ever bite
+> customers after they've run their workload for a month.  Now, if they had=
+ a
+> means of checkpointing, then when it crashes, they could capture the last
+> image that landed somewhere, and set that up for more tests/monitoring wi=
+th
+> kprobes etc and reproduce those hard-to-reproduce bugs a lot faster.
 
-...but it is not _that_ simple. Preparing video for suspend-to-ram is
-rather nasty piece of code, and I'd rather not have it ran after
-system is frozen. Sequence needs to be something like:
+I've been asked about this from time to time too. Apart from the issues Pav=
+el=20
+has already mentioned, the big problem in my mind was figuring out what to =
+do=20
+about disk storage. As the algorithm stands at the moment, the image includ=
+es=20
+information about the state of mounted filesystems. We'd need to somehow ge=
+t=20
+rid of or be able to ignore that. Any suggestions?
 
-prepare video for s2ram, vbetool save if neccessary
-FREEZE
-SNAPSHOT
-save image to disk
-run s2ram
-immediately after wakeup, s-t-disk signature needs to be removed,
-	otherwise we risk two resumes from one suspend.
+Regards,
 
-> Why is this useful ?  We've seen bugs reported that only ever bite customers
-> after they've run their workload for a month.  Now, if they had a means
-> of checkpointing, then when it crashes, they could capture the last image
-> that landed somewhere, and set that up for more tests/monitoring with kprobes etc
-> and reproduce those hard-to-reproduce bugs a lot faster.
+Nigel
+=2D-=20
+See our web page for Howtos, FAQs, the Wiki and mailing list info.
+http://www.suspend2.net                IRC: #suspend2 on Freenode
 
-Yes, you can do it, but:
+--nextPart1559119.egA1TnWxqu
+Content-Type: application/pgp-signature
 
-1) each SNAPSHOT takes few seconds, and it is rather disruptive
-action -- includes console switch. It needs half of memory free.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-2) it only snapshots memory. To be able to continue from saved
-snapshot, you'd need to save swap partition and all mounted
-filesystems.
+iD8DBQBEFeszN0y+n1M3mo0RApC/AJ43Lhuo1t5OCwU7DqLPnwE2+nJ0/QCfb/RL
+E2V84Bv8GgfReiJtnkP0zvA=
+=HSEh
+-----END PGP SIGNATURE-----
 
-Maybe you don't need 2) -- like kernel state is enough for you, or
-maybe you can do some magic with device mapper.
+--nextPart1559119.egA1TnWxqu--
 
-Actually I have played with this idea myself. Running system entirely
-on ramdisk would make periodic snapshots feasible, and it could do
-tricks like system-level undo. Maybe I'll prepare some demo when I get
-a time... Its probably going to be toy, through.
-								Pavel
--- 
-113:
-
---===============52172747305780198==
+--===============99738322551801495==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============52172747305780198==--
+--===============99738322551801495==--
