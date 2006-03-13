@@ -1,14 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Adam Belay <ambx1@neo.rr.com>
 Subject: Re: Re: standby to disk transition
-Date: Mon, 13 Mar 2006 09:50:42 +0100
-Message-ID: <20060313085042.GB3495@elf.ucw.cz>
+Date: Mon, 13 Mar 2006 04:07:59 -0500
+Message-ID: <20060313090759.GA20930@neo.rr.com>
 References: <E1FIctI-0000jE-00@porton.narod.ru>
 	<20060313083037.GA3495@elf.ucw.cz>
 	<20060313084811.GC20569@neo.rr.com>
+	<20060313085042.GB3495@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4155934655231337=="
+Content-Type: multipart/mixed; boundary="===============18635684895527316=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060313084811.GC20569@neo.rr.com>
+In-Reply-To: <20060313085042.GB3495@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,55 +19,42 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <ambx1@neo.rr.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@osdl.org, "Victor Porton, , , " <porton@ex-code.com>, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============4155934655231337==
+--===============18635684895527316==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Po 13-03-06 03:48:11, Adam Belay wrote:
-> On Mon, Mar 13, 2006 at 09:30:38AM +0100, Pavel Machek wrote:
-> > On Po 13-03-06 07:34:36, Victor Porton,,, wrote:
-> > > There should be something such which would cause (after user
-> > > specified timeout, e.g. a hour) automatically switch the
-> > > system from standby to suspend to disk (or suspend to mem).
-> > ....
-> > > Or as a possible alternative, we could suspend SIMULTANEOUSLY
-> > > to disk and to mem (with switching into suspend-to-disk by
-> > > timeout), to have both quick restoration and automatically
-> > > fully turning it off.
-> > 
-> > Yep, it would be nice.
-> > 
-> > Does that mean you are working on it and will send me a patch? Do you
-> > want help coding?
+On Mon, Mar 13, 2006 at 09:50:42AM +0100, Pavel Machek wrote:
+> On Po 13-03-06 03:48:11, Adam Belay wrote:
+> > The timeout feature could be done using the ACPI alarm interface, but there's
+> > no reliable way of knowing how long the system can remain in a suspend state
+> > on the x86 mobile platform, so waking up at the right time would be tricky if
+> > not impossible.
 > 
-> The simultaneous idea sounds very similar to the idea Nigel had around a year
-> ago.  It may have been implemented to some degree.
+> Make it an hour... System should be able to stay suspended for an
+> hour. IIRC Apple did something like this? I'd just be slightly worried
+> about machine waking up itself just when you hit the turbulence in the
+> airplane, or something like that. 
 
-suspend2 probably supports it. (Of course; suspend2 supports
-everything :-).
+Hmm, but let's say the battery is 40% charged.  Then it's not very clear if it
+will last an hour.  All of a sudden the issue becomes system specific, or it
+may even depend on things like whether wake-on-lan is enabled, right?
 
-> The timeout feature could be done using the ACPI alarm interface, but there's
-> no reliable way of knowing how long the system can remain in a suspend state
-> on the x86 mobile platform, so waking up at the right time would be tricky if
-> not impossible.
+If we could get a power management event and wake the system when the battery
+reaches a low condition that would be really awesome.  But I don't think this
+is possible AFAIK.
 
-Make it an hour... System should be able to stay suspended for an
-hour. IIRC Apple did something like this? I'd just be slightly worried
-about machine waking up itself just when you hit the turbulence in the
-airplane, or something like that. 
-								Pavel
--- 
-108:
+Thanks,
+Adam
 
---===============4155934655231337==
+--===============18635684895527316==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============4155934655231337==--
+--===============18635684895527316==--
