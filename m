@@ -1,10 +1,8 @@
-From: "Christine Shepard" <bcunningham@1-800-arkansas.com>
-Subject: St0kkMarrkett Picks Trade Special News
-Date: Fri, 10 Mar 2006 18: 7: 1  -0120
-Message-ID: <307246230.20060310180701@1-800-arkansas.com>
-Reply-To: Christine Shepard <bcunningham@1-800-arkansas.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============66938089086077923=="
+From: "Victor Porton,,," <porton@ex-code.com>
+Subject: standby to disk transition
+Date: Mon, 13 Mar 2006 07:34:36 +0500
+Message-ID: <E1FIctI-0000jE-00@porton.narod.ru>
+Content-Type: multipart/mixed; boundary="===============46184495808022774=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -15,79 +13,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linux-pm@osdl.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+--===============46184495808022774==
 
---===============66938089086077923==
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+There should be something such which would cause (after user
+specified timeout, e.g. a hour) automatically switch the
+system from standby to suspend to disk (or suspend to mem).
 
-There is a Big PR Campa ign started  today!
-Get G APJ First Thing Today, This Is Going To Explode!
+Probably to make this transition possible without turning HDD
+on, there should be a hibrid of standby and suspend to disk:
+do suspend to disk but then enter standby instead of shutting
+down. This state should be (dependently on whether there was
+user input during the timeout) like standby in quick exit from
+it and be like suspend to disk in regard that then computer
+could be turned off (manually by power button or by timeout).
 
-Check out for HOT NEWS!!!
+Do you understand the idea? For me curently standby is useless
+as it even does not turn off the fans and computer continues
+to produce noise when in standby. Suspend to disk is also not
+quite good for me because it takes 40 sec to take it out.
+I want the state when computer enters standby automatically
+saving state to disk before standby and then if no user input
+by timeout either enters real suspend to disk, or if I wake it
+exits from this state quickly.
 
-GAP J- GOLDEN APPLE OIL/GAS
+Or as a possible alternative, we could suspend SIMULTANEOUSLY
+to disk and to mem (with switching into suspend-to-disk by
+timeout), to have both quick restoration and automatically
+fully turning it off.
 
-Current Price: $1.17
-Already Starting to move!
+I realize that it may be hard to design and implement, but my
+idea is very nice and convenient for users. So it would be
+great if you will do it to Linux 2.8...
 
-Before we start with the profile of GA PJ we would like to mention something very important: There is a Big PR Campaign started  today. We are already seeing movement it will go all week so it would be best to get in NOW
+(To implement switching from standby to an other mode, we
+probably can use BIOS wake timer feature. Or for me it would
+be currently acceptable if standby would turn off only HDD
+instead of real standby so that during standby processor timer
+could continue to function.)
 
-Current Press Release
-
-Golden Apple Oil and Gas, Inc. and Franklin Ross Securities Complete Private Placement
-
-Golden Apple Oil and Gas, Inc. (GA PJ - News) is pleased to announce it has completed the initial private placement with Franklin Ross Securities of New Jersey.
-
-The company is currently negotiating with several investor groups for the next phase of financing.
-
-Headquartered in Phoenix, Arizona, Golden Apple is an independent oil and gas producer with a focus on North and South American properties. The Company applies advanced technologies to systematically explore and develop its oil and natural gas opportunities. Golden Apple focuses its activities where technology can be used effectively to maximize returns on invested capital by reducing drilling risk and enhancing its ability to cost-effectively grow reserves and production volumes.
-
-Golden Apple Oil and Gas, Inc has opened a Canadian office in Toronto, Ontario to facilitate the management of its Canadian operations. All correspondence and communication will continue to be serviced by the company's head office staff in Phoenix Arizona.
-
-
---===============66938089086077923==
+--===============46184495808022774==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-_______________________________________________
-linux-pm mailing list
-linux-pm@lists.osdl.org
-https://lists.osdl.org/mailman/listinfo/linux-pm
 
---===============66938089086077923==
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-
-Spam detection software, running on the system "fire-2.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or block
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  --==============f938089086077923=Content-Type:
-  text/plain; charset=us-ascii Content-Transfer-Encoding: 7bit There is a
-  Big PR Campa ign started today! Get G APJ First Thing Today, This Is
-  Going To Explode! [...] 
-
-Content analysis details:   (6.1 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 0.0 INVALID_DATE           Invalid Date: header (not RFC 2822)
- 1.0 OUTFLUX_INVEST_PRICE   BODY: Body has "Current Price:" in it
- 0.8 DATE_IN_PAST_12_24     Date: is 12 to 24 hours before Received: date
- 4.3 FORGED_MUA_THEBAT_BOUN Mail pretending to be from The Bat! (boundary)
-
-
-
---===============66938089086077923==--
+--===============46184495808022774==--
