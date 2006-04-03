@@ -1,9 +1,9 @@
-From: UKNATIONAL LOTTERY <morrison.wrigth@laposte.net>
+From: UKNATIONAL LOTTERY 2006 <joe.morrison@laposte.net>
 Subject: YOU HAVE WON!!
-Date: Mon, 3 Apr 2006 06:41:24 +0200
-Message-ID: <200604030441.k334fONx023805@k3.j.pl>
+Date: Mon, 3 Apr 2006 06:48:25 +0200
+Message-ID: <200604030448.k334mPSx012727@tecnoserver>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============011171309338852353=="
+Content-Type: multipart/mixed; boundary="===============36468216721128632=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -16,10 +16,10 @@ Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============011171309338852353==
+--===============36468216721128632==
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k3352LEX005729
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k3359PEX005952
 
 
  =20
@@ -43,8 +43,8 @@ TICKET No: 20511465463-7644=20
 SERIAL No: S/N-00168=20
 LUCKY No: 887-13-865-37-10-83=20
 You as well as the other winner are therefore to receive a cash prize=20
-of &pound;500,000.00. Pounds (Five hundred thousand pounds only) each fro=
-m the=20
+of =A3500,000.00. Pounds (Five hundred thousand pounds only) each from th=
+e=20
 total payout.=20
 Your prize award has been insured with your e-mail address and will be=20
 transferred to you upon meeting our requirements, statutory=20
@@ -90,15 +90,14 @@ NOTE: You are to contact your claims officer immediately. =20
 
 _________________________________________________________________________=
 __
-PL:: E-mail wys=B3any za pomoc=B1 us=B3ugi WebMail oferowanej przez http:=
-//www.Problemy.PL/
-EN:: Mail sent from WebMail service at http://www.Problemy.PL/
+Mail sent from WebMail service at PHP-Nuke Powered Site
+- http://www.consulcredit.it
 
---===============011171309338852353==
+--===============36468216721128632==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 
---===============011171309338852353==--
+--===============36468216721128632==--
