@@ -1,12 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: How to enable/power off a port
-Date: Mon, 17 Apr 2006 10:35:42 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0604171024270.5391-100000@iolanthe.rowland.org>
-References: <380D9721A8E2114485644D71E87C6AB201B55E21@PNE-HJN-MBX01.wipro.com>
+From: "Brown, Len" <len.brown@intel.com>
+Subject: RE: on-ness
+Date: Mon, 17 Apr 2006 17:43:23 -0400
+Message-ID: <CFF307C98FEABE47A452B27C06B85BB63588C3@hdsmsx411.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============33158001160222406=="
+Content-Type: multipart/mixed; boundary="===============75604011677986649=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB201B55E21@PNE-HJN-MBX01.wipro.com>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,46 +15,93 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rasmit.ranjan@wipro.com
+To: "Richard A. Griffiths" <richard.griffiths@windriver.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============33158001160222406==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============75604011677986649==
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 
-On Mon, 17 Apr 2006 rasmit.ranjan@wipro.com wrote:
+> Thinking about the discussion of the ON field. How about Limiter? Then
+0
+> maps to no limit (max power, max freq, whatever) and any other number
+is
+> some limit of performance/power, similar to what was decided for Idle.
 
-> Hi all,
-> 	I can suspend a port from the user space manualy by doing
-> 	
-> 	echo -n 3 > /sys/bus/usb....../power/state
-> 
-> Similarlly can I enable/power off a port from the user space manually ?
+my scribbles on generic sysfs device directory file names say:
 
-It depends on where the port is.  For ports built into the computer, the 
-answer is generally No.  The USB controller hardware in computers does not 
-have per-port power control.
+state:
+on	- running and available
+off	- requires a full device initialization to be usable
 
-On some systems you might be able to turn off power to _all_ the ports
-attached to a particular USB host controller by turning off power to the
-controller itself (put it in a D3cold state).  But this would affect more
-than one port, and most systems won't allow you to do it anyway.
+idle: # = "how idle"
+0 - active, not idle at all eg C0, D0
+1 - idle. eg C1, D1
+...
+n - most power saving, highest latency idle state, eg. Cn, Dn
 
-If the port is part of an external hub instead of build into the computer, 
-you may be able to do it.  Many hubs do not support per-port power 
-control, but some of them do.  You can get more information and a 
-userspace program here:
+idle_max
+max # that can be in idle file above
 
-http://www.gniibe.org/ac-power-by-usb/ac-power-control.html
+speed: # = "how fast"
+0 - minimum speed
+1 - 
+...
+n -- highest speed, highest power
 
-Alan Stern
+speed_max
+max # that can be in speed file above
+
+So describing the ACPI states using these:
+
+state = on: online
+state = off: offline
+
+idle = 0: C0
+idle = 1: C1
+idle = n: Cn
+
+(for devices with D-states, replace Cx above with Dx -- since they are
+both describing a state where the device is present, but not executing
+and with increasing latency before resuming execution)
+
+speed = 0: Pn
+speed = 1: Pn-1
+...
+speed = n: P0
+
+Not immediately obvious how to articulate Throttling states here,
+would probably need an additional file similar to "speed", since they
+are effectively multiplied.  Maybe simply:
+
+throttle
+0 - full speed
+n - min speed
+
+Re: state
+unclear if on/off is sufficient, or if hotplug wold need any
+other states.
+
+---
+
+sounds like you're suggesting the inverse of "speed" where
+0 is max performance and max power.  I'd certainly be happy
+to have 0 mean P0 for processors -- but "on" and "speed"
+are certainly the opposite of what we want to call this.
+Maybe "powersave" to capture the concept of an executing
+but power saving operating point?
+
+-Len
 
 
---===============33158001160222406==
+--===============75604011677986649==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============33158001160222406==--
+--===============75604011677986649==--
