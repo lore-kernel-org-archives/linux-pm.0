@@ -1,65 +1,100 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] swsusp: use less memory during
-	resume
-Date: Tue, 18 Apr 2006 15:07:55 +0200
-Message-ID: <20060418130755.GB26668@elf.ucw.cz>
-References: <200604181319.47400.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: [linux-pm] Behavior of PCMCIA based HCD in the event of SUSPEND
+Date: Tue, 18 Apr 2006 09:45:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0604180940070.4972-100000@iolanthe.rowland.org>
+References: <05B7784238A51247A0A9FB4B348CECAE019BAAF3@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============71996463485506856=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604181319.47400.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <05B7784238A51247A0A9FB4B348CECAE019BAAF3@PNE-HJN-MBX01.wipro.com>
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: kaustav.majumdar@wipro.com
+Cc: linux-usb-devel@lists.sourceforge.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============71996463485506856==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Tue, 18 Apr 2006 kaustav.majumdar@wipro.com wrote:
 
-Hi!
-
-> Currently during resume swsusp puts the image data in the page frames that
-> don't conflict with the original locations of the data (ie. the locations the
-> data will be put in when the saved system state is restored from the image).
-> These page frames are considered as "safe" and the other page frames are
-> treadet as "unsafe".
+> > The HCD's behavior should be to suspend the host controller, with the
+> > understanding that factors beyond the HCD's control (such as the
+> > behavior of the PCMCIA client driver) may cause the host controller to
+> be
+> > shut down entirely.  The HCD should not shut down the host controller
+> > during a suspend event.
 > 
-> Of course we cannot force the memory allocator to allocate "safe" pages only,
-> so if an "unsafe" page is allocated, swsusp treats it as an "eaten page" and
-> attempts to allocate another page in the hope that it'll be "safe" etc.
-> swsusp tries to allocate as many "safe" pages as necessary to store the
-> image data, so it "eats" a considerable number of "unsafe" pages in the
-> process.  Next, it reads the image and puts the data into the allocated "safe"
-> pages.  Finally, the data are copied to their "original" locations.
+> As per my understanding, the Host Controller can be suspended only if
+> all the child devices are already suspended. If they are not then
+> suspension of HC will fail.
+
+That's right.
+
+> Also the PCMCIA subsystem's behavior is to power off the socket
+> irrespective of whether the PCMCIA client driver has successfully
+> handled the SUSPEND event or not.
+
+I don't know how the PCMCIA subsystem works.  If it behaves the way you 
+described then it is broken and should be fixed.
+
+> So if the child devices of HC are not suspended and PCMCIA subsystem
+> will get a SUSPEND event (may be initiated by some user space tool
+> through /sys) then there is a possibility of HC being in operational
+> state (from driver perspective) but the PC Card itself not powered - a
+> chaos I think.
+
+I doubt it will cause chaos, although it might.  More likely the driver 
+will just decide that the host controller has died.
+
+> > No.  The PCMCIA client driver should not make any assumptions about
+> its
+> > clients.  All it should do is check that all the clients have been
+> > suspended already before allowing itself to be suspended.
 > 
-> This approach, although it works nicely, is quite inefficient from the memory
-> utilization point of view and it also turns out to be unnecessary.  Namely,
-> for each "unsafe" page frame returned by the memory allocator there's exactly
-> one page in the image that finally should be placed in this page frame.
-> Therefore we can put the right data into this page frame as soon as they're
-> read from the image and we won't have to copy these data later on.  This way
-> we'll only need to allocate as many pages as necessary to store the image
-> data and we won't have to "eat" the "unsafe" pages.
+> First of all, is there any way to check the state of all the clients
+> from inside the PCMCIA client driver? Please suggest.
 
-Looks good to me. Clever hack, I'd say.
-									Pavel
--- 
-Thanks for all the (sleeping) penguins.
+Since I don't know anything about how the PCMCIA subsystem or the client 
+drivers work, I can't suggest anything specific.  The general approach is 
+to go through the list of child devices and for each one, check the 
+power state (it's embedded in the struct device).
 
---===============71996463485506856==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Secondly, what should we do in the PCMCIA client driver if the check
+> fails? Here point to be noted is, as already mentioned, the PCMCIA
+> socket will be powered off.
+
+The client driver should fail the suspend call and the PCMCIA socket 
+should remain powered on.
+
+> > The PCMCIA client driver should not call usb_remove_hcd at all.  Only
+> a
+> > USB host controller driver is allowed to call that routine.
+> 
+> Actually we are not calling usb_remove_hcd directly. We are implementing
+> the HCD module and there we have a function which is exported. From
+> PCMCIA client driver we call this function, which in turn calls
+> usb_remove_hcd.
+> I am not sure whether this will be ok or not.
+
+I suppose it might work, but it adds a bunch of extra code for no good 
+reason.  You would be much better off directing your efforts toward fixing 
+the PCMCIA socket driver.
+
+Alan Stern
 
 
---===============71996463485506856==--
+
+-------------------------------------------------------
+This SF.Net email is sponsored by xPML, a groundbreaking scripting language
+that extends applications into web and mobile media. Attend the live webcast
+and join the prime developer group breaking into this new coding territory!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
