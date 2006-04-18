@@ -1,11 +1,13 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: RE: on-ness
-Date: Tue, 18 Apr 2006 14:39:37 -0400
-Message-ID: <CFF307C98FEABE47A452B27C06B85BB63590D8@hdsmsx411.amr.corp.intel.com>
+From: Nigel Cunningham <ncunningham@cyclades.com>
+Subject: Re: [RFC][PATCH -mm] swsusp: use less memory during
+	resume
+Date: Tue, 18 Apr 2006 23:07:21 +1000
+Message-ID: <200604182307.26114.ncunningham@cyclades.com>
+References: <200604181319.47400.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============82455390692561648=="
+Content-Type: multipart/mixed; boundary="===============61480416195874277=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <200604181319.47400.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,104 +17,356 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============82455390692561648==
-Content-class: urn:content-classes:message
+--===============61480416195874277==
+Content-Type: multipart/signed; boundary="nextPart1187782.eCAHqRTDMh";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+
+--nextPart1187782.eCAHqRTDMh
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+  charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-(restored linux-pm to cc:)
+Hi.
 
-yes, the concept was to explore a language generic enough
-that it could describe either CPUs or any other devices.
+On Tuesday 18 April 2006 21:19, Rafael J. Wysocki wrote:
+> Hi,
+>
+> Currently during resume swsusp puts the image data in the page frames that
+> don't conflict with the original locations of the data (ie. the locations
+> the data will be put in when the saved system state is restored from the
+> image). These page frames are considered as "safe" and the other page
+> frames are treadet as "unsafe".
+>
+> Of course we cannot force the memory allocator to allocate "safe" pages
+> only, so if an "unsafe" page is allocated, swsusp treats it as an "eaten
+> page" and attempts to allocate another page in the hope that it'll be
+> "safe" etc. swsusp tries to allocate as many "safe" pages as necessary to
+> store the image data, so it "eats" a considerable number of "unsafe" pages
+> in the process.  Next, it reads the image and puts the data into the
+> allocated "safe" pages.  Finally, the data are copied to their "original"
+> locations.
+>
+> This approach, although it works nicely, is quite inefficient from the
+> memory utilization point of view and it also turns out to be unnecessary.=
+=20
+> Namely, for each "unsafe" page frame returned by the memory allocator
+> there's exactly one page in the image that finally should be placed in th=
+is
+> page frame. Therefore we can put the right data into this page frame as
+> soon as they're read from the image and we won't have to copy these data
+> later on.  This way we'll only need to allocate as many pages as necessary
+> to store the image data and we won't have to "eat" the "unsafe" pages.
+>
+> The appended patch implements this idea.  It makes swsusp allocate as
+> many pages as it'll need to store the data read from the image in one
+> shot, creating a list of allocated "safe" pages, and uses the observation
+> that all pages allocated by swsusp are marked with the PG_nosave and
+> PG_nosave_free flags set.  Namely, when it's about to read a page, it
+> checks whether the page frame corresponding to the "original" location of
+> this page has been allocated (ie. if the page frame has the PG_nosave and
+> PG_nosave_free flags set) and if so, it reads the page directly into this
+> page frame.  Otherwise it uses an allocated "safe" page from the list to
+> store the data that will be copied to their "original" location later on.
+>
+> On my box this patch allows us to save as many as approx. 90000 page
+> copyings and 90000 (at least - probably twice as many, because it's an
+> x86_64 box) page allocations for an image of approx. 100000 of pages.  Al=
+so
+> it will allow us to read images greater than 50% of the normal zone (when
+> we learn how to create them ;-)).
 
-no, this wasn't expected to be complete, just a start.
-yes, wakeup capability is one thing we we discussed.
-note that we may need to differentiate between enabling
-the device to wakeup the system, and waking up just
-the device itself.
+Haven't looked at the patch itself, but this sounds like a great idea. I=20
+wonder though, won't the 50% limit still apply, because you'll still have t=
+o=20
+make an atomic copy to start with (unless you figure out which pages aren't=
+=20
+going to change and therefore don't need to be atomically copied)?
 
-no, if the numbers happen to corrolate to ACPI states,
-that is purely lucky for the ACPI maintainer:-)
-But honestly, we should "leverage" all we can from ACPI.
-My role, of course, it to make sure that the generic
-description can accommodate everything ACPI can do.
+Regards,
 
-yes, idle refers to either Cx or Dx states -- it depends
-on the device.  0 means operating, non zero means non-operating.
+Nigel
 
-Re: strings.
-we breifly debated strings vs numbers.
-I'm not confident that there are enough unique strings
-available without falling into state0, state1, state2, state3 --
-so numbers seemed simpler.
-The only issue I see with numbers is that they imply order,
-and it may be that some operating points might not have
-such a strict order.
+> [This patch is on top of the
+> swsusp-prevent-possible-image-corruption-on-resume.patch
+> (recently added to the -mm tree).]
+>
+> Comments welcome.
+>
+> Greetings,
+> Rafael
+>
+> ---
+>  kernel/power/power.h    |    2
+>  kernel/power/snapshot.c |  141
+> ++++++++++++++++++++++++++++-------------------- 2 files changed, 85
+> insertions(+), 58 deletions(-)
+>
+> Index: linux-2.6.17-rc1-mm2/kernel/power/power.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.17-rc1-mm2.orig/kernel/power/power.h	2006-04-17
+> 13:47:58.000000000 +0200 +++
+> linux-2.6.17-rc1-mm2/kernel/power/power.h	2006-04-17 13:59:16.000000000
+> +0200 @@ -55,7 +55,7 @@ struct snapshot_handle {
+>  	unsigned int	page;
+>  	unsigned int	page_offset;
+>  	unsigned int	prev;
+> -	struct pbe	*pbe;
+> +	struct pbe	*pbe, *last_pbe;
+>  	void		*buffer;
+>  	unsigned int	buf_offset;
+>  };
+> Index: linux-2.6.17-rc1-mm2/kernel/power/snapshot.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.17-rc1-mm2.orig/kernel/power/snapshot.c	2006-04-17
+> 13:58:07.000000000 +0200 +++
+> linux-2.6.17-rc1-mm2/kernel/power/snapshot.c	2006-04-17 14:05:01.000000000
+> +0200 @@ -293,62 +293,29 @@ static inline void create_pbe_list(struc
+>  	}
+>  }
+>
+> -/**
+> - *	On resume it is necessary to trace and eventually free the unsafe
+> - *	pages that have been allocated, because they are needed for I/O
+> - *	(on x86-64 we likely will "eat" these pages once again while
+> - *	creating the temporary page translation tables)
+> - */
+> -
+> -struct eaten_page {
+> -	struct eaten_page *next;
+> -	char padding[PAGE_SIZE - sizeof(void *)];
+> -};
+> -
+> -static struct eaten_page *eaten_pages =3D NULL;
+> -
+> -static void release_eaten_pages(void)
+> -{
+> -	struct eaten_page *p, *q;
+> -
+> -	p =3D eaten_pages;
+> -	while (p) {
+> -		q =3D p->next;
+> -		/* We don't want swsusp_free() to free this page again */
+> -		ClearPageNosave(virt_to_page(p));
+> -		free_page((unsigned long)p);
+> -		p =3D q;
+> -	}
+> -	eaten_pages =3D NULL;
+> -}
+> +static unsigned int unsafe_pages;
+>
+>  /**
+>   *	@safe_needed - on resume, for storing the PBE list and the image,
+>   *	we can only use memory pages that do not conflict with the pages
+> - *	which had been used before suspend.
+> + *	used before suspend.
+>   *
+>   *	The unsafe pages are marked with the PG_nosave_free flag
+> - *
+> - *	Allocated but unusable (ie eaten) memory pages should be marked
+> - *	so that swsusp_free() can release them
+> + *	and we count them using unsafe_pages
+>   */
+>
+>  static inline void *alloc_image_page(gfp_t gfp_mask, int safe_needed)
+>  {
+>  	void *res;
+>
+> +	res =3D (void *)get_zeroed_page(gfp_mask);
+>  	if (safe_needed)
+> -		do {
+> +		while (res && PageNosaveFree(virt_to_page(res))) {
+> +			/* The page is unsafe, mark it for swsusp_free() */
+> +			SetPageNosave(virt_to_page(res));
+> +			unsafe_pages++;
+>  			res =3D (void *)get_zeroed_page(gfp_mask);
+> -			if (res && PageNosaveFree(virt_to_page(res))) {
+> -				/* This is for swsusp_free() */
+> -				SetPageNosave(virt_to_page(res));
+> -				((struct eaten_page *)res)->next =3D eaten_pages;
+> -				eaten_pages =3D res;
+> -			}
+> -		} while (res && PageNosaveFree(virt_to_page(res)));
+> -	else
+> -		res =3D (void *)get_zeroed_page(gfp_mask);
+> +		}
+>  	if (res) {
+>  		SetPageNosave(virt_to_page(res));
+>  		SetPageNosaveFree(virt_to_page(res));
+> @@ -642,6 +609,8 @@ static int mark_unsafe_pages(struct pbe
+>  			return -EFAULT;
+>  	}
+>
+> +	unsafe_pages =3D 0;
+> +
+>  	return 0;
+>  }
+>
+> @@ -719,42 +688,99 @@ static inline struct pbe *unpack_orig_ad
+>  }
+>
+>  /**
+> - *	create_image - use metadata contained in the PBE list
+> + *	prepare_image - use metadata contained in the PBE list
+>   *	pointed to by pagedir_nosave to mark the pages that will
+>   *	be overwritten in the process of restoring the system
+> - *	memory state from the image and allocate memory for
+> - *	the image avoiding these pages
+> + *	memory state from the image ("unsafe" pages) and allocate
+> + *	memory for the image
+> + *
+> + *	The idea is to allocate the PBE list first and then
+> + *	allocate as many pages as it's needed for the image data,
+> + *	but not to assign these pages to the PBEs initially.
+> + *	Instead, we just mark them as allocated and create a list
+> + *	of "safe" which will be used later
+>   */
+>
+> -static int create_image(struct snapshot_handle *handle)
+> +struct safe_page {
+> +	struct safe_page *next;
+> +	char padding[PAGE_SIZE - sizeof(void *)];
+> +};
+> +
+> +static struct safe_page *safe_pages;
+> +
+> +static int prepare_image(struct snapshot_handle *handle)
+>  {
+>  	int error =3D 0;
+> -	struct pbe *p, *pblist;
+> +	unsigned int nr_pages =3D nr_copy_pages;
+> +	struct pbe *p, *pblist =3D NULL;
+>
+>  	p =3D pagedir_nosave;
+>  	error =3D mark_unsafe_pages(p);
+>  	if (!error) {
+> -		pblist =3D alloc_pagedir(nr_copy_pages, GFP_ATOMIC, 1);
+> +		pblist =3D alloc_pagedir(nr_pages, GFP_ATOMIC, 1);
+>  		if (pblist)
+>  			copy_page_backup_list(pblist, p);
+>  		free_pagedir(p, 0);
+>  		if (!pblist)
+>  			error =3D -ENOMEM;
+>  	}
+> -	if (!error)
+> -		error =3D alloc_data_pages(pblist, GFP_ATOMIC, 1);
+> +	safe_pages =3D NULL;
+> +	if (!error && nr_pages > unsafe_pages) {
+> +		nr_pages -=3D unsafe_pages;
+> +		while (nr_pages--) {
+> +			struct safe_page *ptr;
+> +
+> +			ptr =3D (struct safe_page *)get_zeroed_page(GFP_ATOMIC);
+> +			if (!ptr) {
+> +				error =3D -ENOMEM;
+> +				break;
+> +			}
+> +			if (!PageNosaveFree(virt_to_page(ptr))) {
+> +				/* The page is "safe", add it to the list */
+> +				ptr->next =3D safe_pages;
+> +				safe_pages =3D ptr;
+> +			}
+> +			/* Mark the page as allocated */
+> +			SetPageNosave(virt_to_page(ptr));
+> +			SetPageNosaveFree(virt_to_page(ptr));
+> +		}
+> +	}
+>  	if (!error) {
+> -		release_eaten_pages();
+>  		pagedir_nosave =3D pblist;
+>  	} else {
+> -		pagedir_nosave =3D NULL;
+>  		handle->pbe =3D NULL;
+> -		nr_copy_pages =3D 0;
+> -		nr_meta_pages =3D 0;
+> +		swsusp_free();
+>  	}
+>  	return error;
+>  }
+>
+> +static void *get_buffer(struct snapshot_handle *handle)
+> +{
+> +	struct pbe *pbe =3D handle->pbe, *last =3D handle->last_pbe;
+> +	struct page *page =3D virt_to_page(pbe->orig_address);
+> +
+> +	if (PageNosave(page) && PageNosaveFree(page)) {
+> +		/*
+> +		 * We have allocated the "original" page frame and we can
+> +		 * use it directly to store the read page
+> +		 */
+> +		pbe->address =3D 0;
+> +		if (last && last->next)
+> +			last->next =3D NULL;
+> +		return (void *)pbe->orig_address;
+> +	}
+> +	/*
+> +	 * The "original" page frame has not been allocated and we have to
+> +	 * use a "safe" page frame to store the read page
+> +	 */
+> +	pbe->address =3D (unsigned long)safe_pages;
+> +	safe_pages =3D safe_pages->next;
+> +	if (last)
+> +		last->next =3D pbe;
+> +	handle->last_pbe =3D pbe;
+> +	return (void *)pbe->address;
+> +}
+> +
+>  /**
+>   *	snapshot_write_next - used for writing the system memory snapshot.
+>   *
+> @@ -799,15 +825,16 @@ int snapshot_write_next(struct snapshot_
+>  		} else if (handle->prev <=3D nr_meta_pages) {
+>  			handle->pbe =3D unpack_orig_addresses(buffer, handle->pbe);
+>  			if (!handle->pbe) {
+> -				error =3D create_image(handle);
+> +				error =3D prepare_image(handle);
+>  				if (error)
+>  					return error;
+>  				handle->pbe =3D pagedir_nosave;
+> -				handle->buffer =3D (void *)handle->pbe->address;
+> +				handle->last_pbe =3D NULL;
+> +				handle->buffer =3D get_buffer(handle);
+>  			}
+>  		} else {
+>  			handle->pbe =3D handle->pbe->next;
+> -			handle->buffer =3D (void *)handle->pbe->address;
+> +			handle->buffer =3D get_buffer(handle);
+>  		}
+>  		handle->prev =3D handle->page;
+>  	}
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-appology in advace for the top-post, Intel IT re-installed my
-laptop and a lot of things are not "quite right"...
+--nextPart1187782.eCAHqRTDMh
+Content-Type: application/pgp-signature
 
--Len
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
------Original Message-----
-From: David Brownell [mailto:david-b@pacbell.net] 
-Sent: Tuesday, April 18, 2006 2:15 PM
-To: Brown, Len
-Cc: Richard A. Griffiths
-Subject: Re: [linux-pm] RE: on-ness
+iD8DBQBEROSON0y+n1M3mo0RAnu6AJwLgihZtOg4SymICzRY9Rt5L17dqQCgogK9
+Lvq2PZA0df52SeclfGqQhSU=
+=fsky
+-----END PGP SIGNATURE-----
 
-On Monday 17 April 2006 2:43 pm, Brown, Len wrote:
-> > Thinking about the discussion of the ON field. How about Limiter?
-Then
-> > maps to no limit (max power, max freq, whatever) and any
-> > other number is
-> > some limit of performance/power, similar to what was decided for
-Idle.
-> 
-> my scribbles on generic sysfs device directory file names say:
+--nextPart1187782.eCAHqRTDMh--
 
-That is, you're talking about parameters related to individual devices?
-Or CPUs?
-
-Let's surface more parameters first, before talking about managers!
-
-One more is the wakeup capability; devices may easily have two parameter
-sets, one spending a bit of power to deliver wakeup capability.
-
-Another is which <linux/clk.h> clocks are associated with the device.
-
-
-> state:
-> on	- running and available
-> off	- requires a full device initialization to be usable
-
-Also e.g. "bus suspend" causing maybe 2 mA current draw vs normal
-usb root port power budgets of 100+ mA ... two modes like that, one
-supporting remote wakeup and one not.
-
-
-> idle: # = "how idle"
-> 0 - active, not idle at all eg C0, D0
-> 1 - idle. eg C1, D1
-> ...
-> n - most power saving, highest latency idle state, eg. Cn, Dn
-
-These are ACPI CPU states Cx?  Or device states Dx?  Such values
-should be a string, which need not match acpi conventions...
-
-- Dave
-
-
---===============82455390692561648==
+--===============61480416195874277==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============82455390692561648==--
+--===============61480416195874277==--
