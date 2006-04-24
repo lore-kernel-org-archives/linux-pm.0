@@ -1,11 +1,15 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: RE: RE: on-ness
-Date: Mon, 24 Apr 2006 16:32:54 -0500
-Message-ID: <EA12F909C0431D458B9D18A176BEE4A5055F11C0@dlee02.ent.ti.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: RE: on-ness
+Date: Mon, 24 Apr 2006 23:32:45 +0200
+Message-ID: <20060424213245.GP3386@elf.ucw.cz>
+References: <CFF307C98FEABE47A452B27C06B85BB63590D8@hdsmsx411.amr.corp.intel.com>
+	<20060421183340.GA3071@isilmar.linta.de>
+	<20060421190121.GB2078@elf.ucw.cz>
+	<200604241404.41122.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1467363760901359=="
+Content-Type: multipart/mixed; boundary="===============20744884561816002=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <200604241404.41122.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,62 +19,65 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============1467363760901359==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+--===============20744884561816002==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
+On Po 24-04-06 14:04:40, David Brownell wrote:
+> 
+> > > > > Uh. Not /sys/power/state. But /sys/devices/...../power/{[a],[b],[c]} where
+> > > > > [a], [b] and [c] need sensible names.
+> > > > 
+> > > > Well, "on" could have one defined meaning.  Maybe it's the only option
+> > > > available, until drivers add intelligence.  I don't see any problem
+> > > > with the other names being system-specific, since it's rather unlikely
+> > > > that a PCI_D3hot state will ever appear on most embedded ARM boxes.
+> > > > And if any userspace code tries to set power states, it had darn well
+> > > > better understand exactly what's going on.
+> > > 
+> > > Yes. However if a network managing userspace code wants to set the power
+> > > conusmption of a WLAN device to the lowest possible setting, it shouldn't
+> > > need a configuration file specific for each platform.
+> > 
+> > I'd say that "on" and "off" are well defined.
+> 
 > Are they?  Does "off" imply the device will have been reset the next
-> time it goes to "on"?  If not, there would seem to be two "off"
-states.
+> time it goes to "on"?  If not, there would seem to be two "off" states.
 > Or maybe more ... PCI_D0 is probably "on", but all of the other PCI
 > device states seem to be variants of "off", not of "on".
 
-That would seem device specific.  It would seem that applying a reset
-when moving from "off" (especially that mapped to PCI_D3) would seem
-reasonable.  As I was told, the rest of the PCI defined states D1-D3 are
-non-functional.  So they are all OFF states.  If just happens that in D3
-you can safely physically remove the device.  The current pseudo export
-of these non-functional states doesn't seem so useful.  Having some
-fuzzy level of idleness seems much better.
+I'd say "off" is as low as possible, perhaps including device reset.
 
-The point of the idle states Len was floating attempts to define a level
-of on-ness/idleness.  As it turns out there was a nice correlation to
-some ACPI states.  Numbering them seems reasonable, else your just
-wasting effort translating 'state0, state1, state2, ...', keeping the
-naming convention simple '0,1,2,..0xffff' would seem to lend itself to
-code sharing of necessary class/device specific translation code.
- 
-> Actually the wakeup characteristics are orthogonal, there are
-per-device
-> bits controlling whether a device can and should do the wakeup.  We
-don't
+> And for that matter, "on" doesn't seem to me to imply anything more
+> than "full functionality from external POV".  That doesn't necessarily
+> imply "full power-on", and in fact it'd be better if it were using the
+> lowest power state(s) available.  That state might be compatible with
+> certain system sleep states, or not, depending on the device's
+> workload.
+
+Agreed.
+
+> > For certain classes (like ethernet), other states may be common
+> > between platforms, too, like "off-with-WOL".
+> 
+> Actually the wakeup characteristics are orthogonal, there are per-device
+> bits controlling whether a device can and should do the wakeup.  We don't
 > for example treat "PCI_D3hot with wakeup" as a distinct state.
 
-In my current hack attempts I am trying to associate a 'device' D2 state
-with a local device sleep with an async wake up enabled.  In this state
-a devices accesses are locked out until the device wake up event
-happens.  This async wake can be from a device specific wake up or from
-an associated timer resource.  Current DPM enabled OMAP sprinkles
-suspend lock outs inside of drivers which re-suspend queued waiters and
-suspends new requests if the device is in a locked out state.  From many
-devices this creates a device which just reacts with a higher latency.
+Ok, "off-with-WOL" was example. Hopefully there's better example. 
+								Pavel
+-- 
+Thanks for all the (sleeping) penguins.
 
-
-Regards,
-Richard W.
-
-
---===============1467363760901359==
+--===============20744884561816002==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============1467363760901359==--
+--===============20744884561816002==--
