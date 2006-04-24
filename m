@@ -1,120 +1,51 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Tue, 25 Apr 2006 00:16:32 +0200
-Message-ID: <20060424221632.GQ3386@elf.ucw.cz>
-References: <200604242355.08111.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
+Date: Mon, 24 Apr 2006 15:47:37 -0700
+Message-ID: <200604241547.38692.david-b@pacbell.net>
+References: <200604241429.52022.david-b@pacbell.net> <200604242347.36257.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751105AbWDXWRN@vger.kernel.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <200604242347.36257.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <200604242355.08111.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@suspend2.net>
+Cc: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Monday 24 April 2006 2:47 pm, Rafael J. Wysocki wrote:
+> 
+> I agree with this change but I think it'll cause some strange things to happen
+> for some time.
 
-> The appended patch allows swsusp to break the "50% of the normal zone" limit.
-> This is achieved by using the observation that pages mapped by frozen
-> userland tasks need not be copied before saving.
+Let's see.  :)  I think it's less likely to be drivers with broken
+shutdown() callbacks than drivers which are missing them.
 
-I've not followed the patch too carefully, but it is not as bad as I
-expected...
+Plus, one of the main reasons that driver suspend/resume handling
+is _still_ so goofy is that most drivers are stupid, and just reinit
+devices from scratch in their resume() methods.  Drivers like that
+should not notice any difference.  :)
 
-> With this patch applied I was able to save (and restore ;-)) ~800 MB suspend
-> images on a box with 1 GB of RAM.
-
-And did it also work second time? ;-).
-
-Okay, so it can be done, and patch does not look too bad. It still
-scares me. Is 800MB image more responsive than 500MB after resume?
-
-I guess we can revert to old behaviour by simply returning 1 from
-need_to_copy, right?
-
-I assume that need_to_copy returns 1 in case page is shared by current
-and some other process?
-
-> [Please don't beat me very hard, just couldn't resist. ;-)]
-
-Well, you are about to force me to learn about mm internals. Plus you
-force everyone who tries to modify swsusp. ... it may be okay if
-benefit is great enough and if it gets proper testing. Not 2.6.17
-material.
-
-Is benefit worth it?
+- Dave
 
 
-> --- linux-2.6.17-rc1-mm3.orig/include/linux/rmap.h	2006-04-22 10:34:33.000000000 +0200
-> +++ linux-2.6.17-rc1-mm3/include/linux/rmap.h	2006-04-22 10:34:45.000000000 +0200
-> @@ -104,6 +104,12 @@ pte_t *page_check_address(struct page *,
->   */
->  unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
->  
-> +#ifdef CONFIG_SOFTWARE_SUSPEND
-> +int page_mapped_by_current(struct page *);
-> +#else
-> +static inline int page_mapped_by_current(struct page *page) { return 0; }
-> +#endif /* CONFIG_SOFTWARE_SUSPEND */
 
-I'd leave it undefined. That will prevent nasty surprise when someone
-tries to use it w/o CONFIG_SOFTWARE_SUSPEND set.
-
-> @@ -251,6 +253,14 @@ int restore_special_mem(void)
->  	return ret;
->  }
->  
-> +/* Represents a stacked allocated page to be used in the future */
-> +struct res_page {
-> +	struct res_page *next;
-> +	char padding[PAGE_SIZE - sizeof(void *)];
-> +};
-> +
-> +static struct res_page *page_list;
-> +
->  static int pfn_is_nosave(unsigned long pfn)
->  {
->  	unsigned long nosave_begin_pfn = __pa(&__nosave_begin) >>
-> PAGE_SHIFT;
-
-Is this part of some other patch?
-
-
-> @@ -490,6 +613,11 @@ void swsusp_free(void)
->  	buffer = NULL;
->  }
->  
-> +void swsusp_free(void)
-> +{
-> +	free_image();
-> +	restore_active_inactive_lists();
-> +}
-
-This still scares me. Nice test would be to
-save/restore_active_inactive_lists repeatedly in a loop ... on running
-system ... aha, but it probably can't work outside of refrigerator?
-
->  	case SNAPSHOT_UNFREEZE:
->  		if (!data->frozen)
->  			break;
-> +		if (data->ready) {
-> +			error = -EPERM;
-> +			break;
-> +		}
->  		down(&pm_sem);
->  		thaw_processes();
->  		enable_nonboot_cpus();
-
-Error from UNFREEZE is not nice:
-
-Unfreeze:
-        unfreeze(snapshot_fd);
-        return error;
-}
-... we don't handle it. OTOH I guess it will be all fixed on exit()?
-
-								Pavel
-
--- 
-Thanks for all the (sleeping) penguins.
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
