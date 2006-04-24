@@ -1,83 +1,80 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] Suspending usb function of PCMCIA multi-functional card
-Date: Mon, 24 Apr 2006 11:47:27 -0700
-Message-ID: <200604241147.27832.david-b@pacbell.net>
-References: <380D9721A8E2114485644D71E87C6AB201BB4772@PNE-HJN-MBX01.wipro.com>
+Subject: Re: RE: on-ness
+Date: Mon, 24 Apr 2006 14:04:40 -0700
+Message-ID: <200604241404.41122.david-b@pacbell.net>
+References: <CFF307C98FEABE47A452B27C06B85BB63590D8@hdsmsx411.amr.corp.intel.com>
+	<20060421183340.GA3071@isilmar.linta.de>
+	<20060421190121.GB2078@elf.ucw.cz>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============57457988856159248=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060421190121.GB2078@elf.ucw.cz>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+List-Id: linux-pm@vger.kernel.org
+
+--===============57457988856159248==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB201BB4772@PNE-HJN-MBX01.wipro.com>
 Content-Disposition: inline
-Sender: linux-usb-devel-admin@lists.sourceforge.net
-Errors-To: linux-usb-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-To: linux-pm@lists.osdl.org
-Cc: rasmit.ranjan@wipro.com, linux-usb-devel@lists.sourceforge.net
-List-Id: linux-pm@vger.kernel.org
 
-On Friday 21 April 2006 6:00 am, rasmit.ranjan@wipro.com wrote:
-> Hi all,
->     I have a PCMCIA multi functional card hosting a usb and a serial
-> port.
-> The device tree for the usb is as follows:
->     
->  /sys/bus/pcmcia/devices/1-1/hcd/usb5/5-0:1.0/...............
+
+> > > > Uh. Not /sys/power/state. But /sys/devices/...../power/{[a],[b],[c]} where
+> > > > [a], [b] and [c] need sensible names.
+> > > 
+> > > Well, "on" could have one defined meaning.  Maybe it's the only option
+> > > available, until drivers add intelligence.  I don't see any problem
+> > > with the other names being system-specific, since it's rather unlikely
+> > > that a PCI_D3hot state will ever appear on most embedded ARM boxes.
+> > > And if any userspace code tries to set power states, it had darn well
+> > > better understand exactly what's going on.
+> > 
+> > Yes. However if a network managing userspace code wants to set the power
+> > conusmption of a WLAN device to the lowest possible setting, it shouldn't
+> > need a configuration file specific for each platform.
 > 
-> 1-1 represents usb functionality of my PCMCIA card connected to socket
-> no1. Similarlly my serial port will be listed as 1-0.
-> 
-> Now when I suspend 1-1 without suspening any down stream devices, it
-> allows me to do. I mean, the content of the .../power/state file is
-> changed to 3.
+> I'd say that "on" and "off" are well defined.
 
-The PM framework doesn't pay attention to the power hierarchy except
-during system suspend state transitions.  This seems more buglike than
-anything else, but it's not yet been fixed.  That is, if you write to
-a sysfs power/state file, nothing verifies that the child devices are
-already in a compatible state.  (I suspect it needs to be a driver
-responsibility, and that's how the USB stack now expects to run.)
+Are they?  Does "off" imply the device will have been reset the next
+time it goes to "on"?  If not, there would seem to be two "off" states.
+Or maybe more ... PCI_D0 is probably "on", but all of the other PCI
+device states seem to be variants of "off", not of "on".
 
-There are some fixes lurking in the vicinity of this problem, which are
-as yet un-merged, but I don't know that they touch the issues you saw.
+And for that matter, "on" doesn't seem to me to imply anything more
+than "full functionality from external POV".  That doesn't necessarily
+imply "full power-on", and in fact it'd be better if it were using the
+lowest power state(s) available.  That state might be compatible with
+certain system sleep states, or not, depending on the device's workload.
+
+Is either "on" or "off" a suspend state?  Why, or why not?  :)
 
 
-> Which means my usb_generic_suspend is not getting called 
-> otherwise it would have failed. Also PCMCIA client driver is notified of
-> this suspend. I did not find any noticeable changes by suspending 1-1.
-> 
-> Then how this suspend is handled ? As the content of the power state
-> file is changed, means power management is marking the node(1-1) as
-> suspended. Then which function does this ?
+> For certain classes (like ethernet), other states may be common
+> between platforms, too, like "off-with-WOL".
 
-Somewhere in the drivers/base/power directory; trace the execution
-paths, you'll see it.  The information in power/state sometimes gets
-munched without the assent of the driver which allegedly controls it.
-
-Again, this seems more buglike than anything else, especially since
-(as I recall things) most code paths through the PM core do the right
-thing and leave drivers in control of the suspend state they report.
-(Modulo recent bug additions ... I understand a patch changed things
-there again, adding policy about what values are legal.  That likely
-causes trouble for drivers.)
+Actually the wakeup characteristics are orthogonal, there are per-device
+bits controlling whether a device can and should do the wakeup.  We don't
+for example treat "PCI_D3hot with wakeup" as a distinct state.
 
 - Dave
 
 
 
--------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+--===============57457988856159248==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============57457988856159248==--
