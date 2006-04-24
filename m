@@ -1,83 +1,68 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: RE: on-ness
-Date: Mon, 24 Apr 2006 23:32:45 +0200
-Message-ID: <20060424213245.GP3386@elf.ucw.cz>
-References: <CFF307C98FEABE47A452B27C06B85BB63590D8@hdsmsx411.amr.corp.intel.com>
-	<20060421183340.GA3071@isilmar.linta.de>
-	<20060421190121.GB2078@elf.ucw.cz>
-	<200604241404.41122.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
+Date: Mon, 24 Apr 2006 23:47:35 +0200
+Message-ID: <200604242347.36257.rjw@sisk.pl>
+References: <200604241429.52022.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============20744884561816002=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604241404.41122.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <200604241429.52022.david-b@pacbell.net>
+Content-Disposition: inline
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: linux-pm@lists.osdl.org
+Cc: David Brownell <david-b@pacbell.net>, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============20744884561816002==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-On Po 24-04-06 14:04:40, David Brownell wrote:
+On Monday 24 April 2006 23:29, David Brownell wrote:
+> I've noticed a bunch of problem reports that go like this:
 > 
-> > > > > Uh. Not /sys/power/state. But /sys/devices/...../power/{[a],[b],[c]} where
-> > > > > [a], [b] and [c] need sensible names.
-> > > > 
-> > > > Well, "on" could have one defined meaning.  Maybe it's the only option
-> > > > available, until drivers add intelligence.  I don't see any problem
-> > > > with the other names being system-specific, since it's rather unlikely
-> > > > that a PCI_D3hot state will ever appear on most embedded ARM boxes.
-> > > > And if any userspace code tries to set power states, it had darn well
-> > > > better understand exactly what's going on.
-> > > 
-> > > Yes. However if a network managing userspace code wants to set the power
-> > > conusmption of a WLAN device to the lowest possible setting, it shouldn't
-> > > need a configuration file specific for each platform.
-> > 
-> > I'd say that "on" and "off" are well defined.
+>  - boot system with some USB devices attached
+>  - echo disk > /sys/power/state
+>  - ... later resume ...
+>  - now those USB devices don't work right
+>  - unplug them/replug them, all is OK
 > 
-> Are they?  Does "off" imply the device will have been reset the next
-> time it goes to "on"?  If not, there would seem to be two "off" states.
-> Or maybe more ... PCI_D0 is probably "on", but all of the other PCI
-> device states seem to be variants of "off", not of "on".
-
-I'd say "off" is as low as possible, perhaps including device reset.
-
-> And for that matter, "on" doesn't seem to me to imply anything more
-> than "full functionality from external POV".  That doesn't necessarily
-> imply "full power-on", and in fact it'd be better if it were using the
-> lowest power state(s) available.  That state might be compatible with
-> certain system sleep states, or not, depending on the device's
-> workload.
-
-Agreed.
-
-> > For certain classes (like ethernet), other states may be common
-> > between platforms, too, like "off-with-WOL".
+> I recently observed this myself and tracked down one problem.  The solution
+> involves what kexec() does in much the same situation:  before starting a
+> new kernel, most hardware needs to be reset.  Today, swsusp will suspend it
+> instead, which is the root cause of the problem.
 > 
-> Actually the wakeup characteristics are orthogonal, there are per-device
-> bits controlling whether a device can and should do the wakeup.  We don't
-> for example treat "PCI_D3hot with wakeup" as a distinct state.
+> This seems like something that might need to sit in the MM tree for
+> a while, as it's a longstanding bug and the fix could shake loose driver
+> goofs.  Luckily there's a partial workaround already in wide use:  link
+> drivers as modules if they use true suspend states (like all USB HCDs),
+> don't link them statically into the kernel image.
+> 
+> That workaround is partial because when BIOS takes over a controller, the
+> resume() method has to handle that nasty case too!  Last I checked, all
+> the USB HCDs do handle that case; and few drivers other than those HCDs
+> would ever need to worry about such issues.
 
-Ok, "off-with-WOL" was example. Hopefully there's better example. 
-								Pavel
--- 
-Thanks for all the (sleeping) penguins.
+I agree with this change but I think it'll cause some strange things to happen
+for some time.
 
---===============20744884561816002==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Greetings,
+Rafael
 
 
---===============20744884561816002==--
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
