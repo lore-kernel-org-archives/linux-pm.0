@@ -1,121 +1,76 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
-Date: Mon, 24 Apr 2006 14:29:51 -0700
-Message-ID: <200604241429.52022.david-b@pacbell.net>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: RE: RE: on-ness
+Date: Mon, 24 Apr 2006 16:32:54 -0500
+Message-ID: <EA12F909C0431D458B9D18A176BEE4A5055F11C0@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_QNUTEajrGhXjjBz"
-Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
-Content-Disposition: inline
-Sender: linux-usb-devel-admin@lists.sourceforge.net
-Errors-To: linux-usb-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-To: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="===============1467363760901359=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_QNUTEajrGhXjjBz
+--===============1467363760901359==
+Content-class: urn:content-classes:message
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
+
+> Are they?  Does "off" imply the device will have been reset the next
+> time it goes to "on"?  If not, there would seem to be two "off"
+states.
+> Or maybe more ... PCI_D0 is probably "on", but all of the other PCI
+> device states seem to be variants of "off", not of "on".
+
+That would seem device specific.  It would seem that applying a reset
+when moving from "off" (especially that mapped to PCI_D3) would seem
+reasonable.  As I was told, the rest of the PCI defined states D1-D3 are
+non-functional.  So they are all OFF states.  If just happens that in D3
+you can safely physically remove the device.  The current pseudo export
+of these non-functional states doesn't seem so useful.  Having some
+fuzzy level of idleness seems much better.
+
+The point of the idle states Len was floating attempts to define a level
+of on-ness/idleness.  As it turns out there was a nice correlation to
+some ACPI states.  Numbering them seems reasonable, else your just
+wasting effort translating 'state0, state1, state2, ...', keeping the
+naming convention simple '0,1,2,..0xffff' would seem to lend itself to
+code sharing of necessary class/device specific translation code.
+ 
+> Actually the wakeup characteristics are orthogonal, there are
+per-device
+> bits controlling whether a device can and should do the wakeup.  We
+don't
+> for example treat "PCI_D3hot with wakeup" as a distinct state.
+
+In my current hack attempts I am trying to associate a 'device' D2 state
+with a local device sleep with an async wake up enabled.  In this state
+a devices accesses are locked out until the device wake up event
+happens.  This async wake can be from a device specific wake up or from
+an associated timer resource.  Current DPM enabled OMAP sprinkles
+suspend lock outs inside of drivers which re-suspend queued waiters and
+suspends new requests if the device is in a locked out state.  From many
+devices this creates a device which just reacts with a higher latency.
+
+
+Regards,
+Richard W.
+
+
+--===============1467363760901359==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-I've noticed a bunch of problem reports that go like this:
 
- - boot system with some USB devices attached
- - echo disk > /sys/power/state
- - ... later resume ...
- - now those USB devices don't work right
- - unplug them/replug them, all is OK
-
-I recently observed this myself and tracked down one problem.  The solution
-involves what kexec() does in much the same situation:  before starting a
-new kernel, most hardware needs to be reset.  Today, swsusp will suspend it
-instead, which is the root cause of the problem.
-
-This seems like something that might need to sit in the MM tree for
-a while, as it's a longstanding bug and the fix could shake loose driver
-goofs.  Luckily there's a partial workaround already in wide use:  link
-drivers as modules if they use true suspend states (like all USB HCDs),
-don't link them statically into the kernel image.
-
-That workaround is partial because when BIOS takes over a controller, the
-resume() method has to handle that nasty case too!  Last I checked, all
-the USB HCDs do handle that case; and few drivers other than those HCDs
-would ever need to worry about such issues.
-
-- Dave
-
-
-
---Boundary-00=_QNUTEajrGhXjjBz
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="swsusp.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="swsusp.patch"
-
-Currently the swsusp resume path puts devices into a bogus suspend state
-before switching to the new kernel.  It's neither the suspend state that
-the driver left the device in, nor a "device lost power" reset state.
-
-Instead, it's a semi-functional state from the kernel which loaded the
-snapshot.  There's no way that a driver can properly resume from that.
-Some drivers issue resets in their resume methods, but that's wrong for
-every driver which uses more power states than just "on" and "reset".
-
-This patch shuts down (resets) the devices, just like kexec() does, so
-that non-modular drivers will know they must fully re-initialize even
-when they wouldn't ordinarily do so during resume().
-
-
---- linux.orig/kernel/power/swsusp.c	2006-04-23 08:41:22.000000000 -0700
-+++ linux/kernel/power/swsusp.c	2006-04-24 13:20:17.000000000 -0700
-@@ -49,6 +49,7 @@
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
- #include <linux/highmem.h>
-+#include <linux/reboot.h>
- 
- #include "power.h"
- 
-@@ -249,10 +250,16 @@
- int swsusp_resume(void)
- {
- 	int error;
--	local_irq_disable();
--	if (device_power_down(PMSG_FREEZE))
--		printk(KERN_ERR "Some devices failed to power down, very bad\n");
-+
-+	/* We need to shutdown/reset devices so that drivers which use
-+	 * non-powerdown suspend() states will see sane states in their
-+	 * resume() methods.  At this point "reset" is the only option,
-+	 * since we clobbered any valid suspend state a long time ago.
-+	 */
-+	kernel_restart_prepare(NULL);
-+
- 	/* We'll ignore saved state, but this gets preempt count (etc) right */
-+	local_irq_disable();
- 	save_processor_state();
- 	error = swsusp_arch_resume();
- 	/* Code below is only ever reached in case of failure. Otherwise
-
---Boundary-00=_QNUTEajrGhXjjBz--
-
-
--------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+--===============1467363760901359==--
