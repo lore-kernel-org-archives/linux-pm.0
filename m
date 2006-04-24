@@ -1,58 +1,83 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [OT] debugfs and sysfs [Was: Re: RE: on-ness]
-Date: Fri, 21 Apr 2006 21:04:48 +0200
-Message-ID: <20060421190448.GA15324@isilmar.linta.de>
-References: <CFF307C98FEABE47A452B27C06B85BB63590D8@hdsmsx411.amr.corp.intel.com>
-	<200604211130.05650.david-b@pacbell.net>
-	<20060421183340.GA3071@isilmar.linta.de>
-	<200604211200.45959.david-b@pacbell.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] Suspending usb function of PCMCIA multi-functional card
+Date: Mon, 24 Apr 2006 11:47:27 -0700
+Message-ID: <200604241147.27832.david-b@pacbell.net>
+References: <380D9721A8E2114485644D71E87C6AB201BB4772@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============37062942480500105=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604211200.45959.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <380D9721A8E2114485644D71E87C6AB201BB4772@PNE-HJN-MBX01.wipro.com>
+Content-Disposition: inline
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: linux-pm@lists.osdl.org
+Cc: rasmit.ranjan@wipro.com, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
---===============37062942480500105==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Fri, Apr 21, 2006 at 12:00:45PM -0700, David Brownell wrote:
-> > Uh, there's a rule "one-value-per-file" for sysfs. Arrays might be OK in
-> > certain cases, but lots of system-specific information in one file? No way,
-> > IMHO.
+On Friday 21 April 2006 6:00 am, rasmit.ranjan@wipro.com wrote:
+> Hi all,
+>     I have a PCMCIA multi functional card hosting a usb and a serial
+> port.
+> The device tree for the usb is as follows:
+>     
+>  /sys/bus/pcmcia/devices/1-1/hcd/usb5/5-0:1.0/...............
 > 
-> Remember that sysfs != debugfs, and /sys/kernel/debug is debugfs.
+> 1-1 represents usb functionality of my PCMCIA card connected to socket
+> no1. Similarlly my serial port will be listed as 1-0.
+> 
+> Now when I suspend 1-1 without suspening any down stream devices, it
+> allows me to do. I mean, the content of the .../power/state file is
+> changed to 3.
 
-Sorry, missed that bit. Editing my fstab right now :)
+The PM framework doesn't pay attention to the power hierarchy except
+during system suspend state transitions.  This seems more buglike than
+anything else, but it's not yet been fixed.  That is, if you write to
+a sysfs power/state file, nothing verifies that the child devices are
+already in a compatible state.  (I suspect it needs to be a driver
+responsibility, and that's how the USB stack now expects to run.)
 
->  (And for that matter, binary
-> data in sysfs is more than one-value-per-file ... there are plenty of cases
-> where that "rule" doesn't need to be obeyed.)
-
-Binary data is special, indeed, but needs to be rare -- and I sincerely
-doubt there are "plenty of cases" for sysfs where this rule doesn't need to
-be obeyed, but that would be OT now...
-
-Thanks,
-	Dominik
-
-
---===============37062942480500105==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+There are some fixes lurking in the vicinity of this problem, which are
+as yet un-merged, but I don't know that they touch the issues you saw.
 
 
---===============37062942480500105==--
+> Which means my usb_generic_suspend is not getting called 
+> otherwise it would have failed. Also PCMCIA client driver is notified of
+> this suspend. I did not find any noticeable changes by suspending 1-1.
+> 
+> Then how this suspend is handled ? As the content of the power state
+> file is changed, means power management is marking the node(1-1) as
+> suspended. Then which function does this ?
+
+Somewhere in the drivers/base/power directory; trace the execution
+paths, you'll see it.  The information in power/state sometimes gets
+munched without the assent of the driver which allegedly controls it.
+
+Again, this seems more buglike than anything else, especially since
+(as I recall things) most code paths through the PM core do the right
+thing and leave drivers in control of the suspend state they report.
+(Modulo recent bug additions ... I understand a patch changed things
+there again, adding policy about what values are legal.  That likely
+causes trouble for drivers.)
+
+- Dave
+
+
+
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
