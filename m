@@ -1,13 +1,16 @@
-From: Nigel Cunningham <nigel@suspend2.net>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Wed, 26 Apr 2006 07:18:36 +1000
-Message-ID: <200604260718.42681.nigel@suspend2.net>
-References: <200604242355.08111.rjw@sisk.pl> <20060425203256.GD6379@elf.ucw.cz>
-	<200604252312.26249.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Tue, 25 Apr 2006 23:41:19 +0200
+Message-ID: <20060425214119.GA6542@elf.ucw.cz>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200604250911.54951.david-b@pacbell.net>
+	<200604252056.56534.rjw@sisk.pl>
+	<200604251404.30228.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============98183120241086819=="
+Content-Type: multipart/mixed; boundary="===============092971106162385908=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604252312.26249.rjw@sisk.pl>
+In-Reply-To: <200604251404.30228.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,108 +20,87 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@osdl.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Nigel Cunningham <nigel@suspend2.net>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============98183120241086819==
-Content-Type: multipart/signed; boundary="nextPart1391673.hOPRmanWJe";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-
---nextPart1391673.hOPRmanWJe
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+--===============092971106162385908==
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi.
+(aha, I see the mail now)
 
-On Wednesday 26 April 2006 07:12, Rafael J. Wysocki wrote:
-> Hi,
->
-> On Tuesday 25 April 2006 22:32, Pavel Machek wrote:
-> > > >   > -unsigned int count_data_pages(void)
-> > > > >
-> > > > > +/**
-> > > > > + *	need_to_copy - determine if a page needs to be copied before
-> > > > > saving. + *	Returns false if the page can be saved without copyin=
-g.
-> > > > > + */
-> > > > > +
-> > > > > +static int need_to_copy(struct page *page)
-> > > > > +{
-> > > > > +	if (!PageLRU(page) || PageCompound(page))
-> > > > > +		return 1;
-> > > > > +	if (page_mapped(page))
-> > > > > +		return page_mapped_by_current(page);
-> > > > > +
-> > > > > +	return 1;
-> > > > > +}
-> > > >
-> > > > I'd much rather VM internal type stuff get moved *out* of
-> > > > kernel/power :(
-> > >
-> > > Well, I kind of agree, but I don't know where to place it under mm/.
-> > >
-> > > > It needs more comments too. Also, how important is it for the page =
-to
-> > > > be off the LRU?
-> > >
-> > > Hm, I'm not sure if that's what you're asking about, but the pages off
-> > > the LRU are handled in a usual way, ie. copied when snapshotting the
-> > > system.  The pages _on_ the LRU may be included in the snapshot image
-> > > without copying, but I require them additionally to be (a) mapped by
-> > > someone and (b) not mapped by the current task.
-> >
-> > Why do you _want_ them mapped by someone?
->
-> Because this means they belong to a task that is frozen and won't touch
-> them (of course unless it's us).  The kernel has no reason to access them
-> either (even after we resume devices) except for reclaiming, but that's
-> handled explicitly.  Thus it's safe to include them in the image without
-> copying.
->
-> As I said before, I think the page cache pages may be treated this way to=
-o.
-> It probably applies to all of the LRU pages, but there may be some corner
-> cases.  The mapped pages are just easy to single out.
+> > > I've begun thinking that calls like pm_should_I_spin_down_drives() would be a
+> > > better structural approach than continually redefining this "freeze" thing so
+> > > it makes less and less sense to all other drivers ... who nonethless need to
+> > > clutter themselves up with a growing list of special cases, to accomodate
+> > > rotating media that may not even exist in the target system.
+> > 
+> > I think we should do something different to device_power_down(PMSG_FREEZE)
+> > there, but I'm not sure it should be kernel_restart_prepare(NULL).
+> > 
+> > Actually spinning down disks during resume is a problem for some users (yes,
+> > we've had such bug reports recently), so it's better to avoid this.
+> 
+> Well, if we had a pm_should_I_spin_down_drives() it would make sense to me
+> that it return FALSE during kernel_restart_prepare() too ... surely kexec
+> users have the same issues!
 
-It does apply to all of the LRU pages. This is what I've been doing for yea=
-rs=20
-now. The only corner case I've come across is XFS. It still wants to write=
-=20
-data even when there's nothing to do and it's threads are frozen (IIRC -=20
-haven't looked at it for a while). I got around that by freezing bdevs when=
-=20
-freezing processes.
+pm_should_I_spin_down_drives() is incredibly ugly hack, sorry.
 
-Regards,
+> > Then it goes like that (approximately):
+> > (1) We activate swsusp which calls .suspend() for all devices including our
+> > driver (this is a real suspend).
+> > (2) swsusp snapshots the system and creates the image.
+> > (3) swsusp calls .resume() for all devices in order to be able to save the
+> > image (.resume() for our driver is also called which is OK).
+> > (4) swsusp turns off the system.
+> > (5) (some time later) We start a new kernel and tell it to resume.
+> > (6) It activates swsusp which reads the image.
+> 
+> And assuming this is an x86 PC, at this point every device is in one of three states:
+> 
+>   - initialized by BIOS.  This is a particular PITA for USB, but one that's
+>     handled OK (mostly) except when BIOS bugs kick in.  There's some nasty
+>     code that kicks in along with PCI quirk handling, which ensures that by
+>     the time Linux-USB  driver could see this state (or the input subsystem
+>     needs to care about it), the state has morphed to reset.  Video cards
+>     have funky issues here too.
+> 
+>   - (powerup) reset.  This is the ideal state, in terms of "truth" to convey
+>     to the image we're about to restore ... no ambiguity, every driver will
+>     need to re-init.  As if there were (thank you!!) no BIOS.
+> 
+>   - initialized by Linux ... which leads to the case my patch addresses.
+> 
+> Those first two states are legit for any resume() call, and they apply in
+> your scenario restriction.
+> 
+> The third state is the problem scenario, kicking in when the driver was
+> statically linked (or modprobed from initramfs, etc), but not during
+> your scenario.
 
-Nigel
+Driver should be able to resume() from state #3. If driver is broken
+and can't do that, modify suspend() call to power down hardware.
 
-=2D-=20
-See our web page for Howtos, FAQs, the Wiki and mailing list info.
-http://www.suspend2.net                IRC: #suspend2 on Freenode
+> My patch/suggestion just ensures that instead of that broken state, reset is used.
+> in all cases ... not just the "driver not initialized before snapshot resume" case.
 
---nextPart1391673.hOPRmanWJe
-Content-Type: application/pgp-signature
+I guess I partially see what you are saying. Behaviour in
+driver-modular and driver-non-modular is indeed different and that is
+not nice.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+But it would be nice to have less intrusive solution than call reboot
+notifiers...
+								Pavel
+-- 
+Thanks for all the (sleeping) penguins.
 
-iD8DBQBETpIyN0y+n1M3mo0RAkntAKDj+r9NEsWFiL6dBZVV/MyDFsfzlwCcDzPM
-8D40EMGtK/BzOYL8YAkNcGU=
-=9IJx
------END PGP SIGNATURE-----
-
---nextPart1391673.hOPRmanWJe--
-
---===============98183120241086819==
+--===============092971106162385908==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============98183120241086819==--
+--===============092971106162385908==--
