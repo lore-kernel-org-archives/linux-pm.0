@@ -1,15 +1,13 @@
-From: Nigel Cunningham <nigel@suspend2.net>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Wed, 26 Apr 2006 08:18:11 +1000
-Message-ID: <200604260818.20484.nigel@suspend2.net>
-References: <200604241429.52022.david-b@pacbell.net>
-	<200604260703.35214.nigel@suspend2.net>
-	<200604260006.33856.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
+Date: Wed, 26 Apr 2006 00:21:08 +0200
+Message-ID: <200604260021.08888.rjw@sisk.pl>
+References: <200604242355.08111.rjw@sisk.pl> <200604252312.26249.rjw@sisk.pl>
+	<200604260718.42681.nigel@suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============25004929016375899=="
+Content-Type: multipart/mixed; boundary="===============027056763955998875=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604260006.33856.rjw@sisk.pl>
+In-Reply-To: <200604260718.42681.nigel@suspend2.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,110 +17,82 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+To: Nigel Cunningham <nigel@suspend2.net>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============25004929016375899==
-Content-Type: multipart/signed; boundary="nextPart1915777.5XEmoGykK4";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-
---nextPart1915777.5XEmoGykK4
+--===============027056763955998875==
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi.
+Hi,
 
-On Wednesday 26 April 2006 08:06, Rafael J. Wysocki wrote:
-> On Tuesday 25 April 2006 23:03, Nigel Cunningham wrote:
-> > On Wednesday 26 April 2006 06:53, Rafael J. Wysocki wrote:
-> > > On Tuesday 25 April 2006 22:28, Nigel Cunningham wrote:
-> > > > On Wednesday 26 April 2006 04:56, Rafael J. Wysocki wrote:
-> > > > > You're saying that (9) is wrong, so could you please suggest what
-> > > > > to do instead of it?
+On Tuesday 25 April 2006 23:18, Nigel Cunningham wrote:
+> On Wednesday 26 April 2006 07:12, Rafael J. Wysocki wrote:
+> > On Tuesday 25 April 2006 22:32, Pavel Machek wrote:
+> > > > >   > -unsigned int count_data_pages(void)
+> > > > > >
+> > > > > > +/**
+> > > > > > + *	need_to_copy - determine if a page needs to be copied before
+> > > > > > saving. + *	Returns false if the page can be saved without copying.
+> > > > > > + */
+> > > > > > +
+> > > > > > +static int need_to_copy(struct page *page)
+> > > > > > +{
+> > > > > > +	if (!PageLRU(page) || PageCompound(page))
+> > > > > > +		return 1;
+> > > > > > +	if (page_mapped(page))
+> > > > > > +		return page_mapped_by_current(page);
+> > > > > > +
+> > > > > > +	return 1;
+> > > > > > +}
+> > > > >
+> > > > > I'd much rather VM internal type stuff get moved *out* of
+> > > > > kernel/power :(
 > > > >
-> > > > 'scuse me for butting in, but here's my suggested modified version:
-> > > > > Well, suppose we have a modular driver that's not loaded before
-> > > > > resume. Then it goes like that (approximately):
-> > > > > (1) We activate swsusp which calls .suspend() for all devices
-> > > > > including our driver (this is a real suspend).
-> > > > > (2) swsusp snapshots the system and creates the image.
-> > > > > (3) swsusp calls .resume() for all devices in order to be able to
-> > > > > save the image (.resume() for our driver is also called which is
-> > > > > OK). (4) swsusp turns off the system.
-> > > > > (5) (some time later) We start a new kernel and tell it to resume.
-> > > > > (6) It activates swsusp which reads the image.
-> > > > > (7) (without your change) swsusp calls .suspend() for all device
-> > > > > drivers that are present at that time, but our driver is not ther=
-e,
-> > > > > so its .suspend() _won't_ be called.  [Of course with your change
-> > > > > .suspend() won't be called for any driver.]
+> > > > Well, I kind of agree, but I don't know where to place it under mm/.
 > > > >
-> > > > We also make a list that is safely available after the atomic resto=
-re
-> > > > of drivers that have had .suspend methods called.
+> > > > > It needs more comments too. Also, how important is it for the page to
+> > > > > be off the LRU?
+> > > >
+> > > > Hm, I'm not sure if that's what you're asking about, but the pages off
+> > > > the LRU are handled in a usual way, ie. copied when snapshotting the
+> > > > system.  The pages _on_ the LRU may be included in the snapshot image
+> > > > without copying, but I require them additionally to be (a) mapped by
+> > > > someone and (b) not mapped by the current task.
 > > >
-> > > Do you mean we place the list in a __nosave area?
+> > > Why do you _want_ them mapped by someone?
 > >
-> > Well, I wasn't wanting to get bogged down in the details yet, but let's
-> > see what we can come up with. How about this:
+> > Because this means they belong to a task that is frozen and won't touch
+> > them (of course unless it's us).  The kernel has no reason to access them
+> > either (even after we resume devices) except for reclaiming, but that's
+> > handled explicitly.  Thus it's safe to include them in the image without
+> > copying.
 > >
-> > At the point where we do the drivers resume at resume time, we're still
-> > atomic, right? Since that's the case, we can just use get_safe_page()
-> > prior to the restore to store the list and a __nosave pointer to retain
-> > the location across the atomic restore. If we are concerned about
-> > resuming drivers allocating memory and overwriting our list (and I think
-> > that's a valid concern), space could be allocated and the list copied
-> > between doing the atomic restore and the device pwoerup/resume.
->
-> This one seems to look better.
->
-> Still the problem is we need to know what to do with the devices that have
-> had .suspend() routines called.  Some of them would have to be reset, some
-> of them might be left in the current state, and for some of them we'd have
-> to do something special.  Frankly, only the driver writer will know what's
-> appropriate.
+> > As I said before, I think the page cache pages may be treated this way too.
+> > It probably applies to all of the LRU pages, but there may be some corner
+> > cases.  The mapped pages are just easy to single out.
+> 
+> It does apply to all of the LRU pages. This is what I've been doing for years 
+> now. The only corner case I've come across is XFS. It still wants to write 
+> data even when there's nothing to do and it's threads are frozen (IIRC - 
+> haven't looked at it for a while). I got around that by freezing bdevs when 
+> freezing processes.
 
-I saw the 2 suspends, 1 resume comment in another part of the thread, but=20
-don't believe a driver would be able to detect that 2 suspends and 1 resume=
-=20
-call had been made - at least not without some non volatile ram. This is th=
-e=20
-problem I'm mainly seeking to address. I agree that the driver is the only=
-=20
-thing that will know what to do with the information. That presents another=
-=20
-issue - we would then have to pass on to the drivers the information - I=20
-guess by modified a field in their struct device?
+This means if we freeze bdevs, we'll be able to save all of the LRU pages,
+except for the pages mapped by the current task, without copying.  I think we
+can try to do this, but we'll need a patch to freeze bdevs for this purpose. ;-)
 
-Regards,
+Greetings,
+Rafael
 
-Nigel
-=2D-=20
-See our web page for Howtos, FAQs, the Wiki and mailing list info.
-http://www.suspend2.net                IRC: #suspend2 on Freenode
-
---nextPart1915777.5XEmoGykK4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBETqAsN0y+n1M3mo0RAvwdAKCzPPtZ3UHQEKhfTxQ0xynkWmbkNQCfRB0L
-4WPVgmgDMwrkPKuh1Hmj5TA=
-=rNwd
------END PGP SIGNATURE-----
-
---nextPart1915777.5XEmoGykK4--
-
---===============25004929016375899==
+--===============027056763955998875==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============25004929016375899==--
+--===============027056763955998875==--
