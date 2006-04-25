@@ -1,138 +1,101 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Tue, 25 Apr 2006 15:56:54 -0700
-Message-ID: <200604251556.55040.david-b@pacbell.net>
-References: <200604241429.52022.david-b@pacbell.net>
-	<200604251404.30228.david-b@pacbell.net>
-	<200604252355.29006.rjw@sisk.pl>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
+Date: Tue, 25 Apr 2006 16:13:41 -0700
+Message-ID: <200604251613.42388.david-b@pacbell.net>
+References: <200604241429.52022.david-b@pacbell.net> <200604251404.30228.david-b@pacbell.net> <20060425214119.GA6542@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============048384575194066803=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604252355.29006.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
-List-Id: linux-pm@vger.kernel.org
-
---===============048384575194066803==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <20060425214119.GA6542@elf.ucw.cz>
 Content-Disposition: inline
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 April 2006 2:55 pm, Rafael J. Wysocki wrote:
-> On Tuesday 25 April 2006 23:04, David Brownell wrote:
->  
+On Tuesday 25 April 2006 2:41 pm, Pavel Machek wrote:
+
+> > Well, if we had a pm_should_I_spin_down_drives() it would make sense to me
+> > that it return FALSE during kernel_restart_prepare() too ... surely kexec
+> > users have the same issues!
+> 
+> pm_should_I_spin_down_drives() is incredibly ugly hack, sorry.
+
+The name was chosen to be ugly.  I'd expect someone to make it prettier;
+maybe draw ponies around the name or somesuch.  ;)
+
+
+However, by the way your pm_message_t changes removed all information about
+system states, you've forced that family of approach in every driver that needs
+to know about such states in order to behave correctly.  For example, "don't
+turn off clock X in PM_STANDBY" ... since no driver has a standard way to know
+about PM_STANDBY, it needs some function accessing state set up by pm_ops.prepare
+or else it's not going to be able to behave right.
+
+
+
 > > The third state is the problem scenario, kicking in when the driver was
 > > statically linked (or modprobed from initramfs, etc), but not during
 > > your scenario.
 > 
-> The problem, as I see it, is that too many devices may be initialized at the
-> kernel startup.
+> Driver should be able to resume() from state #3. If driver is broken
+> and can't do that, modify suspend() call to power down hardware.
 
-That's a fair observation.  In the same way, swsusp resumes too many devices
-before writing the snapshot.  In both cases, it only needs the resume partition,
-not every random bit of hardware in the system.
+You conveniently edited out the elaboration there.  State #3 is no problem
+by itself ... it's later states, only accessible through door #3.
 
-But it's not the root cause of the problem either.  The same problem appears if
-the device holding the resume partition gets forced into this "broken suspend"
-state.
-
-
-> I think we _can_ reset some of them before the image 
-> is restored, but at least some of them need to be treated more carefully.
-
-Maybe; but remember they _were_ just reset ... and that if a driver doesn't
-know how to re-init a device that it has just reset, then it has other problems!
-It's a common practice to reset on entrance to probe() ... if that works, it's
-"just" a simple matter of code cleanup/reorg to let the init code be used if
-resume() detects the device hardware has been reset.
-
-For example, rmmod/modprobe cycles wouldn't behave sanely ... and it'd likely
-break with kexec().  If they "need" careful treatment, that'd seem to me most
-like a driver bug ...
-
-Now, if you have specific examples of things that shouldn't be reset, that
-could be interesting.  I don't seem to have tripped over any, and from first
-principles it's clear to me there _shouldn't_ be such drivers (modulo bugs).
-
-If you're going to argue that there are enough buggy drivers around that
-we can't rely on them to behave correctly here ... well, we don't have an
-example of even one such driver, much less a flood of them.  And the thing
-to do with bugs is fix them, not coddle them.  ;)
-
-
-> > Right:  the first two "safe" cases kick in.  This is the partial workaround I
-> > had identified:  dodging the code paths for that third state, where suspend()
-> > is being used to put the hardware into a broken suspend state.
-> 
-> So perhaps we should just make them enter a state that's not broken?
-> That may be reset for some devices (eg. USB) and something else for some
-> others (eg. storage).
-
-Sure, but I'm not sure what "something else" would ever be.  Examples?
-Not of cases where something else _could_ be done, but where it _must_ be.
-
-
-> > It may help to think of two distinct types of device hardware suspend states
-> > (only the first is real, the second is just a software bug):
-> > 
-> >  - Correct, with internal state corresponding to what the driver suspend() did;
-> >    what a normal hardware suspend/resume cycle (not powercycle!) could do.
-> > 
-> >  - Broken, with any other internal state (except reset).  This is what swsusp
-> >    currently forces, by adding **AND HIDING** a reset and reinit cycle, because
-> >    of the extra suspend() call in (7).
-> 
-> Still there are drivers that have no problems with it, so why we should we
-> forcibly reset their devices?
-
-Can any driver can really justify not handling the case where resume() sees
-hardware that's been reset?  That is, _exactly_ as would be the case if its
-driver were only loaded as a module after the kernel booted?  I think not...
+The problem comes from then calling suspend() -- as you advise! -- to force
+broken/invalid/bogus suspend state into the hardware.  It's NOT a driver
+issue ... it's the fact that calling suspend() there will trash hardware
+state (needlessly).  Drivers should not need to cope with such trashing.
 
 
 > > My patch/suggestion just ensures that instead of that broken state, reset is used.
 > > in all cases ... not just the "driver not initialized before snapshot resume" case.
 > 
-> As I said before I generally agree with this except I think some more fine
-> grained approach is needed in this case.
+> I guess I partially see what you are saying. Behaviour in
+> driver-modular and driver-non-modular is indeed different and that is
+> not nice.
 
-You've not convinced me of that; might be right, but nothing proves it to me.
+That's part of it; the other part is that swsusp should never force the
+hardware to reflect an invalid state (the way it does without my patch).
+
+Different behaviours wouldn't be much trouble if they were both correct.
 
 
-> Basically it seems we need something like a .prepare_for_resume() routine,
-> that will be called before restoring the swsusp's image, apart from .suspend()
-> and .resume() for each driver.  Your patch just assumes that
-> .prepare_for_resume() should be "reset" for all devices.
+> But it would be nice to have less intrusive solution than call reboot
+> notifiers...
 
-I want to avoid piling on more special cases for swsusp, and that would appear
-to be the only potential user for a prepare_for_resume().
+Actually, we'd need the notifiers to be called as much as the driver.shutdown()
+methods ... they are both used to reset hardware.
 
-The patch assumes that kexec() and the swsusp snapshot resume should be subject
-to the same basic constraints.  While that might be a bit aggressive, it sure
-seems like it's the right approach to take:  not adding special cases just for
-swsusp, and making sure two very similar problems don't needlessly diverge
-their solutions.  Plus, it's a mechanism that's been in place for some time now,
-known to work.
+
+You still haven't come up with a response to my point that starting up a
+new kernel via swsusp snapshot resume is a system restart in exactly the
+same way as it is for kexec() ... at this point, there is no better fix
+for the problem than my original patch, AND you haven't actually identified
+a single real problem with it.
 
 - Dave
 
 
---===============048384575194066803==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-
---===============048384575194066803==--
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
