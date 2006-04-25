@@ -1,140 +1,152 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Tue, 25 Apr 2006 09:56:48 -0700
-Message-ID: <200604250956.49177.david-b@pacbell.net>
-References: <200604241429.52022.david-b@pacbell.net>
-	<200604241547.38692.david-b@pacbell.net>
-	<200604252034.54352.ncunningham@cyclades.com>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
+Date: Tue, 25 Apr 2006 10:37:13 -0700
+Message-ID: <200604251037.13714.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0604251010460.5330-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============90069915292436664=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604252034.54352.ncunningham@cyclades.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
-List-Id: linux-pm@vger.kernel.org
-
---===============90069915292436664==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0604251010460.5330-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 April 2006 3:34 am, Nigel Cunningham wrote:
-> Hi.
+On Tuesday 25 April 2006 7:41 am, Alan Stern wrote:
 > 
-> On Tuesday 25 April 2006 08:47, David Brownell wrote:
-> > On Monday 24 April 2006 2:47 pm, Rafael J. Wysocki wrote:
-> > > I agree with this change but I think it'll cause some strange things to
-> > > happen for some time.
-> >
-> > Let's see.  :)  I think it's less likely to be drivers with broken
-> > shutdown() callbacks than drivers which are missing them.
-> >
-> > Plus, one of the main reasons that driver suspend/resume handling
-> > is _still_ so goofy is that most drivers are stupid, and just reinit
-> > devices from scratch in their resume() methods.  Drivers like that
-> > should not notice any difference.  :)
-> 
-> No!
+> When the USB subsystem resumes a device, it relies on the fact that a
+> certain amount of state has been preserved _in the device_.  At a minimum,
+> that state includes the device's bus address, which is assigned
+> dynamically and obviously is necessary for communicating with the device.  
 
-To what in particular?  The US version of fascism?  Everything in general?
-One specific comment above?  All of them?
+It also includes other state ... for example the device's driver may
+have initialized it in a particular way, and external events may also
+have changed things in ways that the kernel cares about.  Not all of
+that state can be interrogated by Linux, and drivers are allowed to
+rely on that information being unchanged after a true resume().
 
 
-> The only reason that driver suspend/resume handling is still far from perfect 
-> is that a good number of drivers still don't have any suspend/resume 
-> handling.
+> This state will be lost whenever the "power session" is interrupted, which
+> means that USB devices cannot remain suspended when VBUS power is lost --
+> and many systems do not provide VBUS suspend current while in various
+> sleep states, although some systems do.
 
-That's a separate issue.  I was referring to the structural issues,
-the "handling".  Specifically, the ones which make it hard to use
-more device states than just the "on" and "off" required by swsusp.
-
-For example, there's the "drivers can't detect the target system state"
-issue ... the pm_message_t conversion replaced a value which had originally
-been used to indicate that state (back in 2.4) with something that's all
-but useless for any purpose other than telling IDE when not to spin down.
-(I have one proposal to help there, which I'll make at some point in a
-separate thread.)
-
-It's those structural issues that make it hard to do things like handling
-both swsusp _and_ real system suspend states like STR ... and to make
-wakeup events work.  I do understand that ACPI is sometimes in the way,
-but the structural issues are what keep things from acting sane even on
-nice clean embedded hardware where not even a bootloader gets in the way
-of having Linux do proper suspend/wakeup/resume handling.
+Most systems _do_ provide VBUS power during true suspend states.  But the
+swsusp approach precludes VBUS; it's "system off" not "system suspend".
 
 
-> Getting rid of the instrastructure because it isn't completely  
-> implemented is the wrong approach.
+> Regardless, the problem is that the resuming kernel doesn't have any
+> terribly good ways of telling whether or not the power session has
+> remained intact.
 
-I didn't advocate getting rid of any infrastructure.  How could you even
-read what I wrote as recommending that?  There wasn't even a mention of
-anything to be removed.
-
-
-> We should instead complete implementing  
-> the support so that drivers understand the difference between freezing, 
-> suspending, powering down, powering up and resuming. If we dumb things down, 
-> we'll only create problems.
-
-Another of the reasons system suspend/resume is goofy is that there's
-still confusion about what that support is, and what those differences are.
-
-For example, you were the one who recently (yesterday!!) advocated redefining
-FREEZE so it's more than just driver quiescence.
-
-And for that matter, there are no driver power down/up APIs; all we have are
-suspend/resume.  That actually makes sense to me, but you seem to think there
-should be some difference between the two.
+Actually almost all systems do have ways to report that.  The issue in
+this case is that swsusp both trashed that report and replaced it with
+an incorrect and troublesome report that the sessions DID remain.
 
 
-How could you read what I wrote as recommending we "dumb things down"?
-All I did was observe that swsusp was violating the existing definition
-of device state during resume() callbacks, and provide a fix for it.
+> It can test whether the host controller is still in the 
+> same state that a suspend would leave it in.  It can test whether the
+> device's port is still enabled and whether anything responds at the
+> device's bus address.  (We don't currently try to tell whether the
+> responder actually _is_ the device we're trying to resume as opposed to
+> some other device!)
 
-If you refer to my dislike of special cases ... that's not dumbing down,
-that's experience.  You can't evolve complex systems **THAT WORK** only by
-adding special cases whenever another inconvenient truth comes up.  At some
-point you either succumb to chaos, or replace most of those special cases
-with simple rules.
+True.  Sometimes the port is managed with the help of an external
+transceive that can monitor things more closely than the controller,
+so the "controller" isn't the only relevant device.
+
+ 
+> The real difficulty comes when the USB drivers are compiled into the boot 
+> kernel or loaded by an initrd.  They will take over the host controllers 
+> and any devices they can find, destroying the preserved state.  Then when 
+> they are told to prepare for the upcoming atomic restore, they will try to 
+> freeze or reset (or whatever) the devices.
+
+That's what the patch changed:  to reset, not (wrongly) freeze/suspend.
+
+And note that it also makes the behavior uniform, so that the snapshot
+will always see the reset even if that driver had initialized inside
+the kernel that restored the snapshot.
 
 
-> Rafael raised the issue in another email of code built as modules that is 
-> suspended and not resumed or vice versa because in the case of suspend to 
-> disk, the module is loaded at boot time but not in the suspended kernel (or 
-> v.v).
+> Now the resuming kernel starts up, and it has to guess whether everything
+> is still properly suspended with all the necessary state intact.  Suppose
+> the boot kernel has destroyed the state and left the devices frozen, as
+> happens now (without David's patch).  It will appear to the resuming
+> kernel that the devices are still suspended, but unbeknownst to the kernel 
+> the state information is gone.  That's why the devices don't work after 
+> resuming until the user unplugs and replugs them.
 
-Which issue made no sense to me when he tried to write it up either.
+Yes:  swsusp trashed the correct status report.
 
 
-> It seems to me that the right way to deal with this is to extend the  
-> use of __nosave so that information about what was loaded in the boot kernel 
-> is available when resuming drivers after the atomic restore.
+> The right way to solve this is to make sure that the resuming kernel can
+> correctly determine whether the power session (way back from the original
+> sw-suspend) is still intact.  It's expected that in many cases it won't
+> be, because most systems won't provide suspend current while the machine
+> is off.
 
-I seriously doubt you'll be able to get all the hardware designers to
-cooperate with you.  Not all the hardware state is directly visible to
-software even in normal operation, so there's no way to turn all the
-relevant information into driver state to which __nosave (etc) could
-be applied ...
+True for swsusp, but generally not for true system suspend states.
+
+
+> We have to guarantee that the boot kernel's actions won't end up 
+> fooling the resuming kernel into thinking that the power sessions are
+> intact when in fact they aren't.  (Furthermore, in an ideal world, we
+> would also make sure that the boot kernel won't destroy any power sessions
+> that still _are_ intact.  Right now we have no way to do this, because the
+> drivers in the boot kernel don't know that it _is_ a boot kernel.)
+
+Again, true system suspend states don't have this issue.  With swsusp
+the sessions will always be broken.
+
+ 
+> Making the boot kernel shut down the host controllers instead of freezing
+> or suspending them will indeed destroy all existing power sessions, as
+> well as making it clear to the resuming kernel that that are gone.  Under
+> certain circumstances, freezing the host controllers will fool the
+> resuming kernel.
+
+Right.
+
+ 
+> Propagating some kind of information from one kernel to the next is the
+> solution. 
+
+True system suspend states propagate that information in the hardware,
+and I see no reason to define a second mechanism.
+
+
+> Maybe that's what you meant.  Trying to store that information 
+> in the host controller's state is a poor-man's way of doing it, but at the
+> moment it's the only way we have.  That's why David doesn't want the state 
+> during the atomic reload to be the same as the state during a regular 
+> resume.
+
+I'd put it differently.  It's not a poor-man's way at all; passing that
+information in hardware is the correct solution.  A regular resume would
+keep the information there too (from STR or standby).  We don't want to
+have swsusp piling on special cases.
 
 - Dave
 
 
---===============90069915292436664==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============90069915292436664==--
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
