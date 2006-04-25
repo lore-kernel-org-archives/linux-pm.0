@@ -1,18 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Nigel Cunningham <nigel@suspend2.net>
 Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
 	device_suspend()
-Date: Tue, 25 Apr 2006 20:56:55 +0200
-Message-ID: <200604252056.56534.rjw@sisk.pl>
+Date: Wed, 26 Apr 2006 06:28:35 +1000
+Message-ID: <200604260628.41003.nigel@suspend2.net>
 References: <200604241429.52022.david-b@pacbell.net>
-	<200604251032.57204.rjw@sisk.pl>
 	<200604250911.54951.david-b@pacbell.net>
+	<200604252056.56534.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============10398706518480161=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604250911.54951.david-b@pacbell.net>
-Content-Disposition: inline
+In-Reply-To: <200604252056.56534.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,75 +19,82 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============10398706518480161==
+Content-Type: multipart/signed; boundary="nextPart5538800.lTngAySedz";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-On Tuesday 25 April 2006 18:11, David Brownell wrote:
-> On Tuesday 25 April 2006 1:32 am, Rafael J. Wysocki wrote:
-> 
-> > > just want things quiesced, mainly because we don't want to spin down drives.
-> > 
-> > That's right.  And kernel_restart_prepare(NULL) will make them spin down?
-> > If so, they have to be treated in a special way.
-> 
-> Seems every time that someone turns up one of the problems with this "freeze"
-> thing, the same responses come back:  "we can't fix that because we don't want
-> to spin down drives".
+--nextPart5538800.lTngAySedz
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I didn't say we couldn't fix that, did I?
+Hi.
 
-> I've begun thinking that calls like pm_should_I_spin_down_drives() would be a
-> better structural approach than continually redefining this "freeze" thing so
-> it makes less and less sense to all other drivers ... who nonethless need to
-> clutter themselves up with a growing list of special cases, to accomodate
-> rotating media that may not even exist in the target system.
+On Wednesday 26 April 2006 04:56, Rafael J. Wysocki wrote:
+> You're saying that (9) is wrong, so could you please suggest what to do
+> instead of it?
 
-I think we should do something different to device_power_down(PMSG_FREEZE)
-there, but I'm not sure it should be kernel_restart_prepare(NULL).
+'scuse me for butting in, but here's my suggested modified version:
 
-Actually spinning down disks during resume is a problem for some users (yes,
-we've had such bug reports recently), so it's better to avoid this.
+> Well, suppose we have a modular driver that's not loaded before resume.
+> Then it goes like that (approximately):
+> (1) We activate swsusp which calls .suspend() for all devices including o=
+ur
+> driver (this is a real suspend).
+> (2) swsusp snapshots the system and creates the image.
+> (3) swsusp calls .resume() for all devices in order to be able to save the
+> image (.resume() for our driver is also called which is OK).
+> (4) swsusp turns off the system.
+> (5) (some time later) We start a new kernel and tell it to resume.
+> (6) It activates swsusp which reads the image.
+> (7) (without your change) swsusp calls .suspend() for all device drivers
+> that are present at that time, but our driver is not there, so its
+> .suspend() _won't_ be called.  [Of course with your change .suspend() won=
+'t
+> be called for any driver.]
 
-> > OTOH I think at least some device driver writers assume that .resume() will
-> > always be called after .suspend() which only is true for non-modular drivers
-> > (or for modular drivers loaded from an initrd before resume). 
-> 
-> Say what?  Of _course_ resume() should only be called after suspend().  If
-> that's not true in any case, the code wrongly issuing the resume() is buggy.
+We also make a list that is safely available after the atomic restore of=20
+drivers that have had .suspend methods called.
 
-Well, suppose we have a modular driver that's not loaded before resume.
-Then it goes like that (approximately):
-(1) We activate swsusp which calls .suspend() for all devices including our
-driver (this is a real suspend).
-(2) swsusp snapshots the system and creates the image.
-(3) swsusp calls .resume() for all devices in order to be able to save the
-image (.resume() for our driver is also called which is OK).
-(4) swsusp turns off the system.
-(5) (some time later) We start a new kernel and tell it to resume.
-(6) It activates swsusp which reads the image.
-(7) (without your change) swsusp calls .suspend() for all device drivers that
-are present at that time, but our driver is not there, so its .suspend()
-_won't_ be called.  [Of course with your change .suspend() won't be called
-for any driver.]
-(8) swsusp restores the image.
-(9) swsusp calls .resume() for all devices _including_ our driver, because it
-was in memory before suspend.  For our driver this .resume() is not
-called after .suspend(), is it?
+> (8) swsusp restores the image.
 
-You're saying that (9) is wrong, so could you please suggest what to do
-instead of it?
- 
-> I don't see where you're collecting that list of special cases.
+(9) suspend to disk calls .resume() for each device that is found in the li=
+st=20
+generated above, thereby excluding our problem driver. Drivers which are=20
+present but not in the list above (such as the problem driver) have a=20
+different routine called, perhaps the normal initialisation one?
 
-I have no such list ...
+Regards,
 
-> It doesn't match what I've observed ... and even if it were correct, I'd say
-> that's yet another case where special casing reflects bugs.
+Nigel
+=2D-=20
+See our web page for Howtos, FAQs, the Wiki and mailing list info.
+http://www.suspend2.net                IRC: #suspend2 on Freenode
 
-... and I'm against special casing as far as it's avoidable.
+--nextPart5538800.lTngAySedz
+Content-Type: application/pgp-signature
 
-Greetings,
-Rafael
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBEToZ4N0y+n1M3mo0RAsMMAKDUA26dh6LW+P+kaxeISHJbYGfk3ACeKI1d
+fvOLAT05tqP5hlVfh9F9ols=
+=5cub
+-----END PGP SIGNATURE-----
+
+--nextPart5538800.lTngAySedz--
+
+--===============10398706518480161==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============10398706518480161==--
