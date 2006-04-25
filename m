@@ -1,123 +1,257 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Tue, 25 Apr 2006 10:41:10 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0604251010460.5330-100000@iolanthe.rowland.org>
-References: <200604252034.54352.ncunningham@cyclades.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
+Date: Tue, 25 Apr 2006 17:39:12 +0200
+Message-ID: <200604251739.13377.rjw@sisk.pl>
+References: <200604242355.08111.rjw@sisk.pl> <444DF9B3.7080600@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============067453615950721524=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604252034.54352.ncunningham@cyclades.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@cyclades.com>
-Cc: David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751246AbWDYPjk@vger.kernel.org>
+In-Reply-To: <444DF9B3.7080600@yahoo.com.au>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Pavel Machek <pavel@suse.cz>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============067453615950721524==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Hi,
 
-On Tue, 25 Apr 2006, Nigel Cunningham wrote:
+First, thanks for reviewing.
 
-> It seems to me that the right solution might be for these usb devices to
-> treat a resume from a freeze as an indication that hardware should be reset.
+On Tuesday 25 April 2006 12:28, Nick Piggin wrote:
+> pageRafael J. Wysocki wrote:
+> 
+> > Index: linux-2.6.17-rc1-mm3/mm/rmap.c
+> > ===================================================================
+> > --- linux-2.6.17-rc1-mm3.orig/mm/rmap.c	2006-04-22 10:34:33.000000000 +0200
+> > +++ linux-2.6.17-rc1-mm3/mm/rmap.c	2006-04-23 00:41:19.000000000 +0200
+> > @@ -851,3 +851,22 @@ int try_to_unmap(struct page *page, int 
+> >  	return ret;
+> >  }
+> >  
+> > +#ifdef CONFIG_SOFTWARE_SUSPEND
+> > +int page_mapped_by_current(struct page *page)
+> > +{
+> > +	struct vm_area_struct *vma;
+> > +	int ret = 0;
+> > +
+> > +	spin_lock(&current->mm->page_table_lock);
+> > +
+> > +	for (vma = current->mm->mmap; vma; vma = vma->vm_next)
+> > +		if (page_address_in_vma(page, vma) != -EFAULT) {
+> > +			ret = 1;
+> > +			break;
+> > +		}
+> > +
+> > +	spin_unlock(&current->mm->page_table_lock);
+> > +
+> > +	return ret;
+> > +}
+> > +#endif /* CONFIG_SOFTWARE_SUSPEND */
+> 
+> Why not just pass in the task struct? It might make the interface more
+> useful elsewhere.
 
-That can't be right.  For example, we issue resume from freeze during the 
-suspend portion of swsusp (to write out the image).
+Good idea, I'll do that.
 
-> The only reason that driver suspend/resume handling is still far from perfect 
-> is that a good number of drivers still don't have any suspend/resume 
-> handling. Getting rid of the instrastructure because it isn't completely 
-> implemented is the wrong approach. We should instead complete implementing 
-> the support so that drivers understand the difference between freezing, 
-> suspending, powering down, powering up and resuming. If we dumb things down, 
-> we'll only create problems.
+> > Index: linux-2.6.17-rc1-mm3/include/linux/rmap.h
+> > ===================================================================
+> > --- linux-2.6.17-rc1-mm3.orig/include/linux/rmap.h	2006-04-22 10:34:33.000000000 +0200
+> > +++ linux-2.6.17-rc1-mm3/include/linux/rmap.h	2006-04-22 10:34:45.000000000 +0200
+> > @@ -104,6 +104,12 @@ pte_t *page_check_address(struct page *,
+> >   */
+> >  unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
+> >  
+> > +#ifdef CONFIG_SOFTWARE_SUSPEND
+> > +int page_mapped_by_current(struct page *);
+> > +#else
+> > +static inline int page_mapped_by_current(struct page *page) { return 0; }
+> > +#endif /* CONFIG_SOFTWARE_SUSPEND */
+> 
+> This just wrong. What if some random unrelated code calls
+> page_mapped_by_current? You should only fold inlines if their result
+> folds accordingly.
+> 
+> For now just leave it out completely if !CONFIG_SOFTWARE_SUSPEND.
 
-I agree that this is a major reason.  It's not the _only_ reason.  But 
-never mind that now...
+OK
 
-> Rafael raised the issue in another email of code built as modules that is 
-> suspended and not resumed or vice versa because in the case of suspend to 
-> disk, the module is loaded at boot time but not in the suspended kernel (or 
-> v.v). It seems to me that the right way to deal with this is to extend the 
-> use of __nosave so that information about what was loaded in the boot kernel 
-> is available when resuming drivers after the atomic restore.
+>   > -unsigned int count_data_pages(void)
+> > +/**
+> > + *	need_to_copy - determine if a page needs to be copied before saving.
+> > + *	Returns false if the page can be saved without copying.
+> > + */
+> > +
+> > +static int need_to_copy(struct page *page)
+> > +{
+> > +	if (!PageLRU(page) || PageCompound(page))
+> > +		return 1;
+> > +	if (page_mapped(page))
+> > +		return page_mapped_by_current(page);
+> > +
+> > +	return 1;
+> > +}
+> 
+> I'd much rather VM internal type stuff get moved *out* of kernel/power :(
 
-It's not clear that you're getting the point.  (In fact, it's not entirely
-clear that I understand it perfectly either, because this is fairly
-subtle.)
+Well, I kind of agree, but I don't know where to place it under mm/.
 
-When the USB subsystem resumes a device, it relies on the fact that a
-certain amount of state has been preserved _in the device_.  At a minimum,
-that state includes the device's bus address, which is assigned
-dynamically and obviously is necessary for communicating with the device.  
-This state will be lost whenever the "power session" is interrupted, which
-means that USB devices cannot remain suspended when VBUS power is lost --
-and many systems do not provide VBUS suspend current while in various
-sleep states, although some systems do.
+> It needs more comments too. Also, how important is it for the page to be
+> off the LRU?
 
-Regardless, the problem is that the resuming kernel doesn't have any
-terribly good ways of telling whether or not the power session has
-remained intact.  It can test whether the host controller is still in the
-same state that a suspend would leave it in.  It can test whether the
-device's port is still enabled and whether anything responds at the
-device's bus address.  (We don't currently try to tell whether the
-responder actually _is_ the device we're trying to resume as opposed to
-some other device!)
+Hm, I'm not sure if that's what you're asking about, but the pages off the LRU
+are handled in a usual way, ie. copied when snapshotting the system.  The
+pages _on_ the LRU may be included in the snapshot image without
+copying, but I require them additionally to be (a) mapped by someone and
+(b) not mapped by the current task.
 
-The real difficulty comes when the USB drivers are compiled into the boot 
-kernel or loaded by an initrd.  They will take over the host controllers 
-and any devices they can find, destroying the preserved state.  Then when 
-they are told to prepare for the upcoming atomic restore, they will try to 
-freeze or reset (or whatever) the devices.
+> What if kswapd has taken it off the LRU temporarily (or is it 
+> guanteed not to at this point)? What if it is in an lru_add pagevec?
 
-Now the resuming kernel starts up, and it has to guess whether everything
-is still properly suspended with all the necessary state intact.  Suppose
-the boot kernel has destroyed the state and left the devices frozen, as
-happens now (without David's patch).  It will appear to the resuming
-kernel that the devices are still suspended, but unbeknownst to the kernel 
-the state information is gone.  That's why the devices don't work after 
-resuming until the user unplugs and replugs them.
+At this point kswapd is frozen as well as everything else except for the
+current task (ie. us).  IOW no one is expected to process the LRU lists.
 
-The right way to solve this is to make sure that the resuming kernel can
-correctly determine whether the power session (way back from the original
-sw-suspend) is still intact.  It's expected that in many cases it won't
-be, because most systems won't provide suspend current while the machine
-is off.  We have to guarantee that the boot kernel's actions won't end up
-fooling the resuming kernel into thinking that the power sessions are
-intact when in fact they aren't.  (Furthermore, in an ideal world, we
-would also make sure that the boot kernel won't destroy any power sessions
-that still _are_ intact.  Right now we have no way to do this, because the
-drivers in the boot kernel don't know that it _is_ a boot kernel.)
+> > +
+> > +unsigned int count_data_pages(unsigned int *total)
+> >  {
+> >  	struct zone *zone;
+> >  	unsigned long zone_pfn;
+> > -	unsigned int n = 0;
+> > +	unsigned int n, m;
+> >  
+> > +	n = m = 0;
+> >  	for_each_zone (zone) {
+> >  		if (is_highmem(zone))
+> >  			continue;
+> >  		mark_free_pages(zone);
+> > -		for (zone_pfn = 0; zone_pfn < zone->spanned_pages; ++zone_pfn)
+> > -			n += saveable(zone, &zone_pfn);
+> > +		for (zone_pfn = 0; zone_pfn < zone->spanned_pages; ++zone_pfn) {
+> > +			unsigned long pfn = zone_pfn + zone->zone_start_pfn;
+> > +
+> > +			if (saveable(pfn)) {
+> > +				n++;
+> > +				if (!need_to_copy(pfn_to_page(pfn)))
+> > +					m++;
+> > +			}
+> > +		}
+> >  	}
+> > -	return n;
+> > +	if (total)
+> > +		*total = n;
+> > +
+> > +	return n - m;
+> >  }
+> 
+> Maybe we could add some commenting to these functions while changing them
+> around.
 
-Making the boot kernel shut down the host controllers instead of freezing
-or suspending them will indeed destroy all existing power sessions, as
-well as making it clear to the resuming kernel that that are gone.  Under
-certain circumstances, freezing the host controllers will fool the
-resuming kernel.
+OK, I will.
 
-Propagating some kind of information from one kernel to the next is the
-solution.  Maybe that's what you meant.  Trying to store that information
-in the host controller's state is a poor-man's way of doing it, but at the
-moment it's the only way we have.  That's why David doesn't want the state 
-during the atomic reload to be the same as the state during a regular 
-resume.
+> > +static LIST_HEAD(active_pages);
+> > +static LIST_HEAD(inactive_pages);
+> > +
+> > +/**
+> > + *	protect_data_pages - move data pages that need to be protected from
+> > + *	being reclaimed out of their respective LRU lists
+> > + */
+> > +
+> > +static void protect_data_pages(struct pbe *pblist)
+> > +{
+> > +	struct pbe *p;
+> > +
+> > +	for_each_pbe (p, pblist)
+> > +		if (p->address == p->orig_address) {
+> > +			struct page *page = virt_to_page(p->address);
+> > +			struct zone *zone = page_zone(page);
+> > +
+> > +			spin_lock(&zone->lru_lock);
+> > +			if (PageActive(page)) {
+> > +				del_page_from_active_list(zone, page);
+> > +				list_add(&page->lru, &active_pages);
+> > +			} else {
+> > +				del_page_from_inactive_list(zone, page);
+> > +				list_add(&page->lru, &inactive_pages);
+> > +			}
+> > +			spin_unlock(&zone->lru_lock);
+> > +			ClearPageLRU(page);
+> > +		}
+> > +}
+> 
+> a) How do you know the page is on the LRU?
 
-Alan Stern
+Because in copy_data_pages() p->address is only set to p->orig_address for
+pages that are on the LRU.  No one can change the state of the pages in
+between because everyone else is frozen and we have local IRQs disabled.
 
+> b) Why are you clearing PageLRU outside the spinlock?
 
---===============067453615950721524==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Well, good question. ;-)  Moreover it seems I don't need to acquire the
+spinlock at all, because this is done on one CPU with IRQs disabled and the
+other tasks frozen.
 
+> c) This code isn't going outside mm/ even if it is correct.
 
---===============067453615950721524==--
+OK, so could you please suggest me where to put it (or a corrected version)
+under mm/?
+
+> d) swsusp seems to be quite under documented as far as race conditions
+>     vs the rest of the kernel go. In some places only a single CPU is
+>     running with interrupts off, in other places all processes have
+>     frozen, etc. etc. So it is hard to even know if synchronisation is
+>     correct or not.
+> 
+>     Suggest more documentation goes into this.
+
+OK
+
+> > +
+> > +/**
+> > + *	restore_active_inactive_lists - if suspend fails, the pages protected
+> > + *	with protect_data_pages() have to be moved back to their respective
+> > + *	lists
+> > + */
+> > +
+> > +static void restore_active_inactive_lists(void)
+> 
+> Ditto, mostly.
+> 
+> > +static int enough_free_mem(unsigned int nr_pages, unsigned int copy_pages)
+> >  {
+> >  	struct zone *zone;
+> > -	unsigned int n = 0;
+> > +	long n = 0;
+> > +
+> > +	pr_debug("swsusp: pages needed: %u + %lu + %lu, free: %u\n",
+> > +		 copy_pages,
+> > +		 (nr_pages + PBES_PER_PAGE - 1) / PBES_PER_PAGE,
+> > +		 EXTRA_PAGES, nr_free_pages());
+> >  
+> >  	for_each_zone (zone)
+> > -		if (!is_highmem(zone))
+> > +		if (!is_highmem(zone) && populated_zone(zone)) {
+> >  			n += zone->free_pages;
+> > -	pr_debug("swsusp: available memory: %u pages\n", n);
+> > -	return n > (nr_pages + PAGES_FOR_IO +
+> > -		(nr_pages + PBES_PER_PAGE - 1) / PBES_PER_PAGE);
+> > -}
+> > -
+> > -static int alloc_data_pages(struct pbe *pblist, gfp_t gfp_mask, int safe_needed)
+> > -{
+> > -	struct pbe *p;
+> > +			n -= zone->lowmem_reserve[ZONE_NORMAL];
+> 
+> Comment for this? Eg. why are you taking the ZONE_NORMAL watermark
+> in particular?
+
+This is to sync enough_free_mem() with swsusp_shrink_memory() (in swsusp.c).
+[We allocate with GFP_ATOMIC ie. from the normal zone and the lowmem reserves
+in the lower zones are effectively unavailable to us because of the check in
+zone_watermark_ok().]
+
+Thanks a lot for the comments.  I'll do my best to follow your suggestions
+in the next version of the patch.
+
+Greetings,
+Rafael
