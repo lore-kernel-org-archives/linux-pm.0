@@ -1,13 +1,15 @@
-From: Nigel Cunningham <nigel@suspend2.net>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Wed, 26 Apr 2006 08:30:51 +1000
-Message-ID: <200604260830.57866.nigel@suspend2.net>
-References: <200604242355.08111.rjw@sisk.pl> <200604260021.08888.rjw@sisk.pl>
-	<20060425222526.GG6379@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Wed, 26 Apr 2006 00:34:45 +0200
+Message-ID: <200604260034.46149.rjw@sisk.pl>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200604260006.33856.rjw@sisk.pl>
+	<200604260818.20484.nigel@suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============34297731530274245=="
+Content-Type: multipart/mixed; boundary="===============17031564140928435=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060425222526.GG6379@elf.ucw.cz>
+In-Reply-To: <200604260818.20484.nigel@suspend2.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,72 +19,85 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
+To: Nigel Cunningham <nigel@suspend2.net>
+Cc: David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
---===============34297731530274245==
-Content-Type: multipart/signed; boundary="nextPart3177110.UtBlh3quKl";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-
---nextPart3177110.UtBlh3quKl
+--===============17031564140928435==
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-HI.
+Hi,
 
-On Wednesday 26 April 2006 08:25, Pavel Machek wrote:
-> Hi!
->
-> > > It does apply to all of the LRU pages. This is what I've been doing f=
-or
-> > > years now. The only corner case I've come across is XFS. It still wan=
-ts
-> > > to write data even when there's nothing to do and it's threads are
-> > > frozen (IIRC - haven't looked at it for a while). I got around that by
-> > > freezing bdevs when freezing processes.
+On Wednesday 26 April 2006 00:18, Nigel Cunningham wrote:
+> On Wednesday 26 April 2006 08:06, Rafael J. Wysocki wrote:
+> > On Tuesday 25 April 2006 23:03, Nigel Cunningham wrote:
+> > > On Wednesday 26 April 2006 06:53, Rafael J. Wysocki wrote:
+> > > > On Tuesday 25 April 2006 22:28, Nigel Cunningham wrote:
+> > > > > On Wednesday 26 April 2006 04:56, Rafael J. Wysocki wrote:
+> > > > > > You're saying that (9) is wrong, so could you please suggest what
+> > > > > > to do instead of it?
+> > > > >
+> > > > > 'scuse me for butting in, but here's my suggested modified version:
+> > > > > > Well, suppose we have a modular driver that's not loaded before
+> > > > > > resume. Then it goes like that (approximately):
+> > > > > > (1) We activate swsusp which calls .suspend() for all devices
+> > > > > > including our driver (this is a real suspend).
+> > > > > > (2) swsusp snapshots the system and creates the image.
+> > > > > > (3) swsusp calls .resume() for all devices in order to be able to
+> > > > > > save the image (.resume() for our driver is also called which is
+> > > > > > OK). (4) swsusp turns off the system.
+> > > > > > (5) (some time later) We start a new kernel and tell it to resume.
+> > > > > > (6) It activates swsusp which reads the image.
+> > > > > > (7) (without your change) swsusp calls .suspend() for all device
+> > > > > > drivers that are present at that time, but our driver is not there,
+> > > > > > so its .suspend() _won't_ be called.  [Of course with your change
+> > > > > > .suspend() won't be called for any driver.]
+> > > > >
+> > > > > We also make a list that is safely available after the atomic restore
+> > > > > of drivers that have had .suspend methods called.
+> > > >
+> > > > Do you mean we place the list in a __nosave area?
+> > >
+> > > Well, I wasn't wanting to get bogged down in the details yet, but let's
+> > > see what we can come up with. How about this:
+> > >
+> > > At the point where we do the drivers resume at resume time, we're still
+> > > atomic, right? Since that's the case, we can just use get_safe_page()
+> > > prior to the restore to store the list and a __nosave pointer to retain
+> > > the location across the atomic restore. If we are concerned about
+> > > resuming drivers allocating memory and overwriting our list (and I think
+> > > that's a valid concern), space could be allocated and the list copied
+> > > between doing the atomic restore and the device pwoerup/resume.
 > >
-> > This means if we freeze bdevs, we'll be able to save all of the LRU
-> > pages, except for the pages mapped by the current task, without copying=
-=2E=20
-> > I think we can try to do this, but we'll need a patch to freeze bdevs f=
-or
-> > this purpose. ;-)
->
-> ...adding more dependencies to how vm/blockdevs work. I'd say current
-> code is complex enough...
+> > This one seems to look better.
+> >
+> > Still the problem is we need to know what to do with the devices that have
+> > had .suspend() routines called.  Some of them would have to be reset, some
+> > of them might be left in the current state, and for some of them we'd have
+> > to do something special.  Frankly, only the driver writer will know what's
+> > appropriate.
+> 
+> I saw the 2 suspends, 1 resume comment in another part of the thread, but 
+> don't believe a driver would be able to detect that 2 suspends and 1 resume 
+> call had been made - at least not without some non volatile ram.
 
-You assume too much. This is just using existing code.
+In fact we know when the second .suspend() is going to be called from the
+driver, so we can tell it to take care, for example by passing a special
+value to .suspend().  If that value is passed to .suspend(), the driver should
+prepare the device for .resume() being called after the snapshot image is
+restored (eg. reset it).
 
-Regards,
+Greetings,
+Rafael
 
-Nigel
-
-=2D-=20
-See our web page for Howtos, FAQs, the Wiki and mailing list info.
-http://www.suspend2.net                IRC: #suspend2 on Freenode
-
---nextPart3177110.UtBlh3quKl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBETqMhN0y+n1M3mo0RAr9tAJ9ifhv4Uj4nSLzTcsuMHnDIJjzeCgCg3zIB
-RImCXPYDKkoYy7h2vbDBwg4=
-=hDS7
------END PGP SIGNATURE-----
-
---nextPart3177110.UtBlh3quKl--
-
---===============34297731530274245==
+--===============17031564140928435==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============34297731530274245==--
+--===============17031564140928435==--
