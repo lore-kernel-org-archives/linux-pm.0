@@ -1,14 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
 	device_suspend()
-Date: Tue, 25 Apr 2006 08:56:05 -0700
-Message-ID: <200604250856.06038.david-b@pacbell.net>
+Date: Tue, 25 Apr 2006 09:11:54 -0700
+Message-ID: <200604250911.54951.david-b@pacbell.net>
 References: <200604241429.52022.david-b@pacbell.net>
 	<200604250832.04065.nigel@suspend2.net>
+	<200604251032.57204.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============021762301847251697=="
+Content-Type: multipart/mixed; boundary="===============73164841230323208=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604250832.04065.nigel@suspend2.net>
+In-Reply-To: <200604251032.57204.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,56 +19,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <nigel@suspend2.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
---===============021762301847251697==
-Content-Disposition: inline
+--===============73164841230323208==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Monday 24 April 2006 3:31 pm, Nigel Cunningham wrote:
-> >
-> > I recently observed this myself and tracked down one problem.  The solution
-> > involves what kexec() does in much the same situation:  before starting a
-> > new kernel, most hardware needs to be reset.  Today, swsusp will suspend it
-> > instead, which is the root cause of the problem.
+On Tuesday 25 April 2006 1:32 am, Rafael J. Wysocki wrote:
+
+> > just want things quiesced, mainly because we don't want to spin down drives.
 > 
-> I'm not sure that it is. If we switched to not freezing devices, we'd then 
-> cause issues with hardware such as hard drives. They need to know that we 
-> just want things quiesced, mainly because we don't want to spin down drives.
+> That's right.  And kernel_restart_prepare(NULL) will make them spin down?
+> If so, they have to be treated in a special way.
 
-Ignore potential performance issue for a minute -- it didn't spin anything
-down in my testing so far, anyway! -- and focus on correctness instead.
+Seems every time that someone turns up one of the problems with this "freeze"
+thing, the same responses come back:  "we can't fix that because we don't want
+to spin down drives".
 
-How could it be possible to hand a device to driver with resume() and not
-have it in one of the two defined states for that?  Either (a) powerup reset,
-just like during resume from STR with especially aggressive hardware; or
-else (b) the state suspend() left it in, ready for no-data-lossage resume()?
+I've begun thinking that calls like pm_should_I_spin_down_drives() would be a
+better structural approach than continually redefining this "freeze" thing so
+it makes less and less sense to all other drivers ... who nonethless need to
+clutter themselves up with a growing list of special cases, to accomodate
+rotating media that may not even exist in the target system.
 
 
-> It seems to me that the right solution might be for these usb devices to 
-> treat a resume from a freeze as an indication that hardware should be reset.
+> OTOH I think at least some device driver writers assume that .resume() will
+> always be called after .suspend() which only is true for non-modular drivers
+> (or for modular drivers loaded from an initrd before resume). 
 
-I don't much like that model.  It creates more special cases in drivers (not
-just USB), and redefines the "freeze" thing to be more than just "quiescede".
-Every special case that gets added is a breeding ground for more bugs.
+Say what?  Of _course_ resume() should only be called after suspend().  If
+that's not true in any case, the code wrongly issuing the resume() is buggy.
 
-Also, what about the resume-from-freeze that _every_ device does during swsusp
-suspend?  The kernel is still resuming every device, not just the ones needed
-to write the suspend partition.
+I don't see where you're collecting that list of special cases.  It doesn't
+match what I've observed ... and even if it were correct, I'd say that's yet
+another case where special casing reflects bugs.
 
 - Dave
 
+  
 
-
---===============021762301847251697==
+--===============73164841230323208==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============021762301847251697==--
+--===============73164841230323208==--
