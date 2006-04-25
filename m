@@ -1,16 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Wed, 26 Apr 2006 00:43:02 +0200
-Message-ID: <200604260043.03481.rjw@sisk.pl>
+Date: Wed, 26 Apr 2006 00:38:21 +0200
+Message-ID: <200604260038.22046.rjw@sisk.pl>
 References: <200604242355.08111.rjw@sisk.pl> <200604260021.08888.rjw@sisk.pl>
-	<20060425222526.GG6379@elf.ucw.cz>
+	<200604260825.04867.nigel@suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============13206841498540789=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060425222526.GG6379@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200604260825.04867.nigel@suspend2.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,28 +17,93 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <nigel@suspend2.net>, Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
+To: Nigel Cunningham <nigel@suspend2.net>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
+
+--===============13206841498540789==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 Hi,
 
-On Wednesday 26 April 2006 00:25, Pavel Machek wrote:
-> > > It does apply to all of the LRU pages. This is what I've been doing for years 
-> > > now. The only corner case I've come across is XFS. It still wants to write 
-> > > data even when there's nothing to do and it's threads are frozen (IIRC - 
-> > > haven't looked at it for a while). I got around that by freezing bdevs when 
-> > > freezing processes.
-> > 
+On Wednesday 26 April 2006 00:24, Nigel Cunningham wrote:
+> On Wednesday 26 April 2006 08:21, Rafael J. Wysocki wrote:
+> > On Tuesday 25 April 2006 23:18, Nigel Cunningham wrote:
+> > > On Wednesday 26 April 2006 07:12, Rafael J. Wysocki wrote:
+> > > > On Tuesday 25 April 2006 22:32, Pavel Machek wrote:
+> > > > > > >   > -unsigned int count_data_pages(void)
+> > > > > > > >
+> > > > > > > > +/**
+> > > > > > > > + *	need_to_copy - determine if a page needs to be copied
+> > > > > > > > before saving. + *	Returns false if the page can be saved
+> > > > > > > > without copying. + */
+> > > > > > > > +
+> > > > > > > > +static int need_to_copy(struct page *page)
+> > > > > > > > +{
+> > > > > > > > +	if (!PageLRU(page) || PageCompound(page))
+> > > > > > > > +		return 1;
+> > > > > > > > +	if (page_mapped(page))
+> > > > > > > > +		return page_mapped_by_current(page);
+> > > > > > > > +
+> > > > > > > > +	return 1;
+> > > > > > > > +}
+> > > > > > >
+> > > > > > > I'd much rather VM internal type stuff get moved *out* of
+> > > > > > > kernel/power :(
+> > > > > >
+> > > > > > Well, I kind of agree, but I don't know where to place it under
+> > > > > > mm/.
+> > > > > >
+> > > > > > > It needs more comments too. Also, how important is it for the
+> > > > > > > page to be off the LRU?
+> > > > > >
+> > > > > > Hm, I'm not sure if that's what you're asking about, but the pages
+> > > > > > off the LRU are handled in a usual way, ie. copied when
+> > > > > > snapshotting the system.  The pages _on_ the LRU may be included in
+> > > > > > the snapshot image without copying, but I require them additionally
+> > > > > > to be (a) mapped by someone and (b) not mapped by the current task.
+> > > > >
+> > > > > Why do you _want_ them mapped by someone?
+> > > >
+> > > > Because this means they belong to a task that is frozen and won't touch
+> > > > them (of course unless it's us).  The kernel has no reason to access
+> > > > them either (even after we resume devices) except for reclaiming, but
+> > > > that's handled explicitly.  Thus it's safe to include them in the image
+> > > > without copying.
+> > > >
+> > > > As I said before, I think the page cache pages may be treated this way
+> > > > too. It probably applies to all of the LRU pages, but there may be some
+> > > > corner cases.  The mapped pages are just easy to single out.
+> > >
+> > > It does apply to all of the LRU pages. This is what I've been doing for
+> > > years now. The only corner case I've come across is XFS. It still wants
+> > > to write data even when there's nothing to do and it's threads are frozen
+> > > (IIRC - haven't looked at it for a while). I got around that by freezing
+> > > bdevs when freezing processes.
+> >
 > > This means if we freeze bdevs, we'll be able to save all of the LRU pages,
-> > except for the pages mapped by the current task, without copying.  I think we
-> > can try to do this, but we'll need a patch to freeze bdevs for this purpose. ;-)
+> > except for the pages mapped by the current task, without copying.  I think
+> > we can try to do this, but we'll need a patch to freeze bdevs for this
+> > purpose. ;-)
 > 
-> ...adding more dependencies to how vm/blockdevs work. I'd say current
-> code is complex enough...
+> Isn't that a coincidence? I just happen to have the code right here! Not in a 
+> patch form that you'd want though - do you have any refrigerator changes in 
+> mm at the moment, or can I use vanilla 2.6.17-rc2 process.c?
 
-Well, why don't we see the patch?  If it's too complex, we can just decide not
-to use it. :-)
+I think you can use the 2.6.17-rc2 one safely.
 
 Greetings,
 Rafael
+
+
+--===============13206841498540789==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============13206841498540789==--
