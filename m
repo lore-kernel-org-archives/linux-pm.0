@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Tue, 25 Apr 2006 10:26:53 +0200
-Message-ID: <200604251026.53613.rjw@sisk.pl>
-References: <200604242355.08111.rjw@sisk.pl> <20060424221632.GQ3386@elf.ucw.cz>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Tue, 25 Apr 2006 10:32:56 +0200
+Message-ID: <200604251032.57204.rjw@sisk.pl>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200604250832.04065.nigel@suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7579291473897376=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060424221632.GQ3386@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200604250832.04065.nigel@suspend2.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,173 +18,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Nigel Cunningham <nigel@suspend2.net>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.osdl.org
+Cc: Nigel Cunningham <nigel@suspend2.net>, David Brownell <david-b@pacbell.net>, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
+
+--===============7579291473897376==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 Hi,
 
-On Tuesday 25 April 2006 00:16, Pavel Machek wrote:
-> > The appended patch allows swsusp to break the "50% of the normal zone" limit.
-> > This is achieved by using the observation that pages mapped by frozen
-> > userland tasks need not be copied before saving.
+On Tuesday 25 April 2006 00:31, Nigel Cunningham wrote:
+> On Tuesday 25 April 2006 07:29, David Brownell wrote:
+> > I've noticed a bunch of problem reports that go like this:
+> >
+> >  - boot system with some USB devices attached
+> >  - echo disk > /sys/power/state
+> >  - ... later resume ...
+> >  - now those USB devices don't work right
+> >  - unplug them/replug them, all is OK
+> >
+> > I recently observed this myself and tracked down one problem.  The solution
+> > involves what kexec() does in much the same situation:  before starting a
+> > new kernel, most hardware needs to be reset.  Today, swsusp will suspend it
+> > instead, which is the root cause of the problem.
 > 
-> I've not followed the patch too carefully, but it is not as bad as I
-> expected...
-> 
-> > With this patch applied I was able to save (and restore ;-)) ~800 MB suspend
-> > images on a box with 1 GB of RAM.
-> 
-> And did it also work second time? ;-).
+> I'm not sure that it is. If we switched to not freezing devices, we'd then 
+> cause issues with hardware such as hard drives. They need to know that we 
+> just want things quiesced, mainly because we don't want to spin down drives.
 
-Yes, somethinkg like 10 times in a row. :-)
+That's right.  And kernel_restart_prepare(NULL) will make them spin down?
+If so, they have to be treated in a special way.
 
-> Okay, so it can be done, and patch does not look too bad. It still
-> scares me. Is 800MB image more responsive than 500MB after resume?
-
-Yes, it is, slightly, but I think 800 meg images are impractical for
-performance reasons (like IMO everything above 500 meg with the current
-hardware).  However this means we can save 80% of RAM with the patch
-and that should be 400 meg instead of 250 on a 500 meg machine, or
-200 meg instead of 125 on a 250 meg machine.
-
-Apart from this we save some memory allocations and copyings during
-suspend.
-
-> I guess we can revert to old behaviour by simply returning 1 from
-> need_to_copy, right?
-
-Yes.
-
-> I assume that need_to_copy returns 1 in case page is shared by current
-> and some other process?
-
-Yes.  [If the page is shared with the current task it has to mapped by it, in
-which case it will be copied.]
-
-> > [Please don't beat me very hard, just couldn't resist. ;-)]
-> 
-> Well, you are about to force me to learn about mm internals. Plus you
-> force everyone who tries to modify swsusp. ... it may be okay if
-> benefit is great enough and if it gets proper testing. Not 2.6.17
-> material.
-
-Obviously not, and yes it requires a _lot_ of testing especially on boxes
-with 512 meg of RAM or less.
-
-> Is benefit worth it?
-
-Well, that depends.  I think for boxes with 1 GB of RAM or more it's just
-unnecessary (as of today, but this may change if faster disks are available).
-On boxes with 512 MB of RAM or less it may change a lot as far as the
-responsiveness after resume is concerned.
-
-Anyway do you think it may go into -mm (unless Andrew shoots it down,
-that is ;-))?
- 
-> > --- linux-2.6.17-rc1-mm3.orig/include/linux/rmap.h	2006-04-22 10:34:33.000000000 +0200
-> > +++ linux-2.6.17-rc1-mm3/include/linux/rmap.h	2006-04-22 10:34:45.000000000 +0200
-> > @@ -104,6 +104,12 @@ pte_t *page_check_address(struct page *,
-> >   */
-> >  unsigned long page_address_in_vma(struct page *, struct vm_area_struct *);
-> >  
-> > +#ifdef CONFIG_SOFTWARE_SUSPEND
-> > +int page_mapped_by_current(struct page *);
-> > +#else
-> > +static inline int page_mapped_by_current(struct page *page) { return 0; }
-> > +#endif /* CONFIG_SOFTWARE_SUSPEND */
-> 
-> I'd leave it undefined. That will prevent nasty surprise when someone
-> tries to use it w/o CONFIG_SOFTWARE_SUSPEND set.
-
-OK
-
-> > @@ -251,6 +253,14 @@ int restore_special_mem(void)
-> >  	return ret;
-> >  }
-> >  
-> > +/* Represents a stacked allocated page to be used in the future */
-> > +struct res_page {
-> > +	struct res_page *next;
-> > +	char padding[PAGE_SIZE - sizeof(void *)];
-> > +};
-> > +
-> > +static struct res_page *page_list;
-> > +
-> >  static int pfn_is_nosave(unsigned long pfn)
-> >  {
-> >  	unsigned long nosave_begin_pfn = __pa(&__nosave_begin) >>
-> > PAGE_SHIFT;
-> 
-> Is this part of some other patch?
-
-No.  That's because I use a linked list of allocated pages that has been
-defined in a slightly different way in
-swsusp-use-less-memory-during-resume.patch,
-so I just redefine and reuse it.
-
-> > @@ -490,6 +613,11 @@ void swsusp_free(void)
-> >  	buffer = NULL;
-> >  }
-> >  
-> > +void swsusp_free(void)
-> > +{
-> > +	free_image();
-> > +	restore_active_inactive_lists();
-> > +}
-> 
-> This still scares me. Nice test would be to
-> save/restore_active_inactive_lists repeatedly in a loop ... on running
-> system ... aha, but it probably can't work outside of refrigerator?
-
-restore_active_inactive_lists() only does something if suspend fails
-(otherwise the lists active_pages and inactive_pages are empty).
-
-The suspend failure may be simulated by running swapoff and suspendig
-with "echo disk > /sys/power/state".  However it wouldn't be interesting to
-do this in a loop because it will make the same set of pages go out of the
-LRU lists and back in a round robin fashion.
-
-I did the the following test:
-- ran swapoff
-- tried to suspend with "echo disk > /sys/power/state" (which failed,
-obviously)
-- checked the numbers of active/inactive pages in /proc/meminfo
-- ran swapon
-- set image_size to 0
-- suspended with "echo disk > /sys/power/state" to verify if the right number
-of pages would be reclaimed
-- resumed
-
-at it worked, apparently.
-
-> >  	case SNAPSHOT_UNFREEZE:
-> >  		if (!data->frozen)
-> >  			break;
-> > +		if (data->ready) {
-> > +			error = -EPERM;
-> > +			break;
-> > +		}
-> >  		down(&pm_sem);
-> >  		thaw_processes();
-> >  		enable_nonboot_cpus();
-> 
-> Error from UNFREEZE is not nice:
-> 
-> Unfreeze:
->         unfreeze(snapshot_fd);
->         return error;
-> }
-> ... we don't handle it.
-
-It will only occur if we don't call free_snapshot() before unfreeze() which is
-a bug anyway.  We prevent it from occuring by always calling free_snapshot()
-before unfreeze(). :-)
-
-> OTOH I guess it will be all fixed on exit()?
-
-Well, sort of, but I think the LRU lists always have to be restored before
-thawing processes (eg. kswapd).
+OTOH I think at least some device driver writers assume that .resume() will
+always be called after .suspend() which only is true for non-modular drivers
+(or for modular drivers loaded from an initrd before resume).  The David's
+change makes this assumptions explicitly invalid and that's why I said
+I agreed with it.  However you're absolutely right about hard disks.
 
 Greetings,
 Rafael
+
+--===============7579291473897376==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============7579291473897376==--
