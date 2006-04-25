@@ -1,66 +1,73 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
-Date: Tue, 25 Apr 2006 08:49:19 -0700
-Message-ID: <200604250849.19946.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0604250947260.5330-100000@iolanthe.rowland.org>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Tue, 25 Apr 2006 08:56:05 -0700
+Message-ID: <200604250856.06038.david-b@pacbell.net>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200604250832.04065.nigel@suspend2.net>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============021762301847251697=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200604250832.04065.nigel@suspend2.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Nigel Cunningham <nigel@suspend2.net>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+List-Id: linux-pm@vger.kernel.org
+
+--===============021762301847251697==
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0604250947260.5330-100000@iolanthe.rowland.org>
-Content-Disposition: inline
-Sender: linux-usb-devel-admin@lists.sourceforge.net
-Errors-To: linux-usb-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
-List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 April 2006 6:50 am, Alan Stern wrote:
+On Monday 24 April 2006 3:31 pm, Nigel Cunningham wrote:
+> >
+> > I recently observed this myself and tracked down one problem.  The solution
+> > involves what kexec() does in much the same situation:  before starting a
+> > new kernel, most hardware needs to be reset.  Today, swsusp will suspend it
+> > instead, which is the root cause of the problem.
 > 
-> We might have been able to avoid some of these problems with USB devices
-> if we had been a bit more careful.  In particular, it wouldn't hurt to
-> have usb_resume_device() verify that the upstream port is enabled and not
-> suspended in the non-CONFIG_USB_SUSPEND case.
+> I'm not sure that it is. If we switched to not freezing devices, we'd then 
+> cause issues with hardware such as hard drives. They need to know that we 
+> just want things quiesced, mainly because we don't want to spin down drives.
 
-Nope ... remember, the USB device enumerated from scratch both times.
-Identically, reproducibly.  So the first device will again be given
-address 2, and will even pass the "is it still there" sanity check in
-finish_device_resume().  (I was testing with USB_SUSPEND of course.)
+Ignore potential performance issue for a minute -- it didn't spin anything
+down in my testing so far, anyway! -- and focus on correctness instead.
 
-But that device wasn't in the _right_ suspend state, the one in which
-it had been left before swsusp turned the power off.  Only the low level
-setup had been (could have been) done -- USB enumeration, that's all.
+How could it be possible to hand a device to driver with resume() and not
+have it in one of the two defined states for that?  Either (a) powerup reset,
+just like during resume from STR with especially aggressive hardware; or
+else (b) the state suspend() left it in, ready for no-data-lossage resume()?
 
-The reason such devices can't work after this fakey "resume" is that
-the system (specifically swsusp) is lying about things.  It brought
-all the hardware part way up, obliterating all the true state that
-drivers rely on to make resume() behave correctly.
 
-Making swsusp do like kexec -- resetting the devices that need it -- is
-just making that PM code stop its lies.
+> It seems to me that the right solution might be for these usb devices to 
+> treat a resume from a freeze as an indication that hardware should be reset.
 
-HCDs (and similar drivers) can handle it OK if there was a power loss
-after suspend().  By calling device_suspend() not device_shutdown(),
-swsusp is going out of its way to prevent drivers from knowing .
+I don't much like that model.  It creates more special cases in drivers (not
+just USB), and redefines the "freeze" thing to be more than just "quiescede".
+Every special case that gets added is a breeding ground for more bugs.
+
+Also, what about the resume-from-freeze that _every_ device does during swsusp
+suspend?  The kernel is still resuming every device, not just the ones needed
+to write the suspend partition.
 
 - Dave
 
 
 
--------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+--===============021762301847251697==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============021762301847251697==--
