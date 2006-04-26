@@ -1,51 +1,76 @@
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Wed, 26 Apr 2006 12:24:43 +1000
-Message-ID: <444ED9EB.5060205@yahoo.com.au>
-References: <200604242355.08111.rjw@sisk.pl> <200604252312.26249.rjw@sisk.pl>
-	<200604260718.42681.nigel@suspend2.net>
-	<200604260021.08888.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
+Date: Tue, 25 Apr 2006 20:32:42 -0700
+Message-ID: <200604252032.42695.david-b@pacbell.net>
+References: <200604241429.52022.david-b@pacbell.net> <200604251655.01988.david-b@pacbell.net> <200604261116.59070.nigel@suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============70244291217441379=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604260021.08888.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@suspend2.net>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <200604261116.59070.nigel@suspend2.net>
+Content-Disposition: inline
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: Nigel Cunningham <nigel@suspend2.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.osdl.org, Andrew Morton <akpm@osdl.org>, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
---===============70244291217441379==
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tuesday 25 April 2006 6:16 pm, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Wednesday 26 April 2006 09:55, David Brownell wrote:
+> > On Tuesday 25 April 2006 3:18 pm, Nigel Cunningham wrote:
+> > > I saw the 2 suspends, 1 resume comment in another part of the thread, but
+> > > don't believe a driver would be able to detect that 2 suspends and 1
+> > > resume call had been made - at least not without some non volatile ram.
+> >
+> > The extra suspend is just IMO a symptom of sloppiness, like a "here may be
+> > bugs" sign.  Not necessarily an issue in its own right.
+> >
+> > In fact if you count carefully, it's three suspends and one resume:  one
+> > suspend before calling swsusp_resume, one inside swsusp_resume -- replaced
+> > by my patch -- and a correctly matched pair in the kernel being resumed.
+> 
+> That doesn't sound right. Let' see - where's this third one?
 
-Rafael J. Wysocki wrote:
+I see your point ... device_suspend() and device_power_down() really
+do the same thing, but to different sets of devices.  A nastily deceptive
+naming convention that I may want to fix someday.
 
->This means if we freeze bdevs, we'll be able to save all of the LRU pages,
->except for the pages mapped by the current task, without copying.  I think we
->can try to do this, but we'll need a patch to freeze bdevs for this purpose. ;-)
->
-
-Why not the current task? Does it exit the kernel? Or go through some
-get_uesr_pages path?
-
---
-
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+So it's not quite fair counting those separately.  Three suspend calls,
+sure ... but only two per device.
 
 
---===============70244291217441379==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > Also, about non-volatile RAM.  Not necessary ... the device hardware holds
+> > all the relevant state.  The problem is that swsusp is now trashing it with
+> > those suspend calls before resuming the real kernel.  On the plus side, we
+> > already have code being used to resolve the identical issue for kexec(),
+> > and all my patch does is to use it.
+> 
+> If devices really do get powered down, then they won't retain the state. If 
+> they don't actually powerdown, then I see your point.
+
+While the system is restarting into the snapshot, there's no powerdown.
+(Because device_power_down doesn't actually power down devices.)  Q.E.D.
+
+- Dave
 
 
---===============70244291217441379==--
+
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
