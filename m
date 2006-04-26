@@ -1,69 +1,60 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Wed, 26 Apr 2006 10:24:00 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0604261020320.5283-100000@iolanthe.rowland.org>
-References: <200604260628.41003.nigel@suspend2.net>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not
+ device_suspend()
+Date: Wed, 26 Apr 2006 10:38:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0604261032500.5283-100000@iolanthe.rowland.org>
+References: <200604261326.15853.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============25038127208095795=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200604260628.41003.nigel@suspend2.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <nigel@suspend2.net>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+In-Reply-To: <200604261326.15853.rjw@sisk.pl>
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
---===============25038127208095795==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+On Wed, 26 Apr 2006, Rafael J. Wysocki wrote:
 
-A little behind the current head of the thread, but better late than
-never...
-
-On Wed, 26 Apr 2006, Nigel Cunningham wrote:
-
-> > (7) (without your change) swsusp calls .suspend() for all device drivers
-> > that are present at that time, but our driver is not there, so its
-> > .suspend() _won't_ be called.  [Of course with your change .suspend() won't
-> > be called for any driver.]
+> > Now, if you have specific examples of things that shouldn't be reset, that
+> > could be interesting.
 > 
-> We also make a list that is safely available after the atomic restore of 
-> drivers that have had .suspend methods called.
-> 
-> > (8) swsusp restores the image.
-> 
-> (9) suspend to disk calls .resume() for each device that is found in the list 
-> generated above, thereby excluding our problem driver. Drivers which are 
-> present but not in the list above (such as the problem driver) have a 
-> different routine called, perhaps the normal initialisation one?
+> The resume device and friends (ie. controller, bus, etc.).
 
-First, is this a list of drivers or a list of devices?  Under (7) you said 
-drivers, and under (9) you said devices.
+I presume the freeze/reset we're talking about occurs immediately after 
+the memory snapshot has been read from the swap partition and immediately 
+before it is installed/activated.  (If occurs before the snapshot is read 
+in, then how would you actually manage to read it?)
 
-Second, how do you tell whether a device or driver in the resuming kernel 
-is in the list or not?  Do you store the driver's name in the list and 
-compare names?
+So under these circumstances, how does it hurt anything to reset the 
+resume device rather than to freeze it?
 
-Third, suppose a driver was present in the original swsusp kernel (and 
-hence also in the resuming kernel) but not in the boot kernel.  Then it 
-won't be in the list.  Apparently that means it doesn't get resumed during 
-(9).  So when does it get resumed?
+> My point is that it need not be _necessary_ to reset all devices.  We should
+> reset only those which need to be reset.
+
+> Of course every driver should handle this but that's not the point.  The point
+> is whether we should _force_ the reset on every device.
+
+I'm not convinced that it hurts anything.  But in any case, it wouldn't
+hurt to follow Pavel's advice and add a flags field to pm_message_t.
 
 Alan Stern
 
 
---===============25038127208095795==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-
---===============25038127208095795==--
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
