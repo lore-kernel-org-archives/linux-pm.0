@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
-Date: Wed, 26 Apr 2006 17:26:16 +0200
-Message-ID: <200604261726.17799.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0604261032500.5283-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not
+ device_suspend()
+Date: Wed, 26 Apr 2006 11:38:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0604261132340.5361-100000@iolanthe.rowland.org>
+References: <200604261726.17799.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0604261032500.5283-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <200604261726.17799.rjw@sisk.pl>
 Sender: linux-usb-devel-admin@lists.sourceforge.net
 Errors-To: linux-usb-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
@@ -19,42 +17,30 @@ List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: David Brownell <david-b@pacbell.net>, Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 April 2006 16:38, Alan Stern wrote:
-> On Wed, 26 Apr 2006, Rafael J. Wysocki wrote:
-> 
-> > > Now, if you have specific examples of things that shouldn't be reset, that
-> > > could be interesting.
-> > 
-> > The resume device and friends (ie. controller, bus, etc.).
-> 
-> I presume the freeze/reset we're talking about occurs immediately after 
-> the memory snapshot has been read from the swap partition and immediately 
-> before it is installed/activated.  (If occurs before the snapshot is read 
-> in, then how would you actually manage to read it?)
-> 
-> So under these circumstances, how does it hurt anything to reset the 
-> resume device rather than to freeze it?
+On Wed, 26 Apr 2006, Rafael J. Wysocki wrote:
 
-It just shouldn't be necessary.  Actually I think the resume device shouldn't
-be frozen too.
-
-> > My point is that it need not be _necessary_ to reset all devices.  We should
-> > reset only those which need to be reset.
+> > So under these circumstances, how does it hurt anything to reset the 
+> > resume device rather than to freeze it?
 > 
-> > Of course every driver should handle this but that's not the point.  The point
-> > is whether we should _force_ the reset on every device.
-> 
-> I'm not convinced that it hurts anything.  But in any case, it wouldn't
-> hurt to follow Pavel's advice and add a flags field to pm_message_t.
+> It just shouldn't be necessary.  Actually I think the resume device shouldn't
+> be frozen too.
 
-Exactly.
+Well, you wouldn't want it doing DMA to unknown memory areas while you're
+trying to place the image data in those same areas, would you?  And when
+the image is reactivated, you wouldn't want the device generating
+interrupt requests while its driver still thinks it is suspended.  (Or if 
+it doesn't even have a driver in the image.)
 
-Greetings,
-Rafael
+And don't say that no resume device would ever do DMA or generate IRQs
+while it was idle!  What if it was a remote disk accessible via a network 
+interface?
+
+Alan Stern
+
 
 
 -------------------------------------------------------
