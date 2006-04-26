@@ -1,115 +1,129 @@
-From: Nigel Cunningham <nigel@suspend2.net>
-Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
-Date: Wed, 26 Apr 2006 13:44:20 +1000
-Message-ID: <200604261344.24694.nigel@suspend2.net>
-References: <200604241429.52022.david-b@pacbell.net> <200604261116.59070.nigel@suspend2.net> <200604252032.42695.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Wed, 26 Apr 2006 13:26:15 +0200
+Message-ID: <200604261326.15853.rjw@sisk.pl>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200604252355.29006.rjw@sisk.pl>
+	<200604251556.55040.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart29389695.nQdGM9HlHt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
-In-Reply-To: <200604252032.42695.david-b@pacbell.net>
-Sender: linux-usb-devel-admin@lists.sourceforge.net
-Errors-To: linux-usb-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-To: David Brownell <david-b@pacbell.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.osdl.org, Andrew Morton <akpm@osdl.org>, linux-usb-devel@lists.sourceforge.net
-List-Id: linux-pm@vger.kernel.org
-
---nextPart29389695.nQdGM9HlHt
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200604251556.55040.david-b@pacbell.net>
 Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Wednesday 26 April 2006 00:56, David Brownell wrote:
+> On Tuesday 25 April 2006 2:55 pm, Rafael J. Wysocki wrote:
+> > On Tuesday 25 April 2006 23:04, David Brownell wrote:
+> >  
+> > > The third state is the problem scenario, kicking in when the driver was
+> > > statically linked (or modprobed from initramfs, etc), but not during
+> > > your scenario.
+> > 
+> > The problem, as I see it, is that too many devices may be initialized at the
+> > kernel startup.
+> 
+> That's a fair observation.  In the same way, swsusp resumes too many devices
+> before writing the snapshot.  In both cases, it only needs the resume partition,
+> not every random bit of hardware in the system.
 
-On Wednesday 26 April 2006 13:32, David Brownell wrote:
-> On Tuesday 25 April 2006 6:16 pm, Nigel Cunningham wrote:
-> > Hi.
-> >
-> > On Wednesday 26 April 2006 09:55, David Brownell wrote:
-> > > On Tuesday 25 April 2006 3:18 pm, Nigel Cunningham wrote:
-> > > > I saw the 2 suspends, 1 resume comment in another part of the threa=
-d,
-> > > > but don't believe a driver would be able to detect that 2 suspends
-> > > > and 1 resume call had been made - at least not without some non
-> > > > volatile ram.
-> > >
-> > > The extra suspend is just IMO a symptom of sloppiness, like a "here m=
-ay
-> > > be bugs" sign.  Not necessarily an issue in its own right.
-> > >
-> > > In fact if you count carefully, it's three suspends and one resume:=20
-> > > one suspend before calling swsusp_resume, one inside swsusp_resume --
-> > > replaced by my patch -- and a correctly matched pair in the kernel
-> > > being resumed.
-> >
-> > That doesn't sound right. Let' see - where's this third one?
->
-> I see your point ... device_suspend() and device_power_down() really
-> do the same thing, but to different sets of devices.  A nastily deceptive
-> naming convention that I may want to fix someday.
+That's right, and I think we should make it resume only what's needed at some
+point in the future.
 
-:)
+> But it's not the root cause of the problem either.  The same problem appears if
+> the device holding the resume partition gets forced into this "broken suspend"
+> state.
 
-> So it's not quite fair counting those separately.  Three suspend calls,
-> sure ... but only two per device.
->
-> > > Also, about non-volatile RAM.  Not necessary ... the device hardware
-> > > holds all the relevant state.  The problem is that swsusp is now
-> > > trashing it with those suspend calls before resuming the real kernel.=
-=20
-> > > On the plus side, we already have code being used to resolve the
-> > > identical issue for kexec(), and all my patch does is to use it.
-> >
-> > If devices really do get powered down, then they won't retain the state.
-> > If they don't actually powerdown, then I see your point.
->
-> While the system is restarting into the snapshot, there's no powerdown.
-> (Because device_power_down doesn't actually power down devices.)  Q.E.D.
+Well, IMO the state may or may not be broken depending on the device,
+so we should not assume it will always be broken.
 
-I thought that at least some devices might go D3cold, or is it always hot? =
-I'm=20
-perfectly happy to admit being an ignoramus here - I'm just beginning to wo=
-rk=20
-on drivers, so still have a lot to learn.
+> > I think we _can_ reset some of them before the image 
+> > is restored, but at least some of them need to be treated more carefully.
+> 
+> Maybe; but remember they _were_ just reset ... and that if a driver doesn't
+> know how to re-init a device that it has just reset, then it has other problems!
+> It's a common practice to reset on entrance to probe() ... if that works, it's
+> "just" a simple matter of code cleanup/reorg to let the init code be used if
+> resume() detects the device hardware has been reset.
 
-Regards,
+Agreed.
 
-Nigel
-=2D-=20
-See our web page for Howtos, FAQs, the Wiki and mailing list info.
-http://www.suspend2.net                IRC: #suspend2 on Freenode
+> For example, rmmod/modprobe cycles wouldn't behave sanely ... and it'd likely
+> break with kexec().  If they "need" careful treatment, that'd seem to me most
+> like a driver bug ...
+> 
+> Now, if you have specific examples of things that shouldn't be reset, that
+> could be interesting.
 
---nextPart29389695.nQdGM9HlHt
-Content-Type: application/pgp-signature
+The resume device and friends (ie. controller, bus, etc.).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+> I don't seem to have tripped over any, and from first principles it's clear to
+> me there _shouldn't_ be such drivers (modulo bugs). 
+> 
+> If you're going to argue that there are enough buggy drivers around that
+> we can't rely on them to behave correctly here ... well, we don't have an
+> example of even one such driver, much less a flood of them.  And the thing
+> to do with bugs is fix them, not coddle them.  ;)
 
-iD8DBQBETuyYN0y+n1M3mo0RAu4YAKC47ocNxQ0GwhmrRyV5fknbPPixMwCeIO9H
-Hizj5eySpuoZ7aBH9z3Uc+o=
-=PkVo
------END PGP SIGNATURE-----
+Agreed.
 
---nextPart29389695.nQdGM9HlHt--
+> > > Right:  the first two "safe" cases kick in.  This is the partial workaround I
+> > > had identified:  dodging the code paths for that third state, where suspend()
+> > > is being used to put the hardware into a broken suspend state.
+> > 
+> > So perhaps we should just make them enter a state that's not broken?
+> > That may be reset for some devices (eg. USB) and something else for some
+> > others (eg. storage).
+> 
+> Sure, but I'm not sure what "something else" would ever be.  Examples?
+> Not of cases where something else _could_ be done, but where it _must_ be.
 
+My point is that it need not be _necessary_ to reset all devices.  We should
+reset only those which need to be reset.
 
--------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+> > > It may help to think of two distinct types of device hardware suspend states
+> > > (only the first is real, the second is just a software bug):
+> > > 
+> > >  - Correct, with internal state corresponding to what the driver suspend() did;
+> > >    what a normal hardware suspend/resume cycle (not powercycle!) could do.
+> > > 
+> > >  - Broken, with any other internal state (except reset).  This is what swsusp
+> > >    currently forces, by adding **AND HIDING** a reset and reinit cycle, because
+> > >    of the extra suspend() call in (7).
+> > 
+> > Still there are drivers that have no problems with it, so why we should we
+> > forcibly reset their devices?
+> 
+> Can any driver can really justify not handling the case where resume() sees
+> hardware that's been reset?  That is, _exactly_ as would be the case if its
+> driver were only loaded as a module after the kernel booted?  I think not...
+
+Of course every driver should handle this but that's not the point.  The point
+is whether we should _force_ the reset on every device.
+ 
+> > > My patch/suggestion just ensures that instead of that broken state, reset is used.
+> > > in all cases ... not just the "driver not initialized before snapshot resume" case.
+> > 
+> > As I said before I generally agree with this except I think some more fine
+> > grained approach is needed in this case.
+> 
+> You've not convinced me of that; might be right, but nothing proves it to me.
+
+Fair enough. :-)
+
+Greetings,
+Rafael
