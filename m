@@ -1,146 +1,169 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Tue, 25 Apr 2006 17:30:33 -0700
-Message-ID: <200604251730.34377.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0604251626180.839-100000@iolanthe.rowland.org>
+From: Nigel Cunningham <nigel@suspend2.net>
+Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
+Date: Wed, 26 Apr 2006 10:49:33 +1000
+Message-ID: <200604261049.39592.nigel@suspend2.net>
+References: <200604242355.08111.rjw@sisk.pl> <20060425222526.GG6379@elf.ucw.cz> <200604260043.03481.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============70531468479085802=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0604251626180.839-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@osdl.org>, Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: multipart/signed;
+  boundary="nextPart2609063.WIiYFG1Q4G";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932320AbWDZAun@vger.kernel.org>
+In-Reply-To: <200604260043.03481.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Nick Piggin <nickpiggin@yahoo.com.au>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============70531468479085802==
+--nextPart2609063.WIiYFG1Q4G
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-> > > This state will be lost whenever the "power session" is interrupted, which
-> > > means that USB devices cannot remain suspended when VBUS power is lost --
-> > > and many systems do not provide VBUS suspend current while in various
-> > > sleep states, although some systems do.
-> > 
-> > Most systems _do_ provide VBUS power during true suspend states.  But the
-> > swsusp approach precludes VBUS;
-> 
-> I don't know how you justify that "Most".  
-
-Most PC motherboards -- more than half for sure, every one I've seen or
-heard of -- maintain it.  I've seen one ultralight laptop that powers
-off VBUS during suspend-to-RAM, to save battery power.  Ditto for every
-embedded board I've worked with; a few have a GPIO that can be used to
-switch off the VBUS supply.
-
-
-> At the least it would depend on 
-> the particular state.  For instance, I've got a PCI USB controller card
-> (VIA) on which the UHCI controllers support only D0 and D3cold.  And
-> (although I'm not certain of this) I may have seen a report from someone
-> whose system _does_ retain power during swsusp.  IIRC it was a powerbook
-> of some sort.
-
-I know that Macintoshes are good about maintaining power during STR, and
-suspect that some systems running Apple's OS will do so during "hibernate";
-they have a more complete/powerful power management framework than Linux.
-
-But last time the topic came up, I recall Pavel saying he'd never seen or
-heard of hardware that did things like that with swsusp, even when using
-"platform" (or "firmware") suspend mode.
-
-
-> > it's "system off" not "system suspend".
-> 
-> Well, there's "off" and there's "off".  You're the one who's been 
-> complaining about generic terms like "on" and "off" being too imprecise.
-
-In that context I meant real power off.  Sorry, didn't mean to confuse.
-
- 
-> > > Regardless, the problem is that the resuming kernel doesn't have any
-> > > terribly good ways of telling whether or not the power session has
-> > > remained intact.
-> > 
-> > Actually almost all systems do have ways to report that.
-> 
-> Again, I'm not so sure about that "almost all".  There have been plenty of 
-> reports of controller settings getting messed up by BIOS firmware during a 
-> suspend/resume cycle. 
-
-Well, EHCI certainly has such ways, and for the past few years it's been
-hard to find motherboards that don't include that.  OHCI also has ways,
-which counts for all non-Intel/VIA motherboard.   I think you've explained
-that UHCI still has some issues there ... although in that case, ISTR you
-can at least detect that the controller was reset during suspend, and thus
-deduce that the poser session was broken.
-
-
-> Basically we have to assume that if the controller  
-> isn't exactly the way we left it then the whole thing needs to be reset.  
-> There should be a better approach...
-
-Because for example that approach wouldn't detect the scenario that
-led to my patch.  :)
-
-
-> > Again, true system suspend states don't have this issue.  With swsusp
-> > the sessions will always be broken.
-> 
-> If that is correct, then your patch is the right thing to do.  If it's not
-> correct, your patch still isn't wrong -- it's just not quite optimal.
-
-I still think it's correct.
-
-
-> > > Maybe that's what you meant.  Trying to store that information 
-> > > in the host controller's state is a poor-man's way of doing it, but at the
-> > > moment it's the only way we have.  That's why David doesn't want the state 
-> > > during the atomic reload to be the same as the state during a regular 
-> > > resume.
-> > 
-> > I'd put it differently.  It's not a poor-man's way at all; passing that
-> > information in hardware is the correct solution.  A regular resume would
-> > keep the information there too (from STR or standby).  We don't want to
-> > have swsusp piling on special cases.
-> 
-> Okay, I take it back.  Yes, putting the hardware into the appropriate 
-> state is the right thing to do.
-> 
-> On the other hand, it might not be so easy to know what that state is.  
-
-That was the point of my comment above (you responded "if that is correct...").
-That's how to know.  Hardware is already correct in all cases except the annoying
-one where the kernel resuming a swsusp snapshot initializes that USB driver; and
-in that case, it's always correct to reset the USB controller.
-
-
-> Perhaps the decision should be left up to the device driver.  If drivers
-> were told the difference between "FREEZE to prepare for creating a memory
-> snapshot" and "FREEZE to prepare for restoring a memory image" then they 
-> could do the right thing always.
-
-Or better yet, just do what kexec() does.  :)
-
-- Dave
-
-
---===============70531468479085802==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
+Hi.
 
---===============70531468479085802==--
+On Wednesday 26 April 2006 08:43, Rafael J. Wysocki wrote:
+> Hi,
+>
+> On Wednesday 26 April 2006 00:25, Pavel Machek wrote:
+> > > > It does apply to all of the LRU pages. This is what I've been doing
+> > > > for years now. The only corner case I've come across is XFS. It sti=
+ll
+> > > > wants to write data even when there's nothing to do and it's threads
+> > > > are frozen (IIRC - haven't looked at it for a while). I got around
+> > > > that by freezing bdevs when freezing processes.
+> > >
+> > > This means if we freeze bdevs, we'll be able to save all of the LRU
+> > > pages, except for the pages mapped by the current task, without
+> > > copying.  I think we can try to do this, but we'll need a patch to
+> > > freeze bdevs for this purpose. ;-)
+> >
+> > ...adding more dependencies to how vm/blockdevs work. I'd say current
+> > code is complex enough...
+>
+> Well, why don't we see the patch?  If it's too complex, we can just decide
+> not to use it. :-)
+
+In Suspend2, I'm still using a different version of process.c to what you g=
+uys=20
+have. In my version, I thaw kernelspace, then thaw bdevs, then thaw userspa=
+ce.=20
+The version below just thaws bdevs after thawing all processes. I think tha=
+t=20
+might need modification, but thought I'd post this now so you can see how=20
+complicated or otherwise it is.
+
+Regards,
+
+Nigel
+
+diff -ruN linux-2.6.17-rc2/kernel/power/process.c bdev-freeze/kernel/power/=
+process.c
+=2D-- linux-2.6.17-rc2/kernel/power/process.c	2006-04-19 14:27:36.000000000=
+ +1000
++++ bdev-freeze/kernel/power/process.c	2006-04-26 10:44:56.000000000 +1000
+@@ -19,6 +19,56 @@
+  */
+ #define TIMEOUT	(20 * HZ)
+=20
++struct frozen_fs
++{
++	struct list_head fsb_list;
++	struct super_block *sb;
++};
++
++LIST_HEAD(frozen_fs_list);
++
++void freezer_make_fses_rw(void)
++{
++	struct frozen_fs *fs, *next_fs;
++
++	list_for_each_entry_safe(fs, next_fs, &frozen_fs_list, fsb_list) {
++		thaw_bdev(fs->sb->s_bdev, fs->sb);
++
++		list_del(&fs->fsb_list);
++		kfree(fs);
++	}
++}
++
++/*=20
++ * Done after userspace is frozen, so there should be no danger of
++ * fses being unmounted while we're in here.
++ */
++int freezer_make_fses_ro(void)
++{
++	struct frozen_fs *fs;
++	struct super_block *sb;
++
++	/* Generate the list */
++	list_for_each_entry(sb, &super_blocks, s_list) {
++		if (!sb->s_root || !sb->s_bdev ||
++		    (sb->s_frozen =3D=3D SB_FREEZE_TRANS) ||
++		    (sb->s_flags & MS_RDONLY))
++			continue;
++
++		fs =3D kmalloc(sizeof(struct frozen_fs), GFP_ATOMIC);
++		fs->sb =3D sb;
++		list_add_tail(&fs->fsb_list, &frozen_fs_list);
++	};
++
++	/* Do the freezing in reverse order so filesystems dependant
++	 * upon others are frozen in the right order. (Eg loopback
++	 * on ext3). */
++	list_for_each_entry_reverse(fs, &frozen_fs_list, fsb_list)
++		freeze_bdev(fs->sb->s_bdev);
++
++	return 0;
++}
++
+=20
+ static inline int freezeable(struct task_struct * p)
+ {
+@@ -77,6 +127,7 @@
+ 	printk( "Stopping tasks: " );
+ 	start_time =3D jiffies;
+ 	user_frozen =3D 0;
++	bdevs_frozen =3D 0;
+ 	do {
+ 		nr_user =3D todo =3D 0;
+ 		read_lock(&tasklist_lock);
+@@ -107,6 +158,10 @@
+ 			start_time =3D jiffies;
+ 		}
+ 		user_frozen =3D !nr_user;
++
++		if (user_frozen && !bdevs_frozen)
++			freezer_make_fses_ro();
++
+ 		yield();			/* Yield is okay here */
+ 		if (todo && time_after(jiffies, start_time + TIMEOUT))
+ 			break;
+@@ -156,6 +211,8 @@
+ 			printk(KERN_INFO " Strange, %s not stopped\n", p->comm );
+ 	} while_each_thread(g, p);
+=20
++	freezer_make_fses_rw();
++
+ 	read_unlock(&tasklist_lock);
+ 	schedule();
+ 	printk( " done\n" );
+
+
+=2D-=20
+See our web page for Howtos, FAQs, the Wiki and mailing list info.
+http://www.suspend2.net                IRC: #suspend2 on Freenode
+
+--nextPart2609063.WIiYFG1Q4G
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBETsOjN0y+n1M3mo0RAr3jAKCj6Xwqz0EIoF0W5kx6ztxtDNzW4gCgwNE/
+Wmi0pMRJXsWAFEmS7I5W2xQ=
+=5c8p
+-----END PGP SIGNATURE-----
+
+--nextPart2609063.WIiYFG1Q4G--
