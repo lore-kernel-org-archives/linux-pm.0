@@ -1,78 +1,66 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
-	device_suspend()
-Date: Wed, 26 Apr 2006 11:07:49 +0200
-Message-ID: <20060426090747.GC6676@elf.ucw.cz>
-References: <200604241429.52022.david-b@pacbell.net>
-	<200604251404.30228.david-b@pacbell.net>
-	<20060425214119.GA6542@elf.ucw.cz>
-	<200604251613.42388.david-b@pacbell.net>
+From: Nigel Cunningham <nigel@suspend2.net>
+Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
+Date: Wed, 26 Apr 2006 13:41:27 +1000
+Message-ID: <200604261341.32500.nigel@suspend2.net>
+References: <200604242355.08111.rjw@sisk.pl> <200604260021.08888.rjw@sisk.pl> <444ED9EB.5060205@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200604251613.42388.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Nigel Cunningham <nigel@suspend2.net>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+Content-Type: multipart/signed;
+  boundary="nextPart3631143.1XjrAkghlY";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932384AbWDZKqs@vger.kernel.org>
+In-Reply-To: <444ED9EB.5060205@yahoo.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On =DAt 25-04-06 16:13:41, David Brownell wrote:
-> On Tuesday 25 April 2006 2:41 pm, Pavel Machek wrote:
->=20
-> > > Well, if we had a pm_should_I_spin_down_drives() it would make sens=
-e to me
-> > > that it return FALSE during kernel_restart_prepare() too ... surely=
- kexec
-> > > users have the same issues!
-> >=20
-> > pm_should_I_spin_down_drives() is incredibly ugly hack, sorry.
->=20
-> The name was chosen to be ugly.  I'd expect someone to make it prettier=
-;
-> maybe draw ponies around the name or somesuch.  ;)
+--nextPart3631143.1XjrAkghlY
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-:-).
+Hi Nick.
 
-> However, by the way your pm_message_t changes removed all information a=
-bout
-> system states, you've forced that family of approach in every driver th=
-at needs
-> to know about such states in order to behave correctly.  For example, "=
-don't
-> turn off clock X in PM_STANDBY" ... since no driver has a standard way =
-to know
-> about PM_STANDBY, it needs some function accessing state set up by pm_o=
-ps.prepare
-> or else it's not going to be able to behave right.
+On Wednesday 26 April 2006 12:24, Nick Piggin wrote:
+> Rafael J. Wysocki wrote:
+> >This means if we freeze bdevs, we'll be able to save all of the LRU page=
+s,
+> >except for the pages mapped by the current task, without copying.  I thi=
+nk
+> > we can try to do this, but we'll need a patch to freeze bdevs for this
+> > purpose. ;-)
+>
+> Why not the current task? Does it exit the kernel? Or go through some
+> get_uesr_pages path?
 
-Or you can simply adds flags field to pm_message_t.
+I think Rafael is asleep at the mo, so I'll answer for him - he's wanting i=
+t=20
+to be compatible with using userspace to control what happens (uswsusp). In=
+=20
+that case, current will be the userspace program that's calling the ioctls =
+to=20
+get processes frozen etc.
 
-> You still haven't come up with a response to my point that starting up =
-a
-> new kernel via swsusp snapshot resume is a system restart in exactly
-> the
+Regards,
 
-After kexec, you hit device-init path, while after swsusp resume, you
-hit... well resume(). That's quite different.
+Nigel
 
-> same way as it is for kexec() ... at this point, there is no better fix
-> for the problem than my original patch, AND you haven't actually identi=
-fied
-> a single real problem with it.
+=2D-=20
+See our web page for Howtos, FAQs, the Wiki and mailing list info.
+http://www.suspend2.net                IRC: #suspend2 on Freenode
 
-You identified that problem yourselves: it will break drivers.
+--nextPart3631143.1XjrAkghlY
+Content-Type: application/pgp-signature
 
-Add flags field and be done with it... please?
-								Pavel
---=20
-Thanks for all the (sleeping) penguins.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBETuvsN0y+n1M3mo0RAsApAKDD4OYZQ7Xi1CaGX0eGra2rPpcO8wCeJGtQ
+pAi57ra6EUGfKWVuf6Z2i/g=
+=LqDi
+-----END PGP SIGNATURE-----
+
+--nextPart3631143.1XjrAkghlY--
