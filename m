@@ -1,14 +1,14 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
-Date: Thu, 27 Apr 2006 12:21:45 -0700
-Message-ID: <200604271221.47160.david-b@pacbell.net>
-References: <20060427080826.GB2376@ucw.cz> <Pine.LNX.4.44L0.0604271032390.5192-100000@iolanthe.rowland.org> <20060427165536.GA3113@linux.intel.com>
+Date: Thu, 27 Apr 2006 12:41:28 -0700
+Message-ID: <200604271241.28944.david-b@pacbell.net>
+References: <200604241429.52022.david-b@pacbell.net> <20060427012231.GB26351@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20060427165536.GA3113@linux.intel.com>
+In-Reply-To: <20060427012231.GB26351@linux.intel.com>
 Content-Disposition: inline
 Sender: linux-usb-devel-admin@lists.sourceforge.net
 Errors-To: linux-usb-devel-admin@lists.sourceforge.net
@@ -20,33 +20,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
 To: Patrick Mochel <mochel@linux.intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@osdl.org>, Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+Cc: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 April 2006 9:55 am, Patrick Mochel wrote:
-> On Thu, Apr 27, 2006 at 10:34:16AM -0400, Alan Stern wrote:
-> > 
-> > 		During swsusp the system is
-> > supposed to be completely off, with no suspend power available.  Hence all
-> > the power sessions are guaranteed to be interrupted, and the boot kernel
-> > doesn't have to worry about destroying any of them.
+On Wednesday 26 April 2006 6:22 pm, Patrick Mochel wrote:
+> On Mon, Apr 24, 2006 at 02:29:51PM -0700, David Brownell wrote:
 > 
-> Not necessarily. x86 hardware implementations of suspend-to-disk retain some 
-> power during suspend. Not many (if any) devices will retain context, but the
-> system is definitely not completely "off".
+> > I recently observed this myself and tracked down one problem.  The solution
+> > involves what kexec() does in much the same situation:  before starting a
+> > new kernel, most hardware needs to be reset.  Today, swsusp will suspend it
+> > instead, which is the root cause of the problem.
+> 
+> I'm not sure that is a good thing to do for a lot of video chipsets on x86 
+> platforms. For many, we do not have a way to reinitialize them from scratch,
+> so if we do a reset on them then we shoot ourselves in the foot. 
 
-As a rule swsusp (or firmware suspend-to-disk) power off everything except
-what's needed to power up the motherboard ... or to provide "5 AM wakeup"
-type events using a battery-backed realtime clock.  Maintaining VBUS power
-sessions from USB host controllers is one of those "theoretically allowed,
-but never observed in the wild" cases.
+I was waiting for someone else to bring up video; it wasn't exactly the
+elephant-in-the-room-that-nobody-wants-to-talk-about, but it was clearly
+a trouble spot missing from the discussion.
 
-Right, not "completely" off ... but certainly nowhere as close to "on" as
-would be true of suspend-to-RAM.  And regardless, the problem in $SUBJECT is
-when Linux trashes the state which the limited "on" is there to maintain.
+Agreed that it'd be good not to reset video hardware.  Of the handful of
+drivers that try to do anything specific with FREEZE, Mr. Grep reports
+that we have USB, IDE ... and a bunch of video drivers.
+
+
+> It's very difficult to know what every single device needs, so we should just
+> be honest with the drivers - tell them exactly what we're about to do - and
+> let them handle it as appropriate..
+
+There does seem to be agreement that the current FREEE invocation is not
+sufficient.  I'm looking at a slightly different solution now ... one which
+unfortunately involves changing drivers, but can indeed allow swsusp resume
+paths to do the right thing (instead of what it does now).
 
 - Dave
-
 
 
 -------------------------------------------------------
