@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Fri, 28 Apr 2006 11:23:37 +0200
-Message-ID: <20060428092327.GI10737@elf.ucw.cz>
-References: <200604242355.08111.rjw@sisk.pl> <200604271727.39194.rjw@sisk.pl>
-	<20060427205533.GA10737@elf.ucw.cz>
-	<200604281119.02575.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Thu, 27 Apr 2006 10:54:47 +0000
+Message-ID: <20060427105446.GA2460@ucw.cz>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200604250832.04065.nigel@suspend2.net>
+	<200604250856.06038.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============47956607476370827=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200604281119.02575.rjw@sisk.pl>
+In-Reply-To: <200604250856.06038.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,28 +19,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@suspend2.net>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Nigel Cunningham <nigel@suspend2.net>, Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-SGkhDQoNCj4gT0ssIEknbSB3YWl0aW5nIGZvciBOaWNrIHRvIHJlc3BvbmQsIHRoZW4uIDot
-KQ0KPiANCj4gU3RpbGwgSSdkIGxpa2UgdG8gY2hhbmdlIG9uZSBtb3JlIHRoaW5nIGluIHRo
-ZSBmaW5hbCBwYXRjaC4gIE5hbWVseSwNCj4gaW5zdGVhZCBvZiB0aGlzOg0KPiANCj4gQEAg
-LTE1Myw2ICsxNTMsMTAgQEAgc3RhdGljIGludCBzbmFwc2hvdF9pb2N0bChzdHJ1Y3QgaW5v
-ZGUgKg0KPiCgoKCgoKCgoGNhc2UgU05BUFNIT1RfVU5GUkVFWkU6DQo+IKCgoKCgoKCgoKCg
-oKCgoKBpZiAoIWRhdGEtPmZyb3plbikNCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgYnJl
-YWs7DQo+ICugoKCgoKCgoKCgoKCgoKBpZiAoZGF0YS0+cmVhZHkgJiYgaW5fc3VzcGVuZCkg
-ew0KPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBlcnJvciA9IC1FUEVSTTsNCj4gK6CgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgYnJlYWs7DQo+ICugoKCgoKCgoKCgoKCgoKB9DQo+IKCgoKCg
-oKCgoKCgoKCgoKBkb3duKCZwbV9zZW0pOw0KPiCgoKCgoKCgoKCgoKCgoKCgdGhhd19wcm9j
-ZXNzZXMoKTsNCj4goKCgoKCgoKCgoKCgoKCgoGVuYWJsZV9ub25ib290X2NwdXMoKTsNCj4g
-DQo+IEknZCBsaWtlIHRvIGRvOg0KPiANCj4gIAljYXNlIFNOQVBTSE9UX1VORlJFRVpFOg0K
-PiAgCQlpZiAoIWRhdGEtPmZyb3plbikNCj4gIAkJCWJyZWFrOw0KPiArICAgICAgICAgICAg
-ICAgCWlmIChkYXRhLT5yZWFkeSkNCj4gKwkJCXN3c3VzcF9mcmVlKCk7DQo+ICAJCWRvd24o
-JnBtX3NlbSk7DQo+IAkJdGhhd19wcm9jZXNzZXMoKTsNCj4gCQllbmFibGVfbm9uYm9vdF9j
-cHVzKCk7DQo+IA0KPiBzbyB1bmZyZWV6ZSgpIHdvbid0IHJldHVybiB0aGUgZXJyb3IuDQoN
-ClNlZW1zIG9rYXkgdG8gbWUuLi4NCgkJCQkJCVBhdmVsDQotLSANClRoYW5rcyBmb3IgYWxs
-IHRoZSAoc2xlZXBpbmcpIHBlbmd1aW5zLg0KX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18NCmxpbnV4LXBtIG1haWxpbmcgbGlzdA0KbGludXgtcG1A
-bGlzdHMub3NkbC5vcmcNCmh0dHBzOi8vbGlzdHMub3NkbC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9saW51eC1wbQ0K
+--===============47956607476370827==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi!
+
+> > It seems to me that the right solution might be for these usb devices to 
+> > treat a resume from a freeze as an indication that hardware should be reset.
+> 
+> I don't much like that model.  It creates more special cases in drivers (not
+> just USB), and redefines the "freeze" thing to be more than just "quiescede".
+> Every special case that gets added is a breeding ground for more bugs.
+> 
+> Also, what about the resume-from-freeze that _every_ device does during swsusp
+> suspend?  The kernel is still resuming every device, not just the ones needed
+> to write the suspend partition.
+
+It is quite hard to tell which devices are needed for write... Plus
+only resuming some drivers would only hide the bugs in drivers not
+needed for write, and speedup suspend a tiny bit. Too little benefit
+for more complex code, I'd say.
+							Pavel
+-- 
+Thanks, Sharp!
+
+--===============47956607476370827==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============47956607476370827==--
