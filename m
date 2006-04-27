@@ -1,63 +1,78 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Thu, 27 Apr 2006 22:55:34 +0200
-Message-ID: <20060427205533.GA10737@elf.ucw.cz>
-References: <200604242355.08111.rjw@sisk.pl> <20060425100408.GF4789@elf.ucw.cz> <200604251231.57577.rjw@sisk.pl> <200604271727.39194.rjw@sisk.pl>
+Subject: Re: [patch/rft 2.6.17-rc2] swsusp resume must not
+	device_suspend()
+Date: Thu, 27 Apr 2006 22:58:41 +0200
+Message-ID: <20060427205841.GB10737@elf.ucw.cz>
+References: <20060427080826.GB2376@ucw.cz>
+	<20060427165536.GA3113@linux.intel.com>
+	<200604271221.47160.david-b@pacbell.net>
+	<200604280636.03606.ncunningham@cyclades.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751655AbWD0U4T@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200604271727.39194.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <nigel@suspend2.net>
+Content-Type: multipart/mixed; boundary="===============85855824917019907=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200604280636.03606.ncunningham@cyclades.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Nigel Cunningham <ncunningham@cyclades.com>
+Cc: David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-usb-devel@lists.sourceforge.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-> On Tuesday 25 April 2006 12:31, Rafael J. Wysocki wrote:
-> > On Tuesday 25 April 2006 12:04, Pavel Machek wrote:
-> > > > > Okay, so it can be done, and patch does not look too bad. It still
-> > > > > scares me. Is 800MB image more responsive than 500MB after resume?
-> > > > 
-> > > > Yes, it is, slightly, but I think 800 meg images are impractical for
-> > > > performance reasons (like IMO everything above 500 meg with the current
-> > > > hardware).  However this means we can save 80% of RAM with the patch
-> > > > and that should be 400 meg instead of 250 on a 500 meg machine, or
-> > > > 200 meg instead of 125 on a 250 meg machine.
-> > > 
-> > > Could we get few people trying it on such small machines to see if it
-> > > is really that noticeable?
-> > 
-> > OK, I'll try to run some tests on a machine with smaller RAM (and slower CPU).
-> 
-> Done, although it was not so easy to find the box.  This was a PII 350MHz w/
-> 256 MB of RAM.
-> 
-> I invented the following test:
-> - ran KDE with 4 desktops,
-> - ran Firefox, OpenOffice.org 1.1 (with a simple spreadsheet), and GIMP (with
-> 2 pictures) each on its own desktop,
-> - ran the memory meter from the KDE's Info Center and two konsoles
-> on the remaining desktop - one konsole with a kernel compilation and the
-> other with a root session used for suspending the box (the built-in swsusp
-> was used),
-> so the box's RAM was almost fully occupied with ~30% taken by the page cache.
-> 
-> Then I suspended the box and measured the time from the start of resume
-> (ie. leaving GRUB) to the point at which I had all of the application windows
-> fully rendered on their respective desktops (I always switched the desktops
-> in the same order, starting from the memory meter's one, through the OOo's
-> and Firefox's, finishing on the GIMP's one and I always switched the
-> desktop as soon as the window(s) on it were fully rendered).
-> 
-> I ran it a couple of times on the 2.6.17-rc1-mm2 kernel with and without
-> the patch and the results (on the average) are the following:
-> 
-> (a) 25-28s with the patch
-> (b) 30-33s without it
+--===============85855824917019907==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Ook, thanks for testing. I guess it is ready for -mm when Nick is
-happy with it ...
-							Pavel
+Hi!
+
+> > > > 		During swsusp the system is
+> > > > supposed to be completely off, with no suspend power available.  Hence
+> > > > all the power sessions are guaranteed to be interrupted, and the boot
+> > > > kernel doesn't have to worry about destroying any of them.
+> > >
+> > > Not necessarily. x86 hardware implementations of suspend-to-disk retain
+> > > some power during suspend. Not many (if any) devices will retain context,
+> > > but the system is definitely not completely "off".
+> >
+> > As a rule swsusp (or firmware suspend-to-disk) power off everything except
+> > what's needed to power up the motherboard ... or to provide "5 AM wakeup"
+> > type events using a battery-backed realtime clock.  Maintaining VBUS power
+> > sessions from USB host controllers is one of those "theoretically allowed,
+> > but never observed in the wild" cases.
+
+Napa machine seems to maintain USB power even while turned off.
+
+> > Right, not "completely" off ... but certainly nowhere as close to "on" as
+> > would be true of suspend-to-RAM.  And regardless, the problem in $SUBJECT
+> > is when Linux trashes the state which the limited "on" is there to
+> > maintain.
+> 
+> This isn't necessarily true either. Suspend2 has supported writing the image, 
+> then suspending to ram for a year or two. uswsusp has just gained the same 
+> functionality. In this state, if you don't pull the plug/drain the battery, 
+> you never actually power down. Having said that, this might be a different 
+> kettle of fish though, because there's no boot kernel in that case. For 
+> Suspend2 (and uswsusp, I assume), it's more akin to backing out of the cycle 
+> at the last possible moment before powering down.
+
+Yep it is same for uswsusp, and probably irrelevant here.
+									Pavel
+
+
+
 -- 
 Thanks for all the (sleeping) penguins.
+
+--===============85855824917019907==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============85855824917019907==--
