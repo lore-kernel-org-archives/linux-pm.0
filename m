@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not
- device_suspend()
-Date: Thu, 27 Apr 2006 13:41:39 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0604271337570.6040-100000@iolanthe.rowland.org>
-References: <20060427165536.GA3113@linux.intel.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [patch/rft 2.6.17-rc2] swsusp resume must not device_suspend()
+Date: Thu, 27 Apr 2006 12:21:45 -0700
+Message-ID: <200604271221.47160.david-b@pacbell.net>
+References: <20060427080826.GB2376@ucw.cz> <Pine.LNX.4.44L0.0604271032390.5192-100000@iolanthe.rowland.org> <20060427165536.GA3113@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
 In-Reply-To: <20060427165536.GA3113@linux.intel.com>
+Content-Disposition: inline
 Sender: linux-usb-devel-admin@lists.sourceforge.net
 Errors-To: linux-usb-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
@@ -18,33 +20,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
 To: Patrick Mochel <mochel@linux.intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@osdl.org>, Nigel Cunningham <ncunningham@cyclades.com>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 Apr 2006, Patrick Mochel wrote:
-
-> > According to David this shouldn't matter.  During swsusp the system is
+On Thursday 27 April 2006 9:55 am, Patrick Mochel wrote:
+> On Thu, Apr 27, 2006 at 10:34:16AM -0400, Alan Stern wrote:
+> > 
+> > 		During swsusp the system is
 > > supposed to be completely off, with no suspend power available.  Hence all
 > > the power sessions are guaranteed to be interrupted, and the boot kernel
 > > doesn't have to worry about destroying any of them.
 > 
 > Not necessarily. x86 hardware implementations of suspend-to-disk retain some 
 > power during suspend. Not many (if any) devices will retain context, but the
-> system is definitely not completely "off". Actually, the same is true for
-> soft-off on x86 (aka ACPI S5). Some power may be drawn to support various power
-> on events. The only time a system is truly off is when it is unplugged from
-> the wall (and/or the battery taken out, if applicable). 
-> 
-> I don't think it matters much in this particular context, but it's important
-> to keep in mind when making assumptions about "off-ness".
+> system is definitely not completely "off".
 
-I'm perfectly happy to let you duke this out with David!  :-)
+As a rule swsusp (or firmware suspend-to-disk) power off everything except
+what's needed to power up the motherboard ... or to provide "5 AM wakeup"
+type events using a battery-backed realtime clock.  Maintaining VBUS power
+sessions from USB host controllers is one of those "theoretically allowed,
+but never observed in the wild" cases.
 
-Either way, there is one important observation: You can't use swsusp if 
-your root filesystem is on a USB disk.  Not until some sort of persistent 
-storage manager is available...
+Right, not "completely" off ... but certainly nowhere as close to "on" as
+would be true of suspend-to-RAM.  And regardless, the problem in $SUBJECT is
+when Linux trashes the state which the limited "on" is there to maintain.
 
-Alan Stern
+- Dave
 
 
 
