@@ -1,11 +1,16 @@
-From: "Veronika Patton" <veroniy@s.vnn.vn>
-Subject: Re: touut news
-Date: Thu, 27 Apr 2006 17:34:04 -0700
-Message-ID: <000001c66a5b$741d18f0$865ea8c0@dyg77>
-Reply-To: Veronika Patton <veroniy@s.vnn.vn>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
+Date: Fri, 28 Apr 2006 11:19:01 +0200
+Message-ID: <200604281119.02575.rjw@sisk.pl>
+References: <200604242355.08111.rjw@sisk.pl> <200604271727.39194.rjw@sisk.pl>
+	<20060427205533.GA10737@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1537509140163873=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060427205533.GA10737@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,159 +20,109 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@suspend2.net>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+Hi,
 
---===============1537509140163873==
-Content-Type: multipart/alternative; boundary="----------=_1146184464-8963-53"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+On Thursday 27 April 2006 22:55, Pavel Machek wrote:
+> > On Tuesday 25 April 2006 12:31, Rafael J. Wysocki wrote:
+> > > On Tuesday 25 April 2006 12:04, Pavel Machek wrote:
+> > > > > > Okay, so it can be done, and patch does not look too bad. It =
+still
+> > > > > > scares me. Is 800MB image more responsive than 500MB after re=
+sume?
+> > > > >=20
+> > > > > Yes, it is, slightly, but I think 800 meg images are impractica=
+l for
+> > > > > performance reasons (like IMO everything above 500 meg with the=
+ current
+> > > > > hardware).  However this means we can save 80% of RAM with the =
+patch
+> > > > > and that should be 400 meg instead of 250 on a 500 meg machine,=
+ or
+> > > > > 200 meg instead of 125 on a 250 meg machine.
+> > > >=20
+> > > > Could we get few people trying it on such small machines to see i=
+f it
+> > > > is really that noticeable?
+> > >=20
+> > > OK, I'll try to run some tests on a machine with smaller RAM (and s=
+lower CPU).
+> >=20
+> > Done, although it was not so easy to find the box.  This was a PII 35=
+0MHz w/
+> > 256 MB of RAM.
+> >=20
+> > I invented the following test:
+> > - ran KDE with 4 desktops,
+> > - ran Firefox, OpenOffice.org 1.1 (with a simple spreadsheet), and GI=
+MP (with
+> > 2 pictures) each on its own desktop,
+> > - ran the memory meter from the KDE's Info Center and two konsoles
+> > on the remaining desktop - one konsole with a kernel compilation and =
+the
+> > other with a root session used for suspending the box (the built-in s=
+wsusp
+> > was used),
+> > so the box's RAM was almost fully occupied with ~30% taken by the pag=
+e cache.
+> >=20
+> > Then I suspended the box and measured the time from the start of resu=
+me
+> > (ie. leaving GRUB) to the point at which I had all of the application=
+ windows
+> > fully rendered on their respective desktops (I always switched the de=
+sktops
+> > in the same order, starting from the memory meter's one, through the =
+OOo's
+> > and Firefox's, finishing on the GIMP's one and I always switched the
+> > desktop as soon as the window(s) on it were fully rendered).
+> >=20
+> > I ran it a couple of times on the 2.6.17-rc1-mm2 kernel with and with=
+out
+> > the patch and the results (on the average) are the following:
+> >=20
+> > (a) 25-28s with the patch
+> > (b) 30-33s without it
+>=20
+> Ook, thanks for testing. I guess it is ready for -mm when Nick is
+> happy with it ...
 
-This is a multi-part message in MIME format...
+OK, I'm waiting for Nick to respond, then. :-)
 
-------------=_1146184464-8963-53
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Still I'd like to change one more thing in the final patch.  Namely,
+instead of this:
 
-D z ear Home O w wne f r ,=20
-=20=20
-Your c d red x it doesn't matter to us ! If you OW f N real e b st l at
-l e=20
-and want I w MME l DIAT m E c i ash to s u pen r d ANY way you like, or
-simply wish=20
-to LO y WER your monthly pa b ym q ents by a third or more, here are the
-de u als=20
-we have T r ODA s Y :=20
-=20=20
-$ 48 g 8 , 000 at a 3 p , 67% fi t xed - rat e e=20
-$ 3 u 72 , 000 at a 3 , c 90% v q aria b ble - rat o e=20
-$ 49 n 2 , 000 at a 3 , 2 y 1% i t nteres e t - only=20
-$ 2 h 48 , 000 at a 3 z , 36% f t ixed - ra f te=20
-$ 1 a 98 , 000 at a 3 , 5 o 5% varia v ble - ra a te=20
-=20=20
-Hur v ry, when these de t aIs are gone, they are gone !
-=20=20
-Don't worry about app a rov r al, your cr a edi l t will not dis x
-qualif d y you !=20
-=20=20
-Vi z si s t our si t te <http://geocities.com/ShailoBeebeady/>=20
-=20=20
-Sincerely, Veronika Patton=20
-=20=20
-A o ppro z val Manager
+@@ -153,6 +153,10 @@ static int snapshot_ioctl(struct inode *
+=A0=A0=A0=A0=A0=A0=A0=A0case SNAPSHOT_UNFREEZE:
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!data->frozen)
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0b=
+reak;
++=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (data->ready && in_suspe=
+nd) {
++=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0err=
+or =3D -EPERM;
++=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0bre=
+ak;
++=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0}
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0down(&pm_sem);
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0thaw_processes();
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0enable_nonboot_cpus();
 
+I'd like to do:
 
-------------=_1146184464-8963-53
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+ 	case SNAPSHOT_UNFREEZE:
+ 		if (!data->frozen)
+ 			break;
++               	if (data->ready)
++			swsusp_free();
+ 		down(&pm_sem);
+		thaw_processes();
+		enable_nonboot_cpus();
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1106" name=3DGENERATOR>
-<DEFANGED_style_0 </STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>D<span DEFANGED_style=3D"border: 0px; float
-: right"> z </span>ear Home O<span DEFANGED_style=3D"border: 0px; float
-: right"> w </span>wne<span DEFANGED_style=3D"border: 0px; float
-: right"> f </span>r , <BR>
-&nbsp; <BR>
-Your c<span DEFANGED_style=3D"border: 0px; float
-: right"> d </span>red<span DEFANGED_style=3D"border: 0px; float
-: right"> x </span>it doesn't matter to us !=20
-If you OW<span DEFANGED_style=3D"border: 0px; float
-: right"> f </span>N real e<span DEFANGED_style=3D"border: 0px; float
-: right"> b </span>st<span DEFANGED_style=3D"border: 0px; float
-: right"> l </span>at<span DEFANGED_style=3D"border: 0px; float
-: right"> l </span>e <BR>
-and want I<span DEFANGED_style=3D"border: 0px; float
-: right"> w </span>MME<span DEFANGED_style=3D"border: 0px; float
-: right"> l </span>DIAT<span DEFANGED_style=3D"border: 0px; float
-: right"> m </span>E c<span DEFANGED_style=3D"border: 0px; float
-: right"> i </span>ash to s<span DEFANGED_style=3D"border: 0px; float
-: right"> u </span>pen<span DEFANGED_style=3D"border: 0px; float
-: right"> r </span>d ANY=20
-way you like, or simply wish <BR> to LO<span DEFANGED_style=3D"border: 0px;=
- float
-: right"> y </span>WER your monthly pa<span DEFANGED_style=3D"border: 0px; =
-float
-: right"> b </span>ym<span DEFANGED_style=3D"border: 0px; float
-: right"> q </span>ents=20
-by a third or more, here are the de<span DEFANGED_style=3D"border: 0px; flo=
-at
-: right"> u </span>als <BR> we have T<span DEFANGED_style=3D"border: 0px; f=
-loat
-: right"> r </span>ODA<span DEFANGED_style=3D"border: 0px; float
-: right"> s </span>Y : <BR>
-&nbsp; <BR>
-$ 48<span DEFANGED_style=3D"border: 0px; float
-: right"> g </span>8 , 000 at a 3 <span DEFANGED_style=3D"border: 0px; float
-: right"> p </span>, 67% fi<span DEFANGED_style=3D"border: 0px; float
-: right"> t </span>xed - rat<span DEFANGED_style=3D"border: 0px; float
-: right"> e </span>e <BR>
-$ 3<span DEFANGED_style=3D"border: 0px; float
-: right"> u </span>72 , 000 at a 3 ,<span DEFANGED_style=3D"border: 0px; fl=
-oat
-: right"> c </span> 90% v<span DEFANGED_style=3D"border: 0px; float
-: right"> q </span>aria<span DEFANGED_style=3D"border: 0px; float
-: right"> b </span>ble - rat<span DEFANGED_style=3D"border: 0px; float
-: right"> o </span>e <BR>
-$ 49<span DEFANGED_style=3D"border: 0px; float
-: right"> n </span>2 , 000 at a 3 , 2<span DEFANGED_style=3D"border: 0px; f=
-loat
-: right"> y </span>1% i<span DEFANGED_style=3D"border: 0px; float
-: right"> t </span>nteres<span DEFANGED_style=3D"border: 0px; float
-: right"> e </span>t - only <BR>
-$ 2<span DEFANGED_style=3D"border: 0px; float
-: right"> h </span>48 , 000 at a 3 <span DEFANGED_style=3D"border: 0px; flo=
-at
-: right"> z </span>, 36% f<span DEFANGED_style=3D"border: 0px; float
-: right"> t </span>ixed - ra<span DEFANGED_style=3D"border: 0px; float
-: right"> f </span>te <BR>
-$ 1<span DEFANGED_style=3D"border: 0px; float
-: right"> a </span>98 , 000 at a 3 , 5<span DEFANGED_style=3D"border: 0px; =
-float
-: right"> o </span>5% varia<span DEFANGED_style=3D"border: 0px; float
-: right"> v </span>ble - ra<span DEFANGED_style=3D"border: 0px; float
-: right"> a </span>te <BR>
-&nbsp; <BR>
-Hur<span DEFANGED_style=3D"border: 0px; float
-: right"> v </span>ry, when these de<span DEFANGED_style=3D"border: 0px; fl=
-oat
-: right"> t </span>aIs are gone, they are gone !<BR>
-&nbsp; <BR>
-Don't worry about app<span DEFANGED_style=3D"border: 0px; float
-: right"> a </span>rov<span DEFANGED_style=3D"border: 0px; float
-: right"> r </span>al, your cr<span DEFANGED_style=3D"border: 0px; float
-: right"> a </span>edi<span DEFANGED_style=3D"border: 0px; float
-: right"> l </span>t will=20
-not dis<span DEFANGED_style=3D"border: 0px; float
-: right"> x </span>qualif<span DEFANGED_style=3D"border: 0px; float
-: right"> d </span>y you ! <BR> &nbsp; <BR>=20
-<A href=3D"http://geocities.com/ShailoBeebeady/">Vi<span DEFANGED_style=3D"=
-border: 0px; float
-: right"> z </span>si<span DEFANGED_style=3D"border: 0px; float
-: right"> s </span>t our si<span DEFANGED_style=3D"border: 0px; float
-: right"> t </span>te</A><BR> &nbsp; <BR>
-Sincerely, Veronika Patton <BR> &nbsp; <BR>
-A<span DEFANGED_style=3D"border: 0px; float
-: right"> o </span>ppro<span DEFANGED_style=3D"border: 0px; float
-: right"> z </span>val Manager<BR></FONT></DIV></BODY></HTML>
-------------=_1146184464-8963-53--
+so unfreeze() won't return the error.
 
---===============1537509140163873==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1537509140163873==--
+Greetings,
+Rafael
