@@ -1,13 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] swsusp: support creating bigger images
-Date: Mon, 1 May 2006 13:20:49 +0200
-Message-ID: <200605011320.50256.rjw@sisk.pl>
-References: <200604242355.08111.rjw@sisk.pl> <200604301427.22687.rjw@sisk.pl>
-	<200605011150.04429.nigel@suspend2.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: RE: on-ness
+Date: Mon, 1 May 2006 14:35:52 -0700
+Message-ID: <200605011435.52860.david-b@pacbell.net>
+References: <EA12F909C0431D458B9D18A176BEE4A5055F11C0@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============84411167539719489=="
+Content-Type: multipart/mixed; boundary="===============70603926023791108=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200605011150.04429.nigel@suspend2.net>
+In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A5055F11C0@dlee02.ent.ti.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,129 +16,75 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <nigel@suspend2.net>
-Cc: Linux PM <linux-pm@osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@lists.osdl.org
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
---===============84411167539719489==
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+--===============70603926023791108==
 Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-[Dropped Nick and LKML from the Cc list.]
+On Monday 24 April 2006 2:32 pm, Woodruff, Richard wrote:
 
-Hi,
+> The current pseudo export 
+> of these non-functional states doesn't seem so useful.  Having some
+> fuzzy level of idleness seems much better.
 
-On Monday 01 May 2006 03:49, Nigel Cunningham wrote:
-> Hi.
+I've come to believe that userspace has little or no business caring
+about the details of power states ... except to the extent that a driver
+exports them.  After all, the driver might not support all the possible
+hardware states.  And the same controller on two different systems might
+expose different power management functionality, based on (among other
+things) what external hardware is wired up.
+
+
+> The point of the idle states Len was floating attempts to define a level
+> of on-ness/idleness.  As it turns out there was a nice correlation to
+> some ACPI states.  Numbering them seems reasonable, else your just
+> wasting effort translating 'state0, state1, state2, ...', keeping the
+> naming convention simple '0,1,2,..0xffff' would seem to lend itself to
+> code sharing of necessary class/device specific translation code.
+
+I don't think I agree with "seem".  We'd get right back into the mess
+we now have ... not just expecting "2" to mean the same thing everywhere
+(aargh!) but also finding needs for integer "1.5" that is somehow stuck
+between "1" and "2".  Much easier to do that with strings!
+
+Plus, numbers lead to an assumption that things can be compared.
+One is less than two ... but is an apple less than an orange?
+In the same way, different power states are not necessarily
+comparable on one single axis.
+
+  
+> > Actually the wakeup characteristics are orthogonal, there are
+> > per-device bits controlling whether a device can and should do
+> > the wakeup.  We don't for example treat "PCI_D3hot with wakeup"
+> > as a distinct state. 
 > 
-> Sorry for the slow response - I only have internet access at work now.
+> In my current hack attempts I am trying to associate a 'device' D2 state
+> with a local device sleep with an async wake up enabled.  In this state
+> a devices accesses are locked out until the device wake up event
+> happens.  This async wake can be from a device specific wake up or from
+> an associated timer resource.
 
-No problem at all. :-)
+So would that be a "wake the whole system" or a runtime power
+management mechanism to provide functionality without very much
+of a power drain?  I've done the latter a few times, but never
+needed to expose it through sysfs.  If it works, it kind of needs
+to be enabled at almost all times, to avoid nightmares of config
+management and debugging.
 
-> This is  going to be a pattern for the next few weeks - I'm off work next
-> week and.the week after I'll also be off apart from Monday and Tuesday
-> (those are my last two days working for Cyclades - I then get my sweetheart
-> and little one back, and we drive down to Victoria over the rest of the week).
-> 
-> On Sunday 30 April 2006 22:27, Rafael J. Wysocki wrote:
-> > On Wednesday 26 April 2006 02:49, Nigel Cunningham wrote:
-> > > On Wednesday 26 April 2006 08:43, Rafael J. Wysocki wrote:
-> > > > On Wednesday 26 April 2006 00:25, Pavel Machek wrote:
-> > > > > > > It does apply to all of the LRU pages. This is what I've been
-> > > > > > > doing for years now. The only corner case I've come across is
-> > > > > > > XFS. It still wants to write data even when there's nothing to do
-> > > > > > > and it's threads are frozen (IIRC - haven't looked at it for a
-> > > > > > > while). I got around that by freezing bdevs when freezing
-> > > > > > > processes.
-> > > > > >
-> > > > > > This means if we freeze bdevs, we'll be able to save all of the LRU
-> > > > > > pages, except for the pages mapped by the current task, without
-> > > > > > copying.  I think we can try to do this, but we'll need a patch to
-> > > > > > freeze bdevs for this purpose. ;-)
-> > > > >
-> > > > > ...adding more dependencies to how vm/blockdevs work. I'd say current
-> > > > > code is complex enough...
-> > > >
-> > > > Well, why don't we see the patch?  If it's too complex, we can just
-> > > > decide not to use it. :-)
-> > >
-> > > In Suspend2, I'm still using a different version of process.c to what you
-> > > guys have. In my version, I thaw kernelspace, then thaw bdevs, then thaw
-> > > userspace. The version below just thaws bdevs after thawing all
-> > > processes. I think that might need modification, but thought I'd post
-> > > this now so you can see how complicated or otherwise it is.
-> >
-> > IMHO it doesn't look so scary. :-)
-> 
-> :)
-> 
-> > > diff -ruN linux-2.6.17-rc2/kernel/power/process.c
-> > > bdev-freeze/kernel/power/process.c ---
-> > > linux-2.6.17-rc2/kernel/power/process.c	2006-04-19 14:27:36.000000000
-> > > +1000 +++ bdev-freeze/kernel/power/process.c	2006-04-26
-> > > 10:44:56.000000000 +1000 @@ -19,6 +19,56 @@
-> > >   */
-> > >  #define TIMEOUT	(20 * HZ)
-> > >
-> > > +struct frozen_fs
-> > > +{
-> > > +	struct list_head fsb_list;
-> > > +	struct super_block *sb;
-> > > +};
-> > > +
-> > > +LIST_HEAD(frozen_fs_list);
-> > > +
-> > > +void freezer_make_fses_rw(void)
-> > > +{
-> > > +	struct frozen_fs *fs, *next_fs;
-> > > +
-> > > +	list_for_each_entry_safe(fs, next_fs, &frozen_fs_list, fsb_list) {
-> > > +		thaw_bdev(fs->sb->s_bdev, fs->sb);
-> > > +
-> > > +		list_del(&fs->fsb_list);
-> > > +		kfree(fs);
-> > > +	}
-> > > +}
-> > > +
-> > > +/*
-> > > + * Done after userspace is frozen, so there should be no danger of
-> > > + * fses being unmounted while we're in here.
-> > > + */
-> > > +int freezer_make_fses_ro(void)
-> > > +{
-> > > +	struct frozen_fs *fs;
-> > > +	struct super_block *sb;
-> > > +
-> > > +	/* Generate the list */
-> > > +	list_for_each_entry(sb, &super_blocks, s_list) {
-> > > +		if (!sb->s_root || !sb->s_bdev ||
-> > > +		    (sb->s_frozen == SB_FREEZE_TRANS) ||
-> > > +		    (sb->s_flags & MS_RDONLY))
-> > > +			continue;
-> > > +
-> > > +		fs = kmalloc(sizeof(struct frozen_fs), GFP_ATOMIC);
-> >
-> > Shouldn't we check for kmalloc() failures here?
-> 
-> Good point. Just because I've never seen it fail, doesn't mean it can't :)
-> 
-> Before I roll a new version, what did you think splitting the thawing and 
-> thawing bdevs in the middle? I think it's the right thing (TM) to do :>
+- Dave
 
-Do you mean to thaw kernel threads first, thaw bdevs next and thaw user
-space processes at the end?  I think it should be done in that order if
-the bdevs are frozen.
 
-Greetings,
-Rafael
 
---===============84411167539719489==
+--===============70603926023791108==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============84411167539719489==--
+--===============70603926023791108==--
