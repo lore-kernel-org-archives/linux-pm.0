@@ -1,12 +1,12 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: RE: on-ness
-Date: Mon, 1 May 2006 14:35:52 -0700
-Message-ID: <200605011435.52860.david-b@pacbell.net>
-References: <EA12F909C0431D458B9D18A176BEE4A5055F11C0@dlee02.ent.ti.com>
+Date: Mon, 1 May 2006 14:58:37 -0700
+Message-ID: <200605011458.38383.david-b@pacbell.net>
+References: <200604271412.k3RECVA2009467@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============70603926023791108=="
+Content-Type: multipart/mixed; boundary="===============42946323858052127=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A5055F11C0@dlee02.ent.ti.com>
+In-Reply-To: <200604271412.k3RECVA2009467@olwen.urbana.css.mot.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,75 +16,88 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: linux-pm@lists.osdl.org, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
---===============70603926023791108==
-Content-Disposition: inline
+--===============42946323858052127==
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Monday 24 April 2006 2:32 pm, Woodruff, Richard wrote:
-
-> The current pseudo export 
-> of these non-functional states doesn't seem so useful.  Having some
-> fuzzy level of idleness seems much better.
-
-I've come to believe that userspace has little or no business caring
-about the details of power states ... except to the extent that a driver
-exports them.  After all, the driver might not support all the possible
-hardware states.  And the same controller on two different systems might
-expose different power management functionality, based on (among other
-things) what external hardware is wired up.
-
-
-> The point of the idle states Len was floating attempts to define a level
-> of on-ness/idleness.  As it turns out there was a nice correlation to
-> some ACPI states.  Numbering them seems reasonable, else your just
-> wasting effort translating 'state0, state1, state2, ...', keeping the
-> naming convention simple '0,1,2,..0xffff' would seem to lend itself to
-> code sharing of necessary class/device specific translation code.
-
-I don't think I agree with "seem".  We'd get right back into the mess
-we now have ... not just expecting "2" to mean the same thing everywhere
-(aargh!) but also finding needs for integer "1.5" that is somehow stuck
-between "1" and "2".  Much easier to do that with strings!
-
-Plus, numbers lead to an assumption that things can be compared.
-One is less than two ... but is an apple less than an orange?
-In the same way, different power states are not necessarily
-comparable on one single axis.
-
-  
-> > Actually the wakeup characteristics are orthogonal, there are
-> > per-device bits controlling whether a device can and should do
-> > the wakeup.  We don't for example treat "PCI_D3hot with wakeup"
-> > as a distinct state. 
+On Thursday 27 April 2006 7:12 am, Scott E. Preece wrote:
 > 
-> In my current hack attempts I am trying to associate a 'device' D2 state
-> with a local device sleep with an async wake up enabled.  In this state
-> a devices accesses are locked out until the device wake up event
-> happens.  This async wake can be from a device specific wake up or from
-> an associated timer resource.
+> Let me recast the question a little.
+> 
+> Quite aside from the utility of having names that are meaningful to a
+> human reader unfamiliar with a particular device, is the problem of
+> supporting a system-level power policy on top of devices that have
+> different device-level power states.
 
-So would that be a "wake the whole system" or a runtime power
-management mechanism to provide functionality without very much
-of a power drain?  I've done the latter a few times, but never
-needed to expose it through sysfs.  If it works, it kind of needs
-to be enabled at almost all times, to avoid nightmares of config
-management and debugging.
+Related:  handling the interactions between system and device power
+states.  System states commonly constrain device states, e.g. by rules
+like "clocks X, Y, and Z are unavailable in system states B and C".
+
+I have an API proposal for that particular problem, but there are
+similar ones in other areas, like the available power.  (Maybe some
+of the supplies have less power available -- or none! -- or switch to
+lower voltage modes.)
+
+
+> So, is the sum of this conversation to this point that it simply isn't
+> possible to come up with a set of names and attributes that are
+> meaningful across devices?
+
+Possible is one thing; you can always define an ever-growing set of
+attributes.  But would it be useful ... or a nightmare to manage,
+when scaling over all platforms that Linux handles?  I lean towards
+the latter.
+
+
+> Or might it be possible to map the set of 
+> special conditions (like the "NoSoftReset" below) to a common vocabulary
+> that a device could expose to power management and that a generic,
+> cross-platform power management facility could map to system states and
+> transitions?
+
+There will be some common features, sure, but I'm skeptical about the
+notion of a generic cross-platform wunderfacility.
+
+And there are other options.  My current favorite is still to expose
+device-specific power states purely for test/debug, and expect the
+kernel to handle everything correctly.
+
+(We do need a better notion of drivers interacting with a system-wide
+power manager.  Currently there IS no such notion, and it's a huge
+hole.)
+
+
+> In my domain (consumer devices) it's not such a big deal, because we
+> pick the devices and can write code [albeit with some effort that we
+> would rather not expend] to control each device appropriately in the
+> context of the system's projected use cases. However, even in our domain
+> we're beginning to need to deal with USB OTG devices being added, and it
+> would be useful to be able to handle them at least somewhat
+> intelligently based on attributes that they expose.
+
+Heh.  OTG, yes.  I've put some thought into that.  There happen to be
+a few different models to consider ... for example, sometimes there are
+separate controllers for host and peripheral roles, as well as an OTG
+controller coupled to a transceiver (maybe external/interchangeable);
+and sometimes it's all integrated (e.g. host vs peripheral is just
+different modes working with the same FIFO/SIE silicon).
+
+Again, I don't see any need to expose a userspace API for those.
 
 - Dave
 
 
-
---===============70603926023791108==
+--===============42946323858052127==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============70603926023791108==--
+--===============42946323858052127==--
