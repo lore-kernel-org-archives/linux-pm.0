@@ -1,12 +1,12 @@
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: __releases and __acquires macros in compiler.h
-Date: Wed, 3 May 2006 23:09:50 -0700
-Message-ID: <20060503230950.470befb6.rdunlap@xenotime.net>
-References: <380D9721A8E2114485644D71E87C6AB201CCBC5A@PNE-HJN-MBX01.wipro.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: Using memcpy() in kernel space( driver)
+Date: Thu, 4 May 2006 09:59:00 +0000
+Message-ID: <20060504095900.GD5844@ucw.cz>
+References: <380D9721A8E2114485644D71E87C6AB201CCBC72@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8853810179695496=="
+Content-Type: multipart/mixed; boundary="===============58516277922168847=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB201CCBC5A@PNE-HJN-MBX01.wipro.com>
+In-Reply-To: <380D9721A8E2114485644D71E87C6AB201CCBC72@PNE-HJN-MBX01.wipro.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,71 +20,34 @@ To: rasmit.ranjan@wipro.com
 Cc: linux-kernel-digest@lists.us.dell.com, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
---===============8853810179695496==
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+--===============58516277922168847==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Thu, 4 May 2006 11:29:23 +0530 rasmit.ranjan@wipro.com wrote:
+On Thu 04-05-06 11:35:13, rasmit.ranjan@wipro.com wrote:
+> Hi all,
+>     I am using memcpy() in my driver.
+> I am taking a spinlock and calling this function memcpy().
+> Is it safe to call memcpy() inside a lock?
+> If memcpy() fails, then will it create any problem in releasing the
+> spinlock ?
+> Please suggest.
 
-> 
-> Thanks Randy. Can you please explain it elaboraly.
-> What I mean, is why this sparse static checker is used and is there any
-> toll to use it ?
+This is linux-PowerManagement, not linux-HELPME or linux-newbies list,
+so this is offtopic here.
 
-The tool to use it is called 'sparse'.  You can get it from its
-git repository (you can view it here:
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/sparse.git;a=summary ).
-Or you can download daily tarball snapshots of it from:
-http://www.codemonkey.org.uk/projects/git-snapshots/sparse/
+Uff, and your question certainly has nothing to do with usb. Pleasw
+behave yourself.
+							Pavel
 
-As far as explaining and using it, you'll just need to look at
-kernel source code and this email from Linus:
-http://marc.theaimsgroup.com/?l=linux-sparse&m=109865107109043&w=2
+-- 
+Thanks, Sharp!
 
-
-> Thanks and regards,
-> Rasmit.
-> 	
-> 
-> > -----Original Message-----
-> > From: Randy.Dunlap [mailto:rdunlap@xenotime.net]
-> > Sent: Thursday, May 04, 2006 11:23 AM
-> > To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
-> > Cc: linux-kernel-digest@lists.us.dell.com;
-> > linux-pm@lists.osdl.org; linux-usb-devel@lists.sourceforge.net
-> > Subject: Re: [linux-pm] __releases and __acquires macros in compiler.h
-> >
-> > On Thu, 4 May 2006 11:13:20 +0530 rasmit.ranjan@wipro.com wrote:
-> >
-> > > Hi all,
-> > >     I came across two macros __releases and __acquires defined in
-> > > compiler.h.
-> > > Can anyone please tell me the exact use of these two macros.
-> >
-> > They are for the sparse static checker to count locks
-> > released and acquired, to make sure that they are balanced.
-> >
-> > ---
-> > ~Randy
-> >
-> 
-> 
-> The information contained in this electronic message and any attachments to this message are intended for the exclusive use of the addressee(s) and may contain proprietary, confidential or privileged information. If you are not the intended recipient, you should not disseminate, distribute or copy this e-mail. Please notify the sender immediately and destroy all copies of this message and any attachments.
-> 
-> WARNING: Computer viruses can be transmitted via email. The recipient should check this email and any attachments for the presence of viruses. The company accepts no liability for any damage caused by any virus transmitted by this email.
-> 
-> www.wipro.com
-> 
-
-
----
-~Randy
-
---===============8853810179695496==
+--===============58516277922168847==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============8853810179695496==--
+--===============58516277922168847==--
