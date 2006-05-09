@@ -1,14 +1,14 @@
-From: Richard Hughes <hughsient@gmail.com>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: suspend and hibernate nomenclature
-Date: Tue, 09 May 2006 08:38:40 +0100
-Message-ID: <1147160320.2120.10.camel@localhost.localdomain>
+Date: Tue, 9 May 2006 08:57:06 -0700
+Message-ID: <200605090857.07853.david-b@pacbell.net>
 References: <1147024930.16057.3.camel@localhost.localdomain>
 	<200605081647.55275.david-b@pacbell.net>
-Reply-To: richard@hughsie.com
+	<1147160320.2120.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============54219437708639662=="
+Content-Type: multipart/mixed; boundary="===============22344787495296314=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200605081647.55275.david-b@pacbell.net>
+In-Reply-To: <1147160320.2120.10.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,75 +18,66 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, richard@hughsie.com
+To: richard@hughsie.com
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============54219437708639662==
-Content-Type: text/plain
+--===============22344787495296314==
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Mon, 2006-05-08 at 16:47 -0700, David Brownell wrote:
-> One thing that doesn't seem right at all:  you suggest using the same
-> name for the "standby" and "suspend to RAM" states.  Those are both
-> different types of "suspend" states, as distinct from "hibernate"/swsusp
-> states (which are types of power-off).
+On Tuesday 09 May 2006 12:38 am, Richard Hughes wrote:
+> Ohh, standby exists, but I don't think a user needs to understand this
+> (or use this -- see below) in a desktop context.
 
-Well sort of. I was trying to explain that standby and suspend-to-ram
-are similar enough for the user not to worry about the differences.
+I don't think I saw a real explanation for that "below".  You implied
+that "standby" was mostly meaningful for embedded hardware; not so.
 
-My point mainly was that standby is a bad name for suspend-to-ram, which
-a few users and vendors have suggested, as it's different, and has been
-used differently for ACPI.
+If the state is there and used, users will be aware of the distinction
+between the two suspend states ("standby" and "suspend to RAM").  One
+is quick to enter/exit, the other isn't.
 
-> That wiki page has an assertion that both "standby" and "suspend-to-RAM"
-> are bad names.  Maybe; but they're also the names that MS-Windows users have
-> been trained to expect, so fighting against them (and hiding them even in
-> explanations) isn't necessarily good.
+Of course what I _would_ like to see is Linux distros that autosuspend,
+entering "standby" after they're idle for a while and then, if they're
+not woken up quickly enough, entering "suspend-to-RAM".  No point in
+having laptops burn all that energy all the time, after all ... or
+automagically inflicting long resume-from-STR latencies on them.
 
-Apple have different names too.
+Admittedly we do have issues getting either of those states to work
+lately in Linux, but at least "standby" should be trivial given even
+a small fraction of the effort that's gone into swsusp/"hibernate".
 
-> But they are still distinctly different states, and if you don't expose
-> both of them to users, then you'd be effectively preventing use of one
-> of the two states.  And if power savings is a goal, that's ungood.  On
-> embedded systems, there are lots of variants of "standby", and analogues
-> of "suspend to RAM" can be hard to enter.
 
-Ohh, standby exists, but I don't think a user needs to understand this
-(or use this -- see below) in a desktop context.
+> If you guys used a sleep name in the kernel
+> sleep_for_not_longer_than_6_minutes_but_more_that_2_seconds() I really
+> don't mind -- but if the user has to click a button, I would rather the
+> button was marked suspend or hibernate :-)
 
-> One suggestion might be to talk about how deeply the system is suspended;
-> "light suspend" (standby) or "deep suspend" (suspend-to-RAM).  That could
-> work well with the non-PC/non-ACPI/non-ACPI type of systems too, where
-> there may well be several more types of "suspend" state than just those
-> two, and no analague of "hibernate".  (Noted also by Scott Preece...)
+Well "not_longer_yadda_yadda()" would be a bizarre model.  The user-visible
+issue is the latency to suspend or resume ... where "standby" is quick, and
+"suspend-to-RAM" is relatively slow.  Where "quick" is on the order of time
+for users to finish switching their mental context, while "slow" is on the
+order of doing that _plus_ doing something else to fill the wait time.  How
+long the system stays in a given suspend state is immaterial to any issue
+beyond how much power is saved.  (Which is only indirectly user visible,
+e.g. stretching battery life out one more hour vs eight more.)
 
-At the moment I'm aiming the nomenclature at people using acpi, pmu, apm
-etc on a desktop platform, rather than embedded people as the
-requirements are very different. Think of just getting KDE and GNOME to
-agree on something. :-)
+The "suspend" button could be more menu-like, and users could choose to
+override whatever their default "suspend depth" is ... and set the default
+to match their impatience (vs power savings).
 
-For embedded (I'm guessing here), the use of standby for a super-quick
-sleep and the use of suspend-x where x = 1-4 for the different states
-may be needed, but at the moment I think the desktop user has enough to
-understand.
-
-If you guys used a sleep name in the kernel
-sleep_for_not_longer_than_6_minutes_but_more_that_2_seconds() I really
-don't mind -- but if the user has to click a button, I would rather the
-button was marked suspend or hibernate :-)
-
-Thanks for your comments.
-
-Richard.
+- Dave
 
 
 
---===============54219437708639662==
+
+--===============22344787495296314==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============54219437708639662==--
+--===============22344787495296314==--
