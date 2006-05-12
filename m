@@ -1,12 +1,10 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: suspend and hibernate nomenclature
-Date: Mon, 8 May 2006 20:01:03 +0000
-Message-ID: <20060508200103.GB4312@ucw.cz>
-References: <1147024930.16057.3.camel@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH/rfc] schedule /sys/device/.../power for removal
+Date: Fri, 12 May 2006 12:05:44 +0200
+Message-ID: <20060512100544.GA29010@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============56123967499424599=="
+Content-Type: multipart/mixed; boundary="===============23185175988500983=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1147024930.16057.3.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,42 +14,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: richard@hughsie.com
-Cc: linux-pm@lists.osdl.org
+To: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============56123967499424599==
+--===============23185175988500983==
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi!
+It is very ugly, and we really should use names instead.
 
-> First, sorry for the random mail to this mailing list.
-> 
-> I'm the developer of gnome-power-manager. The latest mini-project of
-> mine is to fix the suspend-hibernate nomenclature used by OSS projects.
-> 
-> This might not effect the lowest layers of the stack (i.e. I want to
-> focus on the stuff used by *users*), so this might not be applicable to
-> you guys. Please keep me cc'd if you discuss, as I'm not subscribed to
-> this list.
-> 
-> Full description of the problem is here:
-> http://live.gnome.org/GnomePowerManager/SleepNames and I would encourage
-> you guys to add comments to the end of the wiki if required.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Please do not use word 'thaw'. We already freeze processes during
-suspend, and we thaw them during resume.
-							Pavel
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 421bcff..dfcfc47 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -6,6 +6,16 @@ be removed from this file.
+ 
+ ---------------------------
+ 
++What:	/sys/device/.../power
++When:	July 2007
++Files:	
++Why:	Because it takes integers, and different userland applications
++	expect different numbers to mean different things.
++	(Pcmcia expect 2 for off, some other code expects 3 for off).
++Who:	Pavel Machek <pavel@suse.cz>
++
++---------------------------
++
+ What:	devfs
+ When:	July 2005
+ Files:	fs/devfs/*, include/linux/devfs_fs*.h and assorted devfs
 
 -- 
-Thanks for all the (sleeping) penguins.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
---===============56123967499424599==
+--===============23185175988500983==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============56123967499424599==--
+--===============23185175988500983==--
