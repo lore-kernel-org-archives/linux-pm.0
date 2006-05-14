@@ -1,14 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: suspend and hibernate nomenclature
-Date: Sun, 14 May 2006 17:39:30 +0200
-Message-ID: <20060514153929.GE2438@elf.ucw.cz>
-References: <1147024930.16057.3.camel@localhost.localdomain>
-	<20060508200103.GB4312@ucw.cz>
-	<1147620745.8072.18.camel@localhost.localdomain>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Re: [PATCH/rfc] schedule /sys/device/.../power for
+	removal
+Date: Sun, 14 May 2006 08:51:26 -0700
+Message-ID: <200605140851.29221.david-b@pacbell.net>
+References: <20060512100544.GA29010@elf.ucw.cz>
+	<200605120652.55658.david-b@pacbell.net>
+	<1147565632.21291.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============92560832379187752=="
+Content-Type: multipart/mixed; boundary="===============044269506956564397=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1147620745.8072.18.camel@localhost.localdomain>
+In-Reply-To: <1147565632.21291.15.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,56 +19,51 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: richard@hughsie.com
-Cc: linux-pm@lists.osdl.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============92560832379187752==
-Content-Type: text/plain; charset=us-ascii
+--===============044269506956564397==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Ne 14-05-06 16:32:24, Richard Hughes wrote:
-> On Mon, 2006-05-08 at 20:01 +0000, Pavel Machek wrote:
-> > Hi!
+On Saturday 13 May 2006 5:13 pm, Benjamin Herrenschmidt wrote:
+> On Fri, 2006-05-12 at 06:52 -0700, David Brownell wrote:
+> > On Friday 12 May 2006 3:11 am, Andrew Morton wrote:
+> > > 
+> > > What will be impacted by this?
 > > 
-> > > First, sorry for the random mail to this mailing list.
-> > > 
-> > > I'm the developer of gnome-power-manager. The latest mini-project of
-> > > mine is to fix the suspend-hibernate nomenclature used by OSS projects.
-> > > 
-> > > This might not effect the lowest layers of the stack (i.e. I want to
-> > > focus on the stuff used by *users*), so this might not be applicable to
-> > > you guys. Please keep me cc'd if you discuss, as I'm not subscribed to
-> > > this list.
-> > > 
-> > > Full description of the problem is here:
-> > > http://live.gnome.org/GnomePowerManager/SleepNames and I would encourage
-> > > you guys to add comments to the end of the wiki if required.
-> > 
-> > Please do not use word 'thaw'. We already freeze processes during
-> > suspend, and we thaw them during resume.
+> > Driver suspend/resume testing ... impact is strongly negative.
+> > ...
+> > Which IMO makes removing this a Bad Thing.  It needs to have some
+> > kind of replacement in place before the "magic numbers" go away.
 > 
-> Got any better ideas? It needs to *just* apply to hibernation, not a
-> generic term like wake.
+> And that's why Pavel is not proposing to remove it right away... but to
+> schedule it's removal so that developpers know right now that building a
+> whole new kernel<->user interface based on that is not the smartest
+> thing to do.
 
-reanimate?  As you said, users are unlikely to see this one.
+How could we schedule the removal before we have even had a couple
+releases to fine-tune its replacement, and verify that the main issues
+with the current thing are fully resolved?
 
-Alternatives:
+... plus, removing the whole power/* directory is clearly wrong.  The
+issue that's been acknowledged is only with the contents of a single
+file, power/state, not the whole directory.
 
-dehibarnate (unhibernate?), resume-from-disk :-), ressurect,
-resuscitate (particulary useful if s-2-disk is buggy :-), revive, ...
+There may be a bit of a gap in the process here.  "July 2007" is a
+date that's not backed up by anything more than agreement that the
+current approach is a lose.  Deprecation is not the same as removal.
 
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
---===============92560832379187752==
+--===============044269506956564397==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============92560832379187752==--
+--===============044269506956564397==--
