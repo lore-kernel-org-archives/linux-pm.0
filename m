@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-usb-devel] Re: [patch/rft 2.6.17-rc2] swsusp
-	resume must not device_suspend()
-Date: Sat, 27 May 2006 16:38:37 +0000
-Message-ID: <20060527163837.GE4242@ucw.cz>
-References: <200604241429.52022.david-b@pacbell.net>
-	<200605252006.06866.david-b@pacbell.net>
-	<20060526231628.GA9284@elf.ucw.cz>
-	<200605261719.57601.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Longhaul - call suspend(PMSG_FREEZE) before
+	and resume() after
+Date: Sun, 28 May 2006 07:16:22 +0000
+Message-ID: <20060528071622.GA4108@ucw.cz>
+References: <4478D319.2030707@interia.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200605261719.57601.david-b@pacbell.net>
+In-Reply-To: <4478D319.2030707@interia.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,73 +19,46 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+To: Rafa Bilski <rafalbilski@interia.pl>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > 		 the patch appended
-> > > here shows what I'm pursuing.  Same calling convention, new PRETHAW m=
-essage
-> > > that "pm-naive" drivers (most of them!) can handle just like FREEZE.
-> > > =
+> I posted this to Dave Jones, but:
+> > This really should also get posted to linux-kernel, though I don't
+> > think people are going to be particularly enthusiastic about exposing
+> > these innards to modules.
+> So I'm posting this patch here too. I'm not subscribed to this list.
+> If You wish email me.
+> Minor change: preempt_disabled() goto_sleep_pci() and wakeup_pci() =
 
-> > > Other than this, it affects about 20 files with about 2/3 being drive=
-rs; say
-> > > that maybe 5% of all in-tree drivers needed trivial changes, most of =
-which
-> > > could count as bugfixes _before_ defining the new message.
-> > =
+> causes "sheduling while atomic". So in this patch below it isn't
+> preempt_disabled(). But I think that this should be protected
+> in some way. =
 
-> > Okay, so you changed the interface, and it needed fixing at 16 places.
+
+Well, suspend/resume is normally called during system suspend/resume,
+so it has 'interesting' locking requirements.
+
+> How it works:
+> 1. Call suspend(PMSG_FREEZE) for each block device.
+> 2. Call suspend(PMSG_FREEZE) for each PCI device.
+> 3. Change CPU frequency.
+> 4. Call resume() for each PCI device.
+> 5. Call resume() for each block device.
 > =
 
-> Not what I said ... in many of those places, the driver code was already =
-dubious.
-> Making the event code __bitwise would have helped catch those errors.
+> Result: No more broken DMA transfers caused by frequency change.
 
-Yep, __bitwise (+ someone using sparse :-) would be nice.
+Result: system hang if userspace tries to do request at the same time
+-- PCI drivers probably were not designed for _that_... but we
+probably want to fix them, anyway, so this is probably ok (but expect
+to do some driver debugging).
 
-> > > + * PRETHAW	Quiesce as if for FREEZE; additionally, prepare for resto=
-ring
-> > > + * 		the system from a snapshot taken after an earlier FREEZE.
-> > > + * 		Some drivers will need to reset their hardware state instead
-> > > + * 		of preserving it, to ensure that it's never mistaken for the
-> > > + * 		state which that earlier snapshot had set up.
-> > =
+But you should really add that preempt_disable and not try this on smp
+system...
+						Pavel
 
-> > And you *do* realize that PRETHAW is like a FREEZE... So... can we use
-> > FREEZE, and add aditional flag field that says it is preTHAW?
-> =
-
-> Of course, FREEZE is like a SUSPEND, and SUSPEND is the only behavior tha=
-t's
-> required of all drivers, or which most drivers understand.  So why did yo=
-u not
-> implement FREEZE as a flag in the first place, if you like that model?  :)
-> =
-
-> Most drivers treat all suspend() messages as SUSPEND anyway; mesg.event w=
-as
-> already little more than a fancy flag (SUSPEND vs FREEZE).  We only need
-> three transition types (so far), not four (flag x flag =3D=3D> 4 states).
-
-Okay, I still don't 100% like it, but it makes some sense and I think
-we can live with PREFREEZE.
-
-> > This will result in if (message =3D=3D FREEZE || message =3D=3D PRETHAW=
-) that
-> > is kind-of ugly.
-> =
-
-> switch (mesg.event) { ... } for the few drivers that actually care about
-> more than one of the transitions.  Only a handful need to care about more
-> than whether it's a real SUSPEND or not.
-
-Okay, you are right that suspend and freeze are similar, too. Can you
-retransmit the patch?
-							Pavel
 -- =
 
 Thanks for all the (sleeping) penguins.
