@@ -1,85 +1,170 @@
-From: =?iso-8859-1?q?Austin=20Rock?= <austin_rock223@yahoo.com.au>
-Subject: PROPOSAL
-Date: Tue, 30 May 2006 07:06:52 -0700 (PDT)
-Message-ID: <20060530140652.8281.qmail@web55505.mail.re4.yahoo.com>
-Reply-To: austin_rock112@myway.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Autosuspend/autoresume support for USB, and PM notifications
+Date: Tue, 30 May 2006 11:36:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0605301022130.5821-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1880379520=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-devel-admin@lists.sourceforge.net>
+Sender: linux-usb-devel-admin@lists.sourceforge.net
+Errors-To: linux-usb-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+To: USB development list <linux-usb-devel@lists.sourceforge.net>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+I'm starting to work on adding autosuspend/autoresume support for the USB
+generic-device driver and the hub interface driver.  Just to be clear
+about this, autosuspend and autoresume are forms of runtime power
+management.  They are suspend events created automatically by a driver
+when it determines that its device is idle and resume events created
+automatically by a driver when it needs to use a suspended device.
 
---===============1880379520==
-Content-Type: multipart/alternative;
-    boundary="----------=_1149001720-28850-629"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+Going hand-in-hand with autosuspend/autoresume is the need to propagate PM
+events up the device tree.  When a device suspends, its parent should be
+notified so that the parent can decide whether to autosuspend.  Likewise,
+if a device needs to resume, it may first have to ask its parent to
+resume.
 
-This is a multi-part message in MIME format...
+USB seems like a good place to start developing this stuff.  It's
+self-contained and it already has a well defined specification for
+suspend/resume at the hardware level.  For now, PM event propagation will
+stop when it reaches the upper edge of the USB subsystem.  Ultimately this
+mechanism could be added to the PM core, so that event notifications would
+cross subsystem boundaries.
 
-------------=_1149001720-28850-629
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
+Initial design thoughts have pointed out some weaknesses in the current PM 
+messaging model, in terms of not supplying enough information to drivers.
 
-I have a new email address!You can now email me at: austin_rock223@yahoo.com.au
+At the higher level, a driver might need to know the source of a PM 
+request:
 
-Dear Sir/Madam,
+	System sleep transition;
 
- 
+	User PM request made through sysfs;
 
-For security reasons, I wouldn't like to reveal the identity of my client right now until I receive your letter of intent to assist in this transaction.
+	Device-initiated remote wakeup request;
 
- 
+	Driver-initiated autosuspend/autoresume.
 
-For your information,my client  have Twenty Million Dollars  deposited in Diplomatic Courier Company and he wants to secretly invest  this funds in choice properties (Commercial and Residential Houses) abroad due to political cartography  in his country  Benin Republic and I would appreciate it if you  will kindly assist us to make this transaction a success for our mutual benefit.You will be responsible for managing the investment for my client until his arrival in your country with his family.
+At the lower level, a driver needs to know how to handle the request:
 
- 
+	Should autosuspend be enabled at all?
 
-Your every assistance rendered to us in this regard will be highly appreciated and rewarded handsomely  by my client.
+	Should a power change notice be propagated up the device tree?
 
- 
+	Should a suspend request be ignored if the driver is in use?
 
-Please when replying do not forget to let me have your private tel/fax numbers for easy and effective communication.
+	Should autoresume requests be ignored?
 
- 
+	Should the device's remote wakeup setting be enabled?
 
-Yours faithfully,
+	Should the device's power level be changed?
 
- 
-
-
-
-- Austin Rock
-
-
-------------=_1149001720-28850-629
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-
-<div style="border: DEFANGED_solid DEFANGED_1px #cccccc; width:448px; background-color:white; DEFANGED_margin:10px 0px;";><table border=0 cellspacing=0 cellpadding=0 width="448"><tr><td class="tablot" DEFANGED_background="http://us.i1.yimg.com/us.yimg.com/i/us/pim/gr/gr_announce_1.gif" valign="center" height="57"><big DEFANGED_style="padding:10px;">I have a new email address!</big></td></tr></table><div DEFANGED_style="padding:10px;">You can now email me at: <b>austin_rock223@yahoo.com.au</b><br><br><span DEFANGED_style="color:green;">Dear Sir/Madam,<br><br> <br><br>For security reasons, I wouldn't like to reveal the identity of my client right now until I receive your letter of intent to assist in this transaction.<br><br> <br><br>For your information,my client  have Twenty Million Dollars  deposited in Diplomatic Courier Company and he wants to secretly invest  this funds in choice pro
- perties (Commercial and Residential Houses) abroad due to political cartography  in his c!
-ountry  Benin Republic and I would appreciate it if you  will kindly assist us to make this transaction a success for our mutual benefit.You will be responsible for managing the investment for my client until his arrival in your country with his family.<br><br> <br><br>Your every assistance rendered to us in this regard will be highly appreciated and rewarded handsomely  by my client.<br><br> <br><br>Please when replying do not forget to let me have your private tel/fax numbers for easy and effective communication.<br><br> <br><br>Yours faithfully,<br><br> <br><br></span><br><br>- <span DEFANGED_style="color:green;">Austin Rock</span></div></div>
-------------=_1149001720-28850-629--
-
---===============1880379520==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The answers to some of these questions will depend on the source of a 
+request.  Here is a brief discussion...
 
 
---===============1880379520==--
+The struct pm_message, as currently used for conveying PM request 
+information, does not provide any way to distinguish between system-level 
+PM events and runtime PM events.  At some stage we certainly need to add a 
+way of doing this, perhaps a new PM_EVENT_RUNTIME code.
+
+Autosuspend/autoresume and remote wakeup requests can be told apart from
+each other and the other two because they arrive by different pathways.  
+However at some point all these events will have to go through common
+code, and if this code uses a pm_message struct then once again, the
+ability to distinguish will be lost (unless we add even more PM_EVENT
+codes).
+
+	Should autosuspend be enabled at all?
+
+This is a policy question and it should be decided in userspace.  For now 
+we can ignore the question.  In principle, autosuspend for individual 
+devices can be disabled by turning off the may_wakeup attribute.  On a 
+larger scale, it's not clear whether we want to disable autosuspend at the 
+level of drivers, subsystems, or the entire kernel.  This can be 
+determined later.
+
+	Should a power change notice be propagated up the device tree?
+
+It never hurts to do so.  For system-sleep transitions it's not necessary,
+because the PM core will iterate through the entire tree anyhow.  For
+other sorts of transitions we definitely _do_ want to propagate the
+information, unless perhaps autosuspend is disabled.  To keep things
+simple, I'll always do it.
+
+	Should a suspend request be ignored if the driver is in use?
+
+A USB device is in use when its usbfs device file is open or its
+configuration is being changed.  A hub interface is in use while the
+hub_events() routine is running.  In either case, we clearly don't want to
+do an autosuspend at such times.  But we do want to suspend for
+system-sleep transitions, and we probably do want to obey requests coming 
+via sysfs.  Obviously this requires the ability to tell where a suspend 
+request originated.
+
+	Should autoresume requests be ignored?
+
+During a system-sleep transition, definitely yes.  During most such 
+transitions there can't be any autoresume requests to begin with, because 
+these requests are created by processes that will be frozen.  But some 
+kinds of sleep transitions _don't_ freeze user processes (STR on powermac,
+for example).  Should autoresume be allowed then?  I don't know.
+
+Following autosuspend we certainly do want to allow autoresume.  
+Following a runtime sysfs suspend request, it's not clear.  Probably we
+do.  After all, ignoring autoresume requests would cause programs like
+lsusb to fail.
+
+	Should the device's remote wakeup setting be enabled?
+
+In general this is controlled by the may_wakeup attribute.  But there are 
+certain times when we don't want to enable remote wakeup at all: during 
+FREEZE and PRETHAW.  Of course, if remote wakeup isn't enabled then we 
+will never do an autosuspend.
+
+	Should the device's power level be changed?
+
+This is perhaps the trickiest question of all, and the answer will vary 
+according to the driver.  For FREEZE/PRETHAW the power level does not need 
+to be changed.  USB is a little peculiar in that for system-sleep 
+transitions, the power level doesn't need to be changed either; devices 
+will automatically suspend themselves when the root hub is suspended.  Of 
+course, for runtime PM we will always want to change the power level.
+
+Not changing the power level is merely a time-saving optimization.  For 
+now it will be simplest always to change it.
+
+
+Here's another consideration.  Propagating PM-change notifications up the
+device tree will potentially involve lengthy recursions and thus deep
+stacks.  At each stage we should try to minimize the amount of
+information that needs to be passed on the stack.  In particular this
+means that if pm_message structs are used for the notifications, we must
+be very careful to prevent them from bloating with cruft.
+
+I imagine we'll eventually need to add some sort of opaque pointer to
+struct pm_message, for holding driver-specific information.  Apart from
+that there should be nothing more than a single integer (or long), perhaps
+divided into a few bit fields so that all the necessary information can be
+included.  It may turn out that with a few new PM_EVENT codes, almost no 
+extra information will be needed.
+
+Alan Stern
+
+
+
+-------------------------------------------------------
+All the advantages of Linux Managed Hosting--Without the Cost and Risk!
+Fully trained technicians. The highest number of Red Hat certifications in
+the hosting industry. Fanatical Support. Click to learn more
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=107521&bid=248729&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
