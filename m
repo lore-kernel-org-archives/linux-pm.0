@@ -1,16 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch/rft 2.6.17-rc5-git 2/6] add PM_EVENT_PRETHAW
-Date: Tue, 30 May 2006 19:17:41 +0000
-Message-ID: <20060530191741.GB4017@ucw.cz>
+Subject: Re: [patch/rft 2.6.17-rc5-git 4/6] PM_EVENT_PRETHAW for
+	various graphics cards
+Date: Tue, 30 May 2006 19:30:16 +0000
+Message-ID: <20060530193016.GC4044@ucw.cz>
 References: <200604241429.52022.david-b@pacbell.net>
 	<20060527163837.GE4242@ucw.cz>
-	<200606050937.07871.david-b@pacbell.net>
+	<200606050938.34988.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200606050937.07871.david-b@pacbell.net>
+In-Reply-To: <200606050938.34988.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,40 +27,71 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-Looks mostly good...
+>  #ifdef CONFIG_PM
+> -static int nvidiafb_suspend(struct pci_dev *dev, pm_message_t state)
+> +static int nvidiafb_suspend(struct pci_dev *dev, pm_message_t mesg)
+>  {
+>  	struct fb_info *info =3D pci_get_drvdata(dev);
+>  	struct nvidia_par *par =3D info->par;
+>  =
 
-> This adds a new pm_message_t event type to use when preparing to switch
-> into a swsusp snapshot.  Devices that have been initialized by Linux
-> after resume (rather than left in power-up-reset state) may need to be
-> reset; this new event type gives drivers the chance to do that.
-> =
+> +	if (mesg.event =3D=3D PM_EVENT_PRETHAW)
+> +		mesg.event =3D PM_EVENT_FREEZE;
+>  	acquire_console_sem();
+> -	par->pm_state =3D state.event;
+> +	par->pm_state =3D mesg.event;
+>  =
 
-> The drivers that will care about this are those which understand more
-> hardware states than just "on" and "reset", and read the hardware state
-> during resume().   Hardware state during resume() should be either the
-> state left by the preceding suspend(), or a power-lost reset.  When
-> the swsusp freeze/thaw mechanism kicks in, a troublesome third state
-> could exist:  one state set up by a different kernel instance, before
-> a snapshot image is resumed.  This mechanism helps eliminate that state.
+> -	if (state.event =3D=3D PM_EVENT_FREEZE) {
+> -		dev->dev.power.power_state =3D state;
+> -	} else {
+> +	if (mesg.event =3D=3D PM_EVENT_SUSPEND) {
+>  		fb_set_suspend(info, 1);
+>  		nvidiafb_blank(FB_BLANK_POWERDOWN, info);
+>  		nvidia_write_regs(par, &par->SavedReg);
+>  		pci_save_state(dev);
+>  		pci_disable_device(dev);
+> -		pci_set_power_state(dev, pci_choose_state(dev, state));
+> +		pci_set_power_state(dev, pci_choose_state(dev, mesg));
+>  	}
+> +	dev->dev.power.power_state =3D mesg;
 
-...should this go to Documentation/ somewhere?
+If PRETHAW event is sent, we still store FREEZE into power_state. That
+is not consistent with other drivers.
 
-> + * ON		Driver starts working again, responding to hardware events
-> + * 		and software requests.  The hardware may have gone through
-> + * 		a power-off reset, or it may have maintained state from the
-> + * 		previous suspend() which the driver will rely on while
-> + * 		resuming.  On most platforms, there are no restrictions on
-> + * 		availability of resources like clocks during resume().
-> + *
-> + * Other transitions are triggered by messages sent using suspend().  All
-> + * these transitions quiesce the driver, so that I/O queues are inactive.
-> + * That commonly entails turning off IRQs and DMA; there may be rules
+> Index: g26/drivers/video/savage/savagefb_driver.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- g26.orig/drivers/video/savage/savagefb_driver.c	2006-06-02 18:08:30.0=
+00000000 -0700
+> +++ g26/drivers/video/savage/savagefb_driver.c	2006-06-02 18:11:27.000000=
+000 -0700
+> @@ -2151,24 +2151,24 @@ static void __devexit savagefb_remove (s
+>  	}
+>  }
+>  =
 
-Actually all DMAs must always be turned off. Otherwise swsusp can't
-get consistent image. IRQs can be disabled or not (they usually are), howev=
-er driver
-prefers... but DMA must be off.
+> -static int savagefb_suspend (struct pci_dev* dev, pm_message_t state)
+> +static int savagefb_suspend (struct pci_dev* dev, pm_message_t mesg)
+>  {
+>  	struct fb_info *info =3D pci_get_drvdata(dev);
+>  	struct savagefb_par *par =3D info->par;
+>  =
+
+>  	DBG("savagefb_suspend");
+>  =
+
+> -
+> -	par->pm_state =3D state.event;
+> +	if (mesg.event =3D=3D PM_EVENT_PRETHAW)
+> +		mesg.event =3D PM_EVENT_FREEZE;
+> +	par->pm_state =3D mesg.event;
+> +	dev->dev.power.power_state =3D mesg;
+
+Same here.
 						Pavel
+
 -- =
 
 Thanks for all the (sleeping) penguins.
