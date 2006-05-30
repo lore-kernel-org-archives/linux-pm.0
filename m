@@ -1,9 +1,10 @@
-From: =?iso-8859-1?q?sussanwill8=20williams?= <sussanwill8@yahoo.fr>
-Subject: from sussan
-Date: Tue, 30 May 2006 09:27:04 +0000 (GMT)
-Message-ID: <20060530092704.43121.qmail@web26106.mail.ukl.yahoo.com>
+From: =?iso-8859-1?q?Austin=20Rock?= <austin_rock223@yahoo.com.au>
+Subject: PROPOSAL
+Date: Tue, 30 May 2006 07:06:52 -0700 (PDT)
+Message-ID: <20060530140652.8281.qmail@web55505.mail.re4.yahoo.com>
+Reply-To: austin_rock112@myway.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1166672514=="
+Content-Type: multipart/mixed; boundary="===============1880379520=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -19,112 +20,66 @@ List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
---===============1166672514==
+--===============1880379520==
 Content-Type: multipart/alternative;
-    boundary="----------=_1148981285-13001-66"
+    boundary="----------=_1149001720-28850-629"
+Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1148981285-13001-66
+------------=_1149001720-28850-629
 Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k4U9Rd2g018775
 
-J'ai une nouvelle adresse mailVous pouvez maintenant m'=E9crire =E0 :=A0s=
-ussanwill8@yahoo.fr
+I have a new email address!You can now email me at: austin_rock223@yahoo.com.au
 
->From Miss Sussan Williams.. (Sierra Leone). Please reply me
+Dear Sir/Madam,
 
-here: sussanwill8@yahoo.fr
+ 
 
-Greetings. With warm heart I offer my friendship,
+For security reasons, I wouldn't like to reveal the identity of my client right now until I receive your letter of intent to assist in this transaction.
 
-and greetings, and I hope is mail meets you in good time.
+ 
 
-However strange or surprising this contact might seem to
+For your information,my client  have Twenty Million Dollars  deposited in Diplomatic Courier Company and he wants to secretly invest  this funds in choice properties (Commercial and Residential Houses) abroad due to political cartography  in his country  Benin Republic and I would appreciate it if you  will kindly assist us to make this transaction a success for our mutual benefit.You will be responsible for managing the investment for my client until his arrival in your country with his family.
 
-you, as we have not met personally or had any dealings in
+ 
 
-the past. I humbly ask that you take due consideration of
+Your every assistance rendered to us in this regard will be highly appreciated and rewarded handsomely  by my client.
 
-its importance and immense benefit.
+ 
 
-=20
+Please when replying do not forget to let me have your private tel/fax numbers for easy and effective communication.
 
-My name is Miss Sussan William, from Sierra Leone. I have
+ 
 
-something very important that i would like to confide in
+Yours faithfully,
 
-you please,I have a reasonable amount of money inherited
-
-from my late father (19,2M$ Ninteen Million, Two Hundred
-
-Thousand United States Dollar}. I want to invest in your
-
-country with a very honest person and again in a very
-
-profitable venture.
-
-=20
-
-I'm expecting your reply for more explanation. Please i'm
-
-eargerly waiting for your response. Please reply me here:
-
-sussanwill8@yahoo.fr
-
-=20
-
-Thanks and God bless you.
-
-My sincer regards to you,
-
-Miss Sussan.
-
-- sussanwill8 williams
+ 
 
 
-------------=_1148981285-13001-66
+
+- Austin Rock
+
+
+------------=_1149001720-28850-629
 Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k4U9Rd2g018775
 
-<div style=3D"border: DEFANGED_solid DEFANGED_1px #cccccc; width:448px; b=
-ackground-color:white; DEFANGED_margin:10px 0px;";><table border=3D0 cell=
-spacing=3D0 cellpadding=3D0 width=3D"448"><tr><td class=3D"tablot" DEFANG=
-ED_background=3D"http://us.i1.yimg.com/us.yimg.com/i/us/pim/gr/gr_announc=
-e_1.gif" valign=3D"center" height=3D"57"><big DEFANGED_style=3D"padding:1=
-0px;">J'ai une nouvelle adresse mail</big></td></tr></table><div DEFANGED=
-_style=3D"padding:10px;">Vous pouvez maintenant m'=E9crire =E0&nbsp;:=A0<=
-b>sussanwill8@yahoo.fr</b><br><br><span DEFANGED_style=3D"color:green;">F=
-rom Miss Sussan Williams.. (Sierra Leone). Please reply me<br><br>here: s=
-ussanwill8@yahoo.fr<br><br>Greetings. With warm heart I offer my friendsh=
-ip,<br><br>and greetings, and I hope is mail meets you in good time.<br><=
-br>However strange or surprising this contact might seem to<br><br>you, a=
-s we have not met personally or had any dealings in<br><br>the past. I hu=
-mbly ask that you take due consideration of<br><br>its importance and imm=
-ense benefit.<br><br> <br><br>My name is Miss Sussan William, from Sierra=
- Leone. I have<br><br>something very important that i would like to confi=
-de in<br><br>you please,I have a reasonable amount of money inherited<br>=
-<br>from my late father (19,2M$ Ninteen Million, Two Hundred<br><br>Thous=
-and United States Dollar}. I want to invest in your<br><br>country with a=
- very honest person and again in a very<br><br>profitable venture.<br><br=
-> <br><br>I'm expecting your reply for more explanation. Please i'm<br><b=
-r>eargerly waiting for your response. Please reply me here:<br><br>sussan=
-will8@yahoo.fr<br><br> <br><br>Thanks and God bless you.<br><br>My sincer=
- regards to you,<br><br>Miss Sussan.</span><br><br>- <span DEFANGED_style=
-=3D"color:green;">sussanwill8 williams</span></div></div>
-------------=_1148981285-13001-66--
+<div style="border: DEFANGED_solid DEFANGED_1px #cccccc; width:448px; background-color:white; DEFANGED_margin:10px 0px;";><table border=0 cellspacing=0 cellpadding=0 width="448"><tr><td class="tablot" DEFANGED_background="http://us.i1.yimg.com/us.yimg.com/i/us/pim/gr/gr_announce_1.gif" valign="center" height="57"><big DEFANGED_style="padding:10px;">I have a new email address!</big></td></tr></table><div DEFANGED_style="padding:10px;">You can now email me at: <b>austin_rock223@yahoo.com.au</b><br><br><span DEFANGED_style="color:green;">Dear Sir/Madam,<br><br> <br><br>For security reasons, I wouldn't like to reveal the identity of my client right now until I receive your letter of intent to assist in this transaction.<br><br> <br><br>For your information,my client  have Twenty Million Dollars  deposited in Diplomatic Courier Company and he wants to secretly invest  this funds in choice pro
+ perties (Commercial and Residential Houses) abroad due to political cartography  in his c!
+ountry  Benin Republic and I would appreciate it if you  will kindly assist us to make this transaction a success for our mutual benefit.You will be responsible for managing the investment for my client until his arrival in your country with his family.<br><br> <br><br>Your every assistance rendered to us in this regard will be highly appreciated and rewarded handsomely  by my client.<br><br> <br><br>Please when replying do not forget to let me have your private tel/fax numbers for easy and effective communication.<br><br> <br><br>Yours faithfully,<br><br> <br><br></span><br><br>- <span DEFANGED_style="color:green;">Austin Rock</span></div></div>
+------------=_1149001720-28850-629--
 
---===============1166672514==
+--===============1880379520==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
---===============1166672514==--
+--===============1880379520==--
