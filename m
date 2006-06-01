@@ -1,27 +1,38 @@
-From: Jim Gettys <jg@laptop.org>
-Subject: OLPC (One Laptop Per Child) Developer's program.
-Date: Tue, 30 May 2006 17:42:57 -0400
-Message-ID: <1149025377.30703.141.camel@localhost.localdomain>
-Reply-To: jg@laptop.org
+From: Nicolas Troncoso Carrere <ntroncos@alumnos.inf.utfsm.cl>
+Subject: swsusp and PSE
+Date: Thu, 1 Jun 2006 10:17:22 -0400
+Message-ID: <200606011017.22729.ntroncos@alumnos.inf.utfsm.cl>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <netdev-owner@vger.kernel.org>
-Sender: netdev-owner@vger.kernel.org
-To: netdev@vger.kernel.org, linux-pm@lists.osdl.org, LinuxBIOS <linuxbios@linuxbios.org>, OLPC Developer's List <devel@laptop.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-As you know, we've said we were going to have a developer's program. You
-can find more information, including how to apply for boards at:
+Hi,
+I was trying out swsusp, but up bumped up with the issue that it needs PSE. =
 
-http://wiki.laptop.org/index.php/Developers_Program
+I've been reading the source, but havent been able to get a grasp on why do=
+es =
 
-Note that these are bare PC prototype boards, not packaged machines.
-                           Jim Gettys
+it need PSE.
+Could you enlighten me?
 
+cheers
+-- =
 
--- 
-Jim Gettys
-One Laptop Per Child
-
-
+Nicol=E1s Troncoso Carr=E8re                        User #272312 counter.li=
+.org
+Estudiante Mag=EDster en Ciencias de la Inform=E1tica
+Universidad T=E9cnica Federico Santa Mar=EDa
+http://www.alumnos.inf.utfsm.cl/~ntroncos
