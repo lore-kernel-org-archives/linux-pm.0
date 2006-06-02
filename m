@@ -1,130 +1,67 @@
 From: <rasmit.ranjan@wipro.com>
-Subject: ACPI problem with ACER Aspire 3003LC laptop.
-Date: Fri, 2 Jun 2006 09:57:13 +0530
-Message-ID: <380D9721A8E2114485644D71E87C6AB201F0B3CB@PNE-HJN-MBX01.wipro.com>
+Subject: Problem in HCD resume
+Date: Fri, 2 Jun 2006 17:38:24 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB201F695B0@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1811840380=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
 Content-class: urn:content-classes:message
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+Hi,
+	I was trying suspend/resume of OHCI based host controller. I
+suspend the device interface, device/port and the roothub interface/bus
+selectively through sysfs.
+According to Power Management sub-system if I resume the roothub
+interface the all the downsteam devices( device/port and device
+interface) should be resumed. That means power state file of
+roothub,port/device,device interface should be 0. But power state of the
+port/device remains 3. 
+	I tried finding out the reasons. I went through the kernel code.
+What I found out is, resuming any node is initiated through
+usb_generic_device API. In that API first we change the
+dev->power.power_state.event = PM_EVENT_ON which is the notification to
+PM sub-system that now the device is not in suspended state, it is on
+now and the power state file of the node is changed to 0. When I traced
+the path for my case i.e. resuming the bus.
+Here it goes:
 
---===============1811840380==
-Content-Type: multipart/alternative;
-    boundary="----------=_1149222520-25170-121"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+Usb_generic_resume-->hub_resume-->hcd_bus_resume-->ohci_bus_resume-->fin
+ish_device_resume.
 
-This is a multi-part message in MIME format...
+Actually finish_device_resume is called from hub_resume and the
+parameter passed to finish_device_resume is the usb_device structure
+representing the device connected. Then for all the interfaces of the
+device finish_device_resume calls usb_generic_resume.
+So it is clear that expect the device all other node`s resume is
+initiated from usb_generic_resume and this is the only API which does
+dev->power.power_state.event = PM_EVENT_ON. As for device resume this is
+not done, its power state remains 3 although the device is actually
+resumed. 
 
-------------=_1149222520-25170-121
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Is my understanding correct? If yes then is it a known issue ? I am
+using kernel 2.6.15.4.
+So is ther any patch available for this?
 
-Hi all,
-    I am using ACER Aspire 3003LC laptop for developing a Host
-controller driver for kernel version 2.6.15.4.
-If i enable Power management support then my ethernet interface doesnot
-work. Also i get the message: " Disabling IRQ#3"
-This message comes from the kernel. And also i get following messages
-from ACPI:
-=20
-    ACPI-0508: *** Error: Method execution failed[\_SB_.BAT1._BST] (Node
-cbd80560), AE_NOT_FOUND
-    ACPI-0339: *** Error: Looking uo[Z007] in namespace, AE_NOT_FOUND
-=20
-I recompiled my kernel without power management support. Now my ethernet
-is working properly and obviously i don`t get any message from ACPI.
-This is the problem with the laptop. But I need Power management
-support. so is there any patch available for this ? Please suggest.
-=20
-Thanks and regards,
+Please suggest.
+
+Thanks,
 Rasmit.
-=20
-=20
-
-------------=_1149222520-25170-121
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>Hi=20
-all,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>&nbsp;&nb=
-sp;&nbsp; I=20
-am using ACER Aspire 3003LC laptop for developing a Host controller driver =
-for=20
-kernel version 2.6.15.4.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>If i enab=
-le Power=20
-management support then my ethernet interface doesnot work. Also i get the=
-=20
-message: " Disabling IRQ#3"</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>This mess=
-age comes=20
-from the kernel. And also i get following messages from=20
-ACPI:</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D640580704-02062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>&nbsp;&nb=
-sp;&nbsp;=20
-ACPI-0508: *** Error: Method execution failed[\_SB_.BAT1._BST] (Node cbd805=
-60),=20
-AE_NOT_FOUND</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>&nbsp;&nb=
-sp;&nbsp;=20
-ACPI-0339: *** Error: Looking uo[Z007] in namespace,=20
-AE_NOT_FOUND</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D640580704-02062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>I recompi=
-led my=20
-kernel without power management support. Now my ethernet is working properl=
-y and=20
-obviously i don`t get any message from ACPI. This is the problem with the=
-=20
-laptop. But I need Power management support. so is there any patch availabl=
-e for=20
-this ? Please suggest.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D640580704-02062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D640580704-02062006>Thanks an=
-d=20
-regards,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D640580704-02062006>Rasmit.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D640580704-02062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D640580704-02062006></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
-
-------------=_1149222520-25170-121--
-
---===============1811840380==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+    
 
 
---===============1811840380==--
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
