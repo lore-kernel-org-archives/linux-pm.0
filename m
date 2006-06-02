@@ -1,85 +1,76 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Problem in HCD resume
-Date: Fri, 2 Jun 2006 11:29:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606021120480.7076-100000@iolanthe.rowland.org>
-References: <380D9721A8E2114485644D71E87C6AB201F695B0@PNE-HJN-MBX01.wipro.com>
+From: "Moore, Robert" <robert.moore@intel.com>
+Subject: Re: ACPI problem with ACER Aspire 3003LC laptop.
+Date: Fri, 2 Jun 2006 12:10:32 -0700
+Message-ID: <B28E9812BAF6E2498B7EC5C427F293A4634DE4@orsmsx415.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB201F695B0@PNE-HJN-MBX01.wipro.com>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: rasmit.ranjan@wipro.com
-Cc: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Yu, Luming" <luming.yu@intel.com>, rasmit.ranjan@wipro.com, linux-pm@osdl.org
+Cc: linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2 Jun 2006 rasmit.ranjan@wipro.com wrote:
+>Error: Looking uo[Z007]
 
-> Hi,
-> 	I was trying suspend/resume of OHCI based host controller. I
-> suspend the device interface, device/port and the roothub interface/bus
-> selectively through sysfs.
-> According to Power Management sub-system if I resume the roothub
-> interface the all the downsteam devices( device/port and device
-> interface) should be resumed.
+This looks like the type of DSDT bug for which we recently implemented a workaround.
 
-This isn't true at all.  Selective resume of a device through sysfs is
-_not_ expected to change the power state of the device's children.  The
-fact that it does for USB devices is an historical artifact.  This
-behavior will change in the near future.
 
->  That means power state file of
-> roothub,port/device,device interface should be 0. But power state of the
-> port/device remains 3. 
-> 	I tried finding out the reasons. I went through the kernel code.
-> What I found out is, resuming any node is initiated through
-> usb_generic_device API. In that API first we change the
-> dev->power.power_state.event = PM_EVENT_ON which is the notification to
-> PM sub-system that now the device is not in suspended state, it is on
-> now and the power state file of the node is changed to 0. When I traced
-> the path for my case i.e. resuming the bus.
-> Here it goes:
+> -----Original Message-----
+> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> owner@vger.kernel.org] On Behalf Of Yu, Luming
+> Sent: Friday, June 02, 2006 5:11 AM
+> To: rasmit.ranjan@wipro.com; linux-pm@osdl.org
+> Cc: linux-acpi@vger.kernel.org
+> Subject: RE: [linux-pm] ACPI problem with ACER Aspire 3003LC laptop.
 > 
-> Usb_generic_resume-->hub_resume-->hcd_bus_resume-->ohci_bus_resume-->fin
-> ish_device_resume.
+> Does latest base kernel work?
+> If NOT, please file a bug on bugzilla.kernel.org
 > 
-> Actually finish_device_resume is called from hub_resume and the
-> parameter passed to finish_device_resume is the usb_device structure
-> representing the device connected. Then for all the interfaces of the
-> device finish_device_resume calls usb_generic_resume.
-> So it is clear that expect the device all other node`s resume is
-> initiated from usb_generic_resume and this is the only API which does
-> dev->power.power_state.event = PM_EVENT_ON. As for device resume this is
-> not done, its power state remains 3 although the device is actually
-> resumed. 
 > 
-> Is my understanding correct?
-
-It's hard to say, since you mentioned some things that don't matter and 
-left out the big part that _does_ matter: The code in hub_resume that 
-resumes child devices doesn't call usb_generic_resume.
-
->  If yes then is it a known issue ? I am
-> using kernel 2.6.15.4.
-> So is ther any patch available for this?
-
-No.  You can write one if you want.  Since there will soon be a patch that
-prevents the hub driver from waking up child devices, your problem
-probably doesn't matter.
-
-Alan Stern
-
-
-
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+> Thanks
+> Luming
+> 
+> ________________________________
+> 
+> 	From: linux-pm-bounces@lists.osdl.org [mailto:linux-pm-
+> bounces@lists.osdl.org] On Behalf Of rasmit.ranjan@wipro.com
+> 	Sent: 2006年6月2日 12:27
+> 	To: linux-pm@osdl.org
+> 	Subject: [linux-pm] ACPI problem with ACER Aspire 3003LC laptop.
+> 
+> 
+> 	Hi all,
+> 	    I am using ACER Aspire 3003LC laptop for developing a Host
+> controller driver for kernel version 2.6.15.4.
+> 	If i enable Power management support then my ethernet interface
+> doesnot work. Also i get the message: " Disabling IRQ#3"
+> 	This message comes from the kernel. And also i get following
+> messages from ACPI:
+> 
+> 	    ACPI-0508: *** Error: Method execution failed[\_SB_.BAT1._BST]
+> (Node cbd80560), AE_NOT_FOUND
+> 	    ACPI-0339: *** Error: Looking uo[Z007] in namespace,
+> AE_NOT_FOUND
+> 
+> 	I recompiled my kernel without power management support. Now my
+> ethernet is working properly and obviously i don`t get any message from
+> ACPI. This is the problem with the laptop. But I need Power management
+> support. so is there any patch available for this ? Please suggest.
+> 
+> 	Thanks and regards,
+> 	Rasmit.
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
