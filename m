@@ -1,13 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch/rft 2.6.17-rc5-git 1/6] fix broken/dubious driver
-	suspend() methods
-Date: Mon, 5 Jun 2006 09:36:28 -0700
-Message-ID: <200606050936.28224.david-b@pacbell.net>
+Subject: [patch/rft 2.6.17-rc5-git 5/6] PM_EVENT_PRETHAW,
+	handle for USB
+Date: Mon, 5 Jun 2006 09:38:42 -0700
+Message-ID: <200606050938.42562.david-b@pacbell.net>
 References: <200604241429.52022.david-b@pacbell.net>
 	<20060527163837.GE4242@ucw.cz>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_M2FhEczCEajuYZd"
+  boundary="Boundary-00=_S4FhETO37E7yGLe"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -22,181 +22,148 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_M2FhEczCEajuYZd
+--Boundary-00=_S4FhETO37E7yGLe
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Small driver suspend() updates in preparation for the upcoming FREEZE message;
-
- - Only compare message events for equality against PM_EVENT_* codes;
-   not against integers, or using greater/less-than comparisons.
-   (PM_EVENT_* should really become a __bitwise thing.)
-
- - Explicitly test for SUSPEND events (rather than not-something-else)
-   before suspending devices.
-
- - Removes more of the confusion between a pm_message_t (wraps event code)
-   and a "state" ... suspend() originally took a target system state.
-
-These updates are correct and appropriate even without new PM_EVENT codes.
+This teaches several USB host controller drivers to treat PRETHAW as a
+chip reset since the controller, and all devices connected to it, are no
+longer in states compatible with how the snapshotted suspend() left them.
 ---
- drivers/ide/ppc/pmac.c                  |   14 ++++++++------
- drivers/media/dvb/cinergyT2/cinergyT2.c |    2 +-
- drivers/scsi/libata-core.c              |    6 +++---
- drivers/scsi/mesh.c                     |    7 ++++---
- 4 files changed, 16 insertions(+), 13 deletions(-)
+ drivers/usb/core/hcd-pci.c   |    2 +-
+ drivers/usb/core/usb.c       |    2 +-
+ drivers/usb/host/ehci-pci.c  |    6 ++++++
+ drivers/usb/host/ohci-pci.c  |    5 +++++
+ drivers/usb/host/sl811-hcd.c |    9 +++++++--
+ drivers/usb/host/uhci-hcd.c  |    4 ++++
+ 6 files changed, 24 insertions(+), 4 deletions(-)
 
 
---Boundary-00=_M2FhEczCEajuYZd
+--Boundary-00=_S4FhETO37E7yGLe
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="prethaw-misc.patch"
+  name="prethaw-usb.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="prethaw-misc.patch"
+	filename="prethaw-usb.patch"
 
-Small driver suspend() updates in preparation for the upcoming FREEZE message;
-
- - Only compare message events for equality against PM_EVENT_* codes;
-   not against integers, or using greater/less-than comparisons.
-   (PM_EVENT_* should really become a __bitwise thing.)
-
- - Explicitly test for SUSPEND events (rather than not-something-else)
-   before suspending devices.
- 
- - Removes more of the confusion between a pm_message_t (wraps event code)
-   and a "state" ... suspend() originally took a target system state.
-
-These updates are correct and appropriate even without new PM_EVENT codes.
+This teaches several USB host controller drivers to treat PRETHAW as a
+chip reset since the controller, and all devices connected to it, are no
+longer in states compatible with how the snapshotted suspend() left them.
 
 ---
- drivers/ide/ppc/pmac.c                  |   14 ++++++++------
- drivers/media/dvb/cinergyT2/cinergyT2.c |    2 +-
- drivers/scsi/libata-core.c              |    6 +++---
- drivers/scsi/mesh.c                     |    7 ++++---
- 4 files changed, 16 insertions(+), 13 deletions(-)
+ drivers/usb/core/hcd-pci.c   |    2 +-
+ drivers/usb/core/usb.c       |    2 +-
+ drivers/usb/host/ehci-pci.c  |    6 ++++++
+ drivers/usb/host/ohci-pci.c  |    5 +++++
+ drivers/usb/host/sl811-hcd.c |    9 +++++++--
+ drivers/usb/host/uhci-hcd.c  |    4 ++++
+ 6 files changed, 24 insertions(+), 4 deletions(-)
 
-Index: scratch/drivers/ide/ppc/pmac.c
+Index: g26/drivers/usb/core/hcd-pci.c
 ===================================================================
---- scratch.orig/drivers/ide/ppc/pmac.c	2006-06-05 09:06:00.000000000 -0700
-+++ scratch/drivers/ide/ppc/pmac.c	2006-06-05 09:19:13.000000000 -0700
-@@ -1495,15 +1495,16 @@ pmac_ide_macio_attach(struct macio_dev *
- }
+--- g26.orig/drivers/usb/core/hcd-pci.c	2006-06-02 18:08:30.000000000 -0700
++++ g26/drivers/usb/core/hcd-pci.c	2006-06-02 18:11:28.000000000 -0700
+@@ -282,7 +282,7 @@ int usb_hcd_pci_suspend (struct pci_dev 
+ 			(void) usb_hcd_pci_resume (dev);
+ 		}
  
- static int
--pmac_ide_macio_suspend(struct macio_dev *mdev, pm_message_t state)
-+pmac_ide_macio_suspend(struct macio_dev *mdev, pm_message_t mesg)
- {
- 	ide_hwif_t	*hwif = (ide_hwif_t *)dev_get_drvdata(&mdev->ofdev.dev);
- 	int		rc = 0;
+-	} else {
++	} else if (hcd->state != HC_STATE_HALT) {
+ 		dev_dbg (hcd->self.controller, "hcd state %d; not suspended\n",
+ 			hcd->state);
+ 		WARN_ON(1);
+Index: g26/drivers/usb/core/usb.c
+===================================================================
+--- g26.orig/drivers/usb/core/usb.c	2006-06-02 18:08:30.000000000 -0700
++++ g26/drivers/usb/core/usb.c	2006-06-02 18:11:28.000000000 -0700
+@@ -1005,7 +1005,7 @@ static int usb_generic_suspend(struct de
+ 	 * But those semantics are useless, so we equate the two (sigh).
+ 	 */
+ 	if (dev->driver == &usb_generic_driver) {
+-		if (dev->power.power_state.event == message.event)
++		if (dev->power.power_state.event != PM_EVENT_ON)
+ 			return 0;
+ 		/* we need to rule out bogus requests through sysfs */
+ 		status = device_for_each_child(dev, NULL, verify_suspended);
+Index: g26/drivers/usb/host/sl811-hcd.c
+===================================================================
+--- g26.orig/drivers/usb/host/sl811-hcd.c	2006-06-02 18:08:30.000000000 -0700
++++ g26/drivers/usb/host/sl811-hcd.c	2006-06-02 18:11:28.000000000 -0700
+@@ -1780,10 +1780,15 @@ sl811h_suspend(struct platform_device *d
+ 	struct sl811	*sl811 = hcd_to_sl811(hcd);
+ 	int		retval = 0;
  
--	if (state.event != mdev->ofdev.dev.power.power_state.event && state.event >= PM_EVENT_SUSPEND) {
-+	if (mesg.event != mdev->ofdev.dev.power.power_state.event
-+			&& mesg.event == PM_EVENT_SUSPEND) {
- 		rc = pmac_ide_do_suspend(hwif);
- 		if (rc == 0)
--			mdev->ofdev.dev.power.power_state = state;
-+			mdev->ofdev.dev.power.power_state = mesg;
+-	if (state.event == PM_EVENT_FREEZE)
++	switch (state.event) {
++	case PM_EVENT_FREEZE:
+ 		retval = sl811h_bus_suspend(hcd);
+-	else if (state.event == PM_EVENT_SUSPEND)
++		break;
++	case PM_EVENT_SUSPEND:
++	case PM_EVENT_PRETHAW:		/* explicitly discard hw state */
+ 		port_power(sl811, 0);
++		break;
++	}
+ 	if (retval == 0)
+ 		dev->dev.power.power_state = state;
+ 	return retval;
+Index: g26/drivers/usb/host/ehci-pci.c
+===================================================================
+--- g26.orig/drivers/usb/host/ehci-pci.c	2006-06-02 18:08:30.000000000 -0700
++++ g26/drivers/usb/host/ehci-pci.c	2006-06-02 18:11:28.000000000 -0700
+@@ -229,6 +229,12 @@ static int ehci_pci_suspend(struct usb_h
+ 	writel (0, &ehci->regs->intr_enable);
+ 	(void)readl(&ehci->regs->intr_enable);
+ 
++	/* make sure snapshot being resumed re-enumerates everything */
++	if (message.event == PM_EVENT_PRETHAW) {
++		ehci_halt(ehci);
++		ehci_reset(ehci);
++	}
++
+ 	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+  bail:
+ 	spin_unlock_irqrestore (&ehci->lock, flags);
+Index: g26/drivers/usb/host/ohci-pci.c
+===================================================================
+--- g26.orig/drivers/usb/host/ohci-pci.c	2006-06-02 18:11:22.000000000 -0700
++++ g26/drivers/usb/host/ohci-pci.c	2006-06-02 18:11:28.000000000 -0700
+@@ -135,6 +135,11 @@ static int ohci_pci_suspend (struct usb_
  	}
+ 	ohci_writel(ohci, OHCI_INTR_MIE, &ohci->regs->intrdisable);
+ 	(void)ohci_readl(ohci, &ohci->regs->intrdisable);
++
++	/* make sure snapshot being resumed re-enumerates everything */
++	if (message.event == PM_EVENT_PRETHAW)
++		ohci_usb_reset(ohci);
++
+ 	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+  bail:
+ 	spin_unlock_irqrestore (&ohci->lock, flags);
+Index: g26/drivers/usb/host/uhci-hcd.c
+===================================================================
+--- g26.orig/drivers/usb/host/uhci-hcd.c	2006-06-02 18:08:30.000000000 -0700
++++ g26/drivers/usb/host/uhci-hcd.c	2006-06-02 18:11:28.000000000 -0700
+@@ -731,6 +731,10 @@ static int uhci_suspend(struct usb_hcd *
  
+ 	/* FIXME: Enable non-PME# remote wakeup? */
+ 
++	/* make sure snapshot being resumed re-enumerates everything */
++	if (message.event == PM_EVENT_PRETHAW)
++		hc_died(uhci);
++
+ done:
+ 	spin_unlock_irq(&uhci->lock);
  	return rc;
-@@ -1599,15 +1600,16 @@ pmac_ide_pci_attach(struct pci_dev *pdev
- }
- 
- static int
--pmac_ide_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+pmac_ide_pci_suspend(struct pci_dev *pdev, pm_message_t mesg)
- {
- 	ide_hwif_t	*hwif = (ide_hwif_t *)pci_get_drvdata(pdev);
- 	int		rc = 0;
- 	
--	if (state.event != pdev->dev.power.power_state.event && state.event >= 2) {
-+	if (mesg.event != pdev->dev.power.power_state.event
-+			&& mesg.event == PM_EVENT_SUSPEND) {
- 		rc = pmac_ide_do_suspend(hwif);
- 		if (rc == 0)
--			pdev->dev.power.power_state = state;
-+			pdev->dev.power.power_state = mesg;
- 	}
- 
- 	return rc;
-Index: scratch/drivers/scsi/libata-core.c
-===================================================================
---- scratch.orig/drivers/scsi/libata-core.c	2006-06-05 09:06:16.000000000 -0700
-+++ scratch/drivers/scsi/libata-core.c	2006-06-05 09:19:13.000000000 -0700
-@@ -4313,19 +4313,19 @@ int ata_device_resume(struct ata_port *a
-  *	ata_device_suspend - prepare a device for suspend
-  *	@ap: port the device is connected to
-  *	@dev: the device to suspend
-- *	@state: target power management state
-+ *	@mesg: power management request
-  *
-  *	Flush the cache on the drive, if appropriate, then issue a
-  *	standbynow command.
-  */
--int ata_device_suspend(struct ata_port *ap, struct ata_device *dev, pm_message_t state)
-+int ata_device_suspend(struct ata_port *ap, struct ata_device *dev, pm_message_t mesg)
- {
- 	if (!ata_dev_present(dev))
- 		return 0;
- 	if (dev->class == ATA_DEV_ATA)
- 		ata_flush_cache(ap, dev);
- 
--	if (state.event != PM_EVENT_FREEZE)
-+	if (mesg.event == PM_EVENT_SUSPEND)
- 		ata_standby_drive(ap, dev);
- 	ap->flags |= ATA_FLAG_SUSPENDED;
- 	return 0;
-Index: scratch/drivers/scsi/mesh.c
-===================================================================
---- scratch.orig/drivers/scsi/mesh.c	2006-06-05 09:06:16.000000000 -0700
-+++ scratch/drivers/scsi/mesh.c	2006-06-05 09:19:13.000000000 -0700
-@@ -1761,12 +1761,13 @@ static void set_mesh_power(struct mesh_s
- 
- 
- #ifdef CONFIG_PM
--static int mesh_suspend(struct macio_dev *mdev, pm_message_t state)
-+static int mesh_suspend(struct macio_dev *mdev, pm_message_t mesg)
- {
- 	struct mesh_state *ms = (struct mesh_state *)macio_get_drvdata(mdev);
- 	unsigned long flags;
- 
--	if (state.event == mdev->ofdev.dev.power.power_state.event || state.event < 2)
-+	if (mesg.event == mdev->ofdev.dev.power.power_state.event
-+			|| mesg.event != PM_EVENT_SUSPEND)
- 		return 0;
- 
- 	scsi_block_requests(ms->host);
-@@ -1781,7 +1782,7 @@ static int mesh_suspend(struct macio_dev
- 	disable_irq(ms->meshintr);
- 	set_mesh_power(ms, 0);
- 
--	mdev->ofdev.dev.power.power_state = state;
-+	mdev->ofdev.dev.power.power_state = mesg;
- 
- 	return 0;
- }
-Index: scratch/drivers/media/dvb/cinergyT2/cinergyT2.c
-===================================================================
---- scratch.orig/drivers/media/dvb/cinergyT2/cinergyT2.c	2006-06-05 09:06:01.000000000 -0700
-+++ scratch/drivers/media/dvb/cinergyT2/cinergyT2.c	2006-06-05 09:19:13.000000000 -0700
-@@ -978,7 +978,7 @@ static int cinergyt2_suspend (struct usb
- 	if (cinergyt2->disconnect_pending || mutex_lock_interruptible(&cinergyt2->sem))
- 		return -ERESTARTSYS;
- 
--	if (state.event > PM_EVENT_ON) {
-+	if (1) {
- 		struct cinergyt2 *cinergyt2 = usb_get_intfdata (intf);
- 
- 		cinergyt2_suspend_rc(cinergyt2);
 
---Boundary-00=_M2FhEczCEajuYZd
+--Boundary-00=_S4FhETO37E7yGLe
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Boundary-00=_M2FhEczCEajuYZd--
+--Boundary-00=_S4FhETO37E7yGLe--
