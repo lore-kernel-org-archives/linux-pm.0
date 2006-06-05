@@ -1,12 +1,16 @@
-From: <rasmit.ranjan@wipro.com>
-Subject: Re: [linux-usb-devel] Problem in HCD resume
-Date: Mon, 5 Jun 2006 09:43:45 +0530
-Message-ID: <380D9721A8E2114485644D71E87C6AB201F6971E@PNE-HJN-MBX01.wipro.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: swsusp and PSE
+Date: Mon, 5 Jun 2006 11:39:17 +0200
+Message-ID: <20060605093917.GA27474@elf.ucw.cz>
+References: <200606011017.22729.ntroncos@alumnos.inf.utfsm.cl>
+	<20060601142418.GA24962@elf.ucw.cz>
+	<1149472065.32046.163.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <1149472065.32046.163.camel@sli10-desk.sh.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,145 +20,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: stern@rowland.harvard.edu
-Cc: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
- =
-
-
-> -----Original Message-----
-> From: Alan Stern [mailto:stern@rowland.harvard.edu] =
-
-> Sent: Friday, June 02, 2006 8:59 PM
-> To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
-> Cc: linux-pm@lists.osdl.org; linux-usb-devel@lists.sourceforge.net
-> Subject: Re: [linux-usb-devel] Problem in HCD resume
-> =
-
-> On Fri, 2 Jun 2006 rasmit.ranjan@wipro.com wrote:
-> =
-
-> > Hi,
-> > 	I was trying suspend/resume of OHCI based host =
-
-> controller. I suspend =
-
-> > the device interface, device/port and the roothub interface/bus =
-
-> > selectively through sysfs.
-> > According to Power Management sub-system if I resume the roothub =
-
-> > interface the all the downsteam devices( device/port and device
-> > interface) should be resumed.
-> =
-
-> This isn't true at all.  Selective resume of a device through =
-
-> sysfs is _not_ expected to change the power state of the =
-
-> device's children.  The fact that it does for USB devices is =
-
-> an historical artifact.  This behavior will change in the near future.
-
-I am using 2.6.15.4. So here if I resume the bus then the device and the
-device interfaces are resumed. As far as  the power state is concerned,
-for device interfaces the power state is changed to 0 but for the device
-it is not changed to 0. It remains 3. =
-
-> =
-
-> >  That means power state file of
-> > roothub,port/device,device interface should be 0. But power =
-
-> state of =
-
-> > the port/device remains 3.
-> > 	I tried finding out the reasons. I went through the kernel code.
-> > What I found out is, resuming any node is initiated through =
-
-> > usb_generic_device API. In that API first we change the
-> > dev->power.power_state.event =3D PM_EVENT_ON which is the =
-
-> notification =
-
-> > dev->to
-> > PM sub-system that now the device is not in suspended =
-
-> state, it is on =
-
-> > now and the power state file of the node is changed to 0. When I =
-
-> > traced the path for my case i.e. resuming the bus.
-> > Here it goes:
-> > =
-
-> > =
-
-> Usb_generic_resume-->hub_resume-->hcd_bus_resume-->ohci_bus_resume-->f
-> > in
-> > ish_device_resume.
-> > =
-
-> > Actually finish_device_resume is called from hub_resume and the =
-
-> > parameter passed to finish_device_resume is the usb_device =
-
-> structure =
-
-> > representing the device connected. Then for all the =
-
-> interfaces of the =
-
-> > device finish_device_resume calls usb_generic_resume.
-> > So it is clear that expect the device all other node`s resume is =
-
-> > initiated from usb_generic_resume and this is the only API =
-
-> which does
-> > dev->power.power_state.event =3D PM_EVENT_ON. As for device =
-
-> resume this =
-
-> > dev->is
-> > not done, its power state remains 3 although the device is actually =
-
-> > resumed.
-> > =
-
-> > Is my understanding correct?
-> =
-
-> It's hard to say, since you mentioned some things that don't =
-
-> matter and left out the big part that _does_ matter: The code =
-
-> in hub_resume that resumes child devices doesn't call =
-
-> usb_generic_resume.
-
-Yes. I did not say this anywhere. I said hub_resume calls
-finish_device_resume with the parameter representing the device
-connected to the port and finish_device_resume calls usb_generic_resume
-for resuming the device interfaces. usb_generic_resume is not called for
-the device resume and usb_generic resume only changes the power state to
-ON. That is the reason why the power state of the device is not changed
-to 0.
-
-> =
-
-> >  If yes then is it a known issue ? I am using kernel 2.6.15.4.
-> > So is ther any patch available for this?
-> =
-
-> No.  You can write one if you want.  Since there will soon be =
-
-> a patch that prevents the hub driver from waking up child =
-
-> devices, your problem probably doesn't matter.
-> =
-
-> Alan Stern
-> =
-
-> =
+T24gUG8gMDUtMDYtMDYgMDk6NDc6NDUsIFNoYW9odWEgTGkgd3JvdGU6Cj4gT24gVGh1LCAyMDA2
+LTA2LTAxIGF0IDIyOjI0ICswODAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6Cj4gPiBPbiDEjHQgMDEt
+MDYtMDYgMTA6MTc6MjIsIE5pY29sYXMgVHJvbmNvc28gQ2FycmVyZSB3cm90ZTogCj4gPiA+IEhp
+LCAKPiA+ID4gSSB3YXMgdHJ5aW5nIG91dCBzd3N1c3AsIGJ1dCB1cCBidW1wZWQgdXAgd2l0aCB0
+aGUgaXNzdWUgdGhhdCBpdAo+ID4gbmVlZHMgUFNFLiAgCj4gPiA+IEkndmUgYmVlbiByZWFkaW5n
+IHRoZSBzb3VyY2UsIGJ1dCBoYXZlbnQgYmVlbiBhYmxlIHRvIGdldCBhIGdyYXNwIG9uCj4gPiB3
+aHkgZG9lcyAgCj4gPiA+IGl0IG5lZWQgUFNFLiAKPiA+ID4gQ291bGQgeW91IGVubGlnaHRlbiBt
+ZT8KPiA+IAo+ID4gVy9vIFBTRSwgd2UgYXJlIHVzaW5nIHBhZ2V0YWJsZXMgZHVyaW5nIGRhdGEg
+Y29weSwgYW5kIHdlIG1heSAKPiA+IG92ZXJ3cml0ZSBwYWdldGFibGUgdGhhdCBpcyBzdGlsbCB1
+c2VkLgo+IHcvUFNFIHBhZ2V0YWJsZSBtaWdodCBiZSBvdmVyd3JpdHRlbiB0b28gYW5kIGRhdGEg
+Y29weSB1c2VzIGlkZW50aXR5Cj4gbWFwcGluZywgb3ZlcndyaXRlIHBhZ2V0YWJsZSBkb2Vzbid0
+IGhhcm0gdG8gbWUuIAoKdy9QU0UsIGlkZW50aXR5IG1hcHBpbmcgaXMgZnVsbHkgY29udGFpbmVk
+IGluIHRvcC1sZXZlbCBwYWdlZGlyLCBhbmQKdGhhdCBpcyBwcm9wZXJseSBtYXJrZWQgbm9zYXZl
+LgoKd28vUFNFLCB5b3UnZCBuZWVkIHRvIHByb3Blcmx5IG1hcmsgbm9zYXZlIG5vdCBvbmx5IHRv
+cC1sZXZlbCBwYWdlZGlyLApidXQgYWxzbyBhbGwgdGhlIG5lZWRlZCBkZXNjZW5kYW50cy4gTm90
+IGltcG9zc2libGUsIGp1c3QgYSBiaXQKdHJpY2t5LCBzZWUgeDg2LTY0IHZlcnNpb24gZm9yIGlu
+c3BpcmF0aW9uLgoJCQkJCQkJCVBhdmVsCi0tIAooZW5nbGlzaCkgaHR0cDovL3d3dy5saXZlam91
+cm5hbC5jb20vfnBhdmVsbWFjaGVrCihjZXNreSwgcGljdHVyZXMpIGh0dHA6Ly9hdHJleS5rYXJs
+aW4ubWZmLmN1bmkuY3ovfnBhdmVsL3BpY3R1cmUvaG9yc2VzL2Jsb2cuaHRtbApfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
+c3QKbGludXgtcG1AbGlzdHMub3NkbC5vcmcKaHR0cHM6Ly9saXN0cy5vc2RsLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LXBtCg==
