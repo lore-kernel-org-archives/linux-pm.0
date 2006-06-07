@@ -1,116 +1,58 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [2.6.17-rc5-mm2] crash when doing second suspend: BUG in arch/i386/kernel/nmi.c:174
-Date: Wed, 7 Jun 2006 10:50:20 +1000
-Message-ID: <200606071050.24916.ncunningham@linuxmail.org>
-References: <4480C102.3060400@goop.org> <200606071005.14307.ncunningham@linuxmail.org> <20060607004217.GF11696@redhat.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [patch/rft 2.6.17-rc5-git 3/6] PM_EVENT_PRETHAW,
+	handle in IDE and PCI
+Date: Tue, 6 Jun 2006 17:51:26 -0700
+Message-ID: <200606061751.26856.david-b@pacbell.net>
+References: <200604241429.52022.david-b@pacbell.net>
+	<200606050938.23356.david-b@pacbell.net>
+	<20060530192108.GA4044@ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart20171759.IrOMuyQhyY";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751136AbWFGAtU@vger.kernel.org>
-In-Reply-To: <20060607004217.GF11696@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Don Zickus <dzickus@redhat.com>, Linux-pm list <linux-pm@lists.osdl.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>, shaohua.li@intel.com, miles.lane@gmail.com, jeremy@goop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060530192108.GA4044@ucw.cz>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---nextPart20171759.IrOMuyQhyY
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tuesday 30 May 2006 12:21 pm, Pavel Machek wrote:
+> Hi!
+> =
 
-Hi.
+> > @@ -1227,7 +1227,9 @@ static int generic_ide_suspend(struct de
+> >  	rq.special =3D &args;
+> >  	rq.pm =3D &rqpm;
+> >  	rqpm.pm_step =3D ide_pm_state_start_suspend;
+> > -	rqpm.pm_state =3D state.event;
+> > +	if (mesg.event =3D=3D PM_EVENT_PRETHAW)
+> > +		mesg.event =3D PM_EVENT_FREEZE;
+> > +	rqpm.pm_state =3D mesg.event;
+> > =
 
-On Wednesday 07 June 2006 10:42, Don Zickus wrote:
-> On Wed, Jun 07, 2006 at 10:05:07AM +1000, Nigel Cunningham wrote:
-> > Hi.
-> >
-> > On Wednesday 07 June 2006 09:55, Don Zickus wrote:
-> > > > > So my question is/was what is the proper way to handle processor
-> > > > > level subsystems during the suspend/resume path on an SMP system.=
-=20
-> > > > > I really don't understand the hotplug path nor the suspend/resume
-> > > > > path very well.
-> > > >
-> > > > Make it work properly for CPU hotplug for individual CPU and then in
-> > > > suspend you take care of "global" state and the last CPU.
-> > >
-> > > So the assumption is treat all the cpus the same either all on or all
-> > > off, no mixed mode (some cpus on, some cpus off).  I guess I was tryi=
-ng
-> > > to hard to work on the per-cpu level.
-> >
-> > This sounds wrong to me. Shouldn't the the effect of hotunplugging a cpu
-> > be to put the driver in a state equivalent to if that cpu simply didn't
-> > exist? Unplugging shouldn't assume we're going to subsequently have
-> > either a driver suspend, or a replug.
->
-> This is my biggest problem or maybe my complete lack of understanding, is
-> that I don't know how to determine what state I am in during a hotplug
-> event, either a cpu removal or a suspend.  Therefore I feel like I have to
-> store some persistant data around _just_ in case this is a suspend event.
-> Also at the opposite end, how to separate a cpu insert vs. a cpu resume.
-> The different being initialize to a global state vs. initialize to a last
-> known state.
->
-> I thought it would make more sense if a few more states were to the
-> hotplug event list.  For example, in addition to CPU_ONLINE and CPU_DEAD,
-> there could also be something like CPU_SUSPEND, CPU_FREEZE, CPU_RESUME,
-> and CPU_THAW.
->
-> Anyway, I am probably complicating the matter.  I'll whip something up and
-> post it for review.
+> =
 
-Act like...
+> Actually it would be nicer not to modify mesg.event... And perhaps I'd =
 
-Unplug: It's going away, never to return.
-Plug: It's just appeared from nowhere, is completely uninitialised and may =
-be=20
-a different item to anything that happened to look the same before.
-Suspend: It's going to be put into a low (possibly no-) power state. It's=20
-going to come back, and when it does, you want to be able to put it back in=
-=20
-the state it's in prior to this call.
-Resume: You want to restore the state you saved in memory when given the=20
-suspend call earlier.
+> move this check lower -- to be consistent with 'low level driver gets
+> full info' idea.
 
-Regarding _FREEZE, there is work in progress to add this. I haven't been=20
-following the conversation really closely recently, but my understanding is=
-=20
-that you should expect it to be similar to suspend, except that you can=20
-guarantee that power will not be lost. All activity should be stopped so th=
-at=20
-you get a consistent state which you can restore in the resume call. Every=
-=20
-suspend or freeze must be followed by a resume.
+Instead, it's consistent with the "smallest obviously correct patch"
+principle.  Didn't want to end up overhauling IDE, especially since it
+doesn't seem to be a class  where resume() does anything interesting.
 
-I'll add the linux-pm list to the cc, just in case I've gotten something wr=
-ong=20
-or the other guys want to comment and have missed this thread.
 
-Hope this helps.
+> (Or is it checked at too many places?) =
 
-Regards,
 
-Nigel
-=2D-=20
-Nigel, Michelle and Alisdair Cunningham
-5 Mitchell Street
-Cobden 3266
-Victoria, Australia
-
---nextPart20171759.IrOMuyQhyY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBEhiLQN0y+n1M3mo0RAoxOAKCsZftYPolOI3tQBnHR7OwnSC9chACdHntY
-GXWmOGPKbE4gjw+uBdQ3u3M=
-=N4Gf
------END PGP SIGNATURE-----
-
---nextPart20171759.IrOMuyQhyY--
+Notice that "rqpm.pm_state" confusion ... it's checked indirectly
+from there.  Event codes are not states. =
