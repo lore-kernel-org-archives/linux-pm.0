@@ -1,11 +1,14 @@
-From: <rasmit.ranjan@wipro.com>
-Subject: Remote wake up not working
-Date: Thu, 8 Jun 2006 17:51:32 +0530
-Message-ID: <380D9721A8E2114485644D71E87C6AB201FD8476@PNE-HJN-MBX01.wipro.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Remote wake up not working
+Date: Thu, 8 Jun 2006 11:46:59 -0700
+Message-ID: <200606081147.00063.david-b@pacbell.net>
+References: <380D9721A8E2114485644D71E87C6AB201FD8476@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1397765560=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <380D9721A8E2114485644D71E87C6AB201FD8476@PNE-HJN-MBX01.wipro.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,107 +18,65 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel-digest@lists.us.dell.com
+To: linux-pm@lists.osdl.org
+Cc: rasmit.ranjan@wipro.com, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Thursday 08 June 2006 5:21 am, rasmit.ranjan@wipro.com wrote:
+> Hi,
 
---===============1397765560==
-Content-Type: multipart/alternative;
-    boundary="----------=_1149769319-21674-260"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-
-This is a multi-part message in MIME format...
-
-------------=_1149769319-21674-260
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi,
-    I am using ACER Aspire 3003LC laptop. Linux version: 2.6.15.4. I my
-Host Controller supports Power Management.I tried selective
-suspend/resume and it worked properly.Also my Host Controller supports
-remote wake up. So i tried testing remote wake up.But it did not
-work.Then i tried the same with the standard ( OHCI controller of my
-laptop ).It did not work as wel.=20
-Then i changed my laptop and tried testing remote wakeup and it worked
-properly with the OHCI controller and also with my Host Controller.=20
-=20
-So does this mean that there is something wrong with the ACER Aspire
-3003LC laptop ?=20
-Or is there something on which remote wake up depends on besides the
-Host Controller and the device ( supporting remote wake up ) ?
-=20
-Please suggest.
-=20
-Thanks,
-Rasmit.
-
-------------=_1149769319-21674-260
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006>Hi,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D915422511-07062006>&nbsp;&nb=
-sp;&nbsp; I=20
-am using ACER Aspire 3003LC laptop. Linux version: 2.6.15.4. I my Host=20
-Controller supports Power Management.I tried selective suspend/resume and i=
-t=20
-worked properly.Also m</SPAN></FONT><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006>y Host Controller supports remote wake up. So i =
-tried=20
-testing remote wake up.But it did not work.</SPAN></FONT><FONT face=3DArial=
-=20
-size=3D2><SPAN class=3D915422511-07062006>Then i tried the same with the st=
-andard (=20
-OHCI controller of my laptop ).It did not work as wel.&nbsp;</SPAN></FONT><=
-/DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D915422511-07062006>Then i ch=
-anged my=20
-laptop and tried testing remote wakeup and it worked properly with the OHCI=
-=20
-controller and also with my Host Controller. </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D915422511-07062006>So does t=
-his mean=20
-that there is something wrong with the ACER Aspire 3003LC laptop ?=20
-</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D915422511-07062006>Or is the=
-re=20
-something on which remote wake up depends on besides the Host Controller an=
-d the=20
-device ( supporting remote wake up ) ?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D915422511-07062006>Please=20
-suggest.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006>Thanks,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D915422511-07062006>Rasmit.</SPAN></FONT></DIV></BODY></HTML>
-
-------------=_1149769319-21674-260--
-
---===============1397765560==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+[ don't cc "digest" lists ... and avoid ccing multiple lists! ]
 
 
---===============1397765560==--
+>     I am using ACER Aspire 3003LC laptop. Linux version: 2.6.15.4. I my
+> Host Controller supports Power Management.  =
+
+
+That's with a SIS southbridge, right?  With both EHCI and OHCI?
+
+> I tried selective =
+
+> suspend/resume and it worked properly.  Also my Host Controller supports
+> remote wake up.  So i tried testing remote wake up.  But it did not
+> work.  Then i tried the same with the standard ( OHCI controller of my
+> laptop ).  It did not work as wel.
+
+You should include specifics of how you tested, and the failure mode...
+
+Also the "lspci -vv" output, and the relevant parts of kernel config.
+(Presumably CONFIG_PM is defined, also CONFIG_USB_SUSPEND...)  And to
+be most useful, the "lsusb -v" output for the devices you're using as
+wakeup event sources.  (Not all USB devices behave yet for suspend/resume,
+or issue wakeup events.)
+
+Note that remote wakeup -- from e.g. a system standby or suspend-to-RAM
+state -- on x86 hardware probably involves ensuring that /proc/acpi/wakeup
+lists the USB controllers as wakeup sources.
+
+
+> Then i changed my laptop and tried testing remote wakeup and it worked
+> properly with the OHCI controller and also with my Host Controller. =
+
+
+That is, using a different southbridge?  And different BIOS, with
+different ACPI support?  Again, you'd need to provide specifics.
+
+Congratulations!!  So far, every time I've tested remote wakeup on
+Linux, the ACPI code broke during the resume process ... that is, if
+it managed to enter a "standby" or "suspend-to-ram" state in the first
+place (again, ACPI problems).  I know that USB was doing the right
+thing, since that can be unit tested outside of system sleep states.
+
+  =
+
+> So does this mean that there is something wrong with the ACER Aspire
+> 3003LC laptop ?
+> Or is there something on which remote wake up depends on besides the
+> Host Controller and the device ( supporting remote wake up ) ?
+
+My first guess would be you're seeing ACPI breakage, or perhaps you're
+not setting things up correctly.  If you really did the same tests
+on both laptops, I'd be more inclined to suspect ACPI ... especially
+since that's where the problems have always been in my testing.
+
+- Dave
