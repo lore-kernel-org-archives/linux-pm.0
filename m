@@ -1,66 +1,56 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] Remote wake up not working
-Date: Tue, 13 Jun 2006 10:17:58 -0700
-Message-ID: <200606131018.00575.david-b@pacbell.net>
-References: <380D9721A8E2114485644D71E87C6AB201FD8476@PNE-HJN-MBX01.wipro.com>
-	<20060610132832.GB4547@ucw.cz> <1150215167.6305.6.camel@johannes>
+Subject: Re: Information in PM messages
+Date: Tue, 13 Jun 2006 10:25:34 -0700
+Message-ID: <200606131025.35106.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0606091018160.16847-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <1150215167.6305.6.camel@johannes>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0606091018160.16847-100000@netrider.rowland.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: linux-usb-devel@lists.sourceforge.net
-Cc: Johannes Berg <johannes@sipsolutions.net>, rasmit.ranjan@wipro.com, linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 13 June 2006 9:12 am, Johannes Berg wrote:
-> On Sat, 2006-06-10 at 13:28 +0000, Pavel Machek wrote:
-> 
-> > I do not think we support remote wakeup these days. Code may be there,
-> > but as noone ever uses it... perhaps it needs some fixing.
-> 
-> Works fine with bluetooth on my powerbook, but then again, I can't turn
-> it *off* which is rather annoying, but I think caused by the missing
-> suspend/resume handlers in hci_usb :/
+On Friday 09 June 2006 7:24 am, Alan Stern wrote:
+> On Thu, 8 Jun 2006, David Brownell wrote:
+> =
 
-USB remote wakeup basically works today (given CONFIG_USB_SUSPEND),
-and has worked for quite a few kernel releases now, given
+> > > 	A message whose source is USER or DRIVER should not be
+> > > 	allowed to resume a device that was suspended by a message
+> > > 	whose source was SYSTEM.  In other words, runtime PM and
+> > > 	autoresume should not interfere with a system sleep transition.
+> > =
 
-  (a) Working platform support.  So for example ACPI will not-infrequently
-      do the wrong thing on resume, or the video driver misbehaves, and
-      so on.  All too few systems work correctly with either (a1) "standby"
-      or (a2) "mem" when you write them to /sys/power/state, and the issues
-      have only rarely been related to USB.  (I got some mail over the last
-      few days about one that boiled down to interrupt controller bugs.)
+> > Why wouldn't that be entirely the driver's responsibility, and
+> > something they don't need API changes to achieve?
+> =
 
-  (b) Support in the USB drivers for suspend/resume.  I've seen other
-      reports lately about hci_usb is missing usb suspend/resume calls,
-      leading to misbehavior.  (I think someone checked in an odd patch
-      a while ago which change the failure mode for those missing calls
-      to something that was still broken, just not as obviously.)  And
-      then there are the ALSA drivers, and quite a few others...
+> Perhaps we don't need to worry about this.
+> =
 
-That's not to say that it's perfect -- the clock framework is still missing
-a hook to help embedded USB hosts behave right, and the /proc/acpi/wakeup
-state isn't even vaguely integrated with the driver model wakeup stuff -- but
-there are no known blocking issues there inside the USB stack or the main
-host controller drivers.
+> After all, in most cases it's impossible for a device which is suspended
+> as part of a system-sleep transition to get either a runtime-PM resume or
+> an autoresume request.  It can only happen in situations where the
+> system-sleep did not first freeze all tasks.  In those situations people
+> may agree that it is acceptable for the sleep transition to be aborted by
+> a user request or an autoresume.
+> =
+
+> If that is so then yes, we don't need to alter the PM message structures
+> in this way.
+
+I think that's pretty much what I was saying by insisting that the driver's
+PM state transitions have to be correct... invalid transtions will always
+be invalid, regardless of whether or not the API gets complexified!  :)
 
 - Dave
-
-
-
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
