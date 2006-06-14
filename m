@@ -1,17 +1,17 @@
-From: David Brownell <david-b@pacbell.net>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 14 Jun 2006 08:28:38 -0700
-Message-ID: <200606140828.39775.david-b@pacbell.net>
+Date: Wed, 14 Jun 2006 10:52:52 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
-	<200606131620.45156.david-b@pacbell.net>
-	<20060614102806.GB28536@elf.ucw.cz>
+	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
+	<20060614103404.GC28536@elf.ucw.cz>
+	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060614102806.GB28536@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,28 +22,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
+Cc: Power management list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 14 June 2006 3:28 am, Pavel Machek wrote:
-> Hi!
+
+
+On Wed, 14 Jun 2006, Linus Torvalds wrote:
+> > =
+
+> > And we definitely want to go back to SYSTEM_RUNNING or how is it
+> > called here.
 > =
 
-> > Here's a related patch (well, "hack") I found helpful ... specifically =
-to
-> > help let _serial_ consoles be more useful.  As a rule, RS-232 lines wil=
-l get
-> > shut down right before the most interesting point in the system suspend
-> > process, so that the debug messages I'm most interested in seeing will
-> > then be thrown into the bitbucket ...
-> =
+> Right. A bit too much cut-and-paste ;)
 
-> Also Russell recently posted "fix serial console over suspend"
-> patch... it would be nice if someone tested it. (I still have it in my in=
-box).
+Btw, maybe I didn't quite make this clear enough, but the two patches =
 
-That patch doesn't affect the "shut down" problem.  It addresses
-a problem I've never seen:  serial settings (baud etc) getting
-trashed.  So it wouldn't help, and I couldn't test it.
+actually make a huge difference for me.
 
-- Dave
+My Mac Mini (Intel dual-core CPU) now resumes and suspends in SMP mode =
+
+too, which was not true just a couple of days ago. It even seems to do it =
+
+fairly reliable.
+
+The debugging patch helped me figure out a number of the problems (and =
+
+even more problems that then didn't actually make any difference once I =
+
+started getting things working ;)
+
+And the console fixes is apparently what got things working in SMP mode. =
+
+
+Admittedly I'm not even quite sure _why_, but the reason I did them was =
+
+that I saw too many problems with hangs etc that seemed to be due to the =
+
+printk's and other debugging crud, and trying to debug with netconsole in =
+
+particular.
+
+As a result I will actually apply the console fixes patch (the fixed one, =
+
+with SYSTEM_RUNNING ;) immediately after the 2.6.17 release, so if people =
+
+have problems with it or suggesting for a way to disable the console =
+
+shutoff, please speak up. It's too late to do it for 2.6.17, or I would =
+
+have already applied it rather than post it to linux-pm..
+
+I don't particularly like shutting the console up early (and enabling it =
+
+again late), but quite frankly, the alternatives seemed much much worse in =
+
+practice, and this was really the RightThing(tm), apart from it probably =
+
+needing some debug flag to disable the disable.
+
+		Linus
