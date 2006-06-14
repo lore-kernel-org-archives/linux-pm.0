@@ -1,16 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 14 Jun 2006 12:34:04 +0200
-Message-ID: <20060614103404.GC28536@elf.ucw.cz>
+Date: Wed, 14 Jun 2006 12:28:06 +0200
+Message-ID: <20060614102806.GB28536@elf.ucw.cz>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
+	<200606131620.45156.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
+In-Reply-To: <200606131620.45156.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,52 +21,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Power management list <linux-pm@lists.osdl.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> The old code was terminally broken, and would do extremely bad things if =
-
-> you used netconsole, for example. Like sending out packets when the devic=
-e =
-
-> had already been suspended etc.
+> Here's a related patch (well, "hack") I found helpful ... specifically to
+> help let _serial_ consoles be more useful.  As a rule, RS-232 lines will =
+get
+> shut down right before the most interesting point in the system suspend
+> process, so that the debug messages I'm most interested in seeing will
+> then be thrown into the bitbucket (especially when resume breaks).  But
+> this *cough* elegant patch lets you toss that bitbucket into itself.
 > =
 
-> The new version may not be perfect either, but it seems fundamentally lik=
-e =
+> Although I must say I like Nigel's "BDI-2000 per developer" hack better.
+> Even though not all boxes can hook up to a JTAG module.  :(
 
-> a better design: we just hold on to the primary console semaphore over th=
-e =
+I guess I missed something, where is BDI-2000/developer hack?
 
-> whole suspend event, forcing printk() to just buffer up its data until we =
+Also Russell recently posted "fix serial console over suspend"
+patch... it would be nice if someone tested it. (I still have it in my inbo=
+x).
+									Pavel
 
-> can show it again. The code is also much simpler and more obvious.
-
-Okay, but we probably do not want to be in SYSTEM_BOOTING state,
-right?
-
-> -	orig_kmsg =3D kmsg_redirect;
-> -	kmsg_redirect =3D SUSPEND_CONSOLE;
-> +	console_suspended =3D 1;
-> +	system_state =3D SYSTEM_BOOTING;
->  	return 0;
->  }
->  =
-
->  void pm_restore_console(void)
->  {
-> -	acquire_console_sem();
-> -	set_console(orig_fgconsole);
-> +	console_suspended =3D 0;
-> +	system_state =3D SYSTEM_BOOTING;
-
-And we definitely want to go back to SYSTEM_RUNNING or how is it
-called here.
-
-								Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
