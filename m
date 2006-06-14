@@ -1,22 +1,19 @@
-From: Dave Jones <davej@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 14 Jun 2006 15:17:27 -0400
-Message-ID: <20060614191727.GC23238@redhat.com>
+Date: Wed, 14 Jun 2006 21:40:48 +0000
+Message-ID: <20060614214048.GG4950@ucw.cz>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
 	<20060614103404.GC28536@elf.ucw.cz>
 	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
-	<20060614180959.GD13105@redhat.com>
-	<Pine.LNX.4.64.0606141121040.5498@g5.osdl.org>
-	<1150312438.21941.10.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <1150312438.21941.10.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,49 +23,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Peter Jones <pjones@redhat.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Power management list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Power management list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 14, 2006 at 03:13:58PM -0400, Peter Jones wrote:
- > On Wed, 2006-06-14 at 11:29 -0700, Linus Torvalds wrote:
- > > =
+Hi!
 
- > > On Wed, 14 Jun 2006, Dave Jones wrote:
- > > > =
+> > > And we definitely want to go back to SYSTEM_RUNNING or how is it
+> > > called here.
+> > =
 
- > > > I bet you're not using slab debug are you? :)
- > > =
+> > Right. A bit too much cut-and-paste ;)
+> =
 
- > > Actually, I am:
- > > =
+> Btw, maybe I didn't quite make this clear enough, but the two patches =
 
- > > 	..
- > > 	CONFIG_DEBUG_SLAB=3Dy  =
+> actually make a huge difference for me.
 
- > > 	CONFIG_DEBUG_SLAB_LEAK=3Dy =
+Well, I'm sure they will make huge difference to me, too ;-)))))))))).
 
- > > 	CONFIG_DEBUG_MUTEXES=3Dy
- > > 	CONFIG_DEBUG_SPINLOCK=3Dy
- > > 	CONFIG_DEBUG_SPINLOCK_SLEEP=3Dy
- > > 	..
- > > =
+The first one is probably harmless/good idea, but I think the second
+one will break suspend-to-disk, or at least make it undebuggable.
 
- > > > Peter is hitting this with his mini on resume...
- > > =
+> My Mac Mini (Intel dual-core CPU) now resumes and suspends in SMP mode =
 
- > > I'm not sure why I'm not, but we probably have different configuration=
-s in =
+> too, which was not true just a couple of days ago. It even seems to do it =
 
- > > other respects.
- > =
+> fairly reliable.
 
- > Yes, we do -- this traceback was from the MacBook Pro, and on the
- > suspend-to-disk case, not suspend-to-ram.
+Yep, you are not alone trying to get that working.
 
-Ah my bad. That's what I get for middle-man'ing bug reports :)
+> The debugging patch helped me figure out a number of the problems (and =
 
-		Dave
+> even more problems that then didn't actually make any difference once I =
+
+> started getting things working ;)
+> =
+
+> And the console fixes is apparently what got things working in SMP mode. =
+
+
+It works for some people _without_ that console fix.
+
+Then, you have irq9 problem that breaks second suspend, right? I've
+seen that before, forced the poor soul to report it into kernel
+bugzilla, and IIRC ACPI people were already proposing solutions.
+
+						Pavel
+
 -- =
 
-http://www.codemonkey.org.uk
+Thanks for all the (sleeping) penguins.
