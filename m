@@ -1,19 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 14 Jun 2006 21:40:48 +0000
-Message-ID: <20060614214048.GG4950@ucw.cz>
+Date: Wed, 14 Jun 2006 15:03:06 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
 	<20060614103404.GC28536@elf.ucw.cz>
 	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
+	<20060614214048.GG4950@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
+In-Reply-To: <20060614214048.GG4950@ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,54 +23,45 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Power management list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > And we definitely want to go back to SYSTEM_RUNNING or how is it
-> > > called here.
+
+On Wed, 14 Jun 2006, Pavel Machek wrote:
+> =
+
+> > The debugging patch helped me figure out a number of the problems (and =
+
+> > even more problems that then didn't actually make any difference once I =
+
+> > started getting things working ;)
 > > =
 
-> > Right. A bit too much cut-and-paste ;)
+> > And the console fixes is apparently what got things working in SMP mode=
+. =
+
 > =
 
-> Btw, maybe I didn't quite make this clear enough, but the two patches =
+> It works for some people _without_ that console fix.
 
-> actually make a huge difference for me.
+Yes. It worked for me in UP and with several drivers removed without the =
 
-Well, I'm sure they will make huge difference to me, too ;-)))))))))).
+console fix. It didn't work for me when I did fancier stuff, netconsole in =
 
-The first one is probably harmless/good idea, but I think the second
-one will break suspend-to-disk, or at least make it undebuggable.
+particular ;/
 
-> My Mac Mini (Intel dual-core CPU) now resumes and suspends in SMP mode =
+> Then, you have irq9 problem that breaks second suspend, right? I've
+> seen that before, forced the poor soul to report it into kernel
+> bugzilla, and IIRC ACPI people were already proposing solutions.
 
-> too, which was not true just a couple of days ago. It even seems to do it =
+Yes, I've got the same irq9 problem, and the broken second resume.
 
-> fairly reliable.
+The irq9 one is really irritating (hey, ACPI almost always is). I thought =
 
-Yep, you are not alone trying to get that working.
+it would be something as simple as the wrong polarity or something, but =
 
-> The debugging patch helped me figure out a number of the problems (and =
+nope..
 
-> even more problems that then didn't actually make any difference once I =
-
-> started getting things working ;)
-> =
-
-> And the console fixes is apparently what got things working in SMP mode. =
-
-
-It works for some people _without_ that console fix.
-
-Then, you have irq9 problem that breaks second suspend, right? I've
-seen that before, forced the poor soul to report it into kernel
-bugzilla, and IIRC ACPI people were already proposing solutions.
-
-						Pavel
-
--- =
-
-Thanks for all the (sleeping) penguins.
+			Linus
