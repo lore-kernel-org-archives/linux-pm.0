@@ -1,8 +1,8 @@
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
+From: Greg KH <greg@kroah.com>
 Subject: Re: [PATCH 2/2] Fix console handling during
- suspend/resume
-Date: Tue, 13 Jun 2006 17:06:09 -0700
-Message-ID: <20060613170609.3291ce36.rdunlap@xenotime.net>
+	suspend/resume
+Date: Tue, 13 Jun 2006 17:18:44 -0700
+Message-ID: <20060614001844.GA31458@kroah.com>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
 	<200606131620.45156.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606131635430.5498@g5.osdl.org>
@@ -11,6 +11,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
 In-Reply-To: <200606141000.12260.ncunningham@linuxmail.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -22,11 +23,10 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: david-b@pacbell.net, torvalds@osdl.org, linux-pm@lists.osdl.org
+Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 14 Jun 2006 10:00:08 +1000 Nigel Cunningham wrote:
-
+On Wed, Jun 14, 2006 at 10:00:08AM +1000, Nigel Cunningham wrote:
 > Hi.
 > =
 
@@ -51,39 +51,11 @@ t's
 
 > omnibook even came with one. It's the one bit I still use :)
 
-and usb serial-console works, although not during early init (it has
-to wait for the usb subsystem to be ready).
+But you need interrupts to work for usb to serial devices, and the whole
+usb stack up and running.  Even though you can get console messages
+through these devices, it's a bad hack and I wouldn't recommend it for
+anyone.
 
-> > > Although I must say I like Nigel's "BDI-2000 per developer" hack bett=
-er.
-> > > Even though not all boxes can hook up to a JTAG module.  :(
-> >
-> > Umm. Even more importantly, I don't think the JTAG interfaces for PC's =
-are
-> > necessarily even available. There is read-out logic for ARM's and embed=
-ded
-> > PPC, but have you ever seen anything for something non-embedded?
-> =
+thanks,
 
-> Yeah. Sort of kills that idea, doesn't it?
-> =
-
-> > A really useful trick the PPC people use was to put the firewire
-> > controller into "anybody can read" mode, and use it as a kernel debugger
-> > when it basically becomes a remote memory DMA engine. I used that to de=
-bug
-> > some kernel hangs, and it was very nice.
-> >
-> > However, that won't survive a power event, so it might be useful to deb=
-ug
-> > suspend problems, but generally not resume problems.
-> =
-
-> Since just about every problem occurs at resume time, it really does seem=
- to =
-
-> me to be the case that we have to use the rtc. Great idea, by the way.
-
-
----
-~Randy
+greg k-h
