@@ -1,15 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] Add some basic resume trace facilities
-Date: Wed, 14 Jun 2006 12:25:13 +0200
-Message-ID: <20060614102513.GA28536@elf.ucw.cz>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Wed, 14 Jun 2006 12:34:04 +0200
+Message-ID: <20060614103404.GC28536@elf.ucw.cz>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606131430380.5498@g5.osdl.org>
+	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606131430380.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,23 +26,46 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Not a lot of space in the RTC, but it's the only piece of hardware that i=
-s =
+> The old code was terminally broken, and would do extremely bad things if =
 
-> (a) reachable at all times, regardless of any other setup and (b) doesn't =
+> you used netconsole, for example. Like sending out packets when the devic=
+e =
 
-> lose it state or have firmware reset the memory of at boot.
+> had already been suspended etc.
 > =
 
-> Side note: you really don't want to do this unless you have an external =
+> The new version may not be perfect either, but it seems fundamentally lik=
+e =
 
-> time-source like NTP that resets the clock to the right value after the =
+> a better design: we just hold on to the primary console semaphore over th=
+e =
 
-> boot is done ;)
+> whole suspend event, forcing printk() to just buffer up its data until we =
 
-Clever hack, I'd say. I used hardware debugger last time I was trying
-to debug this, but I guess that's just not an option in mac mini case...
-									Pavel
+> can show it again. The code is also much simpler and more obvious.
+
+Okay, but we probably do not want to be in SYSTEM_BOOTING state,
+right?
+
+> -	orig_kmsg =3D kmsg_redirect;
+> -	kmsg_redirect =3D SUSPEND_CONSOLE;
+> +	console_suspended =3D 1;
+> +	system_state =3D SYSTEM_BOOTING;
+>  	return 0;
+>  }
+>  =
+
+>  void pm_restore_console(void)
+>  {
+> -	acquire_console_sem();
+> -	set_console(orig_fgconsole);
+> +	console_suspended =3D 0;
+> +	system_state =3D SYSTEM_BOOTING;
+
+And we definitely want to go back to SYSTEM_RUNNING or how is it
+called here.
+
+								Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
