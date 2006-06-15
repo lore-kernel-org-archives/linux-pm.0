@@ -1,14 +1,18 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 15:18:21 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606151502150.5498@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606151720350.10244-100000@iolanthe.rowland.org>
+Date: Fri, 16 Jun 2006 00:20:02 +0200
+Message-ID: <20060615222002.GF2255@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
+	<20060615211031.GA2255@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151446350.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0606151720350.10244-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606151446350.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,127 +22,71 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-
-On Thu, 15 Jun 2006, Alan Stern wrote:
->
-> Here's what you actually did say:
-> ---------
->
-> > To have DMAs stopped, you need to "freeze" the devices.
+> > Okay, so you are saving state, then changing it. Now.. you are right
+> > that for most devices it is possible to separate state that does not
+> > change from state that changes; that is okay but lot of work.
 > =
 
-> No you don't. =
+> It's ok _by_definition_ for all work, since any changes we do are done by =
+
+> ourselves, so it's "not important".
+> =
+
+> I think that a lot of problems that people look at aren't actually =
+
+> "device" problems at all, but "memory management" problems. =
 
 > =
 
-> You need to stop the high-level _queues_, but that's something totally =
+> The fact is, suspend-to-disk is really nasty from a memory management =
 
-> different from actually stopping the _devices_.
+> standpoint, since the image you save to disk is not the "final" image in =
 
-Right. =
+> the same sense that the STR image is (or the APM suspend image is).
+
+Right. Fortunately, it is only nasty brain-teaser when you try to
+think about it, code is not that bad.
+
+> That means, for example, that if you save-and-restore temporary pointers =
+
+> in your device status, you need to do something about the =
+
+> _memory_management_ problems, but that has really nothing to do with =
+
+> saving and restoring the hardware device state.
+
+? No, I do not think we have any problems with temporary
+pointers. Memory snapshot is atomic (done on single CPU, with disabled
+interrupts, no DMAs). Snapshot restore is also atomic (1 CPU, no
+interrupts, no DMAs). And snapshot just take all the (allocated)
+memory, so we need absolutely no support for saving state that is not
+in hardware.
+
+>  - some drivers might choose to not support suspend-to-disk as well as =
+
+>    they support suspend-to-ram. They might, for example, decide that
+>  if it =
 
 
-What you _do_ need to do, is stop the user-level actions.
+? If driver support suspend-to-ram, it automatically supports
+suspend-to-disk (albeit maybe slowly, like in disks case, which were
+unneccessarily spun down).
 
-Ie by "higher-level queues", we're talking stuff that has nothing at all =
+> But notice how this is about _memory_, not about the actual hardware =
 
-to do with device drivers any more.
+> device state?
 
-Before you suspend, you need to make the machine quiescent, in other =
+? I do not see what problems are that with memory.
 
-words. The devices are still working, but you really really don't want to =
+									Pavel
+-- =
 
-do this while things are still _happening_.
-
-Now, with suspend-to-RAM, I suspect we could even avoid that until the =
-
-very last phase (ie the actual suspend code). But quite frankly, from a =
-
-pure debuggability standpoint, I do think we want to basically try to make =
-
-everything as quiet as humanly possible.
-
-And from a suspend-to-disk standpoint, the act of starting to write to =
-
-disk really requires that everything is "done", so you had better have =
-
-_nothing_ else than the actual write-to-disk actually happening. That's =
-
-also the thing where a "save_state()" may actually want to flush its =
-
-queues entirely and replace them with a known-temporary thing.
-
-But the point is, the devices really have to be able to handle things that =
-
-can happen during suspend, even after their state has been "saved". They =
-
-can't just stop. That would be a bug - or it would require totally insane =
-
-special casing, which is effectively what we do now.
-
-So think about what we do now: We special-case X, and we special-case the =
-
-save-to-disk device, and we special-case the console printouts, and we =
-
-special-case a lot of other things, AND WE STILL GOT IT WRONG. Try using =
-
-netconsole, and see it blow up in your face without my changes (it _might_ =
-
-work with some network drivers, but I looked at the sky2 driver, and I =
-
-suspect that apart from the stupid bug where it didn't actually do a =
-
-pci_save_state(), it's probably one of the _better_ ones).
-
-And the thing is, all those special-cases are all really doing the same =
-
-thing: "keep the device alive despite shutting it down". Really. I'm not =
-
-making that up. In the case of X, we did it the other way around, namely =
-
-in that case, the special case was not keeping the device alive, but =
-
-instead just saving the state separately (and early) from all the other =
-
-drivers. Which I'm just saying we should do for _everyting_.
-
-At some point, somebody just _has_ to realize, that the problem was =
-
-shutting the damn thing down in the first place! If you just save the hw =
-
-state that you need to save, and let the device itself continue work, =
-
-suddenly all the special cases just go away.
-
-Poof. They're gone.
-
-And yes, I admit (and I started off talking about this) that I care a lot =
-
-more about suspend-to-ram than I do about suspend-to-disk. I seriously =
-
-claim that STR _should_ be a lot simpler than suspend-to-disk, because it =
-
-avoids all the memory management problems. The reason that we support =
-
-suspend-to-disk but not STR is totally perverse - it's simply that it has =
-
-been easier to debug, because unlike STR, we can do a "real boot" into a =
-
-working system, and thus we don't have the debugging problems that the =
-
-"easy" suspend/resume case has.
-
-Wouldn't you agree?
-
-Which is obviously also why patch 1/2 (and in many way the more =
-
-fundamental one) was about trying to make debugging much simpler. Or at =
-
-least possible.
-
-			Linus
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
