@@ -1,24 +1,15 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Wed, 14 Jun 2006 21:50:17 -0400
-Message-ID: <20060615015017.GD4823@neo.rr.com>
-References: <Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
-	<20060614103404.GC28536@elf.ucw.cz>
-	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
-	<20060614214048.GG4950@ucw.cz>
-	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
-	<20060614221235.GA7751@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141529270.5498@g5.osdl.org>
-	<20060615003926.GA11083@neo.rr.com>
-	<20060615004052.GA19545@kroah.com>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Thu, 15 Jun 2006 11:54:46 +1000
+Message-ID: <200606151154.50022.ncunningham@linuxmail.org>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<20060614235713.GA24859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0614983757=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20060615004052.GA19545@kroah.com>
+In-Reply-To: <Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,57 +19,121 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Power management list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@lists.osdl.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 14, 2006 at 05:40:52PM -0700, Greg KH wrote:
-> On Wed, Jun 14, 2006 at 08:39:26PM -0400, Adam Belay wrote:
-> > On Wed, Jun 14, 2006 at 03:37:51PM -0700, Linus Torvalds wrote:
-> > > And btw, the reason it didn't resume originally was because _we_ did =
+--===============0614983757==
+Content-Type: multipart/signed; boundary="nextPart1854303.zol6ziSc8p";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> > > things wrong. The PCI command word mustn't be writen before the rest =
-of =
+--nextPart1854303.zol6ziSc8p
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > > the config space has been restored (one of the things I used my debug=
-ging =
+Hi.
 
-> > > patches for, until I noticed that -mm had the same fix independently,=
- so =
+On Thursday 15 June 2006 10:07, Linus Torvalds wrote:
+> On Thu, 15 Jun 2006, Pavel Machek wrote:
+> > On St 14-06-06 15:59:00, Linus Torvalds wrote:
+> > > There is no "console device".
+> > >
+> > > There are potentially _many_ console devices.
+> >
+> > With printks going to all of them?
+>
+> Yup.
+>
+> > My point is that you really want the console enabled in writing phase
+> > of suspend-to-disk. And old setup got that detail right, while new
+> > setup does not.
+>
+> I definitely agree that we can change things around a bit. I don't
+> personally use suspend-to-disk, and I'm a bit tired of having people tell
+> me STD works, when STR is what I have always cared about, so if the tables
+> are turned for once, I won't be _too_ sorry.
 
-> > > that's the one that is merged right now ;)
-> > =
+Sorry to disappoint, but I've just started testing, and it works fine
+with Suspend2, so I don't see any reason to believe swsusp won't
+work as well. For the trace patch, I did need to add a trace section
+to the x86_64 code (patch below). Now I'll see if I can reproduce the
+unreliability I've been having, and see if the tracing works and helps.
 
-> > I was hoping to see a more complete fix merged.  This patch still write=
-s to a
-> > large number of read-only registers, touches BIST (which can be dangero=
-us on
-> > some hardware), and isn't careful about the initial state of the PCI co=
-mmand
-> > word.
-> > =
+> I have always argued that the suspend should be a two-phase thing: a
+> "prepare to suspend" (that saves the device state) and then a "real
+> suspend" (that actually turns off devices).
 
-> > I attempted to rework pci_save/restore_state() a couple weeks ago:
-> > http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D114949711413176&w=3D2
-> > =
+=46wiw, I agree. Wouldn't it also help with that acpi memory allocation
+issue that's hung around for so long?
 
-> > Any comments would be appreciated.
-> =
+> And quite frankly, until we do it the way I say we should do it, I don't
+> think you can _ever_ do things well. For example, the whole thing where we
+> have hacks to try to avoid suspending the device that is the disk to
+> suspend to all comes from this same problem.
 
-> Your patches are still in my queue, so don't worry, they aren't being
-> ignored (the other restore patch had been in my tree, and in -mm for a
-> long time, and deserved to be merged already.)
-
-Thanks, I appreciate you keeping them in mind.
-
-> In other email threads, the idea came up that we should probably be
-> restoring more than just the "basic" configuration.  PCI-E and PCI-X 2.0
-> devices have a much bigger config space, and there's the "new
-> capabilities list" that we should also probably restore in the proper
-> manner if present.
-
-Yes, I think we currently only restore MSI.  I'll look into adding support
-for other capabilities that might need it.
+There I'm not so sure - I think the issue there is that we didn't
+distinguish between 'stop activity' and 'power down'. If I'm up
+with the play, that's being addressed in those new patches to
+add a _FREEZE state.
 
 Regards,
-Adam
+
+Nigel
+
+Signed-off-by: Nigel Cunningham <nigel@suspend2.net>
+
+ vmlinux.lds.S |    7 +++++++
+ 1 file changed, 7 insertions(+)
+diff -ruNp 9931-x86-64-tracedata-section.patch-old/arch/x86_64/kernel/vmlin=
+ux.lds.S 9931-x86-64-tracedata-section.patch-new/arch/x86_64/kernel/vmlinux=
+=2Elds.S
+=2D-- 9931-x86-64-tracedata-section.patch-old/arch/x86_64/kernel/vmlinux.ld=
+s.S	2006-06-15 11:32:20.000000000 +1000
++++ 9931-x86-64-tracedata-section.patch-new/arch/x86_64/kernel/vmlinux.lds.=
+S	2006-06-15 11:31:19.000000000 +1000
+@@ -45,6 +45,13 @@ SECTIONS
+=20
+   RODATA
+=20
++  . =3DALIGN(4);
++  __tracedata_start =3D.;
++  .tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {
++	*(.tracedata)
++  }
++  __tracedata_end =3D.;
++
+ 				/* Data */
+   .data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 	*(.data)
+
+
+=2D-=20
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
+
+--nextPart1854303.zol6ziSc8p
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBEkL3pN0y+n1M3mo0RAstsAJ9HS4SvJYN2nsbM10kiIOd5Z6YDbwCgraAU
+D0CbDdk0PUPAFqkUfOJNXRU=
+=mY2T
+-----END PGP SIGNATURE-----
+
+--nextPart1854303.zol6ziSc8p--
+
+--===============0614983757==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0614983757==--
