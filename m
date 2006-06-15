@@ -1,24 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 23:27:24 +0200
-Message-ID: <20060615212724.GB2255@elf.ucw.cz>
-References: <20060615083921.GB9423@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0606151047410.6879-100000@iolanthe.rowland.org>
-	<20060615161446.GA23859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606150922200.5498@g5.osdl.org>
-	<20060615182419.GA1711@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151219540.5498@g5.osdl.org>
-	<20060615200333.GB1849@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151325520.5498@g5.osdl.org>
-	<20060615204317.GC1849@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151356480.5498@g5.osdl.org>
+Date: Thu, 15 Jun 2006 15:01:44 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606151446350.5498@g5.osdl.org>
+References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
+	<20060615211031.GA2255@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606151356480.5498@g5.osdl.org>
+In-Reply-To: <20060615211031.GA2255@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,114 +20,133 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > > Why? We are saving state to memory, we should not need any other
-> > > > devices to do that.
-> > > =
 
-> > > Hell no, we're not.
-> > =
-
-> > ?
+On Thu, 15 Jun 2006, Pavel Machek wrote:
 > =
 
-> We're clearly saving state to _user_ space etc in some cases. That's not =
+> Okay, so you are saving state, then changing it. Now.. you are right
+> that for most devices it is possible to separate state that does not
+> change from state that changes; that is okay but lot of work.
 
-> "memory", that is "pageable data and processes that can - and do - depend =
+It's ok _by_definition_ for all work, since any changes we do are done by =
 
-> on other devices in ways that the kernel is not necessarily even aware =
+ourselves, so it's "not important".
 
-> of".
-> =
+I think that a lot of problems that people look at aren't actually =
 
-> Just as the most obvious example, it's entirely possible that when you as=
-k =
+"device" problems at all, but "memory management" problems. =
 
-> the graphics system to save its state, it might actually tell clients =
 
-> across a network that their window got occluded or something.
+The fact is, suspend-to-disk is really nasty from a memory management =
 
-That's okay, kernel tells X to switch consoles. When X gives console
-control back to kernel, kernel owns the graphics hardware, and we are
-okay.
+standpoint, since the image you save to disk is not the "final" image in =
 
-> The same is true of various virtual devices that the kernel may not even =
+the same sense that the STR image is (or the APM suspend image is).
 
-> know about. Network devices done as tunnels in user space etc. They may =
+That means, for example, that if you save-and-restore temporary pointers =
 
-> _look_ like system devices at the root of the device tree to the kernel, =
+in your device status, you need to do something about the =
 
-> but that's just because the kernel has not a f*cking clue about what they =
+_memory_management_ problems, but that has really nothing to do with =
 
-> are actually connected to.
+saving and restoring the hardware device state.
 
-I admit we have problems with various virtual devices...
+(And yes, I agree that memory management problems are hard, I'm just =
 
-> So we're _not_ just saving data to memory. We're allocating memory (which =
+saying that they are an independent issue. They aren't hardware state per =
 
-> means that we want to access every single device that may do write-back), =
+se, they are "driver state", and, like all the other VM issues, it's nasty =
 
-> and we're calling out to user space (which means that we _really_ don't =
+to try to restore memory allocations that can change).
 
-> know what a device may need).
+But if you realize that memory management problems are _separate_ from =
 
-That memory should be either allocated statically, or allocated during
-boot up or something. Usually, device just adds few bytes to
-per-device structures.. this problem is real but not too bad.
+device state issues, you already get a much better handle on the problem. =
 
-> > For fbcon, etc, no, we do not any other devices, so it actually works
-> > okay.
-> =
+For example, you immediately realize that _that_ is the biggest difference =
 
-> Yeah, Linux suspend is generally felt to "work ok".
-> =
+between "suspend-to-RAM" and "suspend-to-disk", and that realization means =
 
-> Not.
+that you understand that there are several possible solutions:
 
-Yeah, we have few drivers to fix :-). Yes, we could add one more pass
-before freezing (in s2disk) and before suspending (s2ram). Would it
-magically solve all the suspend problems? No I don't think so.
+ - some drivers might choose to not support suspend-to-disk as well as =
 
-[Your separate pass may save some memory at runtime, you are right,
-but it will not fix the buggy drivers.]
+   they support suspend-to-ram. They might, for example, decide that if it =
 
-> > > In fact, done right, if you know the machine powers off, the final su=
-spend =
+   was a disk suspend, they will simply throw away all the allocations =
 
-> > > should literally not be needed. "Remove power globally" is actually a=
- very =
+   that could have been temporary allocations, and jst re-allocate all =
 
-> > > good suspend/shutdown mechanism that doesn't even need any driver sup=
-port ;)
-> > =
+   temporary storage. This obviously means that you leak some memory at =
 
-> > Actually, that's bad idea; some machines are unable to power down with
-> > devices still running.
-> =
+   resume time, but it's an alternative to saying "I won't do any STD at =
 
-> Can you read my sentence again? "If you know the machine powers off"?
-> =
+   all!"
 
-> Trust me, if you remove power from the devices, that machine _will_ power =
+ - another approach that a driver might choose to do is to free all its =
 
-> down. It's that simple. It's not "maybe", or "if" or "unable to". It's =
+   temporary queues when doing a "save" event, and start using a separate =
 
-> basic physics.
+   memory pool afterwards - and then on resume, just clear the whole =
 
-Except that powerdown is done with ACPI, and that means ... guess
-what... BIOS call. And that BIOS fails if you leave APIC enabled, or
-something like that. So yes, if you could cut off power with devices
-enabled, it is okay to do that. But you can't, because BIOSen are
-broken.
+   memory pool, since it's not "trustworthy" any more (ie it was saved =
 
-									Pavel
--- =
+   with some random state that you thus can't actually trust any more)
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+ - a final approach is actually push some of this into the VM layer, and =
+
+   have the "suspend pool" be something that the VM knows about, and that =
+
+   a resume will simple clear. Every single allocation after the suspend =
+
+   was started would be from this "suspend pool", and that, together with =
+
+   a simplified #2 above (no per-driver pool, the driver just clears all =
+
+   its temporary pointers at "save" time, and knows that any subsequent =
+
+   allocations will be throw-away at resume time) would also probably =
+
+   work.
+
+But notice how this is about _memory_, not about the actual hardware =
+
+device state?
+
+> Okay, so .. in your model you can simply save state *during driver
+> init*, right at boot.
+
+Basically.
+
+Except in practice user actions/setups can change it, and in practice you =
+
+really do want to save it later, because you may not need to save it at =
+
+all. =
+
+
+But yes, the basic idea is that there's two classes of hardware state: =
+
+there's the part you have to save, because you can't re-generate it (and =
+
+that, by definition, is _not_ something that changes as part of normal =
+
+operations, since if it was, the driver _could_ just re-generate it at =
+
+resume), and then there's the stuff that can be regenerated.
+
+You obviously shouldn't save the stuff that you can re-generate. You =
+
+shouldn't save it for two reasons:
+ - it's unnecessary
+ - it's wrong (because it may change due to IO happening).
+
+See? =
+
+
+		Linus
