@@ -1,17 +1,18 @@
-From: David Brownell <david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 09:57:41 -0700
-Message-ID: <200606150957.42449.david-b@pacbell.net>
+Date: Thu, 15 Jun 2006 20:03:50 +0200
+Message-ID: <20060615180350.GG23859@elf.ucw.cz>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606141846.55839.david-b@pacbell.net>
 	<20060615084153.GC9423@elf.ucw.cz>
+	<200606150957.42449.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060615084153.GC9423@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200606150957.42449.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,38 +22,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
+To: David Brownell <david-b@pacbell.net>
 Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 15 June 2006 1:41 am, Pavel Machek wrote:
-> On St 14-06-06 18:46:55, David Brownell wrote:
-> > On Wednesday 14 June 2006 4:57 pm, Pavel Machek wrote:
-> > =
-
-> > > My point is that you really want the console enabled in writing phase
-> > > of suspend-to-disk. =
-
-> > =
-
-> > Notice how nicely this generalizes a point that's been made before:
-> > Linux should have the ability to exclude certain devices (and their
-> > parents) from that first "prepare to suspend" phase.  Originally the
-> =
-
-> No, it does not. If your console needs DMA, you _need_ to stop it. If
-> it can work without, you want to keep it enabled.
-> =
-
-> This has less to do with device types and trees and more to do with
-> DMA or not.
-
-Certainly there are details that need to be worked out, that's the
-whole point of fixing some of these console+suspend problems.  And
-DMA is one of them.
-
-In this case, DMA only would need to be prevented during the actual
-construction of the snapshot -- which is AFTER that "prepare to
-suspend" phase, notice! -- so your straw-man doesn't apply.
-
-- Dave
+T24gxIx0IDE1LTA2LTA2IDA5OjU3OjQxLCBEYXZpZCBCcm93bmVsbCB3cm90ZToKPiBPbiBUaHVy
+c2RheSAxNSBKdW5lIDIwMDYgMTo0MSBhbSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+ID4gT24gU3Qg
+MTQtMDYtMDYgMTg6NDY6NTUsIERhdmlkIEJyb3duZWxsIHdyb3RlOgo+ID4gPiBPbiBXZWRuZXNk
+YXkgMTQgSnVuZSAyMDA2IDQ6NTcgcG0sIFBhdmVsIE1hY2hlayB3cm90ZToKPiA+ID4gCj4gPiA+
+ID4gTXkgcG9pbnQgaXMgdGhhdCB5b3UgcmVhbGx5IHdhbnQgdGhlIGNvbnNvbGUgZW5hYmxlZCBp
+biB3cml0aW5nIHBoYXNlCj4gPiA+ID4gb2Ygc3VzcGVuZC10by1kaXNrLiAKPiA+ID4gCj4gPiA+
+IE5vdGljZSBob3cgbmljZWx5IHRoaXMgZ2VuZXJhbGl6ZXMgYSBwb2ludCB0aGF0J3MgYmVlbiBt
+YWRlIGJlZm9yZToKPiA+ID4gTGludXggc2hvdWxkIGhhdmUgdGhlIGFiaWxpdHkgdG8gZXhjbHVk
+ZSBjZXJ0YWluIGRldmljZXMgKGFuZCB0aGVpcgo+ID4gPiBwYXJlbnRzKSBmcm9tIHRoYXQgZmly
+c3QgInByZXBhcmUgdG8gc3VzcGVuZCIgcGhhc2UuICBPcmlnaW5hbGx5IHRoZQo+ID4gCj4gPiBO
+bywgaXQgZG9lcyBub3QuIElmIHlvdXIgY29uc29sZSBuZWVkcyBETUEsIHlvdSBfbmVlZF8gdG8g
+c3RvcCBpdC4gSWYKPiA+IGl0IGNhbiB3b3JrIHdpdGhvdXQsIHlvdSB3YW50IHRvIGtlZXAgaXQg
+ZW5hYmxlZC4KPiA+IAo+ID4gVGhpcyBoYXMgbGVzcyB0byBkbyB3aXRoIGRldmljZSB0eXBlcyBh
+bmQgdHJlZXMgYW5kIG1vcmUgdG8gZG8gd2l0aAo+ID4gRE1BIG9yIG5vdC4KPiAKPiBDZXJ0YWlu
+bHkgdGhlcmUgYXJlIGRldGFpbHMgdGhhdCBuZWVkIHRvIGJlIHdvcmtlZCBvdXQsIHRoYXQncyB0
+aGUKPiB3aG9sZSBwb2ludCBvZiBmaXhpbmcgc29tZSBvZiB0aGVzZSBjb25zb2xlK3N1c3BlbmQg
+cHJvYmxlbXMuICBBbmQKPiBETUEgaXMgb25lIG9mIHRoZW0uCj4gCj4gSW4gdGhpcyBjYXNlLCBE
+TUEgb25seSB3b3VsZCBuZWVkIHRvIGJlIHByZXZlbnRlZCBkdXJpbmcgdGhlIGFjdHVhbAo+IGNv
+bnN0cnVjdGlvbiBvZiB0aGUgc25hcHNob3QgLS0gd2hpY2ggaXMgQUZURVIgdGhhdCAicHJlcGFy
+ZSB0bwo+IHN1c3BlbmQiIHBoYXNlLCBub3RpY2UhIC0tIHNvIHlvdXIgc3RyYXctbWFuIGRvZXNu
+J3QgYXBwbHkuCgpPa2F5LCB5b3UgX2Nhbl8gZG8gCgpzdXNwZW5kIHdob2xlIHRyZWUgYnV0IGRp
+c2sgYW5kIHZpZGVvCmZyZWV6ZSBkaXNrIGFuZCB2aWRlbwpjcmVhdGUgc25hcHNob3QKdW5mcmVl
+emUgZGlzayBhbmQgdmlkZW8Kd3JpdGUgc25hcHNob3QKcG93ZXJkb3duCgpRdWVzdGlvbiBpczog
+bG9va3MgdG8gbWUgbGlrZSBxdWl0ZSBhIGxvdCBvZiBjb21wbGV4aXR5IGZvciB2ZXJ5CmxpdHRs
+ZSBnYWluLCBidXQuLi4KCQkJCQkJCQlQYXZlbAotLSAKKGVuZ2xpc2gpIGh0dHA6Ly93d3cubGl2
+ZWpvdXJuYWwuY29tL35wYXZlbG1hY2hlawooY2Vza3ksIHBpY3R1cmVzKSBodHRwOi8vYXRyZXku
+a2FybGluLm1mZi5jdW5pLmN6L35wYXZlbC9waWN0dXJlL2hvcnNlcy9ibG9nLmh0bWwKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
+ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLm9zZGwub3JnCmh0dHBzOi8vbGlzdHMub3NkbC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9saW51eC1wbQo=
