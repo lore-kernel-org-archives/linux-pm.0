@@ -1,24 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 18:17:21 +0200
-Message-ID: <20060615161721.GB23859@elf.ucw.cz>
-References: <Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
-	<20060614214048.GG4950@ucw.cz>
-	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
-	<20060614221235.GA7751@elf.ucw.cz>
-	<1150324014.21941.23.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606141537570.5498@g5.osdl.org>
-	<20060614224436.GF7751@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141557100.5498@g5.osdl.org>
-	<20060614235713.GA24859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
+Date: Thu, 15 Jun 2006 09:26:15 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606150922200.5498@g5.osdl.org>
+References: <20060615083921.GB9423@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0606151047410.6879-100000@iolanthe.rowland.org>
+	<20060615161446.GA23859@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
+In-Reply-To: <20060615161446.GA23859@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,58 +20,177 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Power management list <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > My point is that you really want the console enabled in writing phase
-> > of suspend-to-disk. And old setup got that detail right, while new
-> > setup does not.
+
+On Thu, 15 Jun 2006, Pavel Machek wrote:
 > =
 
-> I definitely agree that we can change things around a bit. I don't =
+> That said... Linus, can I get latest version of that patch? I'll fix
+> it up to work with s2disk...
 
-> personally use suspend-to-disk, and I'm a bit tired of having people tell =
+I don't think I've done anything but fix the SYSTEM_RUNNING thing you =
 
-> me STD works, when STR is what I have always cared about, so if the table=
-s =
+noticed and fixed a header problem that DaveJ noticed with =
 
-> are turned for once, I won't be _too_ sorry.
-> =
+CONFIG_VT_CONSOLE not being enabled. But here it is again.
 
-> I have always argued that the suspend should be a two-phase thing: a =
+(I'm told that the linux-pm list corrupts things with MIME, but at least =
 
-> "prepare to suspend" (that saves the device state) and then a "real =
+Pavel should get a non-corrupt version thanks to being directly on the =
 
-> suspend" (that actually turns off devices). =
+participants list)
 
-> =
+Btw, the new console prepare/restore code is so simple that I'm not sure =
 
-> _I_ think that's the only sane schenario, and I think that in that =
+it's worthwhile even having a special file for it. It would actually clean =
 
-> schenario we could save the image to disk in between, and disable the =
+things up to move these things into kernel/printk.c (and make the =
 
-> console after that, and just before the "actually turn off devices" phase.
-> =
+"console_suspended" flag static to that file).
 
-> But I've said that before, and nobody cared last time either. For some =
+		Linus
 
-> reason, people continue to think that suspend should be a single phase, =
+----
+Author: Linus Torvalds <torvalds@macmini.osdl.org>
+Date:   Thu Jun 8 15:29:09 2006 -0700
 
-> with us sending down "suspend" to each device.
+    Fix console handling during suspend/resume
+    =
 
-Actually we already have
+    The old code was terminally broken, and would do extremely bad
+    things if you used netconsole, for example. Like sending out packets
+    when the device had already been suspended etc.
+    =
 
-	device_suspend()
-	device_power_down()
+    The new version may not be perfect either, but it seems fundamentally
+    like a better design.
+    =
 
-calls (badly missnamed, some people believe), so it is two phase for
-now for s2ram. s2disk is more complex...
-									Pavel
--- =
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 37c1c76..c03b17f 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -43,13 +43,9 @@ #ifdef CONFIG_PM
+ /* kernel/power/swsusp.c */
+ extern int software_suspend(void);
+ =
+
+-#if defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE)
+ extern int pm_prepare_console(void);
+ extern void pm_restore_console(void);
+-#else
+-static inline int pm_prepare_console(void) { return 0; }
+-static inline void pm_restore_console(void) {}
+-#endif /* defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE) */
++
+ #else
+ static inline int software_suspend(void)
+ {
+diff --git a/kernel/power/console.c b/kernel/power/console.c
+index 623786d..6e039ca 100644
+--- a/kernel/power/console.c
++++ b/kernel/power/console.c
+@@ -9,42 +9,20 @@ #include <linux/kbd_kern.h>
+ #include <linux/console.h>
+ #include "power.h"
+ =
+
+-#if defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE)
+-#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
+-
+-static int orig_fgconsole, orig_kmsg;
++extern int console_suspended;
+ =
+
+ int pm_prepare_console(void)
+ {
+ 	acquire_console_sem();
+-
+-	orig_fgconsole =3D fg_console;
+-
+-	if (vc_allocate(SUSPEND_CONSOLE)) {
+-	  /* we can't have a free VC for now. Too bad,
+-	   * we don't want to mess the screen for now. */
+-		release_console_sem();
+-		return 1;
+-	}
+-
+-	set_console(SUSPEND_CONSOLE);
+-	release_console_sem();
+-
+-	if (vt_waitactive(SUSPEND_CONSOLE)) {
+-		pr_debug("Suspend: Can't switch VCs.");
+-		return 1;
+-	}
+-	orig_kmsg =3D kmsg_redirect;
+-	kmsg_redirect =3D SUSPEND_CONSOLE;
++	console_suspended =3D 1;
++	system_state =3D SYSTEM_BOOTING;
+ 	return 0;
+ }
+ =
+
+ void pm_restore_console(void)
+ {
+-	acquire_console_sem();
+-	set_console(orig_fgconsole);
++	console_suspended =3D 0;
++	system_state =3D SYSTEM_RUNNING;
+ 	release_console_sem();
+-	kmsg_redirect =3D orig_kmsg;
+ 	return;
+ }
+-#endif
+diff --git a/kernel/printk.c b/kernel/printk.c
+index c056f33..8adb9ed 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -67,6 +67,7 @@ EXPORT_SYMBOL(oops_in_progress);
+  * driver system.
+  */
+ static DECLARE_MUTEX(console_sem);
++static DECLARE_MUTEX(secondary_console_sem);
+ struct console *console_drivers;
+ /*
+  * This is used for debugging the mess that is the VT code by
+@@ -77,6 +78,7 @@ struct console *console_drivers;
+  * locked without the console sempahore held
+  */
+ static int console_locked;
++int console_suspended;
+ =
+
+ /*
+  * logbuf_lock protects log_buf, log_start, log_end, con_start and logged_=
+chars
+@@ -707,6 +709,11 @@ int __init add_preferred_console(char *n
+  */
+ void acquire_console_sem(void)
+ {
++	if (console_suspended) {
++		down(&secondary_console_sem);
++		return;
++	}
++
+ 	BUG_ON(in_interrupt());
+ 	down(&console_sem);
+ 	console_locked =3D 1;
+@@ -750,6 +757,11 @@ void release_console_sem(void)
+ 	unsigned long _con_start, _log_end;
+ 	unsigned long wake_klogd =3D 0;
+ =
+
++	if (console_suspended) {
++		up(&secondary_console_sem);
++		return;
++	}
++
+ 	for ( ; ; ) {
+ 		spin_lock_irqsave(&logbuf_lock, flags);
+ 		wake_klogd |=3D log_start - log_end;
