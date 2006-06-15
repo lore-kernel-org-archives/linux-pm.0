@@ -1,24 +1,21 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 01:57:13 +0200
-Message-ID: <20060614235713.GA24859@elf.ucw.cz>
-References: <20060614103404.GC28536@elf.ucw.cz>
+Date: Wed, 14 Jun 2006 17:01:34 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606141657010.5498@g5.osdl.org>
+References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
+	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
+	<20060614103404.GC28536@elf.ucw.cz>
 	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
 	<20060614214048.GG4950@ucw.cz>
 	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
 	<20060614221235.GA7751@elf.ucw.cz>
-	<1150324014.21941.23.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606141537570.5498@g5.osdl.org>
-	<20060614224436.GF7751@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141557100.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606141557100.5498@g5.osdl.org>
+In-Reply-To: <20060614221235.GA7751@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,56 +25,39 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Power management list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On St 14-06-06 15:59:00, Linus Torvalds wrote:
+
+
+On Thu, 15 Jun 2006, Pavel Machek wrote:
 > =
 
+> According to
 > =
 
-> On Thu, 15 Jun 2006, Pavel Machek wrote:
-> >
-> > Console subsystem should be stopped when console device is stopped,
-> > and restarted when console device is restarted.
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D6670
 > =
 
-> There is no "console device".
+> this should help:
 > =
 
-> There are potentially _many_ console devices.
+> http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D115005083610700&w=3D2
 
-With printks going to all of them?
+Btw, maybe we should do this unconditionally?
 
-> And you don't even know which ones they are.
-> =
+But we should likely do it with a
 
-> The old setup is BROKEN. The new setup is less so. It really is that =
+	acpi_os_write_port(acpi_gbl_FADT->smi_cmd,
+		(u32) acpi_gbl_FADT->acpi_enable, 8);
 
-> simple.
+instead of trying to just stuff "1" into that thing? Hmm? That's what the =
 
-I agree that old setup is broken.
+regular "enable ACPI mode" code does, afaik.
 
-> That's not to say that the new setup cannot be improved upon, though. I'm =
+Totally untested as of yet, of course, but I'm compiling the kernel to try =
 
-> just telling you that the old one was not fixable, not the way it thought =
+it out right now ;)
 
-> it could do things.
-
-...and yes, queueing the messages is nicer solution then the old one.
-
-My point is that you really want the console enabled in writing phase
-of suspend-to-disk. And old setup got that detail right, while new
-setup does not.
-
-It should be possible to register console device (whatever it means,
-make it /sys/devices/system/printk_console ), and reuse its
-suspend/resume routines. That will get "console enabled during write"
-for s2disk right, too.
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+		Linus
