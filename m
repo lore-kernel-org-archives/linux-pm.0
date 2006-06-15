@@ -1,18 +1,18 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 15:41:01 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606151532230.5498@g5.osdl.org>
+Date: Thu, 15 Jun 2006 15:44:37 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606151541100.5498@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
 	<20060615211031.GA2255@elf.ucw.cz>
 	<Pine.LNX.4.64.0606151446350.5498@g5.osdl.org>
-	<20060615222002.GF2255@elf.ucw.cz>
+	<20060615222115.GG2255@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060615222002.GF2255@elf.ucw.cz>
+In-Reply-To: <20060615222115.GG2255@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -29,51 +29,55 @@ List-Id: linux-pm@vger.kernel.org
 
 
 On Fri, 16 Jun 2006, Pavel Machek wrote:
+
+> Hi!
 > =
 
-> ? No, I do not think we have any problems with temporary
-> pointers. Memory snapshot is atomic (done on single CPU, with disabled
-> interrupts, no DMAs).
+> > > Okay, so .. in your model you can simply save state *during driver
+> > > init*, right at boot.
+> > =
 
-The problem I'm trying to point out is that it's _not_ atomic wrt "save =
+> > Basically.
+> > =
 
-the device state".
+> > Except in practice user actions/setups can change it, and in practice y=
+ou =
 
-You've actually worked very hard to make "save device state" and "snapshot =
+> > really do want to save it later, because you may not need to save it at =
 
-memory" to be as atomic as possible - by having the device state save also =
+> > all. =
 
-basically try to freeze the state.
+> =
 
-And I'm trying to change that.
+> _If_ user actions can change it, there's nothing that prevents user
+> from changing it just after suspend started. Remember -- you wanted
+> userland enabled at that point.
 
-And that means that the resume must not restore any "temporary pointers". =
+Yes, but I also hate havign to depend on the distribution always doing the =
+
+right thing. They usually don't.
+
+For example, things like the user usign a mixer to set volume levels on an =
+
+audio device: it's just much _nicer_ if we save the volume levels just =
+
+before we suspend, instead of expecting crazy alsa deamon crud to notice =
+
+that it was suspended and restore things for us. =
 
 
-Now, a lot of hardware doesn't _have_ temporary pointers, but if it has =
+The "user level can do it" thing is clearly _true_, but at the same time, =
 
-things like a DMA ring with pointers to buffers (network drivers do this, =
+we've often seen how user level gets less TLC than the kernel, so in most =
 
-for example), then you need to realize that if the that ring is _not_ =
+cases, the answer is still "..but if we can do it easily in the kernel and =
 
-atomic wrt the memory snapshotting if packets were still coming in =
+not involve user land, let's do it".
 
-(packets that you didn't even care about).
+And in many ways it's just _easier_ to save the state just before =
 
-That's what I was trying to explain by talking about the memory management =
+suspending, than save it at first boot. So it's not like there is any =
 
-issues. Things that you've tried to avoid by making "save and shut down" =
-
-be atomic.
-
-And don't get me wrong - I don't think it's a fundamental problem per se. =
-
-It's an inconvenience that needs a strategy, and the strategy can range =
-
-from "refuse to do networking during suspend if we're suspendign to disk" =
-
-to "various MM things to make it easier to handle" to "if you use =
-
-networking during the suspend, you migth possibly leak some memory".
+_advantage_ to doing it the hard way.
 
 		Linus
