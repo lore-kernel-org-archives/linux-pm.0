@@ -1,18 +1,24 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 18:52:19 +0200
-Message-ID: <20060615165219.GD23859@elf.ucw.cz>
-References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606141948.23107.david-b@pacbell.net>
-	<20060615083921.GB9423@elf.ucw.cz>
-	<200606150943.05188.david-b@pacbell.net>
+Date: Thu, 15 Jun 2006 09:53:54 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606150931190.5498@g5.osdl.org>
+References: <Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
+	<20060614214048.GG4950@ucw.cz>
+	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
+	<20060614221235.GA7751@elf.ucw.cz>
+	<1150324014.21941.23.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606141537570.5498@g5.osdl.org>
+	<20060614224436.GF7751@elf.ucw.cz>
+	<Pine.LNX.4.64.0606141557100.5498@g5.osdl.org>
+	<20060614235713.GA24859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
+	<20060615161721.GB23859@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200606150943.05188.david-b@pacbell.net>
+In-Reply-To: <20060615161721.GB23859@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,34 +28,125 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Power management list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gxIx0IDE1LTA2LTA2IDA5OjQzOjA0LCBEYXZpZCBCcm93bmVsbCB3cm90ZToKPiBPbiBUaHVy
-c2RheSAxNSBKdW5lIDIwMDYgMTozOSBhbSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+ID4gCj4gPiA+
-IEFjdHVhbGx5IGl0IHdvdWxkIGJlIGludGVyZXN0aW5nIHRvIGhlYXIgY291bnRlci1hcmd1bWVu
-dHMgdG8gdGhpcwo+ID4gPiBwb3NpdGlvbjoKPiA+ID4gCj4gPiA+IAlXZSBhbHJlYWR5IEhBVkUg
-dGhhdCB0d28tcGhhc2UgdGhpbmcgZ29pbmcgb24sIGF0Cj4gPiA+IAlsZWFzdCBmb3Igc3dzdXNw
-LiAgSW4gcGhhc2UgSSBhIFBNX0VWRU5UX0ZSRUVaRQo+ID4gPiAJZ2V0cyBzZW50LiAgVGhlbiBp
-biBwaGFzZSBJSSBhIFBNX0VWRU5UX1NVU1BFTkQgZ2V0cwo+ID4gPiAJdHJpZXMgdG8gcmVhbGx5
-IHN1c3BlbmQgdGhpbmdzLgo+ID4gPiAKPiA+ID4gT25lIGNvdW50ZXItYXJndW1lbnQgbWlnaHQg
-YmUgdGhhdCAicGhhc2UgSS41IHJlc3VtZXMgdGhvc2UgZGV2aWNlcyIKPiA+ID4gaXMgYSBwcm9i
-bGVtLiAgQW5vdGhlciBtaWdodCBiZSB0aGF0ICJGUkVFWkUgc2hvdWxkIG5vdCBiZSBzZW50IHRv
-Cj4gPiA+IHRoZSBjb25zb2xlKHMpLCB0aGUgc3dhcCBkZXZpY2UsIG9yIHRoZWlyIHBhcmVudHMi
-LiAgSSBzdXNwZWN0IHRoZXJlCj4gPiA+IGFyZSBhIGZldyBtb3JlIGlzc3VlcyBtaXhlZCB1cCBp
-biB0aGVyZSB0b28uCj4gPiAKPiA+IFRoaXMgaXMgRkFROgo+IAo+IFdoaWNoIHNlZW1zIHRvIHN1
-Z2dlc3QgdGhhdCB5b3UgYXJlIEZyZXF1ZW50bHkgZ2l2aW5nIGEgdXNlbGVzcwo+IEFuc3dlciB0
-byB0aGUgUXVlc3Rpb24gLi4uIGFuZCBpbiB0aGlzIGNhc2UsIG5vdCB0aGUgcXVlc3Rpb24KPiB3
-aGljaCB3YXMgYXNrZWQuICAKCk9rYXksIHNvIHdoYXQgaXMgdGhlIHF1ZXN0aW9uIHlvdSBhcmUg
-YXNraW5nPwoKPiA+IFE6IEkgZG8gbm90IHVuZGVyc3RhbmQgd2h5IHlvdSBoYXZlIHN1Y2ggc3Ry
-b25nIG9iamVjdGlvbnMgdG8gaWRlYSBvZgo+ID4gc2VsZWN0aXZlIHN1c3BlbmQuCj4gCj4gTm90
-IGEgcXVlc3Rpb24sIGFuZCBpdCdzIG5vdCBjbGVhciB3aG8gInlvdSIgaXMuICBQcmVzdW1hYmx5
-LCAiUGF2ZWwiPwo+IFBsdXMgaXQgZG9lc24ndCByZWxhdGUgdG8gdGhlIHBvc2l0aW9uIHNrZXRj
-aGVkIGFib3ZlLgoKRmVlbCBmcmVlIHRvIHN1Ym1pdCBkb2N1bWVudGF0aW9uIHBhdGNoLgoJCQkJ
-CQkJCQlQYXZlbAotLSAKKGVuZ2xpc2gpIGh0dHA6Ly93d3cubGl2ZWpvdXJuYWwuY29tL35wYXZl
-bG1hY2hlawooY2Vza3ksIHBpY3R1cmVzKSBodHRwOi8vYXRyZXkua2FybGluLm1mZi5jdW5pLmN6
-L35wYXZlbC9waWN0dXJlL2hvcnNlcy9ibG9nLmh0bWwKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
-c3RzLm9zZGwub3JnCmh0dHBzOi8vbGlzdHMub3NkbC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1wbQo=
+
+
+On Thu, 15 Jun 2006, Pavel Machek wrote:
+> > =
+
+> > But I've said that before, and nobody cared last time either. For some =
+
+> > reason, people continue to think that suspend should be a single phase, =
+
+> > with us sending down "suspend" to each device.
+> =
+
+> Actually we already have
+> =
+
+> 	device_suspend()
+> 	device_power_down()
+> =
+
+> calls (badly missnamed, some people believe), so it is two phase for
+> now for s2ram. s2disk is more complex...
+
+No we don't.
+
+We have the above _calls_, but it doesn't matter one whit, since that's =
+
+not actually what the calls _do_.
+
+There's no driver infrastructure to call down to the driver to say "save =
+
+your state, but don't suspend". None. Zero. Nada. Zip.
+
+In order for this to actually _work_, you need to have
+
+	device_save_state();
+		.. calls down to each device, saving their      ..
+		.. state BUT NOT SUSPENDING THEM!               ..
+		.. This phase can return an error, and can do   ..
+		.. things like memory allocations.              ..
+
+		.. If an error happens here, we just return. We ..
+		.. do NOT "restore" any state, because there IS ..
+		.. NO STATE TO RESTORE - we've not actually     ..
+		.. _changed_ anything ..
+
+		.. In other words, for a regular PCI device     ..
+		.. this function does "pci_save_state()". Not   ..
+		.. _anything_ else!                             ..
+
+	save_image_to_disk();
+		.. NONE OF THE DEVICES ARE SUSPENDED! So all the  ..
+		.. idiotic crap about trying to keep the "suspend ..
+		.. device" alive would be the obvious crap it is! ..
+
+	suspend_console();
+		.. Again! None of the devices have actually been ..
+		.. physically SUSPENDED, so they're all working, ..
+		.. so we could have done "printk()"s etc all the ..
+		.. time until the next call:                     ..
+
+	shut down CPU's, and disable interrupts HERE!
+
+	suspend/shutdown_devices();
+		.. This is the stage where devices are literally ..
+		.. actyally SUSPENDED. Not before. Not after.    ..
+		.. Before this, they're not frozen, they're not  ..
+		.. disabled, they're not suspended. They still   ..
+		.. work perfectly fine, and were used for both   ..
+		.. console output and disk saving. The "save the ..
+		.. state" callback did just that: it SAVED THE   ..
+		.. STATE. It didn't change it.                   ..
+		.. This phase cannot return an error ..
+
+See? WE DO NOT DO THIS. I told people we needed to do this _years_ ago. I =
+
+tried to push through the two-phase suspend. I tried to explain why. I =
+
+clearly failed, because we do _nothing_of_the_sort_ right now.
+
+Instead, the "please suspend" thing to the devices is a single-phase "put =
+
+yourself into D3", with no support for a separate "please save your state" =
+
+call. Crap.
+
+The include files talk about PM_FREEZE, but that's a load of crap. The =
+
+whole point is to _not_ freeze things, so that you can still access the =
+
+device and save your disk image or your printk messages to it. It also =
+
+seems designed to _either_ "freeze" the machine or "suspend" the machine, =
+
+but not both.
+
+In other words, it's misdesigned. And I've talked about this before. Ijust =
+
+googled for it, and I saw myself ranting about this very same issue a year =
+
+ago (and back then, I also said "as I've said before").
+
+			Linus
+
+PS. I'll also argue that we'd probably be better off with two separate =
+
+phases on resume too, partly to just be consistent, but partly because we =
+
+want to do some things with interrupts disabled, and some things with =
+
+interrupts enabled. Again, we have this INSANE situation where we call the =
+
+same "resume" function for _different_ devices first with interrupts =
+
+disabled, and then with interrupts enabled. Gaah! Idiotic, and hard as =
+
+hell to even understand!
+
+But I think that's actually the lesser of two evils.
