@@ -1,23 +1,18 @@
 From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 10:23:44 +0200
-Message-ID: <20060615082344.GE21135@elf.ucw.cz>
-References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
-	<20060614103404.GC28536@elf.ucw.cz>
-	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
-	<20060614214048.GG4950@ucw.cz>
-	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
-	<20060614221235.GA7751@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141657010.5498@g5.osdl.org>
+Date: Thu, 15 Jun 2006 10:39:21 +0200
+Message-ID: <20060615083921.GB9423@elf.ucw.cz>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
+	<200606151154.50022.ncunningham@linuxmail.org>
+	<200606141948.23107.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606141657010.5498@g5.osdl.org>
+In-Reply-To: <200606141948.23107.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,40 +22,58 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Power management list <linux-pm@lists.osdl.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > According to
-> > =
-
-> > http://bugzilla.kernel.org/show_bug.cgi?id=3D6670
-> > =
-
-> > this should help:
-> > =
-
-> > http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D115005083610700&w=3D2
+> Actually it would be interesting to hear counter-arguments to this
+> position:
 > =
 
-> Btw, maybe we should do this unconditionally?
+> 	We already HAVE that two-phase thing going on, at
+> 	least for swsusp.  In phase I a PM_EVENT_FREEZE
+> 	gets sent.  Then in phase II a PM_EVENT_SUSPEND gets
+> 	tries to really suspend things.
 > =
 
-> But we should likely do it with a
-> =
+> One counter-argument might be that "phase I.5 resumes those devices"
+> is a problem.  Another might be that "FREEZE should not be sent to
+> the console(s), the swap device, or their parents".  I suspect there
+> are a few more issues mixed up in there too.
 
-> 	acpi_os_write_port(acpi_gbl_FADT->smi_cmd,
-> 		(u32) acpi_gbl_FADT->acpi_enable, 8);
-> =
+This is FAQ:
 
-> instead of trying to just stuff "1" into that thing? Hmm? That's what the =
+Q: I do not understand why you have such strong objections to idea of
+selective suspend.
 
-> regular "enable ACPI mode" code does, afaik.
+A: Do selective suspend during runtime power managment, that's
+okay. But
+its useless for suspend-to-disk. (And I do not see how you could use
+it for suspend-to-ram, I hope you do not want that).
 
-Re-enabling ACPI mode during resume indeed sounds like a good idea.
-									Pavel
+Lets see, so you suggest to
+
+* SUSPEND all but swap device and parents
+* Snapshot
+* Write image to disk
+* SUSPEND swap device and parents
+* Powerdown
+
+Oh no, that does not work, if swap device or its parents uses DMA,
+you've corrupted data. You'd have to do
+
+* SUSPEND all but swap device and parents
+* FREEZE swap device and parents
+* Snapshot
+* UNFREEZE swap device and parents
+* Write
+* SUSPEND swap device and parents
+
+Which means that you still need that FREEZE state, and you get more
+complicated code. (And I have not yet introduce details like system
+devices).
+
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
