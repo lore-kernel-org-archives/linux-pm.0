@@ -1,16 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 09:22:39 -0700
-Message-ID: <200606150922.40074.david-b@pacbell.net>
+Date: Thu, 15 Jun 2006 09:43:04 -0700
+Message-ID: <200606150943.05188.david-b@pacbell.net>
 References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606141846.55839.david-b@pacbell.net>
-	<200606151600.30410.ncunningham@linuxmail.org>
+	<200606141948.23107.david-b@pacbell.net>
+	<20060615083921.GB9423@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606151600.30410.ncunningham@linuxmail.org>
+In-Reply-To: <20060615083921.GB9423@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -21,50 +21,94 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 14 June 2006 11:00 pm, Nigel Cunningham wrote:
-> Hi.
+On Thursday 15 June 2006 1:39 am, Pavel Machek wrote:
 > =
 
-> On Thursday 15 June 2006 11:46, David Brownell wrote:
-> > On Wednesday 14 June 2006 4:57 pm, Pavel Machek wrote:
-> > > My point is that you really want the console enabled in writing phase
-> > > of suspend-to-disk.
-> >
-> > Notice how nicely this generalizes a point that's been made before:
-> > Linux should have the ability to exclude certain devices (and their
-> > parents) from that first "prepare to suspend" phase.  Originally the
-> > canonical example was the swap device (and its disk, controller, bus
-> > tree, etc).  Now we recognize consoles (and their parents, network
-> > controllers, etc) have the same issue ...
+> > Actually it would be interesting to hear counter-arguments to this
+> > position:
+> > =
+
+> > 	We already HAVE that two-phase thing going on, at
+> > 	least for swsusp.  In phase I a PM_EVENT_FREEZE
+> > 	gets sent.  Then in phase II a PM_EVENT_SUSPEND gets
+> > 	tries to really suspend things.
+> > =
+
+> > One counter-argument might be that "phase I.5 resumes those devices"
+> > is a problem.  Another might be that "FREEZE should not be sent to
+> > the console(s), the swap device, or their parents".  I suspect there
+> > are a few more issues mixed up in there too.
 > =
 
-> Wouldn't it be simpler to say "We send the prepare_to_suspend/freeze/susp=
-end =
+> This is FAQ:
 
-> messages to all devices, but some have the nous to know to ignore them"?
+Which seems to suggest that you are Frequently giving a useless
+Answer to the Question ... and in this case, not the question
+which was asked.  You're doing that "attack the straw man"
+thing again.
 
-That's one potential solution, and one I thought about.
-But it has the conceptual problem that the PM framework
-code would be (wrongly) thinking the device is suspended;
-so it couldn't handle the parent/child relationships
-properly.  (The parents of that still-"active" device would
-wrongly be allowed to suspend...)
+ =
+
+> Q: I do not understand why you have such strong objections to idea of
+> selective suspend.
+
+Not a question, and it's not clear who "you" is.  Presumably, "Pavel"?
+Plus it doesn't relate to the position sketched above.
 
 
-The approach of having a driver suspend() method understand
-things about the target system state is IMO just fine.  In
-fact the original parameter of suspend() identified that
-system state ... but certainly pm_message_t does not.
+> A: Do selective suspend during runtime power managment, that's
+> okay. But
+> its useless for suspend-to-disk. (And I do not see how you could use
+> it for suspend-to-ram, I hope you do not want that).
 
-You may not have understood the point of the clk_must_disable()
-API I posted a while back, but what it's doing is exporting
-some essential information about that target state ... stuff
-that drivers need to know in order to support multiple system
-sleep (or run!) states.  Certainly there's other data beyond
-clocking that could matter.
+That's a bunch of non-answers of course.
 
-- Dave
+And re the parenthetical comment ... to use ACPI terminology for
+just a moment (without assuming ACPI!), it's trivially true that
+there are different device suspend states, and that real system
+sleep states like S1 and S3 (plus many non-ACPI variants thereof)
+can accomodate multiple device suspend states.
+
+So for example a device enabled as a wakeup event source might use
+a less aggressive suspend state than one which doesn't need to offer
+any functionality while the system is in that sleep state.  In
+some cases those "less aggressive suspend" states _are_ exactly
+equivalent to an un-suspended device.  (Not with PCI PM of course,
+but with some other hardware frameworks.)
+
+ =
+
+> Lets see, so you suggest to
+
+Actually I asked for counter-arguments to a position, which was
+intended as a request not to enter the usual flamewar that shows
+up whenever someone observes that Linux-PM has a few issues that
+affect swsusp.  At this time, I had offered no suggestion.
+
+Those flames are, as always, tedious and needless.
+
+
+> * SUSPEND all but swap device and parents
+> * Snapshot
+> * Write image to disk
+> * SUSPEND swap device and parents
+> * Powerdown
+> =
+
+> Oh no, that does not work,
+
+Oddly enough, it wasn't even mentioned in the position I was
+asking a response to.  This is what's called a "straw man"
+attack ... when rather than actually address an issue that's
+been raised, someone sets up a _different_ issue, attacks
+that, and than treats the original issue as resolved:
+
+  http://www.nizkor.org/features/fallacies/straw-man.html
+
+Attacking a straw man is as efficaceous as putting pins
+into a voodoo doll ... at least, in terms of addressing
+the original question.
