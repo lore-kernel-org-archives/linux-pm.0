@@ -1,20 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 21:19:25 +0200
-Message-ID: <20060615191925.GA1849@elf.ucw.cz>
-References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606141846.55839.david-b@pacbell.net>
-	<20060615084153.GC9423@elf.ucw.cz>
-	<200606150957.42449.david-b@pacbell.net>
-	<20060615180350.GG23859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
+Date: Thu, 15 Jun 2006 12:35:05 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606151219540.5498@g5.osdl.org>
+References: <20060615083921.GB9423@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0606151047410.6879-100000@iolanthe.rowland.org>
+	<20060615161446.GA23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606150922200.5498@g5.osdl.org>
+	<20060615182419.GA1711@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
+In-Reply-To: <20060615182419.GA1711@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,91 +22,70 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > Okay, you _can_ do =
 
-> > =
-
-> > suspend whole tree but disk and video
-> > freeze disk and video
-> > create snapshot
-> > unfreeze disk and video
+On Thu, 15 Jun 2006, Pavel Machek wrote:
 > =
 
-> I really think that's totalyl unnecessary.
-
-I agree; current system works okay.
-
-> At most, you could make the "save_state()" also say "stop listening to =
-
-> external stuff" for devices that otherwise do things on their own. That's =
-
-> not a "freeze" - the device would still obey commands coming from the =
-
-> host - and it would need a "unsave" logic when a suspend fails, but it =
-
-> doesn't change the fundamental "save means _save_, not suspend" logic.
+> Okay, console switches are really needed -- so that X gets it chance
+> to save graphics state. Try your version from accelerated X -- it
+> would break AFAICS.
 > =
 
-> And we currently don't have _anything_ like that. Playing games with =
+> So we basically need the old code -- to switch consoles -- and then
+> your new code -- to prevent writing to console that is suspended.
 
-> sending different commands down the "suspend()" thing is not ever going t=
-o =
+No.
 
-> work. Drivers are going to do it wrong. We really need to add a =
+You're DOING THE SAME MISTAKE AGAIN!
 
-> "save_state()" callback, and it needs to be called that, so that people =
+You're confusing "shutdown" with "save state". The two are totally =
 
-> realize that they should not suspend in it.
+separate, and they MUST be separate. Trying to combine the two is wrong, =
 
-Well, it is right that separation as you suggest is possible... but it
-is quite different from current system. And if someone does suspend
-(instead of freeze) -- no harm is done -- it just takes
-longer. Actually for most devices, suspend and freeze can be
-implemented in same way. Putting device in low-power state does not
-actually hurt, it only makes things slower. It hurts for disk, but
-that's probably it.
+wrong, wrong.
 
-> It would actually simplify and clarify a lot of the confusion we have now=
-. =
+Repeat after me: we must save the state of a device before we shut _any_ =
 
-> =
+device down. =
 
-> I already fixed one driver (sky2) that simply didn't save it's PCI state, =
 
-> it just suspended (and then in resume it tried to "restore" the state =
+That is as true for X and the console as it is for _any_ other device.
 
-> that had never been saved). And I _bet_ that was because it's just a very =
+So it's a slight improvement (because now the functions are at least =
 
-> natural thing to do when you look at "suspend()" as an independent op.
+separate), but by putting the console state saving in the path that does =
 
-Well, suspend/resume is a pair. sky2 was broken if it could not resume
-after suspend.
+the suspend, you're again mixing up the issue of suspending the devices, =
 
-> So it's actually important - _especially_ for device drivers - to have =
+and actually saving their state.
 
-> logical and _distinct_ operations, because device driver writers seldom =
+The console switch itself is actually wrong, but at least it works (we =
 
-> see the big picture. But if you tell a device driver writer that he needs =
+should just initiate the "give me back the console" part, not the actual =
 
-> to save the state, he'll understand that. He might even understand the =
+_switching_, but that would require some cleanup in vt_ioctl.c), but the =
 
-> notion of shutting down the receive side for devices that need it. But if =
+_position_ is wrong.
 
-> you tell a device driver writer that they need to write a "suspend" =
+The state save should be done early (probably where we currently do =
 
-> function, that's exactly what he will do.
+"prepare_console()" - I did the "shut it up" there too, not because I =
 
-Okay, I guess we have some explaining to do. But I'd hate to change
-semantics now and confuse driver writers even more.
-									Pavel
--- =
+wanted to, but because we don't have the "save_state()" phase). And the =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+_suspend_ should be done late.
+
+So I think that whole VT switch (or properly waiting for the release even =
+
+on the same VT) should happen before the save-state in my earlier diagram =
+
+of the different stages. It is, in fact, part of the "prepare user space =
+
+for shutdown" stage. It has nothing to do with the "suspend" stage.
+
+			Linus
