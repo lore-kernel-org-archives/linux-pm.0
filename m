@@ -1,18 +1,20 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 12:35:05 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606151219540.5498@g5.osdl.org>
-References: <20060615083921.GB9423@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0606151047410.6879-100000@iolanthe.rowland.org>
-	<20060615161446.GA23859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606150922200.5498@g5.osdl.org>
-	<20060615182419.GA1711@elf.ucw.cz>
+Date: Thu, 15 Jun 2006 12:40:39 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606151235380.5498@g5.osdl.org>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<200606141846.55839.david-b@pacbell.net>
+	<20060615084153.GC9423@elf.ucw.cz>
+	<200606150957.42449.david-b@pacbell.net>
+	<20060615180350.GG23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
+	<20060615191925.GA1849@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060615182419.GA1711@elf.ucw.cz>
+In-Reply-To: <20060615191925.GA1849@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,7 +25,7 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
@@ -31,61 +33,48 @@ List-Id: linux-pm@vger.kernel.org
 On Thu, 15 Jun 2006, Pavel Machek wrote:
 > =
 
-> Okay, console switches are really needed -- so that X gets it chance
-> to save graphics state. Try your version from accelerated X -- it
-> would break AFAICS.
-> =
+> Well, it is right that separation as you suggest is possible... but it
+> is quite different from current system. And if someone does suspend
+> (instead of freeze) -- no harm is done -- it just takes
+> longer.
 
-> So we basically need the old code -- to switch consoles -- and then
-> your new code -- to prevent writing to console that is suspended.
+Sure, harm IS done.
 
-No.
+Suspending a device before everybody else has saved their state is =
 
-You're DOING THE SAME MISTAKE AGAIN!
+fundamentally and deeply wrong. You do not know whether other devices =
 
-You're confusing "shutdown" with "save state". The two are totally =
-
-separate, and they MUST be separate. Trying to combine the two is wrong, =
-
-wrong, wrong.
-
-Repeat after me: we must save the state of a device before we shut _any_ =
-
-device down. =
+might need that device for their state save. =
 
 
-That is as true for X and the console as it is for _any_ other device.
+You may, for example, have devices that literally have so much state that =
 
-So it's a slight improvement (because now the functions are at least =
+they need user help to save it - which in turn means that they must be =
 
-separate), but by putting the console state saving in the path that does =
+saved before you have suspended other and UNRELATED devices. X itself is =
 
-the suspend, you're again mixing up the issue of suspending the devices, =
+actually an example of this, but so might be anything with firmware, for =
 
-and actually saving their state.
+example).
 
-The console switch itself is actually wrong, but at least it works (we =
+(Right now, we actually end up saving firmware in kernel memory or do =
 
-should just initiate the "give me back the console" part, not the actual =
+things like that, so that we can resume it. That's really a hack for the =
 
-_switching_, but that would require some cleanup in vt_ioctl.c), but the =
+bigger problem of not having multiple stages of save/restore.)
 
-_position_ is wrong.
+It's not just firmware. It could be things like devices that literally =
 
-The state save should be done early (probably where we currently do =
+have user processes handling connection setup etc for them.
 
-"prepare_console()" - I did the "shut it up" there too, not because I =
+So the whole notion of mixing "save state" and "suspend" is fundamentally =
 
-wanted to, but because we don't have the "save_state()" phase). And the =
+wrong. It has _always_ been wrong. And it's very fundamentally wrong in a =
 
-_suspend_ should be done late.
+way that makes me say that unless you can separate the two (not just in =
 
-So I think that whole VT switch (or properly waiting for the release even =
+a technical sense, but in the sense of how people literally _think_ about =
 
-on the same VT) should happen before the save-state in my earlier diagram =
-
-of the different stages. It is, in fact, part of the "prepare user space =
-
-for shutdown" stage. It has nothing to do with the "suspend" stage.
+the suspend problem), we can probably _never_ fix the deeper issues.
 
 			Linus
