@@ -1,17 +1,18 @@
-From: David Brownell <david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 09:43:04 -0700
-Message-ID: <200606150943.05188.david-b@pacbell.net>
+Date: Thu, 15 Jun 2006 18:52:19 +0200
+Message-ID: <20060615165219.GD23859@elf.ucw.cz>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606141948.23107.david-b@pacbell.net>
 	<20060615083921.GB9423@elf.ucw.cz>
+	<200606150943.05188.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060615083921.GB9423@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200606150943.05188.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,94 +22,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
+To: David Brownell <david-b@pacbell.net>
 Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 15 June 2006 1:39 am, Pavel Machek wrote:
-> =
-
-> > Actually it would be interesting to hear counter-arguments to this
-> > position:
-> > =
-
-> > 	We already HAVE that two-phase thing going on, at
-> > 	least for swsusp.  In phase I a PM_EVENT_FREEZE
-> > 	gets sent.  Then in phase II a PM_EVENT_SUSPEND gets
-> > 	tries to really suspend things.
-> > =
-
-> > One counter-argument might be that "phase I.5 resumes those devices"
-> > is a problem.  Another might be that "FREEZE should not be sent to
-> > the console(s), the swap device, or their parents".  I suspect there
-> > are a few more issues mixed up in there too.
-> =
-
-> This is FAQ:
-
-Which seems to suggest that you are Frequently giving a useless
-Answer to the Question ... and in this case, not the question
-which was asked.  You're doing that "attack the straw man"
-thing again.
-
- =
-
-> Q: I do not understand why you have such strong objections to idea of
-> selective suspend.
-
-Not a question, and it's not clear who "you" is.  Presumably, "Pavel"?
-Plus it doesn't relate to the position sketched above.
-
-
-> A: Do selective suspend during runtime power managment, that's
-> okay. But
-> its useless for suspend-to-disk. (And I do not see how you could use
-> it for suspend-to-ram, I hope you do not want that).
-
-That's a bunch of non-answers of course.
-
-And re the parenthetical comment ... to use ACPI terminology for
-just a moment (without assuming ACPI!), it's trivially true that
-there are different device suspend states, and that real system
-sleep states like S1 and S3 (plus many non-ACPI variants thereof)
-can accomodate multiple device suspend states.
-
-So for example a device enabled as a wakeup event source might use
-a less aggressive suspend state than one which doesn't need to offer
-any functionality while the system is in that sleep state.  In
-some cases those "less aggressive suspend" states _are_ exactly
-equivalent to an un-suspended device.  (Not with PCI PM of course,
-but with some other hardware frameworks.)
-
- =
-
-> Lets see, so you suggest to
-
-Actually I asked for counter-arguments to a position, which was
-intended as a request not to enter the usual flamewar that shows
-up whenever someone observes that Linux-PM has a few issues that
-affect swsusp.  At this time, I had offered no suggestion.
-
-Those flames are, as always, tedious and needless.
-
-
-> * SUSPEND all but swap device and parents
-> * Snapshot
-> * Write image to disk
-> * SUSPEND swap device and parents
-> * Powerdown
-> =
-
-> Oh no, that does not work,
-
-Oddly enough, it wasn't even mentioned in the position I was
-asking a response to.  This is what's called a "straw man"
-attack ... when rather than actually address an issue that's
-been raised, someone sets up a _different_ issue, attacks
-that, and than treats the original issue as resolved:
-
-  http://www.nizkor.org/features/fallacies/straw-man.html
-
-Attacking a straw man is as efficaceous as putting pins
-into a voodoo doll ... at least, in terms of addressing
-the original question.
+T24gxIx0IDE1LTA2LTA2IDA5OjQzOjA0LCBEYXZpZCBCcm93bmVsbCB3cm90ZToKPiBPbiBUaHVy
+c2RheSAxNSBKdW5lIDIwMDYgMTozOSBhbSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+ID4gCj4gPiA+
+IEFjdHVhbGx5IGl0IHdvdWxkIGJlIGludGVyZXN0aW5nIHRvIGhlYXIgY291bnRlci1hcmd1bWVu
+dHMgdG8gdGhpcwo+ID4gPiBwb3NpdGlvbjoKPiA+ID4gCj4gPiA+IAlXZSBhbHJlYWR5IEhBVkUg
+dGhhdCB0d28tcGhhc2UgdGhpbmcgZ29pbmcgb24sIGF0Cj4gPiA+IAlsZWFzdCBmb3Igc3dzdXNw
+LiAgSW4gcGhhc2UgSSBhIFBNX0VWRU5UX0ZSRUVaRQo+ID4gPiAJZ2V0cyBzZW50LiAgVGhlbiBp
+biBwaGFzZSBJSSBhIFBNX0VWRU5UX1NVU1BFTkQgZ2V0cwo+ID4gPiAJdHJpZXMgdG8gcmVhbGx5
+IHN1c3BlbmQgdGhpbmdzLgo+ID4gPiAKPiA+ID4gT25lIGNvdW50ZXItYXJndW1lbnQgbWlnaHQg
+YmUgdGhhdCAicGhhc2UgSS41IHJlc3VtZXMgdGhvc2UgZGV2aWNlcyIKPiA+ID4gaXMgYSBwcm9i
+bGVtLiAgQW5vdGhlciBtaWdodCBiZSB0aGF0ICJGUkVFWkUgc2hvdWxkIG5vdCBiZSBzZW50IHRv
+Cj4gPiA+IHRoZSBjb25zb2xlKHMpLCB0aGUgc3dhcCBkZXZpY2UsIG9yIHRoZWlyIHBhcmVudHMi
+LiAgSSBzdXNwZWN0IHRoZXJlCj4gPiA+IGFyZSBhIGZldyBtb3JlIGlzc3VlcyBtaXhlZCB1cCBp
+biB0aGVyZSB0b28uCj4gPiAKPiA+IFRoaXMgaXMgRkFROgo+IAo+IFdoaWNoIHNlZW1zIHRvIHN1
+Z2dlc3QgdGhhdCB5b3UgYXJlIEZyZXF1ZW50bHkgZ2l2aW5nIGEgdXNlbGVzcwo+IEFuc3dlciB0
+byB0aGUgUXVlc3Rpb24gLi4uIGFuZCBpbiB0aGlzIGNhc2UsIG5vdCB0aGUgcXVlc3Rpb24KPiB3
+aGljaCB3YXMgYXNrZWQuICAKCk9rYXksIHNvIHdoYXQgaXMgdGhlIHF1ZXN0aW9uIHlvdSBhcmUg
+YXNraW5nPwoKPiA+IFE6IEkgZG8gbm90IHVuZGVyc3RhbmQgd2h5IHlvdSBoYXZlIHN1Y2ggc3Ry
+b25nIG9iamVjdGlvbnMgdG8gaWRlYSBvZgo+ID4gc2VsZWN0aXZlIHN1c3BlbmQuCj4gCj4gTm90
+IGEgcXVlc3Rpb24sIGFuZCBpdCdzIG5vdCBjbGVhciB3aG8gInlvdSIgaXMuICBQcmVzdW1hYmx5
+LCAiUGF2ZWwiPwo+IFBsdXMgaXQgZG9lc24ndCByZWxhdGUgdG8gdGhlIHBvc2l0aW9uIHNrZXRj
+aGVkIGFib3ZlLgoKRmVlbCBmcmVlIHRvIHN1Ym1pdCBkb2N1bWVudGF0aW9uIHBhdGNoLgoJCQkJ
+CQkJCQlQYXZlbAotLSAKKGVuZ2xpc2gpIGh0dHA6Ly93d3cubGl2ZWpvdXJuYWwuY29tL35wYXZl
+bG1hY2hlawooY2Vza3ksIHBpY3R1cmVzKSBodHRwOi8vYXRyZXkua2FybGluLm1mZi5jdW5pLmN6
+L35wYXZlbC9waWN0dXJlL2hvcnNlcy9ibG9nLmh0bWwKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
+c3RzLm9zZGwub3JnCmh0dHBzOi8vbGlzdHMub3NkbC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1wbQo=
