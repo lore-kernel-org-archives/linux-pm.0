@@ -1,14 +1,22 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 13:56:30 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
+Date: Thu, 15 Jun 2006 14:04:30 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606151356480.5498@g5.osdl.org>
+References: <20060615083921.GB9423@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0606151047410.6879-100000@iolanthe.rowland.org>
+	<20060615161446.GA23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606150922200.5498@g5.osdl.org>
+	<20060615182419.GA1711@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151219540.5498@g5.osdl.org>
+	<20060615200333.GB1849@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151325520.5498@g5.osdl.org>
+	<20060615204317.GC1849@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
+In-Reply-To: <20060615204317.GC1849@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,126 +26,103 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On Thu, 15 Jun 2006, Alan Stern wrote:
+On Thu, 15 Jun 2006, Pavel Machek wrote:
 > =
 
-> If this happens you're already in trouble.  It doesn't matter that the =
+> > > Why? We are saving state to memory, we should not need any other
+> > > devices to do that.
+> > =
 
-> unrelated devices aren't suspended; the fact that they have already saved =
+> > Hell no, we're not.
+> =
 
-> their state and will no longer respond to outside stimuli means they can'=
-t =
+> ?
 
-> be used.  Not to mention that their I/O queues won't be running.
+We're clearly saving state to _user_ space etc in some cases. That's not =
 
-THEIR IO QUEUES ARE RUNNING!
+"memory", that is "pageable data and processes that can - and do - depend =
 
-Why are people being dense and stupid? I told you in the very first =
+on other devices in ways that the kernel is not necessarily even aware =
 
-explanation that the IO state isn't suspended by "save_state()".
+of".
 
-"save_state()" would not disable the device. It would not disable the =
+Just as the most obvious example, it's entirely possible that when you ask =
 
-queues. The device would remain usable, and 100% functional.
+the graphics system to save its state, it might actually tell clients =
 
-It also would NOT save any "queue state". That's a total software =
+across a network that their window got occluded or something.
 
-abstraction, and that's something that comes much later (if at all), when =
+The same is true of various virtual devices that the kernel may not even =
 
-we actually need to save the memory image. The only thing the =
+know about. Network devices done as tunnels in user space etc. They may =
 
-"save_state()" needs to save is the actual _hardware_ state, and not even =
+_look_ like system devices at the root of the device tree to the kernel, =
 
-all of that.
+but that's just because the kernel has not a f*cking clue about what they =
 
-For example, on resume, if you have a network device, you SHOULD NOT EVEN =
+are actually connected to.
 
-TRY to resume the queue state. It's irrelevant. You should consider all =
+So we're _not_ just saving data to memory. We're allocating memory (which =
 
-queued packets (on a hardware level) from before the suspend to be _gone_. =
+means that we want to access every single device that may do write-back), =
 
-You re-initialize the hardware, but you need to restore things like the =
+and we're calling out to user space (which means that we _really_ don't =
 
-BAR's etc that were set up originally. =
+know what a device may need).
 
+> Okay, but graphical console means X these days, and -- being userspace
+> -- needs special casing, anyway.
 
-If you screw up and stop devices from working in "save_state()", that =
+No it does not.
 
-would be a BUG. =
+The point is, what I descibe - with a separate "save state but don't =
 
+disable" - doesn't need any special casing at all, exactly because it =
 
-> Suppose a driver needs to store its state info on a networked drive and =
+doesn't do anythign STUPID.
 
-> the network interface has already saved _its_ state?  Or it needs to =
+> For fbcon, etc, no, we do not any other devices, so it actually works
+> okay.
 
-> access a USB drive and the USB controller is no longer doing DMA?
+Yeah, Linux suspend is generally felt to "work ok".
 
-So? The network device didn't save the state of the _software_. It doesn't =
+Not.
 
-need to. It doesn't need to save the state of the DMA areas - they should =
+> > In fact, done right, if you know the machine powers off, the final susp=
+end =
 
-be RE-DONE by the resume code. The only thing it needs to save is the =
+> > should literally not be needed. "Remove power globally" is actually a v=
+ery =
 
-actual state of the hardware itself, and in fact, if it knows the hardware =
+> > good suspend/shutdown mechanism that doesn't even need any driver suppo=
+rt ;)
+> =
 
-intimately and there is no state that got set up "outside" of the driver, =
+> Actually, that's bad idea; some machines are unable to power down with
+> devices still running.
 
-it doesn't need to save even that.
+Can you read my sentence again? "If you know the machine powers off"?
 
-It's perfectly ok to save zero state at all, if you know that you can =
+Trust me, if you remove power from the devices, that machine _will_ power =
 
-re-create the state from the "dev->resources[]" data, for example. =
+down. It's that simple. It's not "maybe", or "if" or "unable to". It's =
 
+basic physics.
 
-> There is a clear need for a partial ordering of devices.  If device A =
+Just removing power can often be the most efficient way to shut down. It's =
 
-> needs to use device B to save its state, then A's state must be saved =
+a perfectly fine algorithm, if the user asks you to do that.
 
-> before B's.
+That doesn't mean that it's always the right thing to do. It's just that =
 
-NO. NO. NO!!
+it's an option: "save state to disk, then power down, and screw any PCI =
 
-Get it though your head that savign state doesn't change it. Neither does =
-
-normal operations. Because normal operations don't actually change the =
-
-STATE of a device - they just change the immaterial details that your =
-
-driver has to keep track of _independently_, and are things that a reset =
-
-needs to set up _anyway_.
-
-Realize that a "resume" event is not really any different from a "boot" =
-
-event, except that =
-
-
- - you haven't had a firmware POST setting up the device (this is a _huge_ =
-
-   issue for video devices, for example)
-
- - you have some previously cached state like virtual MMIO mappings etc =
-
-   that you had set up one way before the resume, and that means that you =
-
-   have to set up _those_ details the same way (or, you need to unmap the =
-
-   old VM state and re-map it with the new one you create: that's a =
-
-   perfectly valid operation too)
-
-But things like queues etc are not about the device any more. You're =
-
-literally better off just flushing them. Trying to save/restore =
-
-bit-for-bit same exact state is impossible and/or just a huge waste of =
-
-time.
+devices that don't think they know how to do it".
 
 			Linus
