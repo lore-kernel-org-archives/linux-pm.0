@@ -1,8 +1,8 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Wed, 14 Jun 2006 17:12:35 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606141707480.5498@g5.osdl.org>
+From: Adam Belay <ambx1@neo.rr.com>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Wed, 14 Jun 2006 20:39:26 -0400
+Message-ID: <20060615003926.GA11083@neo.rr.com>
 References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
 	<20060614103404.GC28536@elf.ucw.cz>
@@ -12,12 +12,12 @@ References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
 	<20060614221235.GA7751@elf.ucw.cz>
 	<Pine.LNX.4.64.0606141529270.5498@g5.osdl.org>
-	<20060615000021.GB24859@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060615000021.GB24859@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606141529270.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,64 +27,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Power management list <linux-pm@lists.osdl.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Power management list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Jun 14, 2006 at 03:37:51PM -0700, Linus Torvalds wrote:
+> And btw, the reason it didn't resume originally was because _we_ did =
 
+> things wrong. The PCI command word mustn't be writen before the rest of =
 
-On Thu, 15 Jun 2006, Pavel Machek wrote:
->
-> > It's _not_ supposed to be PC-compatible. It just happens to be close =
+> the config space has been restored (one of the things I used my debugging =
 
-> > enough that we can ignore the differences.
-> =
+> patches for, until I noticed that -mm had the same fix independently, so =
 
-> Aha, okay. So it basically needs special config to work, and
-> complaining that it does not boot noapic is not helpful.
+> that's the one that is merged right now ;)
 
-No, it doesn't actually need a special config.
+I was hoping to see a more complete fix merged.  This patch still writes to=
+ a
+large number of read-only registers, touches BIST (which can be dangerous on
+some hardware), and isn't careful about the initial state of the PCI command
+word.
 
-I can run bog-standard Fedora Core on it, except it needs to be the =
+I attempted to rework pci_save/restore_state() a couple weeks ago:
+http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D114949711413176&w=3D2
 
-current development tree in order for grub to not lock up (and again, that =
+Any comments would be appreciated.
 
-was very arguably a grub _bug_ - the Mac Mini doesn't have a keyboard =
-
-controller, it has USB only, but grub would wait forever for the =
-
-nonexistant kbd cntroller anyway).
-
-So it's not a "legacy PC", but it's certainly "standard Intel chipsets =
-
-with ACPI". So the same image _should_ really work.
-
-Of course, like any other PC, it has its own quirks (aka bugs) in the =
-
-firmware.
-
-> Actually s2ram used to work for quite long time...
-
-I know. On _some_ machines. So far, I don't think I've actually ever hit =
-
-a machine where it "just worked". Every single time there's some module =
-
-that needs to be unloaded for it to boot, or it needs to use fbcon, or it =
-
-needs some other magic.
-
-I'd really like for it to "just work", and having more people who can try =
-
-to debug why it doesn't work for them is probably the best way to get =
-
-there. I know from personal experience that at least _one_ reason why =
-
-people didn't even bother debugging it was that there simply wasn't =
-
-anythign to debug. There was just a dead brick.
-
-It's that "it's just a dead brick" part I want to fix. I want to turn that =
-
-into "it's a dead brick that I can look inside".
-
-		Linus
+Thanks,
+Adam
