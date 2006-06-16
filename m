@@ -1,23 +1,17 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Fri, 16 Jun 2006 13:37:12 +1000
-Message-ID: <1150429033.7725.118.camel@localhost.localdomain>
-References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606141846.55839.david-b@pacbell.net>
-	<20060615084153.GC9423@elf.ucw.cz>
-	<200606150957.42449.david-b@pacbell.net>
-	<20060615180350.GG23859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
-	<20060615191925.GA1849@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151235380.5498@g5.osdl.org>
-	<1150421189.7725.81.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606151927580.5498@g5.osdl.org>
+Date: Fri, 16 Jun 2006 14:04:55 +1000
+Message-ID: <1150430695.15202.2.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
+	<1150421516.7725.88.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606152008160.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606151927580.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606152008160.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -31,97 +25,80 @@ To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-
-> We have PM callbacks in the bus hierarchy because we need that just to =
-
-> turn them off. You can't turn off the device after you've turned off the =
-
-> bus it is attached to.
+> It's not up to the block driver, that's the thing.
 > =
 
-> But that's _totally_ orthogonal to the issue that a complex state save ma=
+> The _user_mode_ requests should just be stopped (you don't need to block =
+
+> the queue - you just stop the processes). Then you wait for the queue to =
+
+> drain. End of story.
+> =
+
+> BUT YOU DON*T STOP THE DEVICE QUEUE. Because if you did, that would mean =
+
+> that you couldn't save the state.
+
+My experience has been that relying on userland being stopped -> no more
+driver activity isn't going to work. Things like read-ahead or other
+niceties (not even talking about filesystems that scrub things in the
+background or kernel based web/nfs servers ;)  will defeat that.
+
+> Note the "often". Quite often you can't. Things like cardbus controllers =
+
+> will be set up by the POST to have all the right things, and you literall=
 y =
 
-> need a totally unrelated device - along dependancies we don't even _know_.
+> can't re-generate it, because it depends on the motherboard. That's when =
+
+> you save it.
+
+Yeah, well, video cards enter in that category... I have code that can
+bring back some radeon's from D3 cold for powermac provided I saved a
+whole bunch of registers beforehand.
+
+> (Or, even more commonly, you save it just because it's easier than =
+
+> regenerating it)
 > =
 
-> For example, when a device save needs to allocate memory, that in turn ca=
-n =
-
-> end up needing to write to just about _any_ device - and there simply _is=
-_ =
-
-> no hierarchy for that. No such hierarchy is even possible, because it's a =
-
-> circular problem.
-
-Ok, but I still have a hard time figuring out what you call by "save"
-then... =
-
-
-I tend to think we are close to my concept of "prepare for suspend" that
-I exlained separately.
-
-> Btw, one final note:
+> > Of course they do. Or we have a different notion of what you call
+> > "state" here...
 > =
 
-> If people who do STD really do want to suspend all devices and then wake =
-
-> up devices that lead to the STD device, in the end, I personally simply =
-
-> don't care.
+> Yes. I think that's the main stumbling block.
 > =
 
-> I _guarantee_ you that the ordering I've shown is the right one for STR. =
+> You consider "state" to be everything, whether needed or not. And I don't=
+. =
 
-> And since STR is the one _I_ care about, I want STR to work right. If =
+> I consider "state" to be the things that "resume()" _requires_ to get =
 
-> people want to have a totally screwed-up suspend-to-disk, that's _your_ =
+> going again, which is actually a lot lot smaller.
+> =
 
-> problem, I don't really care. I never have.
+> And exactly because I don't think it means "every bit", _my_ viewpoint =
 
-I care more about STR than I do about STD too but heh :)
+> actually matches reality. It matches - for example - _exactly_ what we =
 
-> But as it is, the _broken_ decisions that the current PM does makes it =
+> already do wrt X. We (and here, the "we" is obviously mostly the X server=
+) =
 
-> harder to do a proper STR and also debug it while doing it (so that it =
+> need to save enough state to _recreate_ the state before suspend, but tha=
+t =
 
-> will some day actually work not just on the few machines somebody decides =
+> does not need that we need to save each bit.
 
-> are important). I want STR to "work by default", rather than "work by =
+I agree that your viewpoint matches reality, it's just that I wouldn't
+have called it 'state' :) =
 
-> accident, sometimes" like it does now.
 
-Well, it works by default fairly well on most macs but I agree we still
-have issues. I explained some of them in another email.
+> It's actually also what a lot of drivers already do. Several drivers' =
 
-> And in order to do STR sanely, that "save_state()" needs to be separate =
+> suspend routines don't actually need to save anythign at all, they just =
 
-> from "suspend()". No ifs, buts, maybe's about it. With a separate =
+> turn the device off - exactly because they can recreate all the state =
 
-> save_state, I can keep the console open until it's really time to finally =
-
-> shut it off, and debug the sequence to the bitter end. And STR doesn't =
-
-> have any atomicity issues, since the memory image just doesn't _go_ =
-
-> anywhere.
-
-I'm still not sure I totally understand what save_state exactly _is_ in
-your view of things since most of the time there is either no state to
-"save" or it makes no sense to save stuff that will get invalidated and
-need to be reconstructed as you properly explained... thus I think we
-might be closer to a "tell the driver system is about to suspend and
-make sure you are ready for that" sort of thing than "save state". If
-that's it, then heh, you just re-discovered the sequence of callbacks
-that I wrote with Paulus for the old Mac PM code before the new driver
-model existed :)
- =
-
-> So if this means that STR is just done sanely, and STD is done in the sam=
-e =
-
-> old totally broken manner, I personally do not care one whit. =
-
+> _without_ saving anything.
 
 Ben.
