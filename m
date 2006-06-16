@@ -1,15 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Fri, 16 Jun 2006 18:01:14 +1000
-Message-ID: <1150444874.23600.41.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Fri, 16 Jun 2006 14:49:19 +0200
+Message-ID: <20060616124919.GA4821@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0606151720350.10244-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606151502150.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606151502150.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,48 +21,74 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: Power management list <linux-pm@lists.osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2006-06-13 at 14:40 -0700, Linus Torvalds wrote:
-> The old code was terminally broken, and would do extremely bad things if =
+Hi!
 
-> you used netconsole, for example. Like sending out packets when the devic=
-e =
+> > Here's what you actually did say:
+> > ---------
+> >
+> > > To have DMAs stopped, you need to "freeze" the devices.
+> > =
 
-> had already been suspended etc.
+> > No you don't. =
+
+> > =
+
+> > You need to stop the high-level _queues_, but that's something totally =
+
+> > different from actually stopping the _devices_.
 > =
 
-> The new version may not be perfect either, but it seems fundamentally lik=
-e =
+> Right. =
 
-> a better design: we just hold on to the primary console semaphore over th=
-e =
-
-> whole suspend event, forcing printk() to just buffer up its data until we =
-
-> can show it again. The code is also much simpler and more obvious.
 > =
 
-> This can potentially make debugging harder when something goes wrong at =
+> What you _do_ need to do, is stop the user-level actions.
 
-> suspend time and a visible printk would have given us a hint _what_ went =
+Well, user-level actions are stopped because of refrigerator.
 
-> wrong, but on the other hand, it makes fewer things go wrong. Oopses will =
+> Before you suspend, you need to make the machine quiescent, in other =
 
-> punch through the semaphore anyway, so serious problems aren't affected b=
-y =
+> words. The devices are still working, but you really really don't want to =
 
-> this.
+> do this while things are still _happening_.
+> =
 
-While the idea is nice for kernel console, we still need the console
-switch for X. Unless you have some kind of APM emulation (which we do
-have on ppc) in which case X should get notified of suspend and resume,
-and will try to save/restore itself properly, not switching consoles is
-a guarantee of X blowing up in many situations. (Your patch as-is broke
-suspend/resume on pretty much all powermacs for example with X).
+> Now, with suspend-to-RAM, I suspect we could even avoid that until the =
 
-It's especially bad if you use things like AGP and DRI... =
+> very last phase (ie the actual suspend code). But quite frankly, from a =
+
+> pure debuggability standpoint, I do think we want to basically try to mak=
+e =
+
+> everything as quiet as humanly possible.
+
+Suspend-to-RAM theoretically does not need any kind of stopping, and
+on ppc (IIRC) no stopping is really done. For suspend-to-disk, both
+user actions (so that they do not write to disk after atomic copy is
+done) and DMA (so that atomic image is not corrupted) needs to be
+stopped.
+
+> So think about what we do now: We special-case X, and we special-case the =
+
+> save-to-disk device, and we special-case the console printouts, and we =
+
+> special-case a lot of other things, AND WE STILL GOT IT WRONG. Try
+> using =
 
 
-Ben.
+Actually no, we are not special-casing the disk device. There was
+discussion about doing that, but it is not going to happen.
+
+X are special, because they are user-level hardware driver. If/when we
+meet more user-level hardware drivers, we'll have to invent something
+extensible.
+								Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
