@@ -1,17 +1,18 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 16 Jun 2006 11:31:45 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
+Date: Fri, 16 Jun 2006 11:45:18 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606161135280.5498@g5.osdl.org>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606150957.42449.david-b@pacbell.net>
 	<20060615180350.GG23859@elf.ucw.cz>
 	<200606160704.34093.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606160704.34093.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,72 +28,56 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On Fri, 16 Jun 2006, David Brownell wrote:
+On Fri, 16 Jun 2006, Linus Torvalds wrote:
 > =
 
-> It's not so different from what Linus has been sketching, except
-> for the actual turn-off-DMA step.  (Needed because you want to get
-> an atomic snapshot.)  In terms of $SUBJECT the gain is that you
-> actually get a debuggable suspend sequence.
+> ie I think it's literally an "outl()" followed by a "udelay()", and there =
 
-Actually, if the _only_ thing STD wants to do, why not just have a
+> is basically _zero_ room for problems. The "unfreeze" is then just =
 
-	->freeze(dev)
-	->unfreeze(dev)
+> setting the "run controller" bit again.
 
-call-in?
+Something like
 
-In almost all cases, non-motherboard devices could just do nothing at all, =
+	/*
+	 * Used to temporarily stop all activity.
+	 */
+	static void freeze_uhci(struct uhci_hcd *uhci)
+	{
+		u16 cmd;
 
-and actual chip devices would _literally_ only just a engine stop for the =
+		if (uhci->is_stopped)
+			return;
+		cmd =3D inw(uhci->io_addr + USBCMD) & ~USBCMD_RS;
+		outw(cmd, uhci->io_addr + USBCMD);
+		udelay(1);
+	}
 
-PCI device.
+	static void unfreeze_uhci(struct uhci_hcd *uhci)
+	{
+		u16 cmd;
+		if (uhci->is_stopped)
+			return;
+		cmd =3D inw(uhci->io_addr + USBCMD) | USBCMD_RS;
+		outw(cmd, uhci->io_addr + USBCMD);
+	}
 
-The thing is, if you don't actally want to suspend, just freeze the thing =
+would seem to be enough, if the caller also guarantees that interrupts are =
 
-_temporarily_, you can do that so so so much easier than actually =
+off during this (which you'd also want regardless, I assume).
 
-suspending.
+For a number of simple devices, just disabling interrupts guarantees that =
 
-For UHCI, I think a "freeze" is basically two lines:
+they won't do anything, but busmasters obviously need to be told to stop =
 
- - write "stop" command to command register (actually, it's "clear the run =
+their BM engine (which is what the above should do for UHCI).
 
-   bit" or something)
- - wait for a microsecond to guarantee that the engine actually stopped =
+Of course, these days EHCI etc is probably more interesting than UHCI, but =
 
-   (I think it will run to completion for whatever queue entry it's =
+I only personally worked with UHCI, so I don't know the details, but I =
 
-   working on, and poll the stop bit only in between).
+assume it has a similar "run" bit in some command register.
 
-ie I think it's literally an "outl()" followed by a "udelay()", and there =
-
-is basically _zero_ room for problems. The "unfreeze" is then just =
-
-setting the "run controller" bit again.
-
-(Ok, so it's been about five years since I did anything with UHCI, and the =
-
-USB stack has changed radically since, so my memory may be bad).
-
-In other words, if you really just want to stop the devices in order to do =
-
-a memory snapshot, doing a "suspend" + "resume" is _way_way_way_ overkill, =
-
-and really really fragile because it is so much more complicated. A simple =
-
-"stop" and "continue" is for a lot of PCI devices a total no-op, and for =
-
-others it's literally a matter of setting a stop bit or similar.
-
-IOW, USB, which usually is the "device from hell" in this kind of setting, =
-
-can basically do both the stop and resume in one single machine =
-
-instruction!
-
-So if you're using "suspend/resume" to actually just copy a static image, =
-
-you're really doing silly things.
+My point is, this has nothing to do with _suspending_ the device.
 
 		Linus
