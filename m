@@ -1,8 +1,8 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 16 Jun 2006 14:49:19 +0200
-Message-ID: <20060616124919.GA4821@elf.ucw.cz>
+Date: Fri, 16 Jun 2006 15:22:51 +0200
+Message-ID: <20060616132250.GA1666@elf.ucw.cz>
 References: <Pine.LNX.4.44L0.0606151720350.10244-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606151502150.5498@g5.osdl.org>
 Mime-Version: 1.0
@@ -26,67 +26,33 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > Here's what you actually did say:
-> > ---------
-> >
-> > > To have DMAs stopped, you need to "freeze" the devices.
-> > =
+> And yes, I admit (and I started off talking about this) that I care a lot =
 
-> > No you don't. =
+> more about suspend-to-ram than I do about suspend-to-disk. I seriously =
 
-> > =
+> claim that STR _should_ be a lot simpler than suspend-to-disk, because it =
 
-> > You need to stop the high-level _queues_, but that's something totally =
+> avoids all the memory management problems. The reason that we support =
 
-> > different from actually stopping the _devices_.
-> =
+> suspend-to-disk but not STR is totally perverse - it's simply that it has =
 
-> Right. =
+> been easier to debug, because unlike STR, we can do a "real boot" into a =
 
-> =
+> working system, and thus we don't have the debugging problems that the =
 
-> What you _do_ need to do, is stop the user-level actions.
+> "easy" suspend/resume case has.
 
-Well, user-level actions are stopped because of refrigerator.
+This is one reason, there are two more.
 
-> Before you suspend, you need to make the machine quiescent, in other =
+> Which is obviously also why patch 1/2 (and in many way the more =
 
-> words. The devices are still working, but you really really don't want to =
+> fundamental one) was about trying to make debugging much simpler. Or at =
 
-> do this while things are still _happening_.
-> =
+> least possible.
 
-> Now, with suspend-to-RAM, I suspect we could even avoid that until the =
-
-> very last phase (ie the actual suspend code). But quite frankly, from a =
-
-> pure debuggability standpoint, I do think we want to basically try to mak=
-e =
-
-> everything as quiet as humanly possible.
-
-Suspend-to-RAM theoretically does not need any kind of stopping, and
-on ppc (IIRC) no stopping is really done. For suspend-to-disk, both
-user actions (so that they do not write to disk after atomic copy is
-done) and DMA (so that atomic image is not corrupted) needs to be
-stopped.
-
-> So think about what we do now: We special-case X, and we special-case the =
-
-> save-to-disk device, and we special-case the console printouts, and we =
-
-> special-case a lot of other things, AND WE STILL GOT IT WRONG. Try
-> using =
-
-
-Actually no, we are not special-casing the disk device. There was
-discussion about doing that, but it is not going to happen.
-
-X are special, because they are user-level hardware driver. If/when we
-meet more user-level hardware drivers, we'll have to invent something
-extensible.
-								Pavel
-
+Yes, 1/2 is pretty clever hack that can't hurt. Debugging s2ram will
+still be bad, but probably no longer a nightmare.
+									Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
