@@ -1,22 +1,25 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console
-	handling	during	suspend/resume
-Date: Fri, 16 Jun 2006 11:03:36 +1000
-Message-ID: <1150419816.7725.53.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606131435400.5498@g5.osdl.org>
-	<20060614103404.GC28536@elf.ucw.cz>
-	<Pine.LNX.4.64.0606140820420.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
-	<20060614214048.GG4950@ucw.cz>
-	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Fri, 16 Jun 2006 11:09:06 +1000
+Message-ID: <1150420147.7725.59.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
 	<20060614221235.GA7751@elf.ucw.cz>
 	<1150324014.21941.23.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606141537570.5498@g5.osdl.org>
+	<20060614224436.GF7751@elf.ucw.cz>
+	<Pine.LNX.4.64.0606141557100.5498@g5.osdl.org>
+	<20060614235713.GA24859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
+	<20060615161721.GB23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606150931190.5498@g5.osdl.org>
+	<20060615165909.GE23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151035320.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1150324014.21941.23.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0606151035320.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,53 +29,72 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Peter Jones <pjones@redhat.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, Power management list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Power management list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2006-06-14 at 18:26 -0400, Peter Jones wrote:
-> On Thu, 2006-06-15 at 00:12 +0200, Pavel Machek wrote:
-> > Hi!
+On Thu, 2006-06-15 at 10:41 -0700, Linus Torvalds wrote:
+> =
+
+> On Thu, 15 Jun 2006, Pavel Machek wrote:
 > > =
 
-> > > > > The debugging patch helped me figure out a number of the problems=
- (and =
+> > To have DMAs stopped, you need to "freeze" the devices.
+> =
 
-> > > > > even more problems that then didn't actually make any difference =
-once I =
-
-> > > > > started getting things working ;)
-> > > > > =
-
-> > > > > And the console fixes is apparently what got things working in SM=
-P mode. =
-
-> > > > =
-
-> > > > It works for some people _without_ that console fix.
-> > > =
-
-> > > Yes. It worked for me in UP and with several drivers removed without =
-the =
-
-> > > console fix. It didn't work for me when I did fancier stuff, netconso=
-le in =
-
-> > > particular ;/
-> > =
-
-> > I guess I'd much rather see
-> > =
-
-> > if (network_driver_suspended)
-> > 	drop_message_on_the_floor() =
+> No you don't. =
 
 > =
 
-> I think we have the same problems with e.g. fbcon .
+> You need to stop the high-level _queues_, but that's something totally =
 
-fbcon has an interface to stop all access to the physical framebuffer.
-It's called fb_set_suspend() and is meant to be called by the fbdev when
-it's suspended.
+> different from actually stopping the _devices_.
 
-Ben
+Well, a bit of both in fact. USB controllers for example tend to
+continuously DMA even when there is nothing to process... That must be
+stopped.
+
+But yeah, essentially, when I defined the freeze state back then, I
+defined it as a driver state, not a device state. It's driver freeze.
+Though it's up to the driver to make sure the device is quiescent. DMA
+is deadly not only for STD but for kexec as well.
+
+> So, for example, you want to make sure that nobody is writing to the disk =
+
+> cache, or reading from the disk, or writing to it (apart from the thing =
+
+> that writes the image, of course) any more.
+
+Yup, and that's why I implemented old IDE suspend as a special reuquest
+down the queue that blocks the queue processing when it reaches the
+disk. By being a barrier type request, it allows proper synchronisation
+with pending IOs and makes sure the queue is frozen. Resume is then
+implemented as another special request that gets injected at the head of
+the queue (using the same mecanism used for things like request sense on
+error) and that unblocks it.
+
+> But that's fundamental: and it has absolutely zero to do with device =
+
+> suspend (although you do want to tell the device about it - a number of =
+
+> devices that do polling even in the absense of user input should probably =
+
+> take the hint from "save your state").
+
+Well, it's not about suspending the devices, but it is also about making
+sure the controller doesn't does random DMA, and as I mentioned above,
+the fine line is a bit blurry with some bits of hardware.
+ =
+
+> The fact that you equate "suspend the devices" with "stop doing IO" shows =
+
+> how you think at the wrong level.
+> =
+
+> The "stop doing IO" is at a much higher level.
+
+Yes, though both are involved in the suspend process and can't be
+separated completely due to the dependency between devices in the bus
+hierarchy.
+
+Ben.
