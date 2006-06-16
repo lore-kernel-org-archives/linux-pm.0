@@ -1,16 +1,11 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Fri, 16 Jun 2006 10:47:01 +1000
-Message-ID: <1150418822.7725.36.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0606131418580.5498@g5.osdl.org>
-	<200606150102.53961.rjw@sisk.pl> <20060614233233.GA21135@elf.ucw.cz>
-	<200606151139.14632.rjw@sisk.pl>
+From: "6xhd" <8g7cl@laposte.net>
+Subject: Refill Information By big-pill.com
+Date: Fri, 16 Jun 2006 08:56:04 +0800
+Message-ID: <nj1c6uxroerphdivczw9@laposte.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606151139.14632.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,15 +15,20 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi
 
-> BTW, is there any reason for which the console suspend/resume routines are
-> not called from device_suspend()?
+We accept almost every form of payment.
 
-One of them is that some console drivers aren't struct device's and thus
-aren't in the bus hierarchy (at least vgacon is not).
+Click The Link Below
+big-pill.com
 
-Ben
+
+fzfgykzmuc wpDyjVcTVfAmcGLTMjtmRCjivhsYtn
+drug encyclopedia's conferee Hermosa mistypes gerundive freewheel encase ga=
+thers magicians devises encyclopedia's acknowledgments brouhaha gospels gal=
+enite kilometers fruition inconvertible comparator hoariness contestant des=
+k's fingerings distorts employment's lowest bounty's acids custard club's e=
+arsplitting Ahmedabad encyclopedia's contestant jitterbug kiloton
