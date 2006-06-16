@@ -1,17 +1,17 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 15 Jun 2006 22:23:08 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606152207270.5498@g5.osdl.org>
+Date: Thu, 15 Jun 2006 23:02:19 -0700
+Message-ID: <200606152302.20944.david-b@pacbell.net>
 References: <20060614103404.GC28536@elf.ucw.cz>
-	<1150420919.7725.75.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606151840270.5498@g5.osdl.org>
-	<200606152135.49527.david-b@pacbell.net>
+	<200606150943.05188.david-b@pacbell.net>
+	<20060615165219.GD23859@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606152135.49527.david-b@pacbell.net>
+In-Reply-To: <20060615165219.GD23859@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,119 +21,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Thu, 15 Jun 2006, David Brownell wrote:
-> =
-
-> The main reason a network driver would be interesting from the PM
-> perspective is that it might be able to issue wake-on-LAN events.
-
-I think we do that separately as a totally user-land "prepare to suspend" =
-
-functionality, long before we even get to suspend, right now?
-
-Maybe I'm confused. I've never used it, but from my understanding of =
-
-drivers, I thought that was one of the things you would do with ethtool.
-
-(ie this particular facility very much has that "prepare" phase already ;)
-
-> > All the rest of the state is stuff that the driver knows to do, and it'=
-s =
-
-> > about _driver_ state, not hardware state.
-> =
-
-> USB does however rely on hardware state during true sleep states.
-> For example, that hardware state is what makes remote wakeup work.
-
-But that's state that we already know, no? =
-
-
-> > Are we also in agreement that it's entirely possible that the main syst=
-em =
-
-> > disk is behind USB, and that it might be a good idea to support suspend=
- to =
-
-> > disk off such a thing?
-> =
-
-> No.  Last time this was discussed, the conclusion was that it was not
-> currently supportable.    The issues are shared with all removable media
-> volumes:  MMC/SD, Firewire disks, IDE cartridges, external SATA, and more;
-> not just USB.
-> =
-
-> One of the basic issues is that _resume_ from such media is problematic.
-
-I agree that it probably won't work now, and that it's certainly one of =
-
-the worst cases. It's obviously why I chose it.
-
-You may call it "best" from a PM standpoint, and I'll agree with you from =
-
-a "discuss the issues" standpoint, but I think I'll still just call it =
-
-"worst" from a purely complexity standpoint ;^/
-
-That said, I think it's not unreasonable to want to be able to resume from =
-
-a USB disk at least in theory. Even if the rules very much would be that =
-
-you'd better not move that disk to any other machine, or do other strange =
-
-things. I think those rules would be _very_ understandable to your average =
-
-user, who wouldn't really even expect it to work.
-
-(Evil thought: It _would_ be pretty cool if you could take your work with =
-
-you home by moving the resume disk to an identical machine at home ;)
-
-> >    There's two things to notice: there's no _information_ in the comman=
-d =
-
-> >    lists.
-> =
-
-> ... except from buggy device drivers which didn't abort all their pending
-> commands when they got told to suspend.  (OK, that's the current model,
-> not quite what you're talking about here, but this is a real-world case
-> that currently gets handled that way.
-
-Yeah. I also suspect that in practice it would actually work, because the =
-
-devices would have been quiet, so the fact that we didn't suspend then =
-
-didn't actually matter.
-
-(That's the same thing we now do for the suspend disk: whether we just =
-
-avoid suspending it, _or_ we re-animate it before writing the suspend =
-
-image to it, it obviously ends up beign active while the write happens. =
-
-Nobody really _cares_, because it doesn't really affect any end result in =
-
-practice for something simple like IDE).
-
-> Going that "re-write" route implies the driver init and re-init logic
-> gets handled much more cleanly than it ever has been.  It's a fine notion,
-> but currently not as practical as the save/restore config space approach.
-
-I do believe that for a lot of drivers, there really is no difference.
-
-You see all the complexities of USB, and that really _is_ not just the =
-
-worst case, it's generally a million times worse than just about any other =
-
-driver. =
-
-
-			Linus
+T24gVGh1cnNkYXkgMTUgSnVuZSAyMDA2IDk6NTIgYW0sIFBhdmVsIE1hY2hlayB3cm90ZToKPiBP
+biDEjHQgMTUtMDYtMDYgMDk6NDM6MDQsIERhdmlkIEJyb3duZWxsIHdyb3RlOgo+ID4gT24gVGh1
+cnNkYXkgMTUgSnVuZSAyMDA2IDE6MzkgYW0sIFBhdmVsIE1hY2hlayB3cm90ZToKPiA+ID4gCj4g
+PiA+ID4gQWN0dWFsbHkgaXQgd291bGQgYmUgaW50ZXJlc3RpbmcgdG8gaGVhciBjb3VudGVyLWFy
+Z3VtZW50cyB0byB0aGlzCj4gPiA+ID4gcG9zaXRpb246Cj4gPiA+ID4gCj4gPiA+ID4gCVdlIGFs
+cmVhZHkgSEFWRSB0aGF0IHR3by1waGFzZSB0aGluZyBnb2luZyBvbiwgYXQKPiA+ID4gPiAJbGVh
+c3QgZm9yIHN3c3VzcC4gIEluIHBoYXNlIEkgYSBQTV9FVkVOVF9GUkVFWkUKPiA+ID4gPiAJZ2V0
+cyBzZW50LiAgVGhlbiBpbiBwaGFzZSBJSSBhIFBNX0VWRU5UX1NVU1BFTkQgZ2V0cwo+ID4gPiA+
+IAl0cmllcyB0byByZWFsbHkgc3VzcGVuZCB0aGluZ3MuCj4gPiA+ID4gCj4gPiA+ID4gT25lIGNv
+dW50ZXItYXJndW1lbnQgbWlnaHQgYmUgdGhhdCAicGhhc2UgSS41IHJlc3VtZXMgdGhvc2UgZGV2
+aWNlcyIKPiA+ID4gPiBpcyBhIHByb2JsZW0uICBBbm90aGVyIG1pZ2h0IGJlIHRoYXQgIkZSRUVa
+RSBzaG91bGQgbm90IGJlIHNlbnQgdG8KPiA+ID4gPiB0aGUgY29uc29sZShzKSwgdGhlIHN3YXAg
+ZGV2aWNlLCBvciB0aGVpciBwYXJlbnRzIi4gIEkgc3VzcGVjdCB0aGVyZQo+ID4gPiA+IGFyZSBh
+IGZldyBtb3JlIGlzc3VlcyBtaXhlZCB1cCBpbiB0aGVyZSB0b28uCj4gPiA+IAo+ID4gPiBUaGlz
+IGlzIEZBUToKPiA+IAo+ID4gV2hpY2ggc2VlbXMgdG8gc3VnZ2VzdCB0aGF0IHlvdSBhcmUgRnJl
+cXVlbnRseSBnaXZpbmcgYSB1c2VsZXNzCj4gPiBBbnN3ZXIgdG8gdGhlIFF1ZXN0aW9uIC4uLiBh
+bmQgaW4gdGhpcyBjYXNlLCBub3QgdGhlIHF1ZXN0aW9uCj4gPiB3aGljaCB3YXMgYXNrZWQuICAK
+PiAKPiBPa2F5LCBzbyB3aGF0IGlzIHRoZSBxdWVzdGlvbiB5b3UgYXJlIGFza2luZz8KCldoYXQg
+eW91IHF1b3RlZCBhYm92ZSB3YXMgdGhlIHRvcGljIC4uLiBub3QgcHJlY2lzZWx5IGEgcXVlc3Rp
+b24sCm1vcmUgb2YgYSAiY29tcGFyZSBhbmQgY29udHJhc3QiIHdoYXQgd2UgaGF2ZSB0b2RheSB3
+aXRoIHdoYXQgTGludXMKd2FzIHRhbGtpbmcgYWJvdXQuCgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
+bGlzdHMub3NkbC5vcmcKaHR0cHM6Ly9saXN0cy5vc2RsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LXBtCg==
