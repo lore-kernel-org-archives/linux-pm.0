@@ -1,17 +1,25 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Fri, 16 Jun 2006 14:04:55 +1000
-Message-ID: <1150430695.15202.2.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
-	<1150421516.7725.88.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606152008160.5498@g5.osdl.org>
+Date: Fri, 16 Jun 2006 14:15:30 +1000
+Message-ID: <1150431331.15202.10.camel@localhost.localdomain>
+References: <20060615083921.GB9423@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0606151047410.6879-100000@iolanthe.rowland.org>
+	<20060615161446.GA23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606150922200.5498@g5.osdl.org>
+	<20060615182419.GA1711@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151219540.5498@g5.osdl.org>
+	<20060615200333.GB1849@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151325520.5498@g5.osdl.org>
+	<20060615204317.GC1849@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151356480.5498@g5.osdl.org>
+	<20060615212724.GB2255@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151518380.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606152008160.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606151518380.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,83 +30,44 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-> It's not up to the block driver, that's the thing.
-> =
 
-> The _user_mode_ requests should just be stopped (you don't need to block =
+> X and video really isn't anything special. They are just the _obvious_ =
 
-> the queue - you just stop the processes). Then you wait for the queue to =
+> problem. They are the problem that you can't avoid on _any_ machine: the =
 
-> drain. End of story.
-> =
+> others you can just add special cases for on a one-by-one basis, and you =
 
-> BUT YOU DON*T STOP THE DEVICE QUEUE. Because if you did, that would mean =
+> can get most setups working.
 
-> that you couldn't save the state.
+X is a bit special in fact in the sense that if you want something
+reliable, including the ability you mentioned to be able to reconstruct
+state on resume (because your state "saving", gosh, I don't like that
+terminology, we aren't really saving a sate there) didn't stop
+operations, you'll have to push whole new concepts all the way up the
+stack... to things like X APIs, GL/DRI, etc...
 
-My experience has been that relying on userland being stopped -> no more
-driver activity isn't going to work. Things like read-ahead or other
-niceties (not even talking about filesystems that scrub things in the
-background or kernel based web/nfs servers ;)  will defeat that.
+For example, X can store pixmaps in vram. It needs to know the vram is
+going away to migrate them back into main memory (or other storage).
+Thus if we want to separate thing, we have to create new intefaces to X
+so it gets a chance to do that (and fallback to a boring drawing mode
+maybe until suspend) since I don't think you can just tell an X client
+that a pixmap it owned just vanished.
 
-> Note the "often". Quite often you can't. Things like cardbus controllers =
+Worse with GL. Clients store textures, fbo's (framebuffer objects),
+etc... in vram and there is no GL interfaces to tell GL apps to bring
+their stuff back in as the vram might become invalidated.
 
-> will be set up by the POST to have all the right things, and you literall=
-y =
+And that's just the tip of the X iceberg.
 
-> can't re-generate it, because it depends on the motherboard. That's when =
-
-> you save it.
-
-Yeah, well, video cards enter in that category... I have code that can
-bring back some radeon's from D3 cold for powermac provided I saved a
-whole bunch of registers beforehand.
-
-> (Or, even more commonly, you save it just because it's easier than =
-
-> regenerating it)
-> =
-
-> > Of course they do. Or we have a different notion of what you call
-> > "state" here...
-> =
-
-> Yes. I think that's the main stumbling block.
-> =
-
-> You consider "state" to be everything, whether needed or not. And I don't=
-. =
-
-> I consider "state" to be the things that "resume()" _requires_ to get =
-
-> going again, which is actually a lot lot smaller.
-> =
-
-> And exactly because I don't think it means "every bit", _my_ viewpoint =
-
-> actually matches reality. It matches - for example - _exactly_ what we =
-
-> already do wrt X. We (and here, the "we" is obviously mostly the X server=
-) =
-
-> need to save enough state to _recreate_ the state before suspend, but tha=
-t =
-
-> does not need that we need to save each bit.
-
-I agree that your viewpoint matches reality, it's just that I wouldn't
-have called it 'state' :) =
-
-
-> It's actually also what a lot of drivers already do. Several drivers' =
-
-> suspend routines don't actually need to save anythign at all, they just =
-
-> turn the device off - exactly because they can recreate all the state =
-
-> _without_ saving anything.
+Thus it's definitely worth considering X as a special case for now (and
+other gfx applications) and using the existing method of taking away the
+VT from them is what will give us the best chances of not shooting
+ourselves in the foot, at least for now. X might do things like
+enable/disable AGP, which affects the config space (and thus even your
+saved states if that makes any sense), etc... let's just not open that
+can of worms right now :)
 
 Ben.
