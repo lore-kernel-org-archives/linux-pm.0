@@ -1,25 +1,18 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Fri, 16 Jun 2006 16:02:35 +1000
-Message-ID: <1150437756.23600.18.camel@localhost.localdomain>
+Date: Fri, 16 Jun 2006 16:18:02 +1000
+Message-ID: <1150438682.23600.34.camel@localhost.localdomain>
 References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606141846.55839.david-b@pacbell.net>
-	<20060615084153.GC9423@elf.ucw.cz>
-	<200606150957.42449.david-b@pacbell.net>
-	<20060615180350.GG23859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
-	<20060615191925.GA1849@elf.ucw.cz>
-	<Pine.LNX.4.64.0606151235380.5498@g5.osdl.org>
-	<1150421189.7725.81.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606151927580.5498@g5.osdl.org>
-	<1150429033.7725.118.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606152057140.5498@g5.osdl.org>
+	<1150420919.7725.75.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606151840270.5498@g5.osdl.org>
+	<200606152135.49527.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606152207270.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606152057140.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606152207270.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -34,252 +27,171 @@ Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek 
 List-Id: linux-pm@vger.kernel.org
 
 
-> And I think it's better to make things explicit for driver writers than =
+> I think we do that separately as a totally user-land "prepare to suspend" =
 
-> expect them to get it right implicitly. Especially since in many cases th=
+> functionality, long before we even get to suspend, right now?
+> =
+
+> Maybe I'm confused. I've never used it, but from my understanding of =
+
+> drivers, I thought that was one of the things you would do with ethtool.
+> =
+
+> (ie this particular facility very much has that "prepare" phase already ;)
+
+Yes, pretty much. The fact that WOL has been requested hsa to be
+somewhat stored in the driver instance data since it affects the way the
+chip is put to suspend, but that's it. It's pretty much orthogonbal to
+everything else.
+
+> > USB does however rely on hardware state during true sleep states.
+> > For example, that hardware state is what makes remote wakeup work.
+> =
+
+> But that's state that we already know, no? =
+
+
+I'm not sure I've totally followed the issues involved there... Again,
+"state" is used to mean way too many things. We should step back and
+look _precisely_ what USB does and what can cannot be done.
+
+But then, again, we are hitting a fundamental difference between STR and
+STD... With STR, we prepare, we suspend, we come back, wahtever we did
+is still there in memory, we know what we did and where we come from,
+our lists of urbs, TDs, EDs etc... are still sane etc...
+
+With STD, there is this "magic" step after prepare() and before
+suspend() where system memory will be snapshot.
+
+That means that at a point in time, the USB chip is possibly doing all
+sort of things including DMA'ing to the HCCA in memory, scrubbing ED and
+TD lists, transmitting things, etc...
+
+If we want any chance of resuming properly (and not leaking memory), we
+need at least _some_ sychronisation with the atomic snapshot of memory.
+We need to make sure we aren't in the middle of processing some packets,
+that is all possible upstream "clients" submitting IOs (block, etc...)
+have stopped doing so and we have flushed the necessary queues.
+
+That means that our child drivers (who are the ones submitting those
+IOs) are sort-of quiescent. For block devices, that looks a bit like
+your "phase 2" thing, though I'm not quite sure yet wether you envision
+that involving a driver callback or purely at the core. But there are
+plenty others we need to be a bit careful with. I think it boils down to
+wether a given driver queue holds lossy or lossless informations.
+
+ - Block devices must be lossless. There must be a strict
+synchronisation between the atomic memory image (page cache, buffer
+cache, etc...) and what's on the platter or filesystems might be corrupt
+etc...
+
+ - Network devices are lossy, we can just "pull the plug" and be done
+with it
+
+ - etc... (policy to be defined per device class I suppose)
+
+> > No.  Last time this was discussed, the conclusion was that it was not
+> > currently supportable.    The issues are shared with all removable media
+> > volumes:  MMC/SD, Firewire disks, IDE cartridges, external SATA, and mo=
+re;
+> > not just USB.
+> > =
+
+> > One of the basic issues is that _resume_ from such media is problematic.
+> =
+
+> I agree that it probably won't work now, and that it's certainly one of =
+
+> the worst cases. It's obviously why I chose it.
+
+It should be workable though, I agree. Same with firewire. Heh, after
+all, it works in <insert competition> operating systems :) And there is
+a lot of incentive nowadays to boot machines on things like USB sticks
+etc...
+
+> You may call it "best" from a PM standpoint, and I'll agree with you from =
+
+> a "discuss the issues" standpoint, but I think I'll still just call it =
+
+> "worst" from a purely complexity standpoint ;^/
+
+Yup. But if we get that right, we are pretty confident that we'll have
+everything else right :)
+
+> That said, I think it's not unreasonable to want to be able to resume fro=
+m =
+
+> a USB disk at least in theory. Even if the rules very much would be that =
+
+> you'd better not move that disk to any other machine, or do other strange =
+
+> things. I think those rules would be _very_ understandable to your averag=
 e =
 
-> state you want to restore ends up depending on a lot of other things, it'=
-s =
+> user, who wouldn't really even expect it to work.
 
-> often just _easier_ to have a "save state" phase that the driver writer =
+Agreed. It might even be possible to "detect" misuse (filesytems, before
+suspend, could write a marker that gets cleared on mount or something
+like that, and check on resume and issue a big fat warning (remounting
+r/o and invalidating all cached pages / inodes is an option).
 
-> knows is called before suspend, and which can (for example), just blindly =
+> (Evil thought: It _would_ be pretty cool if you could take your work with =
 
-> save off the config space, and then at resume time we just blast it back =
+> you home by moving the resume disk to an identical machine at home ;)
 
-> out.
+Yeah, it would be :) Let's not dream to far right now :) It might even
+be possible in _some_ circumstances but heh...
 
-I'd rather call it "prepare" than "save state" then...  It's both not
-always and much more than just saving a state :) =
+> > >    There's two things to notice: there's no _information_ in the comm=
+and =
 
+> > >    lists.
+> > =
 
-> Same goes for just saving/restoring some firmware memory area or similar, =
-
-> for example. Yeah, we could ask user space to do it for us, but wouldn't =
-
-> it be nice if "it just worked", and we made the interfaces obvious enough =
-
-> that it's easy for a writer to make it so?
+> > ... except from buggy device drivers which didn't abort all their pendi=
+ng
+> > commands when they got told to suspend.  (OK, that's the current model,
+> > not quite what you're talking about here, but this is a real-world case
+> > that currently gets handled that way.
 > =
 
-> In contrast, keeping track of things one field at a time is actually =
+> Yeah. I also suspect that in practice it would actually work, because the =
 
-> pretty painful, even if you do have all the information, and even if you =
+> devices would have been quiet, so the fact that we didn't suspend then =
 
-> don't strictly need to save off what ends up being just another way of =
+> didn't actually matter.
 
-> saying the same thing..
+Yeah, we are often lucky. =
 
-Yup.
 
-> And, btw, I think "prepare_for_suspend()" is a perfectly fine alternate =
+> (That's the same thing we now do for the suspend disk: whether we just =
 
-> name for "save_state". Maybe even better. I don't at all disagree about =
+> avoid suspending it, _or_ we re-animate it before writing the suspend =
 
-> that approach or the naming.
+> image to it, it obviously ends up beign active while the write happens. =
 
-Good :)
+> Nobody really _cares_, because it doesn't really affect any end result in =
 
-> > I'm still not sure I totally understand what save_state exactly _is_ in
-> > your view of things since most of the time there is either no state to
-> > "save" or it makes no sense to save stuff that will get invalidated and
-> > need to be reconstructed as you properly explained...
+> practice for something simple like IDE).
 > =
 
-> Basically, outside of power management, there is a lot of state that =
-
-> simply doesn't need to _ever_ be saved, exactly because we don't actually =
-
-> lose that state.
+> > Going that "re-write" route implies the driver init and re-init logic
+> > gets handled much more cleanly than it ever has been.  It's a fine noti=
+on,
+> > but currently not as practical as the save/restore config space approac=
+h.
 > =
 
-> So I would want us to have an explicit callback to save any potential =
-
-> state and just generally tell the driver to perhaps disconnect from any =
-
-> user-level stuff etc, rather than have the driver have to keep track of =
-
-> and remember that on its own.
+> I do believe that for a lot of drivers, there really is no difference.
 > =
 
-> But yes, if you think it would be more obvious to call it =
+> You see all the complexities of USB, and that really _is_ not just the =
 
-> "prepare_for_suspend", I have no problem with that. It doesn't change the =
+> worst case, it's generally a million times worse than just about any othe=
+r =
 
-> basic functionality.
+> driver. =
 
-Excellent. Then we agree 100%. Have you read my other email titled
-"suspend/resume issue (Was: [linux-pm] [PATCH 2/2] Fix console handling
-during suspend/resume)" ? I expose a couple of issues we still have that
-are related to request_firmware() in resume() and other similar issues
-with hotplug... =
-
-
-prepare() would allow to work around some of those by allowing drivers
-to clean things us vs. userland communication (or notify a userland
-counterpart etc...) and to pre-load necessary firmwares. However,we
-should also have a pending finish() imho to inform drivers that we are
-now outside of the suspend/resume transition and such things can be
-released (and normal request_firmware can be done again).
-
-There is still the problem with hotplug. I'm tempted to make an extra
-requirement for bus drivers here (drivers that may expose other drivers,
-like USB hubs). After prepare(), they still operate but are forbidden to
-plug a new device in (unplug is probably still ok). That is, on, resume,
-they'll have to do a quick discovery phase to find out if things have
-been plug (they have to anyway since things can be plugged during
-suspend).
-
-There are gazillion of issues if we allow new devices/drivers in while
-we are suspending, and I think the best approach here is to just not do
-it, let them be discovered after resume (in this case, after finish(),
-not resume() of the controller, let's be sane all the way til userland
-can react).
-
-Note that all of this is good for STR. There are still issues with STD
-and the need to have some kind of atomic image of system memory vs.
-filesystems etc... as discussed separately. But let's keep that a
-separate issue. I think a lot of the confusion in this thread is that we
-mix too many things (because the current calls do mix a lot of semantics
-at once, which I agree isn't optimal :)
-
-> I would want most devices to be able to have a suspend function that =
-
-> _literally_ just does
 > =
 
-> 	pcibios_enable_device(dev, PCI_D0);
-
-Hrm... where is the stopping of IO queues, sync'ing with them,
-adadada ... ? As you said, it isn't part of prepare_suspend(), thus it
-shall be part of suspend(). See my example about IDE injeting a suspend
-request in the queue. Network drivers must at least make sure xmit() is
-no longer called once the HW is quiscent, that sort of thing.
-
-> and it would be clear that interrupts have long since been disabled
-
-How so ? A USB device suspend() may want to send commands to the device
-to put it into low power state or to spin down a disk or whatever ...
-will never happen if interrupts are disabled :)
-
->  and  there can be no memory allocations
-
-That I can buy, at least no blocking memory allocations... The above
-example with USB means we still need a few urbs... those could have been
-pre-allocated by prepare() to make sure the driver can continue
-proceeding with IOs after prepare(), but in many case, drivers might
-still just successfully do GFP_NOIO or GFP_ATOMIC allocations... in the
-STR case.
-
-Now if you are talking about the STD case, there is the need for that
-atmic snapshot we talked about that involves also some kind of atomic
-state from drivers for those same reasons I suppose... A slightly more
-complex issue.
-
- >and by then "printk()" won't actually =
-
-> show anything at all, and you cannot return an error, because we have lon=
-g =
-
-> since passed the point of no return.
-
-You can return an error, and the system will just wake up... no ? well,
-that's a detail, doesn't really matter at this point.
-
-> THAT is what I care about. The current setup actually works for me, but i=
-t =
-
-> works at least partially exactly because I basically shut off the console =
-
-> "too early". I would really have preferred to shut off the console much =
-
-> much later, but since currently all the preparatory work actually also =
-
-> ends up shutting things down, that simply isn't an issue.
-> =
-
-> So for any individual driver, the split into "prepare" and "suspend" will =
-
-> never help. That's not the point. The point is purely that we can do =
-
-> general and global things in _between_ the point where "all drivers are =
-
-> prepared and have said that they are ready to suspend", and the final "go =
-
-> go go" moment.
-
-Yes.
-
-> I suspect a lot of drivers don't even need much of a prepare. And others =
-
-> will _literally_ just do something simple and stupid like
-> =
-
-> 	static int prepare_to_suspend(struct pci_dev *dev, pm_message_t state)
-> 	{
-> 		pci_power_t pstate =3D pci_choose_state(pdev, state);
-> =
-
-> 		if (state !=3D PCI_D3hot && state !=3D PCI_D3cold)
-> 			return -EINVAL;
-> 		.. allocate save area for IO registers, save them there ..
-> 		pci_save_state(dev);
-> 		return 0;
-> 	}
-> =
-
-> exactly so that we can tell _ahead_ of time if something would fail, and =
-
-> so that we can keep the console open longer.
-
-Drivers that use a separate firmware would use the above to request it,
-so it's available on resume, etc...
-
-> In my crazier moments, I actually want to do _three_ phases: my really =
-
-> preferred thing would be
-> =
-
->  - phase 1: allocate memory, save state, and return errors
-> =
-
->    After phase 1, we are guaranteed to not need any more memory =
-
->    allocations.
-
-Yes.
-
->  - phase 2: send commands to flush write caches, spin down
-> =
-
->    After phase 2, we know we don't have to wait any more, and this is the =
-
->    point where we disable the console and disable all interrupts
-
-Does the above involve talking to drivers ? Because that's where things
-like IO queues have to be stopped etc... unless it's driver specific
-policy, that means that child devices can't talk to their HW after that
-stage.
-
->  - phase 3: actually power down chips.
-> =
-
->    There is no "after phase 3". The CPU powering down was the last part.
-
-Ok well, there is some issues in splitting 2 and 3 ... makes sense for
-some devices, not others, not necessarily clear. I suppose there is need
-to have something like 2. at the core that stops filesystems, flush
-dirty pages, freeze IOs etc... whatever for STD. For STR, there is no
-real distinction between 2 and 3.
-
-> but I'm still busy trying to just push for a second phase, so I'm not eve=
-n =
-
-> going to mention that next crazy plan to you.
-> =
-
-> Oops.
-> =
-
-> 		Linus
+> 			Linus
