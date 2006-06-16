@@ -1,15 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Fri, 16 Jun 2006 11:31:55 +1000
-Message-ID: <1150421516.7725.88.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0606151625360.8641-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Thu, 15 Jun 2006 19:36:49 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606151927580.5498@g5.osdl.org>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<200606141846.55839.david-b@pacbell.net>
+	<20060615084153.GC9423@elf.ucw.cz>
+	<200606150957.42449.david-b@pacbell.net>
+	<20060615180350.GG23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
+	<20060615191925.GA1849@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151235380.5498@g5.osdl.org>
+	<1150421189.7725.81.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606151345000.5498@g5.osdl.org>
+In-Reply-To: <1150421189.7725.81.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,114 +26,80 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
 
-> Why are people being dense and stupid? I told you in the very first =
 
-> explanation that the IO state isn't suspended by "save_state()".
+On Fri, 16 Jun 2006, Benjamin Herrenschmidt wrote:
 > =
 
-> "save_state()" would not disable the device. It would not disable the =
+> Well, solving that problem is exactly why we have the PM callbacks in
+> bus hierarchy.
 
-> queues. The device would remain usable, and 100% functional.
-
-But what is the point ? What is the relevance of a state saved if it can
-be made invalid right away by processing of IOs ? I can save state at
-any time and suspend 2 hours later, how relevant that state is ? Why not
-save the state at boot and re-use it later ? Doesn't make sense to me :)
-
-> It also would NOT save any "queue state". That's a total software =
-
-> abstraction, and that's something that comes much later (if at all), when =
-
-> we actually need to save the memory image. The only thing the =
-
-> "save_state()" needs to save is the actual _hardware_ state, and not even =
-
-> all of that.
-
-But the hardware state changes as soon as you process requests (run IO
-queues).
-
-> For example, on resume, if you have a network device, you SHOULD NOT EVEN =
-
-> TRY to resume the queue state. It's irrelevant. You should consider all =
-
-> queued packets (on a hardware level) from before the suspend to be _gone_.
-
-Sure, you don't save the content of the queue for network. At least the
-drivers I've cared about so far don't bother, they just drop packets.
-But block drivers need to block the queue as they can't afford to lose
-requests.
-
-> You re-initialize the hardware, but you need to restore things like the =
-
-> BAR's etc that were set up originally. =
-
->
-> If you screw up and stop devices from working in "save_state()", that =
-
-> would be a BUG. =
+No. That's a separate thing. =
 
 
-Saving the PCI interface "state" (BARs etc...) is a very small subset of
-the HW state. That one could probably be done out of line vs. the rest.
-In fact, that specific state can probably even be saved once at driver
-init time and be done with it :)
+We have PM callbacks in the bus hierarchy because we need that just to =
 
-> Get it though your head that savign state doesn't change it. Neither does =
+turn them off. You can't turn off the device after you've turned off the =
 
-> normal operations. Because normal operations don't actually change the =
+bus it is attached to.
 
-> STATE of a device
+But that's _totally_ orthogonal to the issue that a complex state save may =
 
-Of course they do. Or we have a different notion of what you call
-"state" here...
+need a totally unrelated device - along dependancies we don't even _know_.
 
->  - they just change the immaterial details that your =
+For example, when a device save needs to allocate memory, that in turn can =
 
-> driver has to keep track of _independently_, and are things that a reset =
+end up needing to write to just about _any_ device - and there simply _is_ =
 
-> needs to set up _anyway_.
-> =
+no hierarchy for that. No such hierarchy is even possible, because it's a =
 
-> Realize that a "resume" event is not really any different from a "boot" =
+circular problem.
 
-> event, except that =
+Btw, one final note:
 
-> =
+If people who do STD really do want to suspend all devices and then wake =
 
->  - you haven't had a firmware POST setting up the device (this is a _huge=
-_ =
+up devices that lead to the STD device, in the end, I personally simply =
 
->    issue for video devices, for example)
-> =
+don't care.
 
->  - you have some previously cached state like virtual MMIO mappings etc =
+I _guarantee_ you that the ordering I've shown is the right one for STR. =
 
->    that you had set up one way before the resume, and that means that you =
+And since STR is the one _I_ care about, I want STR to work right. If =
 
->    have to set up _those_ details the same way (or, you need to unmap the =
+people want to have a totally screwed-up suspend-to-disk, that's _your_ =
 
->    old VM state and re-map it with the new one you create: that's a =
+problem, I don't really care. I never have.
 
->    perfectly valid operation too)
-> =
+But as it is, the _broken_ decisions that the current PM does makes it =
 
-> But things like queues etc are not about the device any more. You're =
+harder to do a proper STR and also debug it while doing it (so that it =
 
-> literally better off just flushing them. Trying to save/restore =
+will some day actually work not just on the few machines somebody decides =
 
-> bit-for-bit same exact state is impossible and/or just a huge waste of =
+are important). I want STR to "work by default", rather than "work by =
 
-> time.
-> =
+accident, sometimes" like it does now.
 
-> 			Linus
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
+And in order to do STR sanely, that "save_state()" needs to be separate =
+
+from "suspend()". No ifs, buts, maybe's about it. With a separate =
+
+save_state, I can keep the console open until it's really time to finally =
+
+shut it off, and debug the sequence to the bitter end. And STR doesn't =
+
+have any atomicity issues, since the memory image just doesn't _go_ =
+
+anywhere.
+
+So if this means that STR is just done sanely, and STD is done in the same =
+
+old totally broken manner, I personally do not care one whit. =
+
+
+			Linus
