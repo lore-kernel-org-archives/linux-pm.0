@@ -1,26 +1,19 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console
-	handling	during	suspend/resume
-Date: Fri, 16 Jun 2006 11:17:45 +1000
-Message-ID: <1150420666.7725.70.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0606141042260.5498@g5.osdl.org>
-	<20060614214048.GG4950@ucw.cz>
-	<Pine.LNX.4.64.0606141501070.5498@g5.osdl.org>
-	<20060614221235.GA7751@elf.ucw.cz>
-	<1150324014.21941.23.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606141537570.5498@g5.osdl.org>
-	<20060614224436.GF7751@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141557100.5498@g5.osdl.org>
-	<20060614235713.GA24859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606141702300.5498@g5.osdl.org>
-	<20060615161721.GB23859@elf.ucw.cz>
-	<Pine.LNX.4.64.0606150931190.5498@g5.osdl.org>
-	<17553.56413.332136.737946@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Fri, 16 Jun 2006 11:21:59 +1000
+Message-ID: <1150420919.7725.75.camel@localhost.localdomain>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<200606141846.55839.david-b@pacbell.net>
+	<20060615084153.GC9423@elf.ucw.cz>
+	<200606150957.42449.david-b@pacbell.net>
+	<20060615180350.GG23859@elf.ucw.cz>
+	<Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <17553.56413.332136.737946@cargo.ozlabs.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0606151125060.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -30,40 +23,65 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Power management list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-06-16 at 08:17 +1000, Paul Mackerras wrote:
-> Linus Torvalds writes:
+
+> And we currently don't have _anything_ like that. Playing games with =
+
+> sending different commands down the "suspend()" thing is not ever going t=
+o =
+
+> work. Drivers are going to do it wrong. We really need to add a =
+
+> "save_state()" callback, and it needs to be called that, so that people =
+
+> realize that they should not suspend in it.
 > =
 
-> > See? WE DO NOT DO THIS. I told people we needed to do this _years_ ago.=
- I =
+> It would actually simplify and clarify a lot of the confusion we have now=
+. =
 
-> > tried to push through the two-phase suspend. I tried to explain why. I =
 
-> > clearly failed, because we do _nothing_of_the_sort_ right now.
-> =
+But how can you save a sate and use it for resume if the device can
+still operate on further requests ? Your state won't be consistent
+anymore... the state your resume function will get will _not_ match the
+last known hardware state. Pretty annoying.
 
-> We have had working suspend-to-ram on powerbooks since 1998, and we
-> have always done a two-phase suspend.  We have been as unsuccessful
-> as you at convincing people on the PC side that two-phase suspend is
-> good. :-P  Hopefully we'll get further this time.
+Also that means that for things like STD and kexec, you still need a
+second step "suspend" phase to actually stop DMAs which involve stopping
+processing.
 
-Well, we didn't do _that_ sort of 2 phase suspend... again we can't
-separate saving state and suspending for all the reasons I just
-explained to Linus (and I can do it again, I know the problem well and
-while I would love to be convinced it's possible, I yet have to be
-proven wrong).
+> I already fixed one driver (sky2) that simply didn't save it's PCI state, =
 
-What we did was to have a first phase called "prepare" suspend which was
-about informing drivers that things like GFP_KERNEL memory allocations
-were not possible any more, etc... that sort of thing (discussed in
-another mail I sent today). It allows driver that needed to allocate
-large amount of memory for example to do so before the suspend "dance"
-starts and the swap device goes offline.
+> it just suspended (and then in resume it tried to "restore" the state =
 
-This is a completely different issue.
+> that had never been saved). And I _bet_ that was because it's just a very =
+
+> natural thing to do when you look at "suspend()" as an independent op.
+
+Network drivers rarely need to save anything :) Most of their state is
+in the netdev structure (MAC address, multicast filters, etc...) thus
+it's in many case fairly easy to just restore the whole driver from that
+without needing a specific state saving phase.
+
+> So it's actually important - _especially_ for device drivers - to have =
+
+> logical and _distinct_ operations, because device driver writers seldom =
+
+> see the big picture. But if you tell a device driver writer that he needs =
+
+> to save the state, he'll understand that. He might even understand the =
+
+> notion of shutting down the receive side for devices that need it. But if =
+
+> you tell a device driver writer that they need to write a "suspend" =
+
+> function, that's exactly what he will do.
+
+As long as you explain me how my saves state gets _any_ kind of
+relevance if it's not atomically stopping any activity on that driver
+that will invalidate the saved state.
 
 Ben.
