@@ -1,8 +1,8 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 16 Jun 2006 11:45:18 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606161135280.5498@g5.osdl.org>
+Date: Fri, 16 Jun 2006 23:28:11 +0200
+Message-ID: <20060616212811.GA2213@elf.ucw.cz>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606150957.42449.david-b@pacbell.net>
 	<20060615180350.GG23859@elf.ucw.cz>
@@ -12,6 +12,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -22,62 +23,43 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-
-On Fri, 16 Jun 2006, Linus Torvalds wrote:
+> > It's not so different from what Linus has been sketching, except
+> > for the actual turn-off-DMA step.  (Needed because you want to get
+> > an atomic snapshot.)  In terms of $SUBJECT the gain is that you
+> > actually get a debuggable suspend sequence.
 > =
 
-> ie I think it's literally an "outl()" followed by a "udelay()", and there =
+> Actually, if the _only_ thing STD wants to do, why not just have a
+> =
 
-> is basically _zero_ room for problems. The "unfreeze" is then just =
+> 	->freeze(dev)
+> 	->unfreeze(dev)
+> =
 
-> setting the "run controller" bit again.
+> call-in?
 
-Something like
+Unfortunately, it is not the _only_ thing STD needs to do. unfreeze()
+must be able to reinitialize/resume the device during resume.
 
-	/*
-	 * Used to temporarily stop all activity.
-	 */
-	static void freeze_uhci(struct uhci_hcd *uhci)
-	{
-		u16 cmd;
+> In other words, if you really just want to stop the devices in order to d=
+o =
 
-		if (uhci->is_stopped)
-			return;
-		cmd =3D inw(uhci->io_addr + USBCMD) & ~USBCMD_RS;
-		outw(cmd, uhci->io_addr + USBCMD);
-		udelay(1);
-	}
+> a memory snapshot, doing a "suspend" + "resume" is _way_way_way_ overkill=
+, =
 
-	static void unfreeze_uhci(struct uhci_hcd *uhci)
-	{
-		u16 cmd;
-		if (uhci->is_stopped)
-			return;
-		cmd =3D inw(uhci->io_addr + USBCMD) | USBCMD_RS;
-		outw(cmd, uhci->io_addr + USBCMD);
-	}
+> and really really fragile because it is so much more complicated. A
+> simple
 
-would seem to be enough, if the caller also guarantees that interrupts are =
+Well, but we need that to work for s2ram anyway.
+									Pavel
+-- =
 
-off during this (which you'd also want regardless, I assume).
-
-For a number of simple devices, just disabling interrupts guarantees that =
-
-they won't do anything, but busmasters obviously need to be told to stop =
-
-their BM engine (which is what the above should do for UHCI).
-
-Of course, these days EHCI etc is probably more interesting than UHCI, but =
-
-I only personally worked with UHCI, so I don't know the details, but I =
-
-assume it has a similar "run" bit in some command register.
-
-My point is, this has nothing to do with _suspending_ the device.
-
-		Linus
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
