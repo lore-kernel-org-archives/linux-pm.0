@@ -1,17 +1,18 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Sun, 18 Jun 2006 10:48:46 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606181040200.5498@g5.osdl.org>
+Date: Sun, 18 Jun 2006 11:18:38 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606181113000.5498@g5.osdl.org>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606160704.34093.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
 	<200606181016.47561.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606181040200.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606181016.47561.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.64.0606181040200.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,75 +28,47 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On Sun, 18 Jun 2006, David Brownell wrote:
+On Sun, 18 Jun 2006, Linus Torvalds wrote:
 > =
 
-> However, I liked Ben's comment there:  making freeze() be a mode of
-> suspend() processing ensures that the 95% (by my recent audit) of Linux
-> drivers that really don't know anything about power management will be
-> doing something sane, because they'll treat FREEZE requests by default
-> the same way they treat SUSPEND ones.
+> The "most drivers" argument is also pretty bad. The fact is, most drivers =
 
-The "sharign code" and "avoiding mistakes" argument is fine, but it's =
+> probably don't need to do a whole lot for _either_ freeze nor suspend. Th=
+e =
 
-totally bogus in this case.
-
-The thing is, if you want to, you can share it the other way around (ie =
-
-make your "suspend()" routine first call the "freeze()" routine).
-
-And there's a HUGE difference between "freeze()" and "suspend()". If you =
-
-look at the only user that actually _wants_ this, look at disks, for =
-
-example.
-
-For suspend, you _want_ to spin down the disk. No ifs, buts or maybes =
-
-about it. =
+> drivers that matter aren't "most drivers", it's the "special cases". =
 
 
-For freeze(), you absolutely do NOT want to spin down the disk - in fact, =
+Btw, you've gotten off the basic reason we'd want to do this in the first =
 
-as far as the disk is concerned, a "freeze()" should be a total no-op =
+place: keep the system alive throughout the process, so that you can do =
 
-(it's the disk _controller_ that cares).
+"printk()" and other debugging, even while you're suspending one device, =
 
-So trying to make "suspend()" do a "freeze()" is fundamentally wrong. It =
+without having to have horrible hacks about where to reach the console.
 
-is absolutely _not_ a case of "drivers will do something sane by default", =
+If you want to be able to debug as much of the suspend process as =
 
-it's exactly the reverse. Mixing the two makes drivers do _in_sane things =
+possible, you have two choices:
 
-by default.
+ - don't suspend devices until the very end (ie have a separate and =
 
-The "most drivers" argument is also pretty bad. The fact is, most drivers =
+   well-defined "freeze", which doesn't actually need to really shut =
 
-probably don't need to do a whole lot for _either_ freeze nor suspend. The =
+   things off)
 
-drivers that matter aren't "most drivers", it's the "special cases". =
+ - turn off all console activity and/or have horrible hacks that won't =
 
+   work anyway to try to figure out when it can print things and when it =
 
-And the special cases may not even be hard. For example, take the disk =
+   can't.
 
-case above. Disks are generally _trivial_ to suspend. You just basicallyt =
+I think the first option is the one that actually works. Right now, to get =
 
-tell them to. You're done. The thing is, trying to mix up freeze with =
+my machine to suspend successfully (with the current broken "suspend =
 
-suspend just fundamentally confuses and misses the whole point, and then =
+everything"), I have to turn off the console much much _much_ too early. =
 
-you start passing in flags to separate the two cases.
-
-But passing in flags ("we call the same routine, but you had better know =
-
-that you should do two totally different things depending on the =
-
-arguments") is _really_ bad for drivers. Driver writers simply don't =
-
-understand why they are being called, usually. It needs to be explicit in =
-
-the code, not implicit in some rules that most driver writers can (and do) =
-
-ignore.
+That's what I'm trying to get away from.
 
 		Linus
