@@ -1,12 +1,17 @@
-From: WORLD  CUP LOTTERY <mega_safa2010@mail.ru>
-Subject: CONGRATULATIONS!!!!
-Date: Sun, 18 Jun 2006 07:22:17 +0400
-Message-ID: <E1Frnrd-000Jdd-00.mega_safa2010-mail-ru@f40.mail.ru>
-Reply-To: WORLD CUP LOTTERY <mega_safa2010@mail.ru>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Sun, 18 Jun 2006 10:09:04 -0700
+Message-ID: <200606181009.05203.david-b@pacbell.net>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
+	<20060616212811.GA2213@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060616212811.GA2213@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,72 +21,39 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: mega_safa2010@mail.ru
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-       SOUTH AFRICAN WORLD CUP 2010 FREE LOTTERY DRAW =
+On Friday 16 June 2006 2:28 pm, Pavel Machek wrote:
+> =
 
-              HEADQUARTERS LIVERPOOL LONDON UK.
-                        PO Box 1010
- =
+> > > It's not so different from what Linus has been sketching, except
+> > > for the actual turn-off-DMA step.  (Needed because you want to get
+> > > an atomic snapshot.)  In terms of $SUBJECT the gain is that you
+> > > actually get a debuggable suspend sequence.
+> > =
 
-Dear Winner,
- =
+> > Actually, if the _only_ thing STD wants to do, why not just have a
+> > =
 
-We are pleased to announce you as one of the 10 lucky winners in the Free L=
-otto Draw held on the 1st of January 2006. Your email address emerged along=
- side with the nine others as a category of winners in this year's Annual f=
-ree lottery draw. All 10 winning email addresses were randomly selected fro=
-m a batch of 50,000,000 international emails.  You have therefore been appr=
-oved to claim a total sum of &#163;500,000.00 (Five Hundred Thousand Britis=
-h pounds sterling) only.
+> > 	->freeze(dev)
+> > 	->unfreeze(dev)
+> > =
 
-The World Cup 2010 Free Lottery Draw is proudly sponsored by these famous c=
-ompanies: Mike's Sports, Microsoft Corporation, Coca Cola, Nokia, =
+> > call-in?
+> =
 
-MTN, the Intel Group, Toyota, Toshiba, Dell computers, Mackintosh. Mostly b=
-y the South African Government. The South African World Cup 2010 =
+> Unfortunately, it is not the _only_ thing STD needs to do. unfreeze()
+> must be able to reinitialize/resume the device during resume.
 
-Free Lottery Draw is held once a year.  The lottery is well organized to sh=
-ow appreciation to global world and to encourage football soccer world wide.
+Not really ... because resuming drivers get resume() calls, and
+were first told to suspend().
 
-We are proud to say that &#163;5,000,000.00 (Five Million British pounds st=
-erling) are been won annually in more than 152 countries world wide. =
+Another difference between just quiescing a driver and suspending
+it is that when you suspend, the device will potentially need to be
+enabled as a wakeup event source ... which is never true with just
+quiescing the device.  Of course, this is again a difference that
+most drivers will ignore.  ("Wakeup event?  What's that?")
 
-The following particulars are attached to your lotto payment order:
- =
-
-(i) Winning numbers: FL/371/-4385/6711/UK
-(ii) Email ticket number: FL/754/22/76/UK
-(iii) Lotto code number: FL/096/22/UK
-(iv) File Ref number: FL/0473/6207/152/UK
- =
-
-To file your claim, you have to fill the below information's and submit to =
-you our fiduciary agent for easy contact and processing of your =
-
-lottery fund :  =
-
-
-Your full name.......
-Your full address........
-Your nationality.......
-Sex gender........
-age.................
-Occupation.............
-Your Winning email....
-Your direct contact phone number....
-
-CONTACT: MR .EDWIN BRIAN =
-
-E-MAIL: edwin_brian_claimagent@yahoo.co.uk
-PHONE NUMBER: +447024029366
-              +447024024226       =
-
-             =
-
-Sincerely,
-Rev. John Williams
-Promotions Manager
-World Cup 2010
-South Africa
+- Dave
