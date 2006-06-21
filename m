@@ -1,8 +1,8 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Tue, 20 Jun 2006 21:22:05 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606202109410.5498@g5.osdl.org>
+Date: Tue, 20 Jun 2006 21:36:47 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606202125460.5498@g5.osdl.org>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606160704.34093.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
@@ -15,11 +15,12 @@ References: <20060614103404.GC28536@elf.ucw.cz>
 	<1150858653.12507.69.camel@localhost.localdomain>
 	<Pine.LNX.4.64.0606202008290.5498@g5.osdl.org>
 	<1150862396.12507.103.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606202109410.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1150862396.12507.103.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0606202109410.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -35,108 +36,76 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On Wed, 21 Jun 2006, Benjamin Herrenschmidt wrote:
+On Tue, 20 Jun 2006, Linus Torvalds wrote:
 > =
 
-> But there are very good reasons why the suspend process is driven by the
-> drivers in the first place, for big bold dependencies on parent busses
-> based on the above model. And in that picture, it's actually very easy
-> and works pretty well to have a given driver, when asked to suspend, to
-> then call it's own "customers" to tell them to shut up (example; a
-> network driver calling netif_stop_queue() before suspending).
+> It's a perfectly valid operation to create a snapshot AND CONTINUE =
 
-I absolutely agree that on a _suspend_ level, it makes sense to do it =
+> RUNNING! You can create a million snapshots, and only later decide that =
 
-device-model-centric.
+> you want to resume one of them after you've rebooted much later.
 
-But I think the basic disconnect here is that I simply do not believe that =
+Btw, don't get me wrong. I know full well that for full running =
 
-the "image save" has _anything_ to do with "suspend".
+snapshotting you actually need to snapshot the disk contents too (or at =
 
-Let's cut right to the chase:
- - I think "image save" is snapshotting
- - I think snapshotting is well-defined (and possibly useful) without any =
+least the filesystem image - you can do it with a "networked" filesystem =
 
-   suspend activity what-so-ever.
- - I think that anybody who confuses and mixes the two is (a) missing the =
+and a filesystem snapshot capability).
 
-   real potential of snapshotting, but even more importantly (b) making it =
+That has no impact on my basic point: STD is not "suspend".
 
-   much more complex by having the wrong mental model.
+It really _is_ "snaphot", with some things done to limit the damage to =
 
-Mental models are supremely important. Often you can say that they don't =
+"external" images like filesystems by basically making them read-only when =
 
-actually matter, because the end result should be the same, but the fact =
+creating the image, and restoring the image before turning them back into =
 
-is, they have a huge impact on _how_ people think, and on how you get to =
+read-write.
 
-the end result. =
+To actually create a potential for doing "full snapshots" you'd have to do =
 
+more work, but it could (and probably would) be done ON TOP OF a kernel =
 
-The fact is, suspend has nothing to do with the "save to disk" part. I =
+level snapshot as created by the suspend-to-disk code.
 
-think the whole Linux kernel suspend code has been _destroyed_ by the STD =
+I dare you to show _any_ "suspend" activity in suspend-to-disk. Because =
 
-code. Exactly because the STD people have thought that the save-to-disk =
+there is none. So I call total bull on your claim that it's 95% shared =
 
-part was somehow part of "suspend", when it has _nothing_ to do with it =
+code.
 
-other than a very incidental connection.
+For example, the _real_ suspend case (ie non-snapshotting case) has no =
 
-The sad part is that STR (aka "real suspend") has been made much more =
+reason what-so-ever (apart from debuggability) to really stop any queues =
 
-complex because allt he things THAT HAVE NOTHING TO DO WITH SUSPENDING A =
+etc. So if you want to do _real_ suspend, what you should do is exactly =
 
-DEVICE have been pushed into the STR path.
+what you propose: make it built up around the device model. Except you =
 
-Think about the "snapshotting" idea for a while. =
+don't actually need to empty or stop any queues, you just stop the devices =
 
+from handling them.
 
-I claim, that the only _sane_ way to do STD is to create a snapshot, and =
+See? There's absolutely zero overlap in functionality. The two approaches =
 
-resume that snapshot. But notice how "suspendign" isn't part of that =
+literally do totally different things. =
 
-picture AT ALL. Really. =
-
-
-It's a perfectly valid operation to create a snapshot AND CONTINUE =
-
-RUNNING! You can create a million snapshots, and only later decide that =
-
-you want to resume one of them after you've rebooted much later.
-
-The current code mixes the two operations up. I've said so from the =
-
-beginning. The current code seems to think that "suspend" should have =
-
-something to do with creating a snapshot, AND THE CURRENT CODE IS WRONG!
-
-Dammit, I'm right about this.
-
-(And btw, I've done device snapshotting that works like the above, and =
-
-taking snapshots every 5 minutes or so. It's damn useful - you can go =
-
-backwards in time when something goes wrong, and re-examine what went =
-
-wrong. Admittedly, that was done with simulator software - and hardware - =
-
-but the point is, snapshotting and continuing to run isn't even all that =
-
-strange, and it sure as hell isn't an invalid operation).
-
-As long as you continue to confuse "suspend to disk" with "real suspend", =
-
-you're not going to see the point. Just FORGET about the fact that STD is =
-
-called "suspend". It has nothing to do with reality. STD has no suspend in =
-
-it what-so-ever.
-
-In STD, you shut the damn machine off, there's not a whiff of real power =
-
-management anywhere, and device power management is totally unnecessary =
-
-and useless for it.
 
 			Linus
+
+PS. The real reason to make queues be quiescent when doign suspend-to-RAM =
+
+is different: if you never come back from the suspend, you should try to =
+
+have what approaches a clean "dirty shutdown". So you actually do want to =
+
+do "sync" and wait, not because you technically need to, but because it's =
+
+a whole lot safer if you end up disconnecting your machine from a power =
+
+source and forget about it.
+
+PPS. And debugging. Suspend/resume is hard enough and error-prone enough =
+
+even without having to worry about the machine doing tons of stuff.
