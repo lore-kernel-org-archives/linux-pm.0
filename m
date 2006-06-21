@@ -1,8 +1,8 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 21 Jun 2006 08:08:51 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606210754080.5498@g5.osdl.org>
+Date: Wed, 21 Jun 2006 08:15:31 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606210809380.5498@g5.osdl.org>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606160704.34093.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
@@ -16,12 +16,13 @@ References: <20060614103404.GC28536@elf.ucw.cz>
 	<Pine.LNX.4.64.0606202008290.5498@g5.osdl.org>
 	<1150862396.12507.103.camel@localhost.localdomain>
 	<Pine.LNX.4.64.0606202109410.5498@g5.osdl.org>
-	<1150865132.12507.131.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606202125460.5498@g5.osdl.org>
+	<1150866244.12507.141.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1150865132.12507.131.camel@localhost.localdomain>
+In-Reply-To: <1150866244.12507.141.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -40,73 +41,55 @@ List-Id: linux-pm@vger.kernel.org
 On Wed, 21 Jun 2006, Benjamin Herrenschmidt wrote:
 > =
 
-> So your approach to STD would be something like:
-> =
+> Not stopping queues but not servicing them instead ... hrm ... not that
+> much difference if you ask me :)
 
-> 1- stop subsystems
-> 2- driver freeze (in the sense to stop DMA's and other horrors for
-> snapshot, only some drivers care, most don't)
-> 3-snapshot
+A _huge_ difference.
 
-Yes. Where "stop subsystems" could well include some things that we don't =
+You still don't seem to see it:
 
-even do now.
+> In fact, there is very little difference in practice as far as the
+> driver implementation is concerned. I don't care either way as long as
+> the driver is hardened against incoming things (requests, ioctl,
+> whatever) happening after it's been suspended...
 
-> 4-driver thaw, subsystems stay frozen (that is VM, filesystems,
-> userland)
+The difference is _exactly_ on the driver level.
 
-Yes and no. We might actually want to thaw some subsystems too. =
+If you stop the queues, most drivers don't have to care any more. They are =
 
-
-Obviously, there's no reason to thaw user programs (even if you could =
-
-wake them up, they couldn't be allowed to make any forward progress that =
-
-is "visible"), but once you have snapshotted things, you might actually be =
-
-better off allowing a fair amount of "normal" operations.
-
-For example, you might decide that you want to actually _kill_ all user =
-
-processes at that point, and allow kernel processes that you wanted =
-
-quiescent for snapshotting to thaw. Once you have built the snapshot =
-
-image, many of the reasons to freeze are gone - not just for drivers.
-
-At that point, the only thing you want to make sure of is that nobody =
-
-writes to swap any more, and doesn't write to the filesystem (or network, =
-
-for that matter).
-
-> 5-shutdown or driver suspend S4
-
-Not yet. =
+quiescent _without_ any driver impact what-so-ever. =
 
 
- 5 - write snapshot to disk
+Really. =
 
-Because ytou need to do that after the thaw, of course.
 
-And only _then_ do you actually shutdown or do S4.
+The freeze() operation should always just stop the DMA engine. 99% of =
 
-> The only little possible issue there is that the subsystems being still
-> stopped, some drivers may need to have a hard time doing 5 if they need
-> to send requests to their own hardware for things like hard disk
-> spindown, and they happen to use the block layer request queue for that
-> (pumping device specific requests into it).
+drivers don't have a DMA engine that keeps on going independently of the =
 
-I'd wake up all kernel daemons after snapshotting. There's no reason not =
+queues, so for 99% fo the drivers, freeze() should do _nothing_.
 
-to, really (kswapd might be a special case, but quite frankly, I think =
+The only remaining drivers?
 
-we're better off "turning off swap" than necessarily turning off kswapd =
+Basically things like USB etc that do things on a "schedule", needs to =
 
-itself - ie again, the appropriate level to make sure swap doesn't get =
+have their scheduler engine stopped, and devices that react to outside =
 
-dirtied afterwards is likely _higher_ up than the level that actually =
+events ("networking") need to be told to not do that.
 
-makes the IO itself happen).
+Btw, the real connection between STD and STR is not the shutdown. It's =
 
-			Linus
+actually the resume part. In both "snapshot resume" and "suspend resume" =
+
+do you need to reset the hardware to the image you have. =
+
+
+So it's quite possible that the _resume_ codepath is to be shared. But I'm =
+
+pretty damn sure that there's absolutely no shared code in the "suspend" =
+
+path between STD and STR, exactly because they do fundamentally different =
+
+things, and from fundamentally different levels.
+
+		Linus
