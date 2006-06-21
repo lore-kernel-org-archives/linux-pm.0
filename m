@@ -1,14 +1,14 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 21 Jun 2006 09:03:30 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606211130350.6700-100000@iolanthe.rowland.org>
+Date: Wed, 21 Jun 2006 12:35:23 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0606211130350.6700-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,153 +18,214 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 21 Jun 2006, Linus Torvalds wrote:
 
+> On Wed, 21 Jun 2006, Alan Stern wrote:
+> > =
 
-On Wed, 21 Jun 2006, Alan Stern wrote:
+> > There is one small point they do have in common.  For those systems whe=
+re =
+
+> > power doesn't get turned off completely during STD, you will want to =
+
+> > enable remote wakeup (just as in STR).
 > =
 
-> There is one small point they do have in common.  For those systems where =
+> So, let me re-iterate my view of how things really _should_ work.
+> =
 
-> power doesn't get turned off completely during STD, you will want to =
+>  - we should have _suspend_ support. This is the "real suspend" thing, ie =
 
-> enable remote wakeup (just as in STR).
+>    support for putting the machine to sleep, and it is totally independen=
+t =
 
-So, let me re-iterate my view of how things really _should_ work.
+>    of any snapshotting capability what-so-ever.
 
- - we should have _suspend_ support. This is the "real suspend" thing, ie =
+This is what you want to happen during STR, right?  I agree, it should be =
 
-   support for putting the machine to sleep, and it is totally independent =
+independent of snapshotting.
 
-   of any snapshotting capability what-so-ever.
+>    The operations for suspend support is literally:
+> =
 
-   The operations for suspend support is literally:
+> 	- save_state (or, as Ben prefers, "prepare_to_suspend", but that's =
 
-	- save_state (or, as Ben prefers, "prepare_to_suspend", but that's =
+> 	  a naming issue, and having listened to his arguments, I think he =
 
-	  a naming issue, and having listened to his arguments, I think he =
+> 	  prefers that name because he's confused)
 
-	  prefers that name because he's confused)
+How about "prepare_to_reinitialize"?  After all, there's no need to save =
 
-	- suspend()
+anything or worry about suspending if you aren't going to restart the =
 
-	- resume() (and, to clarify my position, let's call it just =
+system later.
 
-	  "restore_state()" here, although I don't actually think renaming =
+> 	- suspend()
 
-	  it is worth-while, but _mentally_ you should think of the =
+Presumably remote wakeup (WOL, whatever) gets enabled as part of the =
 
-	  "resume()" function as a state _restore_, not a "resume", =
+suspend().
 
-	  exactly because it's not actually paired with the suspend, but =
+> 	- resume() (and, to clarify my position, let's call it just =
 
-	  with the "save_state()" function)
+> 	  "restore_state()" here, although I don't actually think renaming =
 
- - we should have a logically and physically totally independent =
+> 	  it is worth-while, but _mentally_ you should think of the =
 
-   "snapshot" support in the device layer, with two operations:
+> 	  "resume()" function as a state _restore_, not a "resume", =
 
-	- freeze. Which would normally be a no-op, or a DMA engine =
+> 	  exactly because it's not actually paired with the suspend, but =
 
-	  (or "receive path") shutdown
+> 	  with the "save_state()" function)
 
-	- unfreeze. Which would normally be a nop-op, or just resuming the =
+At what stage do you restore power to the device?
 
-	  DMA engine or receive path.
+How does the handling differ when you are doing runtime (AKA dynamic AKA =
 
-And the thing is, all these operations are really very different =
+selective) suspend/resume?
 
-operations, and the most important part to realize is that they are fairly =
+>  - we should have a logically and physically totally independent =
 
-INDEPENDENT.
+>    "snapshot" support in the device layer, with two operations:
+> =
 
-But being independent very much means that you can combine them. So, a =
+> 	- freeze. Which would normally be a no-op, or a DMA engine =
 
-normal _real_ suspend would literally be basically this sequence:
+> 	  (or "receive path") shutdown
+> =
 
-	for_each_dev()
-		save_state()
-	for_each_dev()
-		suspend();
-	system suspend()
-	for_each_dev()
-		restore_state()
+> 	- unfreeze. Which would normally be a nop-op, or just resuming the =
 
-note how the normal suspend wouldn't do any freezing at all (at least in =
+> 	  DMA engine or receive path.
+> =
 
-theory - in practice it may well want to quiesce the machine, and =
+> And the thing is, all these operations are really very different =
 
-obviously the driver "suspend()" part will result in it stopping handlign =
+> operations, and the most important part to realize is that they are fairl=
+y =
 
-any _requests_). But at least from a conceptual standpoint, there are =
+> INDEPENDENT.
 
-_zero_ VM games, no frozen processes, no nothing. =
+Agreed.
 
+> But being independent very much means that you can combine them. So, a =
 
-(Also, _conceptually_ the X handling is all perfectly regular, and is part =
+> normal _real_ suspend would literally be basically this sequence:
+> =
 
-of the "save_state()" and "restore_state()" loop, but then from a pure =
+> 	for_each_dev()
+> 		save_state()
+> 	for_each_dev()
+> 		suspend();
+> 	system suspend()
+> 	for_each_dev()
+> 		restore_state()
+> =
 
-implementation standpoint you might make it a separate save/restore around =
+> note how the normal suspend wouldn't do any freezing at all (at least in =
 
-the whole thing).
+> theory - in practice it may well want to quiesce the machine, and =
 
-Ok, so what happens in a suspend-to-disk? The basic loop is
+> obviously the driver "suspend()" part will result in it stopping handlign =
 
-	for_each_dev()
-		save_state()
+> any _requests_). But at least from a conceptual standpoint, there are =
 
-	freeze upper layers (shrink VM, user crud, filesystem read-only, =
+> _zero_ VM games, no frozen processes, no nothing. =
 
-		yadda yadda)
-	for_each_dev()
-		freeze()
-	snapshot
-	for_each_dev()
-		unfreeze()
-	unfreeze at least enough to be able to write
-	write snapshot to disk
+> =
 
-	.. shutdown ..
-	.. reboot ..
-	restore snapshot from disk
-	for_each_dev()
-		restore_state()
+> (Also, _conceptually_ the X handling is all perfectly regular, and is par=
+t =
 
+> of the "save_state()" and "restore_state()" loop, but then from a pure =
 
-See? The "..shutdown .." part is whatever you make of it, you _can_, if =
+> implementation standpoint you might make it a separate save/restore aroun=
+d =
 
-you want to, just make it
+> the whole thing).
 
-	for_each_dev()
-		supend()
-	shutdown();
+On the whole this is fine, although Ben will likely have some comments.
 
-but on other hardware/circumstances it might be a more normal "turn power =
+> Ok, so what happens in a suspend-to-disk? The basic loop is
+> =
 
-off" kind of shutdown. All up to you, and TOTALLY INDEPENDENT of the basic =
+> 	for_each_dev()
+> 		save_state()
+> =
 
-operations.
+> 	freeze upper layers (shrink VM, user crud, filesystem read-only, =
 
-Also, notice how the only thing hat is _really_ common between the two is =
+> 		yadda yadda)
+> 	for_each_dev()
+> 		freeze()
+> 	snapshot
+> 	for_each_dev()
+> 		unfreeze()
+> 	unfreeze at least enough to be able to write
+> 	write snapshot to disk
 
-not the suspend at all, but the "save_state()" and "restore_state()" =
+And somewhere in here you have to enable remote wakeup.
 
-loops. THOSE are fundamentally shared, but neither of them actually has =
+> 	.. shutdown ..
+> 	.. reboot ..
+> 	restore snapshot from disk
 
-really anything at all to do with the suspend itself, with WOL, or =
+Here you left out two steps.  First, drivers have to get their devices
+back into working condition.  (They might be exactly as shutdown() left
+them, or they might have been reset by the firmware.)  Second, you need to
+unfreeze all the upper layers.
 
-anything else.
+> 	for_each_dev()
+> 		restore_state()
+> =
 
-(This also clarifies why "save_state()" and "suspend()" are really =
+> =
 
-different operations, and why "prepare_to_suspend()" is actually not a =
+> See? The "..shutdown .." part is whatever you make of it, you _can_, if =
 
-great name - it may not be paired with a suspend at all, if you just shut =
+> you want to, just make it
+> =
 
-down the machine: it would be paired with a "shutdown()").
+> 	for_each_dev()
+> 		supend()
+> 	shutdown();
+> =
 
-			Linus
+> but on other hardware/circumstances it might be a more normal "turn power =
+
+> off" kind of shutdown. All up to you, and TOTALLY INDEPENDENT of the basi=
+c =
+
+> operations.
+> =
+
+> Also, notice how the only thing hat is _really_ common between the two is =
+
+> not the suspend at all, but the "save_state()" and "restore_state()" =
+
+> loops. THOSE are fundamentally shared, but neither of them actually has =
+
+> really anything at all to do with the suspend itself, with WOL, or =
+
+> anything else.
+
+My point (which you seem to have forgotten) was that the "enable remote =
+
+wakeup" step is also common between the two.
+
+> (This also clarifies why "save_state()" and "suspend()" are really =
+
+> different operations, and why "prepare_to_suspend()" is actually not a =
+
+> great name - it may not be paired with a suspend at all, if you just shut =
+
+> down the machine: it would be paired with a "shutdown()").
+> =
+
+> 			Linus
+
+Alan Stern
