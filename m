@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 21 Jun 2006 12:35:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
+Date: Wed, 21 Jun 2006 10:04:54 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,214 +18,264 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 21 Jun 2006, Linus Torvalds wrote:
 
-> On Wed, 21 Jun 2006, Alan Stern wrote:
+
+On Wed, 21 Jun 2006, Alan Stern wrote:
 > > =
 
-> > There is one small point they do have in common.  For those systems whe=
-re =
+> >  - we should have _suspend_ support. This is the "real suspend" thing, =
+ie =
 
-> > power doesn't get turned off completely during STD, you will want to =
+> >    support for putting the machine to sleep, and it is totally independ=
+ent =
 
-> > enable remote wakeup (just as in STR).
+> >    of any snapshotting capability what-so-ever.
 > =
 
-> So, let me re-iterate my view of how things really _should_ work.
+> This is what you want to happen during STR, right?
+
+Right. Although I can see a S4-kind of suspend being a "suspend" too, just =
+
+not saving memory state. You can certainly see the memory state as being =
+
+"independent" of the actual device suspend activity.
+
+> > 	- save_state (or, as Ben prefers, "prepare_to_suspend", but that's =
+
+> > 	  a naming issue, and having listened to his arguments, I think he =
+
+> > 	  prefers that name because he's confused)
 > =
 
->  - we should have _suspend_ support. This is the "real suspend" thing, ie =
+> How about "prepare_to_reinitialize"?  After all, there's no need to save =
 
->    support for putting the machine to sleep, and it is totally independen=
-t =
+> anything or worry about suspending if you aren't going to restart the =
 
->    of any snapshotting capability what-so-ever.
+> system later.
 
-This is what you want to happen during STR, right?  I agree, it should be =
+Well, naming this op seems to be really hard. In the end, I don't really =
 
-independent of snapshotting.
+care.
 
->    The operations for suspend support is literally:
+What I want is really to haev modular, independent calls, that tell driver =
+
+writers _exactly_ what is going on, and why they should do so. =
+
+
+(And, btw, "tell driver writers" is only indirectly about having the =
+
+documentation. Much more important than documentation is just clear and =
+
+unambiguous interfaces. Right now, "suspend()" is _not_ that. It's not =
+
+clear and unambiguous at all, it's a muddy pit-hole of mixing different =
+
+things - you're supposed to do all of "freeze", "save state" and =
+
+"suspend")
+
+To me, "prepare_to_reinitialize" is just very cumbersome, but I really =
+
+don't care about the naming as much as I care about the op doing just =
+
+_one_ thing, and doing it well.
+
+It's the whole UNIX philosophy again. You can have the Windows kind of =
+
+"open()" system call that has 8 arguments, and can do a "open with stat, =
+
+but only on Wednesdays, and only when I said 'Simon Says' before".
+
+Or you can have the UNIX kind of "open()", which is one system call, does =
+
+one thing only, and if you want the "stat()" of the opened file, you do =
+
+that separately.
+
+You do NOT mix operations in one super-duper-operation.
+
+And naming is somewhat secondary (although not totally irrelevant, of =
+
+course - you can certainly confuse people with bad naming even if the =
+
+design is otherwise perfect).
+
+> > 	- suspend()
 > =
 
-> 	- save_state (or, as Ben prefers, "prepare_to_suspend", but that's =
+> Presumably remote wakeup (WOL, whatever) gets enabled as part of the =
 
-> 	  a naming issue, and having listened to his arguments, I think he =
+> suspend().
 
-> 	  prefers that name because he's confused)
+That's what I'd expect, yes. Clearly _managing_ that whole thing is a =
 
-How about "prepare_to_reinitialize"?  After all, there's no need to save =
+totally separate issue, but right now we don't even do that within the =
 
-anything or worry about suspending if you aren't going to restart the =
+actual device infrastructure, but on a device-by-device basis (ie ethtool =
 
-system later.
+for networking and perhaps the RTC tools for timed wakeups?).
 
-> 	- suspend()
+In fact, exactly because different devices have so fundamentally different =
 
-Presumably remote wakeup (WOL, whatever) gets enabled as part of the =
+notions of what a wakup event is, I think that's the only really workable =
 
-suspend().
+option: have a device-specific setup phase long before, and have =
 
-> 	- resume() (and, to clarify my position, let's call it just =
+"suspend()" just then implement whatever that was.
 
-> 	  "restore_state()" here, although I don't actually think renaming =
+In other words, I don't see how we could even _have_ some "generic =
 
-> 	  it is worth-while, but _mentally_ you should think of the =
+wake-event setup" at this level.
 
-> 	  "resume()" function as a state _restore_, not a "resume", =
+But I haven't thought about it that much.
 
-> 	  exactly because it's not actually paired with the suspend, but =
+> > 	- resume() (and, to clarify my position, let's call it just =
 
-> 	  with the "save_state()" function)
+> > 	  "restore_state()" here, although I don't actually think renaming =
 
-At what stage do you restore power to the device?
+> > 	  it is worth-while, but _mentally_ you should think of the =
 
-How does the handling differ when you are doing runtime (AKA dynamic AKA =
+> > 	  "resume()" function as a state _restore_, not a "resume", =
 
-selective) suspend/resume?
+> > 	  exactly because it's not actually paired with the suspend, but =
 
->  - we should have a logically and physically totally independent =
-
->    "snapshot" support in the device layer, with two operations:
+> > 	  with the "save_state()" function)
 > =
 
-> 	- freeze. Which would normally be a no-op, or a DMA engine =
+> At what stage do you restore power to the device?
 
-> 	  (or "receive path") shutdown
+I am ambivalent about this.
+
+In many cases, power _will_ have been enabled earlier (ie the =
+
+suspend-to-disk case will do it), so I _think_ that the answer is that a =
+
+robust driver just cannot depend on what the state of the device was =
+
+before, and that part of "restore_state()" is to also restore the power =
+
+state at the time of the "save_state()".
+
+So we _may_ actually restore power to the device before even calling =
+
+"resume()", and the driver just doesn't know and shouldn't care. The only =
+
+_real_ semantics should be that the power state _after_ the restore_state =
+
+should be the same as it was when save_state was called.
+
+That seems like the only sane thing we can do, considering the different =
+
+ways to reach it. =
+
+
+> How does the handling differ when you are doing runtime (AKA dynamic AKA =
+
+> selective) suspend/resume?
+
+I think that you should be perfectly able to do a single-device "shut that =
+
+device off" with a simple:
+
+	save_state(dev);
+	suspend(dev);
+	..
+	restore_state(dev);
+
+without having any other suspend going on and without iterating over any =
+
+other devices.
+
+Of course, whoever does this needs to verify that the device itself is =
+
+quiescent (or able to wake up itself and force its own "restore_state()").
+
+I don't see any real issues there, do you?
+
+(That "needs to verify" migth of course be a big issue, but on the other =
+
+hand, I don't think anybody really disagrees about this, do they?)
+
+> > 	unfreeze at least enough to be able to write
+> > 	write snapshot to disk
 > =
 
-> 	- unfreeze. Which would normally be a nop-op, or just resuming the =
+> And somewhere in here you have to enable remote wakeup.
 
-> 	  DMA engine or receive path.
+No, that would be part of the next phase:
+
+> > 	.. shutdown ..
+
+(which might be a suspend cycle).
+
+> > 	.. reboot ..
+> > 	restore snapshot from disk
 > =
 
-> And the thing is, all these operations are really very different =
-
-> operations, and the most important part to realize is that they are fairl=
-y =
-
-> INDEPENDENT.
-
-Agreed.
-
-> But being independent very much means that you can combine them. So, a =
-
-> normal _real_ suspend would literally be basically this sequence:
+> Here you left out two steps.  First, drivers have to get their devices
+> back into working condition.  (They might be exactly as shutdown() left
+> them, or they might have been reset by the firmware.)  Second, you need to
+> unfreeze all the upper layers.
 > =
 
-> 	for_each_dev()
-> 		save_state()
-> 	for_each_dev()
-> 		suspend();
-> 	system suspend()
-> 	for_each_dev()
-> 		restore_state()
-> =
+> > 	for_each_dev()
+> > 		restore_state()
 
-> note how the normal suspend wouldn't do any freezing at all (at least in =
+The "restore_state()" will get the devices back to working condition (by =
 
-> theory - in practice it may well want to quiesce the machine, and =
+definition, or the "save/restore" is clearly buggy). So there's no need to =
 
-> obviously the driver "suspend()" part will result in it stopping handlign =
+unfreeze devices (and that would, in fact, be a bug, since you'd unfreeze =
 
-> any _requests_). But at least from a conceptual standpoint, there are =
+them into some random state if you hadn't done the restore_state).
 
-> _zero_ VM games, no frozen processes, no nothing. =
+But yes, we need to unfreeze the upper layers, since the snapshot got done =
 
-> =
+with them frozen.
 
-> (Also, _conceptually_ the X handling is all perfectly regular, and is par=
-t =
+> My point (which you seem to have forgotten) was that the "enable remote =
 
-> of the "save_state()" and "restore_state()" loop, but then from a pure =
+> wakeup" step is also common between the two.
 
-> implementation standpoint you might make it a separate save/restore aroun=
-d =
+I didn't forget anything. You just didn't understand. I said:
 
-> the whole thing).
+> > See? The "..shutdown .." part is whatever you make of it, you _can_, if =
 
-On the whole this is fine, although Ben will likely have some comments.
+> > you want to, just make it
+> > =
 
-> Ok, so what happens in a suspend-to-disk? The basic loop is
-> =
+> > 	for_each_dev()
+> > 		supend()
+> > 	shutdown();
 
-> 	for_each_dev()
-> 		save_state()
-> =
+Where that "suspend() each device" would do all the same WOL that it does =
 
-> 	freeze upper layers (shrink VM, user crud, filesystem read-only, =
+when it goes to _real_ suspend.
 
-> 		yadda yadda)
-> 	for_each_dev()
-> 		freeze()
-> 	snapshot
-> 	for_each_dev()
-> 		unfreeze()
-> 	unfreeze at least enough to be able to write
-> 	write snapshot to disk
+But the point is, THAT'S ALL INDEPENDENT. It's not necessarily what you do =
 
-And somewhere in here you have to enable remote wakeup.
+at all. It's very possible that you do NOT do this, and that you just shut =
 
-> 	.. shutdown ..
-> 	.. reboot ..
-> 	restore snapshot from disk
+down.
 
-Here you left out two steps.  First, drivers have to get their devices
-back into working condition.  (They might be exactly as shutdown() left
-them, or they might have been reset by the firmware.)  Second, you need to
-unfreeze all the upper layers.
+In other words, "save_state(dev)" _may_ be followed by a "suspend(dev)" =
 
-> 	for_each_dev()
-> 		restore_state()
-> =
+regardless of whether you go to STR or to STD, BUT IT MIGHT NOT.
 
-> =
+It's perfectly valid to _not_ call "suspend(dev)" as part of STD too.
 
-> See? The "..shutdown .." part is whatever you make of it, you _can_, if =
+That's very much why I had that
 
-> you want to, just make it
-> =
+	"..shutdown.."
 
-> 	for_each_dev()
-> 		supend()
-> 	shutdown();
-> =
+part. Exactly because there are anternative ways of doing shutdown. It =
 
-> but on other hardware/circumstances it might be a more normal "turn power =
+might be "shut down all devices and power off NOW" (removing all power), =
 
-> off" kind of shutdown. All up to you, and TOTALLY INDEPENDENT of the basi=
-c =
+and it migt be "suspend all devices and go to S4". Both are totally valid.
 
-> operations.
-> =
-
-> Also, notice how the only thing hat is _really_ common between the two is =
-
-> not the suspend at all, but the "save_state()" and "restore_state()" =
-
-> loops. THOSE are fundamentally shared, but neither of them actually has =
-
-> really anything at all to do with the suspend itself, with WOL, or =
-
-> anything else.
-
-My point (which you seem to have forgotten) was that the "enable remote =
-
-wakeup" step is also common between the two.
-
-> (This also clarifies why "save_state()" and "suspend()" are really =
-
-> different operations, and why "prepare_to_suspend()" is actually not a =
-
-> great name - it may not be paired with a suspend at all, if you just shut =
-
-> down the machine: it would be paired with a "shutdown()").
-> =
-
-> 			Linus
-
-Alan Stern
+		Linus
