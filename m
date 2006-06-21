@@ -1,8 +1,8 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Wed, 21 Jun 2006 12:57:33 +1000
-Message-ID: <1150858653.12507.69.camel@localhost.localdomain>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Tue, 20 Jun 2006 20:23:39 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606202008290.5498@g5.osdl.org>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606160704.34093.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
@@ -12,11 +12,12 @@ References: <20060614103404.GC28536@elf.ucw.cz>
 	<Pine.LNX.4.64.0606201744220.5498@g5.osdl.org>
 	<1150852207.12507.30.camel@localhost.localdomain>
 	<Pine.LNX.4.64.0606201933510.5498@g5.osdl.org>
+	<1150858653.12507.69.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606201933510.5498@g5.osdl.org>
+In-Reply-To: <1150858653.12507.69.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,97 +27,136 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2006-06-20 at 19:40 -0700, Linus Torvalds wrote:
+
+
+On Wed, 21 Jun 2006, Benjamin Herrenschmidt wrote:
 > =
 
-> On Wed, 21 Jun 2006, Benjamin Herrenschmidt wrote:
-> > =
+> It's the driver that gets the suspend() request from the bus layer
+> (device model if you prefer, but in bus order) and thus is responsible
+> for stopping it's own request queue. In some drivers, requests queues
+> are even completely handled locally by the drivers themselves.
 
-> > But the driver queue isn't quiescent !
-> =
-
-> AND WHAT THE HELL DOES THAT HAVE TO DO WITH THE DRIVER?
-> =
-
-> It's not up to the driver to worry about request queues. If you guys thin=
-k =
-
-> it is, you have your heads so solidly up your nether regions that it's no=
-t =
-
-> even funny.
-
-It's the driver that gets the suspend() request from the bus layer
-(device model if you prefer, but in bus order) and thus is responsible
-for stopping it's own request queue. In some drivers, requests queues
-are even completely handled locally by the drivers themselves.
- =
-
-> Dammit, stop trying to make that a driver issue. It isn't. Drivers should =
-
-> not have to worry about things like that, because it's not actually the =
-
-> driver that even _does_ any of the request queue stuff. =
+No. =
 
 
-In some cases it is.
+If that is really how people expect things to happen, and if people are =
 
-> That's _all_ at a much higher level, and trying to push it down to a driv=
-er writer is not =
+_happy_ with that, then I can only throw up my hands in disgust.
 
-> just stupid, it's so incredibly broken and idiotic that it's not even =
+Dammit, if we want to make a machine quiescent enough to take a memory =
 
-> funny.
+snapshot, the only sane way to do that is to do it with proper scoping of =
 
-Yeah yeah yeah ... so give concrete examples of how things should
-happen.
+the problems.
 
-> If you want to take a snapshot of memory, you do NOT ask the drivers to =
+A global memory snapshot is not a "device model" thing.
 
-> just make everything quiet. You start from the upper layers, make things =
+It's a _system_ event.
 
-> quiet there, and _than_ you ask the driver to also shut up.
+The same way the device models try to create a hierarchy, there's a much =
 
-Or you ask the drivers who ask their providers to shut up etc... all the
-way up the chain. Works like a charm _and_ allows you to have proper bus
-ordering. Going downard the chain does NOT.
+higher-level hierarchy there that should also be respected. Devices (even =
 
-> But the fact is, IDE drivers don't even have to be told to shut up. If =
+in the device model) are just about the lowest of the low. Before we tell =
 
-> there are no requests coming in from above, then they will be quiet on =
+devices to be quiet, we tell the upper layers to be quiet.
 
-> their own. So, pretty much by definition, a freeze/unfreeze event for an =
+That's why we freeze processes. That's why we try to clean out the memory =
 
-> IDE driver had better be pretty much a no-op, or you have serious serious =
+management. That's why we do things like shut down the console layer (not =
 
-> problems anyway.
+the _device_ layer - the whole logic for "printk()" etc gets shut up).
 
-And how do you make sure there is no request coming from the above when
-a given segment of a bus is going offline or being power managed or
-whatever and thus a given driver needs to make sure it's not fed any
-requests ? stop the entire system block layer ? What if it's not a block
-driver ? Iterate through all subsystems in the kernel ? What about
-drivers that implement their own internal request queuing mecanisms
-(that aren't block drivers for example) ? What about ioctl's or such
-things coming from userland ?
+> Or you ask the drivers who ask their providers to shut up etc... all the
+> way up the chain. Works like a charm _and_ allows you to have proper bus
+> ordering. Going downard the chain does NOT.
 
-> Trying to claim anything else is beyond stupid.
+Stop blathering about "chains". There's no "chains". We're talking about =
 
-Yeah  yeah, big words, insults, whatever you want, I still see all sort
-of practical examples where my approach currently works and no way yours
-will ... =
+much higher-level things: getting the requests to GO AWAY in the first =
+
+place at the highest level, and waiting for the queues to drain.
+
+That can (and should) happen without devices being involved with it AT =
+
+ALL. It doesn't _matter_ if there's a chain of devices (say, raid queues =
+
+feeding into some multipath queue, feeding into a low-level queue). The =
+
+way you empty a block device queue is totally independent of any devices =
+
+anywhere:
+
+ - you stop feeding it
+ - you unplug it
+ - you wait for it to drain.
+
+"Look, ma, no hands!"
+
+None of those operations have anything to do with devices at all (well, =
+
+the unplug ends up telling something to start, but it has nothing to do =
+
+with any special operation).
+
+And none of those operations are in any way "special" as far as the device =
+
+is concerned. The exact same thing actually happens for any normal IO. If =
+
+some process does a "read" and wants to wait for the result, it ends up =
+
+doing exactly that, indirectly.
+
+In other words, THIS HAS NOTHING TO DO WITH THE DEVICE MANAGEMENT. It's =
+
+all a much higher-level issue. It should _literally_ be a question of =
+
+freezing processes (so that they can't be generating more information), =
+
+and then waiting for all the reachable queues (which is about iterating =
+
+the known devices) to become empty. =
 
 
-> And yes, I realize that the suspend/resume code has done some damn stupid =
+At that point, any lower-level queues will be empty too, because the only =
 
-> things. That's not an excuse for then making things _worse_ by not even =
+way they are reachable is indirectly through a higher-level queue.
 
-> admitting that they are idiotic and bad.
+> And how do you make sure there is no request coming from the above when
+> a given segment of a bus is going offline or being power managed or
+> whatever and thus a given driver needs to make sure it's not fed any
+> requests ? stop the entire system block layer ? What if it's not a block
+> driver ?
 
-facts, please. How long since you have put your hands in a driver btw ?
+We were talking about IDE, weren't we? Last I saw, it was a block driver..
 
-Ben.
+And yes, that can (and should) be done without ANY DRIVER ACCESS =
+
+WHAT-SO-EVER.
+
+The fact is, if we call down to a driver with something that a driver =
+
+should not have to worry about, it's a _failure_. =
+
+
+Why? =
+
+
+Count the number of drivers. Then count them again. Then count the upper =
+
+layers. And realize that if we can do things at upper layers without every =
+
+invocing a driver for an op, we're _much_ better off.
+
+And tell me why the above isn't much simpler than asking drivers to shut =
+
+up on their own? Tell me _one_ reason why an IDE freeze/unfreeze should be =
+
+anything but a no-op, in other words.
+
+			Linus
