@@ -1,16 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 22 Jun 2006 11:19:44 -0700
-Message-ID: <200606221119.45346.david-b@pacbell.net>
+Date: Thu, 22 Jun 2006 11:30:30 -0700
+Message-ID: <200606221130.30614.david-b@pacbell.net>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<200606212252.31918.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606220922570.5498@g5.osdl.org>
+	<1150952298.3633.20.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606220909220.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606220922570.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606220909220.5498@g5.osdl.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -25,66 +25,27 @@ To: Linus Torvalds <torvalds@osdl.org>
 Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 22 June 2006 9:43 am, Linus Torvalds wrote:
+On Thursday 22 June 2006 9:10 am, Linus Torvalds wrote:
 > =
 
-> On Wed, 21 Jun 2006, David Brownell wrote:
-> > =
+> The fact that worries me is that suspend-to-ram DOES NOT WORK FOR PEOPLE. =
 
-> > By which you mean I think the request queues?  Those do need clearly
-> > defined sequence points for an atomic snapshot.
-> =
+> I have never _ever_ met a laptop or machine of mine that "just worked". =
 
-> If you mean the actual USB command queues, you do realize that that is =
+> I've always had to fix something, and people always end up having to do =
 
-> physically impossible for suspend-to-disk on a USB device, don't you?
+> something ridiculous like unlink all modules etc.
 
-Not so, when the snapshot is created with an _empty_ queue (which is
-how it works today).  "Empty" is a nice clearly defined sequence point.
-(And we don't support STD-over-USB either, as previously discussed;
-it seems unlikely until the block and/or filesystem layers change.)
+And when I've looked at the causes of such problems, they've been
+either (a) driver bugs, or (b) ACPI bugs.  As you know, both of
+them are hard to debug, especially when the symptom is on resume
+paths with no console.  (Oooh, see $SUBJECT, this isn't offtopic!!)
 
-The data toggle for bulk and interrupt endpoints might be a bit of a
-problem spot (as you noted) if one tried to reuse it after snapshot
-resume.  For now, we don't use such snapshots unless the hardware has
-been reset (STD cases, not "real suspend") ... which means that such
-endpoint state is always discarded.
 
-In the unlikely event that we ever hit "no controller reset" on STD
-paths **AND** support STD-over-USB, the fix would be just resetting
-the active endpoints before resume completes (probably simplest to
-do that before taking the snapshot).
+> If that isn't what worries you, you're on the wrong page. =
 
- =
 
-> > Nope ... setpci may have been used to tweak things at runtime, and
-> > in ways that affect system correctness.  Admittedly that's not the
-> > most common scenario, but I've had to use it on some systems.
-> > =
-
-> > So saving PCI config space "late" is a far better approach.  It's
-> > hardware state that _can_ be snapshotted, with care.
-> =
-
-> Yes. We _could_ save it basically at driver initialization time, but sinc=
-e =
-
-> the time you have to save it is basically your choice, it's just _better_ =
-
-> to save it later rather than earlier. Exactly if some config stuff is don=
-e =
-
-> that changes things - you should still get a working setup even if you =
-
-> drop it, but it's obviously better and has no real downsides to make that =
-
-> "drop config stuff" window smaller.
-> =
-
-> At worst, people can re-do their setpci or whatever, but at best, they =
-
-> simply wouldn't have to.
-
-Agreed.
+I'm an equal-opportunity worry wart in this case, since the same
+has applied to the swsusp hibernate support.  :)
 
 - Dave
