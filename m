@@ -1,14 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Suspend to disk not working with PCMCIA card
-Date: Thu, 22 Jun 2006 19:44:33 +0200
-Message-ID: <20060622174433.GA10138@dominikbrodowski.de>
-References: <380D9721A8E2114485644D71E87C6AB2020F3518@PNE-HJN-MBX01.wipro.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: swsusp regression [Was: 2.6.17-mm1]
+Date: Thu, 22 Jun 2006 15:57:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606221505030.5772-100000@iolanthe.rowland.org>
+References: <20060622184649.GA6768@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB2020F3518@PNE-HJN-MBX01.wipro.com>
+In-Reply-To: <20060622184649.GA6768@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,24 +17,62 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rasmit.ranjan@wipro.com
-Cc: linux-pm@lists.osdl.org
+To: Greg KH <greg@kroah.com>
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, 22 Jun 2006, Greg KH wrote:
 
-On Wed, Jun 21, 2006 at 07:05:45PM +0530, rasmit.ranjan@wipro.com wrote:
-> My laptop goes into suspended state.Then i press the power button and my
-> laptop resumed properly.
-> But this does not work while a PCMCIA card is plugged in. In the first
-> case my laptop does not go into suspended mode. My screen becomes blank
-> and LCD of the PCMCIA card remains on. To use my laptop i had to reboot
-> it. What might be the problem ? =
+> > There are several possible ways to fix this.  One is to add suspend and =
 
+> > resume routines to the endpoint-device driver.  Another is to change th=
+e =
 
-That seems to be the uevent / call_usermodehelper breakage still being
-present ... see the list archives for January for a more detailled
-description of the problem; unfortunately, I haven't had the time to tackle
-this problem more closely so far.
+> > code that checks for the children being suspended, to make it check onl=
+y =
 
-	Dominik
+> > for child USB devices and not child endpoints.
+> =
+
+> I think it needs to check for _USB_ devices, not just any old device
+> that could possibly be attached to the main USB device (as this one is.)
+> What's to stop any other struct device to bind here and cause the same
+> problem?
+
+In my upcoming patches for USB core suspend improvements, one of the =
+
+changes affects this very piece of code.  Instead of looping over all =
+
+child devices in the driver-model sense, it loops over all interfaces in =
+
+the active configuration, which is all we care about right here.
+
+> Ok, the problem is in verify_suspended(), we are not detecting what type
+> of device this is.
+> =
+
+> Alan, what are you trying to check for here?  What "bogus requests" were
+> you seeing from sysfs that you are trying to filter out?
+
+I didn't write that routine, Dave Brownell did.  It has been there for
+ages.  The "bogus requests" are attempts by the user to suspend a USB
+device (by writing to /sys/devices/.../power/state) without first
+suspending all its children and interfaces.
+
+(This can't happen when doing a global suspend because the PM core =
+
+iterates through the entire device tree.  It matters only for "runtime" or =
+
+"selective" suspend.)
+
+The two easiest ways to fix the problem are:
+
+	Change the code to look through the interfaces in the active
+	configuration instead of using device_for_each_child;
+
+or
+
+	Revert your "endpoints are devices" patch until my upcoming
+	changes are in place.
+
+Alan Stern
