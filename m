@@ -1,29 +1,59 @@
-From: Frederik Deweerdt <deweerdt@free.fr>
-Subject: Re: [linux-pm] swsusp regression [Was: 2.6.17-mm1]
-Date: Thu, 22 Jun 2006 18:04:03 +0200
-Message-ID: <20060622160403.GB2539@slug>
-References: <20060621034857.35cfe36f.akpm@osdl.org> <4499BE99.6010508@gmail.com> <20060621221445.GB3798@inferi.kami.home> <20060622061905.GD15834@kroah.com> <20060622004648.f1912e34.akpm@osdl.org>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Thu, 22 Jun 2006 09:10:04 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606220909220.5498@g5.osdl.org>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
+	<1150938119.16303.99.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606211844590.5498@g5.osdl.org>
+	<1150946286.947.50.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606212105220.5498@g5.osdl.org>
+	<1150952298.3633.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161074AbWFVQEJ@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060622004648.f1912e34.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@osdl.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org, stern@rowland.harvard.edu
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1150952298.3633.20.camel@localhost.localdomain>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Thu, Jun 22, 2006 at 12:46:48AM -0700, Andrew Morton wrote:
-> I can bisect it if we're stuck, but that'll require beer or something.
-
-FWIW, my laptop (Dell D610) gave the following results:
-2.6.17-mm1: suspend_device(): usb_generic_suspend+0x0/0x135 [usbcore]() returns -16
-2.6.17+origin.patch: suspend_device(): usb_generic_suspend+0x0/0x135 [usbcore]() returns -16
-2.6.17: oops
-2.6.17.1: oops
-
-2.6.17-rc6-mm2: suspends correctly
 
 
-Regards,
-Frederik
+On Thu, 22 Jun 2006, Benjamin Herrenschmidt wrote:
+> =
+
+> How so ? What is insane in expecting that settings you have done to your
+> controller are restored to the last settings you did when you resume ?
+
+No. It's insane to do controller setup while a suspend is going on. We can =
+
+make it impossible if you want (easy enough - just stop user land), but =
+
+the point is that you're worrying about ALL THE WRONG THINGS.
+
+The fact that worries me is that suspend-to-ram DOES NOT WORK FOR PEOPLE. =
+
+I have never _ever_ met a laptop or machine of mine that "just worked". =
+
+I've always had to fix something, and people always end up having to do =
+
+something ridiculous like unlink all modules etc.
+
+If that isn't what worries you, you're on the wrong page. =
+
+
+Bah. I don't care. =
+
+
+		Linus
