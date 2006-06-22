@@ -1,77 +1,51 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Thu, 22 Jun 2006 16:31:27 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606221621230.5772-100000@iolanthe.rowland.org>
-References: <200606221127.08327.david-b@pacbell.net>
+From: Greg KH <greg@kroah.com>
+Subject: [PATCH] get USB suspend to work again on 2.6.17-mm1
+Date: Thu, 22 Jun 2006 13:29:52 -0700
+Message-ID: <20060622202952.GA14135@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606221127.08327.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161315AbWFVUdW@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mattia Dongili <malattia@linux.it>, Jiri Slaby <jirislaby@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net, linux-pm@osdl.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Jun 2006, David Brownell wrote:
+Mattai and Jiri, can you try the patch below to see if it fixes the USB
+suspend problem you are seeing with 2.6.17-mm1?
 
-> > 	 The PM core _should_ be
-> > able to handle a device being added or removed while some parts of
-> > the system are suspended or frozen, just so long as the actual parent is
-> > still awake.  Uevents can safely be queued until userspace is unfrozen =
-or =
+David, we really should not be caring about what the children of a USB
+device is doing here, as who knows what type of "device" might hang off
+of a struct usb_device.  This patch is just a band-aid around this area,
+until Alan's patches fix up everything "properly" :)
 
-> > otherwise able to process them.
-> =
+thanks,
 
-> Fixing that involves updating pm core locking, ISTR.  I've thought that
-> the root cause of the issue is that the list of devices to be suspended
-> is created at the wrong time ... very early and globally scoped, not
-> on-demand and privately scoped.
+greg k-h
 
-I believe this has been fixed for quite a while.  The list of devices to
-be suspended is persistent and is maintained over the lifetime of the
-system (devices are added during device_add and removed during
-device_del).  That way the ordering is automatically correct; suspend
-works from the end of the list to the start and resume goes from the start
-to the end.  Thus devices are suspended in the opposite order of discovery =
+-----------------------------
+Subject: USB: get USB suspend to work again
 
-and resumed in the order of discovery.
+Yeah, it's a hack, but it is only temporary until Alan's patches
+reworking this area make it in.  We really should not care what devices
+below us are doing, especially when we do not really know what type of
+devices they are.  This patch relies on the fact that the endpoint
+devices do not have a driver assigned to us.
 
-The difficulty you remember was the mutual exclusion between the
-list-walking in suspend/resume vs. actually modifying the list.  That now
-works okay, so long as nobody tries to add a child to a suspended parent.
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ drivers/usb/core/usb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-> > I'm concerned about remote wakeup events arriving at inconvenient times
-> > during STR or STD.  Sometimes you might want them to abort the suspend,
-> > sometimes you might want to just drop them, and sometimes you might want
-> > them to wake the system up right after it goes to sleep.  It would be n=
-ice
-> > to get this straightened out.
-> =
-
-> Well, wakeup events in general, not just USB ones.  They can be the same
-> as regular IRQs ... which seems to suggest that driver-specific coding may
-> be needed.
-
-Maybe.  Also to be considered is the fact that much of wakeup handling has =
-
-to take place in a process context, so once everything is frozen it can't =
-
-happen.  (Depending on which kernel threads remain unfrozen, of course.  I =
-
-don't know whether keventd in particular should be frozen, or even whether =
-
-it gets frozen currently.)
-
-Alan Stern
+--- gregkh-2.6.orig/drivers/usb/core/usb.c
++++ gregkh-2.6/drivers/usb/core/usb.c
+@@ -991,6 +991,8 @@ void usb_buffer_unmap_sg (struct usb_dev
+ 
+ static int verify_suspended(struct device *dev, void *unused)
+ {
++	if (dev->driver == NULL)
++		return 0;
+ 	return (dev->power.power_state.event == PM_EVENT_ON) ? -EBUSY : 0;
+ }
+ 
