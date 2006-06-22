@@ -1,88 +1,92 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [linux-pm] windfarm got signal
-Date: Thu, 22 Jun 2006 13:34:52 +0200
-Message-ID: <1150976092.16258.33.camel@johannes>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: windfarm got signal
+Date: Thu, 22 Jun 2006 22:33:26 +1000
+Message-ID: <200606222233.32609.ncunningham@linuxmail.org>
 References: <1150847482.16662.13.camel@johannes>
-	<1150956123.3633.23.camel@localhost.localdomain>
-	<200606221303.19860.rjw@sisk.pl> <1150974836.16258.29.camel@johannes>
+	<1150974836.16258.29.camel@johannes>
+	<1150976092.16258.33.camel@johannes>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0161538230=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1150974836.16258.29.camel@johannes>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm@lists.osdl.org
+Content-Type: multipart/mixed; boundary="===============1191775827=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1150976092.16258.33.camel@johannes>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-
---===============0161538230==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-/sAdrAZc/rURMiVNw6hm"
-
-
---=-/sAdrAZc/rURMiVNw6hm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2006-06-22 at 13:13 +0200, Johannes Berg wrote:
-
-> Thanks, I'll look and submit a patch. It does try_to_freeze() but also
-> checks for pending signals.
-
-Ah. The code is just in the wrong order:
-while (!kthread_should_stop()) {
-  try_to_freeze();
-  ...
-  schedule_timeout_interruptible(...);
-  if (signal_pending())
-    break;
-}
-
-Would it be correct to just move the try_to_freeze() before the
-signal_pending() statement?
-
-johannes
-
---=-/sAdrAZc/rURMiVNw6hm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARJqAWqVg1VMiehFYAQJ9nBAAttPDJ/s3q+YNip4cXggIdDAh9z6DUh4Y
-HDlEpQNf3ZHYRdMPglbdS/qplnNr+IEDSAEU9Q7+yfFiYy61DjtklDFKztIDcdf9
-XsSINiqlqgfy4L0zqsBU658m3VAJX9laAp35YbRULCpSFylrXSenWLhdgx3sNSdj
-z6oUcAadxkvquG1DzQaTaoGls+7wjw2TFKCh7ihYlOp+QVw/zDdVpCWPoamsrGsE
-zMRFf6njisWnXp4HNgLm7otcOlVRPJ8tbN8JrwDcJoSGHCEXqe7vAGVXDE8fWAZN
-B05OCOX7CvecdAzWdULNy4oDfmiCfNglQvnMEtW/RgAmeZtw45DooJJLlhreBQKB
-d2kUOxGb3kXlFRpyOo/WaYWjAoUFP5ljmg/5Ws6RXcdRTWXVovE0kH28bgF5liRM
-eUsVs33GOP9hlZjBX1bxaPslvX6dj0mr3zes+zsH1yULY37NeydwycZZJ/kIh4lj
-USwmTuiRlxbBDANZnGVQ7s5V1CC2ix9ppW1fbkHhb0orguyPm3PpUb+oStzcWrhW
-rg2GbL7vOJu9PvBIDvhV9+oaHUfOQxBQKZGS1bQ+Fq7B2t1OWzdgNnmFOOpwyLY6
-NZolY3sSw4AngWu1gdY+XrfFqr/mSuP9ak2TCSluvwL0ZfMoNRhCYDcPaayxVbAu
-vEnm+5/8Cc0=
-=RD6p
------END PGP SIGNATURE-----
-
---=-/sAdrAZc/rURMiVNw6hm--
-
-
---===============0161538230==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+--===============1191775827==
+Content-Type: multipart/signed; boundary="nextPart2446602.GpVZGZnpZJ";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+
+--nextPart2446602.GpVZGZnpZJ
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============0161538230==--
+Hi.
+
+On Thursday 22 June 2006 21:34, Johannes Berg wrote:
+> On Thu, 2006-06-22 at 13:13 +0200, Johannes Berg wrote:
+> > Thanks, I'll look and submit a patch. It does try_to_freeze() but also
+> > checks for pending signals.
+>
+> Ah. The code is just in the wrong order:
+> while (!kthread_should_stop()) {
+>   try_to_freeze();
+>   ...
+>   schedule_timeout_interruptible(...);
+>   if (signal_pending())
+>     break;
+> }
+>
+> Would it be correct to just move the try_to_freeze() before the
+> signal_pending() statement?
+
+Hmm. Will kthread_should_stop() be set if it should really exit? If so,=20
+perhaps you can just remove the signal_pending() check. Otherwise, you'd wa=
+nt=20
+to change the signal_pending() test to something like the "if=20
+(signal_pending() && !try_to_freeze())" to avoid any possibility of a race.=
+=20
+(In this case, you should be able to remove the try_to_freeze() from above).
+
+Regards,
+
+Nigel
+=2D-=20
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
+
+--nextPart2446602.GpVZGZnpZJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBEmo4cN0y+n1M3mo0RAufRAKDyX5r92PjokKKpvbhE67TnTqK3ZwCfRWOM
+fbnGCwyPzbWboZecwujNucA=
+=m8cM
+-----END PGP SIGNATURE-----
+
+--nextPart2446602.GpVZGZnpZJ--
+
+--===============1191775827==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1191775827==--
