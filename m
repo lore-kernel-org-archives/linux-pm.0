@@ -1,17 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Thu, 22 Jun 2006 13:23:11 +1000
-Message-ID: <1150946591.947.56.camel@localhost.localdomain>
-References: <20060614103404.GC28536@elf.ucw.cz>
-	<Pine.LNX.4.64.0606210809380.5498@g5.osdl.org>
-	<1150935357.16303.51.camel@localhost.localdomain>
-	<200606211921.16289.david-b@pacbell.net>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Wed, 21 Jun 2006 21:08:47 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606212105220.5498@g5.osdl.org>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
+	<1150938119.16303.99.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606211844590.5498@g5.osdl.org>
+	<1150946286.947.50.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606211921.16289.david-b@pacbell.net>
+In-Reply-To: <1150946286.947.50.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,27 +22,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2006-06-21 at 19:21 -0700, David Brownell wrote:
-> On Wednesday 21 June 2006 5:15 pm, Benjamin Herrenschmidt wrote:
-> >		Additionally, as I explained earlier, it
-> > will make everybody's life MUCH easier (especially USB) if we define
-> > that between prepare() and finish(), no hotplug activity takes place
-> > (the bus drivers just basically ignore devices being plugged in during
-> > that phase, or if they can't completely ignore them, at least just leave
-> > a bit somewhere "need to come back on resume look what's going on
-> > here").
+
+
+On Thu, 22 Jun 2006, Benjamin Herrenschmidt wrote:
 > =
 
-> In the USB case, you're basically saying that prepare() should freeze
-> khubd.  I think you've implied elsewhere that not all kernel tasks
-> should be frozen at that time, though.
+> I never said your thing was introducing those problems, we are
+> misunderstanding each other there. I want that prepare() thing and
+> wanted it for some time now to fix an existing problem :) I still
+> disagree with the save_state/suspend split for the reason I exposed
+> later in the email.
 
-Yes, but I'm saying that it will just make life easier to everybody if
-we define that we don't get new devices in while we are in the
-suspend/resume process. Don't you agree ?
+You can use save_state() for your "prepare()" if you want to, but I don't =
 
-Ben.
+see what you are disagreeing or arguing about then.
+
+> With a split save_state/suspend, you can end up with the scenario where
+> =
+
+>  1- save state saves the device "state", that includes the keys in the
+> controller
+>  2- client above calls you to change the keys
+>  3- suspend
+>  4- restore_state
+> =
+
+> At that point, what keys are you restoring ?
+
+You don't _do_ that, Ben.
+
+If you did that, you'd get the old keys. =
+
+
+Your complaint is like
+
+  "Doctor, doctor, it hurts when I dig out my eyes with a dull spool"
+
+OF COURSE it hurts. Don't do it.
+
+Your example is insane.
+
+			Linus
