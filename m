@@ -1,51 +1,56 @@
-From: Greg KH <greg@kroah.com>
-Subject: [PATCH] get USB suspend to work again on 2.6.17-mm1
-Date: Thu, 22 Jun 2006 13:29:52 -0700
-Message-ID: <20060622202952.GA14135@kroah.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: swsusp regression [Was: 2.6.17-mm1]
+Date: Thu, 22 Jun 2006 22:37:42 +0159
+Message-ID: <449AFFAD.2030601@gmail.com>
+References: <Pine.LNX.4.44L0.0606221505030.5772-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161315AbWFVUdW@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mattia Dongili <malattia@linux.it>, Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, David Brownell <david-b@pacbell.net>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net, linux-pm@osdl.org, pavel@suse.cz
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0606221505030.5772-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Mattai and Jiri, can you try the patch below to see if it fixes the USB
-suspend problem you are seeing with 2.6.17-mm1?
+Alan Stern napsal(a):
+>> Ok, the problem is in verify_suspended(), we are not detecting what type
+>> of device this is.
+>>
+>> Alan, what are you trying to check for here?  What "bogus requests" were
+>> you seeing from sysfs that you are trying to filter out?
+> =
 
-David, we really should not be caring about what the children of a USB
-device is doing here, as who knows what type of "device" might hang off
-of a struct usb_device.  This patch is just a band-aid around this area,
-until Alan's patches fix up everything "properly" :)
+> I didn't write that routine, Dave Brownell did.  It has been there for
+> ages.  The "bogus requests" are attempts by the user to suspend a USB
+> device (by writing to /sys/devices/.../power/state) without first
+> suspending all its children and interfaces.
+> =
 
-thanks,
+> (This can't happen when doing a global suspend because the PM core =
 
-greg k-h
+> iterates through the entire device tree.  It matters only for "runtime" o=
+r =
 
------------------------------
-Subject: USB: get USB suspend to work again
+> "selective" suspend.)
 
-Yeah, it's a hack, but it is only temporary until Alan's patches
-reworking this area make it in.  We really should not care what devices
-below us are doing, especially when we do not really know what type of
-devices they are.  This patch relies on the fact that the endpoint
-devices do not have a driver assigned to us.
+But everything I did is:
+echo reboot > /sys/power/disk
+echo disk > /sys/power/state
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+No writing anywhere else.
 
----
- drivers/usb/core/usb.c |    2 ++
- 1 file changed, 2 insertions(+)
+regards,
+-- =
 
---- gregkh-2.6.orig/drivers/usb/core/usb.c
-+++ gregkh-2.6/drivers/usb/core/usb.c
-@@ -991,6 +991,8 @@ void usb_buffer_unmap_sg (struct usb_dev
- 
- static int verify_suspended(struct device *dev, void *unused)
- {
-+	if (dev->driver == NULL)
-+		return 0;
- 	return (dev->power.power_state.event == PM_EVENT_ON) ? -EBUSY : 0;
- }
- 
+Jiri Slaby         www.fi.muni.cz/~xslaby
+\_.-^-._   jirislaby@gmail.com   _.-^-._/
+B67499670407CE62ACC8 22A032CC55C339D47A7E
