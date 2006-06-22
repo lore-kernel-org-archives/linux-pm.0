@@ -1,15 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: swsusp regression [Was: 2.6.17-mm1]
-Date: Thu, 22 Jun 2006 14:11:57 -0700
-Message-ID: <20060622211157.GA15669@kroah.com>
-References: <449AFFAD.2030601@gmail.com>
-	<Pine.LNX.4.44L0.0606221706450.5772-100000@iolanthe.rowland.org>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH] get USB suspend to work again on 2.6.17-mm1
+Date: Thu, 22 Jun 2006 23:26:26 +0159
+Message-ID: <449B0B19.9000901@gmail.com>
+References: <20060622202952.GA14135@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0606221706450.5772-100000@iolanthe.rowland.org>
+In-Reply-To: <20060622202952.GA14135@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,53 +17,65 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Cc: David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, Jiri Slaby <jirislaby@gmail.com>, linux-pm@osdl.org, linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2006 at 05:09:43PM -0400, Alan Stern wrote:
-> On Thu, 22 Jun 2006, Jiri Slaby wrote:
+Greg KH napsal(a):
+> Mattai and Jiri, can you try the patch below to see if it fixes the USB
+> suspend problem you are seeing with 2.6.17-mm1?
 > =
 
-> > > ages.  The "bogus requests" are attempts by the user to suspend a USB
-> > > device (by writing to /sys/devices/.../power/state) without first
-> > > suspending all its children and interfaces.
-> > > =
-
-> > > (This can't happen when doing a global suspend because the PM core =
-
-> > > iterates through the entire device tree.  It matters only for "runtim=
-e" or =
-
-> > > "selective" suspend.)
-> > =
-
-> > But everything I did is:
-> > echo reboot > /sys/power/disk
-> > echo disk > /sys/power/state
-> > =
-
-> > No writing anywhere else.
+> David, we really should not be caring about what the children of a USB
+> device is doing here, as who knows what type of "device" might hang off
+> of a struct usb_device.  This patch is just a band-aid around this area,
+> until Alan's patches fix up everything "properly" :)
 > =
 
-> You misunderstood.  I meant that attempts to suspend a USB device without =
-
-> first suspending all its children and interfaces can't happen when doing =
-a =
-
-> global suspend.  That's still true.
+> thanks,
 > =
 
-> Your problem occurred because even though the PM core did _attempt_ to =
+> greg k-h
+> =
 
-> suspend the new children added by Greg's patch, it didn't _succeed_ =
+> -----------------------------
+> Subject: USB: get USB suspend to work again
+> =
 
-> because the patch did not provide suspend or resume methods.
+> Yeah, it's a hack, but it is only temporary until Alan's patches
+> reworking this area make it in.  We really should not care what devices
+> below us are doing, especially when we do not really know what type of
+> devices they are.  This patch relies on the fact that the endpoint
+> devices do not have a driver assigned to us.
+> =
 
-Which because they are virtual "devices" they do not need a suspend or
-resume method, so not having any is just fine.  If we abort because of
-something like this, the core logic is quite broken...
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> =
 
-thanks,
+> ---
+>  drivers/usb/core/usb.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> =
 
-greg k-h
+> --- gregkh-2.6.orig/drivers/usb/core/usb.c
+> +++ gregkh-2.6/drivers/usb/core/usb.c
+> @@ -991,6 +991,8 @@ void usb_buffer_unmap_sg (struct usb_dev
+>  =
+
+>  static int verify_suspended(struct device *dev, void *unused)
+>  {
+> +	if (dev->driver =3D=3D NULL)
+> +		return 0;
+>  	return (dev->power.power_state.event =3D=3D PM_EVENT_ON) ? -EBUSY : 0;
+>  }
+>  =
+
+
+Yeah, it works just fine.
+
+regards,
+-- =
+
+Jiri Slaby         www.fi.muni.cz/~xslaby
+\_.-^-._   jirislaby@gmail.com   _.-^-._/
+B67499670407CE62ACC8 22A032CC55C339D47A7E
