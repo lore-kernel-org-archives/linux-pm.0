@@ -1,49 +1,28 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: windfarm got signal
-Date: Thu, 22 Jun 2006 15:12:17 +0200
-Message-ID: <20060622131216.GA2959@openzaurus.ucw.cz>
-References: <1150847482.16662.13.camel@johannes>
+From: Frederik Deweerdt <deweerdt@free.fr>
+Subject: Re: [linux-pm] swsusp regression [Was: 2.6.17-mm1]
+Date: Thu, 22 Jun 2006 21:07:41 +0200
+Message-ID: <20060622190741.GC2539@slug>
+References: <20060621034857.35cfe36f.akpm@osdl.org> <4499BE99.6010508@gmail.com> <20060621221445.GB3798@inferi.kami.home> <20060622061905.GD15834@kroah.com> <20060622004648.f1912e34.akpm@osdl.org> <20060622160403.GB2539@slug> <20060622092506.da2a8bf4.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751876AbWFVTHp@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1150847482.16662.13.camel@johannes>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20060622092506.da2a8bf4.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org, stern@rowland.harvard.edu
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Thu, Jun 22, 2006 at 09:25:06AM -0700, Andrew Morton wrote:
+> On Thu, 22 Jun 2006 18:04:03 +0200
+> Frederik Deweerdt <deweerdt@free.fr> wrote:
+> > 2.6.17: oops
+> > 2.6.17.1: oops
+> 
+> 2.6.17 wasn't supposed to oops.  Do you have details on this?
+> 
+No, sorry I didn't have a serial cable handy. I'll post the 
+.config and the oops tomorrow.
 
-> after cpu hotplug I decided to write some fake suspend routines for
-> ppc64 that always fail to see what all the drivers would say... The
-> first thing I saw was during the phase where all threads are stopped,
-> that windfarm got a signal!
-> =
-
-> Shortly after that, the fans were revved up fully but I guess that's
-> expected if the wf control loop exits.
-> =
-
-> So now I'm trying to see *why* it got a signal there. Any ideas? Is that
-> expected with pm and windfarm just does the wrong thing there by taking
-> the signal as a reason to exit the control thread?
-> =
-
-> [code in question is windfarm_core.c:wf_thread_func]
-
-See kernel/power/process.c
-
--- =
-
-64 bytes from 195.113.31.123: icmp_seq=3D28 ttl=3D51 time=3D448769.1 ms    =
-     =
+Regards,
+Frederik
