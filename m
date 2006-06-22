@@ -1,8 +1,8 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 22 Jun 2006 16:19:46 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606221614280.6483@g5.osdl.org>
+Date: Thu, 22 Jun 2006 16:21:37 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606221620010.6483@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 	<1150938119.16303.99.camel@localhost.localdomain>
@@ -14,11 +14,12 @@ References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<1151014893.4046.24.camel@localhost.localdomain>
 	<Pine.LNX.4.64.0606221527590.6483@g5.osdl.org>
 	<1151017911.4046.55.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606221614280.6483@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1151017911.4046.55.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0606221614280.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -34,53 +35,27 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On Fri, 23 Jun 2006, Benjamin Herrenschmidt wrote:
+On Thu, 22 Jun 2006, Linus Torvalds wrote:
 > =
 
-> The main reason is the video problem (chips not coming back on resume
-> and needing a POST). This has always been the main issue and that's what
-> is causing STR not to work for a lot of people.
+> Actually, it won't break a single driver for STR.
+> =
 
-No.
+> Why? Because if you do it the old way, STR will still happen to work. I'm =
 
-Not for me. Every single time something doesn't work for me, I just plug =
+> just giving you a separate phase.
 
-it into the network and try to debug it over the net.
+For STD, it _will_ break. If you don't do a good freeze/unfreeze, the new =
 
-Not on _one_ laptop has that helped. Ever.
+world order would break you. Your new save_state + freeze would have to =
 
-Maybe I just happen to have screwy laptops, but I don't believe so.
+save off enough info for resume(). =
 
-It wasn't the reason on the mac mini either.
 
-> The model does and I think your model would 1- break all existing
-> drivers that got it right since they have to be changed
+But even then, you could make drivers "compatible" with the new order by =
 
-Actually, it won't break a single driver for STR.
+just using your old "suspend()" as "freeze()".
 
-Why? Because if you do it the old way, STR will still happen to work. I'm =
-
-just giving you a separate phase.
-
-But you're not interested in facts, are you? Nope.
-
->					 and 2- won't
-> help with the actual problems :)
-
-So you say. Have you actually ever done anything to make debugging easier?
-
-Nope. In the years I've been frustrated with suspend, nobody has ever done =
-
-anything to this. And now I have to push through changes, just because =
-
-people think that "status quo" is acceptable.
-
-> I've brought a real concern that you'll resume devices in a different
-> state than what was last set at suspend time and change a model that
-> isn't broken.
-
-And I've explained several times that your concerns aren't problems. You =
-
-just ignore it.
+Sane drivers can do something saner.
 
 		Linus
