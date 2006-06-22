@@ -1,14 +1,17 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Thu, 22 Jun 2006 11:04:10 +1000
-Message-ID: <1150938250.16303.102.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0606211422450.8272-100000@iolanthe.rowland.org>
+Date: Thu, 22 Jun 2006 11:08:15 +1000
+Message-ID: <1150938496.16303.107.camel@localhost.localdomain>
+References: <20060614103404.GC28536@elf.ucw.cz>
+	<1150852207.12507.30.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606201933510.5498@g5.osdl.org>
+	<200606211418.16236.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0606211422450.8272-100000@iolanthe.rowland.org>
+In-Reply-To: <200606211418.16236.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,56 +21,44 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2006-06-21 at 14:53 -0400, Alan Stern wrote:
-> In brief, I agree with almost everything you say...
-> =
-
-> On Wed, 21 Jun 2006, Linus Torvalds wrote:
-> =
-
-> > Well, naming this op seems to be really hard. In the end, I don't reall=
-y =
-
-> > care.
+On Wed, 2006-06-21 at 14:18 -0700, David Brownell wrote:
+> On Tuesday 20 June 2006 7:40 pm, Linus Torvalds wrote:
 > > =
 
-> > What I want is really to haev modular, independent calls, that tell dri=
-ver =
+> > It's not up to the driver to worry about request queues. =
 
-> > writers _exactly_ what is going on, and why they should do so. =
 
-> =
+Linus, You are contradicting yourself a bit I think... On one mailed,
+you agreed that suspend() would happen in a "live" systems with no
+quiescing of subsystems and now you say drivers shouldn't bother
+blocking their request queues (or rather, stop processing them, but many
+drivers handle their own requests queueing mecanism, if at all, against,
+that term encompass both real "request queues" in the block driver
+sense, packet queues in network drivers, ioctls, other callbakcs like
+set_multicast_filter or whatever ramdom things that can be called by
+your subsystem or as the result of userland actions).
 
-> Isn't it true the only a small minority of drivers need to do anything
-> special during the save_state() callback?  In most cases all the necessary
-> state is already stored in the driver.  So instead of making this a
-> callback in struct device, how about creating a pre_suspend notifier chain
-> for drivers to register on?  And ditto for freeze()/unfreeze() -- almost
-> no drivers need to handle them.
+> Maybe for block drivers.  But USB and network controller drivers
+> are fundamentally about managing request queues, by collaborating
+> with upper level drivers.
 
-I don't like notifier chains because of ordering issues :) Freeze on
-some drivers implies stopping processing of requests (heh, just like
-suspend !) at least on things like USB bus controllers, thus needs some
-ordering between parent and child that is provided by the device-tree
-walking, not by notifiers.
+Yes and the upper level, in the case of ethernet drivers for example,
+provides a very simple way of managing that queue. A single call blocks
+it and properly synchronizes with the xmit callback. You still need to
+be careful with ioctl, set_multicast/mac/... etc... though but you have
+to anyway.
 
-> There already is code present to manage this.  See the "wakeup" section
-> in drivers/base/power/sysfs.c.
+> Alternatively, you may be observing that just like block queues
+> are managed by the upper layer code, so are USB queues managed
+> by the usb_driver entities that freeze their own contributions,
+> like network interfaces manage their network queues.  (Though in
+> both cases the controller drivers must still wait for queues to
+> empty before they are fully quiesced).
 
-It's not very useable "generically" in practice in my experience.
-
-> Hmm.  Be careful here.  The power level really isn't part of the "state"  =
-
-> that gets saved by save_state(), is it?  After all, it is still subject to
-> change from userspace after save_state() has finished.  It seems to me
-> that (for STD at least) you would want to restore the power level as of
-> the time immediately preceding the userspace/upper-layer freeze, not the
-> power level at the time of save_state().
-
-That and everything else. See my reply to Linus.
+Block queues aren't entirely managed by upper layers neither
 
 Ben.
