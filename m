@@ -1,29 +1,15 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Thu, 22 Jun 2006 10:15:57 +1000
-Message-ID: <1150935357.16303.51.camel@localhost.localdomain>
-References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606160704.34093.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
-	<200606181016.47561.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606181040200.5498@g5.osdl.org>
-	<1150843494.1901.42.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606201744220.5498@g5.osdl.org>
-	<1150852207.12507.30.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606201933510.5498@g5.osdl.org>
-	<1150858653.12507.69.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606202008290.5498@g5.osdl.org>
-	<1150862396.12507.103.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606202109410.5498@g5.osdl.org>
-	<Pine.LNX.4.64.0606202125460.5498@g5.osdl.org>
-	<1150866244.12507.141.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606210809380.5498@g5.osdl.org>
+Date: Thu, 22 Jun 2006 10:42:10 +1000
+Message-ID: <1150936931.16303.79.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0606211130350.6700-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606210809380.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606210844460.5498@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -37,77 +23,233 @@ To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2006-06-21 at 08:15 -0700, Linus Torvalds wrote:
+> So, let me re-iterate my view of how things really _should_ work.
 > =
 
-> On Wed, 21 Jun 2006, Benjamin Herrenschmidt wrote:
-> > =
+>  - we should have _suspend_ support. This is the "real suspend" thing, ie =
 
-> > Not stopping queues but not servicing them instead ... hrm ... not that
-> > much difference if you ask me :)
+>    support for putting the machine to sleep, and it is totally independen=
+t =
+
+>    of any snapshotting capability what-so-ever.
+
+Ok, I've come to agree with that one.
+
+>    The operations for suspend support is literally:
 > =
 
-> A _huge_ difference.
+> 	- save_state (or, as Ben prefers, "prepare_to_suspend", but that's =
+
+> 	  a naming issue, and having listened to his arguments, I think he =
+
+> 	  prefers that name because he's confused)
+
+Heh, I don't think so but heh :) Can you define exactly the semantics of
+what you consider "save state" to be on a driver level ? I've exposed
+what I think they should be (basically making sure everything needed for
+both suspend() and resume() is there in memory and ready to go and an
+opportunity for drivers to say goodbye to their userland friends). It's
+also the perfect place to tell bus drivers to stop discovering new
+devices.
+
+> 	- suspend()
+
+Yup.
+
+> 	- resume() (and, to clarify my position, let's call it just =
+
+> 	  "restore_state()" here, although I don't actually think renaming =
+
+> 	  it is worth-while, but _mentally_ you should think of the =
+
+> 	  "resume()" function as a state _restore_, not a "resume", =
+
+> 	  exactly because it's not actually paired with the suspend, but =
+
+> 	  with the "save_state()" function)
+
+Well, that's indeed where I don't quite agree agree :) Regardless of
+that disagreement, though, we also need a:
+	  - finish()
+
+Which is to be called after everything got resumed and is a chance for
+drivers to know that they can talk to userland again, it's back, yeah !
+and things like GFP_KERNEL will no longer block, and request_firmware()
+is an option again etc...  and for bus drivers to allow new discoveries
+and send hotplug events to userland about everything that happened since
+prepare().
+
+I really have a hard time seeing how your separate save state and later
+suspend works in an environment where we aren't suspending the entire
+system but just parts of the device-tree. I keep thinking that saving
+the actual device state (if any is to save) has to happen atomically
+along with suspend, that it's MUCH simpler that way and that your split
+approach will only confuse people and cause gazillion more bugs in
+drivers that are already pretty screwed up.
+
+>  - we should have a logically and physically totally independent =
+
+>    "snapshot" support in the device layer, with two operations:
 > =
 
-> You still don't seem to see it:
+> 	- freeze. Which would normally be a no-op, or a DMA engine =
+
+> 	  (or "receive path") shutdown
 > =
 
-> > In fact, there is very little difference in practice as far as the
-> > driver implementation is concerned. I don't care either way as long as
-> > the driver is hardened against incoming things (requests, ioctl,
-> > whatever) happening after it's been suspended...
+> 	- unfreeze. Which would normally be a nop-op, or just resuming the =
+
+> 	  DMA engine or receive path.
 > =
 
-> The difference is _exactly_ on the driver level.
+> And the thing is, all these operations are really very different =
+
+> operations, and the most important part to realize is that they are fairl=
+y =
+
+> INDEPENDENT.
+
+I agree that STD can be handled with those separate operations. I still
+think that making sure all "higher layers" stop sending requests down to
+drivers that can cause them to do DMA will be hard, but heh :)
+(Especially in the case of layered transports where a middle protocol
+might do activity with the driver on it's own, independently of what
+upper layers do, that sort of thing. I think the network stack will be
+the real bitch here but I might just be thinking that because I don't
+know it very well above the driver layer). =
+
+
+> But being independent very much means that you can combine them. So, a =
+
+> normal _real_ suspend would literally be basically this sequence:
 > =
 
-> If you stop the queues, most drivers don't have to care any more. They ar=
-e =
+> 	for_each_dev()
+> 		save_state()
+> 	for_each_dev()
+> 		suspend();
+> 	system suspend()
+> 	for_each_dev()
+> 		restore_state()
 
-> quiescent _without_ any driver impact what-so-ever. =
+See my objections above.
 
+> note how the normal suspend wouldn't do any freezing at all (at least in =
 
-How do you handle things like partial tree suspend, runtime suspend of a
-given device and it's subtree etc.... ? the needs for power management
-go beyond just sytem suspend and drivers need to be capable of handling
-it. There won't always be an allmighty god to stop "subsystems" above
-the driver to send requests to it if the driver itself doesn't ask for
-that to happen....
+> theory - in practice it may well want to quiesce the machine, and =
 
-(Oh and again, I'm strictly speaking about STR here). What annoys me the
-most is that you seem to be doing some kind of special casing of system
-suspend saying that drivers don't have to care about proper blocking of
-their "request queues" (again, this is a very generic term that ecompass
-not servicing a block device queue, telling the network stack to not
-call xmit, blocking or refusing on ioctl calls, etc etc....) because
-"something" above them will have prevented it from happening.
+> obviously the driver "suspend()" part will result in it stopping handlign =
 
-That's what I don't agree with basically. Drivers need to do this little
-bit of work to make sure they can be safely suspending in a fully alive
-environment. It's not very hard to do (and those "subsystems" above
-drivers, when they exist at all, can well provide a help the driver can
-call to say "heh, I'm sleeping, don't bother me"... heh, they can even
-provide a callback to the driver to wake it up in the context of runtime
-suspend when activity happens) and it makes me sleep better :)
+> any _requests_). But at least from a conceptual standpoint, there are =
 
-Now, the case of system wide suspend has one special aspect to it, which
-is the notion that we are bringing down the swap device(s) etc..., and
-thus we need to have this prepare/finish phase we talked about to give a
-chance to drivers to secure in memory everything they'll need to
-succesfully suspend and resume. Additionally, as I explained earlier, it
-will make everybody's life MUCH easier (especially USB) if we define
-that between prepare() and finish(), no hotplug activity takes place
-(the bus drivers just basically ignore devices being plugged in during
-that phase, or if they can't completely ignore them, at least just leave
-a bit somewhere "need to come back on resume look what's going on
-here").
-
-Ben.
+> _zero_ VM games, no frozen processes, no nothing. =
 
 
+So you said it this time... So for STR, we don't stop processes, we
+don't stop "subsystems", we basically do nothing to prevent requests
+fromn hitting drivers. That's exactly what happens today at least on
+powerpc and that works fine ... provided that drivers correctly block
+their processing of requests when suspended. That's all I've been
+talking about so far and really I don't see how you can disagree there.
+In many case, doing that just boils down to gently asking your subsystem
+to stop feeding you (netif_stop_queue or detach, fb_set_suspend, etc...)
+and making sure we aren't processing some kind of ioctl atc...
+
+> (Also, _conceptually_ the X handling is all perfectly regular, and is par=
+t =
+
+> of the "save_state()" and "restore_state()" loop, but then from a pure =
+
+> implementation standpoint you might make it a separate save/restore aroun=
+d =
+
+> the whole thing).
+
+You mean X11 ? Well... the only ways to handle it properly today are
+either switching the VC away or having an emulation of /dev/apm_bios (I
+do both on powerpc). The later tends to have problems anyway so I
+recommend the former, which also has the nice side effect of working
+with all sort of other applications that may tap the gfx hardware
+without going through X.
+
+> Ok, so what happens in a suspend-to-disk? The basic loop is
+> =
+
+> 	for_each_dev()
+> 		save_state()
+> =
+
+> 	freeze upper layers (shrink VM, user crud, filesystem read-only, =
+
+> 		yadda yadda)
+> 	for_each_dev()
+> 		freeze()
+> 	snapshot
+> 	for_each_dev()
+> 		unfreeze()
+> 	unfreeze at least enough to be able to write
+> 	write snapshot to disk
+> =
+
+> 	.. shutdown ..
+> 	.. reboot ..
+> 	restore snapshot from disk
+> 	for_each_dev()
+> 		restore_state()
+> =
+
+> =
+
+> See? The "..shutdown .." part is whatever you make of it, you _can_, if =
+
+> you want to, just make it
+> =
+
+> 	for_each_dev()
+> 		supend()
+> 	shutdown();
+
+It shall probably be suspend with an arguemnt to tell drivers we are
+going S4 and not S3... but that's in general the case with shutdown.
+shutdown and suspend are very similar on lots of machines (most
+handhelds don't have an actual shutdown, drivers are in control of the
+power to their device), and if you want things like remote wakeup etc...
+you may actually want to put things in D3 state and do a BIOS S4 suspend
+rather than shutting down. Or could just be the existind shutdown()
+callback with some global thingy telling the few drivers that do care
+"we are going S4"... I don't care much at this stage.
  =
 
- =
+> but on other hardware/circumstances it might be a more normal "turn power =
+
+> off" kind of shutdown. All up to you, and TOTALLY INDEPENDENT of the basi=
+c =
+
+> operations.
+> =
+
+> Also, notice how the only thing hat is _really_ common between the two is =
+
+> not the suspend at all, but the "save_state()" and "restore_state()" =
+
+> loops. THOSE are fundamentally shared, but neither of them actually has =
+
+> really anything at all to do with the suspend itself, with WOL, or =
+
+> anything else.
+> =
+
+> (This also clarifies why "save_state()" and "suspend()" are really =
+
+> different operations, and why "prepare_to_suspend()" is actually not a =
+
+> great name - it may not be paired with a suspend at all, if you just shut =
+
+> down the machine: it would be paired with a "shutdown()").
+
+I'll continue spinning it around my head for a while and see if I can
+make sense of that split save state that isn't atomic to the acutal
+suspend()... =
+
 
 Ben.
