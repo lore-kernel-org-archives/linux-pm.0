@@ -1,8 +1,8 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Thu, 22 Jun 2006 08:54:53 +1000
-Message-ID: <1150930493.16303.21.camel@localhost.localdomain>
+Date: Thu, 22 Jun 2006 10:15:57 +1000
+Message-ID: <1150935357.16303.51.camel@localhost.localdomain>
 References: <20060614103404.GC28536@elf.ucw.cz>
 	<200606160704.34093.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606161114110.5498@g5.osdl.org>
@@ -68,17 +68,46 @@ e =
 > quiescent _without_ any driver impact what-so-ever. =
 
 
-(Note that I'm talking about STR here ...)
+How do you handle things like partial tree suspend, runtime suspend of a
+given device and it's subtree etc.... ? the needs for power management
+go beyond just sytem suspend and drivers need to be capable of handling
+it. There won't always be an allmighty god to stop "subsystems" above
+the driver to send requests to it if the driver itself doesn't ask for
+that to happen....
 
-As long as there is a notion of "queues" separate from the driver itself
-that can be stopped by some global thing... might be true for the block
-layer, might even be true for the network layer (but in that case, it's
-really easy for the driver to do with a single call), is not true with
-everything going through ioctl's (unless you have frozen userland and no
-internal kernel daemon is hitting driver ioctl's), and other direct
-callbacks that don't go through a "queue"... =
+(Oh and again, I'm strictly speaking about STR here). What annoys me the
+most is that you seem to be doing some kind of special casing of system
+suspend saying that drivers don't have to care about proper blocking of
+their "request queues" (again, this is a very generic term that ecompass
+not servicing a block device queue, telling the network stack to not
+call xmit, blocking or refusing on ioctl calls, etc etc....) because
+"something" above them will have prevented it from happening.
+
+That's what I don't agree with basically. Drivers need to do this little
+bit of work to make sure they can be safely suspending in a fully alive
+environment. It's not very hard to do (and those "subsystems" above
+drivers, when they exist at all, can well provide a help the driver can
+call to say "heh, I'm sleeping, don't bother me"... heh, they can even
+provide a callback to the driver to wake it up in the context of runtime
+suspend when activity happens) and it makes me sleep better :)
+
+Now, the case of system wide suspend has one special aspect to it, which
+is the notion that we are bringing down the swap device(s) etc..., and
+thus we need to have this prepare/finish phase we talked about to give a
+chance to drivers to secure in memory everything they'll need to
+succesfully suspend and resume. Additionally, as I explained earlier, it
+will make everybody's life MUCH easier (especially USB) if we define
+that between prepare() and finish(), no hotplug activity takes place
+(the bus drivers just basically ignore devices being plugged in during
+that phase, or if they can't completely ignore them, at least just leave
+a bit somewhere "need to come back on resume look what's going on
+here").
+
+Ben.
 
 
-In many cases, it's actually fairly easy to harden the driver tho :)
+ =
+
+ =
 
 Ben.
