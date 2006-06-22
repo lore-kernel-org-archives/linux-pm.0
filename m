@@ -1,17 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Wed, 21 Jun 2006 22:36:41 -0700
-Message-ID: <200606212236.41734.david-b@pacbell.net>
-References: <20060614103404.GC28536@elf.ucw.cz>
-	<200606211921.16289.david-b@pacbell.net>
-	<1150946591.947.56.camel@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: windfarm got signal
+Date: Thu, 22 Jun 2006 16:02:03 +1000
+Message-ID: <1150956123.3633.23.camel@localhost.localdomain>
+References: <1150847482.16662.13.camel@johannes>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1150946591.947.56.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <1150847482.16662.13.camel@johannes>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,39 +17,33 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 21 June 2006 8:23 pm, Benjamin Herrenschmidt wrote:
-> On Wed, 2006-06-21 at 19:21 -0700, David Brownell wrote:
-> > On Wednesday 21 June 2006 5:15 pm, Benjamin Herrenschmidt wrote:
-> > >		Additionally, as I explained earlier, it
-> > > will make everybody's life MUCH easier (especially USB) if we define
-> > > that between prepare() and finish(), no hotplug activity takes place
-> > > (the bus drivers just basically ignore devices being plugged in during
-> > > that phase, or if they can't completely ignore them, at least just le=
-ave
-> > > a bit somewhere "need to come back on resume look what's going on
-> > > here").
-> > =
-
-> > In the USB case, you're basically saying that prepare() should freeze
-> > khubd.  I think you've implied elsewhere that not all kernel tasks
-> > should be frozen at that time, though.
+On Wed, 2006-06-21 at 01:51 +0200, Johannes Berg wrote:
+> Hey,
 > =
 
-> Yes, but I'm saying that it will just make life easier to everybody if
-> we define that we don't get new devices in while we are in the
-> suspend/resume process. Don't you agree ?
+> after cpu hotplug I decided to write some fake suspend routines for
+> ppc64 that always fail to see what all the drivers would say... The
+> first thing I saw was during the phase where all threads are stopped,
+> that windfarm got a signal!
+> =
 
-It certainly gets rid of various deadlocks we've observed.
+> Shortly after that, the fans were revved up fully but I guess that's
+> expected if the wf control loop exits.
+> =
 
-For example, the appropriate action on a "power was lost" resume is
-often to delete some devices ... which means self-deadlocking in the
-PM core.  Our workaround for that has been to punt the work to khubd,
-which gets unfrozen later (after devices are resumed), marking the
-devices as disconnected so that the pointless "resume dead device"
-logic will be fail-fast.
+> So now I'm trying to see *why* it got a signal there. Any ideas? Is that
+> expected with pm and windfarm just does the wrong thing there by taking
+> the signal as a reason to exit the control thread?
+> =
 
-- Dave
+> [code in question is windfarm_core.c:wf_thread_func]
+
+I think it's the way the freezer works ... it sends a pseudo signal to
+all kernel threads who are then supposed to do something like test for
+PF_FREEZE or something like that.
+
+Ben.
