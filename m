@@ -1,8 +1,8 @@
 From: Mattia Dongili <malattia@linux.it>
 Subject: Re: [PATCH] get USB suspend to work again on
 	2.6.17-mm1
-Date: Thu, 22 Jun 2006 23:28:55 +0200
-Message-ID: <20060622212855.GA4891@inferi.kami.home>
+Date: Thu, 22 Jun 2006 23:34:00 +0200
+Message-ID: <20060622213400.GA5967@inferi.kami.home>
 References: <20060622202952.GA14135@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,9 +27,10 @@ On Thu, Jun 22, 2006 at 01:29:52PM -0700, Greg KH wrote:
 > Mattai and Jiri, can you try the patch below to see if it fixes the USB
 > suspend problem you are seeing with 2.6.17-mm1?
 
-it does, s2ram now works again
+great! it also solves the s2disk problems I was seeing since
+2.6.17-rc5-mm1.
 
-thanks
+double thanks!
 -- 
 mattia
 :wq!
