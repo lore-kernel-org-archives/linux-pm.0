@@ -1,8 +1,8 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Fri, 23 Jun 2006 09:11:51 +1000
-Message-ID: <1151017911.4046.55.camel@localhost.localdomain>
+From: Pavel Machek <pavel@suse.cz>
+Subject: suspend debuggability [was Re: [PATCH 2/2] Fix console
+	handling during suspend/resume]
+Date: Fri, 23 Jun 2006 01:13:31 +0200
+Message-ID: <20060622231330.GD4462@elf.ucw.cz>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 	<1150938119.16303.99.camel@localhost.localdomain>
@@ -17,6 +17,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0606221527590.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -28,63 +29,43 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2006-06-22 at 15:31 -0700, Linus Torvalds wrote:
-> =
+Hi!
 
-> On Fri, 23 Jun 2006, Benjamin Herrenschmidt wrote:
-> > =
+(I was away, going down the river... helplessly watching 100 mails
+going to my inbox... sorry for the delay).
 
 > > The problem is that what you call "controller setup" might well happen
 > > as part of normal operations of a given device.
 > =
 
 > Give one _reasonable_ example.
-
-automatic rotating keys is one that came to mind, automatic controller
-timing demotion is another,
-I could certainly find more... damn even hard disks have that sort of
-state (think about host protected area setting.. ok unlikely that this
-changed in the middle of a suspend cycle unless you hotswap just at the
-wrong time).
-
-However there aren't that many examples tho becasue there is not that
-many state that need to be saved ! (which adds to my argument that
-save_state is generally not even needed and thus by splitting it out,
-you won't really help your debugging problem).
+> =
 
 > > I think you are trying to change a model that is not broken...
 > =
 
 > Bzzt. Thank you for playing. =
 
-
-I really think it's not that model that is broken :)
+> =
 
 > The fact is, this thing has been broken for years. At some point, we have =
 
 > to just accept the fact that it's not just "drivers". There's something =
 
 > else that is broken, and I bet it's the model.
-
-Why ? I have fixed drivers used on powermac and it works like a charm.
-Drivers are broken, the model is sane. really.
+> =
 
 > The fact that drivers don't get fixed should be a big hint.
-
-The main reason is the video problem (chips not coming back on resume
-and needing a POST). This has always been the main issue and that's what
-is causing STR not to work for a lot of people.
+> =
 
 > And yes, maybe I'm wrong, but even if I am, what have we got to lose? =
 
 > Nothing. The thing doesn't work reliably now.
 
-The model does and I think your model would 1- break all existing
-drivers that got it right since they have to be changed and 2- won't
-help with the actual problems :)
+We are _slowly_ getting there. Changing the model will really not help.
 
 > And you haven't actually answered any of my fundamental issues, which =
 
@@ -94,15 +75,12 @@ help with the actual problems :)
 >  - debuggability
 >  - not doing five things in the same routine.
 
-I'm confident you won't get help on the first one, by splitting
-save_state since that's not that which is a problem, but the actual
-suspend.
+It is doing one thing: suspend. It is overkill for system snapshot,
+but it is correct. When you get s2ram to work, I'll magically have
+working s2disk... I think I like it that way.
 
-The later, well, it just has to be that way. (And it's not 5, it's 3 and
-actually boils down to 2 in most drivers since there is nothing to save
-and the first one, blocking of userland activity, usually tends to be a
-one liner with the appropriate support from the subsystem).
-  =
+And BTW that system-snapshotting system works; do ioctl on
+/dev/snapshot. Code at suspend.sf.net uses exactly that.
 
 > but instead you have brought up total red herrings that have nothing to d=
 o =
@@ -111,8 +89,31 @@ o =
 
 > "easier" for drivers to have just one complicated function).
 
-I've brought a real concern that you'll resume devices in a different
-state than what was last set at suspend time and change a model that
-isn't broken.
+It is you who is suggesting crazy ideas here. Currently, providing
+suspend/resume support, good enough for s2ram, makes s2ram work, and
+it makes s2disk work, too (maybe slowly). I think I like it that way.
 
-Ben.
+Yes, symmetry is issue here. I'd hate to have freeze paired with
+resume.
+
+Now.. as far as debuggability goes... debugging suspend is easy:
+
+* you just turn on vgacon. That needs no suspend/resume.
+
+* you locate offending module by binary search.
+
+* you debug bad module using printk/mdelay.
+
+Debugging resume is quite okay in s2disk case, but tricky for s2ram --
+if you need userland to restore your console, that's bad.
+
+Fortunately s2disk/s2ram using same callbacks comes handy here,
+too.... you just get s2disk working (easy to debug because console
+works), and s2ram starts to work magically.
+
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
