@@ -1,20 +1,14 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 22 Jun 2006 09:10:04 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606220909220.5498@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
-	<1150938119.16303.99.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606211844590.5498@g5.osdl.org>
-	<1150946286.947.50.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606212105220.5498@g5.osdl.org>
-	<1150952298.3633.20.camel@localhost.localdomain>
+Date: Thu, 22 Jun 2006 12:17:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606221205220.8121-100000@iolanthe.rowland.org>
+References: <1150946591.947.56.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1150952298.3633.20.camel@localhost.localdomain>
+In-Reply-To: <1150946591.947.56.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,35 +19,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-
-
 On Thu, 22 Jun 2006, Benjamin Herrenschmidt wrote:
+
+> On Wed, 2006-06-21 at 19:21 -0700, David Brownell wrote:
+> > On Wednesday 21 June 2006 5:15 pm, Benjamin Herrenschmidt wrote:
+> > >		Additionally, as I explained earlier, it
+> > > will make everybody's life MUCH easier (especially USB) if we define
+> > > that between prepare() and finish(), no hotplug activity takes place
+> > > (the bus drivers just basically ignore devices being plugged in during
+> > > that phase, or if they can't completely ignore them, at least just le=
+ave
+> > > a bit somewhere "need to come back on resume look what's going on
+> > > here").
+> > =
+
+> > In the USB case, you're basically saying that prepare() should freeze
+> > khubd.  I think you've implied elsewhere that not all kernel tasks
+> > should be frozen at that time, though.
 > =
 
-> How so ? What is insane in expecting that settings you have done to your
-> controller are restored to the last settings you did when you resume ?
+> Yes, but I'm saying that it will just make life easier to everybody if
+> we define that we don't get new devices in while we are in the
+> suspend/resume process. Don't you agree ?
 
-No. It's insane to do controller setup while a suspend is going on. We can =
+It's not so simple as just freezing khubd.  Devices can be created and
+destroyed in responsing to requests from userspace (e.g., writing to
+/sys/.../bConfigurationValue).  It's not at all clear to me how we could
+reliably prevent or delay such requests.  Right now we rely on userspace
+and khubd _both_ being frozen.
 
-make it impossible if you want (easy enough - just stop user land), but =
+Perhaps the best answer is to require callers to lock the parent device
+when creating or removing a child (USB does this already).  Under the
+assumption that you'll never want to create or remove a child of an
+already-suspended parent, things should be okay.  The PM core _should_ be
+able to handle a device being added or removed while some parts of
+the system are suspended or frozen, just so long as the actual parent is
+still awake.  Uevents can safely be queued until userspace is unfrozen or =
 
-the point is that you're worrying about ALL THE WRONG THINGS.
+otherwise able to process them.
 
-The fact that worries me is that suspend-to-ram DOES NOT WORK FOR PEOPLE. =
+I'm concerned about remote wakeup events arriving at inconvenient times
+during STR or STD.  Sometimes you might want them to abort the suspend,
+sometimes you might want to just drop them, and sometimes you might want
+them to wake the system up right after it goes to sleep.  It would be nice
+to get this straightened out.
 
-I have never _ever_ met a laptop or machine of mine that "just worked". =
-
-I've always had to fix something, and people always end up having to do =
-
-something ridiculous like unlink all modules etc.
-
-If that isn't what worries you, you're on the wrong page. =
-
-
-Bah. I don't care. =
-
-
-		Linus
+Alan Stern
