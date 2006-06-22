@@ -1,8 +1,8 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: suspend debuggability [was Re: [PATCH 2/2] Fix console
-	handling during suspend/resume]
-Date: Fri, 23 Jun 2006 01:13:31 +0200
-Message-ID: <20060622231330.GD4462@elf.ucw.cz>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Thu, 22 Jun 2006 16:19:46 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606221614280.6483@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 	<1150938119.16303.99.camel@localhost.localdomain>
@@ -13,12 +13,12 @@ References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606220909220.5498@g5.osdl.org>
 	<1151014893.4046.24.camel@localhost.localdomain>
 	<Pine.LNX.4.64.0606221527590.6483@g5.osdl.org>
+	<1151017911.4046.55.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606221527590.6483@g5.osdl.org>
+In-Reply-To: <1151017911.4046.55.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,92 +28,59 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-(I was away, going down the river... helplessly watching 100 mails
-going to my inbox... sorry for the delay).
 
-> > The problem is that what you call "controller setup" might well happen
-> > as part of normal operations of a given device.
+On Fri, 23 Jun 2006, Benjamin Herrenschmidt wrote:
 > =
 
-> Give one _reasonable_ example.
-> =
+> The main reason is the video problem (chips not coming back on resume
+> and needing a POST). This has always been the main issue and that's what
+> is causing STR not to work for a lot of people.
 
-> > I think you are trying to change a model that is not broken...
-> =
+No.
 
-> Bzzt. Thank you for playing. =
+Not for me. Every single time something doesn't work for me, I just plug =
 
-> =
+it into the network and try to debug it over the net.
 
-> The fact is, this thing has been broken for years. At some point, we have =
+Not on _one_ laptop has that helped. Ever.
 
-> to just accept the fact that it's not just "drivers". There's something =
+Maybe I just happen to have screwy laptops, but I don't believe so.
 
-> else that is broken, and I bet it's the model.
-> =
+It wasn't the reason on the mac mini either.
 
-> The fact that drivers don't get fixed should be a big hint.
-> =
+> The model does and I think your model would 1- break all existing
+> drivers that got it right since they have to be changed
 
-> And yes, maybe I'm wrong, but even if I am, what have we got to lose? =
+Actually, it won't break a single driver for STR.
 
-> Nothing. The thing doesn't work reliably now.
+Why? Because if you do it the old way, STR will still happen to work. I'm =
 
-We are _slowly_ getting there. Changing the model will really not help.
+just giving you a separate phase.
 
-> And you haven't actually answered any of my fundamental issues, which =
+But you're not interested in facts, are you? Nope.
 
-> boils down to
-> =
+>					 and 2- won't
+> help with the actual problems :)
 
->  - debuggability
->  - not doing five things in the same routine.
+So you say. Have you actually ever done anything to make debugging easier?
 
-It is doing one thing: suspend. It is overkill for system snapshot,
-but it is correct. When you get s2ram to work, I'll magically have
-working s2disk... I think I like it that way.
+Nope. In the years I've been frustrated with suspend, nobody has ever done =
 
-And BTW that system-snapshotting system works; do ioctl on
-/dev/snapshot. Code at suspend.sf.net uses exactly that.
+anything to this. And now I have to push through changes, just because =
 
-> but instead you have brought up total red herrings that have nothing to d=
-o =
+people think that "status quo" is acceptable.
 
-> with either (including apparently the totally ludicrous claim that it's =
+> I've brought a real concern that you'll resume devices in a different
+> state than what was last set at suspend time and change a model that
+> isn't broken.
 
-> "easier" for drivers to have just one complicated function).
+And I've explained several times that your concerns aren't problems. You =
 
-It is you who is suggesting crazy ideas here. Currently, providing
-suspend/resume support, good enough for s2ram, makes s2ram work, and
-it makes s2disk work, too (maybe slowly). I think I like it that way.
+just ignore it.
 
-Yes, symmetry is issue here. I'd hate to have freeze paired with
-resume.
-
-Now.. as far as debuggability goes... debugging suspend is easy:
-
-* you just turn on vgacon. That needs no suspend/resume.
-
-* you locate offending module by binary search.
-
-* you debug bad module using printk/mdelay.
-
-Debugging resume is quite okay in s2disk case, but tricky for s2ram --
-if you need userland to restore your console, that's bad.
-
-Fortunately s2disk/s2ram using same callbacks comes handy here,
-too.... you just get s2disk working (easy to debug because console
-works), and s2ram starts to work magically.
-
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+		Linus
