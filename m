@@ -1,15 +1,14 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: swsusp regression [Was: 2.6.17-mm1]
-Date: Thu, 22 Jun 2006 13:22:57 -0700
-Message-ID: <20060622202257.GB13736@kroah.com>
-References: <20060622184649.GA6768@kroah.com>
-	<Pine.LNX.4.44L0.0606221505030.5772-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Thu, 22 Jun 2006 16:31:27 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606221621230.5772-100000@iolanthe.rowland.org>
+References: <200606221127.08327.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0606221505030.5772-100000@iolanthe.rowland.org>
+In-Reply-To: <200606221127.08327.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,86 +18,60 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2006 at 03:57:24PM -0400, Alan Stern wrote:
-> On Thu, 22 Jun 2006, Greg KH wrote:
+On Thu, 22 Jun 2006, David Brownell wrote:
+
+> > 	 The PM core _should_ be
+> > able to handle a device being added or removed while some parts of
+> > the system are suspended or frozen, just so long as the actual parent is
+> > still awake.  Uevents can safely be queued until userspace is unfrozen =
+or =
+
+> > otherwise able to process them.
 > =
 
-> > > There are several possible ways to fix this.  One is to add suspend a=
-nd =
+> Fixing that involves updating pm core locking, ISTR.  I've thought that
+> the root cause of the issue is that the list of devices to be suspended
+> is created at the wrong time ... very early and globally scoped, not
+> on-demand and privately scoped.
 
-> > > resume routines to the endpoint-device driver.  Another is to change =
-the =
+I believe this has been fixed for quite a while.  The list of devices to
+be suspended is persistent and is maintained over the lifetime of the
+system (devices are added during device_add and removed during
+device_del).  That way the ordering is automatically correct; suspend
+works from the end of the list to the start and resume goes from the start
+to the end.  Thus devices are suspended in the opposite order of discovery =
 
-> > > code that checks for the children being suspended, to make it check o=
-nly =
+and resumed in the order of discovery.
 
-> > > for child USB devices and not child endpoints.
-> > =
+The difficulty you remember was the mutual exclusion between the
+list-walking in suspend/resume vs. actually modifying the list.  That now
+works okay, so long as nobody tries to add a child to a suspended parent.
 
-> > I think it needs to check for _USB_ devices, not just any old device
-> > that could possibly be attached to the main USB device (as this one is.)
-> > What's to stop any other struct device to bind here and cause the same
-> > problem?
+
+> > I'm concerned about remote wakeup events arriving at inconvenient times
+> > during STR or STD.  Sometimes you might want them to abort the suspend,
+> > sometimes you might want to just drop them, and sometimes you might want
+> > them to wake the system up right after it goes to sleep.  It would be n=
+ice
+> > to get this straightened out.
 > =
 
-> In my upcoming patches for USB core suspend improvements, one of the =
+> Well, wakeup events in general, not just USB ones.  They can be the same
+> as regular IRQs ... which seems to suggest that driver-specific coding may
+> be needed.
 
-> changes affects this very piece of code.  Instead of looping over all =
+Maybe.  Also to be considered is the fact that much of wakeup handling has =
 
-> child devices in the driver-model sense, it loops over all interfaces in =
+to take place in a process context, so once everything is frozen it can't =
 
-> the active configuration, which is all we care about right here.
-> =
+happen.  (Depending on which kernel threads remain unfrozen, of course.  I =
 
-> > Ok, the problem is in verify_suspended(), we are not detecting what type
-> > of device this is.
-> > =
+don't know whether keventd in particular should be frozen, or even whether =
 
-> > Alan, what are you trying to check for here?  What "bogus requests" were
-> > you seeing from sysfs that you are trying to filter out?
-> =
+it gets frozen currently.)
 
-> I didn't write that routine, Dave Brownell did.  It has been there for
-> ages.
-
-Sorry for the misattribution, I should have checked closer.
-
-> The "bogus requests" are attempts by the user to suspend a USB
-> device (by writing to /sys/devices/.../power/state) without first
-> suspending all its children and interfaces.
-> =
-
-> (This can't happen when doing a global suspend because the PM core =
-
-> iterates through the entire device tree.  It matters only for "runtime" o=
-r =
-
-> "selective" suspend.)
-
-Then why is people hitting this now?  I guess no one had hooked a struct
-device to a struct usb_device before, only interfaces.
-
-> The two easiest ways to fix the problem are:
-> =
-
-> 	Change the code to look through the interfaces in the active
-> 	configuration instead of using device_for_each_child;
-
-Or at least verify that they are looking at an interface, just blindly
-poking at a child device isn't very nice :(
-
-> or
-> =
-
-> 	Revert your "endpoints are devices" patch until my upcoming
-> 	changes are in place.
-
-I'll work on a fix-up patch based on the first option :)
-
-thanks,
-
-greg k-h
+Alan Stern
