@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] get USB suspend to work again on
 	2.6.17-mm1
-Date: Fri, 23 Jun 2006 10:28:48 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606231027330.5966-100000@iolanthe.rowland.org>
-References: <20060623042614.GB23232@kroah.com>
+Date: Fri, 23 Jun 2006 10:51:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
+References: <20060623042452.GA23232@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20060623042614.GB23232@kroah.com>
+In-Reply-To: <20060623042452.GA23232@kroah.com>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
@@ -24,21 +24,41 @@ List-Id: linux-pm@vger.kernel.org
 
 On Thu, 22 Jun 2006, Greg KH wrote:
 
-> > In my upcoming patch set this test isn't needed at all, because suspending
-> > a device automatically suspends all of its interfaces first.  I've already
-> > submitted the first few revised patches in that set (not the part that
-> > removes the test, though), but you've probably been too busy to look at
-> > them yet.
+> > Under what scenario could it possibly be legitimate to suspend a
+> > usb device -- or interface, or anything else -- with its children
+> > remaining active?  The ability to guarantee that could _never_ happen
+> > was one of the fundamental motivations for the driver model ...
 > 
-> I've glanced at them (and yes, been busy, they are still in my TO-APPLY
-> queue, trying to sync up with Linus first), but I don't see anything in
-> that set that changes the suspend logic.
-> 
-> Or am I just missing something obvious?  Which patch does that in your
-> revised series?
+> I'm not disagreeing with that.  It's just that you are looping all
+> struct devices that are attached to a struct usb_device and assuming
+> that they are all of type struct usb_interface.  And that's not true
+> anymore, and should never have been assumed (which is probably my fault
+> way long ago when converting USB to the driver model.)
 
-It's not in any of the pieces you've gotten so far.  It's about 3 patches 
-farther down the line.
+In fact the code doesn't make that assumption.  It only assumes that the 
+dev->power.power_state.event field is set correctly (0 for not suspended, 
+non-zero for suspended) and that you don't want to suspend a device if its 
+children aren't all suspended.
+
+> We probably need to keep our own list of interfaces if we want to
+> properly walk them now...
+
+We do have such a list: udev->actconfig->interface[].
+
+> And we also need to be able to handle devices in the device tree that do
+> not have a suspend/resume function, or ones that are not attached to any
+> bus, without failing the suspend, as obviously they do not care or need
+> to worry about the whole issue.
+
+Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
+it because it doesn't need them, or is it because nobody has written them 
+yet?  In the latter case, failing the suspend or unbinding the driver are 
+the only safe courses.
+
+And when you're dealing with a device that isn't on a bus or doesn't have 
+a driver, then clearly you _can't_ suspend it.  You can abort the system 
+sleep, or you can go ahead knowing that the device may not be in a 
+low-power mode.
 
 Alan Stern
 
