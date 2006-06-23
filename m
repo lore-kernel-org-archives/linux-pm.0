@@ -1,19 +1,19 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Fri, 23 Jun 2006 19:32:44 -0400
-Message-ID: <20060623233244.GB4264@neo.rr.com>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Fri, 23 Jun 2006 16:44:40 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<200606221130.30614.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
 	<200606231106.46863.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+	<20060623233244.GB4264@neo.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+In-Reply-To: <20060623233244.GB4264@neo.rr.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,100 +23,132 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Adam Belay <ambx1@neo.rr.com>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 23, 2006 at 12:23:53PM -0700, Linus Torvalds wrote:
+
+
+On Fri, 23 Jun 2006, Adam Belay wrote:
 > =
 
-> =
+> In my opinion, the point here is that the suspend functions are trying to
+> prevent access to hardware.
 
-> On Fri, 23 Jun 2006, David Brownell wrote:
-> > =
+Yes. =
 
-> > Seriously, suspend() tends to be less of a problem than resume().  Which
-> > is why I'm lukewarm to notions of refactoring suspend().
-> =
 
-> Now, I obviously agree, I just don't see any good way to refactor resume =
+My point is that it's not needed for STR, has nothing to do with "driver" =
 
-> at all.
-> =
+(every driver needs to do it, and it doesn't actually touch hardware), and =
 
-> So I think we should attack the problems that we _can_ attack.
-> =
+it's wrong.
 
-> Btw, I disagree violently with the standpoint that you and Pavel have had =
+And IT'S ONLY DONE BECAUSE THE INTERFACE SUCKS!
 
-> that we currently just do enough in "suspend()" to make STR work, and tha=
-t =
+It's really only needed with the current setup, because the whole =
 
-> gets STD working automatically.
-> =
+suspend() phase is so messy, and we try to solve everything in one single =
 
-> Several suspend() functions I've seen (networking in particular) do a =
+pass, and one single function call.
 
-> _hell_ of a lot more than they need for STR, exactly because they try to =
+What I'd like to get to (and no, I realize that just ->save_state() will =
 
-> protect against problems that happen with STD, but _not_ STR.
-> =
+_not_ get me there - it's just a first step) is a point where 99% of all =
 
-> Network devices tend to do things like "unregister from the network stack=
-" =
+devices can literally do just something like
 
-> etc, all of which should be totally unnecessary for STR. It's all there =
+	pci_save_state(dev);
+	pci_set_wake_event(..);
+	pci_set_power_state(dev, PCI_D3hot);
 
-> really for _disk_ suspend, to make things quiet.
-> =
+in their suspend routine. =
 
-> So the whole argument that "suspend()" is the minimal functionality is =
 
-> just totally bogus. Its' simply not _true_. The current suspend() =
+Now, in order to get there, we'll need a few more pieces. In particular, =
 
-> functions do lots of things that have nothing to do with actual device =
+it would require that this final suspend be called when interrupts have =
 
-> suspend, exactly because the current setup forces them to do so, not =
+been turned off. =
 
-> because they would actually _need_ to do so for STR.
-> =
 
-> 			Linus
+We can't do that right now, but I think we can split up "->suspend()" the =
 
-As far as I understand, most of them call netif_device_detach(), which just
-set's a flag bit that indicates the hardware isn't available for a moment,
-but this isn't the same as unregistering from the netdev stack.
+other way: split the remains into two, similarly to how "save_state()" is =
 
-In my opinion, the point here is that the suspend functions are trying to
-prevent access to hardware.  In the suspend-to-ram case the device might be
-uninitialized or powered off.  As a result touching the hardware may lead to
-driver errors, master aborts, lost data, or other problems.  Similarly, the
-goal during suspend-to-disk memory snapshotting is just to quiet down the
-drivers by stopping DMA, interrupts, and other hardware access so it's easi=
-er
-to create a functional memory snapshot, even if it isn't entirely atomic.
+for "stuff that can be done without any side effects". We would have =
 
-In either case, it's important to a.) tell the driver to stop touching it's
-hardware for a moment, b.) make sure the hardware itself is quiet enough and
-c.) optionally push out any queues or buffers of data waiting to hit the
-device.  Of course, there are also a lot of activities that are not shared
-between each suspend scenario.  For example, when suspending devices before
-entering S3 (or whatever the platform calls suspend-to-ram) it's important,
-in addition to the above, to save dynamic device context, enter the correct
-device power state, and enable wakeup capabilities if needed.  In contrast,
-when preparing for a memory snapshot, it's important to save dynamic device
-context but device power must be maintained.  As a third example, before
-entering S5 it might be best to transition devices to lower power states
-and enable wakeup features, but there is no need to save dynamic context.
+"early suspend with interrupts enabled" and "late suspend with interrupts =
 
-Now I'm not arguing that the current suspend model is correct, in fact I th=
-ink
-it's in need of some major restructuring.  Nor am I arguing that this all m=
-ust
-happen in a single unified suspend callback.  I just want to suggest that in
-any suspend case, one of the most important objectives is to quiesce the
-driver and hardware.  As a result, every type of suspend() operation has at
-least some similar requirements.
+disabled".
 
-Thanks,
-Adam
+So, for a network controller, you'd leave "early_suspend()" as NULL, and =
+
+"late_suspend()" would basically be the above sequence. For a disk, you'd =
+
+make "early_suspend()" be the "flush cache" etc sequence, while the =
+
+"late_suspend" would be NULL.
+
+See? Different devices want different things. Again, the current =
+
+"suspend()" has to cater to _all_ needs, which makes it very complicated. =
+
+Catering to _all_ needs means that it has to do things with interrupts on, =
+
+because _some_ users need it.
+
+See a pattern here? It's exactly the same thing, all over again.
+
+Splitting it up really should make some things _much_ easier.
+
+This, btw, is something we can (and probably should) do on the resume side =
+
+too. Again, "early_resume()" would be done before interrupts are enabled =
+
+and other cores are brought up. And "late_resume()" would be done with =
+
+interrupts on.
+
+(And I think Ben is right, we might want to have a "final_resume()" which =
+
+is called when user mode has resumed).
+
+And again, most devices probably want just one or the other, not both (or =
+
+all three). But just the fact that a device knows that it's =
+
+late_suspend()/early_resume() routines would be called with no interrupts =
+
+etc ever happening in between would make things _much_ easier for those.
+
+And yes, some devices might want to actually use both. You might resume =
+
+controller state in early_resume() (allowing a simpler late_suspend() that =
+
+doesn't need to worry), and then actually do things like device =
+
+re-discovery in "late_resume()", because you need to wait for things). =
+
+
+Which brings us back to the fact that I think "suspend()" tries to do too =
+
+many things as it stands now. It tries to handle all the cases, but =
+
+because it does so in one single phase, it's _really_fundamentally_hard_.
+
+I really don't understand people who think that one routine is better than =
+
+five routines. I pretty much _guarantee_ that most devices will still just =
+
+have one or two routines, but they'll be simpler, just because they can be =
+
+more directed rather than flailing around wildly and aimlessly because of =
+
+having just one interface that needs to make everybody happy.
+
+Five simple routines are _superior_ to one complicated routine. That is =
+
+true even if the five simple routines end up having more lines of code.
+
+			Linus
