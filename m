@@ -1,64 +1,90 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] get USB suspend to work again on
-	2.6.17-mm1
-Date: Thu, 22 Jun 2006 21:26:14 -0700
-Message-ID: <20060623042614.GB23232@kroah.com>
-References: <20060622235112.GA30484@kroah.com>
-	<Pine.LNX.4.44L0.0606222241390.18690-100000@netrider.rowland.org>
+From: Frederik Deweerdt <deweerdt@free.fr>
+Subject: Re: swsusp regression [Was: 2.6.17-mm1]
+Date: Fri, 23 Jun 2006 11:02:06 +0200
+Message-ID: <20060623090206.GA2234@slug>
+References: <20060621034857.35cfe36f.akpm@osdl.org>
+	<4499BE99.6010508@gmail.com>
+	<20060621221445.GB3798@inferi.kami.home>
+	<20060622061905.GD15834@kroah.com>
+	<20060622004648.f1912e34.akpm@osdl.org>
+	<20060622160403.GB2539@slug>
+	<20060622092506.da2a8bf4.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0606222241390.18690-100000@netrider.rowland.org>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Jiri Slaby <jirislaby@gmail.com>
+In-Reply-To: <20060622092506.da2a8bf4.akpm@osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2006 at 10:45:15PM -0400, Alan Stern wrote:
-> On Thu, 22 Jun 2006, Greg KH wrote:
-> 
-> > > And yes, we _should_ care about whether or not any interface is
-> > > still active, until the pm core code starts to pay attention to
-> > > the driver model tree at all times ... even outside of system-wide
-> > > suspend transitions.  Today, the pm core code doesn't even use
-> > > that tree directly, and all runtime state changes (like selective
-> > > suspend with USB) completely bypass that pm tree.
-> > 
-> > Hm, ok, yes, we should care about interfaces, but we need some way to
-> > only walk them, not anything else that might be attached to us...
-> 
-> In my upcoming patch set this test isn't needed at all, because suspending
-> a device automatically suspends all of its interfaces first.  I've already
-> submitted the first few revised patches in that set (not the part that
-> removes the test, though), but you've probably been too busy to look at
-> them yet.
+On Thu, Jun 22, 2006 at 09:25:06AM -0700, Andrew Morton wrote:
+> On Thu, 22 Jun 2006 18:04:03 +0200
+> Frederik Deweerdt <deweerdt@free.fr> wrote:
+> =
 
-I've glanced at them (and yes, been busy, they are still in my TO-APPLY
-queue, trying to sync up with Linus first), but I don't see anything in
-that set that changes the suspend logic.
+> > Thu, Jun 22, 2006 at 12:46:48AM -0700, Andrew Morton wrote:
+> > > I can bisect it if we're stuck, but that'll require beer or something.
+> > =
 
-Or am I just missing something obvious?  Which patch does that in your
-revised series?
+> > FWIW, my laptop (Dell D610) gave the following results:
+> > 2.6.17-mm1: suspend_device(): usb_generic_suspend+0x0/0x135 [usbcore]()=
+ returns -16
+> > 2.6.17+origin.patch: suspend_device(): usb_generic_suspend+0x0/0x135 [u=
+sbcore]() returns -16
+> =
 
-thanks,
+> So it's in mainline already - hence it's some recently-written thing which
+> was not tested in rc6-mm2.
+> =
 
-greg k-h
+> > 2.6.17: oops
+> > 2.6.17.1: oops
+> =
 
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+> 2.6.17 wasn't supposed to oops.  Do you have details on this?
+> =
+
+For some reason, unknown to me, the oops won't display on the serial link :=
+(.
+
+Here's what I could hand copy (I've suppressed printk timing information):
+x1b9/0x1be
+<c0166e6b> sys_write+0x4b/0x75  <c010300f> sysenter_past_esp+0x54/0x75
+Code: 05 c4 52 43 c0 31 53 43 c0 c3 8b 2d 68 6e 54 c0 8b 1d 60
+6e 54 c0 8b 35 6c 6e 54 c0 8b 3d 70 6e 54 c0 ff 35 74 6e 54 c0 9d c3 90 <e8>
+9d 2c ea ff e8 a2 ff ff ff 6a 03 e8 4c ab de ff 83 c4 04 c3
+EIP: [<c043531c>] do_suspend_lowlevel+0x0/0x15 SS:ESP 0068:f7a0fea4
+<3>BUG: sleeping function called from invalid context at include/linux/rwse=
+m.h:43
+in_atomic():0, irqs_disabled():1
+ <c0103e56> show_trace+0x20/0x22  <c0103f5b> dump_stack+0x1e/0x20
+ <c011aec7> __might_sleep+0x9e/0xa6  <c012b0cf> blocking_notifier_call_chai=
+n+0x1e/0x5b
+ <c011f091> profile_task_exit+0x21/0x23  <c0120946> do_exit+0x1d/0x483
+ <c0104432> do_divide_error+0x0/0xbf  <c0362c76> do_page_fault+0x3c4/0x752
+ <c0103b2f> error_code+0x4f/0x54  <c013b33a> suspend_enter+0x2f/0x52
+ <c013b3e0> enter_state+0x4b/0x8d  <c013b579> state_store+0xa0/0xa2
+ <c01a54f1> subsys_attr_store+0x37/0x41  <c01a5772> flush_write_buffer+0x3c=
+/046
+ <c01a57e3> sysfs_write_file+0x67/0x8b  <c0166da6> vfs_write+0x1b9/0x1be
+ <c0166e6b> sys_write+0x4b/0x75  <c010300f> sysenter_past_esp+0x54/0x75
+
+This is triggered on a 2.6.17.1 kernel by:
+echo mem > /sys/power/state
+
+.config and dmesg are here:
+http://fdeweerdt.free.fr/suspend_oops/
+
+Regards,
+Frederik
