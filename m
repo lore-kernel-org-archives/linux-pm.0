@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] get USB suspend to work again on
 	2.6.17-mm1
-Date: Thu, 22 Jun 2006 22:45:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606222241390.18690-100000@netrider.rowland.org>
-References: <20060622235112.GA30484@kroah.com>
+Date: Thu, 22 Jun 2006 20:34:43 -0700
+Message-ID: <200606222034.44085.david-b@pacbell.net>
+References: <20060622202952.GA14135@kroah.com>
+	<200606221624.03182.david-b@pacbell.net>
+	<20060622235112.GA30484@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
 In-Reply-To: <20060622235112.GA30484@kroah.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
@@ -19,11 +22,15 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 Sender: linux-usb-devel-bounces@lists.sourceforge.net
 Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
 To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Alan Stern <stern@rowland.harvard.edu>, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Jun 2006, Greg KH wrote:
-
+On Thursday 22 June 2006 4:51 pm, Greg KH wrote:
+> > There was previously an invariant that the interfaces were marked
+> > as quiescent unless the interface (a) had a driver, and (b) that
+> > driver was not suspended.  Evidently that has been lost.  This patch
+> > may be insufficient; ISTR other places relying on that invariant.
+> > 
 > > And yes, we _should_ care about whether or not any interface is
 > > still active, until the pm core code starts to pay attention to
 > > the driver model tree at all times ... even outside of system-wide
@@ -34,13 +41,17 @@ On Thu, 22 Jun 2006, Greg KH wrote:
 > Hm, ok, yes, we should care about interfaces, but we need some way to
 > only walk them, not anything else that might be attached to us...
 
-In my upcoming patch set this test isn't needed at all, because suspending
-a device automatically suspends all of its interfaces first.  I've already
-submitted the first few revised patches in that set (not the part that
-removes the test, though), but you've probably been too busy to look at
-them yet.
+Under what scenario could it possibly be legitimate to suspend a
+usb device -- or interface, or anything else -- with its children
+remaining active?  The ability to guarantee that could _never_ happen
+was one of the fundamental motivations for the driver model ...
 
-Alan Stern
+Maybe that invariant should be replaced with something else, though
+I'm not sure what.  Certainly it would make a fair amount of sense
+to leave unused PCI devices in the PCI_D3 state, for example; that
+would be the PCI analogue of that invariant.
+
+- Dave
 
 
 Using Tomcat but need to do more? Need to support web services, security?
