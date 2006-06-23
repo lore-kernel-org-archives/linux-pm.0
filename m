@@ -1,70 +1,26 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Fri, 23 Jun 2006 12:23:53 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<200606221130.30614.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<200606231106.46863.david-b@pacbell.net>
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [linux-pm] swsusp regression [Was: 2.6.17-mm1]
+Date: Fri, 23 Jun 2006 20:41:01 +0100
+Message-ID: <20060623194100.GA3812@flint.arm.linux.org.uk>
+References: <20060621034857.35cfe36f.akpm@osdl.org> <4499BE99.6010508@gmail.com> <20060621221445.GB3798@inferi.kami.home> <20060622061905.GD15834@kroah.com> <20060622004648.f1912e34.akpm@osdl.org> <20060622160403.GB2539@slug> <20060622092506.da2a8bf4.akpm@osdl.org> <20060623090206.GA2234@slug> <20060623091016.GE4940@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606231106.46863.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751960AbWFWTlL@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060623091016.GE4940@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Frederik Deweerdt <deweerdt@free.fr>, Andrew Morton <akpm@osdl.org>, greg@kroah.com, linux-kernel@vger.kernel.org, linux-pm@osdl.org, stern@rowland.harvard.edu
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Jun 23, 2006 at 11:10:21AM +0200, Pavel Machek wrote:
+> Serial console is currently broken by suspend, resume. _But_ I have a
+> patch I'd like you to try.... pretty please?
 
+Did you bother trying my patch, which was done the Right(tm) way?
+There wasn't any feedback on it so I can only assume not.
 
-On Fri, 23 Jun 2006, David Brownell wrote:
-> =
-
-> Seriously, suspend() tends to be less of a problem than resume().  Which
-> is why I'm lukewarm to notions of refactoring suspend().
-
-Now, I obviously agree, I just don't see any good way to refactor resume =
-
-at all.
-
-So I think we should attack the problems that we _can_ attack.
-
-Btw, I disagree violently with the standpoint that you and Pavel have had =
-
-that we currently just do enough in "suspend()" to make STR work, and that =
-
-gets STD working automatically.
-
-Several suspend() functions I've seen (networking in particular) do a =
-
-_hell_ of a lot more than they need for STR, exactly because they try to =
-
-protect against problems that happen with STD, but _not_ STR.
-
-Network devices tend to do things like "unregister from the network stack" =
-
-etc, all of which should be totally unnecessary for STR. It's all there =
-
-really for _disk_ suspend, to make things quiet.
-
-So the whole argument that "suspend()" is the minimal functionality is =
-
-just totally bogus. Its' simply not _true_. The current suspend() =
-
-functions do lots of things that have nothing to do with actual device =
-
-suspend, exactly because the current setup forces them to do so, not =
-
-because they would actually _need_ to do so for STR.
-
-			Linus
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
