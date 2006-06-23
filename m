@@ -1,16 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 23 Jun 2006 09:37:22 -0700
-Message-ID: <200606230937.22533.david-b@pacbell.net>
+Date: Fri, 23 Jun 2006 10:18:59 -0700
+Message-ID: <200606231018.59772.david-b@pacbell.net>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606221527590.6483@g5.osdl.org>
-	<1151017911.4046.55.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1151017911.4046.55.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -21,27 +20,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pm@lists.osdl.org, Linus Torvalds <torvalds@osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-> > The fact that drivers don't get fixed should be a big hint.
+On Wednesday 21 June 2006 10:04 am, Linus Torvalds wrote:
 
-The hint I get is that (a) not many developers know how to fix both
-(a1) drivers, and (a2) suspend or resume bugs; and that (b) even those
-which can do both suffer because of debuggability issues like $SUBJECT
-or, equivalently:
+> documentation. Much more important than documentation is just clear and =
 
-> The main reason is the video problem (chips not coming back on resume
-> and needing a POST). This has always been the main issue and that's what
-> is causing STR not to work for a lot of people.
+> unambiguous interfaces. Right now, "suspend()" is _not_ that. It's not =
 
-Plus, related -- that ACPI is not generally debuggable.  I've seen many
-systems come back well enough to produce new video output (text console),
-but fail almost immediately in what _seems_ to be ACPI codee.
+> clear and unambiguous at all, it's a muddy pit-hole of mixing different =
 
+> things - you're supposed to do all of "freeze", "save state" and =
 
-I tend to agree with Ben that the model is not the worst problem here.
-Not that it's perfect!
+> "suspend")
+
+It's messy -- I don't like pm_message_t much at all -- but it's not
+as bad as you paint it.  It's _always_ correct to do everything needed
+to enter STR ... fewer than 5% of today's drivers want to do anything
+fancier, like avoiding disk spindown, enabling wakeup events, etc.
+
+In fact that was true back in 2.4 kernels too.  Hardly any drivers
+needed to do anything more than preparing for STR.  The extra parameter
+to suspend() is only to support "advanced" PM mechanisms.
+
+Of course that means under-featured system PM -- we still suck at
+handling wakeup events -- but I figure the first milestone is getting
+systems to handle STR (and STD) at all, and doing anything advanced
+is a "phase 2" that not all drivers will ever reach.
 
 - Dave
