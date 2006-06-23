@@ -1,8 +1,8 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 2/2] Fix console handling
 	during	suspend/resume
-Date: Fri, 23 Jun 2006 10:05:59 +1000
-Message-ID: <1151021159.4046.73.camel@localhost.localdomain>
+Date: Fri, 23 Jun 2006 10:08:51 +1000
+Message-ID: <1151021331.4046.76.camel@localhost.localdomain>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 	<1150938119.16303.99.camel@localhost.localdomain>
@@ -35,57 +35,36 @@ To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-
-> Here's a _fact_:
+On Thu, 2006-06-22 at 16:41 -0700, Linus Torvalds wrote:
 > =
 
->  - we currently walk the device chain to suspend different devices
->  - one device returns an error
->  - we've now suspended half the machine, done major things, and we need t=
-o =
+> On Fri, 23 Jun 2006, Benjamin Herrenschmidt wrote:
+> > > =
 
->    undo it
->  - the thing fails.
+> > > So you say. Have you actually ever done anything to make debugging ea=
+sier?
+> > =
+
+> > I've implemented suspend/resume for a whole range of machiens where
+> > everything goes down and all I have to debug on resume is ... sending
+> > commands to a chip to blink a LED. So yes, I have.
 > =
 
-> Are you seriously claiming this has never happened to you? It sure has =
+> That's not what I asked.
+> =
 
-> happened to me.
-
-It happens occasionally (latest was a USB controller going dead
-occasionally on a box and usb suspend() method for it failing when that
-happens).
-
-When we fail, we resume() things that were suspended(), at least we used
-to, and that works. That is suspending fails but at least the machine
-comes back into operational state and you can look at dmesg, console,
-whatever. I haven't had the case where _that_ failed.
-
-> And YES, THIS WOULD BE IMPROVED BY MY SCHEME. Instead of getting a machin=
-e =
-
-> that has suspended partly, and may be effectively dead and unable to even =
-
-> tell the user that it failed half-way through, it would not have suspende=
-d =
-
-> anything at all, and just say "Sorry, I can't do that".
-
-That would have been fixed by a prepare() callback too as I'm advocating
-it. This has nothing to do with saving state.
-
-> Adn yes, this is a _direct_ result of THE BROKEN CONVENTION OF DOING =
-
-> EVERYTHING IN SUSPEND()!
+> I didn't ask whether you had debugged suspend/resume.
 >
-> But yeah, you go on and ignore it. Because the current scheme is obviousl=
-y =
+> I asked whether you had tried to make it easier.
 
-> all right.
+Yes and I've given you examples later in the same email. The main one
+being that early resume console thing. And yes, I did it in an arch
+specific way, because there was no way I could resume the display _that_
+early in a general case, and yes, I think it might be interesting to
+think about doing the general case still (though the main problem will
+be the resuming of AGP which currently =
 
-The current scheme is not perfect, and I've proposed at least one
-mecanism to improve it. My argument is that it has nothing about saving
-state and changing the state save vs. suspend semantics. Changing _that_
-won't help.
+tends to not follow any correct ordering rule vs. the video chip on the
+bus).
 
 Ben.
