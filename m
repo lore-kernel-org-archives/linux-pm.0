@@ -1,22 +1,16 @@
-From: Dave Jones <davej@redhat.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: swsusp regression [Was: 2.6.17-mm1]
-Date: Fri, 23 Jun 2006 16:22:04 -0400
-Message-ID: <20060623202204.GC4102@redhat.com>
+Date: Fri, 23 Jun 2006 23:10:54 +0200
+Message-ID: <200606232310.54564.rjw@sisk.pl>
 References: <20060621034857.35cfe36f.akpm@osdl.org>
-	<4499BE99.6010508@gmail.com>
-	<20060621221445.GB3798@inferi.kami.home>
-	<20060622061905.GD15834@kroah.com>
-	<20060622004648.f1912e34.akpm@osdl.org>
-	<20060622160403.GB2539@slug>
-	<20060622092506.da2a8bf4.akpm@osdl.org>
-	<20060623090206.GA2234@slug> <20060623091016.GE4940@elf.ucw.cz>
+	<20060623091016.GE4940@elf.ucw.cz>
 	<20060623194100.GA3812@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
 In-Reply-To: <20060623194100.GA3812@flint.arm.linux.org.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,24 +20,22 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>, Frederik Deweerdt <deweerdt@free.fr>, Andrew Morton <akpm@osdl.org>, greg@kroah.com, linux-kernel@vger.kernel.org, linux-pm@osdl.org, stern@rowland.harvard.edu
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-pm@osdl.org, Pavel Machek <pavel@ucw.cz>, Frederik Deweerdt <deweerdt@free.fr>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 23, 2006 at 08:41:01PM +0100, Russell King wrote:
- > On Fri, Jun 23, 2006 at 11:10:21AM +0200, Pavel Machek wrote:
- > > Serial console is currently broken by suspend, resume. _But_ I have a
- > > patch I'd like you to try.... pretty please?
- > =
+Hi,
 
- > Did you bother trying my patch, which was done the Right(tm) way?
- > There wasn't any feedback on it so I can only assume not.
+On Friday 23 June 2006 21:41, Russell King wrote:
+> On Fri, Jun 23, 2006 at 11:10:21AM +0200, Pavel Machek wrote:
+> > Serial console is currently broken by suspend, resume. _But_ I have a
+> > patch I'd like you to try.... pretty please?
+> =
 
-I thought I had replied to that.   It didn't make any difference for me.
-I recall seeing a posting from someone else saying the same thing.
+> Did you bother trying my patch, which was done the Right(tm) way?
+> There wasn't any feedback on it so I can only assume not.
 
-		Dave
+Sorry for that, I just couldn't test it earlier.  Works for me. :-)
 
-
--- =
-
-http://www.codemonkey.org.uk
+Thanks,
+Rafael
