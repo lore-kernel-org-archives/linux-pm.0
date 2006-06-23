@@ -1,46 +1,48 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] get USB suspend to work again on
-	2.6.17-mm1
-Date: Fri, 23 Jun 2006 08:38:57 -0700
-Message-ID: <200606230838.57957.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Fri, 23 Jun 2006 11:15:20 -0700
+Message-ID: <200606231115.21265.david-b@pacbell.net>
+References: <1150946286.947.50.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606221641180.6483@g5.osdl.org>
+	<20060622235100.GA4940@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060622235100.GA4940@elf.ucw.cz>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: linux-usb-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Alan Stern <stern@rowland.harvard.edu>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 June 2006 7:51 am, Alan Stern wrote:
 
-> Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
-> it because it doesn't need them, or is it because nobody has written them 
-> yet?  In the latter case, failing the suspend or unbinding the driver are 
-> the only safe courses.
+> > The Mac Mini was the first machine when I decided to try using netconso=
+le. =
 
-I think the former would ba a dangerous assumption ... in the category
-of "intermittent bugs triggering later on" rather than "easily reproduced
-bugs triggering right at the trouble spot" (like the latter).
+> > And I did so because it didn't work for me even before. It just so =
+
+> > happened that netconsole actually made things EVEN WORSE.
+> > =
+
+> > The other machines I've tried (without netconsole) haven't resumed eith=
+er.
+> =
+
+> Well... here's list of machines we got to work (from suspend.sf.net
+> project):
+
+Doesn't it seem wrong to _everyone_ else that making a basic
+kernel mechanism like "echo ... >/sys/power/state" work, some
+out of tree code appears to be needed?
 
 - Dave
-
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
