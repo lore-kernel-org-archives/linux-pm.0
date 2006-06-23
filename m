@@ -1,16 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 23 Jun 2006 11:06:46 -0700
-Message-ID: <200606231106.46863.david-b@pacbell.net>
+Date: Fri, 23 Jun 2006 10:43:41 -0700
+Message-ID: <200606231043.42256.david-b@pacbell.net>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<200606221130.30614.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606210937090.5498@g5.osdl.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -25,97 +24,74 @@ To: Linus Torvalds <torvalds@osdl.org>
 Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 22 June 2006 12:23 pm, Linus Torvalds wrote:
-> =
-
-> On Thu, 22 Jun 2006, David Brownell wrote:
-> =
-
-> > On Thursday 22 June 2006 9:10 am, Linus Torvalds wrote:
-> > > =
-
-> > > The fact that worries me is that suspend-to-ram DOES NOT WORK FOR PEO=
-PLE. =
-
-> > > I have never _ever_ met a laptop or machine of mine that "just worked=
-". =
-
-> > > I've always had to fix something, and people always end up having to =
-do =
-
-> > > something ridiculous like unlink all modules etc.
+On Wednesday 21 June 2006 10:04 am, Linus Torvalds wrote:
+> On Wed, 21 Jun 2006, Alan Stern wrote:
 > > =
 
-> > And when I've looked at the causes of such problems, they've been
-> > either (a) driver bugs, or (b) ACPI bugs.  As you know, both of
-> > them are hard to debug, especially when the symptom is on resume
-> > paths with no console.  (Oooh, see $SUBJECT, this isn't offtopic!!)
+> > At what stage do you restore power to the device?
 > =
 
-> EXACTLY.
+> I am ambivalent about this.
+
+Good, because it's not necessarily the right question.  On most
+SOC systems, the right question relates to clock gating.  As in,
+"when do you re-enable the device's clocks?"  And disabling the
+clocks doesn't necessarily imply losing any device state.  It will
+mean the hardware state machines stop transitioning, but there are
+devices (like MMC/SD controllers) where that doesn't matter since
+the controller is a pure cpu slave.
+
+Plus there are nuances like "which clocks do you enable when" ...
+you may want to keep a controller-specific PLL off most of the
+time, but leave the the registers (and basic hardware state machine)
+clocked all the time except during sleep states.  (And maybe not
+turn it off even then, if that device should be a wakeup event
+source.  Of course, leaving it clocked during sleep states costs
+maybe a couple milliAmps per device...)
+
+
+> > How does the handling differ when you are doing runtime (AKA dynamic AK=
+A =
+
+> > selective) suspend/resume?
 > =
 
-> We're back to square one.
+> I think that you should be perfectly able to do a single-device "shut tha=
+t =
+
+> device off" with a simple:
 > =
 
-> The #1 problem _by_far_ with suspend has absolutely ZERO to do with =
+> 	save_state(dev);
+> 	suspend(dev);
+> 	..
+> 	restore_state(dev);
 
-> suspend being "hard", block device queues, or how to save driver state pe=
-r =
+Separating the save/restore state for STR seems dubious to me.  I've not
+seen hardware where it's necessary ... in large part because the point of
+runtime PM is less about "shut it off" and more just "conserve power".  And
+the hardware folk tend to do the right thing there, so that low power modes
+don't imply losing any state.  (PCI drivers may need to care about D3 vs D2
+of course, since D3 allows state trashing that D2 doesn't.  But that's a
+separate discussion.)
 
-> se.
+ =
+
+> without having any other suspend going on and without iterating over any =
+
+> other devices.
 > =
 
-> Each individual driver tends to be fairly easy to fix, I'd say. I suspect =
+> Of course, whoever does this needs to verify that the device itself is =
 
-> that even USB in the end is just a "Small Matter Of Programming", but it'=
-s =
-
-> a total bitch to debug.
-
-Actually, testing is more of a problem, given the 2^(about 8) different
-configurations, with different fault paths in each.  That one is never
-going away, while the "is printk available" issue has at least had some
-system-specific workarounds.
-
-
-> Our problem is that it's damn hard to debug the mess, AND A LARGE PART OF =
-
-> THAT IS THAT STUPID INTERFACE!
-
-Specifically, that the interface de-facto includes "printk unavailable"
-during interesting sequence like resume, so there's no way to see what
-broke and when.
-
-
-> Let's revisit why I want to do as much _independently_ of actually callin=
-g =
-
-> suspend() on a device again:
+> quiescent (or able to wake up itself and force its own "restore_state()").
 > =
 
->  - debugging is basically impossible during the _actual_ suspend sequence.
-> =
+> I don't see any real issues there, do you?
 
-> This is why we want to (nay, NEED) to split that "suspend()" function up, =
-
-> so that it doesn't do five different things. The more we can do _outside_ =
-
-> of suspend(), the better. Exactly because suspend() is a total bitch to =
-
-> debug, and because in order to actually do things like printk() and use =
-
-> netconsole, we want to minimize the amount of code that gets run in that =
-
-> state.
-
-Seriously, suspend() tends to be less of a problem than resume().  Which
-is why I'm lukewarm to notions of refactoring suspend().
-
-Going from a first-principles model based approach, the conceptual issue
-is that providing a console has to date been purely a side effect of the
-driver model suspend and resume sequences.  There are multiple sequences
-of driver suspend/resume calls which observe the parent/child constraints,
-but there's no effort to keep a consoles maximally active.
+Child devices need to be suspended first, which is an issue the current
+PM core completely ignores.  Until it does, any driver supporting runtime
+suspend needs to at least verify that a device's children were suspended
+before it tries to suspend that device.
 
 - Dave
