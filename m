@@ -1,30 +1,77 @@
-From: Frederik Deweerdt <deweerdt@free.fr>
-Subject: Re: [linux-pm] swsusp regression [Was: 2.6.17-mm1]
-Date: Sat, 24 Jun 2006 01:53:57 +0200
-Message-ID: <20060623235357.GA1181@slug>
-References: <4499BE99.6010508@gmail.com> <20060621221445.GB3798@inferi.kami.home> <20060622061905.GD15834@kroah.com> <20060622004648.f1912e34.akpm@osdl.org> <20060622160403.GB2539@slug> <20060622092506.da2a8bf4.akpm@osdl.org> <20060623090206.GA2234@slug> <20060623091016.GE4940@elf.ucw.cz> <20060623194100.GA3812@flint.arm.linux.org.uk> <20060623221117.GA2497@elf.ucw.cz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Sat, 24 Jun 2006 09:53:38 +1000
+Message-ID: <1151106818.16946.19.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+	<200606221130.30614.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<200606231106.46863.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752176AbWFWXyE@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060623221117.GA2497@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, greg@kroah.com, linux-kernel@vger.kernel.org, linux-pm@osdl.org, stern@rowland.harvard.edu
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 24, 2006 at 12:11:18AM +0200, Pavel Machek wrote:
-> On Fri 2006-06-23 20:41:01, Russell King wrote:
-> > On Fri, Jun 23, 2006 at 11:10:21AM +0200, Pavel Machek wrote:
-> > > Serial console is currently broken by suspend, resume. _But_ I have a
-> > > patch I'd like you to try.... pretty please?
-> > 
-> > Did you bother trying my patch, which was done the Right(tm) way?
-> > There wasn't any feedback on it so I can only assume not.
-> 
-> (I actually forwarded him your patch in private email).
-And I did try it, but it make no difference: the output would still
-appear on the laptop.
 
-Regards,
-Frederik
+> Several suspend() functions I've seen (networking in particular) do a =
+
+> _hell_ of a lot more than they need for STR, exactly because they try to =
+
+> protect against problems that happen with STD, but _not_ STR.
+> =
+
+> Network devices tend to do things like "unregister from the network stack=
+" =
+
+> etc, all of which should be totally unnecessary for STR. It's all there =
+
+> really for _disk_ suspend, to make things quiet.
+
+How so ? Are you talking about netif_device_detach ? There should never
+be need to unregister completel from the network stack for either STR or
+STD, but netif_device_detach() is needed for STR (and won't harm for
+STD) for making sure your xmit() isn't called on a sleeping hardware
+(and to sync with it). There may be _differnet_ ways of doing it but
+netif_device_detach() works fine and doesn't seem to cause any problem
+(and avoids the network stack bmbing you with tx timeouts unlike what
+happens if you just use netif_stop_queue() from memory..)
+
+I've very rarely seen drivers trying to do _anything_ to work around STD
+specific issues. I think Pavel and David are right there... suspend() is
+mostly written for STR and that way happens to work with STD...
+
+> So the whole argument that "suspend()" is the minimal functionality is =
+
+> just totally bogus. Its' simply not _true_. The current suspend() =
+
+> functions do lots of things that have nothing to do with actual device =
+
+> suspend, exactly because the current setup forces them to do so, not =
+
+> because they would actually _need_ to do so for STR.
+
+What are you talking about now ? Precisely that is ? The current
+suspend() mostly do things to make sure we don't hit the hardware when
+it's suspended. That's it. In some cases it's a one liner due to the
+subsystem we attach to being nice and providing us with a single call
+that just does it, in some cases it's more complicated because we don't
+have that (but could add such helpers) or because we may be hit directly
+by things like ioctl path and need to guard them.
+
+It's all STR issues.
+
+Ben.
