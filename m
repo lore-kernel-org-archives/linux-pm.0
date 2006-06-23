@@ -1,64 +1,53 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Thu, 22 Jun 2006 22:41:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606222235210.18690-100000@netrider.rowland.org>
-References: <200606221648.10799.david-b@pacbell.net>
+Subject: Re: [PATCH] get USB suspend to work again on
+	2.6.17-mm1
+Date: Thu, 22 Jun 2006 22:45:15 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606222241390.18690-100000@netrider.rowland.org>
+References: <20060622235112.GA30484@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606221648.10799.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20060622235112.GA30484@kroah.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Jun 2006, David Brownell wrote:
+On Thu, 22 Jun 2006, Greg KH wrote:
 
-> > > Fixing that involves updating pm core locking, ISTR.  I've thought th=
-at
-> > > the root cause of the issue is that the list of devices to be suspend=
-ed
-> > > is created at the wrong time ... very early and globally scoped, not
-> > > on-demand and privately scoped.
-> > =
+> > And yes, we _should_ care about whether or not any interface is
+> > still active, until the pm core code starts to pay attention to
+> > the driver model tree at all times ... even outside of system-wide
+> > suspend transitions.  Today, the pm core code doesn't even use
+> > that tree directly, and all runtime state changes (like selective
+> > suspend with USB) completely bypass that pm tree.
+> 
+> Hm, ok, yes, we should care about interfaces, but we need some way to
+> only walk them, not anything else that might be attached to us...
 
-> > I believe this has been fixed for quite a while. =
-
-> =
-
-> That's been said, but nonetheless the last few times I've tried to do
-> things like handling disconnect processing anything other than very
-> late (after khubd got woken up again), it was still deadlocksville.
-> Yes, this is _after_ folk have said "this has been fixed...".
-
-I haven't looked at it recently.  It shouldn't be too hard to prevent
-khubd from being frozen and then provoke a disconnect during system
-resume...  I'll let you know what happens.
-
-> That applies only during system sleep state transitions.
-
-Well yes, of course.  We were talking about system sleep, not runtime PM.
-
->  If you
-> try to invoke selective suspend (only part of the driver model tree
-> rather than the whole thing), all such ordering is ignored.  And
-> for USB, selective suspend is a fundamental mechanism for reducing
-> systems' runtime power usage.
-
-Ben never suggested device creation or removal should be prevented during =
-
-selective suspend, and you never mentioned encountering any deadlocks =
-
-because of it.  So why do you bring it up?
+In my upcoming patch set this test isn't needed at all, because suspending
+a device automatically suspends all of its interfaces first.  I've already
+submitted the first few revised patches in that set (not the part that
+removes the test, though), but you've probably been too busy to look at
+them yet.
 
 Alan Stern
+
+
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
