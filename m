@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] get USB suspend to work again on
 	2.6.17-mm1
-Date: Fri, 23 Jun 2006 10:51:47 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
-References: <20060623042452.GA23232@kroah.com>
+Date: Fri, 23 Jun 2006 08:38:57 -0700
+Message-ID: <200606230838.57957.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20060623042452.GA23232@kroah.com>
+In-Reply-To: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
@@ -18,50 +19,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-usb-devel-bounces@lists.sourceforge.net
 Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Jiri Slaby <jirislaby@gmail.com>
+To: linux-usb-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Jun 2006, Greg KH wrote:
+On Friday 23 June 2006 7:51 am, Alan Stern wrote:
 
-> > Under what scenario could it possibly be legitimate to suspend a
-> > usb device -- or interface, or anything else -- with its children
-> > remaining active?  The ability to guarantee that could _never_ happen
-> > was one of the fundamental motivations for the driver model ...
-> 
-> I'm not disagreeing with that.  It's just that you are looping all
-> struct devices that are attached to a struct usb_device and assuming
-> that they are all of type struct usb_interface.  And that's not true
-> anymore, and should never have been assumed (which is probably my fault
-> way long ago when converting USB to the driver model.)
+> Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
+> it because it doesn't need them, or is it because nobody has written them 
+> yet?  In the latter case, failing the suspend or unbinding the driver are 
+> the only safe courses.
 
-In fact the code doesn't make that assumption.  It only assumes that the 
-dev->power.power_state.event field is set correctly (0 for not suspended, 
-non-zero for suspended) and that you don't want to suspend a device if its 
-children aren't all suspended.
+I think the former would ba a dangerous assumption ... in the category
+of "intermittent bugs triggering later on" rather than "easily reproduced
+bugs triggering right at the trouble spot" (like the latter).
 
-> We probably need to keep our own list of interfaces if we want to
-> properly walk them now...
-
-We do have such a list: udev->actconfig->interface[].
-
-> And we also need to be able to handle devices in the device tree that do
-> not have a suspend/resume function, or ones that are not attached to any
-> bus, without failing the suspend, as obviously they do not care or need
-> to worry about the whole issue.
-
-Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
-it because it doesn't need them, or is it because nobody has written them 
-yet?  In the latter case, failing the suspend or unbinding the driver are 
-the only safe courses.
-
-And when you're dealing with a device that isn't on a bus or doesn't have 
-a driver, then clearly you _can't_ suspend it.  You can abort the system 
-sleep, or you can go ahead knowing that the device may not be in a 
-low-power mode.
-
-Alan Stern
-
+- Dave
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
