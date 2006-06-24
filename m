@@ -1,16 +1,14 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 23 Jun 2006 20:28:22 -0700
-Message-ID: <200606232028.22618.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
-	<1151106818.16946.19.camel@localhost.localdomain>
+Date: Fri, 23 Jun 2006 20:39:15 -0700
+Message-ID: <200606232039.16262.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0606231425440.6478-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1151106818.16946.19.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0606231425440.6478-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -21,22 +19,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-pm@lists.osdl.org, Linus Torvalds <torvalds@osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 June 2006 4:53 pm, Benjamin Herrenschmidt wrote:
+On Friday 23 June 2006 11:32 am, Alan Stern wrote:
+> On Thu, 22 Jun 2006, David Brownell wrote:
 > =
 
-> I've very rarely seen drivers trying to do _anything_ to work around STD
-> specific issues. I think Pavel and David are right there... suspend() is
-> mostly written for STR and that way happens to work with STD...
+> > On Thursday 22 June 2006 1:31 pm, Alan Stern wrote:
 
-I don't think I've used those words ... :)
+> > > I believe this has been fixed for quite a while. =
 
-The PRETHAW patches (which I'll forward for MM after I retest against
-the latest GIT tree) are proof that the suspend-to-disk resume paths
-actually **DON'T** just happen to work in all cases.  Which does pretty
-much show that the STD stuff (FREEZE etc) was an afterthought.
+> > =
+
+> > That's been said, but nonetheless the last few times I've tried to do
+> > things like handling disconnect processing anything other than very
+> > late (after khubd got woken up again), it was still deadlocksville.
+> > Yes, this is _after_ folk have said "this has been fixed...".
+> =
+
+> Okay, I have tried it.
+
+Hmm, when I tried that, I did it on suspend() paths not resume, and
+the deadlocks were in PM core code.  I didn't see that SCSI bug.
+Maybe it really is fixed now.
+
+
+> ...  =
+
+> The devices actually get removed twice: once during the "resume so we can
+> write out the memory image" phase and then once again during the actual =
+
+> final resume.
+
+... albeit still strange.
 
 - Dave
