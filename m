@@ -1,17 +1,17 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 23 Jun 2006 21:10:04 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606232108440.6483@g5.osdl.org>
+Date: Fri, 23 Jun 2006 21:35:35 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606232132311.6483@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
-	<Pine.LNX.4.64.0606231706180.6483@g5.osdl.org>
-	<200606232030.11497.david-b@pacbell.net>
+	<20060624024230.GB3438@neo.rr.com>
+	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<200606232104.11131.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200606232030.11497.david-b@pacbell.net>
+In-Reply-To: <200606232104.11131.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,7 +22,7 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
@@ -30,18 +30,31 @@ List-Id: linux-pm@vger.kernel.org
 On Fri, 23 Jun 2006, David Brownell wrote:
 > =
 
-> So have we all.  It makes us want to avoid large scale changes that cause
-> a need to retest things, since adequate retesting even on _one_ of the
-> affected platform configurations can take so long.
+> > Good point. We probably should. That really really makes sense, and tha=
+t =
 
-The whole notion that this needs "large" changes was somebody elses =
+> > also automagically solves the "network device" issue.
+> =
 
-theory. I just posted the patch that implements all my proposals with =
+> I'm not sure doing that with class devcies is the right idea, at least
+> until they show up in the driver model tree as physical children of the
+> parent hardware (so that the driver model tree automatically handles
+> sequence constraints.
 
-_zero_ need for driver changes.
+See the example (admittedly untested) patch.
 
-Yes, drivers need to change if they want to take advantage of this, of =
+You obviously have to walk the devices in _bus_ order, but once you do, =
 
-course..
+there's nothing that prevents you from them using the _class_ suspend to =
 
-			Linus
+help suspend that device.
+
+The fact that we can suspend with a class function does not mean that we =
+
+have to _walk_ with a class order.
+
+So in a very real sense, the classes _do_ show up as physical children of =
+
+the parent hardware: they show up as instances of devices.
+
+				Linus
