@@ -1,17 +1,21 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: cpufreq-related updates [WAS: Fix console handling
-	during	suspend/resume]
-Date: Fri, 23 Jun 2006 16:54:58 -0700
-Message-ID: <200606231654.58578.david-b@pacbell.net>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Fri, 23 Jun 2006 18:00:26 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606231758590.6483@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<200606231448.32927.david-b@pacbell.net>
-	<20060623221026.GA30332@kroah.com>
+	<200606221130.30614.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<200606231106.46863.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+	<20060623233244.GB4264@neo.rr.com>
+	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
+	<1151108543.16946.41.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060623221026.GA30332@kroah.com>
-Content-Disposition: inline
+In-Reply-To: <1151108543.16946.41.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,23 +25,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks for explaining that "PCI resource rebalancing" thing.
 
-On Friday 23 June 2006 3:10 pm, Greg KH wrote:
-> 	 I'm guessing that Adam is thinking that the
-> suspend/freeze/whatever-you-want-to-call-it model might be the one to
-> help with this issue.
 
-I see.   Though I don't much like adding new driver callbacks, this may
-be a case where they're appropriate ... so the PCI rebalancing code could
-have logic like "don't rebalance devices whose pci_driver can't cooperate".
+On Sat, 24 Jun 2006, Benjamin Herrenschmidt wrote:
+> =
 
-That same argument might be applied to the reclocking issue.  Not that
-we have systems that need driver reclocking just now ... but that issue
-does keep coming up.
+> That's bullshit. How can USB operate without interrupts ? It can't.
 
-- Dave
+Ben.
+
+Please stop bothering me.
+
+The only thing you prove with your inane rants is that you don't even read =
+
+my emails, or if you read them, you don't understand them.
+
+So just stop it.
+
+I already told you I'll just do it. Maybe you'll believe me when my =
+
+machine doesn't go up in flames. =
+
+
+And maybe you won't believe me even then. Hey, that's your problem. I =
+
+don't need your belief.
+
+		Linus
