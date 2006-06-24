@@ -1,8 +1,8 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Sat, 24 Jun 2006 14:52:20 +1000
-Message-ID: <1151124740.10141.49.camel@localhost.localdomain>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Fri, 23 Jun 2006 22:18:41 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606232155160.6483@g5.osdl.org>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<200606221130.30614.david-b@pacbell.net>
 	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
@@ -12,11 +12,12 @@ References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
 	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 	<20060624024230.GB3438@neo.rr.com>
 	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<1151124740.10141.49.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+In-Reply-To: <1151124740.10141.49.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,247 +27,200 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-/me puts ego on hold and tries to be constructive without ranting...
 
-> in my current tree I have
+
+On Sat, 24 Jun 2006, Benjamin Herrenschmidt wrote:
 > =
 
->  - suspend_prepare (I went with Ben's name, maybe that strokes his ego =
-
->    enough that he'll admit it's better now)
-
-Heh.
-
->  - suspend (same as old)
-
-Ok. Well, most of my latest burst was about blocking of incoming
-"requests" but we can discuss that separately. Indeed, just adding the
-other calls don't break anything as it is.
-
->  - suspend_late
-
-Ok, so this is a cleanup over the old stuff we had for returning a
-special error from suspend to be called again later with interrupts off.
-I agree it sucked, though I never actually used it. Better have it well
-defined this way. Now wether or when drivers shall use it and when they
-shall do so is a different question :) (Obviously, not drivers that rely
-on a complex parent bus like USB, firewire, etc etc... but more like PCI
-drivers, though there is also the problem of how does that
-"suspend_late" fits in the context of dynamic PM in a live system. But
-we can re-discuss that later.
-
->  - resume_early
-
-Same as above.
-
->  - resume (same as old)
+> >  - suspend_late
 > =
 
-> (and I really wanted to do a "resume_finish()" too after user-land resume=
-, =
+> Ok, so this is a cleanup over the old stuff we had for returning a
+> special error from suspend to be called again later with interrupts off.
+> I agree it sucked, though I never actually used it.
 
-> just to have the "reverse" three phases of resume as I have of suspend, =
+I don't think it _could_ be used. =
 
-> but I decided I didn't have any driver that I would make use of it =
 
-> personally)
+Or rather, you'd have to have done some really really insane things like
 
-This one will be needed as soon as we tackle the problem of devices that
-do request_firmware and/or communicate with userland. I have one user at
-least already for it on powerpc which is the APM emulation (I
-emulate /dev/apm_bios for the few userland stuffs that do care about
-suspend/resume).
+	if (!interrupt_disabled())
+		return -EAGAIN;
 
-I think most wireless drivers that need firmwares should be fixed to use
-prepare/finish to preload the firmware in memory and get rid of that
-preloaded image. That way, their resume can use the preloaded firmware
-rather than deadlock/fail in request_firmware() bcs userland isn't in a
-state where it can service it. First candidate for me here is bcm43xx
+in the suspend() routine, and live with the fact that cleanup - and =
 
-There is also my idea that bus drivers could stop inserting new devices
-after prepare(), not something I'm necessarily very firm on, it's just
-an idea that I though might make life easier but can definitely be
-debated.
+ordering - would be impossible and/or very hard to figure out.
 
-> > One thing that might help us get there is if we passed a suspend notifi=
-cation
-> > to the class devices (i.e. the higher level subsystems).
+I bet nobody ever used it.
+
+> However, we could just do a 2 pass mecanism instaed with the second pass
+> sitll not having irqs off, but having shut down all clients of "directly
+> mapped" devices (PCI etc...) and thus letting those be suspended _after_
+> all the others. In our above examples, we would get the first pass do
 > =
 
-> Good point. We probably should. That really really makes sense, and that =
+>  - usb devices, firewire devices, all devices depending on an upper
+> transport driver basically
+>  - the class devices like netdev's (maybe with tweaks so that netconsole
+> is still operational via hacks in the driver tho)
+>  =
 
-> also automagically solves the "network device" issue.
+> And the second pass would do
 > =
 
-> I'll do that too, it actually looks pretty simple (famous last words).
+>  - pci devices (network drivers typically, fbdev's)
+>  - pci bridges
 
-Yes, that would be definitely a good thing, though while adding the
-callback is simple, when to call it is not... (or rather is not with the
-current implementation). It seems to me that class devices as
-essentially the childs of the device as far as PM is concerned
-(suspended before the device and resumed after). Thus they should be
-inserted in the PM tree at the right place. Right now, they are not.
+I'm pretty sure that would suck, and be a lot less flexible than the much =
 
-I wonder if we shall bite the bullet and finally go for a completely
-separate PM "tree" structure (or worse, a dependency graph that some
-embedded people ask for but I dislike it). Right now, we have a list and
-we hope we always insert things at the right place. Not sure it can
-accomodate class devices though.
+simpler setup.
 
-> > I'm curious about your thoughts on runtime suspending of devices are, s=
-uch as
-> > the resource rebalancing or cpufreq cases I suggested earlier. =
+I bet you we'll have devices that want to be in both classes. For example, =
 
-> =
+I would expect a network driver to set up it's "PCI state" in the early =
 
-> I really don't see that as my primary worry. Runtime suspend is "nice", =
+resume, but possibly do something like it's PHY probing etc in the =
 
-> but it's not a _primary_ goal for me.
+"normal" resume when interrupts are on, because it may need to do =
 
-Ok. It's been one for embedded and handhelds folks though lately and is
-necessary for a few things today like shutting down your wireless
-interface in a place (yeah, stupid, but heh !). In most case, it can be
-handled totally locally to a given driver though. But we have been
-looking into making it better by properly using the PM core to
-"escalate" power state changes of drivers, allowing things like entire
-busses to be unclocked when all devices on them are off, that sort of
-thing.
+"msleep()" etc to do that part.
+
+In fact, I can also point you to a device that is at least two _different_ =
+
+classes: the graphics thing.
+
+Take a close look at where "device_prepare_suspend()" is, and where the
+"device_finish_resume()" callback would be.
+
+Hint: they match "pm_prepare_console()" and "pm_restore_console()" =
+
+_exactly_. =
+
+
+It's not just "close". It's right there.
+
+In other words, if we added a "resume_finish()" method, we could handle X =
+
+and the screen _without_any_special_cases_, as the perfectly normal phases =
+
+of suspending the video device. You could _literally_ make the "prepare" =
+
+be the "switch consoles" of the current pm_prepare_consoles, and the =
+
+"suspend_late()" would be the actual "go to D3cold" part.
+
+I talked about this a lot earlier. Very early in this thread, I pointed =
+
+out that X really shouldn't need to be a special case.
+
+And the "suspend_late()" thing really is fundamentally different from =
+
+"suspend()". As mentioned several times, splitting suspend() up is what =
+
+allows us to, very specifically, avoid having to shut down the console =
+
+early. I want to be able to do printk() until as late in the game as =
+
+possible, and preferably as early in the game as possible. =
+
+
+And splitting suspend was the way to do that. And when I actually started =
+
+doing that, splitting resume (which is even _better_) actually fell out of =
+
+it automatically - I needed to do that just to handle the nested error =
+
+cases correctly (which I had earlier thought I'd just punt entirely, and =
+
+require that we do errors in the "prepare/save_state" phase only).
+
+In other words, I think that this patch will allow us to resume, say VGA =
+
+early, and reliably, and get a working console by the time we resume USB.
+
+Now, it does require that PCI buses (and preferably other devices) go to =
+
+D3 only in suspend_late(), and come back in resume_early(), so that VGA is =
+
+reachable. So that _will_ require driver modifications.
+
+But I think it will actually fall out of just moving where the "default =
+
+PCI suspend/resume" thing gets handled (ie move -that- from the current =
+
+standard suspend/resume, to be in the late/early suspend/resume).
+
+In other words, I've not tested it, but I suspect something as simple as =
+
+this migt just do 99% of it. Teach some other core PCI devices (a network =
+
+driver or two) about the late/early stuff, and I suspect you'll find it a =
+
+_lot_ easier to debug USB suspend and resume, because things like =
+
+netconsole suddenly start working _during_ suspend.
+
+(And btw, this patch is _totally_ untested. This is the point where we =
+
+actually start modifying what we do. But it doesn't look "obviously wrong" =
+
+to me - I think it falls solidly in the "it might just work" category).
+
+		Linus
+
+---
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index f0af89b..82c8d9b 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -274,6 +274,8 @@ static int pci_device_suspend_prepare(st
+ 	if (drv && drv->suspend_prepare) {
+ 		i =3D drv->suspend_prepare(pci_dev, state);
+ 		suspend_report_result(drv->suspend_prepare, i);
++	} else {
++		pci_save_state(pci_dev);
+ 	}
+ 	return i;
+ }
+@@ -287,8 +289,6 @@ static int pci_device_suspend(struct dev
+ 	if (drv && drv->suspend) {
+ 		i =3D drv->suspend(pci_dev, state);
+ 		suspend_report_result(drv->suspend, i);
+-	} else {
+-		pci_save_state(pci_dev);
+ 	}
+ 	return i;
+ }
+@@ -328,14 +328,12 @@ static int pci_default_resume(struct pci
  =
 
-> I think it should be pretty easy to implement, and I think your subsystem =
-
-> suspend notification thing would help a lot (to basically guarantee that =
-
-> the subsystem doesn't try to use it).
-
-Yes. Though we are talking about two slightly different things: class
-device and subsystems. In the first case, we have an entity that could
-be considered as a funcitonal child of the device (netdev class devices
-etc...) and get called before. In the later case, we have a subsystem
-routine that is explicitely called by the driver at suspend to ask the
-subsystem to leave it alone. Unless you want to suspend all subsystem's
-before you suspend all drivers but I'm not sure that will not lead into
-various sort of problems where subsystems are part of a transport layer
-needed by some drivers to suspend...
-
-But it's essentiall the same idea.
-
-That is definitely a good way to split suspend() and make it safer,
-because it would provide proper blocking of requests etc... that I'm so
-big about, at the sysbsytem or class device layer.
-
-In fact, it's more/or less how I did IDE back then (not with class
-devices but by having 2 devices separate for the disk and the
-controller, sounds logical today, wasn't back then in the state where
-the IDE layer was). The disk gets suspended first, then the controller.
-By the time the controller suspend is called, it doesn't have to worry
-about requests or anything like that, it just change the power state.
-The disk drivers gets the complicated logic of blocking queues, sending
-spindown commands, etc... Which is cool, there is _one_ disk driver to
-debug and dozens of controller drivers.
-
-That sort of split, I'm all about. That is, not splitting suspend() into
-different sub-callbacks to the same driver, which for the various
-reasons I already went on too much about, I think isn't necessarily a
-solution, but by splitting the functionality between different drivers.
-
-Network is definitely something we could handle in part by having
-suspend/resume at the generic eth level (netdev class device). There
-would still be a little care to take in drivers about things like
-ioctl's (for those who still take thse, though I suppose even there, the
-netdev layer might be able to block them) and drivers that have their
-own timer/workqueues/threads to do link management (though we have been
-working toward a generic PHY layer that makes the various PHYs separate
-drivers, so heh, here again, we _can_ split the complicated work, but
-not within a driver, between layers of drivers).
-
-That doesn't necessarily fix the main debuggability problem which is the
-console though. fbdev will have a hard time being suspended "late"
-because it needs to take the console semaphore to do the suspend safely
-and it's difficult to do so with interrupts disabled (you can try to get
-it, but you can't just call acquire_console_semaphore, unless you go
-silencing a lot of atomicity warnings we have all over the place). I
-suppose pure PCI network drivers could suspend "late" using your second
-callback mecanism, thus allowing netconsole to survive a bit longer,
-though as I mentioned earlier, that scheme doesn't quite fit with the
-needs of runtime/dynamic PM... at least if the driver _assumes_ it has
-interrupts off.
-
-However, we could just do a 2 pass mecanism instaed with the second pass
-sitll not having irqs off, but having shut down all clients of "directly
-mapped" devices (PCI etc...) and thus letting those be suspended _after_
-all the others. In our above examples, we would get the first pass do
-
- - usb devices, firewire devices, all devices depending on an upper
-transport driver basically
- - the class devices like netdev's (maybe with tweaks so that netconsole
-is still operational via hacks in the driver tho)
+ static int pci_device_resume(struct device * dev)
+ {
+-	int error;
++	int error =3D 0;
+ 	struct pci_dev * pci_dev =3D to_pci_dev(dev);
+ 	struct pci_driver * drv =3D pci_dev->driver;
  =
 
-And the second pass would do
+ 	if (drv && drv->resume)
+ 		error =3D drv->resume(pci_dev);
+-	else
+-		error =3D pci_default_resume(pci_dev);
+ 	return error;
+ }
+ =
 
- - pci devices (network drivers typically, fbdev's)
- - pci bridges
+@@ -347,6 +345,8 @@ static int pci_device_resume_early(struc
+ =
 
-In addition, we might want this "irq off" pass for low level system
-things (like the PIC themselves) or broken legacy devices. Could be a
-3rd pass. Right now, we have both the dodgy "return that error from
-suspend to be called later with irq offs" hack _and_ the sysdevs. I hate
-the sysdev's because they are just duplicate of some of the struct
-device logic with another name, and just don't fit well in the picture.
-I'd rather have had a separate callback to struct device and have them
-be normal struct device. They've also been abused by cpufreq which cause
-regulary problems with suspend. So cleanup in that area is welcome. =
-
-
-Now there is still the question of how things like usb controllers would
-fit in the above picture. Different problems. USB has it's own issues
-that it mgith want itself to be split between a toplevel that is
-suspended in the first pass (request processing etc..) and a bottom
-level that happens in the second pass (actual controller D3).
-
-> > Do you have any opinions on how this might be handled?  So far, I've =
-
-> > been favoring usage of the same sort of freeze() mechanism used for =
-
-> > preparing for memory snapshots etc.
-> =
-
-> Let me reboot my current kernel to test my current five-phase thing, and =
-
-> I'll do the subsystem thing too.
-> =
-
-> My off-the-cuff plan for that is to just add a "suspend(dev, state)" =
-
-> callback to the subsystem structure, and have device_suspend() call the =
-
-> subsystem suspend function before it even calls the actual device suspend =
-
-> function (and in reverse order on resume, of course).
->
-> Again - I'm not actually planning on doing very many individual drivers =
-
-> (that's the point I _don't_ care about), I want the support infrastructur=
-e =
-
-> to be sane.
-> =
-
-> (That, btw, obviously indirectly means that I'm not willing to break =
-
-> existing drivers - my infrastructure is strictly a _superset_ of what the=
-y =
-
-> get now).
-> =
-
-> 			Linus
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
+ 	if (drv && drv->resume_early)
+ 		error =3D drv->resume_early(pci_dev);
++	else
++		error =3D pci_default_resume(pci_dev);
+ 	return error;
+ }
+ =
