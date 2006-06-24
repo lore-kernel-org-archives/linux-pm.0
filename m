@@ -1,18 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Sat, 24 Jun 2006 23:33:14 +0200
-Message-ID: <20060624213313.GD2777@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
-	<1151106818.16946.19.camel@localhost.localdomain>
-	<200606232028.22618.david-b@pacbell.net>
+Date: Sat, 24 Jun 2006 23:35:22 +0200
+Message-ID: <20060624213522.GE2777@elf.ucw.cz>
+References: <1150946286.947.50.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606221641180.6483@g5.osdl.org>
+	<20060622235100.GA4940@elf.ucw.cz>
+	<200606231115.21265.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200606232028.22618.david-b@pacbell.net>
+In-Reply-To: <200606231115.21265.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,30 +26,32 @@ To: David Brownell <david-b@pacbell.net>
 Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > I've very rarely seen drivers trying to do _anything_ to work around STD
-> > specific issues. I think Pavel and David are right there... suspend() is
-> > mostly written for STR and that way happens to work with STD...
+On Fri 2006-06-23 11:15:20, David Brownell wrote:
 > =
 
-> I don't think I've used those words ... :)
+> > > The Mac Mini was the first machine when I decided to try using netcon=
+sole. =
+
+> > > And I did so because it didn't work for me even before. It just so =
+
+> > > happened that netconsole actually made things EVEN WORSE.
+> > > =
+
+> > > The other machines I've tried (without netconsole) haven't resumed ei=
+ther.
+> > =
+
+> > Well... here's list of machines we got to work (from suspend.sf.net
+> > project):
 > =
 
-> The PRETHAW patches (which I'll forward for MM after I retest against
-> the latest GIT tree) are proof that the suspend-to-disk resume paths
-> actually **DON'T** just happen to work in all cases.  Which does pretty
-> much show that the STD stuff (FREEZE etc) was an afterthought.
+> Doesn't it seem wrong to _everyone_ else that making a basic
+> kernel mechanism like "echo ... >/sys/power/state" work, some
+> out of tree code appears to be needed?
 
-Well... lets say that PRETHAW patches were only introduced _years_
-after swsusp started working -- so it is not _that_ important.
-
-Yes, you are right, in resume path, during s2ram you can assume
-hardware was powered on, while in s2disk case hardware might have been
-already initialized or not.
-
-In practice, it is not a big deal.
-								Pavel
+Bringing up video hardware needs x86 emulator (yes, s2ram is ugly on
+PC)... I'd prefer to keep that out of tree.
+									Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
