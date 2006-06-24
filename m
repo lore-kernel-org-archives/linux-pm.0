@@ -1,15 +1,19 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Sat, 24 Jun 2006 21:16:30 +1000
-Message-ID: <200606242116.35384.ncunningham@linuxmail.org>
+From: Jim Gettys <jg@laptop.org>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Sat, 24 Jun 2006 07:57:39 -0400
+Message-ID: <1151150259.15365.316.camel@localhost.localdomain>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
-	<Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
+	<200606221130.30614.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<200606231106.46863.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+Reply-To: jg@laptop.org
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1281315165=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,87 +23,57 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============1281315165==
-Content-Type: multipart/signed; boundary="nextPart11194912.0hcv8tPmq4";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+We're building the OLPC machine in which the wireless hardware is alive
+(and able to forward packets in the mesh) even with the machine STR.
+Even our ATest hardware supports this for wireless.
 
---nextPart11194912.0hcv8tPmq4
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Similarly for the screen; it can be "alive" while the machine is STR.
+The power savings are dramatic. the screen takes an ASIC we don't have
+back yet, so that we won't have until the next batch of boards.  And
+with the Geode's UMA, all we should have to do on the console is save
+and restore the graphics registers, which should be very fast.
 
-Hi.
-
-I've been quiet so far because I'm too busy with other things. I am reading=
-=20
-the discussion (if that's the right word) though.
-
-A couple of questions about the patch:
-
-> +static int resume_device_early(struct device * dev)
-> +{
-> +	int error =3D 0;
->
-> +	if (dev->bus && dev->bus->resume_early) {
-> +		dev_dbg(dev,"EARLY resume\n");
-> +		error =3D dev->bus->resume(dev);
-
-Should this be resume_early(dev)?
-
-> +/*
-> + * Resume the devices that have either not gone through
-> + * the late suspend, or that did go through it but also
-> + * went through the early resume
-> + */
->  void dpm_resume(void)
->  {
->  	down(&dpm_list_sem);
-> @@ -96,11 +115,9 @@ void dpm_power_up(void)
->  		struct list_head * entry =3D dpm_off_irq.next;
->  		struct device * dev =3D to_device(entry);
->
-> -		get_device(dev);
->  		list_del_init(entry);
-> -		list_add_tail(entry, &dpm_active);
-> -		resume_device(dev);
-> -		put_device(dev);
-> +		list_add_tail(entry, &dpm_off);
-> +		resume_device_early(dev);
-
-No need for getting a reference on the device anymore?
-
-Regards,
-
-Nigel
-=2D-=20
-Nigel, Michelle and Alisdair Cunningham
-5 Mitchell Street
-Cobden 3266
-Victoria, Australia
-
---nextPart11194912.0hcv8tPmq4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBEnR8TN0y+n1M3mo0RApudAJ4okPVq6j4rh1WBfs7RfPHJxrZ09wCg0CPi
-cGcWJ8wLmg4tAGo9rorx4dA=
-=jtTx
------END PGP SIGNATURE-----
-
---nextPart11194912.0hcv8tPmq4--
-
---===============1281315165==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The Wireless chip can wake the processor if it detects a packet bound
+for that machine, rather than just being forwarded.  As far as other
+machines are concerned, the destination machine can be considered
+"alive" and not STR.
+                         Regards,
+                            - Jim
 
 
---===============1281315165==--
+On Fri, 2006-06-23 at 12:23 -0700, Linus Torvalds wrote:
+
+> =
+
+> Network devices tend to do things like "unregister from the network stack=
+" =
+
+> etc, all of which should be totally unnecessary for STR. It's all there =
+
+> really for _disk_ suspend, to make things quiet.
+> =
+
+> So the whole argument that "suspend()" is the minimal functionality is =
+
+> just totally bogus. Its' simply not _true_. The current suspend() =
+
+> functions do lots of things that have nothing to do with actual device =
+
+> suspend, exactly because the current setup forces them to do so, not =
+
+> because they would actually _need_ to do so for STR.
+> =
+
+> 			Linus
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+-- =
+
+Jim Gettys
+One Laptop Per Child
