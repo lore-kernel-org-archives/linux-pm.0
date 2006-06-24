@@ -1,16 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Fri, 23 Jun 2006 20:28:03 -0700
-Message-ID: <200606232028.04491.david-b@pacbell.net>
+Date: Fri, 23 Jun 2006 20:33:37 -0700
+Message-ID: <200606232033.37911.david-b@pacbell.net>
 References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<200606231106.46863.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+	<20060623233244.GB4264@neo.rr.com>
+	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -22,78 +22,78 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
+Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 June 2006 12:23 pm, Linus Torvalds wrote:
+On Friday 23 June 2006 4:44 pm, Linus Torvalds wrote:
 > =
 
-> So I think we should attack the problems that we _can_ attack.
+> We can't do that right now, but I think we can split up "->suspend()" the =
 
-Sure ... much better than attacking the problems we _can't_ solve!  ;)
-Gotta start somewhere; maybe with simple stuff.
+> other way: split the remains into two, similarly to how "save_state()" is =
 
-Though it's also good to prioritize.  And for large changes like those
-needed in the PM-related frameworks, have plans to minimize overall
-disruption, regressions, etc.
+> for "stuff that can be done without any side effects". We would have =
+
+> "early suspend with interrupts enabled" and "late suspend with interrupts =
+
+> disabled".
+
+That would certainly get rid of the bizarre disjunction that now
+exists for the "irqs enabled" and "irqs disabled" paths.  Though
+it's unclear to me how many drivers would actually _use_ that
+second "irqs off" method.
+
+In terms of API migration, it would seem like the former should
+just be today's suspend() -- though other changes might follow,
+later on -- and the new method should be late_suspend() ... maybe
+without that annoying pm_message_t/PM_EVENT_* parameter.
 
 
-> Btw, I disagree violently with the standpoint that you and Pavel have had =
+> This, btw, is something we can (and probably should) do on the resume sid=
+e =
 
-> that we currently just do enough in "suspend()" to make STR work, and tha=
-t =
+> too. Again, "early_resume()" would be done before interrupts are enabled =
 
-> gets STD working automatically.
+> and other cores are brought up. And "late_resume()" would be done with =
 
-That's not been my standpoint with respect to STD at all.
-
-
-> Several suspend() functions I've seen (networking in particular) do a =
-
-> _hell_ of a lot more than they need for STR, exactly because they try to =
-
-> protect against problems that happen with STD, but _not_ STR.
+> interrupts on.
 > =
 
-> Network devices tend to do things like "unregister from the network stack=
-" =
+> (And I think Ben is right, we might want to have a "final_resume()" which =
 
-> etc, all of which should be totally unnecessary for STR. It's all there =
+> is called when user mode has resumed).
 
-> really for _disk_ suspend, to make things quiet.
-
-No; as Ben pointed out, there's no "unregister", netif_device_detach() is
-just the "stop the I/O queues" operation.  Which _is_ needed for STR; we
-went over that earlier.  Retransmits, accepting new connections, and all
-that kind of stuff must be stopped cleanly before STR wraps up.
-
-That has to be done in the network controller driver, because the network
-stack doesn't participate in suspend operations otherwise.  If for example
-there were a real "eth0" device node provided by the network stack, it
-would be natural for the networking layer to provide a suspend() method
-which calls that, rather than have every controller driver do so...
+All those seem like plausible API changes, though it's not clear to me
+what drivers would need them ... or the overall benefit.
 
 
-> So the whole argument that "suspend()" is the minimal functionality is =
+> I really don't understand people who think that one routine is better tha=
+n =
 
-> just totally bogus. Its' simply not _true_.
+> five routines.
 
-Who made that argument? =A0I've said that it's _correct_ to do all that
-PM_EVENT_SUSPEND stuff for all suspend() calls, albeit overkill in
-various scenarios. =A0Not that it's minimal. =A0And that's orthogonal to
-most of the refactoring points you're making.
-
-
-> The current suspend()  =
-
-> functions do lots of things that have nothing to do with actual device =
-
-> suspend, exactly because the current setup forces them to do so, not =
-
-> because they would actually _need_ to do so for STR.
-
-Where "current setup" IMO stretches into the layers above the drivers.
-See the above for networking; and pretty much every stack has similar
-issues.
+Complete and implementable proposals (not necessarily patches) seem to have
+been lacking.  I've seen "refactor one into five" type changes that have be=
+en
+wins ... and ones that have been huge loses.
 
 - Dave
+
+
+> I pretty much _guarantee_ that most devices will still just  =
+
+> have one or two routines, but they'll be simpler, just because they can b=
+e =
+
+> more directed rather than flailing around wildly and aimlessly because of =
+
+> having just one interface that needs to make everybody happy.
+> =
+
+> Five simple routines are _superior_ to one complicated routine. That is =
+
+> true even if the five simple routines end up having more lines of code.
+> =
+
+> 			Linus
+> =
