@@ -1,18 +1,14 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Sun, 25 Jun 2006 10:15:29 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606251012470.3747@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<20060624024230.GB3438@neo.rr.com>
-	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
-	<200606232104.11131.david-b@pacbell.net>
-	<20060625082328.GC4264@neo.rr.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: suspend to RAM (embedded) ppc?
+Date: Sun, 25 Jun 2006 20:36:48 +0200 (CEST)
+Message-ID: <Pine.LNX.4.60.0606252034260.9893@poirot.grange>
+References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
+	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060625082328.GC4264@neo.rr.com>
+In-Reply-To: <17565.58599.858812.278800@cargo.ozlabs.ibm.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,37 +18,38 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <ambx1@neo.rr.com>
-Cc: David Brownell <david-b@pacbell.net>, Kay Sievers <kay.sievers@vrfy.org>, linux-pm@lists.osdl.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, 25 Jun 2006, Paul Mackerras wrote:
 
-
-On Sun, 25 Jun 2006, Adam Belay wrote:
+> Guennadi Liakhovetski writes:
 > =
 
-> P.S.:  Linus, what are your thoughts on passing a mirror image of the sus=
-pend
-> callbacks we provide (or will provide) for the device interface to the cl=
-ass
-> device interface?  In other words, allow it to also get suspend_prepare(),
-> resume_finish(), etc. to encourage the sort of abstraction suggested abov=
-e.
+> > Sorry if this is not the right list to ask. I was surprised to not find =
 
-I don't think the suspend_late() case in particular makes much sense (what =
+> > any ppc platforms except powermac implementing suspend to RAM? Same for =
 
-could a class do at that late a point?), but I'm certainly not against it =
+> > CPU_FREQ - only powermac. What could be the reason?
+> =
 
-if people figure out a real use.
+> Presumably no-one else has felt motivated to get them going on other
+> PPC platforms so far...  Both of these things tend to use very
+> platform-specific facilities.
 
-I'd like the current single entry-point to be made usable first, though. =
+Oh, no... Looking in arch/powerpc/platforms/powermac/setup.c at their
+struct pm_ops couldn't see any actual code to handle suspends, and then
+noticed this:
 
-Right now it "exists", but I don't think you can necessarily use it =
+/* TODO: Merge the suspend-to-ram with the common code !!!
+ * currently, this is a stub implementation for suspend-to-disk
+ * only
+ */
 
-because the class doesn't necessarily have a mapping from "struct device" =
+So, there's not a single STR implementation for ppc in the kernel?...
 
-to whatever class instance it's a class of.
-
-(That might depend on the class, of course, I didn't really look into it)
-
-		Linus
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
