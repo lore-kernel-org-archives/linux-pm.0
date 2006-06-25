@@ -1,82 +1,63 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Sat, 24 Jun 2006 19:32:36 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606241929340.6483@g5.osdl.org>
-References: <Pine.LNX.4.44L0.0606242213531.492-100000@netrider.rowland.org>
+From: Jim Gettys <jg@laptop.org>
+Subject: Re: [linux-pm] [PATCH] get USB suspend to work
+	again on 2.6.17-mm1
+Date: Sat, 24 Jun 2006 22:42:57 -0400
+Message-ID: <1151203377.15365.389.camel@localhost.localdomain>
+References: <20060622202952.GA14135@kroah.com>
+	<200606221624.03182.david-b@pacbell.net>
+	<20060622235112.GA30484@kroah.com>
+	<200606222034.44085.david-b@pacbell.net>
+Reply-To: jg@laptop.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0606242213531.492-100000@netrider.rowland.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <200606222034.44085.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 2006-06-22 at 20:34 -0700, David Brownell wrote:
+
+> Under what scenario could it possibly be legitimate to suspend a
+> usb device -- or interface, or anything else -- with its children
+> remaining active?  The ability to guarantee that could _never_ happen
+> was one of the fundamental motivations for the driver model ...
+> 
+
+I'm not sure this directly applies, but....
+
+The Marvell wireless chip we're using this generation in the OLPC
+machine is interfaced via USB.  Not ideal, but there's no other game in
+town to let us keep the mesh network up while the main machine is STR.
+
+We intend to leave the Marvell chip on (it can forward packets in the
+mesh network, and/or wake up the CPU if there are inbound packets for
+the machine that matter), and turn off the USB interface it is attached
+to.
+                        Regards,
+                             - Jim
+
+-- 
+Jim Gettys
+One Laptop Per Child
 
 
-On Sat, 24 Jun 2006, Alan Stern wrote:
-> =
 
-> Is this an okay place to point out that after resume-from-disk, the i8042
-> keyboard auto-repeat rate settings are messed up?
-
-Does this fix it for you?
-
-(Totally untested - I don't have PS/2 keyboards any more on the machines I =
-
-actually use..)
-
-> The VT console font is not restored either.
-
-I don't think it ever has been, has it? That needs to be done by user =
-
-space, it would be pretty wasteful to do it from the kernel..
-
-		Linus
-
----
-diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-index fad04b6..d648242 100644
---- a/drivers/input/keyboard/atkbd.c
-+++ b/drivers/input/keyboard/atkbd.c
-@@ -39,6 +39,8 @@ static int atkbd_set =3D 2;
- module_param_named(set, atkbd_set, int, 0);
- MODULE_PARM_DESC(set, "Select keyboard code set (2 =3D default, 3 =3D PS/2=
- native)");
- =
-
-+static int atkbd_repeatrate;
-+
- #if defined(__i386__) || defined(__x86_64__) || defined(__hppa__)
- static int atkbd_reset;
- #else
-@@ -477,7 +479,7 @@ static void atkbd_event_work(void *data)
- 			j++;
- 		dev->rep[REP_PERIOD] =3D period[i];
- 		dev->rep[REP_DELAY] =3D delay[j];
--		param[0] =3D i | (j << 5);
-+		param[0] =3D atkbd_repeatrate =3D i | (j << 5);
- 		ps2_command(&atkbd->ps2dev, param, ATKBD_CMD_SETREP);
- 	}
- =
-
-@@ -679,7 +681,7 @@ static int atkbd_activate(struct atkbd *
-  * Set autorepeat to fastest possible.
-  */
- =
-
--	param[0] =3D 0;
-+	param[0] =3D atkbd_repeatrate;
- 	if (ps2_command(ps2dev, param, ATKBD_CMD_SETREP))
- 		return -1;
- =
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
