@@ -1,21 +1,13 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Sun, 25 Jun 2006 11:12:33 +1000
-Message-ID: <1151197953.4547.13.camel@localhost.localdomain>
-References: <1150946286.947.50.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606221641180.6483@g5.osdl.org>
-	<20060622235100.GA4940@elf.ucw.cz>
-	<200606231115.21265.david-b@pacbell.net>
-	<20060624213522.GE2777@elf.ucw.cz>
-	<Pine.LNX.4.64.0606241454030.6483@g5.osdl.org>
-	<1151197051.4547.5.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606241802460.6483@g5.osdl.org>
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: suspend to RAM (embedded) ppc?
+Date: Sun, 25 Jun 2006 11:20:39 +1000
+Message-ID: <17565.58599.858812.278800@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606241802460.6483@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,28 +17,22 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2006-06-24 at 18:05 -0700, Linus Torvalds wrote:
+Guennadi Liakhovetski writes:
 
-> We already do. The current i810 driver tree does it all (in the =
+> Sorry if this is not the right list to ask. I was surprised to not find =
 
-> "modesetting" branch). =
+> any ppc platforms except powermac implementing suspend to RAM? Same for =
 
-> =
+> CPU_FREQ - only powermac. What could be the reason?
 
-> So on the Mac Mini, I can have full X with all the bells and whistles, an=
-d =
+Presumably no-one else has felt motivated to get them going on other
+PPC platforms so far...  Both of these things tend to use very
+platform-specific facilities.
 
-> no BIOS calls used anywhere.
+Patches welcome.
 
-Ah good. Does the driver actuall re-POST the chip completely or is it
-not necessary ? I suppose the fact that it's an integrated chipset makes
-things easier... With ATI radeons, one of the major pains is to
-re-initialize the memory controller and internal clock net. I've reverse
-enineered it from the MacOS driver for some chips used on apple laptops
-but it's still far from a generic solution.
-
-Ben.
+Paul.
