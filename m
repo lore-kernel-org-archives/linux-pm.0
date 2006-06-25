@@ -1,14 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Sun, 25 Jun 2006 12:35:08 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606251227210.26740-100000@netrider.rowland.org>
-References: <Pine.LNX.4.64.0606241929340.6483@g5.osdl.org>
+Date: Sun, 25 Jun 2006 10:15:29 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0606251012470.3747@g5.osdl.org>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+	<20060624024230.GB3438@neo.rr.com>
+	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<200606232104.11131.david-b@pacbell.net>
+	<20060625082328.GC4264@neo.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606241929340.6483@g5.osdl.org>
+In-Reply-To: <20060625082328.GC4264@neo.rr.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,32 +22,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Adam Belay <ambx1@neo.rr.com>
+Cc: David Brownell <david-b@pacbell.net>, Kay Sievers <kay.sievers@vrfy.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 24 Jun 2006, Linus Torvalds wrote:
 
-> On Sat, 24 Jun 2006, Alan Stern wrote:
-> > =
 
-> > Is this an okay place to point out that after resume-from-disk, the i80=
-42
-> > keyboard auto-repeat rate settings are messed up?
+On Sun, 25 Jun 2006, Adam Belay wrote:
 > =
 
-> Does this fix it for you?
-> =
+> P.S.:  Linus, what are your thoughts on passing a mirror image of the sus=
+pend
+> callbacks we provide (or will provide) for the device interface to the cl=
+ass
+> device interface?  In other words, allow it to also get suspend_prepare(),
+> resume_finish(), etc. to encourage the sort of abstraction suggested abov=
+e.
 
-> (Totally untested - I don't have PS/2 keyboards any more on the machines =
-I =
+I don't think the suspend_late() case in particular makes much sense (what =
 
-> actually use..)
+could a class do at that late a point?), but I'm certainly not against it =
 
-I tried it and it works well.  I will submit a version of this patch to =
+if people figure out a real use.
 
-Andrew (there's a comment that should be updated along with the changes to =
+I'd like the current single entry-point to be made usable first, though. =
 
-the code).
+Right now it "exists", but I don't think you can necessarily use it =
 
-Alan Stern
+because the class doesn't necessarily have a mapping from "struct device" =
+
+to whatever class instance it's a class of.
+
+(That might depend on the class, of course, I didn't really look into it)
+
+		Linus
