@@ -1,16 +1,21 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Sat, 24 Jun 2006 18:10:54 -0700
-Message-ID: <200606241810.55800.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0606232155160.6483@g5.osdl.org>
-	<1151131283.10141.79.camel@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Sun, 25 Jun 2006 11:12:33 +1000
+Message-ID: <1151197953.4547.13.camel@localhost.localdomain>
+References: <1150946286.947.50.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606221641180.6483@g5.osdl.org>
+	<20060622235100.GA4940@elf.ucw.cz>
+	<200606231115.21265.david-b@pacbell.net>
+	<20060624213522.GE2777@elf.ucw.cz>
+	<Pine.LNX.4.64.0606241454030.6483@g5.osdl.org>
+	<1151197051.4547.5.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606241802460.6483@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_fKenEenSDoXD+Em"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1151131283.10141.79.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0606241802460.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,65 +25,28 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_fKenEenSDoXD+Em
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sat, 2006-06-24 at 18:05 -0700, Linus Torvalds wrote:
 
-On Friday 23 June 2006 11:41 pm, Benjamin Herrenschmidt wrote:
-> Also note that it might be useful to implement something I've been
-> carrying around as a patch for debugging suspend on the mac, is what I
-> call "fake suspend". I did it as a kernel argument that turns the real
-> suspend into a fake suspend, but we should be smarter.
->
-> The idea is, as I may have described already, to do the whole driver
-> suspend/resume without actually putting the system to sleep ...
+> We already do. The current i810 driver tree does it all (in the =
 
-Wouldn't the most natural way to implement that be to arrange that
-the platform's pm_ops.enter(PM_SUSPEND_ON) just does the right thing?
-So test-by "echo on > /sys/power/state".
+> "modesetting" branch). =
 
-See the attached (but untested) patch; arch/arm/mach-at91rm9200/pm.c
-in current GIT shows one way to handle such enter() calls.  Maybe
-it's a bit more than what you were thinking of, since it requires
-real wakeup events to leave that "on" state ... you might be thinking
-more like just returning immediately, as if such an event had been
-issued.  (Arguably both test modes would be useful and there should
-be another PM_SUSPEND_* code.)
+> =
 
-- Dave
+> So on the Mac Mini, I can have full X with all the bells and whistles, an=
+d =
 
---Boundary-00=_fKenEenSDoXD+Em
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="pmstate.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="pmstate.patch"
+> no BIOS calls used anywhere.
 
-Index: pm-tmp/kernel/power/main.c
-===================================================================
---- pm-tmp.orig/kernel/power/main.c	2006-06-24 17:46:31.000000000 -0700
-+++ pm-tmp/kernel/power/main.c	2006-06-24 17:50:27.000000000 -0700
-@@ -146,6 +146,7 @@ static void suspend_finish(suspend_state
- 
- 
- static char *pm_states[PM_SUSPEND_MAX] = {
-+	[PM_SUSPEND_ON]		= "on",
- 	[PM_SUSPEND_STANDBY]	= "standby",
- 	[PM_SUSPEND_MEM]	= "mem",
- #ifdef CONFIG_SOFTWARE_SUSPEND
+Ah good. Does the driver actuall re-POST the chip completely or is it
+not necessary ? I suppose the fact that it's an integrated chipset makes
+things easier... With ATI radeons, one of the major pains is to
+re-initialize the memory controller and internal clock net. I've reverse
+enineered it from the MacOS driver for some chips used on apple laptops
+but it's still far from a generic solution.
 
---Boundary-00=_fKenEenSDoXD+Em
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---Boundary-00=_fKenEenSDoXD+Em--
+Ben.
