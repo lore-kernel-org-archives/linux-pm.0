@@ -1,16 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Sun, 25 Jun 2006 00:41:33 +0200
-Message-ID: <20060624224133.GG2777@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0606241220100.19990-100000@netrider.rowland.org>
-	<Pine.LNX.4.64.0606241518380.6483@g5.osdl.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Sun, 25 Jun 2006 10:57:31 +1000
+Message-ID: <1151197051.4547.5.camel@localhost.localdomain>
+References: <1150946286.947.50.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606221641180.6483@g5.osdl.org>
+	<20060622235100.GA4940@elf.ucw.cz>
+	<200606231115.21265.david-b@pacbell.net>
+	<20060624213522.GE2777@elf.ucw.cz>
+	<Pine.LNX.4.64.0606241454030.6483@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606241518380.6483@g5.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606241454030.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,46 +24,75 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2006-06-24 15:28:33, Linus Torvalds wrote:
+
+> I think requiring X to reinitialize the screen for us is perfectly fine.
+
+When X can :) Wether we need X or some other userland based emulator,
+the problem for the kernel is the same. We need to define something at
+the fbdev level though to tell it to stay suspended until userland does
+something to wake it up in that case. vgacon has less problems as it's
+generally harmless to access the VGA memory hole even when the card
+doesn't respond on the bus or isn't initialized. On machines using
+fbdev, though, this is different, and depending on your platform can
+cause machine checks or lockups (x86 tends to be fairly resilient to PCI
+accesses into the wild turning into master or target aborts, though I've
+heard some server-class x86 are not, ppc are generally not though).
+
+> One of the reasons I wanted to get netconsole working is that on many =
+
+> modern laptops, networking really does end up being the "simplest" device.
+
+Yes, true.
+
+> Graphics is complex as hell (and on the Mac Mini, even doing a video BIOS =
+
+> init sequence doesn't even work - it has no video bios even with the =
+
+> firmware updated to look more like a PC, it's normally initialized by =
+
+> EFI).
 > =
 
+> KeithP tells me that it's not even Mac Mini specific, and that some norma=
+l =
+
+> laptops will resume similarly video-bios-less.
+
+Yes. What happens with a lot of these things nowadays is that there is
+no video BIOS proper at the PCI ROM base but whatever is needed to
+initialize the video chip is buried in the system BIOS and the vendor
+provides a mini-BIOS like kind of thing to answer a few standard VBE
+calls.
+
+> And serial is obviously gone, and its replacement (USB) is one of the =
+
+> biggest problems to initialize fully, and nobody expects it to be up unti=
+l =
+
+> fairly late.
 > =
 
-> On Sat, 24 Jun 2006, Alan Stern wrote:
-> > =
+> Which literally leaves networking as existing on just about everything =
 
-> > >  - "suspend_prepare()" is called for every device (with the semaphore =
+> these days. It is also usually well-documented (network chip manufacturer=
+s =
 
-> > >    held, you are _not_ allowed to try to unlink yourself in the prepa=
-re =
+> definitely want Linux to work on those things), and the drivers know how =
 
-> > >    function)
-> > =
+> to initialize everything. So netconsole really _should_ be able to work =
 
-> > There should be a big fat warning about this somewhere, maybe added to =
-the =
-
-> > documentation.
+> fairly early on.
 > =
 
-> Well, there is, right now, above the only place that does this (ie the =
+> I suspect most people prefer debugging over a network anyway (I know I =
 
-> function itself).
-> =
+> do).
 
-> Anyway, would people object to merging the infrastructure work early, eve=
-n =
+Out of curiosity, do you get the video back at all on the mini ? Or will
+we have at some point to get code to do a full re-initialization of the
+intel video chip ?
 
-> if nothing else actually was done before 2.6.18?
-
-I'm pretty sure someone, somewhere is using that -EAGAIN hack. Can we
-go through regular -mm route?
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Ben.
