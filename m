@@ -1,12 +1,14 @@
-From: <rasmit.ranjan@wipro.com>
-Subject: How to differentiate between selective suspend and
-	global suspend
-Date: Mon, 26 Jun 2006 10:33:48 +0530
-Message-ID: <380D9721A8E2114485644D71E87C6AB20214DC0B@PNE-HJN-MBX01.wipro.com>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend to RAM (embedded) ppc?
+Date: Mon, 26 Jun 2006 08:13:16 +0200
+Message-ID: <1151302397.7608.73.camel@localhost>
+References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
+	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.60.0606252034260.9893@poirot.grange>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0350233723=="
+Content-Type: multipart/mixed; boundary="===============1042571202=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.60.0606252034260.9893@poirot.grange>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,81 +18,59 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
 
---===============0350233723==
-Content-Type: multipart/alternative;
-    boundary="----------=_1151298255-32751-781"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+--===============1042571202==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-NSC6ftwpRHRjv53B1CnG"
 
-This is a multi-part message in MIME format...
 
-------------=_1151298255-32751-781
-Content-Type: text/plain;
-	charset="us-ascii"
+--=-NSC6ftwpRHRjv53B1CnG
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi,
-    I have implemented bus_suspend entry point of hc_driver of my OHCI
-complaint host controller. This entry point is called when i do
-selective roothub interface suspend as well as when i do global suspend
-( suspend to disk ). So is there any way to differentiate between
-selective suspend of roothub interface and global suspend ( suspend to
-disk ) for both of which my bus_suspend entry point is getting called ?
-Please suggest.
-=20
-Thanks and regards,
-Rasmit.
+On Sun, 2006-06-25 at 20:36 +0200, Guennadi Liakhovetski wrote:
 
-------------=_1151298255-32751-781
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> So, there's not a single STR implementation for ppc in the kernel?...
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2912" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D749185804-26062006>Hi,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D749185804-26062006>&nbsp;&nb=
-sp;&nbsp; I=20
-have implemented bus_suspend entry point of hc_driver of my OHCI complaint =
-host=20
-controller. This entry point is called when i do selective roothub interfac=
-e=20
-suspend as well as when i do global suspend ( suspend to disk ). So is ther=
-e any=20
-way to differentiate between selective suspend of roothub interface and glo=
-bal=20
-suspend ( suspend to disk ) for both of which my bus_suspend entry point is=
-=20
-getting called ?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D749185804-26062006>Please=20
-suggest.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D749185804-26062006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D749185804-26062006>Thanks an=
-d=20
-regards,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D749185804-26062006>Rasmit.</SPAN></FONT></DIV></BODY></HTML>
+powerbooks and ibooks can suspend but all the code for that goes through
+the via-pmu ioctl, not the generic stuff.
 
-------------=_1151298255-32751-781--
+johannes
 
---===============0350233723==
+--=-NSC6ftwpRHRjv53B1CnG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARJ96+qVg1VMiehFYAQLMdQ//bAdhGxFtckHMT+rcs6zi2xGLw9ynefx7
+TGKwo2104n+WM+8Ny0Sz50Z2sXpZWnTEin37zH9N3aao22CXQ1otChpeMh5w/+vF
+7ahy/cfOVtATCHbWDnxjhXx3SRXW0mB+/dVYF7Em5yuqgovgbQuk1FrtJMZDesOK
+BanEDc0sC8beBK0LIv7iT3GvOft6M/DGldRDv6wJ34Xh1owrvzvIoQUZkAF0yYnI
+DvbfiUfsmIk0RLEuVvSYNjKMPIqFITjXHkMWRKFKI9imdqV1oNYul3n1Wdfh2/1G
+ySP81CgTXRBxICwBiWWqZqqLXaIbox25Pu6Nhxp5CHk9UAnudPw8Lz7BaIv6+bD+
+mghL3JlNWJ0aUMpHVgnLBRwCZ1+MS6kzcPoWqxfqnM90haI8yu61FnrsQy67kPdh
+4xWFXnotYHi01/pzoe6Edr0rw3Qhd5a47vLGIW2enOsr6iK6DvnHKqZTP7fR7RJ3
+cxpx9s9AD0XV+LOVCuD6+uQo6YXzFnhEwm/CsCqYVJxgZxWU3O+3Xs6kvTWDz7r5
+iBAMW2n1d7DhPpooi6fT4V81CvGlgHCvGxvn2qTMJ7fTg4gSegG9L1eBqxcN9GEl
+BXVDHuj/7njHH69/q+zbVDSYP4FfX7EPaUe8NQYGTOf4LnkNopLgGU3YgXtfXrcE
+c4Hfn5/riKs=
+=T2XJ
+-----END PGP SIGNATURE-----
+
+--=-NSC6ftwpRHRjv53B1CnG--
+
+
+--===============1042571202==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============0350233723==--
+--===============1042571202==--
