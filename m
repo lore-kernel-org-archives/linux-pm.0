@@ -1,39 +1,53 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: suspend to RAM (embedded) ppc?
-Date: Mon, 26 Jun 2006 16:26:37 +1000
-Message-ID: <17567.32285.641865.387583@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
-	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606252034260.9893@poirot.grange>
+From: Frederik Deweerdt <deweerdt@free.fr>
+Subject: Re: [linux-pm] swsusp regression [Was: 2.6.17-mm1]
+Date: Mon, 26 Jun 2006 11:00:41 +0200
+Message-ID: <20060626090041.GA3686@slug>
+References: <20060621221445.GB3798@inferi.kami.home> <20060622061905.GD15834@kroah.com> <20060622004648.f1912e34.akpm@osdl.org> <20060622160403.GB2539@slug> <20060622092506.da2a8bf4.akpm@osdl.org> <20060623090206.GA2234@slug> <20060623091016.GE4940@elf.ucw.cz> <20060623121210.GB2234@slug> <20060623125658.GB8048@elf.ucw.cz> <20060623125706.69dafffd.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.60.0606252034260.9893@poirot.grange>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751304AbWFZJAr@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060623125706.69dafffd.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: Pavel Machek <pavel@ucw.cz>, greg@kroah.com, linux-kernel@vger.kernel.org, linux-pm@osdl.org, stern@rowland.harvard.edu
 List-Id: linux-pm@vger.kernel.org
 
-Guennadi Liakhovetski writes:
+On Fri, Jun 23, 2006 at 12:57:06PM -0700, Andrew Morton wrote:
+> On Fri, 23 Jun 2006 14:57:01 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > > Stack: c0229b71 00000046 00000000 00000286 c0383ca7 f6cb9ecc c013b242 00000003
+> > >         00000000 00000003 f6cb9ee0 c013b2e8 00000003 c0436890 f6c9a003 f6cb9f08
+> > >         c013b481 00000003 00000003 00000246 c1788b00 00000003 c04368a0 c043692c
+> > > Call Trace:
+> > >  <c0103eea> show_stack_log_lvl+0x92/0xb7  <c0104100> show_registers+0x1a3/0x21b
+> > >  <c0104319> die+0x117/0x230  <c03627a6> do_page_fault+0x39c/0x72a
+> > >  <c0103b2f> error_code+0x4f/0x54  <c013b242> suspend_enter+0x2f/0x52
+> > >  <c013b2e8> enter_state+0x4b/0x8d  <c013b481> state_store+0xa0/0xa2
+> > >  <c01a5151> subsys_attr_store+0x37/0x41  <c01a53d2> flush_write_buffer+0x3c/0x46
+> > >  <c01a5443> sysfs_write_file+0x67/0x8b  <c0166bb6> vfs_write+0x1b9/0x1be
+> > >  <c0166c7b> sys_write+0x4b/0x75  <c010300f> sysenter_past_esp+0x54/0x75
+> > > 
+> > > Code: 05 c4 42 43 c0 31 43 43 c0 c3 8b 2d 68 6e 54 c0 8b 1d 60 6e 54 c0 8b 35 6c 6e 54 c0 8b 3d 70 6d 54 c0 ff 35 74 6e 54 c0 9d c3 90 <e8> 6d 38 ea ff e8 a2 ff ff ff 6a 03 e8 ec b6 de ff 83 c4 04 c3
+> > > EIP: [c043431c>] do_suspend_lowlevel+0x0/0x15 SS:ESP 0068:f6cb6ea4
+> >   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> > 
+> > Ha, wait a moment, this is interesting line. Can you trace down which
+> > instruction causes this?
+> > 
+> > We recently changed pagetable handling during swsusp, perhaps thats
+> > it? It went to Linus few minutes ago...
+> 
+> That's a good possibility.  It does appear to be oopsing at the first
+> instruction of arch/i386/kernel/acpi/wakeup.S:do_suspend_lowlevel(). 
+> Perhaps there's enough info in that oops trace to tell us whether it was
+> the instruction fetch which oopsed.
+> 
+> One wonders whether this will help...
+> 
+I've tried 2.6.17-git10 which appears to have the fix and the laptop 
+suspends correctly. Looks like that was it :).
 
-> So, there's not a single STR implementation for ppc in the kernel?...
-
-The STR implementation for powerbooks predates the generic STR support
-(by quite a long way, it was originally done in 1998).  These days it
-uses some parts of the generic STR support but the top-level control
-is still using the old code, because the generic STR code doesn't
-provide all the hooks we need yet.
-
-For historical reasons, the top-level powerbook STR code is in
-drivers/macintosh/via-pmu.c, and is invoked via an ioctl on /dev/pmu.
-
-Paul.
+Thanks,
+Frederik
