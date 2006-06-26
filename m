@@ -1,10 +1,16 @@
-From: contactpost <contactpost@sanook.com>
-Subject: BUSINESS INVITATION
-Date: Tue, 27 Jun 2006 05:58:33 +0700
-Message-ID: <E1Fv02L-0003nq-F0@research.msu.ac.th>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Mon, 26 Jun 2006 16:31:42 -0700
+Message-ID: <20060626233142.GB31348@kroah.com>
+References: <Pine.LNX.4.44L0.0606241220100.19990-100000@netrider.rowland.org>
+	<Pine.LNX.4.64.0606241518380.6483@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0203726216=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606241518380.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,21 +20,46 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============0203726216==
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: base64
-X-MIME-Autoconverted: from 8bit to base64 by smtp.osdl.org id k5QMwnnW012198
+On Sat, Jun 24, 2006 at 03:28:33PM -0700, Linus Torvalds wrote:
+> =
 
-DQoNCg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fDQq36NK55LTpw9G6oujSx8rSw83RteK5wdG1
-1KjSoSBodHRwOi8vd3d3LmpvdXJuYWwubXN1LmFjLnRoDQo=
---===============0203726216==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> =
+
+> On Sat, 24 Jun 2006, Alan Stern wrote:
+> > =
+
+> > >  - "suspend_prepare()" is called for every device (with the semaphore =
+
+> > >    held, you are _not_ allowed to try to unlink yourself in the prepa=
+re =
+
+> > >    function)
+> > =
+
+> > There should be a big fat warning about this somewhere, maybe added to =
+the =
+
+> > documentation.
+> =
+
+> Well, there is, right now, above the only place that does this (ie the =
+
+> function itself).
+> =
+
+> Anyway, would people object to merging the infrastructure work early, eve=
+n =
+
+> if nothing else actually was done before 2.6.18? =
 
 
---===============0203726216==--
+No objection from me, feel free to apply it to your tree.  All of the
+driver core and pci stuff looks great.
+
+thanks,
+
+greg k-h
