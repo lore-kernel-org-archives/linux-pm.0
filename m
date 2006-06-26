@@ -1,78 +1,92 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Mon, 26 Jun 2006 16:30:59 -0700
-Message-ID: <20060626233059.GA31348@kroah.com>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<20060624024230.GB3438@neo.rr.com>
-	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
-	<200606232104.11131.david-b@pacbell.net>
-	<20060625082328.GC4264@neo.rr.com>
+Subject: Re: [PATCH] get USB suspend to work again on
+	2.6.17-mm1
+Date: Mon, 26 Jun 2006 16:57:32 -0700
+Message-ID: <20060626235732.GE32008@kroah.com>
+References: <20060623042452.GA23232@kroah.com>
+	<Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <20060625082328.GC4264@neo.rr.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <ambx1@neo.rr.com>
-Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-pm@lists.osdl.org
+In-Reply-To: <Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 25, 2006 at 04:23:28AM -0400, Adam Belay wrote:
-> On Fri, Jun 23, 2006 at 09:04:10PM -0700, David Brownell wrote:
-> > On Friday 23 June 2006 8:12 pm, you wrote:
-> > > > One thing that might help us get there is if we passed a suspend no=
-tification
-> > > > to the class devices (i.e. the higher level subsystems).
-> > > =
+On Fri, Jun 23, 2006 at 10:51:47AM -0400, Alan Stern wrote:
+> On Thu, 22 Jun 2006, Greg KH wrote:
+> 
+> > > Under what scenario could it possibly be legitimate to suspend a
+> > > usb device -- or interface, or anything else -- with its children
+> > > remaining active?  The ability to guarantee that could _never_ happen
+> > > was one of the fundamental motivations for the driver model ...
+> > 
+> > I'm not disagreeing with that.  It's just that you are looping all
+> > struct devices that are attached to a struct usb_device and assuming
+> > that they are all of type struct usb_interface.  And that's not true
+> > anymore, and should never have been assumed (which is probably my fault
+> > way long ago when converting USB to the driver model.)
+> 
+> In fact the code doesn't make that assumption.  It only assumes that the 
+> dev->power.power_state.event field is set correctly (0 for not suspended, 
+> non-zero for suspended) and that you don't want to suspend a device if its 
+> children aren't all suspended.
 
-> > > Good point. We probably should. That really really makes sense, and t=
-hat =
+Yes, but it's looking at devices it should _not_ care about.  The USB
+core should only care about devices it controls, not other devices in
+the device chain.  Those are for the driver core to handle.
 
-> > > also automagically solves the "network device" issue.
-> > =
+> > We probably need to keep our own list of interfaces if we want to
+> > properly walk them now...
+> 
+> We do have such a list: udev->actconfig->interface[].
 
-> > I'm not sure doing that with class devcies is the right idea, at least
-> > until they show up in the driver model tree as physical children of the
-> > parent hardware (so that the driver model tree automatically handles
-> > sequence constraints.
-> =
+Ah, ok, I thought it was somewhere...  David, why don't we walk that
+list instead?
 
-> I agree totally, class devices should be the real children of their physi=
-cal
-> device instances.  It's really all about representing how the drivers are
-> _actually_ layered.  In the PCI network device case, the code always foll=
-ows
-> this structure:
-> =
+> > And we also need to be able to handle devices in the device tree that do
+> > not have a suspend/resume function, or ones that are not attached to any
+> > bus, without failing the suspend, as obviously they do not care or need
+> > to worry about the whole issue.
+> 
+> Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
+> it because it doesn't need them, or is it because nobody has written them 
+> yet?  In the latter case, failing the suspend or unbinding the driver are 
+> the only safe courses.
 
-> PCI Device -> Network Device Driver (e.g. e1000) -> Network Device Class
+No, if it's not there, just expect that it knows what it is doing, and
+don't fail the thing.  Unless you want to add those methods to _every_
+driver in the kernel, and that's going to be a lot of work...
 
-This now possible to do in Linus's current git tree, all of the
-infrastructure is now present for you to convert all instances of
-"struct class_device" with "struct device" and no userspace program
-should even notice the difference (all of the proper symlinks will be
-created by the driver core).
+> And when you're dealing with a device that isn't on a bus or doesn't have 
+> a driver, then clearly you _can't_ suspend it.  You can abort the system 
+> sleep, or you can go ahead knowing that the device may not be in a 
+> low-power mode.
 
-So patches are welcome to start converting things over now.
-
-For examples of the needed conversion, look at the usb core changes that
-moved the usb_device class items.  It was literally just a rename of the
-structure used and the functions called.  For some subsystems, the work
-will be a bit more, but hopefully not.
-
-So this solves the "class devices don't get suspend notices" issue,
-before it even happened :)
+It's a virtual device, it can go to sleep just fine with nothing needed
+to have done at all, as it's just in kernel memory, no physical thing to
+turn to "low power" mode at all.
 
 thanks,
 
 greg k-h
+
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
