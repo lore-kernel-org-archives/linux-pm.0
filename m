@@ -1,27 +1,13 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Fix console handling
-	during	suspend/resume
-Date: Wed, 28 Jun 2006 08:09:27 +1000
-Message-ID: <1151446167.2350.79.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<200606231106.46863.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
-	<20060623233244.GB4264@neo.rr.com>
-	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
-	<20060624024230.GB3438@neo.rr.com>
-	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
-	<1151124740.10141.49.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606232155160.6483@g5.osdl.org>
-	<1151130644.10141.70.camel@localhost.localdomain>
-	<20060627060810.GD4264@neo.rr.com>
-	<Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
-	<1151391516.2350.55.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0606271137120.3927@g5.osdl.org>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: PowerPC cpufreq using ICTC
+Date: Wed, 28 Jun 2006 00:14:32 +0200 (CEST)
+Message-ID: <Pine.LNX.4.60.0606280011120.5592@poirot.grange>
+References: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606271137120.3927@g5.osdl.org>
+In-Reply-To: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -31,36 +17,32 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 27 Jun 2006, Matt Sealey wrote:
 
-> What if the interrupt controller or timers or whatever aren't strictly a =
+> I am investigating more generic power management (cpufreq) for PowerPC, b=
+oth
+> in terms of DFS and the G3 dual-PLL feature (which is already implemented=
+ in
+> the PowerMac driver) and also using the G3/G4 "ICTC" register which stalls
+> the instruction fetch for 1-255 clocks in order to allow the execution un=
+its to
+> go into dynamic power management (when DPM is enabled). This should, by a=
+ll
+> documentation, reduce the power consumption of the CPU.
 
-> "parent" of the devices that need it? THAT'S OK.
+Hm, I thought about replying to this thread writing something like "I'd =
 
-Sure and we have sysdev's for these low level things, those _do_ get
-suspended with IRQ off. I hate sysdev's for many reasons but not that
-one :)
+like to co-operate by implementing CPU_FREQ on G2 / MPC824x", but then, =
 
-> (It's also more than OK - it's a fact of life on some things. It should b=
-e =
+looking at datasheets, it looks like it doesn't support any frequency =
 
-> ok to shut off the interrupt controller before you shut off some devices, =
+scaling:-( So, out of luck here... Or have I overseen anything?
 
-> and it should be ok to bring core devices up before the interrupt =
-
-> controller is even working).
-> =
-
-> So all of this means that I don't think the system should be "live" durin=
-g =
-
-> the last phase. It should be as dead as humanly possible.
-
-Yeah, I see your point, and it does make sense, but I still need to find
-a solution for the problem of the console semaphore :) I might have to
-keep fbdev's in the first phase for now.
-
-Ben.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
