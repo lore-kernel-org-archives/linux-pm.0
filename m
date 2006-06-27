@@ -1,97 +1,109 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] get USB suspend to work again on
-	2.6.17-mm1
-Date: Mon, 26 Jun 2006 19:04:05 -0700
-Message-ID: <200606261904.06102.david-b@pacbell.net>
-References: <20060623042452.GA23232@kroah.com>
-	<Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
-	<20060626235732.GE32008@kroah.com>
+From: Adam Belay <ambx1@neo.rr.com>
+Subject: Re: [PATCH 2/2] Fix console
+	handling	during	suspend/resume
+Date: Tue, 27 Jun 2006 02:08:11 -0400
+Message-ID: <20060627060810.GD4264@neo.rr.com>
+References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<200606231106.46863.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+	<20060623233244.GB4264@neo.rr.com>
+	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
+	<20060624024230.GB3438@neo.rr.com>
+	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<1151124740.10141.49.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606232155160.6483@g5.osdl.org>
+	<1151130644.10141.70.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20060626235732.GE32008@kroah.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Alan Stern <stern@rowland.harvard.edu>, linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <1151130644.10141.70.camel@localhost.localdomain>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 26 June 2006 4:57 pm, Greg KH wrote:
-> On Fri, Jun 23, 2006 at 10:51:47AM -0400, Alan Stern wrote:
-> > On Thu, 22 Jun 2006, Greg KH wrote:
-> > 
-> > > > Under what scenario could it possibly be legitimate to suspend a
-> > > > usb device -- or interface, or anything else -- with its children
-> > > > remaining active?  The ability to guarantee that could _never_ happen
-> > > > was one of the fundamental motivations for the driver model ...
-> > > 
-> > > I'm not disagreeing with that.  It's just that you are looping all
-> > > struct devices that are attached to a struct usb_device and assuming
-> > > that they are all of type struct usb_interface. ...
-> > 
-> > In fact the code doesn't make that assumption.  It only assumes that the 
-> > dev->power.power_state.event field is set correctly ...
-> 
-> Yes, but it's looking at devices it should _not_ care about.  The USB
-> core should only care about devices it controls, not other devices in
-> the device chain.  Those are for the driver core to handle.
+On Sat, Jun 24, 2006 at 04:30:43PM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2006-06-23 at 22:18 -0700, Linus Torvalds wrote:
+> > And the "suspend_late()" thing really is fundamentally different from =
 
-The basic problem is that the driver core does ** NOT ** maintain such
-integrity constraints.  So it's unsafe to remove those checks for cases
-(like USB) where devices get suspended outside transition to "system sleep"
-states like "standby", "suspend-to-ram", and "suspend-to-disk". [1]
+> > "suspend()". As mentioned several times, splitting suspend() up is what =
 
-Go back to my original question:  is there a legitimate scenario where
-that test should fail?  Nobody has come up with even one ...
+> > allows us to, very specifically, avoid having to shut down the console =
 
+> > early. I want to be able to do printk() until as late in the game as =
 
-Even so-called "virtual" devices (talking to abstracted hardware) need to
-quiesce.  And as Adam has pointed out separately, often most of the work to
-quiesce drivers should be at such a "virtual" level.  Most of the time when
-a driver for a "physical" device (touches real registers) does complicated
-work to quiesce, it's because the next level in the driver stack didn't
-create a "virtual" device to package that logic.  As with "eth0".
+> > possible, and preferably as early in the game as possible. =
 
+> >
+> > And splitting suspend was the way to do that. And when I actually start=
+ed =
 
-> > > We probably need to keep our own list of interfaces if we want to
-> > > properly walk them now...
-> > 
-> > We do have such a list: udev->actconfig->interface[].
-> 
-> Ah, ok, I thought it was somewhere...  David, why don't we walk that
-> list instead?
+> > doing that, splitting resume (which is even _better_) actually fell out=
+ of =
 
-Because the type of the child doesn't matter.  If it hasn't suspended,
-the parent must not suspend.  The original point of the driver model was
-to be able to enforce that integrity constraint.
+> > it automatically - I needed to do that just to handle the nested error =
 
-Plus, this way we use the driver model data structures ... in much the
-way the driver model itself would, if it were maintaining such integrity
-constraints.  If the driver model is ever going to fix those issues,
-we'll at least know it has sufficient data at hand.
+> > cases correctly (which I had earlier thought I'd just punt entirely, an=
+d =
 
-- Dave
+> > require that we do errors in the "prepare/save_state" phase only).
+> > =
 
-[1] One simple example:  echo 3 > /sys/devices/.../power/state for a
-    device with children that aren't suspended.  The PM core will not
-    detect that error.
+> > In other words, I think that this patch will allow us to resume, say VG=
+A =
 
+> > early, and reliably, and get a working console by the time we resume US=
+B.
+> =
 
+> So your resume_early is equivalent to my pmac specific hack to resume
+> the fbdev early (except that my hack is really very very very early :)
+> Before I even bring the L2 cache back, but that's almost a detail. After
+> all, nothing says the L2 cache couldn't be just another driver with a
+> suspend and a resume method :)
+> =
 
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+> However, I do still think that this late/early business is problematic
+> with "runtime/dynamic" suspend of individual devices or sub-trees
+> because of the "irq off" requirement of the late round of calls and I'm
+> not necessarily fan of having drivers split themselves between the 2
+> phases. If there is a case where we would be tempted to do that, then I
+> tend to prefer splitting into 2 drivers instead. The PHY example is a
+> good one: move the PHY suspend/resume to the new PHY layer and have
+> proper PHY drivers with their suspend/resume etc... (reminds me I sitll
+> need to port sungem to that new stuff... )
+> =
+
+> > Now, it does require that PCI buses (and preferably other devices) go t=
+o =
+
+> > D3 only in suspend_late(), and come back in resume_early(), so that VGA=
+ is =
+
+> > reachable. So that _will_ require driver modifications.
+> =
+
+> Yes, though doing the PCI busses that way is fair enough provided we
+> don't get into semaphore/msleep/etc... vs. interrupt off kind of issues.
+> I really don't think we need irq off for that late phase :) Let's just
+> quickly look at the reason why you want IRQs off. I think that it's a
+> way to avoid being hit by requests etc... right ?
+
+Yes, and pci_set_power_state() can require msleep().  A suspend_late()
+and resume_early() pass with interrupts off does cleanup the ugly
+legacy device problem and gives some new debugging opportunities.  However,
+I agree, it may not be very useful for most modern devices, especially when
+considering a possible runtime suspend requirement.
+
+Thanks,
+Adam
