@@ -1,9 +1,11 @@
-From: Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Tue, 27 Jun 2006 03:07:17 -0400
-Message-ID: <20060627070716.GC3438@neo.rr.com>
-References: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Fix console handling
+	during	suspend/resume
+Date: Tue, 27 Jun 2006 16:58:36 +1000
+Message-ID: <1151391516.2350.55.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<200606231106.46863.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
 	<20060623233244.GB4264@neo.rr.com>
 	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 	<20060624024230.GB3438@neo.rr.com>
@@ -17,7 +19,6 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -32,9 +33,7 @@ To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 26, 2006 at 11:18:15PM -0700, Linus Torvalds wrote:
-> =
-
+On Mon, 2006-06-26 at 23:18 -0700, Linus Torvalds wrote:
 > =
 
 > On Tue, 27 Jun 2006, Adam Belay wrote:
@@ -63,14 +62,28 @@ On Mon, Jun 26, 2006 at 11:18:15PM -0700, Linus Torvalds wrote:
 > done the "go to sleep" thing obviously doesn't really mean that we should =
 
 > actually sleep 10 msec _there_.
-> =
 
-> 			Linus
+Agreed... though I still (heh, do I sound like I insist a bit there ? :)
+think that we should look into not having interrupts off for this second
+pass... it's just too much of a pain not to be able to hit a code path
+that uses a mutex or whatever else and starts insulting you with
+might_sleep() backtraces... And yes, even in the second phase. The
+console is a good example I took earlier, fb_set_suspend() really wants
+the console sem to be held, that's the only remotely sane way to make
+sure the fbcon isn't currently trying to draw to you or other things
+like that and the console is typically what you want to have suspended
+late and/or resumed early.... In fact, for radeonfb, I also need a lot
+of long delays when bringing the chip back up. Right now, I have ugly
+hacks to do either mdelay or msleep depending if it uses my early wakeup
+hook or the real resume()...
 
-Yes, but when returning to D0 from D3 it's a very necessary delay before
-restoring PCI config space etc.  Wouldn't this be problematic for PCI devic=
-es
-that want to use resume_early()?
+I'm not sure actually _why_ we should have irqs off if we do the job
+properly, that is have either subsystems, class devices or child
+devices, having taken care of blocking IOs to the driver in the first
+place. (If we need a generic netdev suspend/resume, then so be it, that
+will block the queues, and ethX should/could be a child of the device
+like hda is a child of the controller in the IDE stack). =
 
-Thanks,
-Adam
+
+Ben.
+ =
