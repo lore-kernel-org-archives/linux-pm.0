@@ -1,72 +1,78 @@
-From: "Matt Sealey" <matt@genesi-usa.com>
-Subject: PowerPC cpufreq using ICTC
-Date: Tue, 27 Jun 2006 09:56:06 -0500
-Message-ID: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
-Reply-To: matt@genesi-usa.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] get USB suspend to work again on
+	2.6.17-mm1
+Date: Tue, 27 Jun 2006 11:24:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0606271121390.20671-100000@iolanthe.rowland.org>
+References: <200606261904.06102.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <200606261904.06102.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, pavel@suse.cz, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 26 Jun 2006, David Brownell wrote:
 
-Hello,
+> On Monday 26 June 2006 4:57 pm, Greg KH wrote:
+> > On Fri, Jun 23, 2006 at 10:51:47AM -0400, Alan Stern wrote:
+> > > On Thu, 22 Jun 2006, Greg KH wrote:
+> > > 
+> > > > > Under what scenario could it possibly be legitimate to suspend a
+> > > > > usb device -- or interface, or anything else -- with its children
+> > > > > remaining active?  The ability to guarantee that could _never_ happen
+> > > > > was one of the fundamental motivations for the driver model ...
+> > > > 
+> > > > I'm not disagreeing with that.  It's just that you are looping all
+> > > > struct devices that are attached to a struct usb_device and assuming
+> > > > that they are all of type struct usb_interface. ...
+> > > 
+> > > In fact the code doesn't make that assumption.  It only assumes that the 
+> > > dev->power.power_state.event field is set correctly ...
+> > 
+> > Yes, but it's looking at devices it should _not_ care about.  The USB
+> > core should only care about devices it controls, not other devices in
+> > the device chain.  Those are for the driver core to handle.
+> 
+> The basic problem is that the driver core does ** NOT ** maintain such
+> integrity constraints.  So it's unsafe to remove those checks for cases
+> (like USB) where devices get suspended outside transition to "system sleep"
+> states like "standby", "suspend-to-ram", and "suspend-to-disk". [1]
+> 
+> Go back to my original question:  is there a legitimate scenario where
+> that test should fail?  Nobody has come up with even one ...
+> 
+> 
+> Even so-called "virtual" devices (talking to abstracted hardware) need to
+> quiesce.  And as Adam has pointed out separately, often most of the work to
+> quiesce drivers should be at such a "virtual" level.  Most of the time when
+> a driver for a "physical" device (touches real registers) does complicated
+> work to quiesce, it's because the next level in the driver stack didn't
+> create a "virtual" device to package that logic.  As with "eth0".
 
-After a little discussion on linux-ppc kernel mailing list I got pointed he=
-re.
+An easy way around the problem is to create simple suspend/resume methods 
+for the endpoint devices.  They don't have to do anything other than set 
+dev->power.power_state.event.  Not until these "endpoint devices" start 
+implementing some real functionality.
 
-I am investigating more generic power management (cpufreq) for PowerPC, both
-in terms of DFS and the G3 dual-PLL feature (which is already implemented in
-the PowerMac driver) and also using the G3/G4 "ICTC" register which stalls
-the instruction fetch for 1-255 clocks in order to allow the execution unit=
-s to
-go into dynamic power management (when DPM is enabled). This should, by all
-documentation, reduce the power consumption of the CPU.
-
-I'm looking at it from the point of view of the Pegasos (www.pegasosppc.com)
-because right now we only have G3 (750CXe) and G4 (7447) processor cards
-which do not support DFS. The G3 is fanless so there is no scope to reduce
-noise dynamically or turn the fan off, and the G4 fan has no controller so
-the same applies. We also do not support batteries, so you're always on an
-AC power supply, but it WOULD be an interesting project to see if it could
-improve the lifetime of a system running off one of these:
-
-http://www.freeplayenergy.com/index.php?section=3Dproducts&subsection=3Dfre=
-echargeportable
-
-It is merely an exercise in whether it can be done effectively (notwithstan=
-ding
-the possibility of turning a 1GHz G4 into a 4MHz G4 :) and an interesting t=
-est
-of whether the feature works "as advertised" by the IBM and Freescale manua=
-ls.
-It may also be a cute way of testing application performance on slower
-processors, while using the best you have. I dunno. There are lots of things
-floating around in my head right now :)
-
-So the question is, is there already a generic powerpc cpufreq driver which
-does not rely on PowerMac hardware/platform tree or a PMU, if not where
-should I be looking to start, and is this a good idea anyway? I have seen
-threads (from 1-4 years ago) where it was discussed and passed off or, but
-it was all fairly conversational.
-
-http://lists.debian.org/debian-powerpc/2002/08/msg00107.html
-http://www.mail-archive.com/debian-powerpc@lists.debian.org/msg03607.html
-
-http://www.toojays.net/portal/Wiki/IBookG4PowerConsumption =
+Alan Stern
 
 
--- =
-
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
