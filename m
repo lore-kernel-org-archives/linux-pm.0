@@ -1,11 +1,9 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: Adam Belay <ambx1@neo.rr.com>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Mon, 26 Jun 2006 23:18:15 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
-References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<200606231106.46863.david-b@pacbell.net>
-	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+Date: Tue, 27 Jun 2006 03:07:17 -0400
+Message-ID: <20060627070716.GC3438@neo.rr.com>
+References: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
 	<20060623233244.GB4264@neo.rr.com>
 	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 	<20060624024230.GB3438@neo.rr.com>
@@ -14,11 +12,13 @@ References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
 	<Pine.LNX.4.64.0606232155160.6483@g5.osdl.org>
 	<1151130644.10141.70.camel@localhost.localdomain>
 	<20060627060810.GD4264@neo.rr.com>
+	<Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060627060810.GD4264@neo.rr.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,33 +28,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adam Belay <ambx1@neo.rr.com>
+To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Tue, 27 Jun 2006, Adam Belay wrote:
+On Mon, Jun 26, 2006 at 11:18:15PM -0700, Linus Torvalds wrote:
 > =
 
-> Yes, and pci_set_power_state() can require msleep().
+> =
 
-Actually, I was looking at that, and it's a problem right now.
+> On Tue, 27 Jun 2006, Adam Belay wrote:
+> > =
 
-For all the silly (and wrong) reasons.
+> > Yes, and pci_set_power_state() can require msleep().
+> =
 
-The msleep() shouldn't actually be in pci_set_power_state(), but in the =
+> Actually, I was looking at that, and it's a problem right now.
+> =
 
-infrastructure that calls it. In particular, when actually powering down, =
+> For all the silly (and wrong) reasons.
+> =
 
-there's no point in doing a msleep() between each device - we'll be =
+> The msleep() shouldn't actually be in pci_set_power_state(), but in the =
 
-sleeping a lot longer than 10ms after we've gone down.
+> infrastructure that calls it. In particular, when actually powering down, =
 
-The fact that D3hot won't necessarily take effect until 10 ms after we've =
+> there's no point in doing a msleep() between each device - we'll be =
 
-done the "go to sleep" thing obviously doesn't really mean that we should =
+> sleeping a lot longer than 10ms after we've gone down.
+> =
 
-actually sleep 10 msec _there_.
+> The fact that D3hot won't necessarily take effect until 10 ms after we've =
 
-			Linus
+> done the "go to sleep" thing obviously doesn't really mean that we should =
+
+> actually sleep 10 msec _there_.
+> =
+
+> 			Linus
+
+Yes, but when returning to D0 from D3 it's a very necessary delay before
+restoring PCI config space etc.  Wouldn't this be problematic for PCI devic=
+es
+that want to use resume_early()?
+
+Thanks,
+Adam
