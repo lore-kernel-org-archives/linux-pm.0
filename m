@@ -1,66 +1,81 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] get USB suspend to work again on
-	2.6.17-mm1
-Date: Tue, 27 Jun 2006 16:20:02 -0700
-Message-ID: <20060627232002.GD15225@kroah.com>
-References: <20060623042452.GA23232@kroah.com>
-	<20060626235732.GE32008@kroah.com>
-	<20060627090304.GA29199@elf.ucw.cz>
-	<200606271038.40510.david-b@pacbell.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PowerPC cpufreq using ICTC
+Date: Wed, 28 Jun 2006 09:23:17 +1000
+Message-ID: <1151450597.2350.110.camel@localhost.localdomain>
+References: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <200606271038.40510.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Jiri Slaby <jirislaby@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: matt@genesi-usa.com
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 27, 2006 at 10:38:39AM -0700, David Brownell wrote:
-> > > > > And we also need to be able to handle devices in the device tree that do
-> > > > > not have a suspend/resume function ...
-> > > >
-> > > > Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
-> > > > it because it doesn't need them, or is it because nobody has written them 
-> > > > yet?  In the latter case, failing the suspend or unbinding the driver are 
-> > > > the only safe courses.
-> > > 
-> > > No, if it's not there, just expect that it knows what it is doing, and
-> > > don't fail the thing.  Unless you want to add those methods to _every_
-> > > driver in the kernel, and that's going to be a lot of work...
-> 
-> It seems reasonable to me to require that drivers have at least
-> stub "it's actually OK to do nothing here" suspend/resume methods.
+On Tue, 2006-06-27 at 09:56 -0500, Matt Sealey wrote:
 
-No, the point is that these devices have no driver associated with them.
-They are "class" devices, and as such, are virtual.
+> I'm looking at it from the point of view of the Pegasos (www.pegasosppc.c=
+om)
+> because right now we only have G3 (750CXe) and G4 (7447) processor cards
+> which do not support DFS.
 
-Hm, well, I guess I should go add the suspend callbacks to the class, as
-Linus's core changes is going to be expecting that...
+7447A is supposed to support it no ?
 
-Anyway, for virtual devices, it often times makes no sense to have a
-suspend function, and as such, they should not be required to provide a
-null function...
+>  The G3 is fanless so there is no scope to reduce
+> noise dynamically or turn the fan off,
 
-thanks,
+Also G3 generally support at least DOZE mode when idle, unlike the 7447
+where all you have is NAP which is better, but requires proper
+northbridge support... I would be surprised if the Discovery II used on
+the Pegasos supports that properly and without funky bugs...
 
-greg k-h
+>  and the G4 fan has no controller so
+> the same applies. We also do not support batteries, so you're always on an
+> AC power supply, but it WOULD be an interesting project to see if it could
+> improve the lifetime of a system running off one of these:
+> =
 
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+> http://www.freeplayenergy.com/index.php?section=3Dproducts&subsection=3Df=
+reechargeportable
+> =
+
+> It is merely an exercise in whether it can be done effectively (notwithst=
+anding
+> the possibility of turning a 1GHz G4 into a 4MHz G4 :) and an interesting=
+ test
+> of whether the feature works "as advertised" by the IBM and Freescale man=
+uals.
+> It may also be a cute way of testing application performance on slower
+> processors, while using the best you have. I dunno. There are lots of thi=
+ngs
+> floating around in my head right now :)
+>
+> So the question is, is there already a generic powerpc cpufreq driver whi=
+ch
+> does not rely on PowerMac hardware/platform tree or a PMU, if not where
+> should I be looking to start, and is this a good idea anyway? I have seen
+> threads (from 1-4 years ago) where it was discussed and passed off or, but
+> it was all fairly conversational.
+> =
+
+> http://lists.debian.org/debian-powerpc/2002/08/msg00107.html
+> http://www.mail-archive.com/debian-powerpc@lists.debian.org/msg03607.html
+> =
+
+> http://www.toojays.net/portal/Wiki/IBookG4PowerConsumption =
+
+
+I'm not sure a cpufreq driver is the best thing to do but let's first
+simply measure if ICTC helps at all... it should be fairly trivial to do
+a simple kernel module to tweak the value.
+
+Ben.
