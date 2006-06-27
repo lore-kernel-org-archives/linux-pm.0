@@ -1,70 +1,43 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Tue, 27 Jun 2006 11:33:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0606271130490.20671-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] get USB suspend to work again on 2.6.17-mm1
+Date: Tue, 27 Jun 2006 10:38:39 -0700
+Message-ID: <200606271038.40510.david-b@pacbell.net>
+References: <20060623042452.GA23232@kroah.com> <20060626235732.GE32008@kroah.com> <20060627090304.GA29199@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932485AbWF0RsP@vger.kernel.org>
+In-Reply-To: <20060627090304.GA29199@elf.ucw.cz>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-usb-devel@lists.sourceforge.net
+Cc: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, Mattia Dongili <malattia@linux.it>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 26 Jun 2006, Linus Torvalds wrote:
+> > > > And we also need to be able to handle devices in the device tree that do
+> > > > not have a suspend/resume function ...
+> > >
+> > > Ah, there's the rub.  If a driver doesn't have suspend/resume methods, is 
+> > > it because it doesn't need them, or is it because nobody has written them 
+> > > yet?  In the latter case, failing the suspend or unbinding the driver are 
+> > > the only safe courses.
+> > 
+> > No, if it's not there, just expect that it knows what it is doing, and
+> > don't fail the thing.  Unless you want to add those methods to _every_
+> > driver in the kernel, and that's going to be a lot of work...
 
-> =
+It seems reasonable to me to require that drivers have at least
+stub "it's actually OK to do nothing here" suspend/resume methods.
 
-> =
 
-> On Tue, 27 Jun 2006, Adam Belay wrote:
-> > =
+> I believe 90% of drivers need them, anyway... Idea is that if we
+> refuse the suspend, user has dmesg and did not loose his work. If we
+> suspend but can't resume due to driver problems, it is slightly more
+> interesting to debug, and user lost open applications.
 
-> > Yes, and pci_set_power_state() can require msleep().
-> =
+Or as I put it earlier, a clean failure right at the "suspend/resume
+method missing" point is more robust than unpredictable failures much
+later (long after that actual failure points).
 
-> Actually, I was looking at that, and it's a problem right now.
-> =
-
-> For all the silly (and wrong) reasons.
-> =
-
-> The msleep() shouldn't actually be in pci_set_power_state(), but in the =
-
-> infrastructure that calls it. In particular, when actually powering down, =
-
-> there's no point in doing a msleep() between each device - we'll be =
-
-> sleeping a lot longer than 10ms after we've gone down.
-> =
-
-> The fact that D3hot won't necessarily take effect until 10 ms after we've =
-
-> done the "go to sleep" thing obviously doesn't really mean that we should =
-
-> actually sleep 10 msec _there_.
-
-What about other occasions when pci_set_power_state() is called?  For =
-
-instance, a selective suspend.  Where's the appropriate place to delay in =
-
-that case?
-
-What happens if the system sleep is aborted (some later driver is unable =
-
-to suspend) and everything gets resumed immediately?  Where should the 10 =
-
-ms delay occur then?
-
-Alan Stern
+- Dave
