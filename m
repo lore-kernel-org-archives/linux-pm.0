@@ -1,16 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] get USB suspend to work again on 2.6.17-mm1
-Date: Tue, 27 Jun 2006 11:03:05 +0200
-Message-ID: <20060627090304.GA29199@elf.ucw.cz>
-References: <20060623042452.GA23232@kroah.com>
-	<Pine.LNX.4.44L0.0606231028570.5966-100000@iolanthe.rowland.org>
-	<20060626235732.GE32008@kroah.com>
+From: "Matt Sealey" <matt@genesi-usa.com>
+Subject: PowerPC cpufreq using ICTC
+Date: Tue, 27 Jun 2006 09:56:06 -0500
+Message-ID: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
+Reply-To: matt@genesi-usa.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20060626235732.GE32008@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,44 +16,57 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: David Brownell <david-b@pacbell.net>, Mattia Dongili <malattia@linux.it>, Jiri Slaby <jirislaby@gmail.com>, linux-pm@osdl.org, linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > And we also need to be able to handle devices in the device tree that=
- do
-> > > not have a suspend/resume function, or ones that are not attached to =
-any
-> > > bus, without failing the suspend, as obviously they do not care or ne=
-ed
-> > > to worry about the whole issue.
-> > =
+Hello,
 
-> > Ah, there's the rub.  If a driver doesn't have suspend/resume methods, =
-is =
+After a little discussion on linux-ppc kernel mailing list I got pointed he=
+re.
 
-> > it because it doesn't need them, or is it because nobody has written th=
-em =
+I am investigating more generic power management (cpufreq) for PowerPC, both
+in terms of DFS and the G3 dual-PLL feature (which is already implemented in
+the PowerMac driver) and also using the G3/G4 "ICTC" register which stalls
+the instruction fetch for 1-255 clocks in order to allow the execution unit=
+s to
+go into dynamic power management (when DPM is enabled). This should, by all
+documentation, reduce the power consumption of the CPU.
 
-> > yet?  In the latter case, failing the suspend or unbinding the driver a=
-re =
+I'm looking at it from the point of view of the Pegasos (www.pegasosppc.com)
+because right now we only have G3 (750CXe) and G4 (7447) processor cards
+which do not support DFS. The G3 is fanless so there is no scope to reduce
+noise dynamically or turn the fan off, and the G4 fan has no controller so
+the same applies. We also do not support batteries, so you're always on an
+AC power supply, but it WOULD be an interesting project to see if it could
+improve the lifetime of a system running off one of these:
 
-> > the only safe courses.
-> =
+http://www.freeplayenergy.com/index.php?section=3Dproducts&subsection=3Dfre=
+echargeportable
 
-> No, if it's not there, just expect that it knows what it is doing, and
-> don't fail the thing.  Unless you want to add those methods to _every_
-> driver in the kernel, and that's going to be a lot of work...
+It is merely an exercise in whether it can be done effectively (notwithstan=
+ding
+the possibility of turning a 1GHz G4 into a 4MHz G4 :) and an interesting t=
+est
+of whether the feature works "as advertised" by the IBM and Freescale manua=
+ls.
+It may also be a cute way of testing application performance on slower
+processors, while using the best you have. I dunno. There are lots of things
+floating around in my head right now :)
 
-I believe 90% of drivers need them, anyway... Idea is that if we
-refuse the suspend, user has dmesg and did not loose his work. If we
-suspend but can't resume due to driver problems, it is slightly more
-interesting to debug, and user lost open applications.
-									Pavel
+So the question is, is there already a generic powerpc cpufreq driver which
+does not rely on PowerMac hardware/platform tree or a PMU, if not where
+should I be looking to start, and is this a good idea anyway? I have seen
+threads (from 1-4 years ago) where it was discussed and passed off or, but
+it was all fairly conversational.
+
+http://lists.debian.org/debian-powerpc/2002/08/msg00107.html
+http://www.mail-archive.com/debian-powerpc@lists.debian.org/msg03607.html
+
+http://www.toojays.net/portal/Wiki/IBookG4PowerConsumption =
+
+
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Matt Sealey <matt@genesi-usa.com>
+Manager, Genesi, Developer Relations
