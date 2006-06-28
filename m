@@ -1,18 +1,17 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: suspend to RAM (embedded) ppc?
-Date: Thu, 29 Jun 2006 00:37:47 +0200 (CEST)
-Message-ID: <Pine.LNX.4.60.0606290025240.14864@poirot.grange>
-References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
-	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606252034260.9893@poirot.grange>
-	<17567.32285.641865.387583@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606262040230.5678@poirot.grange>
-	<1151431635.4289.2.camel@localhost>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Wed, 28 Jun 2006 16:38:02 -0700
+Message-ID: <200606281638.03395.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+	<200606251716.49893.david-b@pacbell.net>
+	<20060628221617.GB22852@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1151431635.4289.2.camel@localhost>
+In-Reply-To: <20060628221617.GB22852@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,46 +21,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 27 Jun 2006, Johannes Berg wrote:
+On Wednesday 28 June 2006 3:16 pm, Pavel Machek wrote:
+> =
 
-> You may want to hold off working on this a bit and first ask BenH for
-> his old patches that converted the pmu stuff to the generic thing but
-> needed invasive generic stuff first.
+> ...but leaving machine "suspended" with display running (and
+> pressumably keyboard still reactive to keypresses) is really a bit
+> different from "normal" suspend-to-RAM.
 
-Well, I started thinking about possible solutions for mpc824x by looking =
+Keyboard reactive is just normal wakeup event processing.  Of course,
+we have pretty lousy support for wakeup events in Linux just now.  :(
 
-at the only available sleep implementation for ppc in the kernel - =
+Although I'm glad to say that at least for USB, wakeup events are
+basically working, and the main gaps are in platform support (which
+unfortunately includes ACPI).  It would still be nice to see things
+like non-USB keyboards and mice be wakeup event sources though.
+And of course, S1 and S3 states working ...
 
-powermac. As was suggested I looked under drivers/macintosh. As an example =
 
-I took powerbook_sleep_grackle() (I think, grackle is also installed in =
+> Yes, S1 is probably right description of above state. IIRC I seen
+> machines that left dispaly ON in S1...
 
-"blue and white" G3's, right?). There I see various calls to pmu_request() =
+I don't seem to recall seeing the ACPI spec laying down requirements
+about displays.  Those should be platform-specific.   That would be
+epecially true of non-ACPI systems, which get to define "standby"
+and "STR" states to suit.  (And I'd kind of hope the system that Jim
+sketched isn't relying on ACPI!)
 
-with macros as parameters and some comments, so, most things can be =
-
-understood and mapped to another hardware (if still relevant under the new =
-
-power-management interface). But then come some things that I don't =
-
-understand:
-
-		/* Ask the PMU to put us to sleep */
-		pmu_request(&req, NULL, 5, PMU_SLEEP, 'M', 'A', 'T', 'T');
-
-So, what exactly does this command do?
-
-Next I'll dig the real low-level stuff
-
-		low_sleep_handler();
-
-I am already excited about getting my hands dirty with ppc assembly:-)
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+- Dave
