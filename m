@@ -1,67 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: x86_64 restore_image declaration needs
-	asmlinkage?
-Date: Wed, 28 Jun 2006 14:10:44 +0200
-Message-ID: <200606281410.45008.rjw@sisk.pl>
-References: <200606282048.38746.ncunningham@linuxmail.org>
-	<200606281353.15252.rjw@sisk.pl>
-	<200606282200.36268.ncunningham@linuxmail.org>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: release early... powermac g5 suspend to disk
+Date: Wed, 28 Jun 2006 23:42:17 +0200
+Message-ID: <20060628214217.GC30373@elf.ucw.cz>
+References: <1151057810.7608.25.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <suspend2-devel-bounces@lists.suspend2.net>
-In-Reply-To: <200606282200.36268.ncunningham@linuxmail.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
-List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
-List-Post: <mailto:suspend2-devel@lists.suspend2.net>
-List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
-List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
-Sender: suspend2-devel-bounces@lists.suspend2.net
-Errors-To: suspend2-devel-bounces@lists.suspend2.net
-To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, suspend2-devel@lists.suspend2.net
+In-Reply-To: <1151057810.7608.25.camel@localhost>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 28 June 2006 14:00, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Wednesday 28 June 2006 21:53, Rafael J. Wysocki wrote:
-> > Hi,
-> >
-> > On Wednesday 28 June 2006 12:48, Nigel Cunningham wrote:
-> > > I received a report of problems with CONFIG_REGPARM and suspending, that
-> > > led me to recheck asm calls and declarations. Not being a guru on these
-> > > things, I want to ask advice from those who know more.
-> > >
-> > > Along the way I noticed that current git has:
-> > >
-> > > extern asmlinkage int swsusp_arch_suspend(void);
-> > > extern asmlinkage int swsusp_arch_resume(void);
-> > >
-> > > This is right for x86, but for x86_64, we actually call a C routine in
-> > > arch/x86_64/kernel/suspend.c, which calls restore_image in
-> > > arch/x86_64/kernel/suspend_asm.S. Restore image is declared in suspend.c
-> > > as
-> > >
-> > > extern int restore_image(void);
-> > >
-> > > should it be:
-> > >
-> > > extern asmlinkage int restore_image(void);
-> > >
-> > > Having swsusp_arch_resume declared as asmlinkage doesn't matter, does it?
-> >
-> > No, it doesn't.  It would have mattered on i386 if the function had taken
-> > any arguments.  AFAICT, on x86_64 it desn't matter at all.
-> 
-> Right. But what about restore_image lacking the asmlinkage? I'm also wondering 
-> if that does matter.
+Hi!
 
-I think asmlinkage would not matter here too (the function is x86_64-specific).
+> Wow. 2 days and a mostly destroyed XFS filesystem (it's still running
+> but I better not touch some directories or it goes belly up, xfs_repair
+> craps out too) I actually suspended my quad powermac a few times.
 
-Greetings,
-Rafael
+Congratulations! Hehe, you have nice testcase for xfs now :-).
+
+[ext2 is the filesystem you proably want to use while hacking such code]. =
+
+
+> Half of the time I'll be told by the softlockup watchdog that it locked
+> up, but sometimes it actually works, that is, it suspends and resumes.
+> =
+
+> Issues: I don't save MPIC state. Hence, anything that is compiled in as
+> modules will no longer get IRQs after resume. Like USB on my system. So
+> I only ohci_hcd and ehci_hcd before suspend, reload later (from a
+> script) and I can still use the keyboard after ;)
+> =
+
+> Same goes for tg3 even though it is built-in. Well, I held off looking
+> at the MPIC because Ben said he was rewriting the whole interrupt stuff
+> anyway.
+> =
+
+> Other issues: yeah, this is extremely ugly. If you like your machine,
+> don't take a look.
+
+I like my machine. I'll take a look anyway ;-). It is not _that_
+bad... at least it is short :).
+								Pavel
+
+
+> --- linux-2.6-git.orig/kernel/power/snapshot.c	2006-06-23 11:37:23.433885=
+225 +0200
+> +++ linux-2.6-git/kernel/power/snapshot.c	2006-06-23 11:39:03.352985945 +=
+0200
+> @@ -177,7 +177,13 @@
+>  		return 0;
+>  =
+
+>  	page =3D pfn_to_page(pfn);
+> +/*
+> +    I currently mark the physical memory that we reserve
+> +    and _don't_ map for kernel access as Nosave so we won't
+> +    try to save it... Not sure what to do.
+> +
+>  	BUG_ON(PageReserved(page) && PageNosave(page));
+> +*/
+
+I believe this is gone in -git kernels for some other reasons.
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
