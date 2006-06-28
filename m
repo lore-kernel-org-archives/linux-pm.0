@@ -1,14 +1,11 @@
-From: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: PowerPC cpufreq using ICTC
-Date: Wed, 28 Jun 2006 03:04:06 -0500
-Message-ID: <008101c69a89$6fd20630$99dfdfdf@bakuhatsu.net>
-References: <1151450597.2350.110.camel@localhost.localdomain>
-Reply-To: matt@genesi-usa.com
+From: "kdagoh lwzolukz" <vlsfxk@seaworld.com>
+Subject: Emerging growth  VNGP
+Date: Wed, 28 Jun 2006 16:13:01 +0800
+Message-ID: <36822.3562291407$1151482422@news.gmane.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1151450597.2350.110.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,76 +15,81 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
- =
+H 0 T  S T O C K ALERT - VNGP.PK
+A L E R T --  BREAKING MARKET N E W S  R E P O R T --- VNGP.PK =
 
 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org] =
 
-> Sent: Tuesday, June 27, 2006 6:23 PM
-> To: matt@genesi-usa.com
-> Cc: linux-pm@lists.osdl.org
-> Subject: Re: [linux-pm] PowerPC cpufreq using ICTC
-> =
+Company Name: VISION ENERGY GROUP
+Lookup: VNGP
+Current Price: .20 ( UP 200% from 1 week ago and this is just the begining =
+) =
 
-> On Tue, 2006-06-27 at 09:56 -0500, Matt Sealey wrote:
-> =
+Expected: This one is going to grow at a rapid rate.
 
-> > I'm looking at it from the point of view of the Pegasos =
+Business Description: VISION ENERGY GROUP (Other OTC: VNGP.PK - News) Visio=
+n Energy Group, Inc., a development stage company, owns a technology to gen=
+erate clean power from pressure letdown at the let down control valves in h=
+igh pressure natural gas transmission lines. This let down recovery system =
+utilizes a waste heat source in combination with let down expansion turbine=
+. The company was founded in 2002 and is based in Marina Del Rey, Californi=
+a.
 
-> > (www.pegasosppc.com) because right now we only have G3 =
+Overview:
 
-> (750CXe) and G4 =
+Thousands of small, inexpensive, scattered and environmentally-friendly sou=
+rces of energy can now be harvested profitably by using Vision Energy.s (VE=
+G) proven cryogenic and pressure let down technologies to capture otherwise=
+ wasted sources of power. Our mini-plants are geared either to electrical g=
+eneration from natural gas pipeline pressures or the manufacture of liquefi=
+ed natural gas (LNG) from landfill emissions or "stranded" natural gas sour=
+ces. In both cases sites are close to attractive markets and offer energy a=
+t sharply reduced rates. Capital investment for reliable energy can be redu=
+ced by more than ten-fold by a mini-plant while also lowering operating cos=
+ts.
 
-> > (7447) processor cards which do not support DFS.
-> =
 
-> 7447A is supposed to support it no ?
+Technology Opportunity:
 
-Yeah but we don't ship that processor card (nor a 7448 even
-though we have the design and prototypes) and right now.. I
-doubt we ever will considering the cost and rather unnoticable
-performance improvement in the heavy stuff. Unfortunately there
-aren't many customers out there who want do to the kind of
-benchmarks you see on the EEMBC scores, the ones that make the
-G4 shine, they just want to run MySQL or GNOME..
+Since the deregulation of the energy sector the industry has been changed i=
+n many ways. Vision Energy has the opportunity to capitalize on the two maj=
+or expenses which the industry is saddled with, the expense of the extensiv=
+e power grid (distributing the power) and the inefficiencies in the outdate=
+d technology in use. The technologies the industry has employed are outdate=
+d and put into service at a time which is very different from the deregulat=
+ed industry of today.
 
-> >  The G3 is fanless so there is no scope to reduce noise =
+Vision Energy plans to focus on major gas consumers/electricity producers, =
+who have much to gain from utilizing our technologies and solutions. Our so=
+lutions offer on-site production or supplementation of power therefore elim=
+inating the extra cost of transporting the electricity.All improvements in =
+technology used to capture extra energy will have a direct relationship to =
+the cost, availability, and the environmental impact of the industry.
 
-> > dynamically or  turn the fan off,
-> =
 
-> Also G3 generally support at least DOZE mode when idle, =
+WATCH THIS S T O C K GO HIGHER AND HIGHER
 
-> unlike the 7447 where all you have is NAP which is better, =
 
-> but requires proper northbridge support... I would be =
 
-> surprised if the Discovery II used on the Pegasos supports =
+-----------------------
+Too little too late.   You reap what you sow. You have to separate the chaf=
+f from the wheat. What's good for the goose is good for the gander. That's =
+water under the bridge. Weed out. Rain, rain go away; come again some other=
+ day. This is for the birds.   Run to seed.  What goes up must come down. A=
+ stick in the mud.   Shit end of the stick. Water doesn't run uphill.   Wal=
+king on water. We hung them out to dry.  You feel like a fish out of water.=
+ Which came first, the chicken or the egg. Survival of the fittest.   Stop =
+and smell the roses. Top of the morning.    Say it with flowers.   The seas=
+on of goodwill.  =
 
-> that properly and without funky bugs...
 
-I can find out pretty quickly.. when Gerald gets back in the
-office.. *stares at the door*.
-
-> I'm not sure a cpufreq driver is the best thing to do but =
-
-> let's first simply measure if ICTC helps at all... it should =
-
-> be fairly trivial to do a simple kernel module to tweak the value.
-
-One of those links had one (maybe a year old) with a sysfs entry
-to mess with. Unfortunately! I don't have the resources to really
-test it here without dragging a couple guys away from real important
-work. It *DOES* work but I'll be damned if I can see any difference
-apart from the speed on the G4, and I don't have a G3 handy to check
-the temperature.
-
--- =
-
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+Sow dry and set wet. A tree does not move unless there is wind.   That's a =
+real stem winder.   When pigs fly.  The sharper is the berry, the sweeter i=
+s the wine. A rose is a rose is a rose. A thing of beauty is a joy forever.=
+   There's no time like the present.   Scraping the bottom of the barrel.  =
+We'll hand you out to dry. Salt of the Earth. You say potayto, I say potaht=
+o. Run to seed.  Sly as a fox.   Slow as a snail.   You feel like a fish ou=
+t of water.
