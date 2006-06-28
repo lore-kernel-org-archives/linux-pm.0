@@ -1,95 +1,92 @@
-From: "kdagoh lwzolukz" <vlsfxk@seaworld.com>
-Subject: Emerging growth  VNGP
-Date: Wed, 28 Jun 2006 16:13:01 +0800
-Message-ID: <36822.3562291407$1151482422@news.gmane.org>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: x86_64 restore_image declaration needs asmlinkage?
+Date: Wed, 28 Jun 2006 20:48:34 +1000
+Message-ID: <200606282048.38746.ncunningham@linuxmail.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+Content-Type: multipart/mixed; boundary="===============1741657168=="
+Return-path: <suspend2-devel-bounces@lists.suspend2.net>
+List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
+List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
+List-Post: <mailto:suspend2-devel@lists.suspend2.net>
+List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
+List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
+Mime-version: 1.0
+Sender: suspend2-devel-bounces@lists.suspend2.net
+Errors-To: suspend2-devel-bounces@lists.suspend2.net
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, suspend2-devel@lists.suspend2.net
 List-Id: linux-pm@vger.kernel.org
 
-H 0 T  S T O C K ALERT - VNGP.PK
-A L E R T --  BREAKING MARKET N E W S  R E P O R T --- VNGP.PK =
+--===============1741657168==
+Content-Type: multipart/signed; boundary="nextPart1420535.EvX7lUtGpV";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+
+--nextPart1420535.EvX7lUtGpV
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi.
+
+I received a report of problems with CONFIG_REGPARM and suspending, that le=
+d=20
+me to recheck asm calls and declarations. Not being a guru on these things,=
+ I=20
+want to ask advice from those who know more.
+
+Along the way I noticed that current git has:
+
+extern asmlinkage int swsusp_arch_suspend(void);
+extern asmlinkage int swsusp_arch_resume(void);
+
+This is right for x86, but for x86_64, we actually call a C routine in=20
+arch/x86_64/kernel/suspend.c, which calls restore_image in=20
+arch/x86_64/kernel/suspend_asm.S. Restore image is declared in suspend.c as=
+=20
+
+extern int restore_image(void);
+
+should it be:
+
+extern asmlinkage int restore_image(void);
+
+Having swsusp_arch_resume declared as asmlinkage doesn't matter, does it?
+
+Regards,
+
+Nigel
+=2D-=20
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
+
+--nextPart1420535.EvX7lUtGpV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBEol6GN0y+n1M3mo0RAheSAKCzlOA4dWc0hw1vQR+Gsq9I1u2tzQCgo3dK
+9abTdhPjYny1S4EbYXjHTag=
+=xGWS
+-----END PGP SIGNATURE-----
+
+--nextPart1420535.EvX7lUtGpV--
 
 
+--===============1741657168==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Company Name: VISION ENERGY GROUP
-Lookup: VNGP
-Current Price: .20 ( UP 200% from 1 week ago and this is just the begining =
-) =
+_______________________________________________
+Suspend2-devel mailing list
+Suspend2-devel@lists.suspend2.net
+http://lists.suspend2.net/mailman/listinfo/suspend2-devel
 
-Expected: This one is going to grow at a rapid rate.
-
-Business Description: VISION ENERGY GROUP (Other OTC: VNGP.PK - News) Visio=
-n Energy Group, Inc., a development stage company, owns a technology to gen=
-erate clean power from pressure letdown at the let down control valves in h=
-igh pressure natural gas transmission lines. This let down recovery system =
-utilizes a waste heat source in combination with let down expansion turbine=
-. The company was founded in 2002 and is based in Marina Del Rey, Californi=
-a.
-
-Overview:
-
-Thousands of small, inexpensive, scattered and environmentally-friendly sou=
-rces of energy can now be harvested profitably by using Vision Energy.s (VE=
-G) proven cryogenic and pressure let down technologies to capture otherwise=
- wasted sources of power. Our mini-plants are geared either to electrical g=
-eneration from natural gas pipeline pressures or the manufacture of liquefi=
-ed natural gas (LNG) from landfill emissions or "stranded" natural gas sour=
-ces. In both cases sites are close to attractive markets and offer energy a=
-t sharply reduced rates. Capital investment for reliable energy can be redu=
-ced by more than ten-fold by a mini-plant while also lowering operating cos=
-ts.
-
-
-Technology Opportunity:
-
-Since the deregulation of the energy sector the industry has been changed i=
-n many ways. Vision Energy has the opportunity to capitalize on the two maj=
-or expenses which the industry is saddled with, the expense of the extensiv=
-e power grid (distributing the power) and the inefficiencies in the outdate=
-d technology in use. The technologies the industry has employed are outdate=
-d and put into service at a time which is very different from the deregulat=
-ed industry of today.
-
-Vision Energy plans to focus on major gas consumers/electricity producers, =
-who have much to gain from utilizing our technologies and solutions. Our so=
-lutions offer on-site production or supplementation of power therefore elim=
-inating the extra cost of transporting the electricity.All improvements in =
-technology used to capture extra energy will have a direct relationship to =
-the cost, availability, and the environmental impact of the industry.
-
-
-WATCH THIS S T O C K GO HIGHER AND HIGHER
-
-
-
------------------------
-Too little too late.   You reap what you sow. You have to separate the chaf=
-f from the wheat. What's good for the goose is good for the gander. That's =
-water under the bridge. Weed out. Rain, rain go away; come again some other=
- day. This is for the birds.   Run to seed.  What goes up must come down. A=
- stick in the mud.   Shit end of the stick. Water doesn't run uphill.   Wal=
-king on water. We hung them out to dry.  You feel like a fish out of water.=
- Which came first, the chicken or the egg. Survival of the fittest.   Stop =
-and smell the roses. Top of the morning.    Say it with flowers.   The seas=
-on of goodwill.  =
-
-
-Sow dry and set wet. A tree does not move unless there is wind.   That's a =
-real stem winder.   When pigs fly.  The sharper is the berry, the sweeter i=
-s the wine. A rose is a rose is a rose. A thing of beauty is a joy forever.=
-   There's no time like the present.   Scraping the bottom of the barrel.  =
-We'll hand you out to dry. Salt of the Earth. You say potayto, I say potaht=
-o. Run to seed.  Sly as a fox.   Slow as a snail.   You feel like a fish ou=
-t of water.
+--===============1741657168==--
