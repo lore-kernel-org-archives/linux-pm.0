@@ -1,17 +1,19 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Wed, 28 Jun 2006 16:38:02 -0700
-Message-ID: <200606281638.03395.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
-	<200606251716.49893.david-b@pacbell.net>
-	<20060628221617.GB22852@elf.ucw.cz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: suspend to RAM (embedded) ppc?
+Date: Thu, 29 Jun 2006 09:59:54 +1000
+Message-ID: <1151539195.4044.43.camel@localhost.localdomain>
+References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
+	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.60.0606252034260.9893@poirot.grange>
+	<17567.32285.641865.387583@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.60.0606262040230.5678@poirot.grange>
+	<1151431635.4289.2.camel@localhost>
+	<Pine.LNX.4.60.0606290025240.14864@poirot.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060628221617.GB22852@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.60.0606290025240.14864@poirot.grange>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,34 +23,73 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-pm <linux-pm@lists.osdl.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 28 June 2006 3:16 pm, Pavel Machek wrote:
+On Thu, 2006-06-29 at 00:37 +0200, Guennadi Liakhovetski wrote:
+> On Tue, 27 Jun 2006, Johannes Berg wrote:
 > =
 
-> ...but leaving machine "suspended" with display running (and
-> pressumably keyboard still reactive to keypresses) is really a bit
-> different from "normal" suspend-to-RAM.
+> > You may want to hold off working on this a bit and first ask BenH for
+> > his old patches that converted the pmu stuff to the generic thing but
+> > needed invasive generic stuff first.
+> =
 
-Keyboard reactive is just normal wakeup event processing.  Of course,
-we have pretty lousy support for wakeup events in Linux just now.  :(
+> Well, I started thinking about possible solutions for mpc824x by looking =
 
-Although I'm glad to say that at least for USB, wakeup events are
-basically working, and the main gaps are in platform support (which
-unfortunately includes ACPI).  It would still be nice to see things
-like non-USB keyboards and mice be wakeup event sources though.
-And of course, S1 and S3 states working ...
+> at the only available sleep implementation for ppc in the kernel - =
 
+> powermac. As was suggested I looked under drivers/macintosh. As an exampl=
+e =
 
-> Yes, S1 is probably right description of above state. IIRC I seen
-> machines that left dispaly ON in S1...
+> I took powerbook_sleep_grackle() (I think, grackle is also installed in =
 
-I don't seem to recall seeing the ACPI spec laying down requirements
-about displays.  Those should be platform-specific.   That would be
-epecially true of non-ACPI systems, which get to define "standby"
-and "STR" states to suit.  (And I'd kind of hope the system that Jim
-sketched isn't relying on ACPI!)
+> "blue and white" G3's, right?). There I see various calls to pmu_request(=
+) =
 
-- Dave
+> with macros as parameters and some comments, so, most things can be =
+
+> understood and mapped to another hardware (if still relevant under the ne=
+w =
+
+> power-management interface). But then come some things that I don't =
+
+> understand:
+> =
+
+> 		/* Ask the PMU to put us to sleep */
+> 		pmu_request(&req, NULL, 5, PMU_SLEEP, 'M', 'A', 'T', 'T');
+> =
+
+> So, what exactly does this command do?
+
+It sends a command to the PMU microcontroller to go to sleep. The result
+depends on the machine model (I'd suggest you look at the core99 version
+rather than the grackle version, it's more sane, and the B&W G3 doesn't
+have a PMU anyway). On anything recent, the PMU will then wait for a
+signal from the northbridge indicating that the processor entered an
+idle state (NAP or SLEEP), and when that haappens, will shut down
+various bits of the motherboard, including the CPU, stop some clocks
+etc... so basically put the machine to sleep (and do the thing with the
+LED). It will also control the wakeup signals from the USB or the button
+(or the ADB keyboard) and reboot the CPU when that hapens.
+
+> Next I'll dig the real low-level stuff
+> =
+
+> 		low_sleep_handler();
+> =
+
+> I am already excited about getting my hands dirty with ppc assembly:-)
+
+The above flushes all processor caches (since the CPU is going to be
+powered down) and saves as much as necessary of the CPU state, then put
+the CPU into a SLEEP loop waiting for the shutdown by the PMU. It also
+sets up some magic vectors where the ROM code will jump to on resume and
+restores everything it saved.
+
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
