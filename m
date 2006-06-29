@@ -1,12 +1,24 @@
-From: "Gross, Mark" <mark.gross@intel.com>
-Subject: Re: [PATCH 2/2] Fix console handling duringsuspend/resume
-Date: Thu, 29 Jun 2006 13:13:03 -0700
-Message-ID: <5389061B65D50446B1783B97DFDB392D019DE2D5@orsmsx411.amr.corp.intel.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Thu, 29 Jun 2006 15:58:41 -0700
+Message-ID: <20060629225841.GB26175@kroah.com>
+References: <Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
+	<20060624024230.GB3438@neo.rr.com>
+	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
+	<20060629003736.GA6001@kroah.com>
+	<Pine.LNX.4.64.0606281743420.12404@g5.osdl.org>
+	<20060629030923.GA18968@kroah.com>
+	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
+	<20060629042100.GA15225@kroah.com>
+	<20060629062619.GA4668@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20060629062619.GA4668@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,45 +28,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>, Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@osdl.org>
 Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Jun 28, 2006 at 11:26:19PM -0700, Greg KH wrote:
+> On Wed, Jun 28, 2006 at 09:21:00PM -0700, Greg KH wrote:
+> > On Wed, Jun 28, 2006 at 08:24:29PM -0700, Linus Torvalds wrote:
+> > > =
 
+> > > =
 
->-----Original Message-----
->From: linux-pm-bounces@lists.osdl.org
-[mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Linus
->Torvalds
->Sent: Wednesday, June 28, 2006 8:24 PM
->To: Greg KH
->Cc: David Brownell; linux-pm@lists.osdl.org; Pavel Machek
->Subject: Re: [linux-pm] [PATCH 2/2] Fix console handling
-duringsuspend/resume
->
->
->
->On Wed, 28 Jun 2006, Greg KH wrote:
->>
->> Any thoughts as to applying your patch to the tree or not?  No
-objection
->> from me if you want to.
->
->I've not actually had anybody report any testing success from it, and
->since I don't use suspend-to-disk, for example, if would be good to
-have
->verification.
->
->AS FAR AS I CAN TELL the patch won't actually change any behaviour (I
-have
->actually been running for the last few days with the separate patch
-that
->_does_ do that - moves the PCI config suspend/resume to the late/early
->rsume phase), but hey, mistakes happen.
->
+> > > On Wed, 28 Jun 2006, Greg KH wrote:
+> > > > =
 
-Shouldn't this type of thing go through the MM-tree first for these
-reasons?
+> > > > Any thoughts as to applying your patch to the tree or not?  No obje=
+ction
+> > > > from me if you want to.
+> > > =
 
+> > > I've not actually had anybody report any testing success from it, and =
 
---mgross
+> > > since I don't use suspend-to-disk, for example, if would be good to h=
+ave =
+
+> > > verification.
+> > =
+
+> > I'll try this out and let you know how it goes.
+> =
+
+> Hm, this will have to wait until tomorrow, current -git doesn't boot
+> properly on my laptop where suspend to disk normally works.  Something
+> in SATA...
+
+Ok, suspend-to-disk doesn't even work on my old laptop, where a few
+kernel versions ago it did just fine, so I can't test this out easily
+right now till I track that down.
+
+How about I just add your patch to my tree, which will get it a lot of
+testing in -mm?  Then if that works out, I'll send it to you after
+2.6.18 is out?
+
+thanks,
+
+greg k-h
