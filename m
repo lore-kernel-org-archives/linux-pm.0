@@ -1,24 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Thu, 29 Jun 2006 11:50:29 +0200
-Message-ID: <20060629095028.GA1637@elf.ucw.cz>
-References: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
-	<20060623233244.GB4264@neo.rr.com>
-	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
-	<20060624024230.GB3438@neo.rr.com>
-	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
-	<Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
-	<20060629003736.GA6001@kroah.com>
-	<Pine.LNX.4.64.0606281743420.12404@g5.osdl.org>
-	<20060629030923.GA18968@kroah.com>
-	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
+From: "Matt Sealey" <matt@genesi-usa.com>
+Subject: Re: PowerPC cpufreq using ICTC
+Date: Thu, 29 Jun 2006 07:30:23 -0500
+Message-ID: <007d01c69b77$cd36ec20$99dfdfdf@bakuhatsu.net>
+References: <17571.27179.106239.531807@cargo.ozlabs.ibm.com>
+Reply-To: matt@genesi-usa.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
+In-Reply-To: <17571.27179.106239.531807@cargo.ozlabs.ibm.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,51 +18,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+To: 'Paul Mackerras' <paulus@samba.org>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-(Sorry, I'm trying to be on holidays -- 11 horses to play with and big
-email backlog).
+> > (when DPM is enabled). This should, by all documentation, =
 
-> > Any thoughts as to applying your patch to the tree or not?  No objection
-> > from me if you want to.
+> reduce the power consumption of the CPU.
 > =
 
-> I've not actually had anybody report any testing success from it, and =
+> But does it reduce the energy consumed per instruction =
 
-> since I don't use suspend-to-disk, for example, if would be good to have =
+> executed, or increase it?
 
-> verification.
-> =
+In theory if you do not issue instructions to the units, DPM turns
+themselves off saving (from some Freescale doc on the subject) around
+6% power (while running benchmark code). Every pipeline bubble
+adds to the power saving! :]
 
-> AS FAR AS I CAN TELL the patch won't actually change any behaviour (I hav=
-e =
+Then the theory goes that if you can force the units to sit idle for
+1-255 instructions you can save more.
 
-> actually been running for the last few days with the separate patch that =
+I have no idea if it actually works.. that is what I wanted to find
+out.
 
-> _does_ do that - moves the PCI config suspend/resume to the late/early =
+> see any improvement in energy per instruction unless you can =
 
-> rsume phase), but hey, mistakes happen.
+> reduce the CPU core Vdd voltage.
 
-> Anyway, this is the current patch (rebased to current git, and with the =
+It doesn't improve energy per instruction, so much as allow the units
+to go into low-power states so while there are no instructions being
+fetched, you aren't wasting power.
 
-> same "list_move[_tail]()" cleanups that mainline got independently). Does =
+> If you can't reduce the energy per instruction then you might =
 
-> anybody see any remaining problems in it? And can somebody who runs =
+> as well "race to idle", which is effectively what we do currently.
 
-> suspend-to-disk verify that that still works (I don't see why it wouldn't=
-, =
+Like I said that is what I wanted to find out. Let me find that
+Freescale doc..
 
-> but still..)
+http://www.freescale.com/files/32bit/doc/app_note/AN2436.pdf
 
-I quickly tried it on my system and it does not seem to break
-anything.
-								Pavel
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Matt Sealey <matt@genesi-usa.com>
+Manager, Genesi, Developer Relations
