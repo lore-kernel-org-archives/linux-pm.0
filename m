@@ -1,9 +1,10 @@
-From: Greg KH <greg@kroah.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 28 Jun 2006 23:26:19 -0700
-Message-ID: <20060629062619.GA4668@kroah.com>
-References: <20060623233244.GB4264@neo.rr.com>
+Date: Thu, 29 Jun 2006 11:50:29 +0200
+Message-ID: <20060629095028.GA1637@elf.ucw.cz>
+References: <Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+	<20060623233244.GB4264@neo.rr.com>
 	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
 	<20060624024230.GB3438@neo.rr.com>
 	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
@@ -12,13 +13,12 @@ References: <20060623233244.GB4264@neo.rr.com>
 	<Pine.LNX.4.64.0606281743420.12404@g5.osdl.org>
 	<20060629030923.GA18968@kroah.com>
 	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
-	<20060629042100.GA15225@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060629042100.GA15225@kroah.com>
+In-Reply-To: <Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -29,37 +29,50 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 28, 2006 at 09:21:00PM -0700, Greg KH wrote:
-> On Wed, Jun 28, 2006 at 08:24:29PM -0700, Linus Torvalds wrote:
-> > =
+Hi!
 
-> > =
+(Sorry, I'm trying to be on holidays -- 11 horses to play with and big
+email backlog).
 
-> > On Wed, 28 Jun 2006, Greg KH wrote:
-> > > =
-
-> > > Any thoughts as to applying your patch to the tree or not?  No object=
-ion
-> > > from me if you want to.
-> > =
-
-> > I've not actually had anybody report any testing success from it, and =
-
-> > since I don't use suspend-to-disk, for example, if would be good to hav=
-e =
-
-> > verification.
+> > Any thoughts as to applying your patch to the tree or not?  No objection
+> > from me if you want to.
 > =
 
-> I'll try this out and let you know how it goes.
+> I've not actually had anybody report any testing success from it, and =
 
-Hm, this will have to wait until tomorrow, current -git doesn't boot
-properly on my laptop where suspend to disk normally works.  Something
-in SATA...
+> since I don't use suspend-to-disk, for example, if would be good to have =
 
-thanks,
+> verification.
+> =
 
-greg k-h
+> AS FAR AS I CAN TELL the patch won't actually change any behaviour (I hav=
+e =
+
+> actually been running for the last few days with the separate patch that =
+
+> _does_ do that - moves the PCI config suspend/resume to the late/early =
+
+> rsume phase), but hey, mistakes happen.
+
+> Anyway, this is the current patch (rebased to current git, and with the =
+
+> same "list_move[_tail]()" cleanups that mainline got independently). Does =
+
+> anybody see any remaining problems in it? And can somebody who runs =
+
+> suspend-to-disk verify that that still works (I don't see why it wouldn't=
+, =
+
+> but still..)
+
+I quickly tried it on my system and it does not seem to break
+anything.
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
