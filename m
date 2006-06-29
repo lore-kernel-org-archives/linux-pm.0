@@ -1,13 +1,24 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: PowerPC cpufreq using ICTC
-Date: Thu, 29 Jun 2006 15:50:35 +1000
-Message-ID: <17571.27179.106239.531807@cargo.ozlabs.ibm.com>
-References: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Wed, 28 Jun 2006 23:26:19 -0700
+Message-ID: <20060629062619.GA4668@kroah.com>
+References: <20060623233244.GB4264@neo.rr.com>
+	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
+	<20060624024230.GB3438@neo.rr.com>
+	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
+	<20060629003736.GA6001@kroah.com>
+	<Pine.LNX.4.64.0606281743420.12404@g5.osdl.org>
+	<20060629030923.GA18968@kroah.com>
+	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
+	<20060629042100.GA15225@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <023301c699f9$d3e0a860$99dfdfdf@bakuhatsu.net>
+Content-Disposition: inline
+In-Reply-To: <20060629042100.GA15225@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,27 +28,38 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: matt@genesi-usa.com
-Cc: linux-pm@lists.osdl.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Matt Sealey writes:
+On Wed, Jun 28, 2006 at 09:21:00PM -0700, Greg KH wrote:
+> On Wed, Jun 28, 2006 at 08:24:29PM -0700, Linus Torvalds wrote:
+> > =
 
-> I am investigating more generic power management (cpufreq) for PowerPC, b=
-oth
-> in terms of DFS and the G3 dual-PLL feature (which is already implemented=
- in
-> the PowerMac driver) and also using the G3/G4 "ICTC" register which stalls
-> the instruction fetch for 1-255 clocks in order to allow the execution un=
-its to
-> go into dynamic power management (when DPM is enabled). This should, by a=
-ll
-> documentation, reduce the power consumption of the CPU.
+> > =
 
-But does it reduce the energy consumed per instruction executed, or
-increase it?  I would expect that you wouldn't see any improvement in
-energy per instruction unless you can reduce the CPU core Vdd voltage.
-If you can't reduce the energy per instruction then you might as well
-"race to idle", which is effectively what we do currently.
+> > On Wed, 28 Jun 2006, Greg KH wrote:
+> > > =
 
-Paul.
+> > > Any thoughts as to applying your patch to the tree or not?  No object=
+ion
+> > > from me if you want to.
+> > =
+
+> > I've not actually had anybody report any testing success from it, and =
+
+> > since I don't use suspend-to-disk, for example, if would be good to hav=
+e =
+
+> > verification.
+> =
+
+> I'll try this out and let you know how it goes.
+
+Hm, this will have to wait until tomorrow, current -git doesn't boot
+properly on my laptop where suspend to disk normally works.  Something
+in SATA...
+
+thanks,
+
+greg k-h
