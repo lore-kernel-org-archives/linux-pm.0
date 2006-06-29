@@ -1,14 +1,12 @@
-From: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: PowerPC cpufreq using ICTC
-Date: Thu, 29 Jun 2006 07:30:23 -0500
-Message-ID: <007d01c69b77$cd36ec20$99dfdfdf@bakuhatsu.net>
-References: <17571.27179.106239.531807@cargo.ozlabs.ibm.com>
-Reply-To: matt@genesi-usa.com
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] remove kernel/power/pm.c:pm_unregister_all()
+Date: Thu, 29 Jun 2006 21:19:42 +0200
+Message-ID: <20060629191942.GM19712@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <17571.27179.106239.531807@cargo.ozlabs.ibm.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,49 +16,106 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: 'Paul Mackerras' <paulus@samba.org>
-Cc: linux-pm@lists.osdl.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+This patch removes the deprecated and no longer used pm_unregister_all().
 
-> > (when DPM is enabled). This should, by all documentation, =
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Acked-by: Pavel Machek <pavel@suse.cz>
 
-> reduce the power consumption of the CPU.
-> =
+---
 
-> But does it reduce the energy consumed per instruction =
+This patch was already sent on:
+- 23 Jun 2006
 
-> executed, or increase it?
+ include/linux/pm_legacy.h |    7 -------
+ kernel/power/pm.c         |   37 -------------------------------------
+ 2 files changed, 44 deletions(-)
 
-In theory if you do not issue instructions to the units, DPM turns
-themselves off saving (from some Freescale doc on the subject) around
-6% power (while running benchmark code). Every pipeline bubble
-adds to the power saving! :]
+--- linux-2.6.17-mm1-full/include/linux/pm_legacy.h.old	2006-06-22 17:55:29=
+.000000000 +0200
++++ linux-2.6.17-mm1-full/include/linux/pm_legacy.h	2006-06-22 17:55:40.000=
+000000 +0200
+@@ -15,11 +15,6 @@
+ pm_register(pm_dev_t type, unsigned long id, pm_callback callback);
+ =
 
-Then the theory goes that if you can force the units to sit idle for
-1-255 instructions you can save more.
+ /*
+- * Unregister all devices with matching callback
+- */
+-void __deprecated pm_unregister_all(pm_callback callback);
+-
+-/*
+  * Send a request to all devices
+  */
+ int __deprecated pm_send_all(pm_request_t rqst, void *data);
+@@ -35,8 +30,6 @@
+ 	return NULL;
+ }
+ =
 
-I have no idea if it actually works.. that is what I wanted to find
-out.
+-static inline void pm_unregister_all(pm_callback callback) {}
+-
+ static inline int pm_send_all(pm_request_t rqst, void *data)
+ {
+ 	return 0;
+--- linux-2.6.17-mm1-full/kernel/power/pm.c.old	2006-06-22 17:56:18.0000000=
+00 +0200
++++ linux-2.6.17-mm1-full/kernel/power/pm.c	2006-06-22 18:10:14.000000000 +=
+0200
+@@ -75,42 +75,6 @@
+ 	return dev;
+ }
+ =
 
-> see any improvement in energy per instruction unless you can =
+-static void __pm_unregister(struct pm_dev *dev)
+-{
+-	if (dev) {
+-		list_del(&dev->entry);
+-		kfree(dev);
+-	}
+-}
+-
+-/**
+- *	pm_unregister_all - unregister all devices with matching callback
+- *	@callback: callback function pointer
+- *
+- *	Unregister every device that would call the callback passed. This
+- *	is primarily meant as a helper function for loadable modules. It
+- *	enables a module to give up all its managed devices without keeping
+- *	its own private list.
+- */
+- =
 
-> reduce the CPU core Vdd voltage.
+-void pm_unregister_all(pm_callback callback)
+-{
+-	struct list_head *entry;
+-
+-	if (!callback)
+-		return;
+-
+-	mutex_lock(&pm_devs_lock);
+-	entry =3D pm_devs.next;
+-	while (entry !=3D &pm_devs) {
+-		struct pm_dev *dev =3D list_entry(entry, struct pm_dev, entry);
+-		entry =3D entry->next;
+-		if (dev->callback =3D=3D callback)
+-			__pm_unregister(dev);
+-	}
+-	mutex_unlock(&pm_devs_lock);
+-}
+-
+ /**
+  *	pm_send - send request to a single device
+  *	@dev: device to send to
+@@ -239,7 +203,6 @@
+ }
+ =
 
-It doesn't improve energy per instruction, so much as allow the units
-to go into low-power states so while there are no instructions being
-fetched, you aren't wasting power.
-
-> If you can't reduce the energy per instruction then you might =
-
-> as well "race to idle", which is effectively what we do currently.
-
-Like I said that is what I wanted to find out. Let me find that
-Freescale doc..
-
-http://www.freescale.com/files/32bit/doc/app_note/AN2436.pdf
-
--- =
-
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+ EXPORT_SYMBOL(pm_register);
+-EXPORT_SYMBOL(pm_unregister_all);
+ EXPORT_SYMBOL(pm_send_all);
+ EXPORT_SYMBOL(pm_active);
+ =
