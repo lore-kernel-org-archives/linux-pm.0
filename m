@@ -1,20 +1,13 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: suspend to RAM (embedded) ppc?
-Date: Fri, 30 Jun 2006 20:00:04 +0200
-Message-ID: <20060630180004.GB9225@elf.ucw.cz>
-References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
-	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606252034260.9893@poirot.grange>
-	<17567.32285.641865.387583@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606262040230.5678@poirot.grange>
-	<1151431635.4289.2.camel@localhost>
-	<Pine.LNX.4.60.0606290025240.14864@poirot.grange>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: release early... powermac g5 suspend to disk
+Date: Thu, 29 Jun 2006 18:24:00 +0200
+Message-ID: <1151598240.17705.11.camel@localhost>
+References: <1151057810.7608.25.camel@localhost>
+	<20060628214217.GC30373@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1083058417=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.60.0606290025240.14864@poirot.grange>
+In-Reply-To: <20060628214217.GC30373@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,49 +17,82 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2006-06-29 00:37:47, Guennadi Liakhovetski wrote:
-> On Tue, 27 Jun 2006, Johannes Berg wrote:
-> =
 
-> > You may want to hold off working on this a bit and first ask BenH for
-> > his old patches that converted the pmu stuff to the generic thing but
-> > needed invasive generic stuff first.
-> =
+--===============1083058417==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-/fHW3lXz/wGv10x8BYpy"
 
-> Well, I started thinking about possible solutions for mpc824x by looking =
 
-> at the only available sleep implementation for ppc in the kernel - =
+--=-/fHW3lXz/wGv10x8BYpy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> powermac. As was suggested I looked under drivers/macintosh. As an exampl=
-e =
+Hi,
 
-> I took powerbook_sleep_grackle() (I think, grackle is also installed in =
+> Congratulations! Hehe, you have nice testcase for xfs now :-).
 
-> "blue and white" G3's, right?). There I see various calls to pmu_request(=
-) =
+Yeah, already posted to xfs list ;)
 
-> with macros as parameters and some comments, so, most things can be =
+> [ext2 is the filesystem you proably want to use while hacking such code].=
+=20
 
-> understood and mapped to another hardware (if still relevant under the ne=
-w =
+Mounting read-only hasn't wrecked it any further so far :) And I was too
+lazy to install a second system... Should've, I guess, hd is large
+enough anyway.
 
-> power-management interface). But then come some things that I don't =
+> > Half of the time I'll be told by the softlockup watchdog that it locked
+> > up, but sometimes it actually works, that is, it suspends and resumes.
 
-> understand:
-> =
+Obviously that was phrased wrongly -- the code hangs and the softlockup
+watchdog indicates it. But I don't know why. Can writing the MSR hang?
 
-> 		/* Ask the PMU to put us to sleep */
-> 		pmu_request(&req, NULL, 5, PMU_SLEEP, 'M', 'A', 'T', 'T');
-                                                      ~~~~~~~~~~~~~~~~~~
-					What kind of inside joke is that?
+> I believe this is gone in -git kernels for some other reasons.
 
-									Pavel
--- =
+I'm not even sure the hack I did there with marking the area as nosave
+is good. At the very least the code shouldn't live in the MPIC file
+since the code reserving the chunk doesn't either.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+What about the page_is_ram() part? Doesn't any other platform have a RAM
+hole between 2 and 4 GB? Or is that handled more generically with
+discontig support? (and if yes, how does discontig support work?)
+
+johannes
+
+--=-/fHW3lXz/wGv10x8BYpy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARKP+nqVg1VMiehFYAQJnMw/9GXmZK1ql/5NzKO3gM5yJvPyIBjpCBkFH
+0M3iCeohIVXGx3tScdMSDZamqSLotdsBGI7JqI+pWFFC+NVlTkrVIUGB/iX98aeI
+BC+tXlWr4xY7VIm+E9SCzfAMyYc+6GXTejS6n3umVVpl9sd9sb9r5s1mYIaDa+ZF
+NYmN0GV9EpIT/c9/rA9k0ueWUP/5w66KoKVuFPGqfLiA77bOA9GgAzPevgmCNPiQ
+Lqa4+ExLJbCxZIFW15Xrz1VCh9GSw/Pvam3h3z11olRpKSs+DzlLHEC9svBjQs7H
+TFym3QLnZPjffIEKczPOoNDHWe4LQUysVHGn4D15U97mbuW9ObuKjO3eUk29duYq
+ElagSUfXdwJKMAIizD0mPedbYCMPBqEVpPPZG5lM/NDJMIfGJVFMzyzzqNhL+8pM
+lVXhIuiP0Pgj76E7agGLYaGB2K1ENrZlybxpTxvTVP9uwXfad+Vq1cHI9cGTIroH
+edaC2NcC6HQF1Stt9SWqYgfeWA+Z58DJMuDt9+qdwFK5lDdwdSCREa/35Gps8VZb
+UebsLDU5RfMv2Lcm8pzqAsGvr1a7wlZwu+pyqR4H3XGHhcToVRBZRYgeG/6A9HYZ
+YDIwCbzoL7Eeoyj69SyEQiz4rtL7Sgjre+76BacA4GWS2ZbfejheGLDmxp+N55M5
+FyQ/9dkyxrs=
+=zJ7e
+-----END PGP SIGNATURE-----
+
+--=-/fHW3lXz/wGv10x8BYpy--
+
+
+--===============1083058417==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1083058417==--
