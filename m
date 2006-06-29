@@ -1,24 +1,14 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Thu, 29 Jun 2006 15:58:41 -0700
-Message-ID: <20060629225841.GB26175@kroah.com>
-References: <Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
-	<20060624024230.GB3438@neo.rr.com>
-	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
-	<Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
-	<20060629003736.GA6001@kroah.com>
-	<Pine.LNX.4.64.0606281743420.12404@g5.osdl.org>
-	<20060629030923.GA18968@kroah.com>
-	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
-	<20060629042100.GA15225@kroah.com>
-	<20060629062619.GA4668@kroah.com>
+Subject: Re: [PATCH 2/2] Fix console handling duringsuspend/resume
+Date: Thu, 29 Jun 2006 15:59:46 -0700
+Message-ID: <20060629225946.GC26175@kroah.com>
+References: <5389061B65D50446B1783B97DFDB392D019DE2D5@orsmsx411.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060629062619.GA4668@kroah.com>
+In-Reply-To: <5389061B65D50446B1783B97DFDB392D019DE2D5@orsmsx411.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,47 +18,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: "Gross, Mark" <mark.gross@intel.com>
+Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 28, 2006 at 11:26:19PM -0700, Greg KH wrote:
-> On Wed, Jun 28, 2006 at 09:21:00PM -0700, Greg KH wrote:
-> > On Wed, Jun 28, 2006 at 08:24:29PM -0700, Linus Torvalds wrote:
-> > > =
-
-> > > =
-
-> > > On Wed, 28 Jun 2006, Greg KH wrote:
-> > > > =
-
-> > > > Any thoughts as to applying your patch to the tree or not?  No obje=
-ction
-> > > > from me if you want to.
-> > > =
-
-> > > I've not actually had anybody report any testing success from it, and =
-
-> > > since I don't use suspend-to-disk, for example, if would be good to h=
-ave =
-
-> > > verification.
-> > =
-
-> > I'll try this out and let you know how it goes.
+On Thu, Jun 29, 2006 at 01:13:03PM -0700, Gross, Mark wrote:
+> >AS FAR AS I CAN TELL the patch won't actually change any behaviour (I
+> have
+> >actually been running for the last few days with the separate patch
+> that
+> >_does_ do that - moves the PCI config suspend/resume to the late/early
+> >rsume phase), but hey, mistakes happen.
+> >
 > =
 
-> Hm, this will have to wait until tomorrow, current -git doesn't boot
-> properly on my laptop where suspend to disk normally works.  Something
-> in SATA...
+> Shouldn't this type of thing go through the MM-tree first for these
+> reasons?
 
-Ok, suspend-to-disk doesn't even work on my old laptop, where a few
-kernel versions ago it did just fine, so I can't test this out easily
-right now till I track that down.
-
-How about I just add your patch to my tree, which will get it a lot of
-testing in -mm?  Then if that works out, I'll send it to you after
-2.6.18 is out?
+Good point, that's probably the correct way to do this for such a core
+change.
 
 thanks,
 
