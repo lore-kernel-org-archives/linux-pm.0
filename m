@@ -1,19 +1,24 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: suspend to RAM (embedded) ppc?
-Date: Thu, 29 Jun 2006 09:59:54 +1000
-Message-ID: <1151539195.4044.43.camel@localhost.localdomain>
-References: <Pine.LNX.4.60.0606241957470.22786@poirot.grange>
-	<17565.58599.858812.278800@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606252034260.9893@poirot.grange>
-	<17567.32285.641865.387583@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0606262040230.5678@poirot.grange>
-	<1151431635.4289.2.camel@localhost>
-	<Pine.LNX.4.60.0606290025240.14864@poirot.grange>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Wed, 28 Jun 2006 17:37:36 -0700
+Message-ID: <20060629003736.GA6001@kroah.com>
+References: <Pine.LNX.4.44L0.0606211219170.6700-100000@iolanthe.rowland.org>
+	<200606221130.30614.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<200606231106.46863.david-b@pacbell.net>
+	<Pine.LNX.4.64.0606231216290.6483@g5.osdl.org>
+	<20060623233244.GB4264@neo.rr.com>
+	<Pine.LNX.4.64.0606231622580.6483@g5.osdl.org>
+	<20060624024230.GB3438@neo.rr.com>
+	<Pine.LNX.4.64.0606231953560.6483@g5.osdl.org>
+	<Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.60.0606290025240.14864@poirot.grange>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0606232029200.6483@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,73 +28,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2006-06-29 at 00:37 +0200, Guennadi Liakhovetski wrote:
-> On Tue, 27 Jun 2006, Johannes Berg wrote:
+On Fri, Jun 23, 2006 at 09:07:36PM -0700, Linus Torvalds wrote:
+> The sane version has a very simple sequence:
 > =
 
-> > You may want to hold off working on this a bit and first ask BenH for
-> > his old patches that converted the pmu stuff to the generic thing but
-> > needed invasive generic stuff first.
+>  - devices start on "dpm_active". =
+
 > =
 
-> Well, I started thinking about possible solutions for mpc824x by looking =
+>  - "suspend_prepare()" is called for every device (with the semaphore =
 
-> at the only available sleep implementation for ppc in the kernel - =
+>    held, you are _not_ allowed to try to unlink yourself in the prepare =
 
-> powermac. As was suggested I looked under drivers/macintosh. As an exampl=
-e =
-
-> I took powerbook_sleep_grackle() (I think, grackle is also installed in =
-
-> "blue and white" G3's, right?). There I see various calls to pmu_request(=
-) =
-
-> with macros as parameters and some comments, so, most things can be =
-
-> understood and mapped to another hardware (if still relevant under the ne=
-w =
-
-> power-management interface). But then come some things that I don't =
-
-> understand:
+>    function)
 > =
 
-> 		/* Ask the PMU to put us to sleep */
-> 		pmu_request(&req, NULL, 5, PMU_SLEEP, 'M', 'A', 'T', 'T');
-> =
+>  - then, we iterate over every device, and move it from "dpm_active" to =
 
-> So, what exactly does this command do?
+>    "dpm_off" when calling "suspend()". The suspend function is now the =
 
-It sends a command to the PMU microcontroller to go to sleep. The result
-depends on the machine model (I'd suggest you look at the core99 version
-rather than the grackle version, it's more sane, and the B&W G3 doesn't
-have a PMU anyway). On anything recent, the PMU will then wait for a
-signal from the northbridge indicating that the processor entered an
-idle state (NAP or SLEEP), and when that haappens, will shut down
-various bits of the motherboard, including the CPU, stop some clocks
-etc... so basically put the machine to sleep (and do the thing with the
-LED). It will also control the wakeup signals from the USB or the button
-(or the ADB keyboard) and reboot the CPU when that hapens.
+>    subsystem suspend, followed by the device bus suspend.
 
-> Next I'll dig the real low-level stuff
-> =
+Well, the driver core doesn't have to do this "ordering" anymore.
 
-> 		low_sleep_handler();
-> =
+I now have a patch in my quilt tree for the network core that moves all
+network devices to be class_devices.  With this (2 small driver core
+patches are needed to get this to build and work properly, look in the
+tree if you're really interested), when we walk the devices, the
+subsystem devices get called on the list before the "real" devices (that
+are attached to a bus.)
 
-> I am already excited about getting my hands dirty with ppc assembly:-)
+For example, on my box, I now have:
+$ tree /sys/class/net/
+/sys/class/net/
+|-- eth0 -> ../../devices/pci0000:00/0000:00:02.0/0000:01:00.2/0000:03:0e.0=
+/eth0
+|-- eth1 -> ../../devices/pci0000:00/0000:00:02.0/0000:01:00.2/0000:03:0c.0=
+/eth1
+`-- lo -> ../../devices/lo
 
-The above flushes all processor caches (since the CPU is going to be
-powered down) and saves as much as necessary of the CPU state, then put
-the CPU into a SLEEP loop waiting for the shutdown by the PMU. It also
-sets up some magic vectors where the ROM code will jump to on resume and
-restores everything it saved.
+Those eth0 and eth1 devices will have their "suspend()" call done first
+before the devices/pci0000:00/0000:00:02.0/0000:01:00.2/0000:03:0e.0
+device, which is the network pci driver for that card because those
+"eth0" and "eth1" devices are now on the dpm_active list in the proper
+location within the tree.
 
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski
+Now the network subsystem can stop the queue, or do whatever it wanted
+to do with no extra headaches or special cases by the driver core at
+all.
+
+Which is what I think you are really wanting here, subsystems doing the
+work for their class of devices, which makes it much easier on all of
+the individual drivers.
+
+The patch is really messy as it's just a big s/class_device/device/ in
+the network core, that's why I'm not posting it here.  It's on
+kernel.org if you're interested.
+
+thanks,
+
+greg k-h
