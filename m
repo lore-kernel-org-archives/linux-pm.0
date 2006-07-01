@@ -1,7 +1,7 @@
 From: proclus@gnu-darwin.org
 Subject: FOSS, Science, and Public activism
-Date: Sat,  1 Jul 2006 14:36:52 -0400 (EDT)
-Message-ID: <20060701183652.EDCD26B0FD9@gnu-darwin.org>
+Date: Sat,  1 Jul 2006 14:44:17 -0400 (EDT)
+Message-ID: <20060701184417.EC5D56B0FD2@gnu-darwin.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
