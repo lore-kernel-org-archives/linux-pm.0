@@ -1,10 +1,10 @@
-From: "Delia Eskridge" <deliaueskridge@adp.com>
-Subject: with simiz
-Date: Sat, 1 Jul 2006 18:13:21 -0700
-Message-ID: <000001c69d74$b58669d0$c5fea8c0@qyu93>
-Reply-To: Delia Eskridge <deliaueskridge@adp.com>
+From: "Christin Dizon" <christiidiz@bellco.org>
+Subject: with zieuh
+Date: Sat, 1 Jul 2006 18:13:39 -0700
+Message-ID: <000001c69d74$c04f56b0$1900a8c0@uwr97>
+Reply-To: Christin Dizon <christiidiz@bellco.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1481051932=="
+Content-Type: multipart/mixed; boundary="===============0654631981=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -15,21 +15,20 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
---===============1481051932==
-Content-Type: multipart/alternative;
-    boundary="----------=_1151802619-22449-725"
+--===============0654631981==
+Content-Type: multipart/alternative; boundary="----------=_1151802657-26560-2"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1151802619-22449-725
+------------=_1151802657-26560-2
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -46,16 +45,15 @@ and man y other at http://cervasedalion.com
 -
 -
 -
-Whats the Order of the -? Harry began.
-Not here, boy! snarled Moody. Wait till were inside!
-He pulled the piece of parchment out of Harrys hand and set fire to it
-with his wand-tip. As the message curled into flames and floated to the
-ground, Harry looked around at the houses again. They were standing
-outside number eleven; he looked to the left and saw number ten; to the
-right, however, was number thirteen.
+Er: yeah: hes all right, said Ron gruffly. Well, come on then, lets get
+in: what were you saying, Harry?
+I was saying, what are those horse things? Harry said, as he, Ron and
+Luna made for the carriage in which Hermione and Ginny were already
+sitting.
+What horse things?
 
 
-------------=_1151802619-22449-725
+------------=_1151802657-26560-2
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -78,20 +76,18 @@ ref=3D"http://cervasedalion.com">http://cervasedalion.com</A></DIV>
 <DIV>-</DIV>
 <DIV>-</DIV>
 <DIV>-</DIV>
-<DIV>Whats the Order of the -? Harry began.<BR>
-Not here, boy! snarled Moody. Wait till were inside!<BR>
-He pulled the piece of parchment out of Harrys hand and set fire to it with=
- his wand-tip. As the message curled into flames and floated to the ground,=
- Harry looked around at the houses again. They were standing outside number=
- eleven; he looked to the left and saw number ten; to the right, however, w=
-as number thirteen.<BR></DIV></BODY></HTML>
-------------=_1151802619-22449-725--
+<DIV>Er: yeah: hes all right, said Ron gruffly. Well, come on then, lets ge=
+t in: what were you saying, Harry?<BR>
+I was saying, what are those horse things? Harry said, as he, Ron and Luna =
+made for the carriage in which Hermione and Ginny were already sitting.<BR>
+What horse things?<BR></DIV></BODY></HTML>
+------------=_1151802657-26560-2--
 
---===============1481051932==
+--===============0654631981==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============1481051932==--
+--===============0654631981==--
