@@ -1,15 +1,14 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: swsusp regression
-Date: Mon, 3 Jul 2006 17:24:55 -0700
-Message-ID: <20060703172455.d45edb0a.akpm@osdl.org>
-References: <44A99DFB.50106@gmail.com> <44A99FE5.6020806@gmail.com>
-	<20060703161034.a5c4fba9.akpm@osdl.org>
-	<44A9AD48.5020400@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: content of /sys/power/state
+Date: Tue, 4 Jul 2006 10:48:58 +0200
+Message-ID: <20060704084858.GA1755@elf.ucw.cz>
+References: <380D9721A8E2114485644D71E87C6AB202212E23@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <44A9AD48.5020400@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <380D9721A8E2114485644D71E87C6AB202212E23@PNE-HJN-MBX01.wipro.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,44 +18,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
+To: rasmit.ranjan@wipro.com
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 04 Jul 2006 01:50:09 +0159
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> Andrew Morton napsal(a):
-> > On Tue, 04 Jul 2006 00:53:02 +0159
-> > Jiri Slaby <jirislaby@gmail.com> wrote:
-> > =
-
-> >> Jiri Slaby napsal(a):
-> >>> Hello,
-> >>>
-> >>> when suspending machine with hyperthreading, only Freezing cpus appea=
-rs and then
-> >> Note: suspending to disk; done by:
-> >> echo reboot > /sys/power/disk
-> >> echo disk > /sys/power/state
-> >>
-> >>> it loops somewhere. I tried to catch some more info by pressing sysrq=
--p. Here
-> >>> are some captures:
-> >>> http://www.fi.muni.cz/~xslaby/sklad/03072006074.gif
-> >>> http://www.fi.muni.cz/~xslaby/sklad/03072006075.gif
-> >> One more from some previous kernels (cutted sysrq-t):
-> >> http://www.fi.muni.cz/~xslaby/sklad/22062006046.jpg
-> >>
-> > =
-
-> > If you replace kernel/stop_machine.c with the version from 2.6.17, does=
- it
-> > help?
+On Mon 2006-07-03 18:00:51, rasmit.ranjan@wipro.com wrote:
+> Hi,
+>     I have a little doubt regarding which mode of global suspend my
+> system supports.
+> When i do cat /sys/power/state, it gives
 > =
 
-> Yup. It seems so.
+> Standby mem disk
 > =
 
+> Does this mean that my system supports all standby, suspend to RAM and
+> suspend to disk as well? But only suspend to disk works and other two
+> does not. So what might be the cause?
+> Please suggest.
 
-OK.  I don't see what the problem is - let's just revert it.
+Who knows? see suspend.sf.net.
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
