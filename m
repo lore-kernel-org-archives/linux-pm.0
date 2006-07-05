@@ -1,17 +1,17 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Wed, 5 Jul 2006 13:12:59 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0607051305070.12404@g5.osdl.org>
+Date: Wed, 5 Jul 2006 16:03:29 -0700
+Message-ID: <200607051603.29787.david-b@pacbell.net>
 References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<20060627060810.GD4264@neo.rr.com>
-	<Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
 	<200607051140.14194.david-b@pacbell.net>
+	<Pine.LNX.4.64.0607051305070.12404@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200607051140.14194.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.64.0607051305070.12404@g5.osdl.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,82 +21,84 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
+To: Linus Torvalds <torvalds@osdl.org>
 Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Wed, 5 Jul 2006, David Brownell wrote:
+On Wednesday 05 July 2006 1:12 pm, Linus Torvalds wrote:
 > =
 
-> I expect this is what you meant, but one issue I've observed
-> on at least one platform is that after swsusp resume the preempt
-> count is goofed ... it's one too big.  Which in a recent test, meant
-> that resume failed because pci_set_power_state() got called in a
-> context that couldn't msleep().  And in previous tests has led to
-> similar failures, since resume() calls all expect sleeping is OK
-> (since that's part of that API contract).
+> On Wed, 5 Jul 2006, David Brownell wrote:
+> > =
 
-Yes. =
+> > I expect this is what you meant, but one issue I've observed
+                    ^ "NOT" ... omitted by editing error, sorry
+> > on at least one platform is that after swsusp resume the preempt
+> > count is goofed ... it's one too big.  Which in a recent test, meant
+> > that resume failed because pci_set_power_state() got called in a
+> > context that couldn't msleep().  And in previous tests has led to
+> > similar failures, since resume() calls all expect sleeping is OK
+> > (since that's part of that API contract).
+> =
+
+> Yes. =
+
+> =
+
+> I had a patch that did
+> =
+
+> 	system_state =3D SYSTEM_BOOTING;
+> 	..
+> 	system_state =3D SYSTEM_RUNNING;
+> =
+
+> around the final stages of suspend/resume, because the resume stage reall=
+y =
+
+> _does_ end up looking like the boot: single CPU, various special code etc.
+> =
+
+> And that gets rid of some of the warnings, and is arguably a valid thing =
+
+> to do (exactly because it's "true" to some degree that we're in the bootu=
+p =
+
+> state).
+
+Didn't try that.  In this case, debug diagnostics confirmed that what
+was happening was pretty strange (to me):  the preempt count was goofed.
+It was correct as the snapshot was being taken, but wrong after that
+snapshot got resumed.
 
 
-I had a patch that did
+> At the same time, it's certainly equally arguable (or more so) that the =
 
-	system_state =3D SYSTEM_BOOTING;
-	..
-	system_state =3D SYSTEM_RUNNING;
+> warnings are actually valid, even during bootup, and the code that causes =
 
-around the final stages of suspend/resume, because the resume stage really =
+> them should be fixed.
 
-_does_ end up looking like the boot: single CPU, various special code etc.
+In this case, the warnings were clearly valid, and I'm perplexed at
+what was making the preempt count go bad.
 
-And that gets rid of some of the warnings, and is arguably a valid thing =
 
-to do (exactly because it's "true" to some degree that we're in the bootup =
+> > The last time I saw this problem I threw in a hack to drop that
+> > count before starting the device resume calls, but I'm rather
+> > curious why it happens at all.  Does this ring bells for anyone?
+> =
 
-state).
+> Some of the warnings will trigger for doing things like taking a semaphor=
+e =
 
-At the same time, it's certainly equally arguable (or more so) that the =
+> with interrupts disabled, or with a spinlock held (which will raise the =
 
-warnings are actually valid, even during bootup, and the code that causes =
+> preemption count).
 
-them should be fixed.
+Preempt count corruption.  :(
 
-> The last time I saw this problem I threw in a hack to drop that
-> count before starting the device resume calls, but I'm rather
-> curious why it happens at all.  Does this ring bells for anyone?
+Unfortunately right now I don't have a clue as to what did that, only
+a workaround of forcing it to a sane value (decrement before resuming
+the devices).  I'm kind of hoping someone else has noticed similar bugs,
+and gotten beyond them.
 
-Some of the warnings will trigger for doing things like taking a semaphore =
-
-with interrupts disabled, or with a spinlock held (which will raise the =
-
-preemption count).
-
-Again, the warning is indubitably technically _correct_, but it's also =
-
-equally arguably true that when you're in the final single-threaded state =
-
-(which is equal to bootup), it's also correct to say that you know that no =
-
-semaphores should actually ever trigger, and it's often better to re-use =
-
-the same code that works in the general case, even if the boot phase (or =
-
-suspend/resume phase) doesn't need the locking.
-
-So I could go either way. The "system_state" thing above has the advantage =
-
-that it works, is simple, and shuts up arguably spurious warnings. On the =
-
-other hand, I also can't argue _too_ strongly against anybody that says =
-
-that you shouldn't do certain things during the early bootup or late =
-
-shutdown, exactly because you're running in a degenerate state.
-
-So "fix the code instead" is clearly also a good thing to do, I'm just not =
-
-sure that it's always worth the pain (and often duplicated code).
-
-		Linus
+- Dave
