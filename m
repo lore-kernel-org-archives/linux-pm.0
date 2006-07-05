@@ -1,11 +1,17 @@
-From: "Lindsie Fentress" <fentressylindsi@gentefeliz.com>
-Subject: Re: rogob
-Date: Tue, 4 Jul 2006 13:31:15 -0700
-Message-ID: <000001c69fa8$cc663410$7b62a8c0@prw91>
-Reply-To: Lindsie Fentress <fentressylindsi@gentefeliz.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Wed, 5 Jul 2006 11:40:13 -0700
+Message-ID: <200607051140.14194.david-b@pacbell.net>
+References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<20060627060810.GD4264@neo.rr.com>
+	<Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1296169253=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0606262313340.3927@g5.osdl.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,74 +21,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linux-pm@lists.osdl.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Monday 26 June 2006 11:18 pm, Linus Torvalds wrote:
+> =
 
---===============1296169253==
-Content-Type: multipart/alternative;
-    boundary="----------=_1152044899-25476-714"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+> On Tue, 27 Jun 2006, Adam Belay wrote:
+> > =
 
-This is a multi-part message in MIME format...
+> > Yes, and pci_set_power_state() can require msleep().
+> =
 
-------------=_1152044899-25476-714
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Actually, I was looking at that, and it's a problem right now.
+> =
 
-Hi,
-=20
-CzIALIS
-VzALIUM
-VzIAGRA
-AzMBIEN
-=20
-http://antirsteek.com
+> For all the silly (and wrong) reasons.
 
-=20
-ever played with other funny creatures sitting in their holes in the
-long, long ago, before he lost all his friends and was driven away,
-alone, and crept down, down, into the dark under the mountains. Very
+I expect this is what you meant, but one issue I've observed
+on at least one platform is that after swsusp resume the preempt
+count is goofed ... it's one too big.  Which in a recent test, meant
+that resume failed because pci_set_power_state() got called in a
+context that couldn't msleep().  And in previous tests has led to
+similar failures, since resume() calls all expect sleeping is OK
+(since that's part of that API contract).
 
 
-------------=_1152044899-25476-714
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+The last time I saw this problem I threw in a hack to drop that
+count before starting the device resume calls, but I'm rather
+curious why it happens at all.  Does this ring bells for anyone?
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1106" name=3DGENERATOR>
-<DEFANGED_style_0 </STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>CzIALIS<BR>VzALIUM<BR>VzIAGRA<BR>AzMBIEN</=
-FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><A href=3D"http://antirsteek.com">http://a=
-ntirsteek.com</A><BR></FONT></DIV>
-<DIV>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>ever played with other funny creatures sit=
-ting in their holes in the<BR>
-long, long ago, before he lost all his friends and was driven away,<BR>
-alone, and crept down, down, into the dark under the mountains. Very<BR></F=
-ONT></DIV></BODY></HTML>
-------------=_1152044899-25476-714--
-
---===============1296169253==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1296169253==--
+- Dave
