@@ -1,15 +1,11 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Thu, 6 Jul 2006 11:52:05 +1000
-Message-ID: <200607061152.08755.ncunningham@linuxmail.org>
-References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<200607051603.29787.david-b@pacbell.net>
-	<20060706011510.GC5303@elf.ucw.cz>
+From: <rasmit.ranjan@wipro.com>
+Subject: Problem with suspend to RAM
+Date: Thu, 6 Jul 2006 09:49:51 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB2022138F8@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0856902745=="
+Content-Type: multipart/mixed; boundary="===============0639475605=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060706011510.GC5303@elf.ucw.cz>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,61 +16,82 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
-Cc: David Brownell <david-b@pacbell.net>, Linus Torvalds <torvalds@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============0856902745==
-Content-Type: multipart/signed; boundary="nextPart1657859.piBg41A7ZO";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+This is a multi-part message in MIME format...
 
---nextPart1657859.piBg41A7ZO
+--===============0639475605==
+Content-Type: multipart/alternative;
+    boundary="----------=_1152159620-31399-684"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1152159620-31399-684
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi.
+Hi all,
+    I have some problem with suspend t RAM. I tried suspend to RAM with
+different laptops. I am using kernel 2.6.15.4.
+The problem is sometimes it works and sometimes it does not. Sometimes
+only the system suspends to RAM but does not resume. I read somewhere
+that suspend to RAM behaves in this way. It is not stable in the kernel.
+Is it so or is there something specific to do to make suspend to RAM
+work? Please suggest.
+I have ACPI enabled.
+=20
+Thanks,
+Rasmit.
 
-On Thursday 06 July 2006 11:15, Pavel Machek wrote:
-> I have seen that before: Atomic snapshot used fpu copy in some wrong
-> variants. Symptom was exactly that -- elevated preempt count --
-> because fpu copy routine elevated it, then copied the task struct.
->
-> But I thought we solved that problem...?
+------------=_1152159620-31399-684
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-We did. We don't use memcpy for precisely that reason. 3DNOW memcpy was one=
- of=20
-the problem children. This would be a different creature though, wouldn't i=
-t?
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2912" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D440511504-06072006>Hi=20
+all,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D440511504-06072006>&nbsp;&nb=
+sp;&nbsp; I=20
+have some problem with suspend t RAM. I tried suspend to RAM with different=
+=20
+laptops. I am using kernel 2.6.15.4.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D440511504-06072006>The probl=
+em is=20
+sometimes it works and sometimes it does not. Sometimes only the system sus=
+pends=20
+to RAM but does not resume. I read somewhere that suspend to RAM behaves in=
+ this=20
+way. It is not stable in the kernel. Is it so or is there something specifi=
+c to=20
+do to make suspend to RAM work? Please suggest.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D440511504-06072006>I have AC=
+PI=20
+enabled.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D440511504-06072006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D440511504-06072006>Thanks,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D440511504-06072006>Rasmit.</SPAN></FONT></DIV></BODY></HTML>
 
-Regards,
+------------=_1152159620-31399-684--
 
-Nigel
-=2D-=20
-Nigel, Michelle and Alisdair Cunningham
-5 Mitchell Street
-Cobden 3266
-Victoria, Australia
-
---nextPart1657859.piBg41A7ZO
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBErGzIN0y+n1M3mo0RAnypAJ9k1+5SyP6Us853od6bEyr7N+HV1wCeOFn+
-FYto4ZgqG7YjhOY9p9XcSGY=
-=cUEG
------END PGP SIGNATURE-----
-
---nextPart1657859.piBg41A7ZO--
-
---===============0856902745==
+--===============0639475605==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============0856902745==--
+--===============0639475605==--
