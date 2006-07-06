@@ -1,8 +1,8 @@
-From: Greg KH <greg@kroah.com>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: [PATCH 2/2] Fix console handling during
 	suspend/resume
-Date: Thu, 6 Jul 2006 15:31:19 -0700
-Message-ID: <20060706223119.GA3135@kroah.com>
+Date: Thu, 6 Jul 2006 19:27:10 -0400
+Message-ID: <20060706232710.GG30500@redhat.com>
 References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
 	<20060629030923.GA18968@kroah.com>
 	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
@@ -27,14 +27,14 @@ Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org, Pavel Machek <p
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Jul 06, 2006 at 03:27:28PM -0700, David Brownell wrote:
-> The only other new behaviors of note are that the console changes now
-> prevent diagnostics during suspend (sigh), and that something (maybe
-> the PM_TRACE stuff?) is causing a 60 GB ext3 filesystem to fsck on
-> every reboot, claiming it's been 10+ years since it was last checked.
+ > The only other new behaviors of note are that the console changes now
+ > prevent diagnostics during suspend (sigh)
 
-Yeah, the PM_TRACE stuff caused this for me too, and was driving me
-crazy until I figured out what was killing my clock chip...
+That's the biggest step backwards we've made in power management
+in the last few years IMO.  What was the reasoning behind this change?
 
-thanks,
+		Dave
 
-greg k-h
+-- =
+
+http://www.codemonkey.org.uk
