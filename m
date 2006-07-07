@@ -1,20 +1,17 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 2/2] Fix console handling during
-	suspend/resume
-Date: Thu, 6 Jul 2006 21:48:55 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0607062144530.3869@g5.osdl.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: memcpy() in swsusp (was: Re: [PATCH 2/2] Fix console
+	handling during suspend/resume)
+Date: Fri, 7 Jul 2006 10:20:16 +0200
+Message-ID: <200607071020.16213.rjw@sisk.pl>
 References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<20060629030923.GA18968@kroah.com>
-	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
-	<200607061527.29421.david-b@pacbell.net>
-	<20060706232710.GG30500@redhat.com>
-	<Pine.LNX.4.64.0607061642290.3869@g5.osdl.org>
-	<20060706235952.GK30500@redhat.com>
+	<200607062318.55787.rjw@sisk.pl>
+	<20060706220612.GC30500@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060706235952.GK30500@redhat.com>
+In-Reply-To: <20060706220612.GC30500@redhat.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,30 +22,28 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Dave Jones <davej@redhat.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org, Nigel Cunningham <ncunningham@linuxmail.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 07 July 2006 00:06, Dave Jones wrote:
+> On Thu, Jul 06, 2006 at 11:18:55PM +0200, Rafael J. Wysocki wrote:
+>  > On Thursday 06 July 2006 23:07, David Brownell wrote:
+>  > > On Thursday 06 July 2006 2:01 pm, Dave Jones wrote:
+>  > > =
 
+>  > > > Why not just use __memcpy instead? Which should be safe on all arc=
+hs
+>  > > > to do the simplest possible memcpy.
+>  > > =
 
-On Thu, 6 Jul 2006, Dave Jones wrote:
+>  > > Or __constant_memcpy(...PAGE_SIZE) ?  :)
+>  > =
+
+>  > Is __memcpy() defined on all architectures?  Eg. ppc?
 > =
 
-> No, that's something else.  I used to get text on the console, then
-> it went away[1]. some time later, you came along and did the fixes you
-> refer to.
+> Seems not.  __constant_memcpy is a gcc built-in though isn't it ?
 
-Ahh.
+Well, I'm not sure.  i386 and sparc define it explicitly.
 
-> [1] I think it was commit 94c188d32996beac00426740974310e32f162c14
-> which implies userspace can make it come back. That's great, but
-> what if userspace has crashed?
-
-Ok, that's a different thing, not the normal kernel suspend path, but the =
-
-user snapshotting thing.
-
-It seems to expect the user-land tools to do the pm_prepare_console() and =
-
-pm_restore_console() for you..
-
-		Linus
+Rafael
