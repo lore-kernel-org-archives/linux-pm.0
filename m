@@ -1,14 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [BUG] sleeping function called from invalid context
- during resume
-Date: Mon, 10 Jul 2006 12:01:44 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0607101200590.7513-100000@iolanthe.rowland.org>
-References: <CFF307C98FEABE47A452B27C06B85BB6ECFDB0@hdsmsx411.amr.corp.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/2] Fix console handling during
+	suspend/resume
+Date: Mon, 10 Jul 2006 09:53:34 +0200
+Message-ID: <20060710075334.GA2174@elf.ucw.cz>
+References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
+	<200607061527.29421.david-b@pacbell.net>
+	<200607091628.29269.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <CFF307C98FEABE47A452B27C06B85BB6ECFDB0@hdsmsx411.amr.corp.intel.com>
+Content-Disposition: inline
+In-Reply-To: <200607091628.29269.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,29 +22,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Brown, Len" <len.brown@intel.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, johnstul@us.ibm.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 10 Jul 2006, Brown, Len wrote:
-
-> >> http://bugzilla.kernel.org/show_bug.cgi?id=3D3469
-> >> =
-
-> >> Make acpi_os_allocate() into an inline function to
-> >> allow /proc/slab_allocators to work.
-> >
-> >Another problem with this patch; it doesn't compile.
+On Sun 2006-07-09 16:28:28, David Brownell wrote:
 > =
 
-> Hmmm, to you refer to the patch on the bug-id, the one
-> in e-mail, or the one checked into git?
+> > > > Any thoughts as to applying your patch to the tree or not?  No obje=
+ction
+> > > > from me if you want to.
+> > > =
+
+> > > I've not actually had anybody report any testing success from it ...
 > =
 
-> My appologies if they don't match.  I've compiled =
+> Here's a minor fix to Linus' PM API changes:  remove some syslog noise,
+> these messages appear even when they're meaningless.  Greg, please add
+> this to your collection.
 
-> this into a few dozen kernels at this point.
+ACK. suspend is _way_ too noisy just now.
+								Pavel
+-- =
 
-I was referring to the patch in the email.
-
-Alan Stern
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
