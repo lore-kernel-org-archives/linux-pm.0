@@ -1,10 +1,9 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Time to Talk/Hack in Ottawa
-Date: Sun, 16 Jul 2006 11:56:54 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0607161148590.32224@monsoon.he.net>
+From: "marillin griggs" <wynconn@sssax.com>
+Subject: Re: Your Luxury
+Date: Mon, 17 Jul 2006 22:37:37 +0000
+Message-ID: <00d901c6a9f0$c93b7500$ef9e2cac@thgrjbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="----=neXtPaRt_1153179120"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -15,52 +14,95 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: lorne roberson <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format...
 
-Hi everyone,
+------=neXtPaRt_1153179120
+Content-Type: multipart/alternative;
+    boundary="----------=_1153179133-3311-634"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-I have arranged a conference room at the Westin (attached to the Congress =
+This is a multi-part message in MIME format...
 
-Centre) on Tuesday, 18 July 2006, under the auspices of Power Management. =
-
-The room is the Les Saisons room, which will hold 30-50 people (so spread =
-
-the word), and we will have it from 1-6pm. People are welcome to come for =
-
-all or any part of it. We will have soft drinks and snacks at 3, to keep =
-
-everyone awake.
-
-The format will be completely informal. There will be no presentations, =
-
-and no planned general discussions. If there are prescient issues that =
-
-people would like to discuss, please bring them, and we can break into =
-
-groups to talk about them, or hack on them.
-
-I will be bringing at least 1 AC power meter, and hopefully at least one =
-
-test machine. If you a power meter or a test laptop, please feel free to =
-
-bring it. I expect the room to be large enough to support several small =
-
-groups, so if there is a topic or problem that people would like to get =
-
-some work done on, it should be conducive to that. Feel free to prime the =
-
-discussion here, or simply bring the topics along.
-
-[ This is coming at short notice, but little more should be needed, as =
-
-travel plans for Ottawa have been set for some time, and this isn't =
-
-enough to bring someone here on it's own. :-) ]
-
-Thanks, and I hope to see you all on Tuesday.
+------------=_1153179133-3311-634
+Content-Type: text/plain;
+   charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
 
- 	Patrick
+TOP BRANDS - LOW LOW PRICES
+
+Jewelry * Handbags * Pens * Watches * Neckties * Clutches * Wallets=20
+
+Leather, silk and white gold sound good? Visit our site for real photos.
+Everything comes with a certificate, tags and all the extras, plus a warran=
+ty.
+
+http://cuiltent.com/luxury/
+
+die holder fringe tree lattice beam
+penny stock sub-war garden fly honeysuckle
+self-purifying putty-powdered internal-combustion
+desert rat chorus reed trucking house
+white-liveredly money-getting hat blocker
+butterfly flower metal-perforating re-enchain
+day sleeper telephone case taper-pointed
+full-exerted trophy room sling strap
+promise-fulfilling string orchestra soaking pit
+
+------------=_1153179133-3311-634
+Content-Type: text/html;
+   charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3DWindows-125=
+2">
+<META content=3D"MSHTML 6.00.2800.1106" name=3DGENERATOR>
+<DEFANGED_style_0 </STYLE>
+</HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2>
+<p>TOP BRANDS - LOW LOW PRICES</p>
+<p>Jewelry * Handbags * Pens * Watches * Neckties * Clutches * Wallets </p>
+<p>Leather, silk and white gold sound good? Visit our site for real photos.=
+<br>
+Everything comes with a certificate, tags and all the extras, plus a warran=
+ty.</p>
+<A HREF=3D"http://cuiltent.com/luxury/">http://cuiltent.com/luxury/</A><BR>
+<BR>
+die holder fringe tree lattice beam<BR>
+penny stock sub-war garden fly honeysuckle<BR>
+self-purifying putty-powdered internal-combustion<BR>
+desert rat chorus reed trucking house<BR>
+white-liveredly money-getting hat blocker<BR>
+butterfly flower metal-perforating re-enchain<BR>
+day sleeper telephone case taper-pointed<BR>
+full-exerted trophy room sling strap<BR>
+promise-fulfilling string orchestra soaking pit<BR>
+</FONT></DIV></BODY></HTML>
+
+------------=_1153179133-3311-634--
+
+------=neXtPaRt_1153179120
+Content-Type: text/plain;
+Content-Disposition: inline
+
+Este correo se encuentra libre de virus
+
+------=neXtPaRt_1153179120
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+------=neXtPaRt_1153179120--
