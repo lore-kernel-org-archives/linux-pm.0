@@ -1,17 +1,26 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] amd74xx crashes when resuming from STR
-Date: Tue, 18 Jul 2006 04:34:45 +0000 (UTC)
-Message-ID: <19700101003716.GA3558__9011.55568794838$1153197285$gmane$org@ucw.cz>
+Subject: Re: amd74xx crashes when resuming from STR
+Date: Tue, 18 Jul 2006 04:35:36 +0000 (UTC)
+Message-ID: <19700101003716.GA3558__27344.3618826152$1153197336$gmane$org__41818.3293820889$1153197336$gmane$org@ucw.cz>
 References: <20060715210518.GA3263@opus.vpn-dev.reflex>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Date: Thu, 1 Jan 1970 00:37:16 +0000
 Content-Disposition: inline
 In-Reply-To: <20060715210518.GA3263@opus.vpn-dev.reflex>
-Sender: linux-ide-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: Jason Lunz <lunz@falooley.org>
-Cc: vojtech@suse.cz, linux-ide@vger.kernel.org, linux-pm@lists.osdl.org
+Cc: linux-ide@vger.kernel.org, vojtech@suse.cz, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
@@ -29,5 +38,6 @@ Ahha, you are cross-posting there, already.
 What happens if you rmmod amd74xx and insmod it after resume?
 							Pavel
 
--- 
+-- =
+
 Thanks for all the (sleeping) penguins.
