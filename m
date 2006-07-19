@@ -1,11 +1,11 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2.6.18-rc2-mm 2/2] PM:
-	/sys/devices/.../power/state updates
-Date: Wed, 19 Jul 2006 13:40:13 -0700
-Message-ID: <200607191340.14371.david-b@pacbell.net>
+Subject: [patch 2.6.18-rc2-mm 1/2] PM: make
+	/sys/devices/.../power/state optional
+Date: Wed, 19 Jul 2006 13:37:01 -0700
+Message-ID: <200607191337.02365.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_uipvEaIA/eKGXdA"
+  boundary="Boundary-00=_ufpvE5ACnZ4yIyU"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -20,104 +20,100 @@ To: Linux-pm mailing list <linux-pm@lists.osdl.org>
 Cc: Linus Torvalds <torvalds@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_uipvEaIA/eKGXdA
+--Boundary-00=_ufpvE5ACnZ4yIyU
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Two changes here:  (a) make writes to these files fail on devices that
-may need the new operations in Linus' patch; (b) update in-source docs
-to match current behavior, including that change.
+There seems to be a consensus on linux-pm that the sysfs power/state files
+are the wrong approach to userspace having control over runtime PM.  Not
+that there's agreement on what such controls _should_ look like, or even
+that there should be such controls for purposes other than testing...
 
-I hope nobody has issues with (a), but I can't see a good reason to
-do more than reject such writes since the notions behind that file
-are so broken.
+So here's a patch that just makes it easy to get rid of this misfeature.
+It'll help flush out any userspace software that really thinks it needs that
+mechanism; PCMCIA seems to no longer be in that camp, it has it's own
+sysfs attribute.
 
 - Dave
 
-p.s. Greg, these two should IMO merge into your tree along with
-    Linus' patches, in addition to
 
-   http://lists.osdl.org/pipermail/linux-pm/2006-July/002968.html
-
---Boundary-00=_uipvEaIA/eKGXdA
+--Boundary-00=_ufpvE5ACnZ4yIyU
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="linus-tweak2.patch"
+  name="pm-sysfs.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="linus-tweak2.patch"
+	filename="pm-sysfs.patch"
 
-Two updates to the /sys/devices/.../power/state code:
-
-(a) Changes write path code so that it returns errors for devices using the
-    new not-callable-here suspend_prepare(), suspend_late(), or resume_early()
-    methods.
-
-(a) Corrects some of the documentation about what's legal for writing to
-    /sys/devices/.../power/state files to match the current code (including
-    the minor changes for those new methods) below that documentation.
+Add a new PM_SYSFS_DEPRECATED config option to control whether or
+not the /sys/devices/.../power/state files are provided.  This will
+make it easier to get rid of that mechanism when the time comes,
+and to verify that userspace tools work right without it.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
+Index: linux/kernel/power/Kconfig
+===================================================================
+--- linux.orig/kernel/power/Kconfig	2006-07-18 11:00:35.000000000 -0700
++++ linux/kernel/power/Kconfig	2006-07-18 11:14:57.000000000 -0700
+@@ -53,6 +53,17 @@
+ 	CAUTION: this option will cause your machine's real-time clock to be
+ 	set to an invalid time after a resume.
+ 
++config PM_SYSFS_DEPRECATED
++	bool "Driver model /sys/devices/.../power/state files (DEPRECATED)"
++	depends on PM && SYSFS
++	default n
++	help
++	  The driver model started out with a sysfs file intended to provide
++	  a userspace hook for device power management.  This feature has never
++	  worked very well, except for limited testing purposes, and so it will
++	  be removed.   It's not clear that a generic mechanism could really
++	  handle the wide variability of device power states; any replacements
++	  are likely to be bus or driver specific.
+ 
+ config SOFTWARE_SUSPEND
+ 	bool "Software Suspend"
 Index: linux/drivers/base/power/sysfs.c
 ===================================================================
---- linux.orig/drivers/base/power/sysfs.c	2006-07-18 11:00:35.000000000 -0700
-+++ linux/drivers/base/power/sysfs.c	2006-07-18 11:13:56.000000000 -0700
-@@ -11,18 +11,23 @@
+--- linux.orig/drivers/base/power/sysfs.c	2006-07-18 11:13:56.000000000 -0700
++++ linux/drivers/base/power/sysfs.c	2006-07-18 11:15:24.000000000 -0700
+@@ -7,6 +7,8 @@
+ #include "power.h"
+ 
+ 
++#ifdef	CONFIG_PM_SYSFS_DEPRECATED
++
+ /**
   *	state - Control current power state of device
   *
-  *	show() returns the current power state of the device. '0' indicates
-- *	the device is on. Other values (1-3) indicate the device is in a low
-+ *	the device is on. Other values (2) indicate the device is in some low
-  *	power state.
-  *
-- *	store() sets the current power state, which is an integer value
-- *	between 0-3. If the device is on ('0'), and the value written is
-- *	greater than 0, then the device is placed directly into the low-power
-- *	state (via its driver's ->suspend() method).
-- *	If the device is currently in a low-power state, and the value is 0,
-- *	the device is powered back on (via the ->resume() method).
-- *	If the device is in a low-power state, and a different low-power state
-- *	is requested, the device is first resumed, then suspended into the new
-- *	low-power state.
-+ *	store() sets the current power state, which is an integer valued
-+ *	0, 2, or 3.  Devices with bus.suspend_prepare(), bus.suspend_late(),
-+ *	or bus.resume_early() methods fail this operation; those methods
-+ *	won't be called.  Otherwise,
-+ *
-+ *	- If the recorded dev->power.power_state.event matches the
-+ *	  target value (PM_EVENT_ON or PM_EVENT_SUSPEND), nothing is done.
-+ *	- If the recorded event code is nonzero, the device is reactivated
-+ *	  by calling bus.resume() and/or class.resume().
-+ *	- If the target value is nonzero, the device is suspended by
-+ *	  calling class.suspend() and/or bus.suspend() with event code
-+ *	  PM_EVENT_SUSPEND.
-+ *
-+ *	This mechanism is DEPRECATED and should only be used for testing.
-  */
+@@ -67,6 +69,8 @@
  
- static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
-@@ -38,6 +43,12 @@
- 	pm_message_t state;
- 	int error = -EINVAL;
+ static DEVICE_ATTR(state, 0644, state_show, state_store);
  
-+	/* disallow incomplete suspend sequences */
-+	if (dev->bus && (dev->bus->suspend_prepare
-+			|| dev->bus->suspend_late
-+			|| dev->bus->resume_early))
-+		return error;
++#endif	/* CONFIG_PM_SYSFS_DEPRECATED */
 +
- 	state.event = PM_EVENT_SUSPEND;
- 	/* Older apps expected to write "3" here - confused with PCI D3 */
- 	if ((n == 1) && !strcmp(buf, "3"))
+ /*
+  *	wakeup - Report/change current wakeup option for device
+  *
+@@ -140,7 +144,9 @@
+ 
+ 
+ static struct attribute * power_attrs[] = {
++#ifdef	CONFIG_PM_SYSFS_DEPRECATED
+ 	&dev_attr_state.attr,
++#endif
+ 	&dev_attr_wakeup.attr,
+ 	NULL,
+ };
 
---Boundary-00=_uipvEaIA/eKGXdA
+--Boundary-00=_ufpvE5ACnZ4yIyU
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Boundary-00=_uipvEaIA/eKGXdA--
+--Boundary-00=_ufpvE5ACnZ4yIyU--
