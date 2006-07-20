@@ -1,12 +1,11 @@
 From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: [RFC] PowerOP Take 3, Intro 0/5
-Date: Thu, 20 Jul 2006 23:47:24 +0400
-Message-ID: <c55240ed0607201247n3cf57dc1k57218b8d994db5b6@mail.gmail.com>
+Subject: [RFC] PowerOP take 3, PowerOP core 1/5
+Date: Thu, 20 Jul 2006 23:50:35 +0400
+Message-ID: <c55240ed0607201250x5f77c473m381f1698f1168e52@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed;
+	boundary="----=_Part_49493_22486806.1153425035288"
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,109 +19,99 @@ To: linux-pm@lists.osdl.org
 Cc: patrick.mochel@intel.com, Matthew Locke <matt@nomadgs.com>, linux@dominikbrodowski.net, sampsa.fabritius@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-PowerOP is a system power parameter management API submitted for
-discussion.
+------=_Part_49493_22486806.1153425035288
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This patch set is a follow-up to the PowerOP/cpufreq integration
-discussion in the PM summit back in April and the continued discussion
-of the small PM group.  It should be considered a reference for further
-discussion (hence the ifdefs scattered through out).  Esstentially it may
-be seen as take 3 on PowerOP efforts presented by Todd Poynor back
-in 2005. While the basic ideas remain the same (thus don't be surprised
-if you get deja vu reading the text) PowerOP layer is divided into two
-parts - arch independent PowerOP layer and arch dependent PowerOP
-layer in attempt to address comments received by Todd on take 2.
-Two new layers are presented in the PM architecture design as well.
+The PowerOP arch independent core provides routines for
+calling the platform-specific backend to read and set operating
+points and for registering a single machine-dependent backend.
 
-                                                     user space
------------------------------------------------------------------
-   ----------          --------------------          kernel space
-| CPU freq |<->|PowerOP sysfs|
-   ----------          --------------------
-     ^                       ^
-     |                        |
-     v                       v
- ----------------------------------------
-| Arch Independent PowerOP|
- ----------------------------------------
-                                                arch independent
-------------------------------------------------------------------------
-                                                arch specific
- ---------------------------------------
-| Arch Dependent PowerOP |
- --------------------------------------
- ------------------------------
-|         PM Core         |
- ------------------------------
- ---------------------------------
-|     Clock/Voltage FW    |
- ---------------------------------
+------=_Part_49493_22486806.1153425035288
+Content-Type: text/x-patch; name="powerop.core.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="powerop.core.patch"
+X-Attachment-Id: f_epvjh4ft
 
-In the whole, PowerOP writes and reads power "operating points",
-comprised of arbitrary values, called power parameters, that correspond
-to registers, clocks, dividers, voltage regulators, etc. that may be
-modified to set a basic power/performance point for the system.
-Higher-layer power management software passes a platform-specific struct
-of power parameters to a backend that makes the requested adjustments.
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvTWFrZWZpbGUgYi9kcml2ZXJzL01ha2VmaWxlCmluZGV4IGZj
+MmQ3NDQuLmY4ZWFmMzEgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvTWFrZWZpbGUKKysrIGIvZHJpdmVy
+cy9NYWtlZmlsZQpAQCAtNjUsNiArNjUsNyBAQCBvYmotJChDT05GSUdfSVNETikJCSs9IGlzZG4v
+CiBvYmotJChDT05GSUdfRURBQykJCSs9IGVkYWMvCiBvYmotJChDT05GSUdfTUNBKQkJKz0gbWNh
+Lwogb2JqLSQoQ09ORklHX0VJU0EpCQkrPSBlaXNhLworb2JqLSQoQ09ORklHX1BPV0VST1ApCQkr
+PSBwb3dlcm9wLwogb2JqLSQoQ09ORklHX0NQVV9GUkVRKQkJKz0gY3B1ZnJlcS8KIG9iai0kKENP
+TkZJR19NTUMpCQkrPSBtbWMvCiBvYmotJChDT05GSUdfTkVXX0xFRFMpCQkrPSBsZWRzLwpkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9wb3dlcm9wL0tjb25maWcgYi9kcml2ZXJzL3Bvd2Vyb3AvS2NvbmZp
+ZwpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi4wYWU3NGFiCi0tLSAvZGV2L251
+bGwKKysrIGIvZHJpdmVycy9wb3dlcm9wL0tjb25maWcKQEAgLTAsMCArMSwxMiBAQAorIworIyBw
+b3dlcm9wCisjCisKK21lbnUgIlBvd2VyT1AgKFBvd2VyIE1hbmFnZW1lbnQpIgorCitjb25maWcg
+UE9XRVJPUAorCWJvb2wgIlBvd2VyT1AgQ29yZSIKKwloZWxwCisKK2VuZG1lbnUKKwpkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9wb3dlcm9wL01ha2VmaWxlIGIvZHJpdmVycy9wb3dlcm9wL01ha2VmaWxl
+Cm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLjFkNDMwY2UKLS0tIC9kZXYvbnVs
+bAorKysgYi9kcml2ZXJzL3Bvd2Vyb3AvTWFrZWZpbGUKQEAgLTAsMCArMSwyIEBACitvYmotJChD
+T05GSUdfUE9XRVJPUCkJCSs9IHBvd2Vyb3AubworCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2Vy
+b3AvcG93ZXJvcC5jIGIvZHJpdmVycy9wb3dlcm9wL3Bvd2Vyb3AuYwpuZXcgZmlsZSBtb2RlIDEw
+MDY0NAppbmRleCAwMDAwMDAwLi5hMDIzNzI2Ci0tLSAvZGV2L251bGwKKysrIGIvZHJpdmVycy9w
+b3dlcm9wL3Bvd2Vyb3AuYwpAQCAtMCwwICsxLDk1IEBACisvKgorICogUG93ZXJPUCBnZW5lcmlj
+IGNvcmUgZnVuY3Rpb25zCisgKgorICogQXV0aG9yOiBUb2RkIFBveW5vciA8dHBveW5vckBtdmlz
+dGEuY29tPgorICogSW50ZXJmYWNlIHVwZGF0ZSBieSBFdWdlbnkgUy4gTWludHMgPGV1Z2VueS5t
+aW50c0BnbWFpbC5jb20+CisgKgorICogMjAwNSAoYykgTW9udGFWaXN0YSBTb2Z0d2FyZSwgSW5j
+LiBUaGlzIGZpbGUgaXMgbGljZW5zZWQgdW5kZXIKKyAqIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdl
+bmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyLiBUaGlzIHByb2dyYW0KKyAqIGlzIGxpY2Vu
+c2VkICJhcyBpcyIgd2l0aG91dCBhbnkgd2FycmFudHkgb2YgYW55IGtpbmQsIHdoZXRoZXIgZXhw
+cmVzcworICogb3IgaW1wbGllZC4KKyAqLworCisjaW5jbHVkZSA8bGludXgvY29uZmlnLmg+Cisj
+aW5jbHVkZSA8bGludXgvbW9kdWxlLmg+CisjaW5jbHVkZSA8bGludXgvcG93ZXJvcC5oPgorI2lu
+Y2x1ZGUgPGxpbnV4L2luaXQuaD4KKyNpbmNsdWRlIDxsaW51eC9lcnJuby5oPgorCitzdGF0aWMg
+c3RydWN0IHBvd2Vyb3BfZHJpdmVyICpwb3dlcm9wX2RyaXZlcjsKKworLyogc2VyaWFsaXplIGFj
+Y2VzcyB0byBnZXQvc2V0X3BvaW50IHJvdXRpbmVzICovCitzdGF0aWMgREVDTEFSRV9NVVRFWChw
+b3dlcm9wX211dGV4KTsKKworaW50Citwb3dlcm9wX3NldF9wb2ludChzdHJ1Y3QgcG93ZXJvcF9w
+b2ludCAqcG9pbnQpCit7CisJaW50IHJjOworCisJZG93bigmcG93ZXJvcF9tdXRleCk7CisJcmMg
+PSBwb3dlcm9wX2RyaXZlciAmJiBwb3dlcm9wX2RyaXZlci0+c2V0X3BvaW50ID8gCisJCXBvd2Vy
+b3BfZHJpdmVyLT5zZXRfcG9pbnQocG9pbnQpIDogLUVJTlZBTDsKKwl1cCgmcG93ZXJvcF9tdXRl
+eCk7CisJCisJcmV0dXJuIHJjOworfQorCitpbnQKK3Bvd2Vyb3BfZ2V0X3BvaW50KHN0cnVjdCBw
+b3dlcm9wX3BvaW50ICpwb2ludCkKK3sKKwlpbnQgcmM7CisKKwlkb3duKCZwb3dlcm9wX211dGV4
+KTsKKwlyYyA9IHBvd2Vyb3BfZHJpdmVyICYmIHBvd2Vyb3BfZHJpdmVyLT5nZXRfcG9pbnQgPyAK
+KwkJcG93ZXJvcF9kcml2ZXItPmdldF9wb2ludChwb2ludCkgOiAtRUlOVkFMOworCXVwKCZwb3dl
+cm9wX211dGV4KTsKKworCXJldHVybiByYzsKK30KKworCitFWFBPUlRfU1lNQk9MX0dQTChwb3dl
+cm9wX3NldF9wb2ludCk7CitFWFBPUlRfU1lNQk9MX0dQTChwb3dlcm9wX2dldF9wb2ludCk7CisK
+K2ludCAKK3Bvd2Vyb3BfZHJpdmVyX3JlZ2lzdGVyKHN0cnVjdCBwb3dlcm9wX2RyaXZlciAqcCkK
+K3sKKwlpbnQgZXJyb3IgPSAwOworCisJaWYgKCEgcG93ZXJvcF9kcml2ZXIpIHsKKwkJcHJpbnRr
+KEtFUk5fSU5GTyAiUG93ZXJPUCByZWdpc3RlcmluZyBkcml2ZXIgJXMuXG4iLCBwLT5uYW1lKTsK
+KwkJcG93ZXJvcF9kcml2ZXIgPSBwOworCisJfSBlbHNlCisJCWVycm9yID0gLUVCVVNZOworCisJ
+cmV0dXJuIGVycm9yOworfQorCit2b2lkIAorcG93ZXJvcF9kcml2ZXJfdW5yZWdpc3RlcihzdHJ1
+Y3QgcG93ZXJvcF9kcml2ZXIgKnApCit7CisJaWYgKHBvd2Vyb3BfZHJpdmVyID09IHApIHsKKwkJ
+cHJpbnRrKEtFUk5fSU5GTyAiUG93ZXJPUCB1bnJlZ2lzdGVyaW5nIGRyaXZlciAlcy5cbiIsIHAt
+Pm5hbWUpOworCQlwb3dlcm9wX2RyaXZlciA9IE5VTEw7CisJfQorfQorCitFWFBPUlRfU1lNQk9M
+X0dQTChwb3dlcm9wX2RyaXZlcl9yZWdpc3Rlcik7CitFWFBPUlRfU1lNQk9MX0dQTChwb3dlcm9w
+X2RyaXZlcl91bnJlZ2lzdGVyKTsKKworc3RhdGljIGludCBfX2luaXQgcG93ZXJvcF9pbml0KHZv
+aWQpCit7CisJcmV0dXJuIDA7Cit9CisKK3N0YXRpYyB2b2lkIF9fZXhpdCBwb3dlcm9wX2V4aXQo
+dm9pZCkKK3sKK30KKworbW9kdWxlX2luaXQocG93ZXJvcF9pbml0KTsKK21vZHVsZV9leGl0KHBv
+d2Vyb3BfZXhpdCk7CisKK01PRFVMRV9ERVNDUklQVElPTigiUG93ZXJPUCBQb3dlciBNYW5hZ2Vt
+ZW50Iik7CitNT0RVTEVfTElDRU5TRSgiR1BMIik7CisKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGlu
+dXgvcG93ZXJvcC5oIGIvaW5jbHVkZS9saW51eC9wb3dlcm9wLmgKbmV3IGZpbGUgbW9kZSAxMDA2
+NDQKaW5kZXggMDAwMDAwMC4uYmVmZGJmNQotLS0gL2Rldi9udWxsCisrKyBiL2luY2x1ZGUvbGlu
+dXgvcG93ZXJvcC5oCkBAIC0wLDAgKzEsMzEgQEAKKy8qCisgKiBQb3dlck9QIGNvcmUgZGVmaW5p
+dGlvbnMKKyAqCisgKiBBdXRob3I6IFRvZGQgUG95bm9yIDx0cG95bm9yQG12aXN0YS5jb20+Cisg
+KiBJbnRlcmZhY2UgdXBkYXRlIGJ5IEV1Z2VueSBTLiBNaW50cyA8ZXVnZW55Lm1pbnRzQGdtYWls
+LmNvbT4KKyAqCisgKiAyMDA1IChjKSBNb250YVZpc3RhIFNvZnR3YXJlLCBJbmMuIFRoaXMgZmls
+ZSBpcyBsaWNlbnNlZCB1bmRlcgorICogdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJs
+aWMgTGljZW5zZSB2ZXJzaW9uIDIuIFRoaXMgcHJvZ3JhbQorICogaXMgbGljZW5zZWQgImFzIGlz
+IiB3aXRob3V0IGFueSB3YXJyYW50eSBvZiBhbnkga2luZCwgd2hldGhlciBleHByZXNzCisgKiBv
+ciBpbXBsaWVkLgorICovCisjaWZuZGVmIF9fUE9XRVJPUF9IX18KKyNkZWZpbmUgX19QT1dFUk9Q
+X0hfXworCisjaW5jbHVkZSA8YXNtL3Bvd2Vyb3AuaD4KKworc3RydWN0IHBvd2Vyb3BfZHJpdmVy
+IHsKKwljaGFyICpuYW1lOworCWludCAoKnNldF9wb2ludCkoc3RydWN0IHBvd2Vyb3BfcG9pbnQg
+Km9wdCk7CisJaW50ICgqZ2V0X3BvaW50KShzdHJ1Y3QgcG93ZXJvcF9wb2ludCAqb3B0KTsKK307
+CisvKiBJbnRlcmZhY2UgdG8gdXBwZXIgUE1GIGxheWVycyAqLworaW50IHBvd2Vyb3Bfc2V0X3Bv
+aW50KHN0cnVjdCBwb3dlcm9wX3BvaW50ICpvcHQpOworaW50IHBvd2Vyb3BfZ2V0X3BvaW50KHN0
+cnVjdCBwb3dlcm9wX3BvaW50ICpvcHQpOworCisvKiBJbnRlcmZhY2UgdG8gYW4gYXJjaCBQTSBj
+b3JlICovCitpbnQgcG93ZXJvcF9kcml2ZXJfcmVnaXN0ZXIoc3RydWN0IHBvd2Vyb3BfZHJpdmVy
+ICpwKTsKK3ZvaWQgcG93ZXJvcF9kcml2ZXJfdW5yZWdpc3RlcihzdHJ1Y3QgcG93ZXJvcF9kcml2
+ZXIgKnApOworCisjZW5kaWYgLyogX19QT1dFUk9QX0hfXyAqLworCg==
+------=_Part_49493_22486806.1153425035288
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Arch dependent PowerOP layer defines a set of power parameters utilized
-by the platform. Arch independent PowerOP layer provides interfaces for
-both (various) higher-layer power management software and (various)
-backends to talk to each other in terms defined by arch dependent PowerOP
-layer.
 
->From the cpufreq point of view PowerOP in the whole can be thought of as a
-layer below cpufreq that defines platform power parameters and provides
-interface to change it. The main goal is to open up interfaces to operating
-points comprised of arbitrary power parameters, as an extention to the
-"cpu frequency" parameter that cpufreq is designed around.  It pushes the
-hardware-level power parameter management down to a level that provide the
-capability to deal with entire operating points as the basic unit of
-system power
-management for reasons described below.
-
-PowerOP layer is intended to leave all power policy decisions to
-higher layers in a power management software stack. Although, further
-discussion is needed to define interaction of PM framework with drivers.
-
-This work is aimed to extend existing infrastructure for embedded systems,
-which often
-have several parameters that can be set and the cpu frequency
-abstraction specifies only part of the operating point that may be
-managed from software.  For example, an XScale PXA27x could be
-considered to have six basic power parameters (mainly cpu run mode and
-memory and bus dividers) that for the most part should be set in tandem
-to known good sets of values as validated by the silicon vendor.
-Embedded systems typically handle more hardware clock manipulation
-directly in Linux than do, for example, desktop/server systems based on
-ACPI interfaces.  Desktop/server systems may also benefit from the
-ability to select custom voltages, bus speeds, etc., although deviating
-from values validated by the hardware vendor is risky and controversial.
-
-An optional sysfs interface to create and activate operating points is
-also submitted for discussion. It hasn't been changed since original Todd
-patch.  This interface could be used in an actual power management stack,
-or at least can serve as a starting point for discussing how to manage
-operating points at the next higher layer in the power management
-software stack.
-
-This reference implementation is an example of integrating cpufreq and
-PowerOP on the OMAP 1710.
-
-Nowdays Linux has clock framework - well established interface to access
-hw clocks and the layer which handles clocks interdependencies. Similar
-voltage framework is on the way. Such combined clock/voltage framework
-provides a good interface to get/set clock and voltage hw registers.
-
-The arch dependent glue logic may be required to handle either
-clock/voltages interdependencies (open question though) or some arch
-specific actions required to take place in case of simultaneous coupled
-clocks/voltage change (for example  what has to happen first).
-New PM Core layer is designed to address this requirements.
-
-To address comments received by Todd on take 2 arch independent PowerOP
-layer designed in the way to allow different PM Core layers to be
-registered with PowerOP.
-
-Thanks,
-Matt, Eugeny
+------=_Part_49493_22486806.1153425035288--
