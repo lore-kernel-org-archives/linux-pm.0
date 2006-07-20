@@ -1,12 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2.6.18-rc2-mm 1/2] PM: make
-	/sys/devices/.../power/state optional
-Date: Wed, 19 Jul 2006 13:37:01 -0700
-Message-ID: <200607191337.02365.david-b@pacbell.net>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: [RFC] PowerOP Take 3, Intro 0/5
+Date: Thu, 20 Jul 2006 23:47:24 +0400
+Message-ID: <c55240ed0607201247n3cf57dc1k57218b8d994db5b6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ufpvE5ACnZ4yIyU"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,104 +16,113 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linux-pm mailing list <linux-pm@lists.osdl.org>
-Cc: Linus Torvalds <torvalds@osdl.org>
+To: linux-pm@lists.osdl.org
+Cc: patrick.mochel@intel.com, Matthew Locke <matt@nomadgs.com>, linux@dominikbrodowski.net, sampsa.fabritius@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
---Boundary-00=_ufpvE5ACnZ4yIyU
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+PowerOP is a system power parameter management API submitted for
+discussion.
 
-There seems to be a consensus on linux-pm that the sysfs power/state files
-are the wrong approach to userspace having control over runtime PM.  Not
-that there's agreement on what such controls _should_ look like, or even
-that there should be such controls for purposes other than testing...
+This patch set is a follow-up to the PowerOP/cpufreq integration
+discussion in the PM summit back in April and the continued discussion
+of the small PM group.  It should be considered a reference for further
+discussion (hence the ifdefs scattered through out).  Esstentially it may
+be seen as take 3 on PowerOP efforts presented by Todd Poynor back
+in 2005. While the basic ideas remain the same (thus don't be surprised
+if you get deja vu reading the text) PowerOP layer is divided into two
+parts - arch independent PowerOP layer and arch dependent PowerOP
+layer in attempt to address comments received by Todd on take 2.
+Two new layers are presented in the PM architecture design as well.
 
-So here's a patch that just makes it easy to get rid of this misfeature.
-It'll help flush out any userspace software that really thinks it needs that
-mechanism; PCMCIA seems to no longer be in that camp, it has it's own
-sysfs attribute.
+                                                     user space
+-----------------------------------------------------------------
+   ----------          --------------------          kernel space
+| CPU freq |<->|PowerOP sysfs|
+   ----------          --------------------
+     ^                       ^
+     |                        |
+     v                       v
+ ----------------------------------------
+| Arch Independent PowerOP|
+ ----------------------------------------
+                                                arch independent
+------------------------------------------------------------------------
+                                                arch specific
+ ---------------------------------------
+| Arch Dependent PowerOP |
+ --------------------------------------
+ ------------------------------
+|         PM Core         |
+ ------------------------------
+ ---------------------------------
+|     Clock/Voltage FW    |
+ ---------------------------------
 
-- Dave
+In the whole, PowerOP writes and reads power "operating points",
+comprised of arbitrary values, called power parameters, that correspond
+to registers, clocks, dividers, voltage regulators, etc. that may be
+modified to set a basic power/performance point for the system.
+Higher-layer power management software passes a platform-specific struct
+of power parameters to a backend that makes the requested adjustments.
 
+Arch dependent PowerOP layer defines a set of power parameters utilized
+by the platform. Arch independent PowerOP layer provides interfaces for
+both (various) higher-layer power management software and (various)
+backends to talk to each other in terms defined by arch dependent PowerOP
+layer.
 
---Boundary-00=_ufpvE5ACnZ4yIyU
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="pm-sysfs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="pm-sysfs.patch"
+>From the cpufreq point of view PowerOP in the whole can be thought of as a
+layer below cpufreq that defines platform power parameters and provides
+interface to change it. The main goal is to open up interfaces to operating
+points comprised of arbitrary power parameters, as an extention to the
+"cpu frequency" parameter that cpufreq is designed around.  It pushes the
+hardware-level power parameter management down to a level that provide the
+capability to deal with entire operating points as the basic unit of
+system power
+management for reasons described below.
 
-Add a new PM_SYSFS_DEPRECATED config option to control whether or
-not the /sys/devices/.../power/state files are provided.  This will
-make it easier to get rid of that mechanism when the time comes,
-and to verify that userspace tools work right without it.
+PowerOP layer is intended to leave all power policy decisions to
+higher layers in a power management software stack. Although, further
+discussion is needed to define interaction of PM framework with drivers.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+This work is aimed to extend existing infrastructure for embedded systems,
+which often
+have several parameters that can be set and the cpu frequency
+abstraction specifies only part of the operating point that may be
+managed from software.  For example, an XScale PXA27x could be
+considered to have six basic power parameters (mainly cpu run mode and
+memory and bus dividers) that for the most part should be set in tandem
+to known good sets of values as validated by the silicon vendor.
+Embedded systems typically handle more hardware clock manipulation
+directly in Linux than do, for example, desktop/server systems based on
+ACPI interfaces.  Desktop/server systems may also benefit from the
+ability to select custom voltages, bus speeds, etc., although deviating
+from values validated by the hardware vendor is risky and controversial.
 
-Index: linux/kernel/power/Kconfig
-===================================================================
---- linux.orig/kernel/power/Kconfig	2006-07-18 11:00:35.000000000 -0700
-+++ linux/kernel/power/Kconfig	2006-07-18 11:14:57.000000000 -0700
-@@ -53,6 +53,17 @@
- 	CAUTION: this option will cause your machine's real-time clock to be
- 	set to an invalid time after a resume.
- 
-+config PM_SYSFS_DEPRECATED
-+	bool "Driver model /sys/devices/.../power/state files (DEPRECATED)"
-+	depends on PM && SYSFS
-+	default n
-+	help
-+	  The driver model started out with a sysfs file intended to provide
-+	  a userspace hook for device power management.  This feature has never
-+	  worked very well, except for limited testing purposes, and so it will
-+	  be removed.   It's not clear that a generic mechanism could really
-+	  handle the wide variability of device power states; any replacements
-+	  are likely to be bus or driver specific.
- 
- config SOFTWARE_SUSPEND
- 	bool "Software Suspend"
-Index: linux/drivers/base/power/sysfs.c
-===================================================================
---- linux.orig/drivers/base/power/sysfs.c	2006-07-18 11:13:56.000000000 -0700
-+++ linux/drivers/base/power/sysfs.c	2006-07-18 11:15:24.000000000 -0700
-@@ -7,6 +7,8 @@
- #include "power.h"
- 
- 
-+#ifdef	CONFIG_PM_SYSFS_DEPRECATED
-+
- /**
-  *	state - Control current power state of device
-  *
-@@ -67,6 +69,8 @@
- 
- static DEVICE_ATTR(state, 0644, state_show, state_store);
- 
-+#endif	/* CONFIG_PM_SYSFS_DEPRECATED */
-+
- /*
-  *	wakeup - Report/change current wakeup option for device
-  *
-@@ -140,7 +144,9 @@
- 
- 
- static struct attribute * power_attrs[] = {
-+#ifdef	CONFIG_PM_SYSFS_DEPRECATED
- 	&dev_attr_state.attr,
-+#endif
- 	&dev_attr_wakeup.attr,
- 	NULL,
- };
+An optional sysfs interface to create and activate operating points is
+also submitted for discussion. It hasn't been changed since original Todd
+patch.  This interface could be used in an actual power management stack,
+or at least can serve as a starting point for discussing how to manage
+operating points at the next higher layer in the power management
+software stack.
 
---Boundary-00=_ufpvE5ACnZ4yIyU
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This reference implementation is an example of integrating cpufreq and
+PowerOP on the OMAP 1710.
 
+Nowdays Linux has clock framework - well established interface to access
+hw clocks and the layer which handles clocks interdependencies. Similar
+voltage framework is on the way. Such combined clock/voltage framework
+provides a good interface to get/set clock and voltage hw registers.
 
---Boundary-00=_ufpvE5ACnZ4yIyU--
+The arch dependent glue logic may be required to handle either
+clock/voltages interdependencies (open question though) or some arch
+specific actions required to take place in case of simultaneous coupled
+clocks/voltage change (for example  what has to happen first).
+New PM Core layer is designed to address this requirements.
+
+To address comments received by Todd on take 2 arch independent PowerOP
+layer designed in the way to allow different PM Core layers to be
+registered with PowerOP.
+
+Thanks,
+Matt, Eugeny
