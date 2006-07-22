@@ -1,14 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] PowerOP take 3, PowerOP core 1/5
-Date: Thu, 20 Jul 2006 15:01:30 -0700
-Message-ID: <200607201501.32087.david-b@pacbell.net>
-References: <c55240ed0607201250x5f77c473m381f1698f1168e52@mail.gmail.com>
+From: <rasmit.ranjan@wipro.com>
+Subject: suspend to RAM not working
+Date: Sat, 22 Jul 2006 11:59:39 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB2023B6E72@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <c55240ed0607201250x5f77c473m381f1698f1168e52@mail.gmail.com>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,23 +17,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
-Cc: Matthew Locke <matt@nomadgs.com>, patrick.mochel@intel.com, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 20 July 2006 12:50 pm, Eugeny S. Mints wrote:
-> +static int __init powerop_init(void)
-> +{
-> +=A0=A0=A0=A0=A0=A0=A0return 0;
-> +}
-> +
-> +static void __exit powerop_exit(void)
-> +{
-> +}
-> +
-> +module_init(powerop_init);
-> +module_exit(powerop_exit);
+Hi all,
+    I am using ACER Aspire 3003LC laptop. My kernel version 2.6.15.4.
+I tried suspend to RAM by giving following command =
 
-Best to delete useless code like that.  :)
+    echo mem > /sys/power/state
+ =
 
-And you should be grabbing that mutex to register/unregister the arch
-methods table, otherwise there's little point in having it ...
+My system goes into suspended state as it seems because system becomes
+powered off. But when i press my power button or Fn button it does not
+resume ( my screen becomes blank ).My system supports both suspend to
+RAM and suspend to Disk. Suspend to Disk works properly in my system. I
+thought my video card might create some problem.So i run the following
+script.
+#!/bin/sh
+ID=3D`lspci | grep VGA | awk '{ print $1 }' | sed -e 's@0000:@@' -e
+'s@:@/@'`
+TMP_FILE=3D`mktemp /var/tmp/video_state.XXXXXX`
+trap 'rm -f $TMP_FILE' 0 1 15
+chvt 1
+sync
+cat /proc/bus/pci/$ID > $TMP_FILE
+echo mem > /sys/power/state
+cat $TMP_FILE > /proc/bus/pci/$ID
+chvt 7
+rm -f $TMP_FILE
+
+But this did not work for my laptop. Has anybody faced this problem
+before.Please suggest what else can i do to make suspend to RAM working?
+ =
+
+Regards,
+Rasmit.
