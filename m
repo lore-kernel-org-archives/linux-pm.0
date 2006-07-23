@@ -1,13 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: RFC -- updated Documentation/power/devices.txt
-Date: Sun, 23 Jul 2006 09:22:29 -0700
-Message-ID: <200607230922.29824.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0607222334510.10239-100000@netrider.rowland.org>
+Subject: Re: [RFC] PowerOP Take 3, ARM OMAP1 platform support 3/5
+Date: Sun, 23 Jul 2006 09:24:50 -0700
+Message-ID: <200607230924.52289.david-b@pacbell.net>
+References: <c55240ed0607201301y7ac3be76o6f173d1b6ab50c1d@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0607222334510.10239-100000@netrider.rowland.org>
+In-Reply-To: <c55240ed0607201301y7ac3be76o6f173d1b6ab50c1d@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,82 +18,39 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: linux-pm@lists.osdl.org
+Cc: Matthew Locke <matt@nomadgs.com>, patrick.mochel@intel.com, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 22 July 2006 8:59 pm, Alan Stern wrote:
-> On Sat, 22 Jul 2006, David Brownell wrote:
-> =
+On Thursday 20 July 2006 1:01 pm, Eugeny S. Mints wrote:
+> +struct powerop_point {
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int v; =A0 =A0 =A0 =A0 /* voltage in mV */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int dpll;=A0=A0=A0=A0=A0=A0/* in KHz */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int cpu;=A0=A0=A0=A0=A0=A0=A0/* CPU freque=
+ncy in KHz */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int tc;=A0=A0=A0=A0=A0=A0=A0=A0/* in KHz */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int per;=A0=A0=A0=A0=A0=A0=A0/* in KHz */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int dsp;=A0=A0=A0=A0=A0=A0=A0/* in KHz */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int dspmmu;=A0=A0=A0=A0/* in KHz */
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int lcd;=A0=A0=A0=A0=A0=A0=A0/* in KHz */
+> +};
 
-> > In short that's kind of a mess.  IMO the correct approach involves remo=
-ving
-> > the dev->power.power_state thing entirely, along with the sysfs thing, =
-but
-> > we can't do that quite yet.
-> =
+A few comments:
 
-> Then what _can_ we do now?  Or better yet, what _should_ we aim towards
-> doing?  I'm perfectly happy to have those things removed, but what (if
-> anything) should take their place?
+ - This should be part of patch #4; it's not truly separate.
 
-Remove both, replace with nothing generic ... my $US 0.02.  You will
-have noticed the patch I sent to add a config option to remove the
-/sys/devices/.../power/state files; that can start phasing out soon.
-Removing power_state can be done over time.
+ - I take it "v" is CPU voltage rather than some random component?
+   Either way, there seems to be an omission here since boards
+   could have multiple voltages to care about ...
 
-Some busses could provide bus-specific replacements ... PCI and USB,
-not I2C or SPI, as examples.  I can't really argue any reason to make
-such a replacement though, other than for testing.
+ - In general, shouldn't an operating point be board-specific, so
+   that the parts of the system outside the SOC can be included?
 
+ - I'd still rather see operating points be identified by a name
+   string of some kind so that the userspace API resembles that
+   of /sys/power/state:  just write the state name to that file.
 
-> Some simple questions may help start the ball rolling.  During a system
-> resume, should all devices be powered on full, or should they be restored
-> to the state they were in before the suspend? =
-
-
-I'd say the answer is bus- or driver-specific, but lean towards the latter.
-Though it's not clear how the PM core could tell about runtime states, since
-I also think those should be driver-internal ... so how could anyone tell
-the difference?
-
-And for that matter, what is a "system resume" on systems that aren't
-as simple as PCs?  E.g. when there are multiple run modes, there's
-no reason to expect the post-resume mode to be the same as the pre-suspend
-one and thus have e.g. the same clocks and voltages available ... neither
-"all on full" nor "all on as before suspend" make sense everywhere.
-
-
-> Or should there be a third =
-
-> possibility -- maybe some devices always on, others the way they were?  =
-
-> And who decides?  The driver?
-
-A given system should be able to provide the answer appropriate for
-its applications.  Example, if it's woken up by a given device, maybe
-that's the only non-system device that _needs_ to be activated ...
-
- =
-
-> For that matter, to what extent does the PM core need to be involved in
-> runtime power management?
-
-Hardly at all, in my book.  As I wrote in that revised devices.txt...
-see that for more info.  (That's written to reflect the status quo.)
-Different problem domains can have their own hooks ... there's not a
-lot of really generic stuff, since the problem domains are so varied.
-
-
-> As far as I can see, all the core can do is =
-
-> provide centralized routines that would be widely useful.  But apart from
-> something resembling the current sysfs interface, I can't see what those
-> routines might do.
-
-See above ... I consider the current /sys/devices/.../power/state interface
-irredeemably broken.  Which leaves nothing generic enough for the core, at
-least in terms of mechanisms needed/used by Linux today. =
-
+Still looking at the patches, otherwise.
 
 - Dave
+  =
