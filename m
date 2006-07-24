@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: RFC -- updated Documentation/power/devices.txt
-Date: Mon, 24 Jul 2006 11:46:21 +0200
-Message-ID: <200607241146.21709.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0607230843160.31932-100000@netrider.rowland.org>
-	<200607240045.13724.rjw@sisk.pl>
-	<200607232022.24854.david-b@pacbell.net>
+Date: Mon, 24 Jul 2006 10:51:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0607241040400.6638-100000@iolanthe.rowland.org>
+References: <200607241146.21709.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200607232022.24854.david-b@pacbell.net>
-Content-Disposition: inline
+In-Reply-To: <200607241146.21709.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,88 +17,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 24 July 2006 05:22, David Brownell wrote:
-> On Sunday 23 July 2006 3:45 pm, Rafael J. Wysocki wrote:
-> > On Sunday 23 July 2006 15:03, Alan Stern wrote:
-> > > On Sun, 23 Jul 2006, Rafael J. Wysocki wrote:
-> > > ... In other words, devices get restored to the state =
+On Mon, 24 Jul 2006, Rafael J. Wysocki wrote:
 
-> > > they were in before suspend.
-> > =
+> > > > 	Upon resuming from a system suspend, is it better to tell the
+> > > > 	driver to "go directly to the saved state" or to turn the
+> > > > 	device back fully ON and then change to the saved state (if it =
 
-> > Yes.
-> >
-> > > I don't see anything wrong with that.  It does raise some more questi=
-ons.
+> > > > 	wasn't fully ON before the system suspend)?
 > > > =
 
-> > > 	Who should be responsible for remembering the device's state
-> > > 	from before the system suspend: the PM core or the driver?
-> > > 	(Note that the driver has a better idea of what that state
-> > > 	actually was.)
+> > > I think the rule should be "go directly to the saved state", if possi=
+ble.
 > > =
 
-> > It seems to be easier to leave it to the driver.
+> > Agreed, though as I described above it's not something that can be
+> > detected outside of that driver without actually measuring the power
+> > drain that driver imposes on the system.
 > =
 
-> Just the way any true runtime pm operation would be, yes?
-
-I think so.
-
-> > However, I think the core =
-
-> > needs to have at least some control over it.   Otherwise, for example,
-> > the detection of misbehaving drivers would be quite difficult, IMHO.
+> And that would be difficult if not impossible.
 > =
 
-> Remember that the definition of runtime PM under discussion is:
-> =
+> So, it looks like the core will only need to tell the driver to "resume"
+> with the implicit "go directly to the saved state" meaning and the
+> driver will actually decide what to do.
 
-> > > >    2   While the system is running, independently of other power ma=
-nagement
-> > > >        activity.  Upstream drivers will normally not know (or care)=
- if the
-> > > >        device is in some low power state when issuing requests; the=
- driver
-> > > >        will auto-resume anything that's needed when it gets a reque=
-st.
-> =
+And this implies that the meanings of the suspend() and resume() method
+calls are different from what people might normally think.  suspend()  =
 
-> That excludes the core having any such "control", or the ability to "dete=
-ct"
-> such misbehavior.  (And why would it be misbehavior, when the difference =
-is
-> irrelevant to upstream drivers issuing requests to that device?)  No matt=
-er
-> what state the device resumes into, the only architectural requirement is
-> that it respond as if it were fully "on".  Because runtime low power stat=
-es
-> are exactly equivalent to "fully operational" except they use less power.
->
-> > > 	Upon resuming from a system suspend, is it better to tell the
-> > > 	driver to "go directly to the saved state" or to turn the
-> > > 	device back fully ON and then change to the saved state (if it =
+doesn't really mean "Put your device into a low-power state"; it means
+"The system is going into a suspend, so remember the device's current
+power state and take whatever actions are appropriate".  For example, if
+the device is already in a low-power state then it might be appropriate to
+do nothing at all.
 
-> > > 	wasn't fully ON before the system suspend)?
-> > =
+Likewise, resume() doesn't mean "Change your device to fully ON"; it means
+"The system is waking up from a suspend, so put your device back into
+whatever power state it was in before the suspend occurred".
 
-> > I think the rule should be "go directly to the saved state", if possibl=
-e.
-> =
+These meanings may not be entirely consistent with the way the PM core
+works now, but to me they make more sense.  To make the core consistent
+with this approach wouldn't require much of a change.  Basically we just
+have to rip out all the stuff referring to dev->power.power_state, which
+needs to be done anyway.
 
-> Agreed, though as I described above it's not something that can be
-> detected outside of that driver without actually measuring the power
-> drain that driver imposes on the system.
-
-And that would be difficult if not impossible.
-
-So, it looks like the core will only need to tell the driver to "resume"
-with the implicit "go directly to the saved state" meaning and the
-driver will actually decide what to do.
-
-Greetings,
-Rafael
+Alan Stern
