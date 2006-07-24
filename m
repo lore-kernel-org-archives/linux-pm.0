@@ -1,16 +1,13 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
-Date: Mon, 24 Jul 2006 12:40:54 -0700
-Message-ID: <2af1156365fba2cb6217835d3ef4eda7@nomadgs.com>
-References: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
-	<20060724172954.GC1926@elf.ucw.cz>
-	<200607241149.01700.david-b@pacbell.net>
-	<20060724193545.GA2806@elf.ucw.cz>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: RFC -- updated Documentation/power/devices.txt
+Date: Mon, 24 Jul 2006 16:44:51 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0607241610240.6386-100000@iolanthe.rowland.org>
+References: <200607241011.15325.david-b@pacbell.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060724193545.GA2806@elf.ucw.cz>
+In-Reply-To: <200607241011.15325.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,30 +17,66 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: David Brownell <david-b@pacbell.net>, patrick.mochel@intel.com, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Jul 24, 2006, at 12:35 PM, Pavel Machek wrote:
+On Mon, 24 Jul 2006, David Brownell wrote:
 
->
->>> But better run this by lkml.
->>
->> I'd rather see some rough consensus on this list that this is the =
+> OK, _now_ we're discussing a semantic change.  ;)
+> =
 
->> right way
->> to head, before running things like this by LKML.
->
-> I meant "they could suggest how to do the sysfs thing, in reasonable
-> way". Like echo new_config > file is extermely ugly, but perhaps =
+> I've added dev->power.power_state to the "this is deprecated" text, along
+> with the sysfs power/state file.  IMO we can't realistically make that ch=
+ange
+> (removing the "is it nonzero" test) so long as the sysfs mechanism exists.
 
-> configfs
-> is suitable?
+All right, I can accept that.  A fundamental problem is that
 
-Ah, Is that what you consider ugly, that each parameter is a sysfs file =
+	echo -n 2 >/sys/devices/.../power/state
 
-and the values have to be written to a file to set it up?
+calls the driver's suspend() method, thereby telling it that the system as =
 
-We can look into configfs and ask lkml (or specific people) for =
+a whole is going to be suspended.  It's an unfortunate overloading of =
 
-recommendations on the best mechanism to use.
+meanings.
+
+Is it too early to start thinking about replacements for .../power/state
+in individual subsystems?  Is that attribute file currently used anywhere
+outside of PCMCIA (other than for testing)?  The sooner a safe replacement
+is provided for such uses, the better.
+
+> Once the sysfs mechanism goes away, there won't be much need for the mech=
+anism.
+> Only callers to dpm_runtime_*() would trigger any of the troublesome path=
+s.
+> The two callers are USB and PCMCIA, and I'm not sure they really need the=
+ extra
+> lock that's grabbed by the dpm_runtime_*() calls if there's no need to pr=
+otect
+> against that sysfs mechanism.
+
+My autosuspend patches remove the dpm_runtime_* stuff from USB, leaving =
+
+only PCMCIA.
+
+The "extra lock" you refer to is dpm_sem?  I'm not quite sure why it's
+there at all...  Apparently all it does is attempt to prevent runtime PM
+requests from being made while a system suspend/resume transition is in
+progress.  But it's futile to try doing this from within the core, if =
+
+drivers are going to be managing device states internally.  (Not to =
+
+mention that a task waiting on dpm_sem will cause the "freeze processes" =
+
+procedure to fail.)
+
+And it's not clear that we _do_ want to prevent runtime PM changes from =
+
+occurring during a system sleep transition.  If a remote-wakeup request =
+
+arrives while the system is suspending, it ought to be legal for the =
+
+request to succeed and thereby abort the transition.
+
+Alan Stern
