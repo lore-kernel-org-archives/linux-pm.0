@@ -1,15 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
-Date: Mon, 24 Jul 2006 11:48:59 -0700
-Message-ID: <200607241149.01700.david-b@pacbell.net>
+Date: Mon, 24 Jul 2006 21:35:45 +0200
+Message-ID: <20060724193545.GA2806@elf.ucw.cz>
 References: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
 	<20060724172954.GC1926@elf.ucw.cz>
+	<200607241149.01700.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060724172954.GC1926@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200607241149.01700.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,31 +20,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: patrick.mochel@intel.com, Pavel Machek <pavel@ucw.cz>, Matthew Locke <matt@nomadgs.com>, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
+To: David Brownell <david-b@pacbell.net>
+Cc: patrick.mochel@intel.com, Matthew Locke <matt@nomadgs.com>, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 24 July 2006 10:29 am, Pavel Machek wrote:
 
-> That looks quite ugly to do in sysfs, indeed.
+> > But better run this by lkml.
+> =
 
-Yes, it's long been one of the things I most dislike about this PowerOP thi=
-ng.
-Not just the UI, but the models it reflects.
-
-So I was glad to see it split out as fully optional... although from what I
-see, the internal models in the code have derived from this sysfs model, so
-I'd argue those need to change too.
-
-It'd be lots better to just have named operating points that get selected j=
-ust
-the /sys/power/state file selects the, erm, "sleep point".
+> I'd rather see some rough consensus on this list that this is the right w=
+ay
+> to head, before running things like this by LKML.  =
 
 
-> But better run this by lkml.
+I meant "they could suggest how to do the sysfs thing, in reasonable
+way". Like echo new_config > file is extermely ugly, but perhaps configfs
+is suitable?
+									Pavel
+-- =
 
-I'd rather see some rough consensus on this list that this is the right way
-to head, before running things like this by LKML.  =
-
-
-- Dave
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
