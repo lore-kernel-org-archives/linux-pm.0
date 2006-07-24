@@ -1,14 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: RFC -- updated Documentation/power/devices.txt
-Date: Mon, 24 Jul 2006 10:11:14 -0700
-Message-ID: <200607241011.15325.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0607241128460.6638-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
+Date: Mon, 24 Jul 2006 19:29:54 +0200
+Message-ID: <20060724172954.GC1926@elf.ucw.cz>
+References: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0607241128460.6638-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,71 +18,36 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: Matthew Locke <matt@nomadgs.com>, patrick.mochel@intel.com, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 24 July 2006 8:42 am, Alan Stern wrote:
+Hi!
+
+> A sysfs interface for PowerOP that allows operating points to be created
+> and activated from userspace.
 > =
 
-> What I wrote wasn't necessarily intended to be different from what the
-> methods mean today.  But it _is_ different from what people tend to think.
+> The platform-specific backend provides the code to read and write sysfs
+> attributes for each power parameter; the core sysfs interface has no
+> knowledge of the struct powerop_point contents.  This interface could be
+> seen as possible extension of cpufreq sysfs.  It is not
+> an integral part of PowerOP and is provided in part to facilitate
+> discussion and experimentation with PowerOP, but could serve as a basis
+> for a basic userspace power policy management stack.
 > =
 
-> It's very natural for someone to imagine that suspend() means "Suspend
-> your device" (i.e., put it in a low-power state) and resume() means
-> "Resume your device" (i.e., change it to full-power).  But the real
-> emphasis is different; people need to know that suspend() actually means
-> "The _system_ is going to suspend" and resume() means "The _system_ is
-> resuming".
+> Operating points are created by writing the name of the operating point
+> to /sys/powerop/new.  This may be a job for configfs.
 
-Good point.  I'll tweak the text to make that more explicit.  We're in
-agreement it seems, and that was already written up ... but not in what
-I suspect is the best place for such points.
+That looks quite ugly to do in sysfs, indeed.
 
+And it definitely needs some Documentation/ patch. But better run this
+by lkml.
+								Pavel
 
+-- =
 
-> > > These meanings may not be entirely consistent with the way the PM core
-> > > works now,
-> > =
-
-> > I don't believe any semantic change is being discussed here.
-> =
-
-> There is.  Right now suspend_device() won't call the bus's suspend method
-> if dev->power.power_state.event is non-zero.  But since the purpose of the
-> call is to inform the driver that the _system_ is going to suspend, the
-> call should be made regardless of the _device's_ state (which the core
-> shouldn't be concerned with anyway).
-
-OK, _now_ we're discussing a semantic change.  ;)
-
-I've added dev->power.power_state to the "this is deprecated" text, along
-with the sysfs power/state file.  IMO we can't realistically make that chan=
-ge
-(removing the "is it nonzero" test) so long as the sysfs mechanism exists.
-
-
-> > Considering how few drivers use dev->power.power_state, it's easier to
-> > say the problem is in the ones that use it  ... rather than the ones th=
-at
-> > ignore it and act as I've described above! :)
-> =
-
-> I don't know to what extent there are problems in the drivers.  Not much, =
-
-> hopefully.  The real problem lies in the core.
-
-Yes the core has the problem, but drivers referencing power_state is the
-workaround for that problem.
-
-Once the sysfs mechanism goes away, there won't be much need for the mechan=
-ism.
-Only callers to dpm_runtime_*() would trigger any of the troublesome paths.
-The two callers are USB and PCMCIA, and I'm not sure they really need the e=
-xtra
-lock that's grabbed by the dpm_runtime_*() calls if there's no need to prot=
-ect
-against that sysfs mechanism.
-
-- Dave
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
