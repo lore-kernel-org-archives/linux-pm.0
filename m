@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: RFC -- updated Documentation/power/devices.txt
-Date: Tue, 25 Jul 2006 11:42:14 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0607251129160.6498-100000@iolanthe.rowland.org>
-References: <200607241419.25976.david-b@pacbell.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: bus.suspend_prepare()
+Date: Tue, 25 Jul 2006 11:17:30 -0700
+Message-ID: <200607251117.32105.david-b@pacbell.net>
+References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
+	<Pine.LNX.4.64.0606282016220.12404@g5.osdl.org>
+	<200607061527.29421.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200607241419.25976.david-b@pacbell.net>
+In-Reply-To: <200607061527.29421.david-b@pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,57 +20,81 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>, David Brownell <david-b@pacbell.net>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Linus Torvalds <torvalds@osdl.org>, Pavel Machek <pavel@ucw.cz>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 24 Jul 2006, David Brownell wrote:
+Hmm ... I just noticed that the swsusp code path (PM_SUSPEND_DISK)
+is ignoring the new suspend_prepare() mechanism.
 
-> I think PCMCIA switched over to /sys/class/pcmcia_socket/.../card_pm_state
-> a while back, though I'm not sure about the userspace tools.  They could =
-be
-> behind the times by a bit.
+That doesn't seem like a good thing ... Linus, is there a reason you
+did it that way?  Why is there no sibling resume_complete()?  ISTR
+that Ben was the advocate of a suspend_prepare(), but the use cases
+for this call are unclear to me ...
 
-> > My autosuspend patches remove the dpm_runtime_* stuff from USB, leaving =
-
-> > only PCMCIA.
-> =
-
-> Good, I was going to ask about that, except that I figured reading the
-> patches would answer the question in a better way ... ;)
-> =
-
-> I have a patch that deprecates the dpm_runtime_*() calls; it's only trigg=
-ered
-> by USB and PCMCIA.  Not worth submitting IMO; fix the code first, then ju=
-st
-> remove those calls since /sys/.../power/state will be the only remaining =
-caller.
-
-Dominik, have you been following this?  Now's a good time to remove all
-references to dpm_runtime_*() from the PCMCIA code.
+- Dave
 
 
-> I thought dpm_sem was to protect the list manipulations that are currently
-> substituting for a more dynamic tree traversal mechanism.  (But haven't
-> actually looked recently...)
+This makes the prepare_suspend() phase apply to all suspend modes,
+instead of ignoring it for swsusp.
 
-No, you're thinking of dpm_list_sem.
+Potential changes:
 
-> > And it's not clear that we _do_ want to prevent runtime PM changes from =
+    -	Add a sibling bus.resume_complete() to allow cleanup.
 
-> > occurring during a system sleep transition. =
+    -	Remove the pm_message_t parameter bus.suspend_early() since there
+	appears to be no useful way for it to be used with any value
+	other than PMSG_SUSPEND ... and the intent of calling this while
+	userspace and other tasks is still active seems to be to allow
+	userspace notification about the desired state change.
 
-> =
+    -	Provide a sys/power/sleep_state file so that userspace can know if
+	the upcoming sleep state is "standby", STR/"mem", STD/"disk", or
+	"on" (whenever it's not suspending).
 
-> Real runtime PM changes, of the type the core doesn't see or care about?
-> Of course not.  But the fake ones via sysfs?  Yes, I think we do.  We
-> don't want those happening in any case.
 
-While userspace is frozen, requests can't arrive through sysfs.  So the =
+Index: g26/kernel/power/main.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- g26.orig/kernel/power/main.c	2006-07-15 18:15:21.000000000 -0700
++++ g26/kernel/power/main.c	2006-07-25 10:59:38.000000000 -0700
+@@ -54,13 +54,6 @@ static int suspend_prepare(suspend_state
+ 	int error =3D 0;
+ 	unsigned int free_pages;
+ =
 
-only time dpm_sem might matter would be when someone on PPC uses the =
+-	if (!pm_ops || !pm_ops->enter)
+-		return -EPERM;
+-
+-	error =3D device_prepare_suspend(PMSG_SUSPEND);
+-	if (error)
+-		return error;
+-
+ 	pm_prepare_console();
+ =
 
-soon-to-be-deprecated sysfs mechanism during suspend-to-RAM!
+ 	disable_nonboot_cpus();
+@@ -187,9 +180,20 @@ static int enter_state(suspend_state_t s
+ =
 
-Alan Stern
+ 	if (!valid_state(state))
+ 		return -ENODEV;
++	if (state !=3D PM_SUSPEND_DISK && (!pm_ops || !pm_ops->enter))
++		return -EPERM;
++
+ 	if (down_trylock(&pm_sem))
+ 		return -EBUSY;
+ =
+
++	error =3D device_prepare_suspend(PMSG_SUSPEND);
++	if (error) {
++		/* FIXME don't we need a bus.resume_complete() mechanism, if
++		 * only to reverse the effect of bus.suspend_prepare() ??
++		 */
++		goto Unlock;
++	}
++
+ 	if (state =3D=3D PM_SUSPEND_DISK) {
+ 		error =3D pm_suspend_disk();
+ 		goto Unlock;
