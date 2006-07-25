@@ -1,33 +1,33 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] Kernel panic after resuming from S4 on Napa dual-core.
-Date: Sat, 15 Jul 2006 12:04:05 +0000
-Message-ID: <20060715120405.GB9849@ucw.cz>
-References: <076F541A621E59428B837DCEA0AEDB587A227B@bjsmsx401>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: swsusp status report
+Date: Tue, 25 Jul 2006 11:11:45 -0400
+Message-ID: <20060725151145.GG14964@redhat.com>
+References: <200607251325.14747.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932411AbWGYPMc@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <076F541A621E59428B837DCEA0AEDB587A227B@bjsmsx401>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Hu, Fenghua" <fenghua.hu@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, lhcs-devel@lists.sourceforge.net
+In-Reply-To: <200607251325.14747.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 12-07-06 09:29:40, Hu, Fenghua wrote:
-> Hi all,
-> 
-> I am struggling with a S4 issue. On a Napa dual-core laptop, sometimes
-> when resuming from S4, kernel panic occurs, then system reboots. After
-> some investigation, I found it's due to CPU1(AP) can't be woken up in
-> time, and
-> this can be alleviated, even eliminated by introducing more delay in
-> function wakeup_secondary_cpu().In official kernel tree, there were
-> three lines in this function for delaying: mdelay(10), udelay(300) and
-> udelay(200), now I changed them all to mdelay(500). Seems incorrect
-> timing has led to the issue. Could you help me to root cause it? Thanks.
+On Tue, Jul 25, 2006 at 01:25:14PM +0200, Rafael J. Wysocki wrote:
 
-Do you have a copy of panic message and a patch? Or perhaps you just
-want to ask on lkml for testing?
+ > V. Freeing memory
+ > 
+ > Step (3) of the suspend procedure is completed by calling the same
+ > functions that are normally used by kswapd, but in a slightly different way.
+ > The part of swsusp responsible for that is referred to as 'the memory
+ > shrinker' and it may sometimes be called by the suspend-to-RAM code as well
+
+This isn't actually necessary though is it ?
+(Ie, it's a bug that needs fixing?)
+
+Good write-up btw, it may even be a nice addition to Documentation/power/  ?
+
+		Dave
 
 -- 
-Thanks for all the (sleeping) penguins.
+http://www.codemonkey.org.uk
