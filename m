@@ -1,15 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: bus.suspend_prepare()
-Date: Tue, 25 Jul 2006 12:17:47 -0700
-Message-ID: <200607251217.48960.david-b@pacbell.net>
-References: <Pine.LNX.4.64.0606221210350.5498@g5.osdl.org>
-	<200607251117.32105.david-b@pacbell.net>
-	<Pine.LNX.4.64.0607251127420.29649@g5.osdl.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: swsusp status report
+Date: Tue, 25 Jul 2006 21:39:10 +0200
+Message-ID: <200607252139.10356.rjw@sisk.pl>
+References: <200607251325.14747.rjw@sisk.pl>
+	<20060725151145.GG14964@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0607251127420.29649@g5.osdl.org>
+In-Reply-To: <20060725151145.GG14964@redhat.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -20,58 +19,36 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Dave Jones <davej@redhat.com>
+Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 July 2006 11:29 am, Linus Torvalds wrote:
+On Tuesday 25 July 2006 17:11, Dave Jones wrote:
+> On Tue, Jul 25, 2006 at 01:25:14PM +0200, Rafael J. Wysocki wrote:
 > =
 
-> On Tue, 25 Jul 2006, David Brownell wrote:
-> >
-> > Hmm ... I just noticed that the swsusp code path (PM_SUSPEND_DISK)
-> > is ignoring the new suspend_prepare() mechanism.
-> > =
+>  > V. Freeing memory
+>  > =
 
-> > That doesn't seem like a good thing ... Linus, is there a reason you
-> > did it that way?
+>  > Step (3) of the suspend procedure is completed by calling the same
+>  > functions that are normally used by kswapd, but in a slightly differen=
+t way.
+>  > The part of swsusp responsible for that is referred to as 'the memory
+>  > shrinker' and it may sometimes be called by the suspend-to-RAM code as=
+ well
 > =
 
-> Just because I found that neither interesting nor testable in my =
+> This isn't actually necessary though is it ?
+> (Ie, it's a bug that needs fixing?)
 
-> environment.
+Well, that depends on what FREE_PAGE_NUMBER, as defined in
+kernel/power/main.c, is for.  Someone probably knows.
+[I'm tempted to remove it, though. ;-) ]
 
-Yeah, testable is an issue.  Maybe a better fix would be to remove
-the bus.suspend_prepare() operation for now.  Someone with real use
-cases could easily add a complete working package that includes that
-mechanism plus some testable code that needs it.
+> Good write-up btw, it may even be a nice addition to Documentation/power/=
+  ?
 
+I'm going to update the existing docs soon, so it probably won't be needed.
+Still I think we can make it available from suspend.sf.net.
 
-> >		  Why is there no sibling resume_complete()?  ISTR
-> > that Ben was the advocate of a suspend_prepare(), but the use cases
-> > for this call are unclear to me ...
-> =
-
-> Havign a resume_complete() would be nice for a number of things, like =
-
-> reloading firmware etc (which usually requires not just the device being =
-
-> back and fully working, but more importantly, requires user space to be =
-
-> alive again).
-
-I thought the idea there was that suspend_prepare() would preload that
-firmware into memory, so it could just be written in bus.resume() ... not
-that anyone worked through that completely, including the obvious issues
-like firmware images which wouldn't fit in available memory.
-
-The symmetry of a resume_complete() after class.resume() is obvious, but the
-usage is still unclear to me.  Consider a network driver, where we'd expect
-class suspend/resume eventually does the netif_device_{detach,attach}().
-
-Those need to be done AFTER the firmware gets reloaded/restarted.  So either
-the class suspend/resume is unhelpful, or the prepare/complete stuff is ...
-
-As I said:  "unclear".
-
-- Dave
+Rafael
