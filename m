@@ -1,130 +1,109 @@
-From: Jason Lunz <lunz@falooley.org>
-Subject: [patch v3] amd74xx: fix hang on resume from ram
-Date: Tue, 25 Jul 2006 23:14:47 -0400
-Message-ID: <20060726031446.GD4829@opus.vpn-dev.reflex>
-References: <20060715210518.GA3263@opus.vpn-dev.reflex> <20060724005340.GA4073@opus.vpn-dev.reflex> <20060725230955.GB7220@elf.ucw.cz> <200607251727.12678.david-b@pacbell.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
+Date: Tue, 25 Jul 2006 22:05:35 -0700
+Message-ID: <200607252205.37086.david-b@pacbell.net>
+References: <ADE4D9DBCFC3A345AAA95C195F62B6DD018ACC7B@de01exm64.ds.mot.com>
+	<200607241732.57588.david-b@pacbell.net>
+	<1153822154.5875.16.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1153822154.5875.16.camel@localhost>
 Content-Disposition: inline
-In-Reply-To: <200607251727.12678.david-b@pacbell.net>
-Sender: linux-ide-owner@vger.kernel.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@suse.cz>, linux-ide@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: Matthew Locke <matt@nomadgs.com>, Preece Scott-PREECE <scott.preece@motorola.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday 25 July 2006 3:09 am, Amit Kucheria wrote:
+> On Mon, 2006-07-24 at 17:32 -0700, ext David Brownell wrote:
+> > On Monday 24 July 2006 2:58 pm, Preece Scott-PREECE wrote:
+> > > If they're defined dynamically, you can change them without recompili=
+ng
+> > > the system, building a new rootfs image, etc. This is especially usef=
+ul
+> > > during development and tuning of systems built on new hardware, since
+> > > the set of Ops available (that is, that are documented by the chip
+> > > vendor to work) can vary over time and even board-to-board.
+> > =
 
-The amd74xx driver needs to reprogram each drive's PIO timings as well
-as the DMA timings on resume from s2ram.  Otherwise, my
-nforce3-150-based laptop hangs hard when ide_start_power_step() calls
-drive->hwif->ide_dma_check(drive).
+> > I could easily buy such a mechanism being dependent on EXPERIMENTAL,
+> > for use with developer/prototype boards ... thanks for that scenario.
+> > =
 
-Suspend/resume from ram now works with the disk and the cdrom under
-load, both with and without DMA enabled.
+> > But I have a harder time seeing it used in production systems, burnt
+> > into flash on a manufacturing line that already had to qualify that
+> > new hardware before the next production run (of say 10,000 units) was
+> > approved by the powers-that-be.
+> > =
 
-Signed-off-by: Jason Lunz <lunz@falooley.org>
----
+> > - Dave
+> =
 
-I'm hardcoding a maximum of 2 ide channels, but other aspects of this
-driver (like the amd_80w global) are already doing that.
+> Sometimes a certain operating point is not desired for regular operation
+> of the device. So it would not be in the board-xx.c file. =
 
-DMA is re-enabled on resume even if it wasn't on at suspend, but that
-doesn't look unusual in drivers/ide/pci.
+> =
 
-I've incorporated improvements helpfully suggested by David Brownell and
-Pavel Machek.
+> But connect a peripheral and suddenly this is the most attractive OP for
+> the system.
 
-Now compiles with !CONFIG_PM.
+And you'd know that in advance, and thus could predefine that OP.  :)
 
- drivers/ide/pci/amd74xx.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+Even in the worst case, where you somehow add a driver without
+upgrading the rest of the kernel in flash, that driver should be
+able to define an OP without userspace.  (I suppose there are some
+product vendors willing to do that type of field upgrade.)
 
-Index: linux-2.6.18-rc2-git1/drivers/ide/pci/amd74xx.c
-===================================================================
---- linux-2.6.18-rc2-git1.orig/drivers/ide/pci/amd74xx.c
-+++ linux-2.6.18-rc2-git1/drivers/ide/pci/amd74xx.c
-@@ -83,6 +83,8 @@
- static ide_pci_device_t *amd_chipset;
- static unsigned int amd_80w;
- static unsigned int amd_clock;
-+#define AMD_MAX_CHANNELS	(2)
-+static ide_hwif_t *amd_hwifs[AMD_MAX_CHANNELS];
- 
- static char *amd_dma[] = { "MWDMA16", "UDMA33", "UDMA66", "UDMA100", "UDMA133" };
- static unsigned char amd_cyc2udma[] = { 6, 6, 5, 4, 0, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 7 };
-@@ -416,6 +418,8 @@
- {
- 	int i;
- 
-+	amd_hwifs[hwif->channel] = hwif;
-+
- 	if (hwif->irq == 0) /* 0 is bogus but will do for now */
- 		hwif->irq = pci_get_legacy_ide_irq(hwif->pci_dev, hwif->channel);
- 
-@@ -494,6 +498,55 @@
- 	/* 19 */ DECLARE_AMD_DEV("AMD5536"),
- };
- 
-+#ifdef	CONFIG_PM
-+
-+static int amd74xx_suspend(struct pci_dev *dev, pm_message_t state)
-+{
-+	pci_save_state(dev);
-+
-+	if (state.event == PM_EVENT_SUSPEND) {
-+		pci_disable_device(dev);
-+		pci_set_power_state(dev, PCI_D3hot);
-+	}
-+	return 0;
-+}
-+
-+static int amd74xx_resume(struct pci_dev *dev)
-+{
-+	int retval = 0;
-+	int i;
-+
-+	pci_set_power_state(dev, PCI_D0);
-+	retval = pci_enable_device(dev);
-+	pci_restore_state(dev);
-+
-+	for (i = 0; i < AMD_MAX_CHANNELS; i++) {
-+		int d;
-+
-+		if (!amd_hwifs[i])
-+			continue;
-+
-+		for (d = 0; d < MAX_DRIVES; ++d) {
-+			ide_drive_t *drive = &amd_hwifs[i]->drives[d];
-+			if (drive->present && !__ide_dma_bad_drive(drive)) {
-+				/* this is the primary reason this driver needs
-+				 * a suspend()/resume() implementation at all.
-+				 * Calling amd74xx_ide_dma_check() without also
-+				 * calling amd74xx_tune_drive() hangs my
-+				 * nforce3-150 system.  ide-io.c will do just
-+				 * that later if we're resuming from s2ram.
-+				 */
-+				amd_hwifs[i]->tuneproc(drive, 255);
-+				amd_hwifs[i]->ide_dma_check(drive);
-+			}
-+		}
-+	}
-+
-+	return retval;
-+}
-+
-+#endif	/* !CONFIG_PM */
-+
- static int __devinit amd74xx_probe(struct pci_dev *dev, const struct pci_device_id *id)
- {
- 	amd_chipset = amd74xx_chipsets + id->driver_data;
-@@ -539,6 +592,10 @@
- 	.name		= "AMD_IDE",
- 	.id_table	= amd74xx_pci_tbl,
- 	.probe		= amd74xx_probe,
-+#ifdef CONFIG_PM
-+	.suspend	= amd74xx_suspend,
-+	.resume		= amd74xx_resume,
-+#endif
- };
- 
- static int amd74xx_ide_init(void)
+I'm still not persuaded that a UI for OP creation is needed except
+for development.  Feel free to keep trying to persuade me though;
+I'm just pushing back on what I see as weak points, since that's
+the best way I know to come up with good solutions.
+
+- Dave
+
+
+> So the ability to add operating points from userspace might =
+
+> be helpful there.
+> =
+
+> Regards,
+> Amit
+> =
+
+> > =
+
+> > > > I meant "they could suggest how to do the sysfs thing, in reasonabl=
+e =
+
+> > > > way". Like echo new_config > file is extermely ugly, but perhaps =
+
+> > > > configfs is suitable?
+> > > =
+
+> > > Makes some sense.  But I'm still puzzled why _creating_ an operating
+> > > point would be done outside of the arch/.../board-xx.c file. =
+
+> > _______________________________________________
+> > linux-pm mailing list
+> > linux-pm@lists.osdl.org
+> > https://lists.osdl.org/mailman/listinfo/linux-pm
+> -- =
+
+> Amit Kucheria <amit.kucheria@nokia.com>
+> Nokia
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+> =
