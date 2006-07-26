@@ -1,16 +1,15 @@
 From: Matthew Locke <matt@nomadgs.com>
 Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
-Date: Wed, 26 Jul 2006 00:24:53 -0700
-Message-ID: <8417055efd530dbc76993e0b1d61de81@nomadgs.com>
-References: <ADE4D9DBCFC3A345AAA95C195F62B6DD018ACC7B@de01exm64.ds.mot.com>
-	<200607241732.57588.david-b@pacbell.net>
-	<1153822154.5875.16.camel@localhost>
-	<200607252205.37086.david-b@pacbell.net>
+Date: Wed, 26 Jul 2006 00:44:52 -0700
+Message-ID: <083b1ba275390c298727816bc51f21b4@nomadgs.com>
+References: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
+	<20060724172954.GC1926@elf.ucw.cz>
+	<200607241149.01700.david-b@pacbell.net>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200607252205.37086.david-b@pacbell.net>
+In-Reply-To: <200607241149.01700.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,123 +20,82 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: David Brownell <david-b@pacbell.net>
-Cc: Preece Scott-PREECE <scott.preece@motorola.com>, linux-pm@lists.osdl.org
+Cc: patrick.mochel@intel.com, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-Here is the use case we are picturing:
 
-The semiconductor vendor creates the full list of operating points =
+On Jul 24, 2006, at 11:48 AM, David Brownell wrote:
 
-supported on a SoC (and reference board).  A device (cell phone, etc) =
-
-manufacturer decides to use only a subset of the full operating points =
-
-due to their use cases and board design.   We want to enable the =
-
-semiconductor vendor and device manufacturer to easily update the =
-
-operating points and selectively enable ones for their use in a way =
-
-that doesn't require maintaining out of tree patches or submitting =
-
-patches for every update and every device made.
-
-We came up with the idea of creating operating points at run-time =
-
-(initscript at boot usually) to address this scenario.   Hard coding a =
-
-list operating points in the kernel is fine as long as there is an =
-
-interface to override and/or extend that list.
-
-Another use case for creating operating points is to enable device =
-
-manufacturers and others to create a custom name for the  operating =
-
-point.  The entire operating point does not need to be created to =
-
-address this case but we would need a method for creating a mapping of =
-
-points to names.
-
-On Jul 25, 2006, at 10:05 PM, David Brownell wrote:
-
-> On Tuesday 25 July 2006 3:09 am, Amit Kucheria wrote:
->> On Mon, 2006-07-24 at 17:32 -0700, ext David Brownell wrote:
->>> On Monday 24 July 2006 2:58 pm, Preece Scott-PREECE wrote:
->>>> If they're defined dynamically, you can change them without =
-
->>>> recompiling
->>>> the system, building a new rootfs image, etc. This is especially =
-
->>>> useful
->>>> during development and tuning of systems built on new hardware, =
-
->>>> since
->>>> the set of Ops available (that is, that are documented by the chip
->>>> vendor to work) can vary over time and even board-to-board.
->>>
->>> I could easily buy such a mechanism being dependent on EXPERIMENTAL,
->>> for use with developer/prototype boards ... thanks for that scenario.
->>>
->>> But I have a harder time seeing it used in production systems, burnt
->>> into flash on a manufacturing line that already had to qualify that
->>> new hardware before the next production run (of say 10,000 units) was
->>> approved by the powers-that-be.
->>>
->>> - Dave
->>
->> Sometimes a certain operating point is not desired for regular =
-
->> operation
->> of the device. So it would not be in the board-xx.c file.
->>
->> But connect a peripheral and suddenly this is the most attractive OP =
-
->> for
->> the system.
+> On Monday 24 July 2006 10:29 am, Pavel Machek wrote:
 >
-> And you'd know that in advance, and thus could predefine that OP.  :)
+>> That looks quite ugly to do in sysfs, indeed.
 >
-> Even in the worst case, where you somehow add a driver without
-> upgrading the rest of the kernel in flash, that driver should be
-> able to define an OP without userspace.  (I suppose there are some
-> product vendors willing to do that type of field upgrade.)
+> Yes, it's long been one of the things I most dislike about this =
+
+> PowerOP thing.
+> Not just the UI, but the models it reflects.
 >
-> I'm still not persuaded that a UI for OP creation is needed except
-> for development.  Feel free to keep trying to persuade me though;
-> I'm just pushing back on what I see as weak points, since that's
-> the best way I know to come up with good solutions.
+> So I was glad to see it split out as fully optional... although from =
+
+> what I
+> see, the internal models in the code have derived from this sysfs =
+
+> model, so
+> I'd argue those need to change too.
+
+Is there something specific in the internal model that are you =
+
+referring to?
+
+>
+> It'd be lots better to just have named operating points that get =
+
+> selected just
+> the /sys/power/state file selects the, erm, "sleep point".
+
+I've tried to fit sleep into the operating point concept before but =
+
+sleep always ends up being a special case.   The code has to check to =
+
+see if the selected operating the "sleep point" and call the suspend =
+
+function.  I think tying in sleep to the op point concept needs more =
+
+discussion and probably should be handled separately until we get =
+
+further along with power op.
+
+btw, we are in complete agreement about using named points.  This first =
+
+set of patches is meant to introduce the operating point concept into =
+
+the kernel without requiring massive changes to cpufreq.  This layer =
+
+extends the bottom part of cpufreq to enable the control of multiple =
+
+parameters beyond just cpu frequency and voltage across architectures.  =
+
+Currently, cpufreq does not use named operating points so we need to =
+
+make sure cpufreq can use the power op API and continue to function.  =
+
+This topic also ties into our other email discussion on creating op =
+
+points and names are assigned to op points.
+>
+>
+>> But better run this by lkml.
+>
+> I'd rather see some rough consensus on this list that this is the =
+
+> right way
+> to head, before running things like this by LKML.
+
+That is why we submitted here first:)  We will figure out if there is a =
+
+better interface for this patch to use by discussing with Greg or LKML. =
+
+  Meanwhile let's continue to discuss the ideas here for a bit.
 >
 > - Dave
->
->
->> So the ability to add operating points from userspace might
->> be helpful there.
->>
->> Regards,
->> Amit
->>
->>>
->>>>> I meant "they could suggest how to do the sysfs thing, in =
-
->>>>> reasonable
->>>>> way". Like echo new_config > file is extermely ugly, but perhaps
->>>>> configfs is suitable?
->>>>
->>>> Makes some sense.  But I'm still puzzled why _creating_ an operating
->>>> point would be done outside of the arch/.../board-xx.c file.
->>> _______________________________________________
->>> linux-pm mailing list
->>> linux-pm@lists.osdl.org
->>> https://lists.osdl.org/mailman/listinfo/linux-pm
->> -- =
-
->> Amit Kucheria <amit.kucheria@nokia.com>
->> Nokia
->> _______________________________________________
->> linux-pm mailing list
->> linux-pm@lists.osdl.org
->> https://lists.osdl.org/mailman/listinfo/linux-pm
->>
 >
