@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: swsusp status report
-Date: Wed, 26 Jul 2006 19:38:39 +0200
-Message-ID: <200607261938.39213.rjw@sisk.pl>
-References: <200607251325.14747.rjw@sisk.pl> <p73fygo5ri9.fsf@verdi.suse.de>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: Re: [RFC] PowerOP take 3, PowerOP core 1/5
+Date: Thu, 27 Jul 2006 00:44:40 +0400
+Message-ID: <44C7D438.6090208@gmail.com>
+References: <c55240ed0607201250x5f77c473m381f1698f1168e52@mail.gmail.com>
+	<200607201501.32087.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <p73fygo5ri9.fsf@verdi.suse.de>
-Content-Disposition: inline
+In-Reply-To: <200607201501.32087.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,175 +18,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Andi Kleen <ak@suse.de>
-Cc: Linux PM <linux-pm@osdl.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: Matthew Locke <matt@nomadgs.com>, patrick.mochel@intel.com, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 July 2006 17:13, Andi Kleen wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > =
+David Brownell wrote:
+> On Thursday 20 July 2006 12:50 pm, Eugeny S. Mints wrote:
+>   =
 
-> > The code that restores the memory state from the suspend image in step
-> > (11) also uses the kernel identity mapping to address memory, so it can=
-not
-> > access highmem pages on i386, but it practically has no other limitatio=
-ns as
-> > far as the image size is concerned.  In other words, it would be possib=
-le to
-> > restore suspend images as big as 80% or even 90% of RAM, or the normal =
-zone
-> > on i386, if the 'snapshotting' code were able to create them.
-> =
+>> +static int __init powerop_init(void)
+>> +{
+>> +       return 0;
+>> +}
+>> +
+>> +static void __exit powerop_exit(void)
+>> +{
+>> +}
+>> +
+>> +module_init(powerop_init);
+>> +module_exit(powerop_exit);
+>>     =
 
-> Why can't you just kmap or ioremap them as needed and pass the pfns/struct
-> page * for IO?
+>
+> Best to delete useless code like that.  :)
+>
+> And you should be grabbing that mutex to register/unregister the arch
+> methods table, otherwise there's little point in having it ...
+>   =
 
-In principle we can, but that's a long way to go from where we are today.
+basically agree. The reference code is handling only one arch layer
+(essentially PM core) underneath PowerOP for the time being though.
+At the same time PM Core is expected to be "aware" of all PM related
+parameters and details so I actually would like to see an use case  showing
+when an extra layer below PowerOP  may be useful to continue moving
+towards multi arch layer approach.
 
-Currently, we need to make a copy of each highmem page, because we have no
-good method of checking which of them are going to change after we have
-created the snapshot image and before we save them.  Moreover, the copies a=
-re
-made in the normal zone, because swsusp uses kernel virtual addresses to
-enumerate the suspend image pages.  If the copies of the highmem pages were
-made in the highmem zone, we'd have to use pfns to enumerate them and that
-would require some substantial code changes.
-
-> > The code that performs steps (5) and (11) of the suspend-resume cycle is
-> > quite robust and there is only one known problem with it, which seems to
-> > be x86_64-specific.  Namely, on x86_64 machines with more than 2 GB of =
-RAM
-> > there are memory gaps and/or reserved memory areas between the 2nd and =
-3rd
-> > Gbyte of physical memory and swsusp tries to save these areas as though
-> > they were RAM which leads to oopses.  This issue is now being worked on.
-> =
-
-> I guess we could just borrow a new struct page flags bit again and set it
-> during memory setup. That would fix your problem I guess. Should be fairly
-> easy to do. Let me know if you need it.
-
-Actaully we already have the PG_nosave bit for this purpose and a patch that
-fixes this is in the -mm tree now.  [I'm sorry you were not on the Cc list,
-but one of the Andrew's machines was affected and he just picked up the
-patch.]  I'm appeding it for reference (hope it's OK ;-) ).
-
-Greetings,
-Rafael
-
-
----
- arch/x86_64/kernel/e820.c  |   48 ++++++++++++++++++++++++++++++++++++++++=
-+++++
- arch/x86_64/kernel/setup.c |    1 =
-
- include/asm-x86_64/e820.h  |    1 =
-
- 3 files changed, 50 insertions(+)
-
-Index: linux-2.6.18-rc1-mm2/arch/x86_64/kernel/e820.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.18-rc1-mm2.orig/arch/x86_64/kernel/e820.c
-+++ linux-2.6.18-rc1-mm2/arch/x86_64/kernel/e820.c
-@@ -16,6 +16,7 @@
- #include <linux/string.h>
- #include <linux/kexec.h>
- #include <linux/module.h>
-+#include <linux/mm.h>
- =
-
- #include <asm/pgtable.h>
- #include <asm/page.h>
-@@ -293,6 +294,53 @@ void __init e820_reserve_resources(void)
- 	}
- }
- =
-
-+/* Mark pages corresponding to given address range as nosave */
-+static void __init
-+e820_mark_nosave_range(unsigned long start, unsigned long end)
-+{
-+	unsigned long pfn, max_pfn;
-+
-+	if (start >=3D end)
-+		return;
-+
-+	printk("Nosave address range: %016lx - %016lx\n", start, end);
-+	max_pfn =3D end >> PAGE_SHIFT;
-+	for (pfn =3D start >> PAGE_SHIFT; pfn < max_pfn; pfn++)
-+		if (pfn_valid(pfn))
-+			SetPageNosave(pfn_to_page(pfn));
-+}
-+
-+/*
-+ * Find the ranges of physical addresses that do not correspond to
-+ * e820 RAM areas and mark the corresponding pages as nosave for software
-+ * suspend and suspend to RAM.
-+ *
-+ * This function requires the e820 map to be sorted and without any
-+ * overlapping entries and assumes the first e820 area to be RAM.
-+ */
-+void __init e820_mark_nosave_regions(void)
-+{
-+	int i;
-+	unsigned long paddr;
-+
-+	paddr =3D round_down(e820.map[0].addr + e820.map[0].size, PAGE_SIZE);
-+	for (i =3D 1; i < e820.nr_map; i++) {
-+		struct e820entry *ei =3D &e820.map[i];
-+
-+		if (paddr < ei->addr)
-+			e820_mark_nosave_range(paddr,
-+					round_up(ei->addr, PAGE_SIZE));
-+
-+		paddr =3D round_down(ei->addr + ei->size, PAGE_SIZE);
-+		if (ei->type !=3D E820_RAM)
-+			e820_mark_nosave_range(round_up(ei->addr, PAGE_SIZE),
-+					paddr);
-+
-+		if (paddr >=3D (end_pfn << PAGE_SHIFT))
-+			break;
-+	}
-+}
-+
- /* =
-
-  * Add a memory region to the kernel e820 map.
-  */ =
-
-Index: linux-2.6.18-rc1-mm2/arch/x86_64/kernel/setup.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.18-rc1-mm2.orig/arch/x86_64/kernel/setup.c
-+++ linux-2.6.18-rc1-mm2/arch/x86_64/kernel/setup.c
-@@ -684,6 +684,7 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- 	probe_roms();
- 	e820_reserve_resources(); =
-
-+	e820_mark_nosave_regions();
- =
-
- 	request_resource(&iomem_resource, &video_ram_resource);
- =
-
-Index: linux-2.6.18-rc1-mm2/include/asm-x86_64/e820.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.18-rc1-mm2.orig/include/asm-x86_64/e820.h
-+++ linux-2.6.18-rc1-mm2/include/asm-x86_64/e820.h
-@@ -46,6 +46,7 @@ extern void setup_memory_region(void);
- extern void contig_e820_setup(void); =
-
- extern unsigned long e820_end_of_ram(void);
- extern void e820_reserve_resources(void);
-+extern void e820_mark_nosave_regions(void);
- extern void e820_print_map(char *who);
- extern int e820_any_mapped(unsigned long start, unsigned long end, unsigne=
-d type);
- extern int e820_all_mapped(unsigned long start, unsigned long end, unsigne=
-d type);
+Thanks,
+Eugeny
