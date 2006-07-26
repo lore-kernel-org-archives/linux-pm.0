@@ -1,14 +1,14 @@
 From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: [RFC] PowerOP Take 3, ARM OMAP1 platform support 3/5
-Date: Thu, 27 Jul 2006 01:02:29 +0400
-Message-ID: <44C7D865.8020109@gmail.com>
-References: <c55240ed0607201301y7ac3be76o6f173d1b6ab50c1d@mail.gmail.com>
-	<200607230924.52289.david-b@pacbell.net>
+Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
+Date: Thu, 27 Jul 2006 01:11:22 +0400
+Message-ID: <44C7DA7A.2040608@gmail.com>
+References: <ADE4D9DBCFC3A345AAA95C195F62B6DD018ACC7B@de01exm64.ds.mot.com>	<200607241732.57588.david-b@pacbell.net>	<1153822154.5875.16.camel@localhost>
+	<200607252205.37086.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200607230924.52289.david-b@pacbell.net>
+In-Reply-To: <200607252205.37086.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,85 +19,122 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: David Brownell <david-b@pacbell.net>
-Cc: Matthew Locke <matt@nomadgs.com>, patrick.mochel@intel.com, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
+Cc: Matthew Locke <matt@nomadgs.com>, Preece Scott-PREECE <scott.preece@motorola.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 David Brownell wrote:
-> On Thursday 20 July 2006 1:01 pm, Eugeny S. Mints wrote:
+> On Tuesday 25 July 2006 3:09 am, Amit Kucheria wrote:
 >   =
 
->> +struct powerop_point {
->> +       unsigned int v;         /* voltage in mV */
->> +       unsigned int dpll;      /* in KHz */
->> +       unsigned int cpu;       /* CPU frequency in KHz */
->> +       unsigned int tc;        /* in KHz */
->> +       unsigned int per;       /* in KHz */
->> +       unsigned int dsp;       /* in KHz */
->> +       unsigned int dspmmu;    /* in KHz */
->> +       unsigned int lcd;       /* in KHz */
->> +};
+>> On Mon, 2006-07-24 at 17:32 -0700, ext David Brownell wrote:
+>>     =
+
+>>> On Monday 24 July 2006 2:58 pm, Preece Scott-PREECE wrote:
+>>>       =
+
+>>>> If they're defined dynamically, you can change them without recompiling
+>>>> the system, building a new rootfs image, etc. This is especially useful
+>>>> during development and tuning of systems built on new hardware, since
+>>>> the set of Ops available (that is, that are documented by the chip
+>>>> vendor to work) can vary over time and even board-to-board.
+>>>>         =
+
+>>> I could easily buy such a mechanism being dependent on EXPERIMENTAL,
+>>> for use with developer/prototype boards ... thanks for that scenario.
+>>>
+>>> But I have a harder time seeing it used in production systems, burnt
+>>> into flash on a manufacturing line that already had to qualify that
+>>> new hardware before the next production run (of say 10,000 units) was
+>>> approved by the powers-that-be.
+>>>
+>>> - Dave
+>>>       =
+
+>> Sometimes a certain operating point is not desired for regular operation
+>> of the device. So it would not be in the board-xx.c file. =
+
+>>
+>> But connect a peripheral and suddenly this is the most attractive OP for
+>> the system.
 >>     =
 
 >
-> A few comments:
+> And you'd know that in advance, and thus could predefine that OP.  :)
 >
->  - This should be part of patch #4; it's not truly separate.
->   =
-
-PowerOP defines interface between an upper layer and PM core
-and struct powerop_point is part of this interface - it defines what
-the terms an upper layer and PM Core use to communicate to
-each other are. And from this perspective I feel struct
-powerop_point  logically belongs to PowerOP layer although
-it is defined in arch dependent code.
->  - I take it "v" is CPU voltage rather than some random component?
->   =
-
-yes
->    Either way, there seems to be an omission here since boards
->    could have multiple voltages to care about ...
->   =
-
-see reply under the next bullet discussing board vs SoC but basically yes,
-if we have multiple voltages to care about all voltages have to be
-represented in the structure. Reference code structure definition may
-be incomplete.
->  - In general, shouldn't an operating point be board-specific, so
->    that the parts of the system outside the SOC can be included
->   =
-
-good question. Basically current assumption is that definition is for an SoC
-and the values are board specific. While definition will most likely be the
-same for every board based on a certain SoC I can imaging for example
-that we can have an external clock source for an external hw on a board.
-Since that  powerop_point structure definition could be board specific
-but that's where I'd prefer to get some input from the community to
-decide whether we have to move to board specific operating point
-structure definition.
->  - I'd still rather see operating points be identified by a name
->    string of some kind so that the userspace API resembles that
->    of /sys/power/state:  just write the state name to that file.
+> Even in the worst case, where you somehow add a driver without
+> upgrading the rest of the kernel in flash, that driver should be
+> able to define an OP without userspace.  (I suppose there are some
+> product vendors willing to do that type of field upgrade.)
 >
+> I'm still not persuaded that a UI for OP creation is needed except
+> for development.  Feel free to keep trying to persuade me though;
+> I'm just pushing back on what I see as weak points, since that's
+> the best way I know to come up with good solutions.
 >   =
 
-it's actully designed this way except that an operating point should be
-created first to be dereferenced by name. PowerOP sysfs layer
-provides two interfaces for operating points to be created. First one is
-powerop_register_point() and this interface enables exactly runtime
-API you outlined assuming that a kernel entity creates a set of
-operating points with help of power_register_point() for example
-at boot up.  Second real sysfs interface assumes that a set of operating
- points is created from user space. But since operating points initial
-creation may be handled by an init script (again say at system boot up)
-the PowerOP runtime API may be again seen as what you described.
+I'd like to highlight the only thing that PowerOP sysfs layer provides
+two interfaces for operating points creation - one is UI and another is
+powerop_register_point/select_point() and the latter is intended to be
+utilized by a kernel entity. (Btw, please note that select routine receives
+'name' argument)
+
+This may be up to a system designer to define which interface to use
+therefore I see it as an advantage of PowerOP rather than as a weak
+point.
+
+Since UI part seems most painful one I can think of additional splitting
+of PowerOP sysfs layer into two parts. First would be
+powerop_register/unregister_point(), powerop_select_point() and
+another one would be UI sysfs part. And the latter would be optional.
 
 Thanks,
 Eugeny
-> Still looking at the patches, otherwise.
->
 > - Dave
+>
+>
 >   =
 
->
+>> So the ability to add operating points from userspace might =
+
+>> be helpful there.
+>>
+>> Regards,
+>> Amit
+>>
+>>     =
+
+>>>>> I meant "they could suggest how to do the sysfs thing, in reasonable =
+
+>>>>> way". Like echo new_config > file is extermely ugly, but perhaps =
+
+>>>>> configfs is suitable?
+>>>>>           =
+
+>>>> Makes some sense.  But I'm still puzzled why _creating_ an operating
+>>>> point would be done outside of the arch/.../board-xx.c file. =
+
+>>>>         =
+
+>>> _______________________________________________
+>>> linux-pm mailing list
+>>> linux-pm@lists.osdl.org
+>>> https://lists.osdl.org/mailman/listinfo/linux-pm
+>>>       =
+
+>> -- =
+
+>> Amit Kucheria <amit.kucheria@nokia.com>
+>> Nokia
+>> _______________________________________________
+>> linux-pm mailing list
+>> linux-pm@lists.osdl.org
+>> https://lists.osdl.org/mailman/listinfo/linux-pm
+>>
+>>     =
+
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
 >
 >   =
