@@ -1,51 +1,38 @@
-From: Christian Krafft <KRAFFT@de.ibm.com>
-Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
-Date: Wed, 26 Jul 2006 17:03:37 +0200
-Message-ID: <OFA7E6B091.1D546AFE-ONC12571B7.0050AA2C-422571B7.0052603A@de.ibm.com>
-References: <083b1ba275390c298727816bc51f21b4@nomadgs.com>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: swsusp status report
+Date: 26 Jul 2006 17:13:02 +0200
+Message-ID: <p73fygo5ri9.fsf@verdi.suse.de>
+References: <200607251325.14747.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <083b1ba275390c298727816bc51f21b4@nomadgs.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matt@nomadgs.com>
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750741AbWGZPNG@vger.kernel.org>
+In-Reply-To: <200607251325.14747.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM <linux-pm@osdl.org>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> The code that restores the memory state from the suspend image in step
+> (11) also uses the kernel identity mapping to address memory, so it cannot
+> access highmem pages on i386, but it practically has no other limitations as
+> far as the image size is concerned.  In other words, it would be possible to
+> restore suspend images as big as 80% or even 90% of RAM, or the normal zone
+> on i386, if the 'snapshotting' code were able to create them.
 
-Matthew Locke <matt@nomadgs.com> wrote on 07/26/2006 09:44:52 AM:
+Why can't you just kmap or ioremap them as needed and pass the pfns/struct
+page * for IO?
 
-> btw, we are in complete agreement about using named points.  This first
-> set of patches is meant to introduce the operating point concept into
-> the kernel without requiring massive changes to cpufreq.  This layer
-> extends the bottom part of cpufreq to enable the control of multiple
-> parameters beyond just cpu frequency and voltage across architectures.
-> Currently, cpufreq does not use named operating points so we need to
-> make sure cpufreq can use the power op API and continue to function.
-> This topic also ties into our other email discussion on creating op
-> points and names are assigned to op points.
+> The code that performs steps (5) and (11) of the suspend-resume cycle is
+> quite robust and there is only one known problem with it, which seems to
+> be x86_64-specific.  Namely, on x86_64 machines with more than 2 GB of RAM
+> there are memory gaps and/or reserved memory areas between the 2nd and 3rd
+> Gbyte of physical memory and swsusp tries to save these areas as though
+> they were RAM which leads to oopses.  This issue is now being worked on.
 
-Hi,
+I guess we could just borrow a new struct page flags bit again and set it
+during memory setup. That would fix your problem I guess. Should be fairly
+easy to do. Let me know if you need it.
 
-Maybe I missed those discussions about extending cpufreq with other
-attributes.
-On what list has it been posted ?
-
-I am working on a throttling module and would like to implement it as a
-cpufreq driver.
-Also closer integration of the on-demand governor and the cpu scheduler
-(and hopefully thermal control) would be nice.
-This governor uses aged information to control cpus, whereas the scheduler
-knows the future.
-Thermal control could hint the scheduler, before a cpu gets too hot and
-throttled down.
-Are there any ideas floating around ?
+-Andi
