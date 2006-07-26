@@ -1,82 +1,143 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] Kernel panic after resuming from S4 on Napa dual-core.
-Date: Wed, 26 Jul 2006 08:19:36 +0200
-Message-ID: <200607260819.37012.rjw@sisk.pl>
-References: <076F541A621E59428B837DCEA0AEDB5887C0C1@bjsmsx401>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <076F541A621E59428B837DCEA0AEDB5887C0C1@bjsmsx401>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.osdl.org
-Cc: "Hu, Fenghua" <fenghua.hu@intel.com>, Pavel Machek <pavel@suse.cz>, linux-acpi@vger.kernel.org, lhcs-devel@lists.sourceforge.net
+From: Matthew Locke <matt@nomadgs.com>
+Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
+Date: Wed, 26 Jul 2006 00:24:53 -0700
+Message-ID: <8417055efd530dbc76993e0b1d61de81@nomadgs.com>
+References: <ADE4D9DBCFC3A345AAA95C195F62B6DD018ACC7B@de01exm64.ds.mot.com>
+	<200607241732.57588.david-b@pacbell.net>
+	<1153822154.5875.16.camel@localhost>
+	<200607252205.37086.david-b@pacbell.net>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200607252205.37086.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Preece Scott-PREECE <scott.preece@motorola.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 July 2006 07:45, Hu, Fenghua wrote:
-> Here is the message:
-> 
-> Linux version 2.6.16.9-9-s4-hufh (root@localhost.localdomain) (gcc version 3.4.3 20041212 (Asianux 2.0 3.4.3-9.EL4.2)) #24 SMP Thu Jul 27 11:36:08 CST 2006
-]--snip--[
-> Thawing cpus ...
-> Booting processor 1/1 eip 3000
-> Not responding.
-> Inquiring remote APIC #1...
-> ... APIC #1 ID: failed
-> ... APIC #1 VERSION: failed
-> ... APIC #1 SPIV: failed
-> Error taking cpu 1 up: -22
-> Kernel panic - not syncing: Not enough cpus
->  <0>Rebooting in 10 seconds. 
+Here is the use case we are picturing:
 
-This is a problem related to the CPU hotplug, but the panic is from
-kernel/power/smp.c#enable_nonboot_cpus().
+The semiconductor vendor creates the full list of operating points =
 
-I don't think we should be panicking here.  It's better to just continue with
-one CPU online IMHO.
+supported on a SoC (and reference board).  A device (cell phone, etc) =
 
-Please apply the appended patch.  It should prevent the system from panicking,
-but you will run on one CPU after resume.  Then, please check what's in the
-file /sys/devices/system/cup/cpu1/online.  If 0, please do
+manufacturer decides to use only a subset of the full operating points =
 
-# cat 1 >  /sys/devices/system/cup/cpu1/online
+due to their use cases and board design.   We want to enable the =
 
-and see what happens.  If it doesn't go online, in which case
-/sys/devices/system/cup/cpu1/online will contain 1, there should be some
-error messages in dmesg.
+semiconductor vendor and device manufacturer to easily update the =
 
-Also after a fresh boot please try doing:
+operating points and selectively enable ones for their use in a way =
 
-# cat 0 >  /sys/devices/system/cup/cpu1/online
-# cat /proc/interrupts
-(there should be no cpu1 in the output)
-# cat 1 >  /sys/devices/system/cup/cpu1/online
-# cat /proc/interrupts
-(cpu1 should be present again)
+that doesn't require maintaining out of tree patches or submitting =
 
-If this doesn't work, CPU hotplug is totally broken on your system.
-Otherwise, something in the suspend/resume code paths breaks it and we'll
-have to figure out what it is.
+patches for every update and every device made.
 
-Greetings,
-Rafael
+We came up with the idea of creating operating points at run-time =
 
+(initscript at boot usually) to address this scenario.   Hard coding a =
 
---
- kernel/power/smp.c |    1 -
- 1 files changed, 1 deletion(-)
+list operating points in the kernel is fine as long as there is an =
 
-Index: linux-2.6.18-rc1-mm2/kernel/power/smp.c
-===================================================================
---- linux-2.6.18-rc1-mm2.orig/kernel/power/smp.c
-+++ linux-2.6.18-rc1-mm2/kernel/power/smp.c
-@@ -55,7 +55,6 @@ void enable_nonboot_cpus(void)
- 			continue;
- 		}
- 		printk("Error taking cpu %d up: %d\n", cpu, error);
--		panic("Not enough cpus");
- 	}
- 	cpus_clear(frozen_cpus);
- }
+interface to override and/or extend that list.
+
+Another use case for creating operating points is to enable device =
+
+manufacturers and others to create a custom name for the  operating =
+
+point.  The entire operating point does not need to be created to =
+
+address this case but we would need a method for creating a mapping of =
+
+points to names.
+
+On Jul 25, 2006, at 10:05 PM, David Brownell wrote:
+
+> On Tuesday 25 July 2006 3:09 am, Amit Kucheria wrote:
+>> On Mon, 2006-07-24 at 17:32 -0700, ext David Brownell wrote:
+>>> On Monday 24 July 2006 2:58 pm, Preece Scott-PREECE wrote:
+>>>> If they're defined dynamically, you can change them without =
+
+>>>> recompiling
+>>>> the system, building a new rootfs image, etc. This is especially =
+
+>>>> useful
+>>>> during development and tuning of systems built on new hardware, =
+
+>>>> since
+>>>> the set of Ops available (that is, that are documented by the chip
+>>>> vendor to work) can vary over time and even board-to-board.
+>>>
+>>> I could easily buy such a mechanism being dependent on EXPERIMENTAL,
+>>> for use with developer/prototype boards ... thanks for that scenario.
+>>>
+>>> But I have a harder time seeing it used in production systems, burnt
+>>> into flash on a manufacturing line that already had to qualify that
+>>> new hardware before the next production run (of say 10,000 units) was
+>>> approved by the powers-that-be.
+>>>
+>>> - Dave
+>>
+>> Sometimes a certain operating point is not desired for regular =
+
+>> operation
+>> of the device. So it would not be in the board-xx.c file.
+>>
+>> But connect a peripheral and suddenly this is the most attractive OP =
+
+>> for
+>> the system.
+>
+> And you'd know that in advance, and thus could predefine that OP.  :)
+>
+> Even in the worst case, where you somehow add a driver without
+> upgrading the rest of the kernel in flash, that driver should be
+> able to define an OP without userspace.  (I suppose there are some
+> product vendors willing to do that type of field upgrade.)
+>
+> I'm still not persuaded that a UI for OP creation is needed except
+> for development.  Feel free to keep trying to persuade me though;
+> I'm just pushing back on what I see as weak points, since that's
+> the best way I know to come up with good solutions.
+>
+> - Dave
+>
+>
+>> So the ability to add operating points from userspace might
+>> be helpful there.
+>>
+>> Regards,
+>> Amit
+>>
+>>>
+>>>>> I meant "they could suggest how to do the sysfs thing, in =
+
+>>>>> reasonable
+>>>>> way". Like echo new_config > file is extermely ugly, but perhaps
+>>>>> configfs is suitable?
+>>>>
+>>>> Makes some sense.  But I'm still puzzled why _creating_ an operating
+>>>> point would be done outside of the arch/.../board-xx.c file.
+>>> _______________________________________________
+>>> linux-pm mailing list
+>>> linux-pm@lists.osdl.org
+>>> https://lists.osdl.org/mailman/listinfo/linux-pm
+>> -- =
+
+>> Amit Kucheria <amit.kucheria@nokia.com>
+>> Nokia
+>> _______________________________________________
+>> linux-pm mailing list
+>> linux-pm@lists.osdl.org
+>> https://lists.osdl.org/mailman/listinfo/linux-pm
+>>
+>
