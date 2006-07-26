@@ -1,7 +1,7 @@
 From: Jason Lunz <lunz@falooley.org>
-Subject: [patch v2] amd74xx: fix hang on resume from ram
-Date: Tue, 25 Jul 2006 22:45:29 -0400
-Message-ID: <20060726024529.GB4829@opus.vpn-dev.reflex>
+Subject: [patch v3] amd74xx: fix hang on resume from ram
+Date: Tue, 25 Jul 2006 23:14:47 -0400
+Message-ID: <20060726031446.GD4829@opus.vpn-dev.reflex>
 References: <20060715210518.GA3263@opus.vpn-dev.reflex> <20060724005340.GA4073@opus.vpn-dev.reflex> <20060725230955.GB7220@elf.ucw.cz> <200607251727.12678.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,17 +25,19 @@ load, both with and without DMA enabled.
 Signed-off-by: Jason Lunz <lunz@falooley.org>
 ---
 
-I've incorporated improvements helpfully suggested by David Brownell and
-Pavel Machek.
-
 I'm hardcoding a maximum of 2 ide channels, but other aspects of this
 driver (like the amd_80w global) are already doing that.
 
 DMA is re-enabled on resume even if it wasn't on at suspend, but that
 doesn't look unusual in drivers/ide/pci.
 
- drivers/ide/pci/amd74xx.c |   58 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+I've incorporated improvements helpfully suggested by David Brownell and
+Pavel Machek.
+
+Now compiles with !CONFIG_PM.
+
+ drivers/ide/pci/amd74xx.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
 Index: linux-2.6.18-rc2-git1/drivers/ide/pci/amd74xx.c
 ===================================================================
@@ -59,7 +61,7 @@ Index: linux-2.6.18-rc2-git1/drivers/ide/pci/amd74xx.c
  	if (hwif->irq == 0) /* 0 is bogus but will do for now */
  		hwif->irq = pci_get_legacy_ide_irq(hwif->pci_dev, hwif->channel);
  
-@@ -494,6 +498,58 @@
+@@ -494,6 +498,55 @@
  	/* 19 */ DECLARE_AMD_DEV("AMD5536"),
  };
  
@@ -110,20 +112,19 @@ Index: linux-2.6.18-rc2-git1/drivers/ide/pci/amd74xx.c
 +	return retval;
 +}
 +
-+#else	/* !CONFIG_PM */
-+#define amd74xx_suspend
-+#define amd74xx_resume
 +#endif	/* !CONFIG_PM */
 +
  static int __devinit amd74xx_probe(struct pci_dev *dev, const struct pci_device_id *id)
  {
  	amd_chipset = amd74xx_chipsets + id->driver_data;
-@@ -539,6 +595,8 @@
+@@ -539,6 +592,10 @@
  	.name		= "AMD_IDE",
  	.id_table	= amd74xx_pci_tbl,
  	.probe		= amd74xx_probe,
++#ifdef CONFIG_PM
 +	.suspend	= amd74xx_suspend,
 +	.resume		= amd74xx_resume,
++#endif
  };
  
  static int amd74xx_ide_init(void)
