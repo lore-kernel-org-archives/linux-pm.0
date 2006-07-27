@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC] PowerOP Take 3, ARM OMAP1 platform support 3/5
-Date: Wed, 26 Jul 2006 17:28:38 -0700
-Message-ID: <200607261728.40443.david-b@pacbell.net>
-References: <c55240ed0607201301y7ac3be76o6f173d1b6ab50c1d@mail.gmail.com>
-	<200607230924.52289.david-b@pacbell.net>
-	<44C7D865.8020109@gmail.com>
+Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
+Date: Wed, 26 Jul 2006 17:55:23 -0700
+Message-ID: <200607261755.25808.david-b@pacbell.net>
+References: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
+	<200607241149.01700.david-b@pacbell.net>
+	<083b1ba275390c298727816bc51f21b4@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <44C7D865.8020109@gmail.com>
+In-Reply-To: <083b1ba275390c298727816bc51f21b4@nomadgs.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -20,75 +20,101 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: Matthew Locke <matt@nomadgs.com>, patrick.mochel@intel.com, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
+To: Matthew Locke <matt@nomadgs.com>
+Cc: patrick.mochel@intel.com, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 July 2006 2:02 pm, Eugeny S. Mints wrote:
-> David Brownell wrote:
+On Wednesday 26 July 2006 12:44 am, Matthew Locke wrote:
+> =
 
-> >  - This should be part of patch #4; it's not truly separate.
-> >   =
+> On Jul 24, 2006, at 11:48 AM, David Brownell wrote:
+> =
 
-> PowerOP defines interface between an upper layer and PM core
-> and struct powerop_point is part of this interface - it defines what
-> the terms an upper layer and PM Core use to communicate to
-> each other are. And from this perspective I feel struct
-> powerop_point  logically belongs to PowerOP layer although
-> it is defined in arch dependent code.
+> > So I was glad to see it split out as fully optional... although from =
 
-Whereas I say that arch dependent is arch dependent ... unless
-that "core" is indirecting through "struct powerop_point *", the
-interface doesn't include the struct at all.  Ergo my comment.
+> > what I
+> > see, the internal models in the code have derived from this sysfs =
 
+> > model, so
+> > I'd argue those need to change too.
+> =
 
-> >  - I take it "v" is CPU voltage rather than some random component?
-> >   =
+> Is there something specific in the internal model that are you =
 
-> yes
-> >    Either way, there seems to be an omission here since boards
-> >    could have multiple voltages to care about ...
-> >   =
+> referring to?
 
-> see reply under the next bullet discussing board vs SoC but basically yes,
-> if we have multiple voltages to care about all voltages have to be
-> represented in the structure. Reference code structure definition may
-> be incomplete.
+I touched on some of the issues in earlier emails to Eugeny.
 
-I don't think "complete" is achievable then.  This is exactly where
-there will need to be component boundaries:  there must be OMAP1 specific
-componentry (with some chip-specific nuances), and also there must be
-board specific componentry.
+One is that the struct declaration seems too monolithic to
+handle board-specific differences well.  Related to that is the
+way things are just packaged as a set/struct of numbers, rather
+than a set of objects/components with internal rules/models
+(which might be individually reusable, e.g. "SOC X").
 
-Your patch #4 for example had #ifdeffery for specific boards.  ISTR
-that was wrong -- it should have been chip specfic nuances, 17xx parts
-vs 16xx ones -- but still there _would_ be a need for boar-specific
-components in a real/usable/complete system.
+Maybe another way to think of it is that this sysfs stuff defines
+some structural notions that seem to be artifacts of one style
+for creating operating points ... and I'd be more comfortable
+deriving those structural notions by addressing requirements of
+specific board families (not just SOCs!).  And _then_ coming up
+with a sysfs model to suit.
 
 
-> >  - In general, shouldn't an operating point be board-specific, so
-> >    that the parts of the system outside the SOC can be included
-> >   =
+> > It'd be lots better to just have named operating points that get =
 
-> good question. Basically current assumption is that definition is for an =
-SoC
-> and the values are board specific. While definition will most likely be t=
-he
-> same for every board based on a certain SoC I can imaging for example
-> that we can have an external clock source for an external hw on a board.
+> > selected just
+> > the /sys/power/state file selects the, erm, "sleep point".
+> =
 
-I agree that parts of an OP will merit that approach.  But ... the SOC
-is not the only system component that needs managing, and it won't always
-be practical to shuffle the others under the "device-specfic PM" tent.
+> I've tried to fit sleep into the operating point concept before but =
+
+> sleep always ends up being a special case.   The code has to check to =
+
+> see if the selected operating the "sleep point" and call the suspend =
+
+> function.  I think tying in sleep to the op point concept needs more =
+
+> discussion and probably should be handled separately until we get =
+
+> further along with power op.
+
+I'm comfortable with discussing sleep point separately from operating
+points, so long as everyone understands how fuzzy a line that is.  In
+a system with dedicated asymmetric CPUs for example, is "this cpu is
+asleep and that one is running" a sleep state?  Or an operating point?
+Ditto with hardware components that may be running or not, and don't
+get to brag about some fancy instruction set.  :)
+
+In fact, I find it maybe easier to think of "run states" and "sleep
+states", where a "run state" would include a collection of specific
+operating points and some mechanism to select some operating point
+to activate.  I don't think that notion of "operating point" is what
+you are talking about here with PowerOP, though...
 
 
-> Since that  powerop_point structure definition could be board specific
-> but that's where I'd prefer to get some input from the community to
-> decide whether we have to move to board specific operating point
-> structure definition.
+> btw, we are in complete agreement about using named points.  This first =
 
-My input:  make it easy to partition things into components.  One way
-to do that might be to have an SOC component, multiple device components,
-and a board-specific glue component that connects them in the right way.
+> set of patches is meant to introduce the operating point concept into =
+
+> the kernel without requiring massive changes to cpufreq.  This layer =
+
+> extends the bottom part of cpufreq to enable the control of multiple =
+
+> parameters beyond just cpu frequency and voltage across architectures.
+
+I guess I haven't read the patches enough to see how it extends that.
+
+
+> Currently, cpufreq does not use named operating points so we need to =
+
+> make sure cpufreq can use the power op API and continue to function.  =
+
+> This topic also ties into our other email discussion on creating op =
+
+> points and names are assigned to op points.
+
+Hmm, I'll be watching to see how that works out.  I keep thinking that
+in the big picture, a "governor" type component may not map well to
+choosing operating points ... though a given component might well use
+such a mechanism internally.
 
 - Dave
