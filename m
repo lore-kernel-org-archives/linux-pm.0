@@ -1,48 +1,43 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: PowerOp Design and working patch
-Date: Sat, 29 Jul 2006 15:09:02 -0700
-Message-ID: <20060729220902.GA8581@kroah.com>
-References: <242d827d33807b6b46608a26ed29c273@mvista.com>
-	<20060728233837.GG2140@kroah.com>
-	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
-	<20060729004546.GA3917@kroah.com>
-	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: swsusp regression (s2dsk) [Was: 2.6.18-rc2-mm1]
+Date: Sun, 30 Jul 2006 01:05:34 +0159
+Message-ID: <44CBE9D5.9030707@gmail.com>
+References: <20060727015639.9c89db57.akpm@osdl.org> <44CBA1AD.4060602@gmail.com> <200607292059.59106.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: david singleton <dsingleton@mvista.com>
-Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750718AbWG2XFz@vger.kernel.org>
+In-Reply-To: <200607292059.59106.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 28, 2006 at 10:12:26PM -0700, david singleton wrote:
-> =
+Rafael J. Wysocki napsal(a):
+> Hi,
+> 
+> On Saturday 29 July 2006 19:58, Jiri Slaby wrote:
+>> Andrew Morton napsal(a):
+>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc2/2.6.18-rc2-mm1/
+>> Hello,
+>>
+>> I have problems with swsusp again. While suspending, the very last thing kernel
+>> writes is 'restoring higmem' and then hangs, hardly. No sysrq response at all.
+>> Here is a snapshot of the screen:
+>> http://www.fi.muni.cz/~xslaby/sklad/swsusp_higmem.gif
+>>
+>> It's SMP system (HT), higmem enabled (1 gig of ram).
+> 
+> Most probably it hangs in device_power_up(), so the problem seems to be
+> with one of the devices that are resumed with IRQs off.
+> 
+> Does vanila .18-rc2 work?
 
-> Greg,
-> 	perhaps I need to back up a bit.  I wasn't submitting these patches
-> for inclusion into Linux.  I was presenting them to the people =
+Yup, it does.
 
-> discussing
-> how power management might evolve in Linux.
-
-That's fine, but you should at least post them so we can read and
-comment on them from within our email clients then :)
-
-And also by breaking up the patches into small logical changes, it helps
-us to understand what they are doing and would allow us to evaluate them
-much better.
-
-thanks,
-
-greg k-h
+regards,
+-- 
+<a href="http://www.fi.muni.cz/~xslaby/">Jiri Slaby</a>
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
