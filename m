@@ -1,9 +1,9 @@
-From: david singleton <dsingleton@mvista.com>
-Subject: PowerOp Design and working patch
-Date: Fri, 28 Jul 2006 15:31:41 -0700
-Message-ID: <242d827d33807b6b46608a26ed29c273@mvista.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: multipart/mixed; boundary=Apple-Mail-6--274957192
+From: "heights" <wmguqyc@bonk.sun.com>
+Subject: Click
+Date: Sat, 29 Jul 2006 00:13:31 -0100
+Message-ID: <001201c6b29b$71655860$532e0954@igor>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_NextPart_000_000E_01C6B2A3.D32839C0"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -14,891 +14,421 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: David Singleton <daviado@gmail.com>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format...
 
---Apple-Mail-6--274957192
-Content-Transfer-Encoding: 7bit
+------=_NextPart_000_000E_01C6B2A3.D32839C0
+Content-Type: multipart/alternative;
+    boundary="----------=_1154128426-1254-101"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1154128426-1254-101
 Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
+	charset="windows-1250"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Here is a patch that implements a version of the PowerOp concept.
-
-The goal of PowerOp power management is to provide a framework that 
-unifies
-and simplifies the various power management infrastructures in Linux.  
-The
-three infrastructures Power Op is concerned with are:
-
-         1) basic suspend/resume power management (CONFIG_PM)
-
-         2) basic processor frequency management (CONFIG_CPUFREQ)
-
-         3) SourceForge's Dynamic Power Management (CONFIG_DPM)
-
-All three power management infrastructures are concerned with 
-controlling
-power states of the system, and interestingly enough they all perform 
-the
-same basic operational steps to control changes in power state.
-
-PowerOp uses the existing power management sysfs infrastructure and 
-extends it
-to perform cpufreq and dynamic power management operations. The 
-traditional
-suspend to memory or disk (or swap) infrastructure has the correct 
-operational
-structure that supports all types of power state change.
-
-The CPUFREQ table based frequency control makes controlling cpu 
-frequency
-simple and straight forward.  The user doesn't get to set the cpu to
-any speed, but only to supported speeds that have been provided by
-the hardware vendor and validated.
-
-Dynamic Power Management eventually treats all types of power states as 
-operating points,
-wether it's a suspend operating point, a particular frequency, or a 
-specific
-voltage.
-
-By combining the best of all of these power management infrastructures
-PowerOp uses the operational structure of tradition CONFIG_PM power
-management and converts all power states, frequency, voltage, idle or
-suspend to the CPUFREQ concept of only supported and validated operating
-points.
-
-PowerOp allows setting any operating point supported by the system by 
-setting
-the name of the operating point into /sys/power/state.
-
-I apologize for being so late to the table, but I find a working patch 
-easier to discuss
-and I needed to see if I could unify and simplify all three power 
-management infrastructures.
-
-David
+Source quality
+Extra available
+All rights reserved. Questions Comments
+contour Acidfree Premium
+All rights
+repair care
+Library Supplies
+needed Longs
+plastic inert
+variety
+fit. .mil Soft
+Unlined Untabbed Tabbed Center Slit
+Home Customer Service
+version
+fit. .mil Soft
+seeking
+Simple for and Repair
+Source quality that
+Sheets: Lined Unlined Untabbed Tabbed Center
+If not
+offers wide variety
+Code DOWNLOAD IN ADOBE
+that are perfect
+covers Your
+Libraries
+quick accurate
+Conforms
+ADOBE
+Public Libraries grade
+for and Repair Books
+insertion
+most popular sizes
 
 
+------------=_1154128426-1254-101
+Content-Type: text/html;
+	charset="windows-1250"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---Apple-Mail-6--274957192
-Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream; x-unix-mode=0644; name="powerop.patch"
-Content-Disposition: attachment;
-	filename=powerop.patch
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+0">
+<META content=3D"MSHTML 6.00.2900.2873" name=3DGENERATOR>
+<DEFANGED_style_0 </STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV align=3Dcenter><FONT face=3DArial size=3D2>
+<IMG alt=3D""=20
+hspace=3D0 DEFANGED_src=3D"cid:000d01c6b29b$7163d1c0$532e0954@igor" align=
+=3D"baseline"=20
+border=3D0></FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Source quality</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Extra available</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>All rights reserved. Question=
+s Comments</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>contour Acidfree Premium</FON=
+T></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>All rights</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>repair care</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Library Supplies</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>needed Longs</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>plastic inert</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>variety</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>fit. .mil Soft</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Unlined Untabbed Tabbed Cente=
+r Slit</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Home Customer Service</FONT><=
+/DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>version</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>fit. .mil Soft</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>seeking</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Simple for and Repair</FONT><=
+/DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Source quality that</FONT></D=
+IV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Sheets: Lined Unlined Untabbe=
+d Tabbed Center</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>If not</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>offers wide variety</FONT></D=
+IV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Code DOWNLOAD IN ADOBE</FONT>=
+</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>that are perfect</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>covers Your</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Libraries</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>quick accurate</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Conforms</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>ADOBE</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Public Libraries grade</FONT>=
+</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>for and Repair Books</FONT></=
+DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>insertion</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>most popular sizes</FONT></DI=
+V>
+</BODY></HTML>
 
- Documentation/power/powerop.txt                   |  168 +++++++++++++++++++
- Makefile                                          |    2 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  108 ++++++++++++
- drivers/cpufreq/cpufreq.c                         |   34 +++
- include/linux/cpufreq.h                           |    2 
- include/linux/pm.h                                |   26 ++-
- kernel/power/main.c                               |  189 +++++++++++++++++-----
- kernel/power/power.h                              |    2 
- 8 files changed, 486 insertions(+), 45 deletions(-)
+------------=_1154128426-1254-101--
 
-Index: linux-2.6.17/kernel/power/main.c
-===================================================================
---- linux-2.6.17.orig/kernel/power/main.c
-+++ linux-2.6.17/kernel/power/main.c
-@@ -49,7 +49,7 @@ void pm_set_ops(struct pm_ops * ops)
-  *	the platform can enter the requested state.
-  */
- 
--static int suspend_prepare(suspend_state_t state)
-+static int suspend_prepare(struct power_op * state)
- {
- 	int error = 0;
- 	unsigned int free_pages;
-@@ -82,7 +82,7 @@ static int suspend_prepare(suspend_state
- 	}
- 
- 	if (pm_ops->prepare) {
--		if ((error = pm_ops->prepare(state)))
-+		if ((error = pm_ops->prepare(state->type)))
- 			goto Thaw;
- 	}
- 
-@@ -94,7 +94,7 @@ static int suspend_prepare(suspend_state
- 	return 0;
-  Finish:
- 	if (pm_ops->finish)
--		pm_ops->finish(state);
-+		pm_ops->finish(state->type);
-  Thaw:
- 	thaw_processes();
-  Enable_cpu:
-@@ -104,7 +104,7 @@ static int suspend_prepare(suspend_state
- }
- 
- 
--int suspend_enter(suspend_state_t state)
-+int suspend_enter(struct power_op * state)
- {
- 	int error = 0;
- 	unsigned long flags;
-@@ -115,7 +115,7 @@ int suspend_enter(suspend_state_t state)
- 		printk(KERN_ERR "Some devices failed to power down\n");
- 		goto Done;
- 	}
--	error = pm_ops->enter(state);
-+	error = pm_ops->enter(state->type);
- 	device_power_up();
-  Done:
- 	local_irq_restore(flags);
-@@ -131,36 +131,94 @@ int suspend_enter(suspend_state_t state)
-  *	console that we've allocated. This is not called for suspend-to-disk.
-  */
- 
--static void suspend_finish(suspend_state_t state)
-+static void suspend_finish(struct power_op * state)
- {
- 	device_resume();
- 	resume_console();
- 	thaw_processes();
- 	enable_nonboot_cpus();
- 	if (pm_ops && pm_ops->finish)
--		pm_ops->finish(state);
-+		pm_ops->finish(state->type);
- 	pm_restore_console();
- }
- 
- 
-+struct power_op *current_state;
-+struct power_op pm_states = {
-+	.name = "default",
-+	.type = PM_SUSPEND_ON,
-+};
- 
--
--static const char * const pm_states[PM_SUSPEND_MAX] = {
--	[PM_SUSPEND_STANDBY]	= "standby",
--	[PM_SUSPEND_MEM]	= "mem",
-+static struct power_op standby = {
-+	.name = "standby",
-+	.description = "Power-On Suspend ACPI State: S1",
-+	.type = PM_SUSPEND_STANDBY,
-+};
-+static struct power_op mem = {
-+	.name = "mem   ",
-+	.description = "Suspend-to-RAM ACPI State: S3",
-+	.type = PM_SUSPEND_MEM,
-+};
- #ifdef CONFIG_SOFTWARE_SUSPEND
--	[PM_SUSPEND_DISK]	= "disk",
--#endif
-+static struct power_op disk = {
-+	.name = "disk  ",
-+	.description = "Suspend-to-disk ACPI State: S4",
-+	.type = PM_SUSPEND_DISK,
- };
-+#endif
- 
--static inline int valid_state(suspend_state_t state)
-+/*
-+ *
-+ */
-+static int pm_change_state(struct power_op *state)
-+{
-+	int error = -EINVAL;
-+	int len = strlen(state->name);
-+	struct power_op *this, *next;
-+	struct list_head *head = &pm_states.list;
-+
-+	/*
-+	 * list_find new operating point.
-+	 * compare to current operating point.
-+	 * if different change to new operating point.
-+	 */
-+	list_for_each_entry_safe(this, next, head, list) {
-+		if (strncmp(state->name, this->name, len) == 0) {
-+			if ((strcmp(current_state->name, this->name)) == 0) {
-+				return 0;
-+			}
-+
-+			if (this->prepare_transition(current_state, this)) {
-+				break;
-+			}
-+
-+			if (this->transition(current_state, this)) {
-+				break;
-+			}
-+
-+			/*
-+			 * now lets wait for the transition latency
-+			 */
-+			udelay(this->latency);
-+
-+			error = this->finish_transition(current_state, this);
-+
-+			if (error == 0)
-+				current_state = this;
-+			break;
-+		}
-+	}
-+	return error;
-+}
-+
-+static inline int valid_state(struct power_op * state)
- {
- 	/* Suspend-to-disk does not really need low-level support.
- 	 * It can work with reboot if needed. */
--	if (state == PM_SUSPEND_DISK)
-+	if (state->type == PM_SUSPEND_DISK)
- 		return 1;
- 
--	if (pm_ops && pm_ops->valid && !pm_ops->valid(state))
-+	if (pm_ops && pm_ops->valid && !pm_ops->valid(state->type))
- 		return 0;
- 	return 1;
- }
-@@ -168,7 +226,7 @@ static inline int valid_state(suspend_st
- 
- /**
-  *	enter_state - Do common work of entering low-power state.
-- *	@state:		pm_state structure for state we're entering.
-+ *	@state:		power_op structure for state we're entering.
-  *
-  *	Make sure we're the only ones trying to enter a sleep state. Fail
-  *	if someone has beat us to it, since we don't want anything weird to
-@@ -177,7 +235,7 @@ static inline int valid_state(suspend_st
-  *	we've woken up).
-  */
- 
--static int enter_state(suspend_state_t state)
-+static int enter_state(struct power_op *state)
- {
- 	int error;
- 
-@@ -186,16 +244,21 @@ static int enter_state(suspend_state_t s
- 	if (down_trylock(&pm_sem))
- 		return -EBUSY;
- 
--	if (state == PM_SUSPEND_DISK) {
-+	if (state->type == PM_SUSPEND_DISK) {
- 		error = pm_suspend_disk();
- 		goto Unlock;
- 	}
- 
--	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
-+	if (state->type == PM_FREQ_CHANGE) {
-+		error = pm_change_state(state);
-+		goto Unlock;
-+	}
-+
-+	pr_debug("PM: Preparing system for %s sleep\n", state->name);
- 	if ((error = suspend_prepare(state)))
- 		goto Unlock;
- 
--	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
-+	pr_debug("PM: Entering %s sleep\n", state->name);
- 	error = suspend_enter(state);
- 
- 	pr_debug("PM: Finishing wakeup.\n");
-@@ -211,7 +274,15 @@ static int enter_state(suspend_state_t s
-  */
- int software_suspend(void)
- {
--	return enter_state(PM_SUSPEND_DISK);
-+	struct power_op *this, *next;
-+	struct list_head *head = &pm_states.list;
-+	int error = 0;
-+
-+	list_for_each_entry_safe(this, next, head, list) {
-+		if (this->type == PM_SUSPEND_DISK)
-+			error= enter_state(this);
-+	}
-+	return error;
- }
- 
- 
-@@ -223,16 +294,48 @@ int software_suspend(void)
-  *	structure, and enter (above).
-  */
- 
--int pm_suspend(suspend_state_t state)
-+int pm_suspend(struct power_op * state)
- {
--	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX)
-+	if (state->type > PM_SUSPEND_ON && state->type <= PM_SUSPEND_MAX)
- 		return enter_state(state);
- 	return -EINVAL;
- }
- 
-+decl_subsys(power,NULL,NULL);
- 
-+/**
-+ *	supported_states - control system power state.
-+ *
-+ *	show() returns what states are supported, which are no longer
-+ * 	hard-coded to just 'standby' (Power-On Suspend), 'mem' (Suspend-to-RAM),
-+ *	and *'disk' (Suspend-to-Disk), but show all the power states.
-+ *
-+ *	store() unwritable
-+ */
- 
--decl_subsys(power,NULL,NULL);
-+static ssize_t supported_states_show(struct subsystem * subsys, char * buf)
-+{
-+	struct power_op *this, *next;
-+	struct list_head *head = &pm_states.list;
-+	const char *header =  "< Name >    <Frequency>  <Voltage>  <Transition Latency>  < Description >\n";
-+	char * s = buf;
-+
-+	s += sprintf(s, "%s", header);
-+	list_for_each_entry_safe(this, next, head, list) {
-+		s += sprintf(s,"%s %dKHz %dmV %dus %s\n", this->name,
-+		   this->frequency, this->voltage, this->latency,
-+		   this->description);
-+	}
-+
-+	return (s - buf);
-+}
-+
-+static ssize_t supported_states_store(struct subsystem * subsys, const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+
-+power_attr(supported_states);
- 
- 
- /**
-@@ -248,36 +351,28 @@ decl_subsys(power,NULL,NULL);
- 
- static ssize_t state_show(struct subsystem * subsys, char * buf)
- {
--	int i;
- 	char * s = buf;
- 
--	for (i = 0; i < PM_SUSPEND_MAX; i++) {
--		if (pm_states[i] && valid_state(i))
--			s += sprintf(s,"%s ", pm_states[i]);
--	}
--	s += sprintf(s,"\n");
-+	s += sprintf(s,"%s\n", current_state->name);
- 	return (s - buf);
- }
- 
- static ssize_t state_store(struct subsystem * subsys, const char * buf, size_t n)
- {
--	suspend_state_t state = PM_SUSPEND_STANDBY;
--	const char * const *s;
-+	struct power_op *this, *next;
-+	struct list_head *head = &pm_states.list;
- 	char *p;
--	int error;
-+	int error = -EINVAL;
- 	int len;
- 
- 	p = memchr(buf, '\n', n);
- 	len = p ? p - buf : n;
--
--	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
--		if (*s && !strncmp(buf, *s, len))
-+	list_for_each_entry_safe(this, next, head, list) {
-+		if (!strncmp(buf, this->name, len)) {
-+			error = enter_state(this);
- 			break;
-+		}
- 	}
--	if (state < PM_SUSPEND_MAX && *s)
--		error = enter_state(state);
--	else
--		error = -EINVAL;
- 	return error ? error : n;
- }
- 
-@@ -285,6 +380,7 @@ power_attr(state);
- 
- static struct attribute * g[] = {
- 	&state_attr.attr,
-+	&supported_states_attr.attr,
- 	NULL,
- };
- 
-@@ -295,9 +391,20 @@ static struct attribute_group attr_group
- 
- static int __init pm_init(void)
- {
-+
- 	int error = subsystem_register(&power_subsys);
- 	if (!error)
- 		error = sysfs_create_group(&power_subsys.kset.kobj,&attr_group);
-+
-+	INIT_LIST_HEAD(&pm_states.list);
-+
-+#ifdef CONFIG_SOFTWARE_SUSPEND
-+	list_add(&disk.list, &pm_states.list);
-+#endif
-+	list_add(&mem.list, &pm_states.list);
-+	list_add(&standby.list, &pm_states.list);
-+	current_state = &pm_states;
-+
- 	return error;
- }
- 
-Index: linux-2.6.17/include/linux/pm.h
-===================================================================
---- linux-2.6.17.orig/include/linux/pm.h
-+++ linux-2.6.17/include/linux/pm.h
-@@ -108,7 +108,29 @@ typedef int __bitwise suspend_state_t;
- #define PM_SUSPEND_STANDBY	((__force suspend_state_t) 1)
- #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
- #define PM_SUSPEND_DISK		((__force suspend_state_t) 4)
--#define PM_SUSPEND_MAX		((__force suspend_state_t) 5)
-+#define PM_FREQ_CHANGE		((__force suspend_state_t) 5)
-+#define PM_VOLT_CHANGE		((__force suspend_state_t) 6)
-+#define PM_SUSPEND_MAX		((__force suspend_state_t) 7)
-+
-+#define PM_NAME_SIZE            16
-+#define PM_DESCRIPTION_SIZE     48
-+
-+struct power_op {
-+	struct list_head list;
-+	suspend_state_t type;
-+	char name[PM_NAME_SIZE];
-+	char description[PM_DESCRIPTION_SIZE];
-+	unsigned int frequency;		/* in KHz */
-+	unsigned int voltage;		/* mV */
-+	unsigned int latency;		/* transition latency in us */
-+	int     (*prepare_transition)(struct power_op *cur, struct power_op *new);
-+	int     (*transition)(struct power_op *cur, struct power_op *new);
-+	int     (*finish_transition)(struct power_op *cur, struct power_op *new);
-+
-+	void *md_data;			/* arch dependent data (dpm_opt) */
-+};
-+extern struct power_op pm_states;
-+extern struct power_op *current_state;
- 
- typedef int __bitwise suspend_disk_method_t;
- 
-@@ -128,7 +150,7 @@ struct pm_ops {
- 
- extern void pm_set_ops(struct pm_ops *);
- extern struct pm_ops *pm_ops;
--extern int pm_suspend(suspend_state_t state);
-+extern int pm_suspend(struct power_op *state);
- 
- 
- /*
-Index: linux-2.6.17/kernel/power/power.h
-===================================================================
---- linux-2.6.17.orig/kernel/power/power.h
-+++ linux-2.6.17/kernel/power/power.h
-@@ -113,4 +113,4 @@ extern int swsusp_resume(void);
- extern int swsusp_read(void);
- extern int swsusp_write(void);
- extern void swsusp_close(void);
--extern int suspend_enter(suspend_state_t state);
-+extern int suspend_enter(struct power_op * state);
-Index: linux-2.6.17/Makefile
-===================================================================
---- linux-2.6.17.orig/Makefile
-+++ linux-2.6.17/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 18
--EXTRAVERSION = -rc1
-+EXTRAVERSION = -rc1-PowerOp
- NAME=Crazed Snow-Weasel
- 
- # *DOCUMENTATION*
-Index: linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-===================================================================
---- linux-2.6.17.orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -20,6 +20,7 @@
- #include <linux/sched.h>	/* current */
- #include <linux/delay.h>
- #include <linux/compiler.h>
-+#include <linux/pm.h>
- 
- #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
- #include <linux/acpi.h>
-@@ -160,6 +161,80 @@ static struct cpufreq_frequency_table ba
- 	OP(1400, 1484),
- 	{ .frequency = CPUFREQ_TABLE_END }
- };
-+#ifdef CONFIG_PM
-+/*
-+ * this is the formula for OP.  We need the perfctl
-+ * msr value to change to a new frequency.
-+ * We'll save it in the machine dependent variable md_data.
-+ */
-+static void set_perfctl_msr(struct power_op *pm)
-+{
-+	unsigned int msr = pm->frequency/100;
-+	unsigned int v = pm->voltage - 700;
-+
-+	msr = (unsigned int)(msr << 8);
-+	msr |= (unsigned int)(v / 16);
-+	pm->md_data = (void *)msr;
-+}
-+
-+static int centrino_transition(struct power_op *cur, struct power_op *new);
-+
-+static struct power_op mhz600 = {
-+        .name = "600MHz",
-+        .description = "Low Frequency state",
-+        .type = PM_FREQ_CHANGE,
-+        .frequency = 600,
-+        .voltage = 956,
-+	.latency = 100,
-+	.prepare_transition  = cpufreq_prepare_transition,
-+	.transition = centrino_transition,
-+	.finish_transition = cpufreq_finish_transition,
-+};
-+static struct power_op mhz800 = {
-+        .name = "800MHz",
-+        .description = "Lower Frequency state",
-+        .type = PM_FREQ_CHANGE,
-+        .frequency = 800,
-+        .voltage = 1180,
-+	.latency = 100,
-+	.prepare_transition  = cpufreq_prepare_transition,
-+	.transition = centrino_transition,
-+	.finish_transition = cpufreq_finish_transition,
-+};
-+static struct power_op ghz1 = {
-+        .name = "1GHz",
-+        .description = "Med Frequency state",
-+        .type = PM_FREQ_CHANGE,
-+        .frequency = 1000,
-+        .voltage = 1308,
-+	.latency = 100,
-+	.prepare_transition  = cpufreq_prepare_transition,
-+	.transition = centrino_transition,
-+	.finish_transition = cpufreq_finish_transition,
-+};
-+static struct power_op ghz12 = {
-+        .name = "1.2GHz",
-+        .description = "High Frequency state",
-+        .type = PM_FREQ_CHANGE,
-+        .frequency = 1200,
-+        .voltage = 1436,
-+	.latency = 100,
-+	.prepare_transition  = cpufreq_prepare_transition,
-+	.transition = centrino_transition,
-+	.finish_transition = cpufreq_finish_transition,
-+};
-+static struct power_op ghz14 = {
-+        .name = "1.4GHz",
-+        .description = "Highest Frequency state",
-+        .type = PM_FREQ_CHANGE,
-+        .frequency = 1400,
-+        .voltage = 1484,
-+	.latency = 100,
-+	.prepare_transition  = cpufreq_prepare_transition,
-+	.transition = centrino_transition,
-+	.finish_transition = cpufreq_finish_transition,
-+};
-+#endif
- 
- /* Intel Pentium M processor 1.50GHz (Banias) */
- static struct cpufreq_frequency_table banias_1500[] =
-@@ -266,6 +341,19 @@ static int centrino_cpu_init_table(struc
- 	dprintk("found \"%s\": max frequency: %dkHz\n",
- 	       model->model_name, model->max_freq);
- 
-+#ifdef CONFIG_PM
-+	list_add_tail(&mhz600.list, &pm_states.list);
-+	set_perfctl_msr(&mhz600);
-+	list_add_tail(&mhz800.list, &pm_states.list);
-+	set_perfctl_msr(&mhz800);
-+	list_add_tail(&ghz1.list, &pm_states.list);
-+	set_perfctl_msr(&ghz1);
-+	list_add_tail(&ghz12.list, &pm_states.list);
-+	set_perfctl_msr(&ghz12);
-+	list_add_tail(&ghz14.list, &pm_states.list);
-+	set_perfctl_msr(&ghz14);
-+	current_state = &ghz14;
-+#endif
- 	return 0;
- }
- 
-@@ -620,6 +708,26 @@ static int centrino_verify (struct cpufr
- 	return cpufreq_frequency_table_verify(policy, centrino_model[policy->cpu]->op_points);
- }
- 
-+static int centrino_transition(struct power_op *cur, struct power_op *new)
-+{
-+	unsigned int msr, oldmsr = 0, h = 0;
-+
-+	if (cur == new)
-+		return 0;
-+
-+	msr = (unsigned int)new->md_data;
-+	rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
-+
-+	/* all but 16 LSB are reserved, treat them with care */
-+	oldmsr &= ~0xffff;
-+	msr &= 0xffff;
-+	oldmsr |= msr;
-+
-+	wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
-+
-+	return 0;
-+}
-+
- /**
-  * centrino_setpolicy - set a new CPUFreq policy
-  * @policy: new policy
-Index: linux-2.6.17/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.17.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.17/drivers/cpufreq/cpufreq.c
-@@ -226,6 +226,33 @@ static void adjust_jiffies(unsigned long
- static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci) { return; }
- #endif
- 
-+int cpufreq_prepare_transition(struct power_op *cur, struct power_op *new)
-+{
-+	struct cpufreq_freqs freqs;
-+
-+	freqs.old = cur->frequency;
-+	freqs.new = new->frequency;
-+	freqs.cpu = 0;
-+	freqs.flags = cpufreq_driver->flags;
-+	blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+			CPUFREQ_PRECHANGE, &freqs);
-+	adjust_jiffies(CPUFREQ_PRECHANGE, &freqs);
-+	return 0;
-+}
-+
-+int cpufreq_finish_transition(struct power_op *cur, struct power_op *new)
-+{
-+	struct cpufreq_freqs freqs;
-+
-+	freqs.old = cur->frequency;
-+	freqs.new = new->frequency;
-+	freqs.cpu = 0;
-+	freqs.flags = cpufreq_driver->flags;
-+	adjust_jiffies(CPUFREQ_POSTCHANGE, &freqs);
-+	blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+			CPUFREQ_POSTCHANGE, &freqs);
-+	return 0;
-+}
- 
- /**
-  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
-@@ -884,6 +911,12 @@ static void cpufreq_out_of_sync(unsigned
- }
- 
- 
-+#ifdef CONFIG_PM
-+unsigned int cpufreq_quick_get(unsigned int cpu)
-+{
-+	return (current_state->frequency * 1000);
-+}
-+#else
- /**
-  * cpufreq_quick_get - get the CPU frequency (in kHz) frpm policy->cur
-  * @cpu: CPU number
-@@ -905,6 +938,7 @@ unsigned int cpufreq_quick_get(unsigned 
- 
- 	return (ret);
- }
-+#endif
- EXPORT_SYMBOL(cpufreq_quick_get);
- 
- 
-Index: linux-2.6.17/include/linux/cpufreq.h
-===================================================================
---- linux-2.6.17.orig/include/linux/cpufreq.h
-+++ linux-2.6.17/include/linux/cpufreq.h
-@@ -271,6 +271,8 @@ static inline unsigned int cpufreq_quick
- 	return 0;
- }
- #endif
-+int cpufreq_prepare_transition(struct power_op *cur, struct power_op *new);
-+int cpufreq_finish_transition(struct power_op *cur, struct power_op *new);
- 
- 
- /*********************************************************************
-Index: linux-2.6.17/Documentation/power/powerop.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.17/Documentation/power/powerop.txt
-@@ -0,0 +1,168 @@
-+
-+The PowerOp Power Management infrastructure.
-+
-+David Singleton <dsingleton@mvista.com>
-+
-+25 July 2006
-+
-+Copyright (c) 2006 MontaVista Software Inc.
-+
-+0. Introduction
-+
-+The goal of PowerOp power management is to provide a framework that unifies
-+and simplifies the various power management infrastructures in Linux.  The
-+three infrastructures Power Op is concerned with are:
-+
-+	1) basic suspend/resume power management (CONFIG_PM)
-+
-+	2) basic processor frequency management (CONFIG_CPUFREQ)
-+
-+	3) SourceForge's Dynamic Power Management (CONFIG_DPM)
-+
-+All three power management infrastructures are concerned with controlling
-+power states of the system, and interestingly enough they all perform the
-+same basic operational steps to control changes in power state.
-+
-+PowerOp uses the existing power management sysfs infrastructure and extends it
-+to perform cpufreq and dynamic power management operations. The traditional
-+suspend to memory or disk (or swap) infrastructure has the correct operational
-+structure that supports all types of power state change.
-+
-+The CPUFREQ table based frequency control makes controlling cpu frequency
-+simple and straight forward.  The user doesn't get to set the cpu to
-+any speed, but only to supported speeds that have been provided by
-+the hardware vendor and validated.
-+
-+Dynamic Power Management treats all types of power states as operating points,
-+wether it's a suspend operating point, a particular frequency, or a specific
-+voltage.
-+
-+By combining the best of all of these power management infrastructures
-+PowerOp uses the operational structure of tradition CONFIG_PM power
-+management and converts all power states, frequency, voltage, idle or
-+suspend to the CPUFREQ concept of only supported and validated operating
-+points.
-+
-+PowerOp then becomes a simplified power management infrastructure in that
-+only operating points that are supported and validated are available
-+to the user.  Control of all operating points are done by the operating
-+point name.  The user cannot supply invalid, or malicious,
-+parameters that would hang or crash the system.
-+
-+1) PowerOp interface.
-+
-+To simplify power management all operations take place through two sysfs
-+files, /sys/power/state and /sys/power/supported_states.  The 'state' file
-+shows the current operating point of the system.  The readonly
-+'supported_states' file shows the operating points the system supports.
-+
-+Supported operating points are displayed in tuple format of:
-+
-+<name, frequency, voltage, transition latency, description>
-+
-+The supported_states file contains rows of tuples with each
-+tuple describing a supported operating point of the system.
-+The supported_states file looks like a merge between the old
-+/sys/power/state file and a cpufreq table.
-+
-+The system can transition to any of the supported states by simply
-+storing the operating point name in the /sys/power/state file.
-+
-+To allow user space notification of events, like low battery, lid of
-+the notebook being closed, etc.  PowerOp notifies the user through
-+the hotplug interface.
-+
-+
-+2) PowerOP Operating Points.
-+
-+An operating point is represented by the power_op struct which contains:
-+
-+struct power_op {
-+        struct list_head list;
-+        suspend_state_t type;
-+        char name[PM_NAME_SIZE];
-+        char description[PM_DESCRIPTION_SIZE];
-+        unsigned int frequency;         /* in KHz */
-+        unsigned int voltage;           /* mV */
-+        unsigned int latency;           /* transition latency in us */
-+        int     (*prepare_transition)(struct power_op *cur, struct power_op *new);
-+        int     (*transition)(struct power_op *cur, struct power_op *new);
-+        int     (*finish_transition)(struct power_op *cur, struct power_op *new);
-+
-+        void *md_data;                  /* arch dependent data  */
-+};
-+
-+Each operating point has its own functions for preparing to transition,
-+transitioning and finishing transition.  Cpu frequency operating points
-+will probably share their op vectors, idle and suspend operating points my have
-+different op vectors.
-+
-+
-+3) Traditional Operation of Power Management Code.
-+
-+All three power management infrastructures have the same operational model.
-+All three follow the PM model of preparing to suspend,  suspending,
-+and finish the state change.  It was easiest to follow the model
-+enforced by the traditional power management and use the three step process of:
-+
-+ 	1) get ready to change state
-+	2) change state
-+	3) finish changes
-+
-+Cpufreq infrastructure makes three calls to change the frequency of the
-+processor:
-+
-+	1) cpufreq_notify_transition(&freq, CPUFREQ_PRECHANGE);
-+
-+	2) acpi_processor_set_performance (data, j, next_state);
-+
-+	3) cpufreq_notify_transition(&freq, CPUFREQ_POSTCHANGE);
-+
-+DPM uses these three calls to change frequency and/or voltage:
-+
-+	1) dpm_driver_scale(SCALE_PRECHANGE, new);
-+
-+	2) clk_set_rate(prcm_set, new->md_opt.prcm_clock);
-+
-+	3) dpm_driver_scale(SCALE_POStCHANGE, new);
-+
-+PM uses these three calls to suspend:
-+
-+	1) suspend_prepare(state);
-+
-+	2) suspend_enter(state->type);
-+
-+	3) suspend_finish(state);
-+
-+
-+4) PowerOP Operation.
-+
-+PowerOP uses the following three calls to transition to a new operating
-+point.
-+
-+	prepare_to_transition(cur_state, new_state);
-+
-+	transition(cur_state, new_state);
-+
-+	finish_transistion(cur_state, new_state);
-+
-+The parameters are pointers to operating point structures, struct power_op.
-+
-+Power OP is a simplified version of all three of these infrastructures in
-+that it only deals with operating points, and more specifically with
-+supported operating points.  Power Op presents a set of supported operating
-+points to the user.  This is similar to the cpufreq table concept in that
-+only supported and validated frequencies are avaliable.
-+
-+The definition of the operating point is done in a manner similar to cpufreqs
-+in that the supported operating frequency, voltage and transition latency,
-+are predefined (by the hardware vendor) and validated.
-+
-+The user maninuplates the operting points of the system by the
-+name of the operating points.  This simplifies both the code and the
-+control of the system's operating points in the PowerOp daemon.
-+
-+All supported operating points are defined at compile time and
-+the user sets the system to different operating points by
-+the operating point name.
-+
+------=_NextPart_000_000E_01C6B2A3.D32839C0
+Content-Type: image/gif;
+	name="Customer.gif"
+Content-Transfer-Encoding: base64
+Content-ID: <000d01c6b29b$7163d1c0$532e0954@igor>
+Content-Disposition: inline
 
---Apple-Mail-6--274957192
+R0lGODdhrQEOAocAAAAAAIAAAACAAICAAAAAgIAAgACAgMDAwMDcwKbK8EAg
+AGAgAIAgAKAgAMAgAOAgAABAACBAAEBAAGBAAIBAAKBAAMBAAOBAAABgACBg
+AEBgAGBgAIBgAKBgAMBgAOBgAACAACCAAECAAGCAAICAAKCAAMCAAOCAAACg
+ACCgAECgAGCgAICgAKCgAMCgAOCgAADAACDAAEDAAGDAAIDAAKDAAMDAAODA
+AADgACDgAEDgAGDgAIDgAKDgAMDgAODgAAAAQCAAQEAAQGAAQIAAQKAAQMAA
+QOAAQAAgQCAgQEAgQGAgQIAgQKAgQMAgQOAgQABAQCBAQEBAQGBAQIBAQKBA
+QMBAQOBAQABgQCBgQEBgQGBgQIBgQKBgQMBgQOBgQACAQCCAQECAQGCAQICA
+QKCAQMCAQOCAQACgQCCgQECgQGCgQICgQKCgQMCgQOCgQADAQCDAQEDAQGDA
+QIDAQKDAQMDAQODAQADgQCDgQEDgQGDgQIDgQKDgQMDgQODgQAAAgCAAgEAA
+gGAAgIAAgKAAgMAAgOAAgAAggCAggEAggGAggIAggKAggMAggOAggABAgCBA
+gEBAgGBAgIBAgKBAgMBAgOBAgABggCBggEBggGBggIBggKBggMBggOBggACA
+gCCAgECAgGCAgICAgKCAgMCAgOCAgACggCCggECggGCggICggKCggMCggOCg
+gADAgCDAgEDAgGDAgIDAgKDAgMDAgODAgADggCDggEDggGDggIDggKDggMDg
+gODggAAAwCAAwEAAwGAAwIAAwKAAwMAAwOAAwAAgwCAgwEAgwGAgwIAgwKAg
+wMAgwOAgwABAwCBAwEBAwGBAwIBAwKBAwMBAwOBAwABgwCBgwEBgwGBgwIBg
+wKBgwMBgwOBgwACAwCCAwECAwGCAwICAwKCAwMCAwOCAwACgwCCgwECgwGCg
+wICgwKCgwMCgwOCgwADAwCDAwEDAwGDAwIDAwKDAwP/78KCgpICAgP8AAAD/
+AP//AAAA//8A/wD//////ywAAAAArQEOAgcI/gD/CRxIsKDBgwgTKlzIsKHD
+hxAjSpxIsaLFixgzatzIsaPHjyBDihxJsqTJkyhTqlzJsqXLlzBjypxJs6bN
+mzhz6tzJs6fPn0CDCt0YZKjRo0iTKl3KtKlTixFEBghgcGpVqk+zat1ptWBX
+gl+3OqRqFStZsgLP/sOalu3aqXDfwj079y1YuXHr4u0a1i1Yt2HtIpwbWHDb
+w3/rEvZreC/bxY4TFx7YF3Dkq2Utf82sl3Dbzp4vf95s12zptKfFjo1LmfVo
+yV79bpZNGjHiynIpH9TbuPff1rBvMzY8Ozhxs7SBNx7O27Va279zoy4euK/y
+5c8FW3/duvJk1btT/qs1XbZ78ui9nV/XDpiubsyPz+9ub1755OLQm9OvHj//
+/NmPYXfVZ7pRJ99a1+GG33bjTYcWguWB11BhFNInIHrVabceX/tpGJtwHw5m
+IYf1zZdgf+z9xp99w0XHl4a4hfgccimiF6KAC7boW4USlkTiescpdhiKIAJH
+I2M/riiiizRyN+BoMf44pGeQmcdck0de6OKQU0KJnGvHqRgalD2yxMdq+cmX
+YWoXKsiljE0CaWOSFprYJZNpppfdk3gieFqMW4o3o45h5plZQt+VCdNi+J3o
+VXcbxskmmI4dauONpTEqp6NBUrnfebVBV+mDuQFqH6QEilpno5naVqei/zQB
+qmR6qLbZYaqR6okoirLq2KiUrRbJ6as4Qsrqqbg6JxuGRAbroaiwxtTrjZCt
+Gh+HnV2qoKe8eZkrtJzeOaV+io3YraFinvuatdeyNiZ2oDFJabT01mvvvfjm
+q+++/Pbr778AByzwwAQXbPDBCCes8MIMN+zwwxBHLPHEFFds8cUYZ6zxxhx3
+7DHBPXws8sgkl2zyySinrPLKLLfs8sswxyzzzDTXbPPNOOes884897zRHz4H
+LfTQQw1g9AD/GE0Q0koLpPTRRzsN9UBQN10101Ur1LTUBV2ddNZST/010Tlb
+vTXWVKO9NNJUj53221zHbZDYbsNt99Z15002zf5ms5103U/7LfffeJ/tt+EI
+0Y233ojbrffeMlvtNtuBD/544Ydn7jjcZnctOOCCYw65zZKPTbnaXn8ddd6N
+q7763Kdb7nXqji8+OsylP8115wlVfrfmtnMe+9qeXx7657e/XLrqaWu+NPGi
+y82757N/vvj0lifPN+XNdy879Mf/vjnram/eOvnaxzx1+GE3vzrYrkePPvFv
+Q70H1uuzP3/6/Pfv//8ADKAAB0jAAhrwgAhMoAIXyECT5I9u2aNd6hoHP/NF
+DXG0K17twva+rImuehB0X+t85zTq9a2DIRSh9OoXOuNl73byo1/tyme64RVO
+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
+ovnagdCEuuWku9XbvvXbvwXcwA3cSqgEweUIwpU+xB0IwmXcxS1cgkBcxm3c
+f5Dcx1Vcyn1cyJXcgrhczNVcx91czA1d0S3cyi3dyjWIzj3dzb3czFVc1D0I
+2GVd1P813dQN3dol3c79XNsF3cnF3dy13Mx1vtcV3tPlXOM9Xs713OVNXttt
+XddFXsdl3udtXuaN3da13uX13eilXN6FXOnd3eytXuuNXOi93uIt3+SlXvHV
+3WVb38UlX+4lX89tX/ad3Onl3vQF3/gN3/P9Xt0l3uCd3/EV4PCt3/3l3/fV
+3ADO3+glXoQ44GNTYATW3/7t3YUA4AKmXw3eYANGXwtW3tfNXhmw3O7tYIao
+X9U1Xwz+4M+d4O6l3QbGXwQG4WR7YdMt39n1Xxbe3v3VXxUGXgKG3tGFX/oN
+YtJF4t4V3gVW4Ocl4txNYNhNXdCVXiD+3SteYmW74Q/O4PP/zWIafuAq5uD0
+7WIPRuEqtt8c/uII1t4WFt/+tWL5/d4iPmEx5t/rfb4mjmLvhd8KFmIsXmE7
+vmMf/mI6btz2nV0RtuAWBmIaFmL15eA55t04JmQILmQJDmQY5uIlVt02xmM4
+HmJQnmEKzuQppuIUDmQ3pmNPNmMWfuQbtuQ9Bl9Uhj4nDmMxvt1cXmRVduLj
+1WUXvl9bBmBIHt0mfmIlvmBCfuIM/mUwjuUjjuNmHt5LNlyKYGNku+ZqRmFq
+1uZu9maKiAKweKpvJudyNudzRud0Vud1Zud2dud3hud4lud5pud6tud7xud8
+1ud95ud+9ud/BuiAFuiBJuhMIgAC/yiIg1ZohB6IhT5ohHBohH5ognjohW5o
+iz4Ih75oi57ohGZoitbof4jojGboiR5pkf7oig5pgzhpj/ZojHZpkIZpiP5o
+lE5olJ5pkKZonebpjVZony7pmu5ooJbole5pnP5poiZpjB7qmrZplg5qphZq
+pB7qi45pk3bqj4Dpjsbqo47pp7bqp25qqL7pqk7qjabpozbroAZrm+bqovZq
+sG7qs37rl07pu16IreZquc5qrGZrnybrsG7otq5qwa5rmcbrsC5stS7qlIZq
+oVZpl6ZrvrZrnu5qmNBryYbstBZssf7rwf5qkW5rpAZskmbswI5sna7rw/7q
+pgYD1uZr1v9ebNJG68Gea9S+bNru6bG+bdM2bMiG7dTmbKue7Mom7due7N7W
+7cue7Y1g7s1W7tbebM+GiMI2a6oe7d8O7dJGbryGbe1W7M+m7vHO7vGGa9GO
+brEWbfOe7uxOb/CmbPJ266w+7fN26saObORW797O7cyeCI4+a8sWb+Eu77c+
+aQO37qimaomu7cUO7r5O6u5WbaNGbP4e8L/26wC/6pImbsKGcJU+bOVO8JaW
+7pl+bs3Oaf12a5Zu8PPu8BW38N/+bo848QnfbviWb69e7fve6c7e7faWbs22
+8dkmcPbe8PAubyRf74r28KXGbwEP8sD2ce1eayUnbvrubCZf8Zv/Bu35luwO
+j/Emj2uOiGgCN3P6fnDF3u4dZ3HflvL3ju8rt/EC/+wyd/H5HunctmuOlmkx
+r2ypbung9vMoR3AAF/K8hu4+53KyVnGcbnI7H3OSkHArJ/LEVnIgp+zrdvMo
+n/I493I5n/IQh+7EnnT3TnS0nnH4FnFLR29MV/ULj+/mbnQNR/M713JHF3VO
+T3KN6G69zmldB/GodnCNzvPhDm0SP/aVDun0LnU8p+tRX/NTv/Jf//HTznKp
+vnFPP/MFr/APj/A15+wDR/FnB3YsL+hzR/d0V/d1Z/d2d/d1bu53jwwSP/Cp
+Dva1NvRp/+mx3nPxPm57J3VzXwtLMNxc/59wx071Kgd1RV/vak/w2m51HJd3
+n2h2EO/xbFf4T2f4+/ZuCId4uIbzideJimdwk970uE7t6zb5IH/4iG/1jBd5
+kABwmN92tvZ4J+/qDNfyW1dqUwdtJtfwXY95miD5JWdwKb/xlOfxLXf4m7d5
+3e70vjiGay36u755pN/4pXd0lnf6Pi/yoQ8Kg3/xrcf4Wmf1hqf1jvdtqyfv
+eAf7mKD3ZU96s392q9/3aAf0fb/7Oc/xt/d7n+CFvxf8wQcMoCD8w0f8xFd8
+rF/8pVh2x154l8f7AK/3vB9wZx9xPef2PFd2gR983lZwPN9pys94PS9y0Ef4
+s8/y0Yb5WPd8wf4H/RYn+yeH+keH9mOf/ZNf/dYvfX9X/JY/eqDncPy+c9s/
+dJRXb8b3+Wh/c9+X95n3drun7acPfZq3deIXdg5n+kh//MfW+3zv+8YP72D/
++ZK/eOs3fobY+aPPdkbneKwP9Nf/++mG/i7fe/i//chveKYPegc/fh8HCAIE
+/hEkKLAgwoQKFzJs6PAhxIgSJ1KsaPEixowaN3IsONDjx38HDYYseTAkwpEg
+V4pEeRKlyJQDTcJsudDlTJgqSSbcybIj0KBChxItavToUIFKZf7EGVOhT6VL
+QUolWbXlVKc9a1odKfVl1a85b3JFavYs2rRq17Jt6/Yt3Lhy59Kta/73Lt68
+evfy7ev3L+DAggcTLmz4MOLEad8pbuz4MeTIkidTrmz5MubMmjcbVsH5M2jE
+AEKTLm36NOrUqlezbu36NezYsmfTrm37Nu7cuncXHMX7N/CgroITL278OPLk
+ypczb+78OfTo0qdTr279Ovbs2kuPpsxvO/iLAMZ3R1ueL7/03yeuD+8+Yvnz
+SOXjTY/QfsT2hx+93xy/IHndBfgPeQAWSCCABB0ooEPfOajePxBGWJB+90Eo
+YYQYPmjfeu11iN+GFGqIoYUgSqheiP3h9h+CCbKI4Hmjvahgi/RZSJCHFE6I
+I0M58qifgzvuGCSP92WoI5BCKrlkkj4uqf6ibAPS6GKCNMZopUIy5qdjkUM+
+yaWQRP4YZpFiImlkk0aqCeaETlYIZWwMKhigllPCiBCD8RVoo0JucmlmQn6i
+yCGZXnp4IZqJssmkooXCORuL9L1Y55R1/sdnoGD6COiaOb4pZodjkpnmmYtW
+SKqjj8ZZ5ZWTtminq3L2qCmtDQmq5oYk3lqqqGV2+Suoi2ZHRm5XErhglTUe
+aOex49XYYK2p9lkriiJCKyKhf46IX5gnnhitquHmVW2m4poL2KDpqrsuu+26
++y688co76Ln12nsvvvnquy+//fr7716YHvUmR0myRfCa7AHFLcB60ZlsQzYK
+XPBCBiss7FkIY/5s65ezetwwX8bC1xbBFm+5sVka/yqRyheDHHBCljrbrMx5
+7jkzzVi+WnGGH3KIqIYJh9plsL06iW2o27YJIq1Bestwmz3jeCGJL8cln5Yi
+M3tnrHgeC3Gfm3YqNptDj9o0uEo+yOuRRp/JrclL/wms1XNhfSfYd1N6qdcT
+C0034OUSHbWnUY/JKaqGA+60oZ1Oa7DZHdetlt5zbi3gnq9e+rDfZQcet9qJ
+Bsv44U+mG3rbkBPeq5eP4xr45G5VTmXfVHYds8utDy6syYwXPrrivP+tOulm
+Rs720KDHTrnXO1OqM9fJPj/9tb6Ca3bcR0t7dOTGN+po4Ww3Pjfqy0239bCV
+OA+IubN7s4os2IJ3ay29u6+sPf6eT800kvzb7ym5Asg67FXNfMVRmfIMqMCi
+zKuBDnwgBCMoQXgtsIIWvCAGM6jBDXKwg5kJCAA7
+
+------=_NextPart_000_000E_01C6B2A3.D32839C0
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---Apple-Mail-6--274957192--
+------=_NextPart_000_000E_01C6B2A3.D32839C0--
