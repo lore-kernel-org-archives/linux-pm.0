@@ -1,29 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: swsusp regression (s2dsk) [Was: 2.6.18-rc2-mm1]
-Date: Sun, 30 Jul 2006 01:10:01 +0200
-Message-ID: <200607300110.01943.rjw@sisk.pl>
-References: <20060727015639.9c89db57.akpm@osdl.org> <200607292059.59106.rjw@sisk.pl> <44CBE9D5.9030707@gmail.com>
+Date: Sun, 30 Jul 2006 01:22:16 +0200
+Message-ID: <20060729232216.GB1983@elf.ucw.cz>
+References: <20060727015639.9c89db57.akpm@osdl.org> <44CBA1AD.4060602@gmail.com> <200607292059.59106.rjw@sisk.pl> <44CBE9D5.9030707@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750746AbWG2XKU@vger.kernel.org>
-In-Reply-To: <44CBE9D5.9030707@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750757AbWG2XW3@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <44CBE9D5.9030707@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org, linux-mm@kvack.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-pm@osdl.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 30 July 2006 01:06, Jiri Slaby wrote:
-> Rafael J. Wysocki napsal(a):
-> > Hi,
-> > 
-> > On Saturday 29 July 2006 19:58, Jiri Slaby wrote:
-> >> Andrew Morton napsal(a):
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc2/2.6.18-rc2-mm1/
-> >> Hello,
-> >>
+Hi!
+
 > >> I have problems with swsusp again. While suspending, the very last thing kernel
 > >> writes is 'restoring higmem' and then hangs, hardly. No sysrq response at all.
 > >> Here is a snapshot of the screen:
@@ -38,8 +29,8 @@ On Sunday 30 July 2006 01:06, Jiri Slaby wrote:
 > 
 > Yup, it does.
 
-Hm, in fact this may be a problem with any device driver.
-
-Could you please boot the system with init=/bin/bash and try to suspend?
-
-Rafael
+Can you try up kernel, no highmem? (mem=512M)?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
