@@ -1,7 +1,7 @@
 From: "Vitaly Wool" <vitalywool@gmail.com>
-Subject: Re: [RFC] PowerOP Take 3, ARM OMAP1 PM Core 4/5
-Date: Sun, 30 Jul 2006 16:46:56 +0400
-Message-ID: <acd2a5930607300546x39676898vc2c1cca26175ebb6@mail.gmail.com>
+Subject: PowerOp Core/sysfs question
+Date: Sun, 30 Jul 2006 17:10:27 +0400
+Message-ID: <acd2a5930607300610x55f2d61alb4ea4430bb95affd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -22,8 +22,11 @@ List-Id: linux-pm@vger.kernel.org
 
 Eugeny,
 
-what about possible endless recursion in your implementation of
-omap_pm_core_set_opt routine, if, say, DSP PLL needs re-init and DSP
-rate won't be successfully set w/o that reinit?
+can you please elaborate a bit on the rationale for exposing the
+struct powerop_point to the core/sysfs interface? Why not make it an
+inner structure to the board?
+Including asm/powerop.h which includes asm/arch/powerop.h seems a bit
+of modularity principle violation to me.
 
-Vitaly
+Thanks,
+   Vitaly
