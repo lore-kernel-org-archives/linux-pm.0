@@ -1,122 +1,109 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: swsusp regression (s2dsk) [Was: 2.6.18-rc2-mm1]
-Date: Sun, 30 Jul 2006 12:53:48 +0159
-Message-ID: <44CC8FD3.5030403@gmail.com>
-References: <20060727015639.9c89db57.akpm@osdl.org>
-	<200607300931.07679.rjw@sisk.pl> <44CC68EE.1080208@gmail.com>
-	<200607301128.04395.rjw@sisk.pl>
+From: "Vitaly Wool" <vitalywool@gmail.com>
+Subject: Re: PowerOp Design and working patch
+Date: Sun, 30 Jul 2006 15:02:47 +0400
+Message-ID: <acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
+References: <242d827d33807b6b46608a26ed29c273@mvista.com>
+	<20060728233837.GG2140@kroah.com>
+	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
+	<20060729004546.GA3917@kroah.com>
+	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
+	<44CBB1E0.3030908@gmail.com>
+	<62e4476a851bbed395b509023edc5c5c@mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <alsa-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200607301128.04395.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/alsa-devel>,
-	<mailto:alsa-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=alsa-devel>
-List-Post: <mailto:alsa-devel@lists.sourceforge.net>
-List-Help: <mailto:alsa-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/alsa-devel>,
-	<mailto:alsa-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: alsa-devel-bounces@lists.sourceforge.net
-Errors-To: alsa-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, mingo@elte.hu
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <62e4476a851bbed395b509023edc5c5c@mvista.com>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: david singleton <dsingleton@mvista.com>
+Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Uncc: linux-mm
-Cc: alsa-devel
-Cc: mingo
+David,
 
-Rafael J. Wysocki wrote:
-> On Sunday 30 July 2006 10:08, Jiri Slaby wrote:
->> Rafael J. Wysocki napsal(a):
->>> On Sunday 30 July 2006 02:06, Pavel Machek wrote:
->>>> Hi!
->>>>
->>>>>>>>> I have problems with swsusp again. While suspending, the very last thing kernel
->>>>>>>>> writes is 'restoring higmem' and then hangs, hardly. No sysrq response at all.
->>>>>>>>> Here is a snapshot of the screen:
->>>>>>>>> http://www.fi.muni.cz/~xslaby/sklad/swsusp_higmem.gif
->>>>>>>>>
->>>>>>>>> It's SMP system (HT), higmem enabled (1 gig of ram).
->>>>>>>> Most probably it hangs in device_power_up(), so the problem seems to be
->>>>>>>> with one of the devices that are resumed with IRQs off.
->>>>>>>>
->>>>>>>> Does vanila .18-rc2 work?
->>>>>>> Yup, it does.
->>>>>> Can you try up kernel, no highmem? (mem=512M)?
->>>>> It writes then:
->>>>> p16v: status 0xffffffff, mask 0x00001000, pvoice f7c04a20, use 0
->>>>> in endless loop when resuming -- after reading from swap.
->>>> Okay, so we have two different problems here.
+On 7/30/06, david singleton <dsingleton@mvista.com> wrote:
 
-[snip]
+> That's one of the simple parts of the concept.  There aren't any
+> runtime operating
+> point creation.  It's one of the things I like best about cpufreq,  the
+> frequency
+> and voltages are taken from the hardware vendor data sheet and
+> validated.
+>
+> The user just gets to use the operating points supported by the system,
+> not
+> choose the frequency or voltage to transition to.
+>
+> By just presenting the supported operating points to the user it
+> removes the
+> need for new APIs.  The user just reads the supported operating points
+> and decides the best use of the supported operating points.
 
->>>> and one is probably driver problem with p16v (whatever it is).
->>>>
->>>> /data/l/linux/sound/pci/emu10k1/irq.c:
->>>> snd_printk(KERN_ERR "p16v: status: 0x%08x, mask=0x%08x, pvoice=%p,
->>>> use=%d\n", status2, mask, pvoice, pvoice->use);
->>>>
->>>> ...aha, so you may want to unload emu10k1 for testing.
->> Sure, this helped.
-> 
-> So, we have two different regressions here.
-> 
-> Please try to revert git-alsa.patch and see if the emu10k1-related problem
-> goes away.
+I see this approach as fundamentally wrong at least because it will
+produce very long and hard to manage lists of operating points.
+Suppose you have 20 hardware vendor approved core CPU frequency
+values, 3 possible voltage values and 10 approved DSP CPU frequency
+values (which are derived from the other PLL). Not too impossible is
+that almost all combinations are available which makes is almost 600
+operating points. I find it absolutely unreal that anyone enters all
+that stuff without mistakes; managing those lists/searching thru them
+will take significant time which will slow down the state transitions;
+and, finally, it's gonna increase the kernel footprint  quite a bit.
 
-Wow, it didn't helped, I find out there is a difference between in-kernel and 
-modules version of the driver. When compiled as modules (loaded/unloaded) 
-suspending (and resuming) is working ok (enabled higmem and preempt back -- 
-still no smp), when compiled in-kernel (see the config diff below), it doesn't 
-resume.
-@@ -1263,8 +1263,8 @@
-  CONFIG_SND=y
-  CONFIG_SND_TIMER=y
-  CONFIG_SND_PCM=y
--CONFIG_SND_HWDEP=m
--CONFIG_SND_RAWMIDI=m
-+CONFIG_SND_HWDEP=y
-+CONFIG_SND_RAWMIDI=y
-  CONFIG_SND_SEQUENCER=y
-  # CONFIG_SND_SEQ_DUMMY is not set
-  CONFIG_SND_OSSEMUL=y
-@@ -1282,8 +1282,8 @@
-  #
-  # Generic devices
-  #
--CONFIG_SND_AC97_CODEC=m
--CONFIG_SND_AC97_BUS=m
-+CONFIG_SND_AC97_CODEC=y
-+CONFIG_SND_AC97_BUS=y
-  # CONFIG_SND_DUMMY is not set
-  # CONFIG_SND_VIRMIDI is not set
-  # CONFIG_SND_MTPAV is not set
-@@ -1347,7 +1347,7 @@
-  # CONFIG_SND_INDIGO is not set
-  # CONFIG_SND_INDIGOIO is not set
-  # CONFIG_SND_INDIGODJ is not set
--CONFIG_SND_EMU10K1=m
-+CONFIG_SND_EMU10K1=y
-  # CONFIG_SND_EMU10K1X is not set
-  # CONFIG_SND_ENS1370 is not set
-  # CONFIG_SND_ENS1371 is not set
+It looks to me that the concept that the kernel can implement
+rules/restrictions for operating points but shouldn't define them with
+possible exception for the most essential ones far better suits both
+embedded and non-embedded use cases.
 
+> > 2) interface (kernel as well as userspace(sysfs)) for the rest of power
+> >    parameters except cpu voltage and frequency
+>
+>
+> The /sys/power/supported_states file shows the supported operating
+> points
+> and their parameters.
+>
+> The platform specific information is hidden through the md_data pointer,
+> which in the case of embedded systems with complex clocking schemes,
+> contains the clock divisor and multiplier information that the system
+> needs
+> to perform frequency and voltage scaling and clock manipulation.
+>
+> The machine dependent portion of a centrino operating point
+> is only the perfctl msr bits for each frequency/voltage.  For
+> a system with 5 power domains and various clocks the
+> machine dependent portion contains the whole array
+> of information for the different power domains and their clocks.
 
-> As far as the first one is concerned, the genirq-* patches look suspicious.
+Basically I don't see too much sense in your definition of
+PM_FREQ_CHANGE and PM_VOLT_CHANGE. The latter one just isn't used
+anywhere although the voltage differs between the operating points for
+your centrino example. And it's quite a common thing when frequency
+and voltage are changed within the same transition; so those either
+should be bitfields or something like PM_STATE_CHANGE.
 
-Hmm, what to do?
+> >
+> > 3) per platform nature of an operating point rather than per
+> >    a pm control layer (cpufreq for ex.):
+> >    - you have cpu freq and voltage defined in common code
+> >       while it's still possible that on a certain platform one would
+> >       not be interested in control of these parameters
+>
+> Correct, but on all of the hardware with which I'm familiar cpu
+> frequency
+> and voltage are common components to power management.
 
-regards,
--- 
-<a href="http://www.fi.muni.cz/~xslaby/">Jiri Slaby</a>
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+I do agree, but there might be different voltages and different CPU
+frequencies within the same SoC, so it will mean that you separate,
+say, two CPU frequencies between common code and SoC-specific code.
+Maybe it's still the way to go, but it makes things quite complicated
+to understand from scratch.
