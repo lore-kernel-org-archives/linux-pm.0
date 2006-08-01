@@ -1,11 +1,20 @@
 From: david singleton <dsingleton@mvista.com>
-Subject: PowerOp-x86-centrino-speedstep.patch
-Date: Mon, 31 Jul 2006 17:47:07 -0700
-Message-ID: <c2c1939879c9274b0c84194882696151@mvista.com>
+Subject: Re: PowerOp Design and working patch
+Date: Mon, 31 Jul 2006 17:59:43 -0700
+Message-ID: <b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
+References: <242d827d33807b6b46608a26ed29c273@mvista.com>
+	<20060728233837.GG2140@kroah.com>
+	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
+	<20060729004546.GA3917@kroah.com>
+	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
+	<44CBB1E0.3030908@gmail.com>
+	<62e4476a851bbed395b509023edc5c5c@mvista.com>
+	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,189 +24,153 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: david singleton <dsingleton@mvista.com>
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds operating points that mirror the CPUFREQ frequency =
 
-table.
-It also adds the routine necessary to transition to a new frequency on
-the centrino-speedstep.
+On Jul 30, 2006, at 4:02 AM, Vitaly Wool wrote:
 
-Each operating point has function pointers to the routines that prepare =
+> David,
+>
+> On 7/30/06, david singleton <dsingleton@mvista.com> wrote:
+>
+>> That's one of the simple parts of the concept.  There aren't any
+>> runtime operating
+>> point creation.  It's one of the things I like best about cpufreq,  =
 
-transition,
-transition and finish the transition.  For CPUFREQ and Dynamic Power =
+>> the
+>> frequency
+>> and voltages are taken from the hardware vendor data sheet and
+>> validated.
+>>
+>> The user just gets to use the operating points supported by the =
 
-Mangement
-the prepare and finish transition routines are commonly shared across =
+>> system,
+>> not
+>> choose the frequency or voltage to transition to.
+>>
+>> By just presenting the supported operating points to the user it
+>> removes the
+>> need for new APIs.  The user just reads the supported operating points
+>> and decides the best use of the supported operating points.
+>
+> I see this approach as fundamentally wrong at least because it will
+> produce very long and hard to manage lists of operating points.
+> Suppose you have 20 hardware vendor approved core CPU frequency
+> values, 3 possible voltage values and 10 approved DSP CPU frequency
+> values (which are derived from the other PLL). Not too impossible is
+> that almost all combinations are available which makes is almost 600
+> operating points. I find it absolutely unreal that anyone enters all
+> that stuff without mistakes; managing those lists/searching thru them
+> will take significant time which will slow down the state transitions;
+> and, finally, it's gonna increase the kernel footprint  quite a bit.
 
-platforms,
-and in fact are the same notifier list of functions to call when =
+Actually in practice there aren't that many supported operating
+points, even on the hardware you and I are familiar with.  I've yet
+to construct a case where there are more than 16 to 20
+operating points.
 
-changing to a new
-operating point wether the transition comes through the CPUFREQ =
+And the Linux device model allows the system to be set at
+a particular operating point and then suspending the LCD
+or unused USB if so desired.  So the combination flexibility
+is still available.
 
-interface or
-the PowerOp interface in /sys/power/state.
+If there were 600 supported operating points that would be a
+very good reason to use PowerOp.   I'm not sure I'd want
+the user passing all the frequencies, voltages, clock
+divisor and clock multiplier for all those operating points.
 
-The transition routine itself is usually platform specific.
+List manipulation takes place at compile time and list traversal
+is simple.  If a powerop were to become a kobject management
+and traversal would still be simple.
+
+The foot print actually shrinks if you take into account all the
+class, policy and governor code that wouldn't be needed if
+all supported states were simple operating points.
+
+>
+> It looks to me that the concept that the kernel can implement
+> rules/restrictions for operating points but shouldn't define them with
+> possible exception for the most essential ones far better suits both
+> embedded and non-embedded use cases.
+
+CPUFREQ shows that it can, and I believe should, define the operating
+points the system supports.  CPUFREQ does NOT let the user pass
+frequency or voltage values into the kernel.  It shows the hardware
+vendor certified and validated frequencies and voltages.
+
+I really like that concept.  It simplifies things greatly.
+
+>
+>> > 2) interface (kernel as well as userspace(sysfs)) for the rest of =
+
+>> power
+>> >    parameters except cpu voltage and frequency
+>>
+>>
+>> The /sys/power/supported_states file shows the supported operating
+>> points
+>> and their parameters.
+>>
+>> The platform specific information is hidden through the md_data =
+
+>> pointer,
+>> which in the case of embedded systems with complex clocking schemes,
+>> contains the clock divisor and multiplier information that the system
+>> needs
+>> to perform frequency and voltage scaling and clock manipulation.
+>>
+>> The machine dependent portion of a centrino operating point
+>> is only the perfctl msr bits for each frequency/voltage.  For
+>> a system with 5 power domains and various clocks the
+>> machine dependent portion contains the whole array
+>> of information for the different power domains and their clocks.
+>
+> Basically I don't see too much sense in your definition of
+> PM_FREQ_CHANGE and PM_VOLT_CHANGE. The latter one just isn't used
+> anywhere although the voltage differs between the operating points for
+> your centrino example. And it's quite a common thing when frequency
+> and voltage are changed within the same transition; so those either
+> should be bitfields or something like PM_STATE_CHANGE.
+
+
+The example patch isn't provided to show how it should be implemented.
+
+I've added a separate PowerOp state of PM_VOLT_CHANGE for
+hardware that may be changing states by changing a voltage rather
+than having the voltage changed as a side effect of changing the
+frequency explicitly.
+
+>
+>> >
+>> > 3) per platform nature of an operating point rather than per
+>> >    a pm control layer (cpufreq for ex.):
+>> >    - you have cpu freq and voltage defined in common code
+>> >       while it's still possible that on a certain platform one would
+>> >       not be interested in control of these parameters
+>>
+>> Correct, but on all of the hardware with which I'm familiar cpu
+>> frequency
+>> and voltage are common components to power management.
+>
+> I do agree, but there might be different voltages and different CPU
+> frequencies within the same SoC, so it will mean that you separate,
+> say, two CPU frequencies between common code and SoC-specific code.
+> Maybe it's still the way to go, but it makes things quite complicated
+> to understand from scratch.
+>
+
+After digging through all the PM,  CPUFREQ and Dynamic Power Management
+code it became apparent that when they get down to touching hardware
+they are just dealing with an operating point.  And they all change from
+one opeating point to another in the same manner.
+
+Once you view all the states a system can be in as an operating point, =
+
+wether
+its a suspend or frequency change,  things get much simpler.
+
+And
 
 David
-
-Signed-Off-by: David Singleton dsingleton@mvista.com
-
-  arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  108 =
-
-++++++++++++++++++++++
-  1 files changed, 108 insertions(+)
-
-Index: linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.17.orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -20,6 +20,7 @@
-  #include <linux/sched.h>       /* current */
-  #include <linux/delay.h>
-  #include <linux/compiler.h>
-+#include <linux/pm.h>
-
-  #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
-  #include <linux/acpi.h>
-@@ -160,6 +161,80 @@ static struct cpufreq_frequency_table ba
-         OP(1400, 1484),
-         { .frequency =3D CPUFREQ_TABLE_END }
-  };
-+#ifdef CONFIG_PM
-+/*
-+ * this is the formula for OP.  We need the perfctl
-+ * msr value to change to a new frequency.
-+ * We'll save it in the machine dependent variable md_data.
-+ */
-+static void set_perfctl_msr(struct power_op *pm)
-+{
-+       unsigned int msr =3D pm->frequency/100;
-+       unsigned int v =3D pm->voltage - 700;
-+
-+       msr =3D (unsigned int)(msr << 8);
-+       msr |=3D (unsigned int)(v / 16);
-+       pm->md_data =3D (void *)msr;
-+}
-+
-+static int centrino_transition(struct power_op *cur, struct power_op =
-
-*new);
-+
-+static struct power_op mhz600 =3D {
-+        .name =3D "600MHz",
-+        .description =3D "Low Frequency state",
-+        .type =3D PM_FREQ_CHANGE,
-+        .frequency =3D 600,
-+        .voltage =3D 956,
-+       .latency =3D 100,
-+       .prepare_transition  =3D cpufreq_prepare_transition,
-+       .transition =3D centrino_transition,
-+       .finish_transition =3D cpufreq_finish_transition,
-+};
-+static struct power_op mhz800 =3D {
-+        .name =3D "800MHz",
-+        .description =3D "Lower Frequency state",
-+        .type =3D PM_FREQ_CHANGE,
-+        .frequency =3D 800,
-+        .voltage =3D 1180,
-+       .latency =3D 100,
-+       .prepare_transition  =3D cpufreq_prepare_transition,
-+       .transition =3D centrino_transition,
-+       .finish_transition =3D cpufreq_finish_transition,
-+};
-+static struct power_op ghz1 =3D {
-+        .name =3D "1GHz",
-+        .description =3D "Med Frequency state",
-+        .type =3D PM_FREQ_CHANGE,
-+        .frequency =3D 1000,
-+        .voltage =3D 1308,
-+       .latency =3D 100,
-+       .prepare_transition  =3D cpufreq_prepare_transition,
-+       .transition =3D centrino_transition,
-+       .finish_transition =3D cpufreq_finish_transition,
-+};
-+static struct power_op ghz12 =3D {
-+        .name =3D "1.2GHz",
-+        .description =3D "High Frequency state",
-+        .type =3D PM_FREQ_CHANGE,
-+        .frequency =3D 1200,
-+        .voltage =3D 1436,
-+       .latency =3D 100,
-+       .prepare_transition  =3D cpufreq_prepare_transition,
-+       .transition =3D centrino_transition,
-+       .finish_transition =3D cpufreq_finish_transition,
-+};
-+static struct power_op ghz14 =3D {
-+        .name =3D "1.4GHz",
-+        .description =3D "Highest Frequency state",
-+        .type =3D PM_FREQ_CHANGE,
-+        .frequency =3D 1400,
-+        .voltage =3D 1484,
-+       .latency =3D 100,
-+       .prepare_transition  =3D cpufreq_prepare_transition,
-+       .transition =3D centrino_transition,
-+       .finish_transition =3D cpufreq_finish_transition,
-+};
-+#endif
-
-  /* Intel Pentium M processor 1.50GHz (Banias) */
-  static struct cpufreq_frequency_table banias_1500[] =3D
-@@ -266,6 +341,19 @@ static int centrino_cpu_init_table(struc
-         dprintk("found \"%s\": max frequency: %dkHz\n",
-                model->model_name, model->max_freq);
-
-+#ifdef CONFIG_PM
-+       list_add_tail(&mhz600.list, &pm_states.list);
-+       set_perfctl_msr(&mhz600);
-+       list_add_tail(&mhz800.list, &pm_states.list);
-+       set_perfctl_msr(&mhz800);
-+       list_add_tail(&ghz1.list, &pm_states.list);
-+       set_perfctl_msr(&ghz1);
-+       list_add_tail(&ghz12.list, &pm_states.list);
-+       set_perfctl_msr(&ghz12);
-+       list_add_tail(&ghz14.list, &pm_states.list);
-+       set_perfctl_msr(&ghz14);
-+       current_state =3D &ghz14;
-+#endif
-         return 0;
-  }
-
-@@ -620,6 +708,26 @@ static int centrino_verify (struct cpufr
-         return cpufreq_frequency_table_verify(policy, =
-
-centrino_model[policy->cpu]->op_points);
-  }
-
-+static int centrino_transition(struct power_op *cur, struct power_op =
-
-*new)
-+{
-+       unsigned int msr, oldmsr =3D 0, h =3D 0;
-+
-+       if (cur =3D=3D new)
-+               return 0;
-+
-+       msr =3D (unsigned int)new->md_data;
-+       rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
-+
-+       /* all but 16 LSB are reserved, treat them with care */
-+       oldmsr &=3D ~0xffff;
-+       msr &=3D 0xffff;
-+       oldmsr |=3D msr;
-+
-+       wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
-+
-+       return 0;
-+}
-+
-  /**
-   * centrino_setpolicy - set a new CPUFreq policy
-   * @policy: new policy
