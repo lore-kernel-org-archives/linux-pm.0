@@ -1,13 +1,22 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
-Date: Tue, 1 Aug 2006 04:16:17 -0700
-Message-ID: <376b1efdf3599b84ecdd94b6e766c095@nomadgs.com>
-References: <5389061B65D50446B1783B97DFDB392D01F607DB@orsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: "Vitaly Wool" <vitalywool@gmail.com>
+Subject: Re: PowerOp Design and working patch
+Date: Tue, 1 Aug 2006 16:23:38 +0400
+Message-ID: <acd2a5930608010523g4c89ac6bud37163226da35d1f@mail.gmail.com>
+References: <242d827d33807b6b46608a26ed29c273@mvista.com>
+	<20060728233837.GG2140@kroah.com>
+	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
+	<20060729004546.GA3917@kroah.com>
+	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
+	<44CBB1E0.3030908@gmail.com>
+	<62e4476a851bbed395b509023edc5c5c@mvista.com>
+	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
+	<b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <5389061B65D50446B1783B97DFDB392D01F607DB@orsmsx411.amr.corp.intel.com>
+In-Reply-To: <b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,166 +26,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: "Mochel, Patrick" <patrick.mochel@intel.com>, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
+To: david singleton <dsingleton@mvista.com>
+Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+On 8/1/06, david singleton <dsingleton@mvista.com> wrote:
+> Actually in practice there aren't that many supported operating
+> points, even on the hardware you and I are familiar with.  I've yet
+> to construct a case where there are more than 16 to 20
+> operating points.
 
-On Jul 26, 2006, at 4:55 PM, Gross, Mark wrote:
+If there's no way for runtime OP creation, you'll have to specify ALL
+the _valid_ OPs otherwise you'll be artificially narrowing the
+applicability down. I hope that's clear.
+And the number of theoretically possible (ie valid) OPs might well be
+more than 100 - at least on some PXA boards, on PNX4008, on some
+high-end ARMv6 ones etc.
 
->
->
->> -----Original Message-----
->> From: Eugeny S. Mints [mailto:eugeny.mints@gmail.com]
->> Sent: Thursday, July 20, 2006 1:00 PM
->> To: linux-pm@lists.osdl.org
->> Cc: Matthew Locke; toddpoynor@gmail.com; linux@dominikbrodowski.net;
-> Gross, Mark;
->> igor.stoppa@nokia.com; amit.kucheria@nokia.com;
-> sampsa.fabritius@nokia.com; r-woodruff2@ti.com;
->> Mochel, Patrick
->> Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
->>
->> Now with patch attached.
->> Sorry.
->>
->> 2006/7/20, Eugeny S. Mints <eugeny.mints@gmail.com>:
->>> A sysfs interface for PowerOP that allows operating points to be
-> created
->>> and activated from userspace.
->>>
->>> The platform-specific backend provides the code to read and write
-> sysfs
->>> attributes for each power parameter; the core sysfs interface has no
->>> knowledge of the struct powerop_point contents.  This interface could
-> be
->>> seen as possible extension of cpufreq sysfs.  It is not
->>> an integral part of PowerOP and is provided in part to facilitate
->>> discussion and experimentation with PowerOP, but could serve as a
-> basis
->>> for a basic userspace power policy management stack.
->>>
->>> Operating points are created by writing the name of the operating
-> point
->>> to /sys/powerop/new.  This may be a job for configfs.
->>> /sys/powerop/<op>/ will contain an attribute for each power parameter
->>> that may be written to set the associated parameter for the new
->>> operating point.  An operating point may be activated by writing its
->>> name to /sys/powerop/active.  The hardware power parameters currently
->>> set may be read and written via /sys/powerop/hw/, a special operating
->>> point that reads and writes parameter attribute values immediately,
->>> primarily for diagnostic purposes.
->>>
->>> Buried in this interface is also the notion of a registry of "named
->>> operating points", allowing operating points created by some other
->>> interface (such as cpufreq or loading a module with the definitions
-> as
->>> suggested previously by David Brownell) to be activated from
-> userspace
->>> via /sys/powerop/active.
->>>
->>> Please note that the interface is not hooked up with the rest of the
-> code
->>> yet and is provided just for reference/review.
->
-> Drivers/powerop/powerop_sysfs.c : includes asm/powerop.h and will not
-> compile on i386.
-> There are other places where it will not compile for non-omap
-> architectures.  The architecture independent code should build for all
-> architectures.
+> And the Linux device model allows the system to be set at
+> a particular operating point and then suspending the LCD
+> or unused USB if so desired.  So the combination flexibility
+> is still available.
 
-That should be fixed before the next rev of patches are sent out.
+I wasn't talking about that; I've constructed a (weird yet possible)
+example that concerned only frequency/voltage changing, not turning
+on/off the devices.
 
->
-> Now just rambling a bit, while catching up on the email thread some of
-> this may be wrong but....
->
-> Is it realistic to have the dimensionality of the operating points
-> defined at the architecture level?  Why couldn't there be multiple =
+> If there were 600 supported operating points that would be a
+> very good reason to use PowerOp.   I'm not sure I'd want
+> the user passing all the frequencies, voltages, clock
+> divisor and clock multiplier for all those operating points.
 
-> types
-> of operating points based on presence of different peripherals?  Having
-> the array defined at compile time seems wrong.
+Within the given use case for a particular board, given the
+possibility of runtime OP creation, there shouldn't be any need to
+specify ALL the OPs.
 
-An operating point definition is the list of system/board power =
+> > It looks to me that the concept that the kernel can implement
+> > rules/restrictions for operating points but shouldn't define them with
+> > possible exception for the most essential ones far better suits both
+> > embedded and non-embedded use cases.
+> CPUFREQ shows that it can, and I believe should, define the operating
+> points the system supports.  CPUFREQ does NOT let the user pass
+> frequency or voltage values into the kernel.  It shows the hardware
+> vendor certified and validated frequencies and voltages.
 
-parameters.  Generally this means clocks/busses and voltages.  All =
+Again, IMO you should specify what OPs are valid to be able to
+validate runtime-created OPs, but you shouldn't limit OP creation
+kernel-wise.
 
-peripherals are connected to a CPU by a bus and therefore a clock, even =
-
-peripherals external to an SoC.  The list of parameters does not change =
-
-when a USB, PCI hotplug or MMC device is plugged in.  The valid values =
-
-of the those parameters may change but not the list of parameters.  The =
-
-device state and device internal power parameters should be (is) =
-
-handled by its driver.  The driver is responsible for changing a =
-
-devices state and internal power parameters based on activity, user =
-
-space input, or another kernel subsystem.
-
-So the operating point is defined at compile time because the =
-
-definition doesn't change.
-
-> Couldn't the platform
-> startup code enumerate all its power control knobs and define the =
-
-> number
-> of parameters per operating point, or have one have the dimensions grow
-> with platform power drivers, one per control knob?
-
-I think there is too much interdependencies between the various knobs =
-
-to control them separately.
-
-
-> While we are at it, would it make more sense to define the UI for the
-> operating points in some way that exports mins, max, and target values
-> for each dimension?
->
-> Would it make sense to have the different dimensions broken out into
-> separate sysfs entries / attributes?
->
-> Would it also make sense to support multiple powerop_driver instances?
-> Powerop.c can only register one powerop_driver instance at a time.  =
-
-> What
-> if I want to break up my power management into multiple powerop_driver
-> (power, voltage, clock) domains?  Being stuck defining a large n-tuple
-> space of operating points at compile time doesn't work for me.  I want
-> to have them at least built up at startup time, and preferably
-> associated with some platform power driver loading operation.
-
-Not sure about these points.  Again, I think the different areas are =
-
-too connected to control independently.
-
-Summary:
-  - Operating point definition is static because it represents the base =
-
-system (board) physical parameters which are clocks and voltages.
-  - Devices are connected to the CPU by clocks/busses and therefore are =
-
-represented in the operating point definition that does not change if a =
-
-device is present or not.
-  - Valid operating point values may change if a device is present or =
-
-not.
-  - Device state and internal power parameters should be controlled by =
-
-the device driver.
-
->
-> --mgross
->
-> PS I'm sorry for using outlook on this email thread  I know I'm going =
-
-> to
-> regret it more than I all ready do....
->
->
+Vitaly
