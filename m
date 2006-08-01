@@ -1,7 +1,7 @@
 From: david singleton <dsingleton@mvista.com>
-Subject: Powerop-cpufreq.patch
-Date: Mon, 31 Jul 2006 17:42:56 -0700
-Message-ID: <fbab6fee6cca561df6cfb3f056a597aa@mvista.com>
+Subject: PowerOp-x86-centrino-speedstep.patch
+Date: Mon, 31 Jul 2006 17:47:07 -0700
+Message-ID: <c2c1939879c9274b0c84194882696151@mvista.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -19,109 +19,185 @@ To: linux-pm@lists.osdl.org
 Cc: david singleton <dsingleton@mvista.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch unifies the cpufreq power management into the PowerOp =
+This patch adds operating points that mirror the CPUFREQ frequency =
 
-operating point
-concept.   The same CPU frequencies can be set by either interface.  =
+table.
+It also adds the routine necessary to transition to a new frequency on
+the centrino-speedstep.
 
-The PowerOp
-interface can transition to the new frequency by writing the name of =
+Each operating point has function pointers to the routines that prepare =
 
-the operating
-point into the /sys/power/state file.
+transition,
+transition and finish the transition.  For CPUFREQ and Dynamic Power =
 
+Mangement
+the prepare and finish transition routines are commonly shared across =
+
+platforms,
+and in fact are the same notifier list of functions to call when =
+
+changing to a new
+operating point wether the transition comes through the CPUFREQ =
+
+interface or
+the PowerOp interface in /sys/power/state.
+
+The transition routine itself is usually platform specific.
 
 David
 
 Signed-Off-by: David Singleton dsingleton@mvista.com
 
-  drivers/cpufreq/cpufreq.c |   34 ++++++++++++++++++++++++++++++++++
-  include/linux/cpufreq.h   |    2 ++
-  2 files changed, 36 insertions(+)
+  arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  108 =
 
-Index: linux-2.6.17/drivers/cpufreq/cpufreq.c
+++++++++++++++++++++++
+  1 files changed, 108 insertions(+)
+
+Index: linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.17.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.17/drivers/cpufreq/cpufreq.c
-@@ -226,6 +226,33 @@ static void adjust_jiffies(unsigned long
-  static inline void adjust_jiffies(unsigned long val, struct =
+--- linux-2.6.17.orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -20,6 +20,7 @@
+  #include <linux/sched.h>       /* current */
+  #include <linux/delay.h>
+  #include <linux/compiler.h>
++#include <linux/pm.h>
 
-cpufreq_freqs *ci) { return; }
-  #endif
-
-+int cpufreq_prepare_transition(struct power_op *cur, struct power_op =
-
-*new)
+  #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+  #include <linux/acpi.h>
+@@ -160,6 +161,80 @@ static struct cpufreq_frequency_table ba
+         OP(1400, 1484),
+         { .frequency =3D CPUFREQ_TABLE_END }
+  };
++#ifdef CONFIG_PM
++/*
++ * this is the formula for OP.  We need the perfctl
++ * msr value to change to a new frequency.
++ * We'll save it in the machine dependent variable md_data.
++ */
++static void set_perfctl_msr(struct power_op *pm)
 +{
-+       struct cpufreq_freqs freqs;
++       unsigned int msr =3D pm->frequency/100;
++       unsigned int v =3D pm->voltage - 700;
 +
-+       freqs.old =3D cur->frequency;
-+       freqs.new =3D new->frequency;
-+       freqs.cpu =3D 0;
-+       freqs.flags =3D cpufreq_driver->flags;
-+       blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+                       CPUFREQ_PRECHANGE, &freqs);
-+       adjust_jiffies(CPUFREQ_PRECHANGE, &freqs);
-+       return 0;
++       msr =3D (unsigned int)(msr << 8);
++       msr |=3D (unsigned int)(v / 16);
++       pm->md_data =3D (void *)msr;
 +}
 +
-+int cpufreq_finish_transition(struct power_op *cur, struct power_op =
++static int centrino_transition(struct power_op *cur, struct power_op =
 
-*new)
-+{
-+       struct cpufreq_freqs freqs;
+*new);
 +
-+       freqs.old =3D cur->frequency;
-+       freqs.new =3D new->frequency;
-+       freqs.cpu =3D 0;
-+       freqs.flags =3D cpufreq_driver->flags;
-+       adjust_jiffies(CPUFREQ_POSTCHANGE, &freqs);
-+       blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+                       CPUFREQ_POSTCHANGE, &freqs);
-+       return 0;
-+}
++static struct power_op mhz600 =3D {
++        .name =3D "600MHz",
++        .description =3D "Low Frequency state",
++        .type =3D PM_FREQ_CHANGE,
++        .frequency =3D 600,
++        .voltage =3D 956,
++       .latency =3D 100,
++       .prepare_transition  =3D cpufreq_prepare_transition,
++       .transition =3D centrino_transition,
++       .finish_transition =3D cpufreq_finish_transition,
++};
++static struct power_op mhz800 =3D {
++        .name =3D "800MHz",
++        .description =3D "Lower Frequency state",
++        .type =3D PM_FREQ_CHANGE,
++        .frequency =3D 800,
++        .voltage =3D 1180,
++       .latency =3D 100,
++       .prepare_transition  =3D cpufreq_prepare_transition,
++       .transition =3D centrino_transition,
++       .finish_transition =3D cpufreq_finish_transition,
++};
++static struct power_op ghz1 =3D {
++        .name =3D "1GHz",
++        .description =3D "Med Frequency state",
++        .type =3D PM_FREQ_CHANGE,
++        .frequency =3D 1000,
++        .voltage =3D 1308,
++       .latency =3D 100,
++       .prepare_transition  =3D cpufreq_prepare_transition,
++       .transition =3D centrino_transition,
++       .finish_transition =3D cpufreq_finish_transition,
++};
++static struct power_op ghz12 =3D {
++        .name =3D "1.2GHz",
++        .description =3D "High Frequency state",
++        .type =3D PM_FREQ_CHANGE,
++        .frequency =3D 1200,
++        .voltage =3D 1436,
++       .latency =3D 100,
++       .prepare_transition  =3D cpufreq_prepare_transition,
++       .transition =3D centrino_transition,
++       .finish_transition =3D cpufreq_finish_transition,
++};
++static struct power_op ghz14 =3D {
++        .name =3D "1.4GHz",
++        .description =3D "Highest Frequency state",
++        .type =3D PM_FREQ_CHANGE,
++        .frequency =3D 1400,
++        .voltage =3D 1484,
++       .latency =3D 100,
++       .prepare_transition  =3D cpufreq_prepare_transition,
++       .transition =3D centrino_transition,
++       .finish_transition =3D cpufreq_finish_transition,
++};
++#endif
 
-  /**
-   * cpufreq_notify_transition - call notifier chain and adjust_jiffies
-@@ -884,6 +911,12 @@ static void cpufreq_out_of_sync(unsigned
-  }
-
+  /* Intel Pentium M processor 1.50GHz (Banias) */
+  static struct cpufreq_frequency_table banias_1500[] =3D
+@@ -266,6 +341,19 @@ static int centrino_cpu_init_table(struc
+         dprintk("found \"%s\": max frequency: %dkHz\n",
+                model->model_name, model->max_freq);
 
 +#ifdef CONFIG_PM
-+unsigned int cpufreq_quick_get(unsigned int cpu)
-+{
-+       return (current_state->frequency * 1000);
-+}
-+#else
-  /**
-   * cpufreq_quick_get - get the CPU frequency (in kHz) frpm policy->cur
-   * @cpu: CPU number
-@@ -905,6 +938,7 @@ unsigned int cpufreq_quick_get(unsigned
-
-         return (ret);
-  }
++       list_add_tail(&mhz600.list, &pm_states.list);
++       set_perfctl_msr(&mhz600);
++       list_add_tail(&mhz800.list, &pm_states.list);
++       set_perfctl_msr(&mhz800);
++       list_add_tail(&ghz1.list, &pm_states.list);
++       set_perfctl_msr(&ghz1);
++       list_add_tail(&ghz12.list, &pm_states.list);
++       set_perfctl_msr(&ghz12);
++       list_add_tail(&ghz14.list, &pm_states.list);
++       set_perfctl_msr(&ghz14);
++       current_state =3D &ghz14;
 +#endif
-  EXPORT_SYMBOL(cpufreq_quick_get);
-
-
-Index: linux-2.6.17/include/linux/cpufreq.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.17.orig/include/linux/cpufreq.h
-+++ linux-2.6.17/include/linux/cpufreq.h
-@@ -271,6 +271,8 @@ static inline unsigned int cpufreq_quick
          return 0;
   }
-  #endif
-+int cpufreq_prepare_transition(struct power_op *cur, struct power_op =
 
-*new);
-+int cpufreq_finish_transition(struct power_op *cur, struct power_op =
+@@ -620,6 +708,26 @@ static int centrino_verify (struct cpufr
+         return cpufreq_frequency_table_verify(policy, =
 
-*new);
+centrino_model[policy->cpu]->op_points);
+  }
 
++static int centrino_transition(struct power_op *cur, struct power_op =
 
-  /*********************************************************************
+*new)
++{
++       unsigned int msr, oldmsr =3D 0, h =3D 0;
++
++       if (cur =3D=3D new)
++               return 0;
++
++       msr =3D (unsigned int)new->md_data;
++       rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++
++       /* all but 16 LSB are reserved, treat them with care */
++       oldmsr &=3D ~0xffff;
++       msr &=3D 0xffff;
++       oldmsr |=3D msr;
++
++       wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++
++       return 0;
++}
++
+  /**
+   * centrino_setpolicy - set a new CPUFreq policy
+   * @policy: new policy
