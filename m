@@ -1,12 +1,21 @@
-From: Louisa Chris <louisa_chris10@yahoo.co.uk>
-Subject: Good  Day..................From  Louisa
-Date: 1 Aug 2006 10:58:46 +0100
-Message-ID: <20060801095846.27414.qmail@plesk1.sitework.pt>
-Reply-To: louisa_chris03@yahoo.co.uk
-Mime-Version: 1.0
+From: Matthew Locke <mlocke@embeddedalley.com>
+Subject: Re: PowerOp Design and working patch
+Date: Tue, 1 Aug 2006 03:09:46 -0700
+Message-ID: <215c230e2979117fd14d83ea2fd83054@embeddedalley.com>
+References: <242d827d33807b6b46608a26ed29c273@mvista.com>
+	<20060728233837.GG2140@kroah.com>
+	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
+	<20060729004546.GA3917@kroah.com>
+	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
+	<44CBB1E0.3030908@gmail.com>
+	<62e4476a851bbed395b509023edc5c5c@mvista.com>
+	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
+	<b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
+Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,79 +25,190 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: david singleton <dsingleton@mvista.com>
+Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
-FROM:MISS LOUISA
-MISSIONARY QUARTERS A15
-CHURCH ROAD ACCRA GHANA
-Reply to my confidential email ads (louisa_chris7@myway.com)
+On Jul 31, 2006, at 5:59 PM, david singleton wrote:
 
-Dearest,
+>
+> On Jul 30, 2006, at 4:02 AM, Vitaly Wool wrote:
+>
+>> David,
+>>
+>> On 7/30/06, david singleton <dsingleton@mvista.com> wrote:
+>>
+>>> That's one of the simple parts of the concept.  There aren't any
+>>> runtime operating
+>>> point creation.  It's one of the things I like best about cpufreq,
+>>> the
+>>> frequency
+>>> and voltages are taken from the hardware vendor data sheet and
+>>> validated.
+>>>
+>>> The user just gets to use the operating points supported by the
+>>> system,
+>>> not
+>>> choose the frequency or voltage to transition to.
+>>>
+>>> By just presenting the supported operating points to the user it
+>>> removes the
+>>> need for new APIs.  The user just reads the supported operating =
 
-I feel good contacting you today I have read from your add in Internet know=
-ing quiet well that this contact will bring a lasting relationship.With reg=
-ard to your reputation and co-worshipper of God who will not disappoint me =
-nor deny me in faith, I am directing this letter of assistance to you.
+>>> points
+>>> and decides the best use of the supported operating points.
+>>
+>> I see this approach as fundamentally wrong at least because it will
+>> produce very long and hard to manage lists of operating points.
+>> Suppose you have 20 hardware vendor approved core CPU frequency
+>> values, 3 possible voltage values and 10 approved DSP CPU frequency
+>> values (which are derived from the other PLL). Not too impossible is
+>> that almost all combinations are available which makes is almost 600
+>> operating points. I find it absolutely unreal that anyone enters all
+>> that stuff without mistakes; managing those lists/searching thru them
+>> will take significant time which will slow down the state transitions;
+>> and, finally, it's gonna increase the kernel footprint  quite a bit.
+>
+> Actually in practice there aren't that many supported operating
+> points, even on the hardware you and I are familiar with.  I've yet
+> to construct a case where there are more than 16 to 20
+> operating points.
 
-I am Miss Louisa. Christopher the only daughter of Mr.Christopher from Repu=
-blic of Zimbabwe in desire to get somebody who will safe guard my interest,=
- that of my junior brother (Louis) and this money.Briefly, our father Mr. C=
-hristopher was a Gold and Cocoa merchant who based in LomeTogo, Abidjan cot=
-e d'Ivoire, and had a branch office here in Accra Ghana.
+Its not the number of operating points driving the need for run time =
 
-My father was a wealthy Gold/Cocoa merchant who has business in manycountri=
-es in Europe, America and Asian countries.According to my father, my own mo=
-ther Died when I was about six years of age, which means that I did not eve=
-n know my mother very well.The story is that my father Mr. Christopher was =
-Poisoned to death by is business associates about seven this ago, and he di=
-ed in a private hospital here in Accra Ghana.
+creation.  Please read the thread that took place early last week on =
 
-But when he was about to die, he called us beside his sick bed and told us =
-that he deposited the sum of Two Million seven hundred thousand United Stat=
-e Dollars (US$2.7M) with a local bank there in Accra, the economic and admi=
-nistrative capital of Republic of Ghana.
+this topic.  Start from my post here: =
 
-This money was kept for us in my name, his only daughter. Right now I am a =
-first year student of business management in one of the University here.My =
-only problem now is that since my father has been poisoned to death by his =
-business ssociates, I don't even trust any other person here again includin=
-g my father's brothers and sisters. Right now, I want you to help us in the=
- following ways:
+http://lists.osdl.org/pipermail/linux-pm/2006-July/003065.html and read =
 
-1)I want you to provide a personal / company's bank Account where this amou=
-nt here (US$2.7M) can be Transferred.
+backwards.
 
-2) You are going to be the manager of this fund and Also my personal guardi=
-an until I finished my studies.
+Its really the embedded device development and silicon vendor model =
 
-3)You are going to procure admissions for us to continue our studies in one=
- of the known university in your country.
+driving it.  Run time creation is required and enabling run time =
 
-4) You are going to receive 15% of the total sum for providing a bank accou=
-nt for this transfer.
+creation doesn't prevent some architectures/board ports from hard =
 
-5) That you must prepare immediately to make a working visit to ACCRA GHANA=
- here so that me and you can see each other and we can then do the transfer=
- at the same time and I will go back with you to your country.We hope to re=
-ceive your early response, as it will Encourage us, to stop establishing fu=
-rther contacts as It regards to this subject matters, so that we will furni=
-sh you With a private phone number where you can reach us Direct, on receip=
-t of your positive response.For your information, this place we staying now=
- is a House of a church sister who saw our condition and Decided to house u=
-s for a while.
+coding their points.
 
-THIS BUSINESS IS HIGHLY CONFIDENTIAL BECAUSE NONE OF OUR LATE FATHER'S =
+>
+> And the Linux device model allows the system to be set at
+> a particular operating point and then suspending the LCD
+> or unused USB if so desired.  So the combination flexibility
+> is still available.
+>
+> If there were 600 supported operating points that would be a
+> very good reason to use PowerOp.   I'm not sure I'd want
+> the user passing all the frequencies, voltages, clock
+> divisor and clock multiplier for all those operating points.
 
-BROTHERS AND SISTERS KNOWS ABOUT THIS TRANSACTION.
+Well, no one is suggesting a user define and install that info.  =
 
-Reply to my confidential email ads (louisa_chris7@myway.com)
+Operating point creation will be done by someone who understands the =
 
-Waiting to hear from you soon.
-Thanks for your understanding,
+system (system designer) regardless of the method used to get the =
 
-Miss louisa   =
+operating points in the kernel.
+
+>
+> List manipulation takes place at compile time and list traversal
+> is simple.  If a powerop were to become a kobject management
+> and traversal would still be simple.
+>
+> The foot print actually shrinks if you take into account all the
+> class, policy and governor code that wouldn't be needed if
+> all supported states were simple operating points.
+>
+>>
+>> It looks to me that the concept that the kernel can implement
+>> rules/restrictions for operating points but shouldn't define them with
+>> possible exception for the most essential ones far better suits both
+>> embedded and non-embedded use cases.
+>
+> CPUFREQ shows that it can, and I believe should, define the operating
+> points the system supports.  CPUFREQ does NOT let the user pass
+> frequency or voltage values into the kernel.  It shows the hardware
+> vendor certified and validated frequencies and voltages.
+>
+> I really like that concept.  It simplifies things greatly.
+>
+>>
+>>>> 2) interface (kernel as well as userspace(sysfs)) for the rest of
+>>> power
+>>>>    parameters except cpu voltage and frequency
+>>>
+>>>
+>>> The /sys/power/supported_states file shows the supported operating
+>>> points
+>>> and their parameters.
+>>>
+>>> The platform specific information is hidden through the md_data
+>>> pointer,
+>>> which in the case of embedded systems with complex clocking schemes,
+>>> contains the clock divisor and multiplier information that the system
+>>> needs
+>>> to perform frequency and voltage scaling and clock manipulation.
+>>>
+>>> The machine dependent portion of a centrino operating point
+>>> is only the perfctl msr bits for each frequency/voltage.  For
+>>> a system with 5 power domains and various clocks the
+>>> machine dependent portion contains the whole array
+>>> of information for the different power domains and their clocks.
+>>
+>> Basically I don't see too much sense in your definition of
+>> PM_FREQ_CHANGE and PM_VOLT_CHANGE. The latter one just isn't used
+>> anywhere although the voltage differs between the operating points for
+>> your centrino example. And it's quite a common thing when frequency
+>> and voltage are changed within the same transition; so those either
+>> should be bitfields or something like PM_STATE_CHANGE.
+>
+>
+> The example patch isn't provided to show how it should be implemented.
+>
+> I've added a separate PowerOp state of PM_VOLT_CHANGE for
+> hardware that may be changing states by changing a voltage rather
+> than having the voltage changed as a side effect of changing the
+> frequency explicitly.
+>
+>>
+>>>>
+>>>> 3) per platform nature of an operating point rather than per
+>>>>    a pm control layer (cpufreq for ex.):
+>>>>    - you have cpu freq and voltage defined in common code
+>>>>       while it's still possible that on a certain platform one would
+>>>>       not be interested in control of these parameters
+>>>
+>>> Correct, but on all of the hardware with which I'm familiar cpu
+>>> frequency
+>>> and voltage are common components to power management.
+>>
+>> I do agree, but there might be different voltages and different CPU
+>> frequencies within the same SoC, so it will mean that you separate,
+>> say, two CPU frequencies between common code and SoC-specific code.
+>> Maybe it's still the way to go, but it makes things quite complicated
+>> to understand from scratch.
+>>
+>
+> After digging through all the PM,  CPUFREQ and Dynamic Power Management
+> code it became apparent that when they get down to touching hardware
+> they are just dealing with an operating point.  And they all change =
+
+> from
+> one opeating point to another in the same manner.
+>
+> Once you view all the states a system can be in as an operating point,
+> wether
+> its a suspend or frequency change,  things get much simpler.
 
 
- =
+> And
+>
+> David
+>
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+>
