@@ -1,20 +1,18 @@
 From: david singleton <dsingleton@mvista.com>
 Subject: Re: PowerOp Design and working patch
-Date: Mon, 31 Jul 2006 17:59:43 -0700
-Message-ID: <b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
+Date: Mon, 31 Jul 2006 18:27:51 -0700
+Message-ID: <9ccf3d3f54538bb3a8ea72709e776c26@mvista.com>
 References: <242d827d33807b6b46608a26ed29c273@mvista.com>
 	<20060728233837.GG2140@kroah.com>
 	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
 	<20060729004546.GA3917@kroah.com>
 	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
-	<44CBB1E0.3030908@gmail.com>
-	<62e4476a851bbed395b509023edc5c5c@mvista.com>
-	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
+	<20060729220902.GA8581@kroah.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
+In-Reply-To: <20060729220902.GA8581@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,153 +22,114 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Vitaly Wool <vitalywool@gmail.com>
+To: Greg KH <greg@kroah.com>
 Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
-On Jul 30, 2006, at 4:02 AM, Vitaly Wool wrote:
+On Jul 29, 2006, at 3:09 PM, Greg KH wrote:
 
-> David,
->
-> On 7/30/06, david singleton <dsingleton@mvista.com> wrote:
->
->> That's one of the simple parts of the concept.  There aren't any
->> runtime operating
->> point creation.  It's one of the things I like best about cpufreq,  =
-
->> the
->> frequency
->> and voltages are taken from the hardware vendor data sheet and
->> validated.
+> On Fri, Jul 28, 2006 at 10:12:26PM -0700, david singleton wrote:
 >>
->> The user just gets to use the operating points supported by the =
-
->> system,
->> not
->> choose the frequency or voltage to transition to.
->>
->> By just presenting the supported operating points to the user it
->> removes the
->> need for new APIs.  The user just reads the supported operating points
->> and decides the best use of the supported operating points.
+>> Greg,
+>> 	perhaps I need to back up a bit.  I wasn't submitting these patches
+>> for inclusion into Linux.  I was presenting them to the people
+>> discussing
+>> how power management might evolve in Linux.
 >
-> I see this approach as fundamentally wrong at least because it will
-> produce very long and hard to manage lists of operating points.
-> Suppose you have 20 hardware vendor approved core CPU frequency
-> values, 3 possible voltage values and 10 approved DSP CPU frequency
-> values (which are derived from the other PLL). Not too impossible is
-> that almost all combinations are available which makes is almost 600
-> operating points. I find it absolutely unreal that anyone enters all
-> that stuff without mistakes; managing those lists/searching thru them
-> will take significant time which will slow down the state transitions;
-> and, finally, it's gonna increase the kernel footprint  quite a bit.
-
-Actually in practice there aren't that many supported operating
-points, even on the hardware you and I are familiar with.  I've yet
-to construct a case where there are more than 16 to 20
-operating points.
-
-And the Linux device model allows the system to be set at
-a particular operating point and then suspending the LCD
-or unused USB if so desired.  So the combination flexibility
-is still available.
-
-If there were 600 supported operating points that would be a
-very good reason to use PowerOp.   I'm not sure I'd want
-the user passing all the frequencies, voltages, clock
-divisor and clock multiplier for all those operating points.
-
-List manipulation takes place at compile time and list traversal
-is simple.  If a powerop were to become a kobject management
-and traversal would still be simple.
-
-The foot print actually shrinks if you take into account all the
-class, policy and governor code that wouldn't be needed if
-all supported states were simple operating points.
-
+> That's fine, but you should at least post them so we can read and
+> comment on them from within our email clients then :)
 >
-> It looks to me that the concept that the kernel can implement
-> rules/restrictions for operating points but shouldn't define them with
-> possible exception for the most essential ones far better suits both
-> embedded and non-embedded use cases.
+> And also by breaking up the patches into small logical changes, it =
 
-CPUFREQ shows that it can, and I believe should, define the operating
-points the system supports.  CPUFREQ does NOT let the user pass
-frequency or voltage values into the kernel.  It shows the hardware
-vendor certified and validated frequencies and voltages.
+> helps
+> us to understand what they are doing and would allow us to evaluate =
 
-I really like that concept.  It simplifies things greatly.
-
+> them
+> much better.
 >
->> > 2) interface (kernel as well as userspace(sysfs)) for the rest of =
-
->> power
->> >    parameters except cpu voltage and frequency
->>
->>
->> The /sys/power/supported_states file shows the supported operating
->> points
->> and their parameters.
->>
->> The platform specific information is hidden through the md_data =
-
->> pointer,
->> which in the case of embedded systems with complex clocking schemes,
->> contains the clock divisor and multiplier information that the system
->> needs
->> to perform frequency and voltage scaling and clock manipulation.
->>
->> The machine dependent portion of a centrino operating point
->> is only the perfctl msr bits for each frequency/voltage.  For
->> a system with 5 power domains and various clocks the
->> machine dependent portion contains the whole array
->> of information for the different power domains and their clocks.
+> thanks,
 >
-> Basically I don't see too much sense in your definition of
-> PM_FREQ_CHANGE and PM_VOLT_CHANGE. The latter one just isn't used
-> anywhere although the voltage differs between the operating points for
-> your centrino example. And it's quite a common thing when frequency
-> and voltage are changed within the same transition; so those either
-> should be bitfields or something like PM_STATE_CHANGE.
-
-
-The example patch isn't provided to show how it should be implemented.
-
-I've added a separate PowerOp state of PM_VOLT_CHANGE for
-hardware that may be changing states by changing a voltage rather
-than having the voltage changed as a side effect of changing the
-frequency explicitly.
-
->
->> >
->> > 3) per platform nature of an operating point rather than per
->> >    a pm control layer (cpufreq for ex.):
->> >    - you have cpu freq and voltage defined in common code
->> >       while it's still possible that on a certain platform one would
->> >       not be interested in control of these parameters
->>
->> Correct, but on all of the hardware with which I'm familiar cpu
->> frequency
->> and voltage are common components to power management.
->
-> I do agree, but there might be different voltages and different CPU
-> frequencies within the same SoC, so it will mean that you separate,
-> say, two CPU frequencies between common code and SoC-specific code.
-> Maybe it's still the way to go, but it makes things quite complicated
-> to understand from scratch.
+> greg k-h
 >
 
-After digging through all the PM,  CPUFREQ and Dynamic Power Management
-code it became apparent that when they get down to touching hardware
-they are just dealing with an operating point.  And they all change from
-one opeating point to another in the same manner.
+        Greg,
+                 the three patches I just sent,  meant to send this =
 
-Once you view all the states a system can be in as an operating point, =
+first,
+         describe a concept called power op that
+         shows how the various power management infrastructures in
+         Linux could be unified and simplified.  This email describes
+         the concept of what power op is trying to do and how it works.
 
-wether
-its a suspend or frequency change,  things get much simpler.
+                 The following emails break a prototype patch into
+         three logical parts.  The first patch is the powerop-core.patch
+         that adds support for an operating point in the standard linux
+         power management infrastructure (CONFIG_PM) and adds a new
+         function to perform transitioning to operating points other
+         than suspend to memory or disk.
 
-And
+                 The second patch adds the cpufreq portion of the patch
+         that makes cpufreq table a set of operating points.
+
+                 The third patch adds some operating points for
+         the centrino-speedstep (the notebook I'm doing the prototype on)
+         and a centrino specific transition function.
+
+                 The goal of these patches is not to show how the
+         concept of supported operating points should be implemented,
+         rather its intended to show that they can be unified and
+         greatly simplified.
+
+                 All the power management infrastructures operate on
+         what can be conceptualized as an operating point.  Once they
+         get down to the point where they start controlling power, =
+
+frequency
+         or voltage, they are transitioning from one operating point
+         to another.  They all also follow the same steps to transition
+         from one operating point to another.
+
+                 Powerop uses the traditional power management interface
+         of /sys/power/state but changes it a bit. When it's read it =
+
+shows
+         the current operating point of the system.  Powerop uses a =
+
+second
+         sysfs file to present the list of supported operating points, =
+
+their
+         name, frequency, voltage and description,  to the user.
+
+                 The user sets the operating point of the system by =
+
+writing
+         the name of the operating point into the /sys/power/state file.
+
+                 The goal of powerop is to both unify and simplify the
+         different power management infrastructures.  It does this
+         by treating all supported states the system can be in as
+         different operating points that can be simply transitioned
+         to via the name of the operating point.
+
+                 It simplifies power management by following the CPUFREQ
+         concept of a vendor specified and validated table of supported
+         operating points.  In CPUFREQ the user is not allowed to
+         set the frequency or voltage of an operating point that might
+         hang the system, either inadverdantly or maliciously.
+
+                 It also simplifies the code  by putting all the =
+
+decisions
+         about when to transition to a new operating point in the
+         hands of the user.  With this simple example patch the user
+         can manually switch between all the supported states of the
+         centrino speedstep.
+
+
+                 The powerop-core.patch has more details in the
+         Documentation/power/power.txt file.
+
 
 David
