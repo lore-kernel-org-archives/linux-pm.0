@@ -1,18 +1,12 @@
-From: david singleton <dsingleton@mvista.com>
-Subject: Re: PowerOp Design and working patch
-Date: Mon, 31 Jul 2006 18:27:51 -0700
-Message-ID: <9ccf3d3f54538bb3a8ea72709e776c26@mvista.com>
-References: <242d827d33807b6b46608a26ed29c273@mvista.com>
-	<20060728233837.GG2140@kroah.com>
-	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
-	<20060729004546.GA3917@kroah.com>
-	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
-	<20060729220902.GA8581@kroah.com>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: Louisa Chris <louisa_chris10@yahoo.co.uk>
+Subject: Good  Day..................From  Louisa
+Date: 1 Aug 2006 10:58:46 +0100
+Message-ID: <20060801095846.27414.qmail@plesk1.sitework.pt>
+Reply-To: louisa_chris03@yahoo.co.uk
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060729220902.GA8581@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,114 +16,79 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
-On Jul 29, 2006, at 3:09 PM, Greg KH wrote:
+FROM:MISS LOUISA
+MISSIONARY QUARTERS A15
+CHURCH ROAD ACCRA GHANA
+Reply to my confidential email ads (louisa_chris7@myway.com)
 
-> On Fri, Jul 28, 2006 at 10:12:26PM -0700, david singleton wrote:
->>
->> Greg,
->> 	perhaps I need to back up a bit.  I wasn't submitting these patches
->> for inclusion into Linux.  I was presenting them to the people
->> discussing
->> how power management might evolve in Linux.
->
-> That's fine, but you should at least post them so we can read and
-> comment on them from within our email clients then :)
->
-> And also by breaking up the patches into small logical changes, it =
+Dearest,
 
-> helps
-> us to understand what they are doing and would allow us to evaluate =
+I feel good contacting you today I have read from your add in Internet know=
+ing quiet well that this contact will bring a lasting relationship.With reg=
+ard to your reputation and co-worshipper of God who will not disappoint me =
+nor deny me in faith, I am directing this letter of assistance to you.
 
-> them
-> much better.
->
-> thanks,
->
-> greg k-h
->
+I am Miss Louisa. Christopher the only daughter of Mr.Christopher from Repu=
+blic of Zimbabwe in desire to get somebody who will safe guard my interest,=
+ that of my junior brother (Louis) and this money.Briefly, our father Mr. C=
+hristopher was a Gold and Cocoa merchant who based in LomeTogo, Abidjan cot=
+e d'Ivoire, and had a branch office here in Accra Ghana.
 
-        Greg,
-                 the three patches I just sent,  meant to send this =
+My father was a wealthy Gold/Cocoa merchant who has business in manycountri=
+es in Europe, America and Asian countries.According to my father, my own mo=
+ther Died when I was about six years of age, which means that I did not eve=
+n know my mother very well.The story is that my father Mr. Christopher was =
+Poisoned to death by is business associates about seven this ago, and he di=
+ed in a private hospital here in Accra Ghana.
 
-first,
-         describe a concept called power op that
-         shows how the various power management infrastructures in
-         Linux could be unified and simplified.  This email describes
-         the concept of what power op is trying to do and how it works.
+But when he was about to die, he called us beside his sick bed and told us =
+that he deposited the sum of Two Million seven hundred thousand United Stat=
+e Dollars (US$2.7M) with a local bank there in Accra, the economic and admi=
+nistrative capital of Republic of Ghana.
 
-                 The following emails break a prototype patch into
-         three logical parts.  The first patch is the powerop-core.patch
-         that adds support for an operating point in the standard linux
-         power management infrastructure (CONFIG_PM) and adds a new
-         function to perform transitioning to operating points other
-         than suspend to memory or disk.
+This money was kept for us in my name, his only daughter. Right now I am a =
+first year student of business management in one of the University here.My =
+only problem now is that since my father has been poisoned to death by his =
+business ssociates, I don't even trust any other person here again includin=
+g my father's brothers and sisters. Right now, I want you to help us in the=
+ following ways:
 
-                 The second patch adds the cpufreq portion of the patch
-         that makes cpufreq table a set of operating points.
+1)I want you to provide a personal / company's bank Account where this amou=
+nt here (US$2.7M) can be Transferred.
 
-                 The third patch adds some operating points for
-         the centrino-speedstep (the notebook I'm doing the prototype on)
-         and a centrino specific transition function.
+2) You are going to be the manager of this fund and Also my personal guardi=
+an until I finished my studies.
 
-                 The goal of these patches is not to show how the
-         concept of supported operating points should be implemented,
-         rather its intended to show that they can be unified and
-         greatly simplified.
+3)You are going to procure admissions for us to continue our studies in one=
+ of the known university in your country.
 
-                 All the power management infrastructures operate on
-         what can be conceptualized as an operating point.  Once they
-         get down to the point where they start controlling power, =
+4) You are going to receive 15% of the total sum for providing a bank accou=
+nt for this transfer.
 
-frequency
-         or voltage, they are transitioning from one operating point
-         to another.  They all also follow the same steps to transition
-         from one operating point to another.
+5) That you must prepare immediately to make a working visit to ACCRA GHANA=
+ here so that me and you can see each other and we can then do the transfer=
+ at the same time and I will go back with you to your country.We hope to re=
+ceive your early response, as it will Encourage us, to stop establishing fu=
+rther contacts as It regards to this subject matters, so that we will furni=
+sh you With a private phone number where you can reach us Direct, on receip=
+t of your positive response.For your information, this place we staying now=
+ is a House of a church sister who saw our condition and Decided to house u=
+s for a while.
 
-                 Powerop uses the traditional power management interface
-         of /sys/power/state but changes it a bit. When it's read it =
+THIS BUSINESS IS HIGHLY CONFIDENTIAL BECAUSE NONE OF OUR LATE FATHER'S =
 
-shows
-         the current operating point of the system.  Powerop uses a =
+BROTHERS AND SISTERS KNOWS ABOUT THIS TRANSACTION.
 
-second
-         sysfs file to present the list of supported operating points, =
+Reply to my confidential email ads (louisa_chris7@myway.com)
 
-their
-         name, frequency, voltage and description,  to the user.
+Waiting to hear from you soon.
+Thanks for your understanding,
 
-                 The user sets the operating point of the system by =
-
-writing
-         the name of the operating point into the /sys/power/state file.
-
-                 The goal of powerop is to both unify and simplify the
-         different power management infrastructures.  It does this
-         by treating all supported states the system can be in as
-         different operating points that can be simply transitioned
-         to via the name of the operating point.
-
-                 It simplifies power management by following the CPUFREQ
-         concept of a vendor specified and validated table of supported
-         operating points.  In CPUFREQ the user is not allowed to
-         set the frequency or voltage of an operating point that might
-         hang the system, either inadverdantly or maliciously.
-
-                 It also simplifies the code  by putting all the =
-
-decisions
-         about when to transition to a new operating point in the
-         hands of the user.  With this simple example patch the user
-         can manually switch between all the supported states of the
-         centrino speedstep.
+Miss louisa   =
 
 
-                 The powerop-core.patch has more details in the
-         Documentation/power/power.txt file.
-
-
-David
+ =
