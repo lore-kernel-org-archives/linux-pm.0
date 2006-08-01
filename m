@@ -1,22 +1,16 @@
 From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: PowerOp Design and working patch
-Date: Tue, 1 Aug 2006 03:22:30 -0700
-Message-ID: <8fb47cd39c296a31a5ffdf6e376447ef@nomadgs.com>
-References: <242d827d33807b6b46608a26ed29c273@mvista.com>
-	<20060728233837.GG2140@kroah.com>
-	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
-	<20060729004546.GA3917@kroah.com>
-	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
-	<44CBB1E0.3030908@gmail.com>
-	<62e4476a851bbed395b509023edc5c5c@mvista.com>
-	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
-	<b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
-	<215c230e2979117fd14d83ea2fd83054@embeddedalley.com>
+Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
+Date: Tue, 1 Aug 2006 03:45:45 -0700
+Message-ID: <a1fb7fc4317611e1747f894575b45894@nomadgs.com>
+References: <c55240ed0607201256q2d902a0nd3e9e3fba4ac9dd8@mail.gmail.com>
+	<200607241149.01700.david-b@pacbell.net>
+	<083b1ba275390c298727816bc51f21b4@nomadgs.com>
+	<200607261755.25808.david-b@pacbell.net>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <215c230e2979117fd14d83ea2fd83054@embeddedalley.com>
+In-Reply-To: <200607261755.25808.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,199 +20,119 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: david singleton <dsingleton@mvista.com>
-Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: patrick.mochel@intel.com, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
 List-Id: linux-pm@vger.kernel.org
 
 
-On Aug 1, 2006, at 3:09 AM, Matthew Locke wrote:
+On Jul 26, 2006, at 5:55 PM, David Brownell wrote:
+
+> On Wednesday 26 July 2006 12:44 am, Matthew Locke wrote:
+>>
+>> On Jul 24, 2006, at 11:48 AM, David Brownell wrote:
+>>
+>>> So I was glad to see it split out as fully optional... although from
+>>> what I
+>>> see, the internal models in the code have derived from this sysfs
+>>> model, so
+>>> I'd argue those need to change too.
+>>
+>> Is there something specific in the internal model that are you
+>> referring to?
+>
+> I touched on some of the issues in earlier emails to Eugeny.
+>
+> One is that the struct declaration seems too monolithic to
+> handle board-specific differences well.  Related to that is the
+> way things are just packaged as a set/struct of numbers, rather
+> than a set of objects/components with internal rules/models
+> (which might be individually reusable, e.g. "SOC X").
+>
+> Maybe another way to think of it is that this sysfs stuff defines
+> some structural notions that seem to be artifacts of one style
+> for creating operating points ... and I'd be more comfortable
+> deriving those structural notions by addressing requirements of
+> specific board families (not just SOCs!).  And _then_ coming up
+> with a sysfs model to suit.
+>
+
+Got it.  I'll let Eugeny respond on this one.
 
 >
-> On Jul 31, 2006, at 5:59 PM, david singleton wrote:
+>>> It'd be lots better to just have named operating points that get
+>>> selected just
+>>> the /sys/power/state file selects the, erm, "sleep point".
+>>
+>> I've tried to fit sleep into the operating point concept before but
+>> sleep always ends up being a special case.   The code has to check to
+>> see if the selected operating the "sleep point" and call the suspend
+>> function.  I think tying in sleep to the op point concept needs more
+>> discussion and probably should be handled separately until we get
+>> further along with power op.
 >
->>
->> On Jul 30, 2006, at 4:02 AM, Vitaly Wool wrote:
->>
->>> David,
->>>
->>> On 7/30/06, david singleton <dsingleton@mvista.com> wrote:
->>>
->>>> That's one of the simple parts of the concept.  There aren't any
->>>> runtime operating
->>>> point creation.  It's one of the things I like best about cpufreq,
->>>> the
->>>> frequency
->>>> and voltages are taken from the hardware vendor data sheet and
->>>> validated.
->>>>
->>>> The user just gets to use the operating points supported by the
->>>> system,
->>>> not
->>>> choose the frequency or voltage to transition to.
->>>>
->>>> By just presenting the supported operating points to the user it
->>>> removes the
->>>> need for new APIs.  The user just reads the supported operating
->>>> points
->>>> and decides the best use of the supported operating points.
->>>
->>> I see this approach as fundamentally wrong at least because it will
->>> produce very long and hard to manage lists of operating points.
->>> Suppose you have 20 hardware vendor approved core CPU frequency
->>> values, 3 possible voltage values and 10 approved DSP CPU frequency
->>> values (which are derived from the other PLL). Not too impossible is
->>> that almost all combinations are available which makes is almost 600
->>> operating points. I find it absolutely unreal that anyone enters all
->>> that stuff without mistakes; managing those lists/searching thru them
->>> will take significant time which will slow down the state =
+> I'm comfortable with discussing sleep point separately from operating
+> points, so long as everyone understands how fuzzy a line that is.  In
+> a system with dedicated asymmetric CPUs for example, is "this cpu is
+> asleep and that one is running" a sleep state?  Or an operating point?
+> Ditto with hardware components that may be running or not, and don't
+> get to brag about some fancy instruction set.  :)
 
->>> transitions;
->>> and, finally, it's gonna increase the kernel footprint  quite a bit.
->>
->> Actually in practice there aren't that many supported operating
->> points, even on the hardware you and I are familiar with.  I've yet
->> to construct a case where there are more than 16 to 20
->> operating points.
->
-> Its not the number of operating points driving the need for run time
-> creation.  Please read the thread that took place early last week on
-> this topic.  Start from my post here:
-> http://lists.osdl.org/pipermail/linux-pm/2006-July/003065.html and read
-> backwards.
->
-> Its really the embedded device development and silicon vendor model
-> driving it.  Run time creation is required and enabling run time
-> creation doesn't prevent some architectures/board ports from hard
-> coding their points.
->
->>
->> And the Linux device model allows the system to be set at
->> a particular operating point and then suspending the LCD
->> or unused USB if so desired.  So the combination flexibility
->> is still available.
->>
->> If there were 600 supported operating points that would be a
->> very good reason to use PowerOp.   I'm not sure I'd want
->> the user passing all the frequencies, voltages, clock
->> divisor and clock multiplier for all those operating points.
->
-> Well, no one is suggesting a user define and install that info.
-> Operating point creation will be done by someone who understands the
-> system (system designer) regardless of the method used to get the
-> operating points in the kernel.
->
->>
->> List manipulation takes place at compile time and list traversal
->> is simple.  If a powerop were to become a kobject management
->> and traversal would still be simple.
->>
->> The foot print actually shrinks if you take into account all the
->> class, policy and governor code that wouldn't be needed if
->> all supported states were simple operating points.
->>
->>>
->>> It looks to me that the concept that the kernel can implement
->>> rules/restrictions for operating points but shouldn't define them =
+It is very fuzzy.  If we can make it fit without forcing it,  I think =
 
->>> with
->>> possible exception for the most essential ones far better suits both
->>> embedded and non-embedded use cases.
->>
->> CPUFREQ shows that it can, and I believe should, define the operating
->> points the system supports.  CPUFREQ does NOT let the user pass
->> frequency or voltage values into the kernel.  It shows the hardware
->> vendor certified and validated frequencies and voltages.
->>
->> I really like that concept.  It simplifies things greatly.
->>
->>>
->>>>> 2) interface (kernel as well as userspace(sysfs)) for the rest of
->>>> power
->>>>>    parameters except cpu voltage and frequency
->>>>
->>>>
->>>> The /sys/power/supported_states file shows the supported operating
->>>> points
->>>> and their parameters.
->>>>
->>>> The platform specific information is hidden through the md_data
->>>> pointer,
->>>> which in the case of embedded systems with complex clocking schemes,
->>>> contains the clock divisor and multiplier information that the =
+it would be a very nice way to define the various sleep points =
 
->>>> system
->>>> needs
->>>> to perform frequency and voltage scaling and clock manipulation.
->>>>
->>>> The machine dependent portion of a centrino operating point
->>>> is only the perfctl msr bits for each frequency/voltage.  For
->>>> a system with 5 power domains and various clocks the
->>>> machine dependent portion contains the whole array
->>>> of information for the different power domains and their clocks.
->>>
->>> Basically I don't see too much sense in your definition of
->>> PM_FREQ_CHANGE and PM_VOLT_CHANGE. The latter one just isn't used
->>> anywhere although the voltage differs between the operating points =
+supported on the SoC's.
 
->>> for
->>> your centrino example. And it's quite a common thing when frequency
->>> and voltage are changed within the same transition; so those either
->>> should be bitfields or something like PM_STATE_CHANGE.
->>
->>
->> The example patch isn't provided to show how it should be implemented.
->>
->> I've added a separate PowerOp state of PM_VOLT_CHANGE for
->> hardware that may be changing states by changing a voltage rather
->> than having the voltage changed as a side effect of changing the
->> frequency explicitly.
->>
->>>
->>>>>
->>>>> 3) per platform nature of an operating point rather than per
->>>>>    a pm control layer (cpufreq for ex.):
->>>>>    - you have cpu freq and voltage defined in common code
->>>>>       while it's still possible that on a certain platform one =
+>
+> In fact, I find it maybe easier to think of "run states" and "sleep
+> states", where a "run state" would include a collection of specific
+> operating points and some mechanism to select some operating point
+> to activate.  I don't think that notion of "operating point" is what
+> you are talking about here with PowerOP, though...
 
->>>>> would
->>>>>       not be interested in control of these parameters
->>>>
->>>> Correct, but on all of the hardware with which I'm familiar cpu
->>>> frequency
->>>> and voltage are common components to power management.
->>>
->>> I do agree, but there might be different voltages and different CPU
->>> frequencies within the same SoC, so it will mean that you separate,
->>> say, two CPU frequencies between common code and SoC-specific code.
->>> Maybe it's still the way to go, but it makes things quite complicated
->>> to understand from scratch.
->>>
->>
->> After digging through all the PM,  CPUFREQ and Dynamic Power =
+PowerOP is the definition of the operating point and the interface to =
 
->> Management
->> code it became apparent that when they get down to touching hardware
->> they are just dealing with an operating point.  And they all change
->> from
->> one opeating point to another in the same manner.
->>
->> Once you view all the states a system can be in as an operating point,
->> wether
->> its a suspend or frequency change,  things get much simpler.
+set one.  I actually think the same way as you describe.  There are run =
+
+states and sleep states.   As the system changes "states"  it will go =
+
+to an operating point.  We are not including the state changing or =
+
+definition with PowerOp just the mechanism to list and select the =
+
+points.  A component(s) of top of PowerOP would decide which operating =
+
+points belong to a run state and when to change. Examples of this could =
+
+be as simple as  /sys/power/state, a more complex cpufreq =
+
+governor/policy or something new.
+
+
+
 >
 >
->> And
->>
->> David
->>
->> _______________________________________________
->> linux-pm mailing list
->> linux-pm@lists.osdl.org
->> https://lists.osdl.org/mailman/listinfo/linux-pm
->>
+>> btw, we are in complete agreement about using named points.  This =
+
+>> first
+>> set of patches is meant to introduce the operating point concept into
+>> the kernel without requiring massive changes to cpufreq.  This layer
+>> extends the bottom part of cpufreq to enable the control of multiple
+>> parameters beyond just cpu frequency and voltage across architectures.
 >
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
+> I guess I haven't read the patches enough to see how it extends that.
+
+>
+>
+>> Currently, cpufreq does not use named operating points so we need to
+>> make sure cpufreq can use the power op API and continue to function.
+>> This topic also ties into our other email discussion on creating op
+>> points and names are assigned to op points.
+>
+> Hmm, I'll be watching to see how that works out.  I keep thinking that
+> in the big picture, a "governor" type component may not map well to
+> choosing operating points ... though a given component might well use
+> such a mechanism internally.
+>
+> - Dave
 >
