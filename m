@@ -1,14 +1,20 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] PowerOP Take 3, sysfs UI core 2/5
-Date: Sat, 5 Aug 2006 12:05:04 +0000
-Message-ID: <20060805120504.GA5417@ucw.cz>
-References: <5389061B65D50446B1783B97DFDB392D01F607DB@orsmsx411.amr.corp.intel.com>
+Subject: Re: PowerOp Design and working patch
+Date: Sun, 6 Aug 2006 22:05:20 +0000
+Message-ID: <20060806220519.GA4205@ucw.cz>
+References: <242d827d33807b6b46608a26ed29c273@mvista.com>
+	<20060728233837.GG2140@kroah.com>
+	<c6333353f00bb7fd435ef518dc8cee21@mvista.com>
+	<20060729004546.GA3917@kroah.com>
+	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
+	<44CBB1E0.3030908@gmail.com>
+	<62e4476a851bbed395b509023edc5c5c@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <5389061B65D50446B1783B97DFDB392D01F607DB@orsmsx411.amr.corp.intel.com>
+In-Reply-To: <62e4476a851bbed395b509023edc5c5c@mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,36 +24,24 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: "Mochel, Patrick" <patrick.mochel@intel.com>, linux-pm@lists.osdl.org, sampsa.fabritius@nokia.com, linux@dominikbrodowski.net
+To: david singleton <dsingleton@mvista.com>
+Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> >> Please note that the interface is not hooked up with the rest of the
-> code
-> >> yet and is provided just for reference/review.
+> > 2) interface (kernel as well as userspace(sysfs)) for the rest of power
+> >    parameters except cpu voltage and frequency
 > =
 
-> Drivers/powerop/powerop_sysfs.c : includes asm/powerop.h and will not
-> compile on i386.
-> There are other places where it will not compile for non-omap
-> architectures.  The architecture independent code should build for all
-> architectures.
 > =
 
-> Now just rambling a bit, while catching up on the email thread some of
-> this may be wrong but....
-> =
+> The /sys/power/supported_states file shows the supported operating =
 
-> Is it realistic to have the dimensionality of the operating points
-> defined at the architecture level?  Why couldn't there be multiple types
-> of operating points based on presence of different peripherals?  Having
-> the array defined at compile time seems wrong.  Couldn't the platform
+> points
+> and their parameters.
 
-It is complex enough already, please don't overdesign it even more.
-
-							Pavel
+We have one-value-per-file rule for sysfs.
 -- =
 
 Thanks for all the (sleeping) penguins.
