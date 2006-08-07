@@ -1,61 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
-Date: Mon, 7 Aug 2006 22:47:59 +0200
-Message-ID: <200608072247.59184.rjw@sisk.pl>
-References: <20060806030809.2cfb0b1e.akpm@osdl.org> <44D707B6.20501@gmail.com>
-	<20060807162322.GA17564@knob.reflex>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: resume from S3 regression [Was: 2.6.18-rc3-mm2]
+Date: Mon, 7 Aug 2006 22:57:08 +0200
+Message-ID: <20060807205708.GC4007@inferi.kami.home>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org> <20060807193836.GA4007@inferi.kami.home> <20060807130208.94b58773.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060807162322.GA17564@knob.reflex>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932365AbWHGU5r@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jason Lunz <lunz@gehennom.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, andre@linux-ide.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20060807130208.94b58773.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 August 2006 18:23, Jason Lunz wrote:
-> In gmane.linux.kernel, you wrote:
-> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-r=
-c3/2.6.18-rc3-mm2/
-> >
-> > I tried it and guess what :)... swsusp doesn't work :@.
-> >
-> > This time I was able to dump process states with sysrq-t:
-> > http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
-> >
-> > My guess is ide2/2.0 dies (hpt370 driver), since last thing kernel prin=
-ts is =
+On Mon, Aug 07, 2006 at 01:02:08PM -0700, Andrew Morton wrote:
+> On Mon, 7 Aug 2006 21:38:36 +0200
+> Mattia Dongili <malattia@linux.it> wrote:
+> 
+> > after resume from ram (tested in single user), I can type commands for a
+> > few seconds (time is variable), the processes get stuck in io_schedule.
+> > Poorman's screenshots are here:
+> > http://oioio.altervista.org/linux/dsc03448.jpg
+> > http://oioio.altervista.org/linux/dsc03449.jpg
+> 
+> That probably measn that the device or device driver has got itself into a
+> sick state and IO completions aren't occurring. 
 
-> > suspending device 2.0
-> =
+BTW: I tried to reverse ide-reprogram-disk-pio-timings-on-resume.patch
+with no luck.
 
-> Does it go away if you revert this?
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/=
-2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resume.patch
-> =
+> Which storage device (and which device driver) is being used here?
 
-> That should only affect resume, not suspend, but it does mess around
-> with ide power management. Is this maybe happening on the *second*
-> suspend?
-> =
+A dmesg is available here (apart from the already resolved BUGs the boot
+process is meaningful):
+http://oioio.altervista.org/linux/dmesg-2.6.18-rc3-mm2-1
+[    3.168000] ICH3M: chipset revision 1
+[    3.168000] ICH3M: not 100% native mode: will probe irqs later
+[    3.168000]     ide0: BM-DMA at 0x1860-0x1867, BIOS settings: hda:DMA, hdb:pio
+[    3.168000]     ide1: BM-DMA at 0x1868-0x186f, BIOS settings: hdc:pio, hdd:pio
+[    3.168000] Probing IDE interface ide0...
+[    3.460000] hda: FUJITSU MHV2080AH, ATA DISK drive
+[    4.132000] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+[    4.136000] Probing IDE interface ide1...
+[    4.704000] Probing IDE interface ide1...
+[    5.272000] hda: max request size: 128KiB
+[    5.344000] hda: 156301488 sectors (80026 MB) w/8192KiB Cache, CHS=65535/16/63, UDMA(100)
+[    5.348000] hda: cache flushes supported
+[    5.352000]  hda: hda1 hda2 hda3 hda4 < hda5 hda6 >
 
-> > -hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
-> > +hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
-> =
+lspci reports:
+00:1f.1 IDE interface: Intel Corporation 82801CAM IDE U100 (rev 01) (prog-if 8a [Master SecP PriP])
+	Subsystem: Sony Corporation VAIO PCG-GR214EP/GR214MP/GR215MP/GR314MP/GR315MP
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0
+	Interrupt: pin A routed to IRQ 255
+	Region 0: I/O ports at <ignored>
+	Region 1: I/O ports at <ignored>
+	Region 2: I/O ports at <ignored>
+	Region 3: I/O ports at <ignored>
+	Region 4: I/O ports at 1860 [size=16]
+	Region 5: Memory at d0000000 (32-bit, non-prefetchable) [size=1K]
 
-> This looks suspicious. -mm does have several ide-fix-hpt3xx patches.
-
-I found that git-block.patch broke the suspend for me.  Still have no idea
-what's up with it.
-
-Rafael
+-- 
+mattia
+:wq!
