@@ -1,67 +1,50 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: resume from S3 regression [Was: 2.6.18-rc3-mm2]
-Date: Mon, 7 Aug 2006 22:57:08 +0200
-Message-ID: <20060807205708.GC4007@inferi.kami.home>
-References: <20060806030809.2cfb0b1e.akpm@osdl.org> <20060807193836.GA4007@inferi.kami.home> <20060807130208.94b58773.akpm@osdl.org>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
+Date: Mon, 07 Aug 2006 23:08:59 +0159
+Message-ID: <44D7AC02.7060307@gmail.com>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org> <44D707B6.20501@gmail.com> <20060807162322.GA17564@knob.reflex>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932365AbWHGU5r@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060807130208.94b58773.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20060807162322.GA17564@knob.reflex>
+Sender: linux-ide-owner@vger.kernel.org
+To: Jason Lunz <lunz@gehennom.net>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, andre@linux-ide.org, pavel@suse.cz, linux-pm@osdl.org, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 07, 2006 at 01:02:08PM -0700, Andrew Morton wrote:
-> On Mon, 7 Aug 2006 21:38:36 +0200
-> Mattia Dongili <malattia@linux.it> wrote:
+Jason Lunz wrote:
+> In gmane.linux.kernel, you wrote:
+>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/
+>> I tried it and guess what :)... swsusp doesn't work :@.
+>>
+>> This time I was able to dump process states with sysrq-t:
+>> http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
+>>
+>> My guess is ide2/2.0 dies (hpt370 driver), since last thing kernel prints is 
+>> suspending device 2.0
 > 
-> > after resume from ram (tested in single user), I can type commands for a
-> > few seconds (time is variable), the processes get stuck in io_schedule.
-> > Poorman's screenshots are here:
-> > http://oioio.altervista.org/linux/dsc03448.jpg
-> > http://oioio.altervista.org/linux/dsc03449.jpg
+> Does it go away if you revert this?
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resume.patch
+
+No change.
+
+> That should only affect resume, not suspend, but it does mess around
+> with ide power management. Is this maybe happening on the *second*
+> suspend?
+
+Nope, the first one.
+
+>> -hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
+>> +hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
 > 
-> That probably measn that the device or device driver has got itself into a
-> sick state and IO completions aren't occurring. 
+> This looks suspicious. -mm does have several ide-fix-hpt3xx patches.
 
-BTW: I tried to reverse ide-reprogram-disk-pio-timings-on-resume.patch
-with no luck.
+But hdc is not on the hpt3xx controller.
 
-> Which storage device (and which device driver) is being used here?
-
-A dmesg is available here (apart from the already resolved BUGs the boot
-process is meaningful):
-http://oioio.altervista.org/linux/dmesg-2.6.18-rc3-mm2-1
-[    3.168000] ICH3M: chipset revision 1
-[    3.168000] ICH3M: not 100% native mode: will probe irqs later
-[    3.168000]     ide0: BM-DMA at 0x1860-0x1867, BIOS settings: hda:DMA, hdb:pio
-[    3.168000]     ide1: BM-DMA at 0x1868-0x186f, BIOS settings: hdc:pio, hdd:pio
-[    3.168000] Probing IDE interface ide0...
-[    3.460000] hda: FUJITSU MHV2080AH, ATA DISK drive
-[    4.132000] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-[    4.136000] Probing IDE interface ide1...
-[    4.704000] Probing IDE interface ide1...
-[    5.272000] hda: max request size: 128KiB
-[    5.344000] hda: 156301488 sectors (80026 MB) w/8192KiB Cache, CHS=65535/16/63, UDMA(100)
-[    5.348000] hda: cache flushes supported
-[    5.352000]  hda: hda1 hda2 hda3 hda4 < hda5 hda6 >
-
-lspci reports:
-00:1f.1 IDE interface: Intel Corporation 82801CAM IDE U100 (rev 01) (prog-if 8a [Master SecP PriP])
-	Subsystem: Sony Corporation VAIO PCG-GR214EP/GR214MP/GR215MP/GR314MP/GR315MP
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 255
-	Region 0: I/O ports at <ignored>
-	Region 1: I/O ports at <ignored>
-	Region 2: I/O ports at <ignored>
-	Region 3: I/O ports at <ignored>
-	Region 4: I/O ports at 1860 [size=16]
-	Region 5: Memory at d0000000 (32-bit, non-prefetchable) [size=1K]
-
+regards,
 -- 
-mattia
-:wq!
+<a href="http://www.fi.muni.cz/~xslaby/">Jiri Slaby</a>
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
