@@ -1,39 +1,46 @@
-From: Jason Lunz <lunz@gehennom.net>
-Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
-Date: Mon, 7 Aug 2006 12:23:24 -0400
-Message-ID: <20060807162322.GA17564@knob.reflex>
-References: <20060806030809.2cfb0b1e.akpm@osdl.org> <44D707B6.20501@gmail.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: PowerOp Design and working patch
+Date: Mon, 7 Aug 2006 09:58:41 -0700
+Message-ID: <20060807165841.GB6849@kroah.com>
+References: <200608071412.k77ECEQD009852@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932206AbWHGQXh@vger.kernel.org>
-In-Reply-To: <44D707B6.20501@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, andre@linux-ide.org, pavel@suse.cz, linux-pm@osdl.org, linux-ide@vger.kernel.org
+In-Reply-To: <200608071412.k77ECEQD009852@olwen.urbana.css.mot.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: daviado@gmail.com, linux-pm@lists.osdl.org, dsingleton@mvista.com, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-In gmane.linux.kernel, you wrote:
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/
->
-> I tried it and guess what :)... swsusp doesn't work :@.
->
-> This time I was able to dump process states with sysrq-t:
-> http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
->
-> My guess is ide2/2.0 dies (hpt370 driver), since last thing kernel prints is 
-> suspending device 2.0
 
-Does it go away if you revert this?
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resume.patch
+A: No.
+Q: Should I include quotations after my reply?
 
-That should only affect resume, not suspend, but it does mess around
-with ide power management. Is this maybe happening on the *second*
-suspend?
+On Mon, Aug 07, 2006 at 09:12:14AM -0500, Scott E. Preece wrote:
+> =
 
-> -hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
-> +hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
+> While I think it makes sense to treat a list as a "single value" in this
+> kind of case
 
-This looks suspicious. -mm does have several ide-fix-hpt3xx patches.
+A simple list, like what we have today in /sys/power/state, yes.  But
+with paramater information?  no.
 
-Jason
+>, a reasonable alternative would be to make /sys/power/supported_states
+>a directory, with separate files for each supported OP.
+
+Sure, if you want to do that, fine.  But then you are looking a lot like
+configfs :)
+
+thanks,
+
+greg k-h
