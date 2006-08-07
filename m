@@ -1,14 +1,14 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: PowerOp Design and working patch
-Date: Mon, 7 Aug 2006 09:58:41 -0700
-Message-ID: <20060807165841.GB6849@kroah.com>
-References: <200608071412.k77ECEQD009852@olwen.urbana.css.mot.com>
+From: Mattia Dongili <malattia@linux.it>
+Subject: resume from S3 regression [Was: 2.6.18-rc3-mm2]
+Date: Mon, 7 Aug 2006 21:38:36 +0200
+Message-ID: <20060807193836.GA4007@inferi.kami.home>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200608071412.k77ECEQD009852@olwen.urbana.css.mot.com>
+In-Reply-To: <20060806030809.2cfb0b1e.akpm@osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,29 +18,23 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: daviado@gmail.com, linux-pm@lists.osdl.org, dsingleton@mvista.com, pavel@ucw.cz
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-pm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hello,
 
-A: No.
-Q: Should I include quotations after my reply?
+after resume from ram (tested in single user), I can type commands for a
+few seconds (time is variable), the processes get stuck in io_schedule.
+Poorman's screenshots are here:
+http://oioio.altervista.org/linux/dsc03448.jpg
+http://oioio.altervista.org/linux/dsc03449.jpg
 
-On Mon, Aug 07, 2006 at 09:12:14AM -0500, Scott E. Preece wrote:
-> =
+.config:
+http://oioio.altervista.org/linux/config-2.6.18-rc3-mm2-1
 
-> While I think it makes sense to treat a list as a "single value" in this
-> kind of case
+Anything useful I could add?
+-- =
 
-A simple list, like what we have today in /sys/power/state, yes.  But
-with paramater information?  no.
-
->, a reasonable alternative would be to make /sys/power/supported_states
->a directory, with separate files for each supported OP.
-
-Sure, if you want to do that, fine.  But then you are looking a lot like
-configfs :)
-
-thanks,
-
-greg k-h
+mattia
+:wq!
