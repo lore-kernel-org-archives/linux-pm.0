@@ -1,21 +1,12 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
+From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: PowerOp Design and working patch
-Date: Mon, 07 Aug 2006 13:34:47 +0300
-Message-ID: <1154946887.11382.17.camel@Dogbert.NOE.nokia.com>
-References: <c6333353f00bb7fd435ef518dc8cee21@mvista.com>
-	<20060729004546.GA3917@kroah.com>
-	<1c70fd37e4eb876295e0194e2b8725d6@mvista.com><44CBB1E0.3030908@gmail.com>
-	<62e4476a851bbed395b509023edc5c5c@mvista.com>
-	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
-	<b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
-	<215c230e2979117fd14d83ea2fd83054@embeddedalley.com>
-	<287a694aae15b3fba505f4381c95c9c8@mvista.com><44CFA2F5.1070707@am.sony.com>
-	<20060806221104.GB4205@ucw.cz>
+Date: Mon, 7 Aug 2006 09:12:14 -0500 (CDT)
+Message-ID: <200608071412.k77ECEQD009852@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060806221104.GB4205@ucw.cz>
+In-reply-to: Greg KH's message of Sun, 6 Aug 2006 21:17:46 -0700
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,36 +16,78 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: ext Pavel Machek <pavel@ucw.cz>
-Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org, david singleton <dsingleton@mvista.com>
+To: greg@kroah.com
+Cc: daviado@gmail.com, linux-pm@lists.osdl.org, dsingleton@mvista.com, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Mon, 2006-08-07 at 01:11 +0300, ext Pavel Machek wrote:
-<snip>
-> > Often, in the embedded world, the person defining the operating
-> > states will not be a kernel developer, and may not be comfortable
-> > with, or capable of, creating a kernel module.  (There are
-> =
 
-> That's okay, we can create HOWTO or something. 'System designed is too
-> stupid to hack kernel' should not be an argument.
+While I think it makes sense to treat a list as a "single value" in this
+kind of case, a reasonable alternative would be to make
+/sys/power/supported_states a directory, with separate files for each
+supported OP.
 
-In a production environment the competence and experience is usually
-distributed across several teams and it's not realistic to just label
-"stupid" somebody who has a deep understanding of the HW platform but
-not so good understanding of kernel internals.
-> =
+scott
 
-Once there is a clean separation between mechanism and policies, there
-is no need to have a kernel developer take care of issues that are
-purely HW-related.
+| From: Greg KH<greg@kroah.com>
+| =
 
+| On Sun, Aug 06, 2006 at 08:52:15PM -0700, david singleton wrote:
+| > =
+
+| > On Aug 6, 2006, at 3:05 PM, Pavel Machek wrote:
+| > =
+
+| > > Hi!
+| > >
+| > >>> 2) interface (kernel as well as userspace(sysfs)) for the rest of =
+
+| > >>> power
+| > >>>    parameters except cpu voltage and frequency
+| > >>
+| > >>
+| > >> The /sys/power/supported_states file shows the supported operating
+| > >> points
+| > >> and their parameters.
+| > >
+| > > We have one-value-per-file rule for sysfs.
+| > =
+
+| > Yes, the supported_states file would be better off in /proc.  I'll
+| > move it.
+| =
+
+| No, don't put non-process stuff in /proc, that's not where it belongs.
+| =
+
+| > I just put it in /sys because it was so easy.
+| =
+
+| Then use the proper interface with sysfs please.
+| =
+
+| Just listing the supported states is acceptable, there is prior-usages
+| like this.  Just not the paramaters, this doesn't need to be
+| self-documented...
+| =
+
+| Or use configfs, that might be good for something like this.
+| =
+
+| thanks,
+| =
+
+| greg k-h
+| _______________________________________________
+| linux-pm mailing list
+| linux-pm@lists.osdl.org
+| https://lists.osdl.org/mailman/listinfo/linux-pm
+| =
 
 
 -- =
 
-Cheers,
-           Igor
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
 
-Igor Stoppa (Nokia M - OSSO / Tampere)
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
