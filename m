@@ -1,20 +1,15 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: PowerOp Design and working patch
-Date: Tue, 08 Aug 2006 14:12:02 +0300
-Message-ID: <1155035522.11382.64.camel@Dogbert.NOE.nokia.com>
-References: <1c70fd37e4eb876295e0194e2b8725d6@mvista.com>
-	<44CBB1E0.3030908@gmail.com><62e4476a851bbed395b509023edc5c5c@mvista.com>
-	<acd2a5930607300402n13890dbg150315f617c86ffd@mail.gmail.com>
-	<b04f25ff9b3eb8a48cad52ee832d5bf2@mvista.com>
-	<215c230e2979117fd14d83ea2fd83054@embeddedalley.com>
-	<287a694aae15b3fba505f4381c95c9c8@mvista.com><44CFA2F5.1070707@am.sony.com>
-	<20060806221104.GB4205@ucw.cz><44D7985B.6080508@am.sony.com>
-	<20060808100723.GC4442@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
+Date: Tue, 8 Aug 2006 13:16:00 +0200
+Message-ID: <200608081316.00749.rjw@sisk.pl>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org>
+	<20060808110447.GM4025@suse.de> <20060808110726.GN4025@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060808100723.GC4442@elf.ucw.cz>
+In-Reply-To: <20060808110726.GN4025@suse.de>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,39 +19,83 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: ext Pavel Machek <pavel@ucw.cz>
-Cc: David Singleton <daviado@gmail.com>, linux-pm@lists.osdl.org, david singleton <dsingleton@mvista.com>
+To: Jens Axboe <axboe@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Jiri Slaby <jirislaby@gmail.com>, andre@linux-ide.org, linux-ide@vger.kernel.org, Jason Lunz <lunz@gehennom.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2006-08-08 at 13:07 +0300, ext Pavel Machek wrote:
-> Hi!
+On Tuesday 08 August 2006 13:07, Jens Axboe wrote:
+> On Tue, Aug 08 2006, Jens Axboe wrote:
+> > On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
+> > > On Tuesday 08 August 2006 12:43, Jens Axboe wrote:
+> > > > On Tue, Aug 08 2006, Jiri Slaby wrote:
+> > > > > Rafael J. Wysocki wrote:
+> > > > > >On Monday 07 August 2006 18:23, Jason Lunz wrote:
+> > > > > >>In gmane.linux.kernel, you wrote:
+> > > > > >>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6=
+/2.6.18-rc3/2.6.18-rc3-mm2/
+> > > > > >>>I tried it and guess what :)... swsusp doesn't work :@.
+> > > > > >>>
+> > > > > >>>This time I was able to dump process states with sysrq-t:
+> > > > > >>>http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
+> > > > > >>>
+> > > > > >>>My guess is ide2/2.0 dies (hpt370 driver), since last thing ke=
+rnel =
+
+> > > > > >>>prints is suspending device 2.0
+> > > > > >>Does it go away if you revert this?
+> > > > > >>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2=
+.6.18-rc3/2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resum=
+e.patch
+> > > > > >>
+> > > > > >>That should only affect resume, not suspend, but it does mess a=
+round
+> > > > > >>with ide power management. Is this maybe happening on the *seco=
+nd*
+> > > > > >>suspend?
+> > > > > >>
+> > > > > >>>-hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDM=
+A(33)
+> > > > > >>>+hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
+> > > > > >>This looks suspicious. -mm does have several ide-fix-hpt3xx pat=
+ches.
+> > > > > >
+> > > > > >I found that git-block.patch broke the suspend for me.  Still ha=
+ve no idea
+> > > > > >what's up with it.
+> > > > > =
+
+> > > > > I suspect elevator changes. The wait_for_completion is not woken =
+in
+> > > > > ide-io by ll_rw_blk. But I don't understand block layer too much.
+> > > > =
+
+> > > > The ide changes are far more likely, it's probably missing a comple=
+tion.
+> > > =
+
+> > > Actually I think the commit f74bf2e6b415588e562fdcfdd454d587eb33cd46
+> > > (Remove ->waiting member from struct request) is wrong, because
+> > > generic_ide_suspend() uses the end_of_io member of rq to pass the PM =
+data
+> > > to ide_do_drive_cmd() where the pointer gets overwritten by &wait (mu=
+st_wait
+> > > is "true", because action =3D=3D ide_wait).  Previously &wait was sto=
+red in
+> > > rq->waiting and it didn't overwrite the PM data.
+> > =
+
+> > Indeed, that looks broken now. That must be what is screwing it up. With
+> > the former patch applied, did cdrom detection still look funny to you?
+
+Hm, I'm not sure what you mean ...
+
+> > =
+
+> > I'll concoct a fix for that breakage.
 > =
 
-> > >> Often, in the embedded world, the person defining the operating
-> > >> states will not be a kernel developer, and may not be comfortable
-> > >> with, or capable of, creating a kernel module.  (There are
-> > >
-> > > That's okay, we can create HOWTO or something. 'System designed is
-> too
-> > > stupid to hack kernel' should not be an argument.
-> >
-> > It's not a matter of stupidity.  The example I gave of not being
-> > able to create a kernel module was the situation where loadable
-> > module support is not available.  A HOWTO wouldn't alter this.
-> =
+> Something like this.
 
-> So they need to recompile the kernel. Not a big deal when you are
-> developing new machine.
-> =
+Looks good, I'll give it a try.
 
-1 time yes, several maybe, thousands no.
-
-think about it as finding minimums in a n-dimensional discrete function:
-you really don't want to recompile a kernel each time
-
--- =
-
-Cheers,
-           Igor
-
-Igor Stoppa (Nokia M - OSSO / Tampere)
+Rafael
