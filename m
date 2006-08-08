@@ -1,63 +1,63 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: PowerOp Design and working patch
-Date: Tue, 8 Aug 2006 09:03:50 -0700
-Message-ID: <aa2d5acf5f781b46bf7ea60537cc403d@nomadgs.com>
-References: <200608081344.k78DiY0t002356@olwen.urbana.css.mot.com>
-	<20060808135247.GA4624@elf.ucw.cz>
-	<36d9a1be46f5d66d7544035d86de4b47@nomadgs.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <36d9a1be46f5d66d7544035d86de4b47@nomadgs.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matt@nomadgs.com>
-Cc: daviado@gmail.com, linux-pm@lists.osdl.org, dsingleton@mvista.com, Pavel Machek <pavel@ucw.cz>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
+Date: Tue, 08 Aug 2006 18:40:17 +0159
+Message-ID: <44D8BE88.4080809@gmail.com>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org> <200608081316.00749.rjw@sisk.pl> <20060808111925.GO4025@suse.de> <200608081550.36054.rjw@sisk.pl> <20060808140601.GU31726@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20060808140601.GU31726@suse.de>
+Sender: linux-ide-owner@vger.kernel.org
+To: Jens Axboe <axboe@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jason Lunz <lunz@gehennom.net>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, andre@linux-ide.org, pavel@suse.cz, linux-pm@osdl.org, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Just to be clear.... I think the most important part to review and =
-
-agree to is the powerop interface and implementation.  We can always =
-
-add the right userspace interface for creation (if agreed to), =
-
-suspend/resume integration, etc later.
-On Aug 8, 2006, at 8:53 AM, Matthew Locke wrote:
-
->
-> On Aug 8, 2006, at 6:52 AM, Pavel Machek wrote:
->
->> Anyway, lets get in core first, than talk about userspace interface
->> for chanig operating points, ok?
->
-> Sounds like we are all in agreement on this point:)    Hopefully we can
-> get agreement or some sort of conclusion on the latest interface we
-> have presented (by Eugeny).  Once we get agreement there, we can start
-> pushing powerop to andrew and then start working/discussing the other
-> features necessary.
->
->> 							Pavel
->> -- =
-
->> (english) http://www.livejournal.com/~pavelmachek
->> (cesky, pictures)
->> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->> _______________________________________________
->> linux-pm mailing list
->> linux-pm@lists.osdl.org
->> https://lists.osdl.org/mailman/listinfo/linux-pm
+Jens Axboe wrote:
+> On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
+>> On Tuesday 08 August 2006 13:19, Jens Axboe wrote:
+>>> On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
+>>>> On Tuesday 08 August 2006 13:07, Jens Axboe wrote:
+>>>>> On Tue, Aug 08 2006, Jens Axboe wrote:
+>>>>>>> Indeed, that looks broken now. That must be what is screwing it up. With
+>>>>>> the former patch applied, did cdrom detection still look funny to you?
+>>>> Hm, I'm not sure what you mean ...
+>>> -hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
+>>> +hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
+>> Ah, that.
 >>
->
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
->
+>>> But perhaps that wasn't you?
+>> No, that wasn't me. :-)
+
+It was me and it's OK.
+
+>>>>>> I'll concoct a fix for that breakage.
+>>>>> Something like this.
+>>>> Looks good, I'll give it a try.
+>>> Thanks!
+>> It fixes this particular issue for me, but your first patch (appended)
+>> is also needed to prevent the box from hanging later during the resume
+>> (when it tries to save the image).
+> 
+> Yes certainly, that's a separate bug, sorry if I didn't make that clear.
+> Both fixes are in the block repo now, so next -mm should work fine
+> again.
+
+And even this is OK.
+
+I'm just curious, what
+@@ -387,3 +398,5 @@
+  EXT3 FS on md0, internal journal
+  EXT3-fs: mounted filesystem with ordered data mode.
+  Adding 506036k swap on /dev/hda3.  Priority:-1 extents:1 across:506036k
++JBD: barrier-based sync failed on hda2 - disabling barriers
++JBD: barrier-based sync failed on md0 - disabling barriers
+
+means. Another bug?
+
+thanks,
+-- 
+<a href="http://www.fi.muni.cz/~xslaby/">Jiri Slaby</a>
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
