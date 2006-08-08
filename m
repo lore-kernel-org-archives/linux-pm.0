@@ -1,9 +1,9 @@
 From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: [RFC] PowerOP, OMAP1 PM Core 2/3
-Date: Tue, 08 Aug 2006 05:36:02 +0400
-Message-ID: <44D7EA82.9090306@gmail.com>
+Subject: [RFC] PoweOP, OMAP1 CpuFreq PowerOP integration 3/3
+Date: Tue, 08 Aug 2006 05:36:46 +0400
+Message-ID: <44D7EAAE.8040004@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------070201050602080909040703"
+Content-Type: multipart/mixed; boundary="------------030108090706030400080309"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,625 +18,281 @@ To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070201050602080909040703
+--------------030108090706030400080309
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-PM Core for OMAP1 platforms.
+A minimal example of modifying cpufreq to use PowerOP on OMAP1710.
 
-PM Core provides arch dependent routine to create/get/set operating points,
-hooks up with arhc independent PowerOP layer and utilizes
-clock/voltage framework to access hardware. PM Core is expected
-to handle arch specific actions required to take place in case of
-simultaneous coupled clocks/voltage change (for example  what
-has to happen first) as well.
+cpufreq utilizes 2 power parameters out of 8 available on omap1 platform.
 
-Current implementation relies on "smart" virtual mpu clock
-introduced by OMAP1 clock framework (#define
-PM_CORE_USE_MPU_CLOCK) but implementation for more
-common case is presented for reference as well in #else branch
-for PM_CORE_USE_MPU_CLOCK macro.
+The are two patches attached. The patch order is :
 
-Since voltage framework is not merged into mainline yet
-routine to change voltage is temporary implemented in the
-PM Core for reference.
+mpu.clock.reference.count.fix.patch
+omap1.cpufreq.powerop.patch
 
-Please note that PM Core implementation is far incomplete
-and servers mainly reference and proof of concept purpose for
-the time being  (yes, I know parsing implementation is ugly ;).
+mpu.clock.reference.count.fix.patch is just a trivial fix for a
+minor issue.
 
-
---------------070201050602080909040703
+--------------030108090706030400080309
 Content-Type: text/x-patch;
- name="omap1.pm.core.patch"
+ name="mpu.clock.reference.count.fix.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="omap1.pm.core.patch"
+ filename="mpu.clock.reference.count.fix.patch"
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index bad6269..7175bfb 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -719,6 +719,21 @@ config CPU_FREQ_INTEGRATOR
+diff --git a/arch/arm/plat-omap/cpu-omap.c b/arch/arm/plat-omap/cpu-omap.c
+index a0c71dc..9c74729 100644
+--- a/arch/arm/plat-omap/cpu-omap.c
++++ b/arch/arm/plat-omap/cpu-omap.c
+@@ -101,12 +101,13 @@ static int __init omap_cpu_init(struct c
+ {
+ 	struct clk * mpu_clk;
  
- endmenu
++	if (policy->cpu != 0)
++		return -EINVAL;
++
+ 	mpu_clk = clk_get(NULL, MPU_CLK);
+ 	if (IS_ERR(mpu_clk))
+ 		return PTR_ERR(mpu_clk);
  
-+if (ARCH_OMAP)
-+
-+menu "PM Core"
-+
-+config OMAP1_PM_CORE
-+	tristate "OMAP1 PM Core"
-+	depends POWEROP
-+	help
-+	This enables OMAP1 PM Core to control platform clocks/power via
-+	PowerOP interface
-+
-+endmenu
-+
-+endif
-+
- endif
- 
- menu "Floating point emulation"
-diff --git a/arch/arm/mach-omap1/Makefile b/arch/arm/mach-omap1/Makefile
-index 7165f74..de61ab1 100644
---- a/arch/arm/mach-omap1/Makefile
-+++ b/arch/arm/mach-omap1/Makefile
-@@ -38,3 +38,6 @@ led-$(CONFIG_MACH_OMAP_PERSEUS2)	+= leds
- led-$(CONFIG_MACH_OMAP_OSK)		+= leds-osk.o
- obj-$(CONFIG_LEDS)			+= $(led-y)
- 
-+#PM Core
-+obj-$(CONFIG_OMAP1_PM_CORE)		+=pm_core.o
-+
-diff --git a/arch/arm/mach-omap1/pm_core.c b/arch/arm/mach-omap1/pm_core.c
-new file mode 100644
-index 0000000..4a3d59b
---- /dev/null
-+++ b/arch/arm/mach-omap1/pm_core.c
-@@ -0,0 +1,483 @@
-+/*
-+ * arch/arm/mach-omap1/pm_core.c
+-	if (policy->cpu != 0)
+-		return -EINVAL;
+ 	policy->cur = policy->min = policy->max = omap_getspeed(0);
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.min_freq = clk_round_rate(mpu_clk, 0) / 1000;
+
+--------------030108090706030400080309
+Content-Type: text/x-patch;
+ name="omap1.cpufreq.powerop.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="omap1.cpufreq.powerop.patch"
+
+diff --git a/arch/arm/plat-omap/cpu-omap.c b/arch/arm/plat-omap/cpu-omap.c
+index 9c74729..ca2061f 100644
+--- a/arch/arm/plat-omap/cpu-omap.c
++++ b/arch/arm/plat-omap/cpu-omap.c
+@@ -3,6 +3,8 @@
+  *
+  *  CPU frequency scaling for OMAP
+  *
++ *  PowerOP support by Eugeny S. Mints <eugeny.mints@gmail.com>
 + *
-+ * PM Core implementation by Eugeny S. Mints <eugeny.mints@gmail.com>
-+ *
-+ * Based on code by Todd Poynor, Matthew Locke, Dmitry Chigirev, and 
-+ * Bishop Brock.
-+ *
-+ * Copyright (C) 2002, 2004 MontaVista Software <source@mvista.com>.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ *
-+ */
-+#include <linux/config.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/kmod.h>
-+#include <linux/module.h>
-+#include <linux/stat.h>
-+#include <linux/string.h>
-+#include <linux/device.h>
-+#include <linux/pm.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
+  *  Copyright (C) 2005 Nokia Corporation
+  *  Written by Tony Lindgren <tony@atomide.com>
+  *
+@@ -20,6 +22,7 @@ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/err.h>
+ #include <linux/clk.h>
 +#include <linux/powerop.h>
+ 
+ #include <asm/hardware.h>
+ #include <asm/io.h>
+@@ -33,42 +36,83 @@ #else
+ #define MPU_CLK		"virt_prcm_set"
+ #endif
+ 
 +
-+#include <asm/hardirq.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/processor.h>
-+#include <asm/uaccess.h>
-+#include <asm/io.h>
-+#include <asm/mach-types.h>
-+#include <asm/arch/hardware.h>
-+#include <asm/arch/clock.h>
-+#include <asm/arch/board.h>
-+#include <asm/arch/mux.h>
-+#include <asm/arch/pm.h>
-+#include <asm/arch/system.h>
-+#include <asm/mach/time.h>
-+#include <asm/arch/pm_core.h>
++static char *names[] = {"192", "96", "48", "24"};
 +
-+#if defined(CONFIG_MACH_OMAP_H2)
-+#define V_CORE_HIGH		1500
-+#define V_CORE_LOW		1300
-+#define DVS_SUPPORT
-+#elif defined(CONFIG_MACH_OMAP_H3)
-+#define V_CORE_HIGH		1300
-+#define V_CORE_LOW		1050
-+#define DVS_SUPPORT
-+#else
-+#define V_CORE_HIGH		1500
-+#endif
-+
-+#define ULPD_MIN_MAX_REG (1 << 11)
-+#define ULPD_DVS_ENABLE  (1 << 10)
-+#define ULPD_LOW_PWR_REQ (1 << 1)
-+#define LOW_POWER (ULPD_MIN_MAX_REG | ULPD_DVS_ENABLE | ULPD_LOW_PWR_REQ | \
-+		   ULPD_LOW_PWR_EN)
-+
-+static char *pwr_param_names_list = "cpu_vltg dpll cpu tc per dsp dspmmu lcd ";
-+
-+/* current operating point the sustem runs on */
-+static struct pm_core_point cur_opt;
++#define OP(khz, mv) \
++	{ \
++		.frequency = khz, \
++		.index = mv \
++	} 
 +
 +/* 
-+ * REVISIT: this function is implemented here temporary.
-+ * Once Clock/Voltage Framework is in  place this routine
-+ * implementation will be hided in the framework (along with 
-+ * struct voltage)
-+ */ 
-+struct voltage {
-+	int v; /* mV */
++ * this is representation of operatin points on cpufreq layer: cpufreq
++ * knows and operates on only two power parameters (while an omap1 platform
++ * provides wider range of power parameters)
++ */
++static struct cpufreq_frequency_table opoints[] = {
++#ifdef CONFIG_OMAP_ARM_192MHZ
++	OP(192000, 1300),
++	OP(96000,  1300),
++	OP(48000,  1300),
++	OP(24000,  1300),
++	{ .frequency = CPUFREQ_TABLE_END }
++#else
++#error "please choose OMAP 192MHZ option (exlusively)"
++#endif /* CONFIG_OMAP_ARM_192MHZ */
 +};
-+static struct voltage vhandle;
 +
-+static unsigned int
-+vtg_get_voltage(struct voltage *handle)
++#define MAX_OP_INDEX    (ARRAY_SIZE(opoints) - 2)
++
++/* 
++ * returns index in opoint array of operating point with closest cpu rate
++ * which(rate) is <= requested rate or EINVAL 
++ */
++static long
++round_max_rate(long rate)
 +{
-+	unsigned int v;
++	int i;
++	for (i = 0; i <= MAX_OP_INDEX; i++)
++		if (opoints[i].frequency <= rate)
++			return i;
++	return -EINVAL;		
++}
++/* 
++ * returns index in opoint array of operating point with closest cpu rate 
++ * which(rate) is >= requested rate or EINVAL 
++ */
++static long
++round_min_rate(long rate)
++{
++	int i;
++	for (i = MAX_OP_INDEX; i >= 0; i--)
++		if (opoints[i].frequency >= rate)
++			return i;
++	return -EINVAL;		
++}
++#
 +
-+#ifdef DVS_SUPPORT
-+	if (omap_readw(ULPD_POWER_CTRL) & (1 << 1))
-+		v = V_CORE_LOW;
+ /* TODO: Add support for SDRAM timing changes */
+ 
+ int omap_verify_speed(struct cpufreq_policy *policy)
+ {
+-	struct clk * mpu_clk;
+-
+ 	if (policy->cpu)
+ 		return -EINVAL;
+-
+-	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+-				     policy->cpuinfo.max_freq);
+-	mpu_clk = clk_get(NULL, MPU_CLK);
+-	if (IS_ERR(mpu_clk))
+-		return PTR_ERR(mpu_clk);
+-	policy->min = clk_round_rate(mpu_clk, policy->min * 1000) / 1000;
+-	policy->max = clk_round_rate(mpu_clk, policy->max * 1000) / 1000;
++	
+ 	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+ 				     policy->cpuinfo.max_freq);
+-	clk_put(mpu_clk);
+-
+-	return 0;
++	return cpufreq_frequency_table_verify(policy, opoints);
+ }
+ 
+ unsigned int omap_getspeed(unsigned int cpu)
+ {
+-	struct clk * mpu_clk;
+ 	unsigned long rate;
+ 
+ 	if (cpu)
+ 		return 0;
+ 
+-	mpu_clk = clk_get(NULL, MPU_CLK);
+-	if (IS_ERR(mpu_clk))
++	if (powerop_get_point(NULL, "cpu ", &rate))
+ 		return 0;
+-	rate = clk_get_rate(mpu_clk) / 1000;
+-	clk_put(mpu_clk);
+ 
+ 	return rate;
+ }
+@@ -77,43 +121,57 @@ static int omap_target(struct cpufreq_po
+ 		       unsigned int target_freq,
+ 		       unsigned int relation)
+ {
+-	struct clk * mpu_clk;
+ 	struct cpufreq_freqs freqs;
+ 	int ret = 0;
++	unsigned int idx;
+ 
+-	mpu_clk = clk_get(NULL, MPU_CLK);
+-	if (IS_ERR(mpu_clk))
+-		return PTR_ERR(mpu_clk);
+-
++	/*FIXME: check 0 as error */
+ 	freqs.old = omap_getspeed(0);
+-	freqs.new = clk_round_rate(mpu_clk, target_freq * 1000) / 1000;
++
++	/* 
++	 * doing w/o error checking since assuming ->target is called 
++	 * withing limits
++	 */
++	if (relation == CPUFREQ_RELATION_L)
++		idx = round_min_rate(target_freq);
++	else if (relation == CPUFREQ_RELATION_H)
++		idx = round_max_rate(target_freq);
 +	else
-+#endif
-+		v = V_CORE_HIGH;
++		return -EINVAL;
++	freqs.new = opoints[idx].frequency;
+ 	freqs.cpu = 0;
+ 
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+-	ret = clk_set_rate(mpu_clk, target_freq * 1000);
++	
++	ret = powerop_set_point(names[idx]);
++	
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+-	clk_put(mpu_clk);
+ 
+ 	return ret;
+ }
+ 
+ static int __init omap_cpu_init(struct cpufreq_policy *policy)
+ {
+-	struct clk * mpu_clk;
+-
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
+ 
+-	mpu_clk = clk_get(NULL, MPU_CLK);
+-	if (IS_ERR(mpu_clk))
+-		return PTR_ERR(mpu_clk);
+-
+ 	policy->cur = policy->min = policy->max = omap_getspeed(0);
 +
-+	return v;
-+}
++	/* omap_getspeed returns 0 on error */
++	if (policy->cur == 0)
++		return -EIO;
 +
-+/* 
-+ * auxiliary routines to get/set rate of various clocks 
-+ * RETURN: rates in KHz
-+ */
-+static long 
-+get_clk_rate(const char *clk_name)
-+{
-+	struct clk *clk;
-+	long        ret;
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.min_freq = clk_round_rate(mpu_clk, 0) / 1000;
+-	policy->cpuinfo.max_freq = clk_round_rate(mpu_clk, VERY_HI_RATE) / 1000;
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+-	clk_put(mpu_clk);
 +
-+	clk = clk_get(0, clk_name);
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+
-+	ret = clk_get_rate(clk);
-+	clk_put(clk);
-+
-+	return ret/1000;
-+}
-+
-+static long 
-+set_clk_rate(const char *clk_name, unsigned int rate)
-+{
-+	struct clk *clk;
-+	long        ret;
-+
-+	clk = clk_get(0, clk_name);
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+
-+	ret = clk_set_rate(clk, rate);
-+	clk_put(clk);
-+
-+	return ret;
-+}
-+
-+/* 
-+ * auxiliary routines to get/set rate voltages 
-+ * RETURN: mV
-+ */
-+static long 
-+get_vtg(const char *vdomain)
-+{
-+	long ret = 0;
-+#ifdef VOLTAGE_FRAMEWORK
-+	struct voltage *v;
-+
-+	v = vtg_get(0, vdomain);
-+	if (IS_ERR(v))
-+		return PTR_ERR(v);
-+
-+	ret = vtg_get_voltage(v);
-+	vtg_put(v);
-+#else
-+	ret = vtg_get_voltage(&vhandle);
-+#endif /* VOLTAGE_FRAMEWORK */	
-+	return ret;
-+}
-+
-+static long 
-+set_vtg(const char *vdomain, int val)
-+{
-+	long ret = 0;
-+#ifdef VOLTAGE_FRAMEWORK
-+	struct voltage *v;
-+
-+	v = vtg_get(0, vdomain);
-+	if (IS_ERR(v))
-+		return PTR_ERR(v);
-+
-+	ret = vtg_request(v, val);
-+	vtg_put(v);
-+#endif /* VOLTAGE_FRAMEWORK */
-+	return ret;
-+}
-+
-+static int
-+omap_pm_core_get_pwr_params_list(char *list)
-+{
-+	list = pwr_param_names_list;
-+	return 0;
-+}
-+
-+/* FIXME: verification is incomplete */
-+static int
-+omap_pm_core_verify_opt(struct pm_core_point *opt)
-+{
 +	/* 
-+	 * Let's do some upfront error checking. If we fail any of these, 
-+	 * then the whole operating point is suspect and therefore invalid.
-+	 *
-+	 * Vrification includes but is not limited to checking that passed
-+	 * parameters are withing ranges.
-+	 *
-+	 * FIXME: who should be responsible for checking whether the values
-+	 * are consistent in regard to clock modes (fully sycn/scalable sync/
-+	 * etc)?
++	 * FIXME: it's hardcoded for this example having the assumption that 
++	 * operating points in opoints array are sorted out in descending
++	 * order. May be improved by fetching the values from the opoints 
++	 * array with necessary algo
 +	 */
-+	if (opt == NULL)
-+		return -EINVAL;
-+
-+#ifdef DVS_SUPPORT
-+	if ((opt->cpu_vltg != -1) && ((opt->cpu_vltg != V_CORE_LOW) && 
-+	    (opt->cpu_vltg != V_CORE_HIGH))) {
-+		printk(KERN_WARNING "%s: Core voltage can not be other"
-+		       "than %dmV or %dmV\n"
-+		       "Core voltage %d out of range!", __FUNCTION__, 
-+			V_CORE_LOW, V_CORE_HIGH, opt->cpu_vltg);
-+		return -EINVAL;
-+	}
-+#endif
-+
-+	/* TODO: implement all necessary checking */
-+
-+	return 0;
-+}
-+
-+#define PWR_PARAM_SET	1
-+#define PWR_PARAM_GET	2
-+/* FIXME: very temporary implementation, just to prove the concept !! */
-+static int 
-+process_pwr_param(struct pm_core_point *opt, int op, char *param_name,
-+		  int va_arg)
-+{
-+	if (strcmp(param_name, "cpu_vltg") == 0) {
-+		if (op == PWR_PARAM_SET)
-+			opt->cpu_vltg = va_arg;
-+		else if (opt != NULL)
-+			*(int *)va_arg = opt->cpu_vltg;
-+		else if (unlikely((*(int *)va_arg = get_vtg("v1")) <= 0))
-+			return -EINVAL;
-+
-+		return 0;
-+	}
-+
-+	if (strcmp(param_name, "dpll") == 0) {
-+		if (op == PWR_PARAM_SET)
-+			opt->dpll = va_arg;
-+		else if (opt != NULL)
-+			*(int *)va_arg = opt->dpll;
-+		else if ((*(int *)va_arg = get_clk_rate("ck_dpll1")) <= 0)
-+			return -EINVAL;
-+
-+		return 0;
-+	}
-+
-+	if (strcmp(param_name, "cpu") == 0) {
-+		if (op == PWR_PARAM_SET)
-+			opt->cpu = va_arg;
-+		else if (opt != NULL)
-+			*(int *)va_arg = opt->cpu;
-+		else if ((*(int *)va_arg = get_clk_rate("arm_ck")) <= 0)
-+			return -EINVAL;
-+
-+		return 0;
-+	}
-+
-+	/* FIXME: more parameters to process */
-+
-+	return -EINVAL;
-+}
-+
-+#define PWR_PARAM_MAX_LENGTH	20
-+/* REVISIT: with the current approach which allows only subset of platform 
-+ * power parameters to be explicitly listed at an operating point creation the
-+ * following aspect needs attention. PM Core puts '-1' to all power parameters
-+ * which are not listed explicitly. omap_pm_core_verify_opt() replaces '-1'
-+ * with values inherited from current operating point and resulting full set of  * power parameters may appear
-+ * to be invalid (for example ivalid combination of dsp and dspmmu frequencies)
-+ * The are two options. First one is to leave it upto to an upper layer to 
-+ * provide correct resulting operating point regadless of how many power 
-+ * parameters are listed explicitly. The other option is to provide an
-+ * interface to a caller which in case of resulting point after replacement of 
-+ * all implicit parameters occurs to be invalid returns a valid operating point
-+ * with the original value for explicitly set power parameters but with
-+ * implicit parameters set to complement of explicit parameter upto a valid
-+ * operating point instead of just inherited implicit parameters from the 
-+ * current operatin point. Of course just if such combination exists.
-+ *
-+ * NOTE: implicit changes of various power parameters underneath PM Core 
-+ * layer like set_clk_rate() for "mpu" clock does will be prohibited and
-+ * removed in the future since otherwise PM Core will validate one operating
-+ * point while system will actually switch to completely different one
-+ */
-+static void *
-+omap_pm_create_point(const char *pwr_params, va_list args)
-+{
-+	struct pm_core_point *opt;
-+	char buf[PWR_PARAM_MAX_LENGTH + 1];
++	policy->cpuinfo.min_freq = opoints[MAX_OP_INDEX].frequency;
++	policy->cpuinfo.max_freq = opoints[0].frequency;
+ 
+ 	return 0;
+ }
+@@ -129,7 +187,19 @@ static struct cpufreq_driver omap_driver
+ 
+ static int __init omap_cpufreq_init(void)
+ {
 +	int i = 0;
-+	int err;
-+
-+	opt = kmalloc(sizeof(struct pm_core_point), GFP_KERNEL);
-+	if (opt == NULL)
-+		return NULL;
 +	/* 
-+	 * PM Core puts '-1' for all power parameters which are not listed
-+	 * explicitly
++	 * map cpufreq layer representation of power control to 
++	 * omap1 platform operating points
 +	 */
-+	OMAP_PM_CORE_INIT_OPT(opt);
++	for (i = 0; i <=MAX_OP_INDEX; i++ )
++		if (powerop_register_point(names[i], "cpu_vltg cpu ",
++					   opoints[i].index, 
++					   opoints[i].frequency))
++			return -EINVAL;
 +
-+	i = 0;
-+	while (*pwr_params) {
-+		if (*pwr_params != ' ') {
-+			buf[i] = *pwr_params++;
-+			i++;
-+		}
-+		else {
-+			buf[i] = 0;
-+			err = process_pwr_param(opt, PWR_PARAM_SET, buf, 
-+			                        (int)va_arg(args, int));
-+			if (err != 0)
-+				goto out;
-+			i = 0;
-+		}
-+	}
-+
-+	err = omap_pm_core_verify_opt(opt);
-+	if (err != 0)
-+		goto out;
-+
-+	return (void *)opt;
-+out:
-+	kfree(opt);
-+	return NULL;
-+}
-+
-+/* FIXME: synchronization aspect may need attention */
-+/*
-+ * FIXME: notifiers  aspect is not highlighted here. There are 3 options:
-+ *  1) let an upper layer to handle notifiers
-+ *  2) handle notifiers at PM Core layer
-+ *  3) handle notifiers at clock(voltage) framework layer
-+ */ 
-+static int
-+omap_pm_core_set_opt(void *md_opt)
-+{
-+	int ret = 0;
-+	struct pm_core_point *new = (struct pm_core_point *)md_opt;
-+
-+	ret = omap_pm_core_verify_opt(new);
-+	if (ret != 0)
-+		return ret;
-+
-+#define PM_CORE_USE_MPU_CLOCK
-+#ifdef PM_CORE_USE_MPU_CLOCK
-+	/* 
-+	 * OMAP1 clock framework exports "smart" virtual clock "mpu". 
-+	 * "mpu" clock hides and hardcodes interdependencies between
-+	 * ck_dpll1, arm_ck, dsp_ck, dspmmu_ck, tc_ck via the
-+	 * rate_table[].
-+	 * "mpu" clock rate needs to be set to desired cpu clock rate 
-+	 *
-+	 * current implementation of "mpu" clock allows to switch between
-+	 * only those cpu frequencies defined in the rate_table[] which 
-+	 * have the same ck_ref and dpll_ck1 rates.
-+	 *
-+	 * since CONFIG_OMAP_ARM_192MHZ provides the widest range of 
-+	 * available frequencies which meet the above constraints we 
-+	 * use this config for pm_core reference code    
-+	 */
-+
-+	ret = set_clk_rate("mpu", new->cpu * 1000);
-+#else
-+	/* 
-+	 * go through op parameters and set as requested if changed 
-+	 * if at least one failed then restore cur_opt
-+	 *
-+	 * NOTE: auxiliary access to hw registers may occur here for
-+	 * example for proper handling of coupled simultaneous clock and 
-+	 * voltage changes  
-+	 *
-+	 * FIXME: not all parameters are implemented so far
-+	 * REVISIT: '-1' option is not implemented yet
-+	 */
-+	if (cur_opt.cpu_vltg != new->cpu_vltg)
-+		if ((ret = set_vtg("v1", new->cpu_vltg)) != 0)
-+			goto failed;
-+
-+	if (cur_opt.dpll != new->dpll)
-+		if ((ret = set_clk_rate("ck_dpll1", new->dpll)) != 0)
-+			goto failed;
-+
-+	if (cur_opt.cpu != new->cpu)
-+		if ((ret = set_clk_rate("arm_ck", new->cpu)) != 0)
-+			goto failed;
-+
-+	if (cur_opt.tc != new->tc)
-+		if ((ret = set_clk_rate("tc_ck", new->tc)) != 0)
-+			goto failed;
-+
-+	if (cur_opt.dsp != new->dsp)
-+		if ((ret = set_clk_rate("dsp_ck", new->dsp)) != 0)
-+			goto failed;
-+
-+	if (cur_opt.dspmmu != new->dspmmu)
-+		if ((ret = set_clk_rate("dspmmu_ck", new->dspmmu)) != 0)
-+			goto failed;
-+#endif /* PM_CORE_USE_MPU_CLOCK */ 
-+
-+	/* new op is installed successfully, udate cur_opt */
-+	memcpy(&cur_opt, new, sizeof(new));
-+	return ret;
-+
-+failed:
-+	/* 
-+	 * update cur_opt upto what has been changed, return error which
-+	 * caused the failure and expect an upper layer to recover from the
-+	 * failure
-+	 */
-+	powerop_get_point(NULL, pwr_param_names_list, &cur_opt.cpu_vltg, 
-+			  &cur_opt.dpll, &cur_opt.cpu, &cur_opt.tc, 
-+			  &cur_opt.per, &cur_opt.dsp, &cur_opt.dspmmu,
-+			  &cur_opt.lcd);	
-+	return ret;
-+}
-+
-+/* 
-+ * Fully determine the current machine-dependent operating point, and fill in 
-+ * a structure presented by a caller.
-+ *
-+ * RETURN: -ENOENT on error; in error case one should not rely on any 
-+ * power parameter value returned
-+ */
-+static int
-+omap_pm_core_get_opt(void *md_opt, const char *pwr_params, va_list args)
-+{
-+	int err = 0;
-+	int i = 0;
-+	struct pm_core_point *opt = (struct pm_core_point *)md_opt;
-+	char buf[PWR_PARAM_MAX_LENGTH + 1];
-+
-+	i = 0;
-+	while (*pwr_params) {
-+		if (*pwr_params != ' ') {
-+			buf[i] = *pwr_params++;
-+			i++;
-+		}
-+		else {
-+			buf[i] = 0;
-+			err = process_pwr_param(opt, PWR_PARAM_GET, buf, 
-+			                        (int)va_arg(args, int));
-+			if (err != 0)
-+				return err;
-+			i = 0;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static struct powerop_driver omap_pm_core_driver = {
-+	.name                   = "omap1 pm core driver",
-+	.get_pwr_params_list    = omap_pm_core_get_pwr_params_list,
-+	.create_point           = omap_pm_create_point,
-+	.get_point              = omap_pm_core_get_opt,
-+	.set_point              = omap_pm_core_set_opt, 
-+};
-+
-+
-+int __init
-+omap_pm_core_init(void)
-+{
-+	omap_pm_core_driver.pwr_params_list_length = 
-+					strlen(pwr_param_names_list) + 1;
-+
-+	if (powerop_driver_register(&omap_pm_core_driver))
-+		return -EINVAL;
-+
-+
-+	return powerop_get_point(NULL, pwr_param_names_list, 
-+				 &cur_opt.cpu_vltg, &cur_opt.dpll, 
-+				 &cur_opt.cpu, &cur_opt.tc, &cur_opt.per,
-+				 &cur_opt.dsp, &cur_opt.dspmmu,
-+				 &cur_opt.lcd);
-+}
-+
-+postcore_initcall(omap_pm_core_init);
-+
-diff --git a/include/asm-arm/arch-omap/pm_core.h b/include/asm-arm/arch-omap/pm_core.h
-new file mode 100644
-index 0000000..3ef6221
---- /dev/null
-+++ b/include/asm-arm/arch-omap/pm_core.h
-@@ -0,0 +1,46 @@
-+/*
-+ * Set of power parameters supported for OMAP1
-+ *
-+ * Based on DPM OMAP code by Matthew Locke, Dmitry Chigirev, Vladimir
-+ * Barinov, and Todd Poynor.
-+ *
-+ * 2005 (c) MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+
-+#ifndef __ASM_ARCH_OMAP_PM_CORE_H__
-+#define __ASM_ARCH_OMAP_PM_CORE_H__
-+
-+/* 
-+ * Instances of this structure define operating points
-+ *
-+ * -1 for any following fields indicates no change from current op 
-+ */
-+
-+struct pm_core_point {
-+	int cpu_vltg; /* voltage in mV */
-+	int dpll;     /* in KHz */
-+	int cpu;      /* CPU frequency in KHz */
-+	int tc;       /* in KHz */
-+	int per;      /* in KHz */
-+	int dsp;      /* in KHz */
-+	int dspmmu;   /* in KHz */
-+	int lcd;      /* in KHz */
-+};
-+
-+#define OMAP_PM_CORE_INIT_OPT(point)    \
-+	do {                            \
-+		(point)->cpu_vltg = -1; \
-+		(point)->dpll = -1;     \
-+		(point)->cpu = -1;      \
-+		(point)->tc = -1;       \
-+		(point)->per = -1;      \
-+		(point)->dsp = -1;      \
-+		(point)->dspmmu = -1;   \
-+		(point)->lcd = -1;      \
-+	} while (0)   
-+
-+#endif /* __ASM_ARCH_OMAP_PM_CORE_H__ */
+ 	return cpufreq_register_driver(&omap_driver);
+ }
+ 
+ arch_initcall(omap_cpufreq_init);
 +
 
---------------070201050602080909040703
+--------------030108090706030400080309
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---------------070201050602080909040703--
+--------------030108090706030400080309--
