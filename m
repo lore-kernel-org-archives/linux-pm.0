@@ -1,70 +1,60 @@
-From: Jens Axboe <axboe@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
-Date: Tue, 8 Aug 2006 12:43:54 +0200
-Message-ID: <20060808104353.GK4025@suse.de>
-References: <20060806030809.2cfb0b1e.akpm@osdl.org> <44D707B6.20501@gmail.com>
-	<20060807162322.GA17564@knob.reflex>
-	<200608072247.59184.rjw@sisk.pl> <44D8626F.4020101@gmail.com>
+Date: Tue, 8 Aug 2006 12:59:15 +0200
+Message-ID: <200608081259.15966.rjw@sisk.pl>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org> <44D8626F.4020101@gmail.com> <20060808104353.GK4025@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20060808104353.GK4025@suse.de>
 Content-Disposition: inline
-In-Reply-To: <44D8626F.4020101@gmail.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, andre@linux-ide.org, linux-pm@osdl.org, linux-ide@vger.kernel.org, Jason Lunz <lunz@gehennom.net>, linux-kernel@vger.kernel.org
+Sender: linux-ide-owner@vger.kernel.org
+To: Jens Axboe <axboe@suse.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Jason Lunz <lunz@gehennom.net>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, andre@linux-ide.org, pavel@suse.cz, linux-pm@osdl.org, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 08 2006, Jiri Slaby wrote:
-> Rafael J. Wysocki wrote:
-> >On Monday 07 August 2006 18:23, Jason Lunz wrote:
-> >>In gmane.linux.kernel, you wrote:
-> >>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-=
-rc3/2.6.18-rc3-mm2/
-> >>>I tried it and guess what :)... swsusp doesn't work :@.
-> >>>
-> >>>This time I was able to dump process states with sysrq-t:
-> >>>http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
-> >>>
-> >>>My guess is ide2/2.0 dies (hpt370 driver), since last thing kernel =
+On Tuesday 08 August 2006 12:43, Jens Axboe wrote:
+> On Tue, Aug 08 2006, Jiri Slaby wrote:
+> > Rafael J. Wysocki wrote:
+> > >On Monday 07 August 2006 18:23, Jason Lunz wrote:
+> > >>In gmane.linux.kernel, you wrote:
+> > >>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/
+> > >>>I tried it and guess what :)... swsusp doesn't work :@.
+> > >>>
+> > >>>This time I was able to dump process states with sysrq-t:
+> > >>>http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
+> > >>>
+> > >>>My guess is ide2/2.0 dies (hpt370 driver), since last thing kernel 
+> > >>>prints is suspending device 2.0
+> > >>Does it go away if you revert this?
+> > >>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resume.patch
+> > >>
+> > >>That should only affect resume, not suspend, but it does mess around
+> > >>with ide power management. Is this maybe happening on the *second*
+> > >>suspend?
+> > >>
+> > >>>-hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
+> > >>>+hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
+> > >>This looks suspicious. -mm does have several ide-fix-hpt3xx patches.
+> > >
+> > >I found that git-block.patch broke the suspend for me.  Still have no idea
+> > >what's up with it.
+> > 
+> > I suspect elevator changes. The wait_for_completion is not woken in
+> > ide-io by ll_rw_blk. But I don't understand block layer too much.
+> 
+> The ide changes are far more likely, it's probably missing a completion.
 
-> >>>prints is suspending device 2.0
-> >>Does it go away if you revert this?
-> >>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc=
-3/2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resume.patch
-> >>
-> >>That should only affect resume, not suspend, but it does mess around
-> >>with ide power management. Is this maybe happening on the *second*
-> >>suspend?
-> >>
-> >>>-hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
-> >>>+hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
-> >>This looks suspicious. -mm does have several ide-fix-hpt3xx patches.
-> >
-> >I found that git-block.patch broke the suspend for me.  Still have no id=
-ea
-> >what's up with it.
-> =
+Actually I think the commit f74bf2e6b415588e562fdcfdd454d587eb33cd46
+(Remove ->waiting member from struct request) is wrong, because
+generic_ide_suspend() uses the end_of_io member of rq to pass the PM data
+to ide_do_drive_cmd() where the pointer gets overwritten by &wait (must_wait
+is "true", because action == ide_wait).  Previously &wait was stored in
+rq->waiting and it didn't overwrite the PM data.
 
-> I suspect elevator changes. The wait_for_completion is not woken in
-> ide-io by ll_rw_blk. But I don't understand block layer too much.
+Haven't tested yet, though.
 
-The ide changes are far more likely, it's probably missing a completion.
-
-> Where the blk_end_sync_rq should be called from (why is not called at
-> all)?
-
-It's called from ->end_io() in end_that_request_last().
-
--- =
-
-Jens Axboe
+Greetings,
+Rafael
