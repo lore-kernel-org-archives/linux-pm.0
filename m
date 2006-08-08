@@ -1,126 +1,93 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: PowerOp Design and working patch
-Date: Tue, 8 Aug 2006 08:54:58 -0500 (CDT)
-Message-ID: <200608081354.k78DswXq003628@olwen.urbana.css.mot.com>
+From: Jens Axboe <axboe@suse.de>
+Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
+Date: Tue, 8 Aug 2006 16:06:01 +0200
+Message-ID: <20060808140601.GU31726@suse.de>
+References: <20060806030809.2cfb0b1e.akpm@osdl.org> <200608081316.00749.rjw@sisk.pl> <20060808111925.GO4025@suse.de> <200608081550.36054.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: "Scott E. Preece"'s message of Tue, 8 Aug 2006 08:44:34 -0500
-	(CDT)
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: preece@motorola.com
-Cc: daviado@gmail.com, linux-pm@lists.osdl.org, pavel@ucw.cz, dsingleton@mvista.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200608081550.36054.rjw@sisk.pl>
+Sender: linux-ide-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Jason Lunz <lunz@gehennom.net>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, andre@linux-ide.org, pavel@suse.cz, linux-pm@osdl.org, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
+> On Tuesday 08 August 2006 13:19, Jens Axboe wrote:
+> > On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
+> > > On Tuesday 08 August 2006 13:07, Jens Axboe wrote:
+> > > > On Tue, Aug 08 2006, Jens Axboe wrote:
+> > > > > On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
+> > > > > > On Tuesday 08 August 2006 12:43, Jens Axboe wrote:
+> > > > > > > On Tue, Aug 08 2006, Jiri Slaby wrote:
+> > > > > > > > Rafael J. Wysocki wrote:
+> > > > > > > > >On Monday 07 August 2006 18:23, Jason Lunz wrote:
+> > > > > > > > >>In gmane.linux.kernel, you wrote:
+> > > > > > > > >>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/
+> > > > > > > > >>>I tried it and guess what :)... swsusp doesn't work :@.
+> > > > > > > > >>>
+> > > > > > > > >>>This time I was able to dump process states with sysrq-t:
+> > > > > > > > >>>http://www.fi.muni.cz/~xslaby/sklad/ide2.gif
+> > > > > > > > >>>
+> > > > > > > > >>>My guess is ide2/2.0 dies (hpt370 driver), since last thing kernel 
+> > > > > > > > >>>prints is suspending device 2.0
+> > > > > > > > >>Does it go away if you revert this?
+> > > > > > > > >>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/broken-out/ide-reprogram-disk-pio-timings-on-resume.patch
+> > > > > > > > >>
+> > > > > > > > >>That should only affect resume, not suspend, but it does mess around
+> > > > > > > > >>with ide power management. Is this maybe happening on the *second*
+> > > > > > > > >>suspend?
+> > > > > > > > >>
+> > > > > > > > >>>-hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
+> > > > > > > > >>>+hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
+> > > > > > > > >>This looks suspicious. -mm does have several ide-fix-hpt3xx patches.
+> > > > > > > > >
+> > > > > > > > >I found that git-block.patch broke the suspend for me.  Still have no idea
+> > > > > > > > >what's up with it.
+> > > > > > > > 
+> > > > > > > > I suspect elevator changes. The wait_for_completion is not woken in
+> > > > > > > > ide-io by ll_rw_blk. But I don't understand block layer too much.
+> > > > > > > 
+> > > > > > > The ide changes are far more likely, it's probably missing a completion.
+> > > > > > 
+> > > > > > Actually I think the commit f74bf2e6b415588e562fdcfdd454d587eb33cd46
+> > > > > > (Remove ->waiting member from struct request) is wrong, because
+> > > > > > generic_ide_suspend() uses the end_of_io member of rq to pass the PM data
+> > > > > > to ide_do_drive_cmd() where the pointer gets overwritten by &wait (must_wait
+> > > > > > is "true", because action == ide_wait).  Previously &wait was stored in
+> > > > > > rq->waiting and it didn't overwrite the PM data.
+> > > > > 
+> > > > > Indeed, that looks broken now. That must be what is screwing it up. With
+> > > > > the former patch applied, did cdrom detection still look funny to you?
+> > > 
+> > > Hm, I'm not sure what you mean ...
+> > 
+> > -hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
+> > +hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
+> 
+> Ah, that.
+> 
+> > But perhaps that wasn't you?
+> 
+> No, that wasn't me. :-)
+> 
+> > > > > I'll concoct a fix for that breakage.
+> > > > 
+> > > > Something like this.
+> > > 
+> > > Looks good, I'll give it a try.
+> > 
+> > Thanks!
+> 
+> It fixes this particular issue for me, but your first patch (appended)
+> is also needed to prevent the box from hanging later during the resume
+> (when it tries to save the image).
 
-Note that I concur with Pavel and Tim that it would be better
-to get the functionality working first, and worry about this after
-we're sure the basic mechanisms work. However, it would make sense for
-people reviewing the code to have in their minds the idea that it needs
-to be dynamic in the future.
+Yes certainly, that's a separate bug, sorry if I didn't make that clear.
+Both fixes are in the block repo now, so next -mm should work fine
+again.
 
-scott
+-- 
+Jens Axboe
 
-
-| From preece@urbana.css.mot.com Tue Aug  8 08:44:35 2006
-| Date: Tue, 8 Aug 2006 08:44:34 -0500 (CDT)
-| From: "Scott E. Preece" <preece@motorola.com>
-| CC: tim.bird@am.sony.com, daviado@gmail.com, linux-pm@lists.osdl.org,
-| =
-
-| =
-
-| If you're a device manufacturer, and you build, say 50 devices that all
-| use the same hardware but, because they are optimized for different
-| functional use cases, have different preferred operating points and
-| DVFS policies, it's *highly* desirable to not have to maintain 50
-| separate builds for those devices.  Putting configuration information
-| in places that can be changed independently of compilation is very
-| important to us.
-| =
-
-| scott
-| =
-
-| =
-
-| | From: Pavel Machek<pavel@ucw.cz>
-| | =
-
-| | Hi!
-| | =
-
-| | > >> Often, in the embedded world, the person defining the operating
-| | > >> states will not be a kernel developer, and may not be comfortable
-| | > >> with, or capable of, creating a kernel module.  (There are
-| | > > =
-
-| | > > That's okay, we can create HOWTO or something. 'System designed is =
-too
-| | > > stupid to hack kernel' should not be an argument.
-| | > =
-
-| | > It's not a matter of stupidity.  The example I gave of not being
-| | > able to create a kernel module was the situation where loadable
-| | > module support is not available.  A HOWTO wouldn't alter this.
-| | =
-
-| | So they need to recompile the kernel. Not a big deal when you are
-| | developing new machine.
-| | =
-
-| | > > Maybe operating points need to be changed at runtime -- I do not th=
-ink
-| | > > so -- but *please* get the basic stuff in/merged ASAP and then add
-| | > > features one-by-one.
-| | > =
-
-| | > I agree. :-)
-| | =
-
-| | Yes, I believe we are actually in agreement. Maybe features you want
-| | will indeed be useful, but we want to get basics right, first.
-| | 								Pavel
-| | -- =
-
-| | (english) http://www.livejournal.com/~pavelmachek
-| | (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
-| | _______________________________________________
-| | linux-pm mailing list
-| | linux-pm@lists.osdl.org
-| | https://lists.osdl.org/mailman/listinfo/linux-pm
-| | =
-
-| =
-
-| -- =
-
-| scott preece
-| motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-| e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-| phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
-| =
-
-| =
-
-| =
-
-
--- =
-
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
