@@ -1,9 +1,9 @@
 From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: [RFC] PowerOP, PowerOP Core 1/3
-Date: Tue, 08 Aug 2006 05:35:09 +0400
-Message-ID: <44D7EA4D.1020001@gmail.com>
+Subject: [RFC] PowerOP, OMAP1 PM Core 2/3
+Date: Tue, 08 Aug 2006 05:36:02 +0400
+Message-ID: <44D7EA82.9090306@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------020105090306060207020406"
+Content-Type: multipart/mixed; boundary="------------070201050602080909040703"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,592 +18,625 @@ To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020105090306060207020406
+--------------070201050602080909040703
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-The PowerOP Core provides completely arch independent interface
-to create and control operating points which consist of arbitrary
-subset of power parameters available on a certain platform.
-PowerOP Core maintains  list of  operating points and provides
-capability to reference operating points by name.
+PM Core for OMAP1 platforms.
+
+PM Core provides arch dependent routine to create/get/set operating points,
+hooks up with arhc independent PowerOP layer and utilizes
+clock/voltage framework to access hardware. PM Core is expected
+to handle arch specific actions required to take place in case of
+simultaneous coupled clocks/voltage change (for example  what
+has to happen first) as well.
+
+Current implementation relies on "smart" virtual mpu clock
+introduced by OMAP1 clock framework (#define
+PM_CORE_USE_MPU_CLOCK) but implementation for more
+common case is presented for reference as well in #else branch
+for PM_CORE_USE_MPU_CLOCK macro.
+
+Since voltage framework is not merged into mainline yet
+routine to change voltage is temporary implemented in the
+PM Core for reference.
+
+Please note that PM Core implementation is far incomplete
+and servers mainly reference and proof of concept purpose for
+the time being  (yes, I know parsing implementation is ugly ;).
 
 
---------------020105090306060207020406
+--------------070201050602080909040703
 Content-Type: text/x-patch;
- name="powerop.core.patch"
+ name="omap1.pm.core.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="powerop.core.patch"
+ filename="omap1.pm.core.patch"
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index f81a623..bad6269 100644
+index bad6269..7175bfb 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -899,6 +899,8 @@ source "drivers/mmc/Kconfig"
+@@ -719,6 +719,21 @@ config CPU_FREQ_INTEGRATOR
  
- source "drivers/rtc/Kconfig"
- 
-+source "drivers/powerop/Kconfig"
-+
  endmenu
  
- source "fs/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index fc2d744..f8eaf31 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -65,6 +65,7 @@ obj-$(CONFIG_ISDN)		+= isdn/
- obj-$(CONFIG_EDAC)		+= edac/
- obj-$(CONFIG_MCA)		+= mca/
- obj-$(CONFIG_EISA)		+= eisa/
-+obj-$(CONFIG_POWEROP)		+= powerop/
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_MMC)		+= mmc/
- obj-$(CONFIG_NEW_LEDS)		+= leds/
-diff --git a/drivers/powerop/Kconfig b/drivers/powerop/Kconfig
-new file mode 100644
-index 0000000..94d2459
---- /dev/null
-+++ b/drivers/powerop/Kconfig
-@@ -0,0 +1,12 @@
-+#
-+# powerop
-+#
++if (ARCH_OMAP)
 +
-+menu "PowerOP (Power Management)"
++menu "PM Core"
 +
-+config POWEROP
-+	bool "PowerOP Core"
++config OMAP1_PM_CORE
++	tristate "OMAP1 PM Core"
++	depends POWEROP
 +	help
++	This enables OMAP1 PM Core to control platform clocks/power via
++	PowerOP interface
 +
 +endmenu
 +
-diff --git a/drivers/powerop/Makefile b/drivers/powerop/Makefile
-new file mode 100644
-index 0000000..131b983
---- /dev/null
-+++ b/drivers/powerop/Makefile
-@@ -0,0 +1,2 @@
-+obj-$(CONFIG_POWEROP)		+= powerop.o
++endif
 +
-diff --git a/drivers/powerop/powerop.c b/drivers/powerop/powerop.c
+ endif
+ 
+ menu "Floating point emulation"
+diff --git a/arch/arm/mach-omap1/Makefile b/arch/arm/mach-omap1/Makefile
+index 7165f74..de61ab1 100644
+--- a/arch/arm/mach-omap1/Makefile
++++ b/arch/arm/mach-omap1/Makefile
+@@ -38,3 +38,6 @@ led-$(CONFIG_MACH_OMAP_PERSEUS2)	+= leds
+ led-$(CONFIG_MACH_OMAP_OSK)		+= leds-osk.o
+ obj-$(CONFIG_LEDS)			+= $(led-y)
+ 
++#PM Core
++obj-$(CONFIG_OMAP1_PM_CORE)		+=pm_core.o
++
+diff --git a/arch/arm/mach-omap1/pm_core.c b/arch/arm/mach-omap1/pm_core.c
 new file mode 100644
-index 0000000..5ebf820
+index 0000000..4a3d59b
 --- /dev/null
-+++ b/drivers/powerop/powerop.c
-@@ -0,0 +1,389 @@
++++ b/arch/arm/mach-omap1/pm_core.c
+@@ -0,0 +1,483 @@
 +/*
-+ * PowerOP Core routines
++ * arch/arm/mach-omap1/pm_core.c
 + *
-+ * Author: Todd Poynor <tpoynor@mvista.com>
-+ * Interface update by Eugeny S. Mints <eugeny.mints@gmail.com>
++ * PM Core implementation by Eugeny S. Mints <eugeny.mints@gmail.com>
 + *
-+ * 2005 (c) MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
++ * Based on code by Todd Poynor, Matthew Locke, Dmitry Chigirev, and 
++ * Bishop Brock.
++ *
++ * Copyright (C) 2002, 2004 MontaVista Software <source@mvista.com>.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ *
 + */
 +#include <linux/config.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
 +#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/kmod.h>
++#include <linux/module.h>
++#include <linux/stat.h>
++#include <linux/string.h>
++#include <linux/device.h>
++#include <linux/pm.h>
++#include <linux/delay.h>
++#include <linux/err.h>
 +#include <linux/powerop.h>
 +
-+struct powerop_point {
-+	struct kobject   kobj;   /* hook to reference an operating point in
-+				  * some arch independent way
-+				  */
-+	void            *md_opt; /* arch dependent set of power parameters */
-+	struct list_head node;
-+};
++#include <asm/hardirq.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++#include <asm/processor.h>
++#include <asm/uaccess.h>
++#include <asm/io.h>
++#include <asm/mach-types.h>
++#include <asm/arch/hardware.h>
++#include <asm/arch/clock.h>
++#include <asm/arch/board.h>
++#include <asm/arch/mux.h>
++#include <asm/arch/pm.h>
++#include <asm/arch/system.h>
++#include <asm/mach/time.h>
++#include <asm/arch/pm_core.h>
 +
-+static struct powerop_driver *powerop_driver;
++#if defined(CONFIG_MACH_OMAP_H2)
++#define V_CORE_HIGH		1500
++#define V_CORE_LOW		1300
++#define DVS_SUPPORT
++#elif defined(CONFIG_MACH_OMAP_H3)
++#define V_CORE_HIGH		1300
++#define V_CORE_LOW		1050
++#define DVS_SUPPORT
++#else
++#define V_CORE_HIGH		1500
++#endif
 +
-+/* list of named operating points maintained by PowerOP Core layer */
-+static struct list_head named_opt_list;
-+static DECLARE_MUTEX(named_opt_list_mutex);
-+static int powerop_initialized;
++#define ULPD_MIN_MAX_REG (1 << 11)
++#define ULPD_DVS_ENABLE  (1 << 10)
++#define ULPD_LOW_PWR_REQ (1 << 1)
++#define LOW_POWER (ULPD_MIN_MAX_REG | ULPD_DVS_ENABLE | ULPD_LOW_PWR_REQ | \
++		   ULPD_LOW_PWR_EN)
 +
-+/* hw access serialization */
-+static DECLARE_MUTEX(powerop_mutex);
++static char *pwr_param_names_list = "cpu_vltg dpll cpu tc per dsp dspmmu lcd ";
 +
-+/* Auxiliary PowerOP Core internal routines */
-+
-+static void *
-+create_point(const char *pwr_params, va_list args)
-+{
-+	void *res;
-+
-+	down(&powerop_mutex);
-+	res = powerop_driver && powerop_driver->create_point ? 
-+	      powerop_driver->create_point(pwr_params, args) :
-+	      NULL;
-+	up(&powerop_mutex);
-+	
-+	return res;
-+}
-+
-+static int
-+set_point(void *md_opt)
-+{
-+	int rc;
-+
-+	down(&powerop_mutex);
-+	rc = md_opt && powerop_driver && powerop_driver->set_point ? 
-+		powerop_driver->set_point(md_opt) : -EINVAL;
-+	up(&powerop_mutex);
-+	
-+	return rc;
-+}
-+/*
-+ * get_point - get value of specified power paramenter of operating 
-+ * point pointed by 'md_opt'
-+ *
-+ * INPUT:
-+ *   md_opt     - pointer to operating point to be processed or NULL to get
-+ *                values of currently active operating point
-+ *   pwr_params - name of requested power parameters
-+ * 
-+ * OUTPUT:
-+ *   none
-+ *
-+ * INPUT/OUTPUT:
-+ *   args - array of result placeholders 
-+ *
-+ * RETURN:
-+ *   0 on success, error code otherwise
-+ */
-+static int
-+get_point(void *md_opt, const char *pwr_params, va_list args)
-+{
-+	int rc;
-+
-+	down(&powerop_mutex);
-+	rc = powerop_driver && powerop_driver->get_point ? 
-+	     powerop_driver->get_point(md_opt, pwr_params, args) : 
-+	     -EINVAL;
-+	up(&powerop_mutex);
-+
-+	return rc;
-+}
-+
-+/* PowerOP Core public interface */
-+
-+int 
-+powerop_driver_register(struct powerop_driver *p)
-+{
-+	int error = 0;
-+
-+	if (! powerop_driver) {
-+		printk(KERN_INFO "PowerOP registering driver %s.\n", p->name);
-+		powerop_driver = p;
-+
-+	} else
-+		error = -EBUSY;
-+
-+	return error;
-+}
-+
-+void 
-+powerop_driver_unregister(struct powerop_driver *p)
-+{
-+	if (powerop_driver == p) {
-+		printk(KERN_INFO "PowerOP unregistering driver %s.\n", p->name);
-+		powerop_driver = NULL;
-+	}
-+}
-+
-+EXPORT_SYMBOL_GPL(powerop_driver_register);
-+EXPORT_SYMBOL_GPL(powerop_driver_unregister);
-+
-+
-+int 
-+powerop_get_pwr_params_list_length(void)
-+{
-+	return powerop_driver ? 
-+	       powerop_driver->pwr_params_list_length :
-+	       -EINVAL;
-+}
-+
-+/*
-+ * powerop_get_pwr_params_list - get NULL terminated list of power parameter 
-+ * names available for a particular plaftorm
-+ *
-+ * INPUT:
-+ *   list_size - size of allocated memory, should be a number got through
-+ *               powerop_get_pwr_params_list_length() interface
-+ *
-+ * OUTPUT:
-+ *   none
-+ *
-+ * INPUT/OUTPUT:
-+ *   list - result placeholder
-+ */
-+int 
-+powerop_get_pwr_params_list(int list_size, char *list)
-+{
-+	return powerop_driver && powerop_driver->get_pwr_params_list && 
-+	       list_size >= powerop_driver->pwr_params_list_length ? 
-+	       powerop_driver->get_pwr_params_list(list) : 
-+	       -EINVAL;
-+}
-+
-+EXPORT_SYMBOL_GPL(powerop_get_pwr_params_list_length);
-+EXPORT_SYMBOL_GPL(powerop_get_pwr_params_list);
++/* current operating point the sustem runs on */
++static struct pm_core_point cur_opt;
 +
 +/* 
-+ * powerop_register_point - add new operating point with a given name to
-+ * operating points list. A caller passes power parameters for new operating
-+ * points as pairs of name/value and passes only those parameter names the
-+ * caller is interested in. PowerOP Core calls powerop driver to initialize
-+ * arch dependent part of new operating point and links new named operating 
-+ * point to the list maintained by PowerOP Core
-+ * 
-+ *
-+ * INPUT
-+ *   id         - operating point name
-+ *   pwr_params - set of (power parameter name, value) pairs
-+ *
-+ * OUTPUT
-+ *   none
-+ *
-+ * RETURN
-+ *   zero on success, error code otherwise
-+ *    
-+ */
-+int 
-+powerop_register_point(const char *id, const char *pwr_params, ...)
-+{
-+	int err = 0;
-+	struct powerop_point *opt;
-+	va_list args;
++ * REVISIT: this function is implemented here temporary.
++ * Once Clock/Voltage Framework is in  place this routine
++ * implementation will be hided in the framework (along with 
++ * struct voltage)
++ */ 
++struct voltage {
++	int v; /* mV */
++};
++static struct voltage vhandle;
 +
-+	if ((!powerop_initialized) || (id == NULL))
++static unsigned int
++vtg_get_voltage(struct voltage *handle)
++{
++	unsigned int v;
++
++#ifdef DVS_SUPPORT
++	if (omap_readw(ULPD_POWER_CTRL) & (1 << 1))
++		v = V_CORE_LOW;
++	else
++#endif
++		v = V_CORE_HIGH;
++
++	return v;
++}
++
++/* 
++ * auxiliary routines to get/set rate of various clocks 
++ * RETURN: rates in KHz
++ */
++static long 
++get_clk_rate(const char *clk_name)
++{
++	struct clk *clk;
++	long        ret;
++
++	clk = clk_get(0, clk_name);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++
++	ret = clk_get_rate(clk);
++	clk_put(clk);
++
++	return ret/1000;
++}
++
++static long 
++set_clk_rate(const char *clk_name, unsigned int rate)
++{
++	struct clk *clk;
++	long        ret;
++
++	clk = clk_get(0, clk_name);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++
++	ret = clk_set_rate(clk, rate);
++	clk_put(clk);
++
++	return ret;
++}
++
++/* 
++ * auxiliary routines to get/set rate voltages 
++ * RETURN: mV
++ */
++static long 
++get_vtg(const char *vdomain)
++{
++	long ret = 0;
++#ifdef VOLTAGE_FRAMEWORK
++	struct voltage *v;
++
++	v = vtg_get(0, vdomain);
++	if (IS_ERR(v))
++		return PTR_ERR(v);
++
++	ret = vtg_get_voltage(v);
++	vtg_put(v);
++#else
++	ret = vtg_get_voltage(&vhandle);
++#endif /* VOLTAGE_FRAMEWORK */	
++	return ret;
++}
++
++static long 
++set_vtg(const char *vdomain, int val)
++{
++	long ret = 0;
++#ifdef VOLTAGE_FRAMEWORK
++	struct voltage *v;
++
++	v = vtg_get(0, vdomain);
++	if (IS_ERR(v))
++		return PTR_ERR(v);
++
++	ret = vtg_request(v, val);
++	vtg_put(v);
++#endif /* VOLTAGE_FRAMEWORK */
++	return ret;
++}
++
++static int
++omap_pm_core_get_pwr_params_list(char *list)
++{
++	list = pwr_param_names_list;
++	return 0;
++}
++
++/* FIXME: verification is incomplete */
++static int
++omap_pm_core_verify_opt(struct pm_core_point *opt)
++{
++	/* 
++	 * Let's do some upfront error checking. If we fail any of these, 
++	 * then the whole operating point is suspect and therefore invalid.
++	 *
++	 * Vrification includes but is not limited to checking that passed
++	 * parameters are withing ranges.
++	 *
++	 * FIXME: who should be responsible for checking whether the values
++	 * are consistent in regard to clock modes (fully sycn/scalable sync/
++	 * etc)?
++	 */
++	if (opt == NULL)
 +		return -EINVAL;
 +
-+	if ((opt = kmalloc(sizeof(struct powerop_point), GFP_KERNEL)) == NULL)
-+		return -ENOMEM;
++#ifdef DVS_SUPPORT
++	if ((opt->cpu_vltg != -1) && ((opt->cpu_vltg != V_CORE_LOW) && 
++	    (opt->cpu_vltg != V_CORE_HIGH))) {
++		printk(KERN_WARNING "%s: Core voltage can not be other"
++		       "than %dmV or %dmV\n"
++		       "Core voltage %d out of range!", __FUNCTION__, 
++			V_CORE_LOW, V_CORE_HIGH, opt->cpu_vltg);
++		return -EINVAL;
++	}
++#endif
 +
-+	memset(opt, 0, sizeof(struct powerop_point));
++	/* TODO: implement all necessary checking */
 +
-+	va_start(args, pwr_params);
-+	opt->md_opt = create_point(pwr_params, args);
-+	va_end(args);
-+
-+	if (opt->md_opt == NULL)
-+		goto create_failed;
-+
-+	err = kobject_set_name(&opt->kobj, id);
-+	if (err != 0)
-+		goto failed;
-+
-+	down(&named_opt_list_mutex);
-+	list_add_tail(&opt->node, &named_opt_list);
-+	up(&named_opt_list_mutex);
-+	
 +	return 0;
++}
++
++#define PWR_PARAM_SET	1
++#define PWR_PARAM_GET	2
++/* FIXME: very temporary implementation, just to prove the concept !! */
++static int 
++process_pwr_param(struct pm_core_point *opt, int op, char *param_name,
++		  int va_arg)
++{
++	if (strcmp(param_name, "cpu_vltg") == 0) {
++		if (op == PWR_PARAM_SET)
++			opt->cpu_vltg = va_arg;
++		else if (opt != NULL)
++			*(int *)va_arg = opt->cpu_vltg;
++		else if (unlikely((*(int *)va_arg = get_vtg("v1")) <= 0))
++			return -EINVAL;
++
++		return 0;
++	}
++
++	if (strcmp(param_name, "dpll") == 0) {
++		if (op == PWR_PARAM_SET)
++			opt->dpll = va_arg;
++		else if (opt != NULL)
++			*(int *)va_arg = opt->dpll;
++		else if ((*(int *)va_arg = get_clk_rate("ck_dpll1")) <= 0)
++			return -EINVAL;
++
++		return 0;
++	}
++
++	if (strcmp(param_name, "cpu") == 0) {
++		if (op == PWR_PARAM_SET)
++			opt->cpu = va_arg;
++		else if (opt != NULL)
++			*(int *)va_arg = opt->cpu;
++		else if ((*(int *)va_arg = get_clk_rate("arm_ck")) <= 0)
++			return -EINVAL;
++
++		return 0;
++	}
++
++	/* FIXME: more parameters to process */
++
++	return -EINVAL;
++}
++
++#define PWR_PARAM_MAX_LENGTH	20
++/* REVISIT: with the current approach which allows only subset of platform 
++ * power parameters to be explicitly listed at an operating point creation the
++ * following aspect needs attention. PM Core puts '-1' to all power parameters
++ * which are not listed explicitly. omap_pm_core_verify_opt() replaces '-1'
++ * with values inherited from current operating point and resulting full set of  * power parameters may appear
++ * to be invalid (for example ivalid combination of dsp and dspmmu frequencies)
++ * The are two options. First one is to leave it upto to an upper layer to 
++ * provide correct resulting operating point regadless of how many power 
++ * parameters are listed explicitly. The other option is to provide an
++ * interface to a caller which in case of resulting point after replacement of 
++ * all implicit parameters occurs to be invalid returns a valid operating point
++ * with the original value for explicitly set power parameters but with
++ * implicit parameters set to complement of explicit parameter upto a valid
++ * operating point instead of just inherited implicit parameters from the 
++ * current operatin point. Of course just if such combination exists.
++ *
++ * NOTE: implicit changes of various power parameters underneath PM Core 
++ * layer like set_clk_rate() for "mpu" clock does will be prohibited and
++ * removed in the future since otherwise PM Core will validate one operating
++ * point while system will actually switch to completely different one
++ */
++static void *
++omap_pm_create_point(const char *pwr_params, va_list args)
++{
++	struct pm_core_point *opt;
++	char buf[PWR_PARAM_MAX_LENGTH + 1];
++	int i = 0;
++	int err;
++
++	opt = kmalloc(sizeof(struct pm_core_point), GFP_KERNEL);
++	if (opt == NULL)
++		return NULL;
++	/* 
++	 * PM Core puts '-1' for all power parameters which are not listed
++	 * explicitly
++	 */
++	OMAP_PM_CORE_INIT_OPT(opt);
++
++	i = 0;
++	while (*pwr_params) {
++		if (*pwr_params != ' ') {
++			buf[i] = *pwr_params++;
++			i++;
++		}
++		else {
++			buf[i] = 0;
++			err = process_pwr_param(opt, PWR_PARAM_SET, buf, 
++			                        (int)va_arg(args, int));
++			if (err != 0)
++				goto out;
++			i = 0;
++		}
++	}
++
++	err = omap_pm_core_verify_opt(opt);
++	if (err != 0)
++		goto out;
++
++	return (void *)opt;
++out:
++	kfree(opt);
++	return NULL;
++}
++
++/* FIXME: synchronization aspect may need attention */
++/*
++ * FIXME: notifiers  aspect is not highlighted here. There are 3 options:
++ *  1) let an upper layer to handle notifiers
++ *  2) handle notifiers at PM Core layer
++ *  3) handle notifiers at clock(voltage) framework layer
++ */ 
++static int
++omap_pm_core_set_opt(void *md_opt)
++{
++	int ret = 0;
++	struct pm_core_point *new = (struct pm_core_point *)md_opt;
++
++	ret = omap_pm_core_verify_opt(new);
++	if (ret != 0)
++		return ret;
++
++#define PM_CORE_USE_MPU_CLOCK
++#ifdef PM_CORE_USE_MPU_CLOCK
++	/* 
++	 * OMAP1 clock framework exports "smart" virtual clock "mpu". 
++	 * "mpu" clock hides and hardcodes interdependencies between
++	 * ck_dpll1, arm_ck, dsp_ck, dspmmu_ck, tc_ck via the
++	 * rate_table[].
++	 * "mpu" clock rate needs to be set to desired cpu clock rate 
++	 *
++	 * current implementation of "mpu" clock allows to switch between
++	 * only those cpu frequencies defined in the rate_table[] which 
++	 * have the same ck_ref and dpll_ck1 rates.
++	 *
++	 * since CONFIG_OMAP_ARM_192MHZ provides the widest range of 
++	 * available frequencies which meet the above constraints we 
++	 * use this config for pm_core reference code    
++	 */
++
++	ret = set_clk_rate("mpu", new->cpu * 1000);
++#else
++	/* 
++	 * go through op parameters and set as requested if changed 
++	 * if at least one failed then restore cur_opt
++	 *
++	 * NOTE: auxiliary access to hw registers may occur here for
++	 * example for proper handling of coupled simultaneous clock and 
++	 * voltage changes  
++	 *
++	 * FIXME: not all parameters are implemented so far
++	 * REVISIT: '-1' option is not implemented yet
++	 */
++	if (cur_opt.cpu_vltg != new->cpu_vltg)
++		if ((ret = set_vtg("v1", new->cpu_vltg)) != 0)
++			goto failed;
++
++	if (cur_opt.dpll != new->dpll)
++		if ((ret = set_clk_rate("ck_dpll1", new->dpll)) != 0)
++			goto failed;
++
++	if (cur_opt.cpu != new->cpu)
++		if ((ret = set_clk_rate("arm_ck", new->cpu)) != 0)
++			goto failed;
++
++	if (cur_opt.tc != new->tc)
++		if ((ret = set_clk_rate("tc_ck", new->tc)) != 0)
++			goto failed;
++
++	if (cur_opt.dsp != new->dsp)
++		if ((ret = set_clk_rate("dsp_ck", new->dsp)) != 0)
++			goto failed;
++
++	if (cur_opt.dspmmu != new->dspmmu)
++		if ((ret = set_clk_rate("dspmmu_ck", new->dspmmu)) != 0)
++			goto failed;
++#endif /* PM_CORE_USE_MPU_CLOCK */ 
++
++	/* new op is installed successfully, udate cur_opt */
++	memcpy(&cur_opt, new, sizeof(new));
++	return ret;
 +
 +failed:
-+	kfree(opt->md_opt);
-+
-+create_failed:
-+	kfree(opt);
-+	return err;
-+}
-+
-+/* 
-+ * powerop_unregister_point - search for operating point with specified
-+ * name and remove it from operating points list
-+ *
-+ * INPUT
-+ *   id - name of operating point
-+ *
-+ * OUTPUT
-+ *   none
-+ *
-+ * RETURN
-+ *   zero on success, -EINVAL if no operating point is found
-+ *    
-+ */
-+int 
-+powerop_unregister_point(const char *id)
-+{
-+	struct powerop_point *opt, *tmpopt;
-+	int ret = -EINVAL;
-+
-+	if ((!powerop_initialized) || (id == NULL))
-+		return ret;
-+
-+	down(&named_opt_list_mutex);
-+
-+	list_for_each_entry_safe(opt, tmpopt, &named_opt_list, node) {
-+		if (strcmp(opt->kobj.name, id) == 0) {
-+			/* FIXME: can't remove a point if it's the active */ 
-+			list_del(&opt->node);
-+			kfree(opt->md_opt);
-+			kfree(opt);
-+			ret = 0;
-+			break;
-+		}
-+	}
-+
-+	up(&named_opt_list_mutex);
-+
++	/* 
++	 * update cur_opt upto what has been changed, return error which
++	 * caused the failure and expect an upper layer to recover from the
++	 * failure
++	 */
++	powerop_get_point(NULL, pwr_param_names_list, &cur_opt.cpu_vltg, 
++			  &cur_opt.dpll, &cur_opt.cpu, &cur_opt.tc, 
++			  &cur_opt.per, &cur_opt.dsp, &cur_opt.dspmmu,
++			  &cur_opt.lcd);	
 +	return ret;
 +}
 +
 +/* 
-+ * powerop_set_point - search for operating point with specified name 
-+ * and switch the system to the specified operating point
++ * Fully determine the current machine-dependent operating point, and fill in 
++ * a structure presented by a caller.
 + *
-+ * INPUT
-+ *   id - name of operating point
-+ *
-+ * OUTPUT
-+ *   none
-+ *
-+ * RETURN
-+ *     zero   on success 
-+ *   -EINVAL  if no operating point is found or error code otherwise
++ * RETURN: -ENOENT on error; in error case one should not rely on any 
++ * power parameter value returned
 + */
-+int 
-+powerop_set_point(const char *id)
++static int
++omap_pm_core_get_opt(void *md_opt, const char *pwr_params, va_list args)
 +{
-+	struct powerop_point *opt, *selected_opt = NULL;
-+	int ret;
++	int err = 0;
++	int i = 0;
++	struct pm_core_point *opt = (struct pm_core_point *)md_opt;
++	char buf[PWR_PARAM_MAX_LENGTH + 1];
 +
-+	if ((!powerop_initialized) || (id == NULL))
-+		return -EINVAL;
-+
-+	down(&named_opt_list_mutex);
-+
-+	list_for_each_entry(opt, &named_opt_list, node) {
-+		if (strcmp(opt->kobj.name, id) == 0) {
-+			selected_opt = opt;
-+			break;
++	i = 0;
++	while (*pwr_params) {
++		if (*pwr_params != ' ') {
++			buf[i] = *pwr_params++;
++			i++;
++		}
++		else {
++			buf[i] = 0;
++			err = process_pwr_param(opt, PWR_PARAM_GET, buf, 
++			                        (int)va_arg(args, int));
++			if (err != 0)
++				return err;
++			i = 0;
 +		}
 +	}
-+
-+	ret = (selected_opt == NULL) ?
-+		-EINVAL : set_point(opt->md_opt);
-+
-+	up(&named_opt_list_mutex);
-+
-+	return ret;
-+}
-+
-+/* 
-+ * powerop_get_point - search for operating point with specified name 
-+ * and return value of power parameters corresponding to the operating point.
-+ * NULL name is reserved to get power parameter values of current active
-+ * operating point 
-+ *
-+ * INPUT
-+ *   id - name of operating point or NULL to get values for current active
-+ *        operating point
-+ *
-+ * OUTPUT
-+ *   pwr_params - set of (power parameter name, result placeholder) pairs
-+ *
-+ * RETURN
-+ *   zero on success, -EINVAL if no operating point is found
-+ */
-+int 
-+powerop_get_point(const char *id, const char *pwr_params, ...)
-+{
-+	int ret = -EINVAL;
-+	struct powerop_point *opt;
-+	va_list args;
-+	void *md_opt = NULL;
-+
-+	if (!powerop_initialized)
-+		return ret;
-+
-+	down(&named_opt_list_mutex);
-+
-+	/* FIXME: get rid of sema for NULL case */
-+	if (id != NULL) {
-+		list_for_each_entry(opt, &named_opt_list, node) {
-+			if (strcmp(opt->kobj.name, id) == 0) {
-+				md_opt = opt->md_opt;
-+				ret = 0;
-+				break;
-+			}
-+		}
-+		/* 
-+		 * name is specified but corresponding operating point 
-+		 * is not found 
-+		 */
-+		if (ret != 0)
-+			goto out;
-+	}
-+
-+
-+	va_start(args, pwr_params);
-+	ret = get_point(md_opt, pwr_params, args);
-+	va_end(args);
-+out:				
-+	up(&named_opt_list_mutex);
-+	return ret;
-+}
-+
-+EXPORT_SYMBOL_GPL(powerop_register_point);
-+EXPORT_SYMBOL_GPL(powerop_unregister_point);
-+EXPORT_SYMBOL_GPL(powerop_set_point);
-+EXPORT_SYMBOL_GPL(powerop_get_point);
-+
-+static int __init powerop_init(void)
-+{
-+	INIT_LIST_HEAD(&named_opt_list);
-+	powerop_initialized = 1;
 +
 +	return 0;
 +}
 +
-+static void __exit powerop_exit(void)
++static struct powerop_driver omap_pm_core_driver = {
++	.name                   = "omap1 pm core driver",
++	.get_pwr_params_list    = omap_pm_core_get_pwr_params_list,
++	.create_point           = omap_pm_create_point,
++	.get_point              = omap_pm_core_get_opt,
++	.set_point              = omap_pm_core_set_opt, 
++};
++
++
++int __init
++omap_pm_core_init(void)
 +{
-+	struct powerop_point *opt, *tmp_opt;
++	omap_pm_core_driver.pwr_params_list_length = 
++					strlen(pwr_param_names_list) + 1;
 +
-+	down(&named_opt_list_mutex);
++	if (powerop_driver_register(&omap_pm_core_driver))
++		return -EINVAL;
 +
-+	list_for_each_entry_safe(opt, tmp_opt, &named_opt_list, node) {
-+		list_del(&opt->node);
-+		kfree(opt->md_opt);
-+		kfree(opt);
-+	}		
 +
-+	up(&named_opt_list_mutex);
++	return powerop_get_point(NULL, pwr_param_names_list, 
++				 &cur_opt.cpu_vltg, &cur_opt.dpll, 
++				 &cur_opt.cpu, &cur_opt.tc, &cur_opt.per,
++				 &cur_opt.dsp, &cur_opt.dspmmu,
++				 &cur_opt.lcd);
 +}
 +
-+module_init(powerop_init);
-+module_exit(powerop_exit);
++postcore_initcall(omap_pm_core_init);
 +
-+MODULE_DESCRIPTION("PowerOP Core");
-+MODULE_LICENSE("GPL");
-+
-diff --git a/include/linux/powerop.h b/include/linux/powerop.h
+diff --git a/include/asm-arm/arch-omap/pm_core.h b/include/asm-arm/arch-omap/pm_core.h
 new file mode 100644
-index 0000000..874e360
+index 0000000..3ef6221
 --- /dev/null
-+++ b/include/linux/powerop.h
-@@ -0,0 +1,110 @@
++++ b/include/asm-arm/arch-omap/pm_core.h
+@@ -0,0 +1,46 @@
 +/*
-+ * PowerOP core definitions
++ * Set of power parameters supported for OMAP1
 + *
-+ * Author: Todd Poynor <tpoynor@mvista.com>
-+ * Interface update by Eugeny S. Mints <eugeny.mints@gmail.com>
++ * Based on DPM OMAP code by Matthew Locke, Dmitry Chigirev, Vladimir
++ * Barinov, and Todd Poynor.
 + *
 + * 2005 (c) MontaVista Software, Inc. This file is licensed under
 + * the terms of the GNU General Public License version 2. This program
 + * is licensed "as is" without any warranty of any kind, whether express
 + * or implied.
 + */
-+#ifndef __POWEROP_H__
-+#define __POWEROP_H__
 +
-+/* Interface to an arch PM Core layer */
++#ifndef __ASM_ARCH_OMAP_PM_CORE_H__
++#define __ASM_ARCH_OMAP_PM_CORE_H__
 +
-+struct powerop_driver {
-+	char *name;
-+	int  pwr_params_list_length; /* length of the NULL terminated string
-+				      * of power parameter names available on
-+				      * the platfrom _including_ last NULL 
-+				      * character 
-+				      */
-+	int  (*get_pwr_params_list)(char *list);
-+	void *(*create_point)(const char *pwr_params, va_list args);
-+	int  (*set_point)(void *md_opt);
-+	int  (*get_point)(void *md_opt, const char *pwr_params, va_list args);
++/* 
++ * Instances of this structure define operating points
++ *
++ * -1 for any following fields indicates no change from current op 
++ */
++
++struct pm_core_point {
++	int cpu_vltg; /* voltage in mV */
++	int dpll;     /* in KHz */
++	int cpu;      /* CPU frequency in KHz */
++	int tc;       /* in KHz */
++	int per;      /* in KHz */
++	int dsp;      /* in KHz */
++	int dspmmu;   /* in KHz */
++	int lcd;      /* in KHz */
 +};
 +
-+int powerop_driver_register(struct powerop_driver *p);
-+void powerop_driver_unregister(struct powerop_driver *p);
++#define OMAP_PM_CORE_INIT_OPT(point)    \
++	do {                            \
++		(point)->cpu_vltg = -1; \
++		(point)->dpll = -1;     \
++		(point)->cpu = -1;      \
++		(point)->tc = -1;       \
++		(point)->per = -1;      \
++		(point)->dsp = -1;      \
++		(point)->dspmmu = -1;   \
++		(point)->lcd = -1;      \
++	} while (0)   
 +
-+/* Main PowerOP Core interface */
-+int powerop_get_pwr_params_list_length(void);
-+int powerop_get_pwr_params_list(int list_size, char *list);
-+
-+/* 
-+ * powerop_register_point - add new operating point with a given name to
-+ * operating points list. A caller passes power parameters for new operating
-+ * points as pairs of name/value and passes only those parameter names the
-+ * caller is interested in. PowerOP Core calls powerop driver to initialize
-+ * arch dependent part of new operating point and links new named operating 
-+ * point to the list maintained by PowerOP Core
-+ * 
-+ *
-+ * INPUT
-+ *   id         - operating point name
-+ *   pwr_params - set of (power parameter name, value) pairs
-+ *
-+ * OUTPUT
-+ *   none
-+ *
-+ * RETURN
-+ *   zero on success, error code otherwise
-+ *    
-+ */
-+int powerop_register_point(const char *id, const char *pwr_params, ...);
-+
-+/* 
-+ * powerop_unregister_point - search for operating point with specified
-+ * name and remove it from operating points list
-+ *
-+ * INPUT
-+ *   id - name of operating point
-+ *
-+ * OUTPUT
-+ *   none
-+ *
-+ * RETURN
-+ *   zero on success, -EINVAL if no operating point is found
-+ *    
-+ */
-+int powerop_unregister_point(const char *id);
-+
-+/* 
-+ * powerop_set_point - search for operating point with specified name 
-+ * and switch the system to the specified operating point
-+ *
-+ * INPUT
-+ *   id - name of operating point
-+ *
-+ * OUTPUT
-+ *   none
-+ *
-+ * RETURN
-+ *     zero   on success 
-+ *   -EINVAL  if no operating point is found or error code otherwise
-+ */
-+int powerop_set_point(const char *id);
-+
-+/* 
-+ * powerop_get_point - search for operating point with specified name 
-+ * and return value of power parameters corresponding to the operating point.
-+ * NULL name is reserved to get power parameter values of current active
-+ * operating point 
-+ *
-+ * INPUT
-+ *   id - name of operating point or NULL to get values for current active
-+ *        operating point
-+ *
-+ * OUTPUT
-+ *   pwr_params - set of (power parameter name, result placeholder) pairs
-+ *
-+ * RETURN
-+ *   zero on success, -EINVAL if no operating point is found
-+ */
-+int powerop_get_point(const char *id, const char *pwr_params, ...);
-+
-+#endif /* __POWEROP_H__ */
++#endif /* __ASM_ARCH_OMAP_PM_CORE_H__ */
 +
 
---------------020105090306060207020406
+--------------070201050602080909040703
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---------------020105090306060207020406--
+--------------070201050602080909040703--
