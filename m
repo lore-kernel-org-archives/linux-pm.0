@@ -1,12 +1,12 @@
-From: <rasmit.ranjan@wipro.com>
-Subject: suspend to disk not working due to swap space failure
-Date: Tue, 8 Aug 2006 18:43:42 +0530
-Message-ID: <380D9721A8E2114485644D71E87C6AB20250B425@PNE-HJN-MBX01.wipro.com>
+From: "Scott E. Preece" <preece@motorola.com>
+Subject: Re: PowerOp Design and working patch
+Date: Tue, 8 Aug 2006 08:44:34 -0500 (CDT)
+Message-ID: <200608081344.k78DiY0t002356@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-reply-to: Pavel Machek's message of Tue, 8 Aug 2006 12:07:23 +0200
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,24 +16,73 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: pavel@ucw.cz
+Cc: daviado@gmail.com, linux-pm@lists.osdl.org, dsingleton@mvista.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
-    In my laptop, suspend to disk was working properly.But after so many
-days I tried it today.But it failed. First time i tried it showed " Not
-enough space, Error -12 suspending".But i tried once more. Then it
-failed  showing "error: can not find swap device, try swapon -a ".This
-seems my swap partition is not active. So I tried "swapon -a" but it did
-not work. Also the output of "swapon -s " shows nothing. I tried "cat
-/proc/swaps" but this shows nothing as well. So i tried creating a new
-swap space by the command " mkswap". But still my swap partition does
-not come up. I reboot my system but that did not work as well. What
-might be the problem? =
 
-My laptop has RAM of 256 MB and swap space is 1 GB and I am using kernel
-2.6.15.4.
- =
+If you're a device manufacturer, and you build, say 50 devices that all
+use the same hardware but, because they are optimized for different
+functional use cases, have different preferred operating points and
+DVFS policies, it's *highly* desirable to not have to maintain 50
+separate builds for those devices.  Putting configuration information
+in places that can be changed independently of compilation is very
+important to us.
 
-Thanks,
-Rasmit. =
+scott
+
+
+| From: Pavel Machek<pavel@ucw.cz>
+| =
+
+| Hi!
+| =
+
+| > >> Often, in the embedded world, the person defining the operating
+| > >> states will not be a kernel developer, and may not be comfortable
+| > >> with, or capable of, creating a kernel module.  (There are
+| > > =
+
+| > > That's okay, we can create HOWTO or something. 'System designed is too
+| > > stupid to hack kernel' should not be an argument.
+| > =
+
+| > It's not a matter of stupidity.  The example I gave of not being
+| > able to create a kernel module was the situation where loadable
+| > module support is not available.  A HOWTO wouldn't alter this.
+| =
+
+| So they need to recompile the kernel. Not a big deal when you are
+| developing new machine.
+| =
+
+| > > Maybe operating points need to be changed at runtime -- I do not think
+| > > so -- but *please* get the basic stuff in/merged ASAP and then add
+| > > features one-by-one.
+| > =
+
+| > I agree. :-)
+| =
+
+| Yes, I believe we are actually in agreement. Maybe features you want
+| will indeed be useful, but we want to get basics right, first.
+| 								Pavel
+| -- =
+
+| (english) http://www.livejournal.com/~pavelmachek
+| (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
+| _______________________________________________
+| linux-pm mailing list
+| linux-pm@lists.osdl.org
+| https://lists.osdl.org/mailman/listinfo/linux-pm
+| =
+
+
+-- =
+
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
