@@ -1,65 +1,112 @@
-From: Jens Axboe <axboe@suse.de>
-Subject: Re: swsusp regression [Was: 2.6.18-rc3-mm2]
-Date: Tue, 8 Aug 2006 19:53:43 +0200
-Message-ID: <20060808175343.GX31726@suse.de>
-References: <20060806030809.2cfb0b1e.akpm@osdl.org> <200608081316.00749.rjw@sisk.pl> <20060808111925.GO4025@suse.de> <200608081550.36054.rjw@sisk.pl> <20060808140601.GU31726@suse.de> <44D8BE88.4080809@gmail.com>
+From: David Singleton <dsingleton@mvista.com>
+Subject: Dynanic On-The-Fly Operating points for PowerOP
+Date: Tue, 08 Aug 2006 11:12:31 -0700
+Message-ID: <44D8D40F.50005@mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <44D8BE88.4080809@gmail.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jason Lunz <lunz@gehennom.net>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, andre@linux-ide.org, pavel@suse.cz, linux-pm@osdl.org, linux-ide@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 08 2006, Jiri Slaby wrote:
-> Jens Axboe wrote:
-> >On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
-> >>On Tuesday 08 August 2006 13:19, Jens Axboe wrote:
-> >>>On Tue, Aug 08 2006, Rafael J. Wysocki wrote:
-> >>>>On Tuesday 08 August 2006 13:07, Jens Axboe wrote:
-> >>>>>On Tue, Aug 08 2006, Jens Axboe wrote:
-> >>>>>>>Indeed, that looks broken now. That must be what is screwing it up. 
-> >>>>>>>With
-> >>>>>>the former patch applied, did cdrom detection still look funny to you?
-> >>>>Hm, I'm not sure what you mean ...
-> >>>-hdc: ATAPI 63X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache, UDMA(33)
-> >>>+hdc: ATAPI CD-ROM drive, 0kB Cache, UDMA(33)
-> >>Ah, that.
-> >>
-> >>>But perhaps that wasn't you?
-> >>No, that wasn't me. :-)
-> 
-> It was me and it's OK.
-> 
-> >>>>>>I'll concoct a fix for that breakage.
-> >>>>>Something like this.
-> >>>>Looks good, I'll give it a try.
-> >>>Thanks!
-> >>It fixes this particular issue for me, but your first patch (appended)
-> >>is also needed to prevent the box from hanging later during the resume
-> >>(when it tries to save the image).
-> >
-> >Yes certainly, that's a separate bug, sorry if I didn't make that clear.
-> >Both fixes are in the block repo now, so next -mm should work fine
-> >again.
-> 
-> And even this is OK.
+The patches provided in the following three emails continue the unified,
+        simplified PowerOp concept of power management.  The patches
+        can be found at:
 
-Good.
+                http://source.mvista.com/~dsingleton
 
-> I'm just curious, what
-> @@ -387,3 +398,5 @@
->  EXT3 FS on md0, internal journal
->  EXT3-fs: mounted filesystem with ordered data mode.
->  Adding 506036k swap on /dev/hda3.  Priority:-1 extents:1 across:506036k
-> +JBD: barrier-based sync failed on hda2 - disabling barriers
-> +JBD: barrier-based sync failed on md0 - disabling barriers
+                        powerop-core.patch
+                        powerop-cpufreq.patch
+                        powerop-x86-centrino.patch
 
-I think that -mm also added barriers on by default for ext3, so I don't
-think it's anything to worry about.
 
--- 
-Jens Axboe
+                The patches break the working PowerOP feature into
+        three logical parts.  The first patch is the powerop-core.patch
+        that adds support for an operating point in the standard linux
+        power management infrastructure (CONFIG_PM) and adds a new
+        function to perform transitioning to operating points other
+        than suspend to memory or disk.
 
+                The second patch, powerop-cpufreq.patch, adds the cpufreq
+        portion of the patch that makes cpufreq tables a set of PowerOp
+        operating points.
+
+                The third patch, powerop-x86-centrino.patch, adds
+        operating points for all the centrino-speedstep processors.
+
+
+        This set of patches has changed in the following ways.
+
+        1) The patch is now broken out of the cpufreq code and implements
+        operating points for whatever speedstep-centrino the system
+        detects upon boot.
+
+        2) The naming scheme for operating points has been unified to
+        provide a better interface to the PowerOp power manager daemon.
+        The names range from:
+
+                        highest
+                        high
+                        medhigh
+                        medium
+                        medlow
+                        low
+                        lowest
+
+        PowerOp maps the supported processor frequencies onto this
+        namespace list.  The set of centrino processors it supports have
+        supported sets of between four and six different operating points.
+
+        The PowerOP daemon, coming soon, can simply read the supported
+        set of operating points and make some simple rules based
+        decisions about when to transition to various operating points.
+
+        The goal of a unified name space is to provide a PowerOp manager
+        that runs out of the box, with very little setup by the user.
+
+
+        3) This patch supports the ability to provide dynamic, on-the-fly
+        operating points to the framework via a loadable module.  The =
+
+operating
+        point parameters of frequency, voltage and transition latency
+        can be passed at insmod time to create any new operating point
+        the centrino hardware will support.
+
+
+        I think I finally understand the 'why' of hardware vendors asking
+        for a requirement of dynamic, on the fly, operating points.
+
+        I have two sets of hardware that support a wide range of
+        processor speeds and voltages depending on:
+
+        a) the rotary and dip switch setting of the board (the mainstone).
+
+        or
+
+        b) the revision or stepping of the hardware on the board.
+
+        Certain revs of hardware support different frequencies and =
+
+voltages.
+        Some steppings won't run all the frequencies.
+
+        The hardware vendors want to provide support for all the
+        frequencies and voltages that the system could support,
+        depending on the switch settings or rev of hardware without
+        having to change kernel code and recompile the kernel.
+
+        The new dynamic, on the fly, operating point module will allow
+        for this feature.
+
+
+David
