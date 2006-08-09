@@ -1,120 +1,84 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Tue, 8 Aug 2006 22:23:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
-	<20060808235352.GA4751@elf.ucw.cz>
+From: <rasmit.ranjan@wipro.com>
+Subject: Re: suspend to disk not working due to swap space failure
+Date: Wed, 9 Aug 2006 08:35:05 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB20250B4C7@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <suspend2-devel-bounces@lists.suspend2.net>
-In-Reply-To: <20060808235352.GA4751@elf.ucw.cz>
-List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
-List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
-List-Post: <mailto:suspend2-devel@lists.suspend2.net>
-List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
-List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
-Sender: suspend2-devel-bounces@lists.suspend2.net
-Errors-To: suspend2-devel-bounces@lists.suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, ncunningham@linuxmail.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: rjw@sisk.pl
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-
-On Wed, 9 Aug 2006, Pavel Machek wrote:
-
-> Hi!
->
-> > A few months ago, I installed suspend2 on my laptop.  It worked great for
-> > a few days, when suddenly my laptop started to get very hot and the fan
-> > costantly went off, and then I started getting these:
->
-> I take it as "if I keep it for a week powered off, it will not do
-> this".
-
-Not quite.  It's more of, "if I suspend everynight instead of leaving it
-running or shutting it down, it will do this" or "if I power off at night
-or just leave it running, it will not do this".
+ =
 
 
->
-> > ---
-> > Message from syslogd@localhost at Tue Aug  8 16:08:53 2006 ...
-> > localhost kernel: CPU0: Temperature above threshold
-> >
-> > Message from syslogd@localhost at Tue Aug  8 16:08:53 2006 ...
-> > localhost kernel: CPU1: Temperature above threshold
-> >
-> >
-> > Message from syslogd@localhost at Tue Aug  8 16:08:53 2006 ...
-> > localhost kernel: CPU0: Running in modulated clock mode
-> >
-> > Message from syslogd@localhost at Tue Aug  8 16:08:53 2006 ...
-> > localhost kernel: CPU1: Running in modulated clock mode
-> > ---
->
-> P4 has thermal protection, so you are actually safe.
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] =
 
-Yeah, but still, the keyboard gets pretty hot too, and I'm actually more
-worried about damaging something that is close by than damaging the CPU
-itself.
+> Sent: Tuesday, August 08, 2006 7:15 PM
+> To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
+> Cc: linux-pm@lists.osdl.org
+> Subject: Re: [linux-pm] suspend to disk not working due to =
 
->
-> Nigel is right, this is acpi problem, but I guess we can help it.  Do
-> you have /proc/acpi/fan? Do you have /proc/acpi/ibm/fan? Can you try
-> playing with them?
+> swap space failure
+> =
 
-hmm, I have /proc/acpi/fan/ but nothing is in it. Here's some configs of
-interest:
+> On Tuesday 08 August 2006 15:13, rasmit.ranjan@wipro.com wrote:
+> > Hi all,
+> >     In my laptop, suspend to disk was working properly.But after so =
 
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-CONFIG_ACPI_SLEEP_PROC_FS=y
-# CONFIG_ACPI_SLEEP_PROC_SLEEP is not set
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_VIDEO=m
-# CONFIG_ACPI_HOTKEY is not set
-CONFIG_ACPI_FAN=m
-# CONFIG_ACPI_DOCK is not set
-CONFIG_ACPI_PROCESSOR=m
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_ACPI_THERMAL=m
-# CONFIG_ACPI_ASUS is not set
-CONFIG_ACPI_IBM=m
-# CONFIG_ACPI_IBM_DOCK is not set
-# CONFIG_ACPI_TOSHIBA is not set
-CONFIG_ACPI_BLACKLIST_YEAR=2001
-CONFIG_ACPI_DEBUG=y
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_ACPI_CONTAINER=m
-# CONFIG_ACPI_SBS is not set
+> > many days I tried it today.But it failed. First time i =
 
+> tried it showed =
 
-$ lsmod |grep fan
-fan                     6916  0
+> > " Not enough space, Error -12 suspending".But i tried once =
 
-$ sudo modprobe ibm_acpi
-$ ls /proc/acpi/ibm/
-bay        bluetooth  driver     led        thermal
-beep       cmos       hotkey     light      video
+> more. Then =
 
-No fan there
+> > it failed  showing "error: can not find swap device, try swapon -a =
 
-and still no fan stuff in /proc/acpi/fan.
+> > ".This seems my swap partition is not active. So I tried =
 
+> "swapon -a" =
 
->
-> And yes, this should go into bugzilla.kernel.org.
+> > but it did not work. Also the output of "swapon -s " shows =
 
-OK, will do.
+> nothing. I =
 
+> > tried "cat /proc/swaps" but this shows nothing as well. So i tried =
 
-Thanks,
+> > creating a new swap space by the command " mkswap". But =
 
--- Steve
+> still my swap =
+
+> > partition does not come up. I reboot my system but that did =
+
+> not work =
+
+> > as well. What might be the problem?
+> =
+
+> The header of your swap partition got lost.  Please try =
+
+> "mkswap <your_swap_partition_name>" and then swapon -a.  If =
+
+> it works, the suspend should work either.
+
+I tried doing this as wel. But it didn't work. Actually my /etc/fstab
+file doesn't show any entry for swap partition.
+> =
+
+> Greetings,
+> Rafael
+> =
