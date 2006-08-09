@@ -1,132 +1,89 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 1/5] swsusp: Introduce memory bitmaps
-Date: Wed, 9 Aug 2006 14:02:44 +0200
-Message-ID: <200608091402.44749.rjw@sisk.pl>
-References: <200608091152.49094.rjw@sisk.pl> <200608091158.38458.rjw@sisk.pl>
-	<20060809114628.GR3308@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: swsusp and suspend2 like to overheat my laptop
+Date: Wed, 9 Aug 2006 14:08:44 +0200
+Message-ID: <20060809120844.GD3747@elf.ucw.cz>
+References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
+	<20060808235352.GA4751@elf.ucw.cz>
+	<Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com>
+	<20060809073958.GK4886@elf.ucw.cz>
+	<Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
+	<Pine.LNX.4.58.0608090751340.2500@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060809114628.GR3308@elf.ucw.cz>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <suspend2-devel-bounces@lists.suspend2.net>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.58.0608090751340.2500@gandalf.stny.rr.com>
+List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
+List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
+List-Post: <mailto:suspend2-devel@lists.suspend2.net>
+List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
+List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
+Sender: suspend2-devel-bounces@lists.suspend2.net
+Errors-To: suspend2-devel-bounces@lists.suspend2.net
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, ncunningham@linuxmail.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi!
 
-On Wednesday 09 August 2006 13:46, Pavel Machek wrote:
-> > Introduce the memory bitmap data structure and make swsusp use in the s=
-uspend
-> > phase.
-]--snip--[
-> =
+> > > cat we get contents of /proc/acpi/thermal*/*/* ?
+> >
+> > I'm running after a poweroff (left it running over night in the hotel, and
+> > I'm still in the hotel).
+> >
+> > $ grep . /proc/acpi/thermal_zone/THRM/*
+> > /proc/acpi/thermal_zone/THRM/cooling_mode:<setting not supported>
+> > /proc/acpi/thermal_zone/THRM/cooling_mode:cooling mode: passive
+> > /proc/acpi/thermal_zone/THRM/polling_frequency:<polling disabled>
+> > /proc/acpi/thermal_zone/THRM/state:state:                   ok
+> > /proc/acpi/thermal_zone/THRM/temperature:temperature:             48 C
+> > /proc/acpi/thermal_zone/THRM/trip_points:critical (S5):           88 C
+> > /proc/acpi/thermal_zone/THRM/trip_points:passive:                 81 C: tc1=4 tc2=3 tsp=100 devices=0xcf6c2338
+> >
+> > Note thermal_zone/THRM was finished with bash tab completion so they are
+> > the only things that match the above glob expr.
+> >
+> 
+> Note: I just did a swsusp and resume and here's the same data:
+> 
+> $ grep . /proc/acpi/thermal_zone/THRM/*
+> /proc/acpi/thermal_zone/THRM/cooling_mode:<setting not supported>
+> /proc/acpi/thermal_zone/THRM/cooling_mode:cooling mode: passive
+> /proc/acpi/thermal_zone/THRM/polling_frequency:<polling disabled>
+> /proc/acpi/thermal_zone/THRM/state:state:                   ok
+> /proc/acpi/thermal_zone/THRM/temperature:temperature:             60 C
+> /proc/acpi/thermal_zone/THRM/trip_points:critical (S5):           88 C
+> /proc/acpi/thermal_zone/THRM/trip_points:passive:                 81 C: tc1=4 tc2=3 tsp=100 devices=0xcf6c2338
+> 
+> 
+> And just leaving my system idle for a few minutes:
+> 
+> $ grep . /proc/acpi/thermal_zone/THRM/temperature
+> temperature:             62 C
+> 
+> and a few more minutes:
+> 
+> temperature:             64 C
+> 
+> 
+> And a few more:
+> 
+> temperature:             66 C
+> 
+> 
+> right now after typing this:
+> 
+> temperature:             69 C
+> 
+> 
+> So this definitely shows somethings not letting the CPU rest.
 
-> Maybe that bitmap code should go to kernel/power/bitmaps.c or
-> something?
-
-Then we'll also need another header or put the definitions in power.h, but
-they will only be used by the code in snapshot.c anyway.  Apart from this,
-the "bitmap" functions refer to alloc_image_page() etc. that are internal
-to snapshot.c.
-
-I thought it would be better to add this code to snapshot.c, because it's n=
-ot
-needed anywhere else and the separation of it would increase the overall
-complexity for a little real gain.
-
-> > +static inline void bm_position_reset_chunk(struct memory_bitmap *bm)
-> > +{
-> > +	bm->cur.chunk =3D 0;
-> > +	bm->cur.bit =3D -1;
-> > +}
-> > +
-> > +static void bm_position_reset(struct memory_bitmap *bm)
-> > +{
-> > +	struct zone_bitmap *zone_bm;
-> > +
-> > +	zone_bm =3D bm->zone_bm_list;
-> > +	bm->cur.zone_bm =3D zone_bm;
-> > +	bm->cur.block =3D zone_bm->bm_blocks;
-> > +	bm_position_reset_chunk(bm);
-> > +}
-> > +
-> > +static void free_memory_bm(struct memory_bitmap *bm, int
-> > clear_nosave_free);
-> =
-
-> All your other functions use bm_XXX, this is XXX_bm. Well, you are
-> mixing it rather freely..
-
-OK, I'll change that to XXX_bm.
-
-> > +/**
-> > + *	memory_bm_set_bit - set the bit in the bitmap @bm that corresponds
-> > + *	to given pfn.  The cur_zone_bm member of @bm and the cur_block memb=
-er
-> > + *	of @bm->cur_zone_bm are updated.
-> > + *
-> > + *	If the bit cannot be set, the function returns -EINVAL .
-> > + */
-> > +
-> > +static int
-> > +memory_bm_set_bit(struct memory_bitmap *bm, unsigned long pfn)
-> > +{
-> > +	struct zone_bitmap *zone_bm;
-> > +	struct bm_block *bb;
-> > +
-> > +	/* Check if the pfn is from the current zone */
-> > +	zone_bm =3D bm->cur.zone_bm;
-> > +	if (pfn < zone_bm->start_pfn || pfn >=3D zone_bm->end_pfn) {
-> > +		zone_bm =3D bm->zone_bm_list;
-> > +		/* We don't assume that the zones are sorted by pfns */
-> > +		while (pfn < zone_bm->start_pfn || pfn >=3D zone_bm->end_pfn) {
-> > +			zone_bm =3D zone_bm->next;
-> > +			if (unlikely(!zone_bm))
-> > +				return -EINVAL;
-> > +		}
-> > +		bm->cur.zone_bm =3D zone_bm;
-> > +	}
-> > +	/* Check if the pfn corresponds to the current bitmap block */
-> > +	bb =3D zone_bm->cur_block;
-> > +	if (pfn < bb->start_pfn)
-> > +		bb =3D zone_bm->bm_blocks;
-> > +
-> > +	while (pfn >=3D bb->end_pfn) {
-> > +		bb =3D bb->next;
-> > +		if (unlikely(!bb))
-> > +			return -EINVAL;
-> > +	}
-> > +	zone_bm->cur_block =3D bb;
-> > +	pfn -=3D bb->start_pfn;
-> > +	set_bit(pfn % BM_BITS_PER_CHUNK, bb->data + pfn / BM_BITS_PER_CHUNK);
-> > +	return 0;
-> > +}
-> =
-
-> It seems like this will not really introduce O(n^2) behaviour, since
-> you are starting from last position each time?
-
-Exactly.
-
-> You have my ACK here,
-
-Thanks. :-)
-
-> but maybe it should go _after_ 4/5 and 5/5? Those are simple cleanups, th=
-is
-> has break-something-potential and should rest in -mm for a while.
-
-OK, I'll redo the series this way.
-
-Rafael
+Okay, run top to see what goes on, and look for
+/proc/acpi/processor/*/* -- you are interested in C states before and
+after suspend.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
