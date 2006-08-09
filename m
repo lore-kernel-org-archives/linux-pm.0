@@ -1,125 +1,89 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH -mm 1/5] swsusp: Introduce memory bitmaps
-Date: Wed, 9 Aug 2006 13:46:28 +0200
-Message-ID: <20060809114628.GR3308@elf.ucw.cz>
-References: <200608091152.49094.rjw@sisk.pl> <200608091158.38458.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 2/5] swsusp: Use memory bitmaps
+	during resume
+Date: Wed, 9 Aug 2006 13:49:42 +0200
+Message-ID: <20060809114942.GS3308@elf.ucw.cz>
+References: <200608091152.49094.rjw@sisk.pl> <200608091204.36186.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030696AbWHILqu@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200608091158.38458.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <200608091204.36186.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
+Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Introduce the memory bitmap data structure and make swsusp use in the suspend
-> phase.
-> 
-> The current swsusp's internal data structure is not very efficient from the
-> memory usage point of view, so it seems reasonable to replace it with a data
-> structure that will require less memory, such as a pair of bitmaps.
-> 
-> The idea is to use bitmaps that may be allocated as sets of individual pages,
-> so that we can avoid making allocations of order greater than 0.  For this
-> reason the memory bitmap structure consists of several linked lists of objects
-> that contain pointers to memory pages with the actual bitmap data.  Still, for
-> a typical system all of these lists fit in a single page, so it's reasonable
-> to introduce an additional mechanism allowing us to allocate all of them
-> efficiently without sacrificing the generality of the design.  This is done
-> with the help of the chain_allocator structure and associated functions.
-> 
-> We need to use two memory bitmaps during the suspend phase of the
-> suspend-resume cycle.  One of them is necessary for marking the saveable
-> pages, and the second is used to mark the pages in which to store the copies
-> of them (aka image pages).
-> 
-> First, the bitmaps are created and we allocate as many image pages as needed
-> (the corresponding bits in the second bitmap are set as soon as the pages are
-> allocated).  Second, the bits corresponding to the saveable pages are set in
-> the first bitmap and the saveable pages are copied to the image pages.
-> Finally, the first bitmap is used to save the kernel virtual addresses of the
-> saveable pages and the second one is used to save the contents of the image
-> pages.
+> Make swsusp use memory bitmaps to store its internal information during t=
+he
+> resume phase of the suspend-resume cycle.
+> =
 
-Maybe that bitmap code should go to kernel/power/bitmaps.c or
-something?
+> If the pfns of saveable pages are saved during the suspend phase instead =
+of
+> the kernel virtual addresses of these pages, we can use them during the r=
+esume
+> phase directly to set the corresponding bits in a memory bitmap.  Then, t=
+his
+> bitmap is used to mark the page frames corresponding to the pages that we=
+re
+> saveable before the suspend (aka "unsafe" page frames).
+> =
 
-> +static inline void bm_position_reset_chunk(struct memory_bitmap *bm)
-> +{
-> +	bm->cur.chunk = 0;
-> +	bm->cur.bit = -1;
-> +}
-> +
-> +static void bm_position_reset(struct memory_bitmap *bm)
-> +{
-> +	struct zone_bitmap *zone_bm;
-> +
-> +	zone_bm = bm->zone_bm_list;
-> +	bm->cur.zone_bm = zone_bm;
-> +	bm->cur.block = zone_bm->bm_blocks;
-> +	bm_position_reset_chunk(bm);
-> +}
-> +
-> +static void free_memory_bm(struct memory_bitmap *bm, int
-> clear_nosave_free);
+> Next, we allocate as many page frames as needed to store the entire suspe=
+nd
+> image and make sure that there will be some extra free "safe" page frames=
+ for
+> the list of PBEs constructed later.  Subsequently, the image is loaded an=
+d,
+> if possible, the data loaded from it are written into their "original" pa=
+ge frames
+> (ie. the ones they had occupied before the suspend).  The image data that
+> cannot be written into their "original" page frames are loaded into "safe=
+" page
+> frames and their "original" kernel virtual addresses, as well as the addr=
+esses
+> of the "safe" pages containing their copies, are stored in a list of PBEs.
+> Finally, the list of PBEs is used to copy the remaining image data into t=
+heir
+> "original" page frames (this is done atomically, by the architecture-depe=
+ndent
+> parts of swsusp).
+> =
 
-All your other functions use bm_XXX, this is XXX_bm. Well, you are
-mixing it rather freely..
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> +/**
-> + *	memory_bm_set_bit - set the bit in the bitmap @bm that corresponds
-> + *	to given pfn.  The cur_zone_bm member of @bm and the cur_block member
-> + *	of @bm->cur_zone_bm are updated.
-> + *
-> + *	If the bit cannot be set, the function returns -EINVAL .
-> + */
-> +
-> +static int
-> +memory_bm_set_bit(struct memory_bitmap *bm, unsigned long pfn)
-> +{
-> +	struct zone_bitmap *zone_bm;
-> +	struct bm_block *bb;
-> +
-> +	/* Check if the pfn is from the current zone */
-> +	zone_bm = bm->cur.zone_bm;
-> +	if (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
-> +		zone_bm = bm->zone_bm_list;
-> +		/* We don't assume that the zones are sorted by pfns */
-> +		while (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
-> +			zone_bm = zone_bm->next;
-> +			if (unlikely(!zone_bm))
-> +				return -EINVAL;
-> +		}
-> +		bm->cur.zone_bm = zone_bm;
-> +	}
-> +	/* Check if the pfn corresponds to the current bitmap block */
-> +	bb = zone_bm->cur_block;
-> +	if (pfn < bb->start_pfn)
-> +		bb = zone_bm->bm_blocks;
-> +
-> +	while (pfn >= bb->end_pfn) {
-> +		bb = bb->next;
-> +		if (unlikely(!bb))
-> +			return -EINVAL;
-> +	}
-> +	zone_bm->cur_block = bb;
-> +	pfn -= bb->start_pfn;
-> +	set_bit(pfn % BM_BITS_PER_CHUNK, bb->data + pfn / BM_BITS_PER_CHUNK);
-> +	return 0;
-> +}
+ACK. If we get bitmap code we may as well use it. Should wait in -mm
+for a while.
 
-It seems like this will not really introduce O(n^2) behaviour, since
-you are starting from last position each time?
+> @@ -53,7 +40,7 @@ static inline void pm_restore_console(vo
+>  static inline int software_suspend(void)
+>  {
+>  	printk("Warning: fake suspend called\n");
+> -	return -EPERM;
+> +	return -ENOSYS;
+>  }
+>  #endif /* CONFIG_PM */
+>  =
 
-You have my ACK here, but maybe it should go _after_ 4/5 and 5/5?
-Those are simple cleanups, this has break-something-potential and
-should rest in -mm for a while.
 
+Heh, yes, it is right.. it is also totally unrelated and changes
+userland interface ;-)))... which is probably okay here. But separate
+would be nice.
 								Pavel
+-- =
 
--- 
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
