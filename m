@@ -1,179 +1,207 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH -mm 4/5] swsusp: Change the name of
-	pagedir_nosave
-Date: Wed, 9 Aug 2006 12:35:21 +0200
-Message-ID: <20060809103521.GK3308@elf.ucw.cz>
-References: <200608091152.49094.rjw@sisk.pl> <200608091211.34615.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 5/5] swsusp: Introduce some helpful constants
+Date: Wed, 9 Aug 2006 12:36:15 +0200
+Message-ID: <20060809103615.GL3308@elf.ucw.cz>
+References: <200608091152.49094.rjw@sisk.pl> <200608091213.18418.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030666AbWHIKgb@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200608091211.34615.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+In-Reply-To: <200608091213.18418.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2006-08-09 12:11:34, Rafael J. Wysocki wrote:
-> The name of the pagedir_nosave variable does not make sense any more, so =
-it
-> seems reasonable to change it to something more meaningful.
+On Wed 2006-08-09 12:13:18, Rafael J. Wysocki wrote:
+> Introduce some constants that hopefully will help improve the readability kernel/power/snapshot.c |   45 +++++++++++++++++++++++++--------------------
+>  1 files changed, 25 insertions(+), 20 deletions(-)
+>
 
-Yes, that name was wrong from day 0. ACK.
+You probably want to add signed-off-by:... aha, it is below the
+patch. Some script went crazy inserting diff at wrong place. Otherwise
+ACK.
 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/i386/power/swsusp.S         |    2 +-
->  arch/powerpc/kernel/swsusp_32.S  |    4 ++--
->  arch/x86_64/kernel/suspend_asm.S |    2 +-
->  kernel/power/power.h             |    2 --
->  kernel/power/snapshot.c          |   15 +++++++++------
->  5 files changed, 13 insertions(+), 12 deletions(-)
-> =
+							Pavel
 
-> Index: linux-2.6.18-rc3-mm2/arch/i386/power/swsusp.S
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.18-rc3-mm2.orig/arch/i386/power/swsusp.S
-> +++ linux-2.6.18-rc3-mm2/arch/i386/power/swsusp.S
-> @@ -32,7 +32,7 @@ ENTRY(swsusp_arch_resume)
->  	movl	$swsusp_pg_dir-__PAGE_OFFSET, %ecx
->  	movl	%ecx, %cr3
->  =
-
-> -	movl	pagedir_nosave, %edx
-> +	movl	restore_pblist, %edx
->  	.p2align 4,,7
->  =
-
->  copy_loop:
-> Index: linux-2.6.18-rc3-mm2/arch/powerpc/kernel/swsusp_32.S
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.18-rc3-mm2.orig/arch/powerpc/kernel/swsusp_32.S
-> +++ linux-2.6.18-rc3-mm2/arch/powerpc/kernel/swsusp_32.S
-> @@ -159,8 +159,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
->  	isync
->  =
-
->  	/* Load ptr the list of pages to copy in r3 */
-> -	lis	r11,(pagedir_nosave - KERNELBASE)@h
-> -	ori	r11,r11,pagedir_nosave@l
-> +	lis	r11,(restore_pblist - KERNELBASE)@h
-> +	ori	r11,r11,restore_pblist@l
->  	lwz	r10,0(r11)
->  =
-
->  	/* Copy the pages. This is a very basic implementation, to
-> Index: linux-2.6.18-rc3-mm2/arch/x86_64/kernel/suspend_asm.S
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.18-rc3-mm2.orig/arch/x86_64/kernel/suspend_asm.S
-> +++ linux-2.6.18-rc3-mm2/arch/x86_64/kernel/suspend_asm.S
-> @@ -54,7 +54,7 @@ ENTRY(restore_image)
->  	movq	%rcx, %cr3;
->  	movq	%rax, %cr4;  # turn PGE back on
->  =
-
-> -	movq	pagedir_nosave(%rip), %rdx
-> +	movq	restore_pblist(%rip), %rdx
->  loop:
->  	testq	%rdx, %rdx
->  	jz	done
-> Index: linux-2.6.18-rc3-mm2/kernel/power/power.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.18-rc3-mm2.orig/kernel/power/power.h
-> +++ linux-2.6.18-rc3-mm2/kernel/power/power.h
-> @@ -38,8 +38,6 @@ extern struct subsystem power_subsys;
->  /* References to section boundaries */
->  extern const void __nosave_begin, __nosave_end;
->  =
-
-> -extern struct pbe *pagedir_nosave;
-> -
->  /* Preferred image size in bytes (default 500 MB) */
->  extern unsigned long image_size;
->  extern int in_suspend;
 > Index: linux-2.6.18-rc3-mm2/kernel/power/snapshot.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> ===================================================================
 > --- linux-2.6.18-rc3-mm2.orig/kernel/power/snapshot.c
 > +++ linux-2.6.18-rc3-mm2/kernel/power/snapshot.c
-> @@ -38,8 +38,11 @@
->   * the suspend and included in the suspend image, but have also been
->   * allocated by the "resume" kernel, so their contents cannot be written
->   * directly to their "original" page frames.
-> + *
-> + * NOTE: It cannot be static, because it is used by the architecture-dep=
-endent
-> + * atomic restore code.
+> @@ -57,6 +57,11 @@ static void *buffer;
+>   *	so that swsusp_free() can release it.
 >   */
-> -struct pbe *pagedir_nosave;
-> +struct pbe *restore_pblist;
->  =
-
->  /* Pointer to an auxiliary buffer (1 page) */
->  static void *buffer;
-> @@ -824,7 +827,7 @@ void swsusp_free(void)
+>  
+> +#define PG_ANY		0
+> +#define PG_SAFE		1
+> +#define PG_UNSAFE_CLEAR	1
+> +#define PG_UNSAFE_KEEP	0
+> +
+>  static unsigned int allocated_unsafe_pages;
+>  
+>  static void *get_image_page(gfp_t gfp_mask, int safe_needed)
+> @@ -357,7 +362,7 @@ create_memory_bm(struct memory_bitmap *b
+>  	zone_bm = create_zone_bm_list(nr, &ca);
+>  	bm->zone_bm_list = zone_bm;
+>  	if (!zone_bm) {
+> -		chain_free(&ca, 1);
+> +		chain_free(&ca, PG_UNSAFE_CLEAR);
+>  		return -ENOMEM;
 >  	}
->  	nr_copy_pages =3D 0;
->  	nr_meta_pages =3D 0;
-> -	pagedir_nosave =3D NULL;
-> +	restore_pblist =3D NULL;
->  	buffer =3D NULL;
+>  
+> @@ -410,7 +415,7 @@ create_memory_bm(struct memory_bitmap *b
+>  
+>  Free:
+>  	bm->p_list = ca.chain;
+> -	free_memory_bm(bm, 1);
+> +	free_memory_bm(bm, PG_UNSAFE_CLEAR);
+>  	return -ENOMEM;
 >  }
->  =
-
-> @@ -1203,7 +1206,7 @@ load_header(struct swsusp_info *info)
+>  
+> @@ -936,15 +941,15 @@ swsusp_alloc(struct memory_bitmap *orig_
 >  {
 >  	int error;
->  =
-
-> -	pagedir_nosave =3D NULL;
-> +	restore_pblist =3D NULL;
->  	error =3D check_header(info);
->  	if (!error) {
->  		nr_copy_pages =3D info->image_pages;
-> @@ -1562,8 +1565,8 @@ static void *get_buffer(struct memory_bi
->  	pbe->orig_address =3D page_address(page);
->  	pbe->address =3D safe_pages_list;
->  	safe_pages_list =3D safe_pages_list->next;
-> -	pbe->next =3D pagedir_nosave;
-> -	pagedir_nosave =3D pbe;
-> +	pbe->next =3D restore_pblist;
-> +	restore_pblist =3D pbe;
->  	return (void *)pbe->address;
+>  
+> -	error = create_memory_bm(orig_bm, GFP_ATOMIC, 0);
+> +	error = create_memory_bm(orig_bm, GFP_ATOMIC, PG_ANY);
+>  	if (error)
+>  		goto Free;
+>  
+> -	error = create_memory_bm(copy_bm, GFP_ATOMIC, 0);
+> +	error = create_memory_bm(copy_bm, GFP_ATOMIC, PG_ANY);
+>  	if (error)
+>  		goto Free;
+>  
+> -	error = get_highmem_buffer(0);
+> +	error = get_highmem_buffer(PG_ANY);
+>  	if (error)
+>  		goto Free;
+>  
+> @@ -1078,7 +1083,7 @@ int snapshot_read_next(struct snapshot_h
+>  
+>  	if (!buffer) {
+>  		/* This makes the buffer be freed by swsusp_free() */
+> -		buffer = get_image_page(GFP_ATOMIC, 0);
+> +		buffer = get_image_page(GFP_ATOMIC, PG_ANY);
+>  		if (!buffer)
+>  			return -ENOMEM;
+>  	}
+> @@ -1299,10 +1304,10 @@ prepare_highmem_image(struct memory_bitm
+>  {
+>  	unsigned int to_alloc;
+>  
+> -	if (create_memory_bm(bm, GFP_ATOMIC, 1))
+> +	if (create_memory_bm(bm, GFP_ATOMIC, PG_SAFE))
+>  		return -ENOMEM;
+>  
+> -	if (get_highmem_buffer(1))
+> +	if (get_highmem_buffer(PG_SAFE))
+>  		return -ENOMEM;
+>  
+>  	to_alloc = count_free_highmem_pages();
+> @@ -1415,8 +1420,8 @@ static inline int last_highmem_page_copi
+>  
+>  static inline void free_highmem_data(void)
+>  {
+> -	free_memory_bm(safe_highmem_bm, 1);
+> -	free_image_page(buffer, 1);
+> +	free_memory_bm(safe_highmem_bm, PG_UNSAFE_CLEAR);
+> +	free_image_page(buffer, PG_UNSAFE_CLEAR);
 >  }
->  =
+>  #else
+>  static inline int get_safe_write_buffer(void) { return 0; }
+> @@ -1465,19 +1470,19 @@ prepare_image(struct memory_bitmap *new_
+>  	int error;
+>  
+>  	/* If there is no highmem, the buffer will not be necessary */
+> -	free_image_page(buffer, 1);
+> +	free_image_page(buffer, PG_UNSAFE_CLEAR);
+>  
+>  	nr_highmem = count_highmem_image_pages(bm);
+>  	error = mark_unsafe_pages(bm);
+>  	if (error)
+>  		goto Free;
+>  
+> -	error = create_memory_bm(new_bm, GFP_ATOMIC, 1);
+> +	error = create_memory_bm(new_bm, GFP_ATOMIC, PG_SAFE);
+>  	if (error)
+>  		goto Free;
+>  
+>  	duplicate_memory_bitmap(new_bm, bm);
+> -	free_memory_bm(bm, 0);
+> +	free_memory_bm(bm, PG_UNSAFE_KEEP);
+>  	if (nr_highmem > 0) {
+>  		error = prepare_highmem_image(bm, &nr_highmem);
+>  		if (error)
+> @@ -1494,7 +1499,7 @@ prepare_image(struct memory_bitmap *new_
+>  	nr_pages = nr_copy_pages - nr_highmem - allocated_unsafe_pages;
+>  	nr_pages = DIV_ROUND_UP(nr_pages, PBES_PER_LINKED_PAGE);
+>  	while (nr_pages > 0) {
+> -		lp = get_image_page(GFP_ATOMIC, 1);
+> +		lp = get_image_page(GFP_ATOMIC, PG_SAFE);
+>  		if (!lp) {
+>  			error = -ENOMEM;
+>  			goto Free;
+> @@ -1525,7 +1530,7 @@ prepare_image(struct memory_bitmap *new_
+>  	/* Free the reserved safe pages so that chain_alloc() can use them */
+>  	while (sp_list) {
+>  		lp = sp_list->next;
+> -		free_image_page(sp_list, 1);
+> +		free_image_page(sp_list, PG_UNSAFE_CLEAR);
+>  		sp_list = lp;
+>  	}
+>  	return 0;
+> @@ -1604,7 +1609,7 @@ int snapshot_write_next(struct snapshot_
+>  	if (handle->offset == 0) {
+>  		if (!buffer)
+>  			/* This makes the buffer be freed by swsusp_free() */
+> -			buffer = get_image_page(GFP_ATOMIC, 0);
+> +			buffer = get_image_page(GFP_ATOMIC, PG_ANY);
+>  
+>  		if (!buffer)
+>  			return -ENOMEM;
+> @@ -1618,7 +1623,7 @@ int snapshot_write_next(struct snapshot_
+>  			if (error)
+>  				return error;
+>  
+> -			error = create_memory_bm(&copy_bm, GFP_ATOMIC, 0);
+> +			error = create_memory_bm(&copy_bm, GFP_ATOMIC, PG_ANY);
+>  			if (error)
+>  				return error;
+>  
+> @@ -1668,7 +1673,7 @@ void snapshot_write_finalize(struct snap
+>  	copy_last_highmem_page();
+>  	/* Free only if we have loaded the image entirely */
+>  	if (handle->prev && handle->cur > nr_meta_pages + nr_copy_pages) {
+> -		free_memory_bm(&orig_bm, 1);
+> +		free_memory_bm(&orig_bm, PG_UNSAFE_CLEAR);
+>  		free_highmem_data();
+>  	}
+>  }
+> @@ -1710,7 +1715,7 @@ int restore_highmem(void)
+>  	struct highmem_pbe *pbe = highmem_pblist;
+>  	void *buf;
+>  
+> -	buf = get_image_page(GFP_ATOMIC, 1);
+> +	buf = get_image_page(GFP_ATOMIC, PG_SAFE);
+>  	if (!buf)
+>  		return -ENOMEM;
+>  
+> @@ -1718,7 +1723,7 @@ int restore_highmem(void)
+>  		swap_two_pages_data(pbe->copy_page, pbe->orig_page, buf);
+>  		pbe = pbe->next;
+>  	}
+> -	free_image_page(buf, 1);
+> +	free_image_page(buf, PG_UNSAFE_CLEAR);
+>  	return 0;
+>  }
+>  #endif /* CONFIG_HIGHMEM */
+> 
+> of the code.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
 
-> @@ -1628,7 +1631,7 @@ int snapshot_write_next(struct snapshot_
->  =
-
->  				chain_init(&ca, GFP_ATOMIC, 1);
->  				bm_position_reset(&orig_bm);
-> -				pagedir_nosave =3D NULL;
-> +				restore_pblist =3D NULL;
->  				handle->sync_read =3D 0;
->  				handle->buffer =3D get_buffer(&orig_bm, &ca);
->  				if (!handle->buffer)
-
--- =
-
+-- 
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
