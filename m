@@ -1,15 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 2/5] swsusp: Use memory bitmaps
 	during resume
-Date: Wed, 9 Aug 2006 13:49:42 +0200
-Message-ID: <20060809114942.GS3308@elf.ucw.cz>
-References: <200608091152.49094.rjw@sisk.pl> <200608091204.36186.rjw@sisk.pl>
+Date: Wed, 9 Aug 2006 13:51:06 +0200
+Message-ID: <200608091351.06596.rjw@sisk.pl>
+References: <200608091152.49094.rjw@sisk.pl> <200608091304.35746.rjw@sisk.pl>
+	<20060809113335.GP3308@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060809113335.GP3308@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200608091204.36186.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,71 +20,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@suse.cz>
 Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
-> Make swsusp use memory bitmaps to store its internal information during t=
-he
-> resume phase of the suspend-resume cycle.
+On Wednesday 09 August 2006 13:33, Pavel Machek wrote:
+]--snip--[
 > =
 
-> If the pfns of saveable pages are saved during the suspend phase instead =
-of
-> the kernel virtual addresses of these pages, we can use them during the r=
-esume
-> phase directly to set the corresponding bits in a memory bitmap.  Then, t=
-his
-> bitmap is used to mark the page frames corresponding to the pages that we=
-re
-> saveable before the suspend (aka "unsafe" page frames).
-> =
+> I'm still not sure if highmem support is worth the complexity -- I
+> hope highmem dies painful death in next 3 weeks or so.
 
-> Next, we allocate as many page frames as needed to store the entire suspe=
-nd
-> image and make sure that there will be some extra free "safe" page frames=
- for
-> the list of PBEs constructed later.  Subsequently, the image is loaded an=
-d,
-> if possible, the data loaded from it are written into their "original" pa=
-ge frames
-> (ie. the ones they had occupied before the suspend).  The image data that
-> cannot be written into their "original" page frames are loaded into "safe=
-" page
-> frames and their "original" kernel virtual addresses, as well as the addr=
-esses
-> of the "safe" pages containing their copies, are stored in a list of PBEs.
-> Finally, the list of PBEs is used to copy the remaining image data into t=
-heir
-> "original" page frames (this is done atomically, by the architecture-depe=
-ndent
-> parts of swsusp).
-> =
+metoo, but currently quite a lot of Core Duo-based notebooks with 1 GB of R=
+AM
+and more are still being sold, let alone the Celerons, Semprons etc.
 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+The patch is designed so that the higmem-related parts are just dropped by =
+the
+compiler if CONFIG_HIGHMEM is not set.  That makes it a bit larger, but then
+they don't get in the way when they are not needed.
 
-ACK. If we get bitmap code we may as well use it. Should wait in -mm
-for a while.
+[Well, I've been using 64-bit machines only for quite some time anyway, but
+I thought it would be nice to do something for the others, too. ;-) ]
 
-> @@ -53,7 +40,7 @@ static inline void pm_restore_console(vo
->  static inline int software_suspend(void)
->  {
->  	printk("Warning: fake suspend called\n");
-> -	return -EPERM;
-> +	return -ENOSYS;
->  }
->  #endif /* CONFIG_PM */
->  =
-
-
-Heh, yes, it is right.. it is also totally unrelated and changes
-userland interface ;-)))... which is probably okay here. But separate
-would be nice.
-								Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Rafael
