@@ -1,76 +1,37 @@
-From: Nigel Cunningham <nigel@suspend2.net>
-Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Wed, 9 Aug 2006 21:54:15 +1000
-Message-ID: <200608092154.16559.nigel@suspend2.net>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
-	<20060809073958.GK4886@elf.ucw.cz>
-	<Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
-Reply-To: nigel@suspend2.net
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm 1/5] swsusp: Introduce memory bitmaps
+Date: Wed, 9 Aug 2006 13:53:35 +0200
+Message-ID: <20060809115335.GA3747@elf.ucw.cz>
+References: <200608091152.49094.rjw@sisk.pl> <200608091257.16663.rjw@sisk.pl> <20060809112701.GO3308@elf.ucw.cz> <200608091336.17137.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1124252357=="
-Return-path: <suspend2-devel-bounces@lists.suspend2.net>
-In-Reply-To: <Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
-List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
-List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
-List-Post: <mailto:suspend2-devel@lists.suspend2.net>
-List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
-List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
-Mime-version: 1.0
-Sender: suspend2-devel-bounces@lists.suspend2.net
-Errors-To: suspend2-devel-bounces@lists.suspend2.net
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-pm@osdl.org, Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161000AbWHILxx@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200608091336.17137.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============1124252357==
-Content-Type: multipart/signed; boundary="nextPart15404602.IkaQGrMOvA";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Wed 2006-08-09 13:36:16, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> On Wednesday 09 August 2006 13:27, Pavel Machek wrote:
+> > > > > Introduce the memory bitmap data structure and make swsusp use in the suspend
+> > > > > phase.
+> > > > > 
+> > > > > The current swsusp's internal data structure is not very efficient from the
+> > > > > memory usage point of view, so it seems reasonable to replace it with a data
+> > > > > structure that will require less memory, such as a pair of bitmaps.
+> > > > 
+> > > > Well, 500 lines of code  for what... 0.25% bigger image?
+> 
+> BTW, that depends on the total size of RAM.  On a 1.5 GB i386 box that would
+> be something like 100%.
 
---nextPart15404602.IkaQGrMOvA
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi Steven.
-
-Have you tried building the ACPI modules as modules (if you're not already=
-=20
-doing so), and unloading them while suspending? If not, I'd give that a go.
-
-Regards,
-
-Nigel
-=2D-=20
-See http://www.suspend2.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart15404602.IkaQGrMOvA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBE2czoN0y+n1M3mo0RAoQUAJ4oukCig28y/Xik3Aq0qEN8JRJegQCaA0Rn
-7yQxA8rMaC8VcCHuQZLMLSE=
-=wwWK
------END PGP SIGNATURE-----
-
---nextPart15404602.IkaQGrMOvA--
-
-
---===============1124252357==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Suspend2-devel mailing list
-Suspend2-devel@lists.suspend2.net
-http://lists.suspend2.net/mailman/listinfo/suspend2-devel
-
---===============1124252357==--
+Well, well, but 99.75% of that is from 3/5 patch, and we could still
+get those 99.75% without bitmaps, right?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
