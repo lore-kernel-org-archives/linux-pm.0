@@ -1,48 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 2/5] swsusp: Use memory bitmaps
-	during resume
-Date: Wed, 9 Aug 2006 13:51:06 +0200
-Message-ID: <200608091351.06596.rjw@sisk.pl>
-References: <200608091152.49094.rjw@sisk.pl> <200608091304.35746.rjw@sisk.pl>
-	<20060809113335.GP3308@elf.ucw.cz>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: [RFC][PATCH -mm 0/5] swsusp: Fix handling of highmem
+Date: Wed, 9 Aug 2006 21:52:10 +1000
+Message-ID: <200608092152.11122.ncunningham@linuxmail.org>
+References: <200608091152.49094.rjw@sisk.pl> <200608092047.13493.ncunningham@linuxmail.org> <20060809113822.GQ3308@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060809113335.GP3308@elf.ucw.cz>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: multipart/signed;
+  boundary="nextPart3471784.p0Ehy8OJY2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030708AbWHILv5@vger.kernel.org>
+In-Reply-To: <20060809113822.GQ3308@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Pavel Machek <pavel@suse.cz>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--nextPart3471784.p0Ehy8OJY2
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Wednesday 09 August 2006 13:33, Pavel Machek wrote:
-]--snip--[
-> =
+On Wednesday 09 August 2006 21:38, Pavel Machek wrote:
+> Hi!
+>
+> > > Comments welcome.
+> >
+> > Thanks for the reminder. I'd forgotten half the reason why I didn't want
+> > to make Suspend2 into incremental patches! You're a brave man!
+>
+> Why does this serve as a reminder? No, it is not easy to merge big
+> patches to mainline. But it is actually a feature.
 
-> I'm still not sure if highmem support is worth the complexity -- I
-> hope highmem dies painful death in next 3 weeks or so.
+It serves as a reminder because it shows (just the description, I mean), ho=
+w=20
+inter-related all the changes that are needed are.
 
-metoo, but currently quite a lot of Core Duo-based notebooks with 1 GB of R=
-AM
-and more are still being sold, let alone the Celerons, Semprons etc.
+I don't get the "it is actually a feature" bit.
 
-The patch is designed so that the higmem-related parts are just dropped by =
-the
-compiler if CONFIG_HIGHMEM is not set.  That makes it a bit larger, but then
-they don't get in the way when they are not needed.
+> > while (1) {
+> >   size=3D$RANDOM * 65536 + 1
+> >   dd if=3D/dev/random bs=3D1 count=3D$size | patch -p0-b
+> >   make && break
+> >}
+>
+> Is this what you use to generate suspend2 patches? :-)))))
 
-[Well, I've been using 64-bit machines only for quite some time anyway, but
-I thought it would be nice to do something for the others, too. ;-) ]
+:) Actually, given Greg's OLS keynote, I was wondering if it was what he us=
+ed=20
+to generate them.
 
-Rafael
+Regards,
+
+Nigel
+=2D-=20
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
+
+--nextPart3471784.p0Ehy8OJY2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBE2cxrN0y+n1M3mo0RAvtYAJ9Cy74DMRUbIcffghoV6OImVsccRACeMGxq
+w1oLd/pk2lkqxJxbslO/K9g=
+=4T6u
+-----END PGP SIGNATURE-----
+
+--nextPart3471784.p0Ehy8OJY2--
