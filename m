@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Wed, 9 Aug 2006 22:32:03 +0200
-Message-ID: <200608092232.03360.rjw@sisk.pl>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
-	<200608091415.51226.rjw@sisk.pl>
-	<Pine.LNX.4.58.0608090913480.3560@gandalf.stny.rr.com>
-Mime-Version: 1.0
+From: Matthew Locke <matt@nomadgs.com>
+Subject: Re: Dynanic On-The-Fly Operating points for PowerOP
+Date: Wed, 9 Aug 2006 14:17:38 -0700
+Message-ID: <bb52214749a48f317fba09eb522537bb@nomadgs.com>
+References: <44D8D40F.50005@mvista.com>
+Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.58.0608090913480.3560@gandalf.stny.rr.com>
-Content-Disposition: inline
+In-Reply-To: <44D8D40F.50005@mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,30 +17,167 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-pm@osdl.org, ncunningham@linuxmail.org, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Suspend2-devel@lists.suspend2.net
+To: David Singleton <dsingleton@mvista.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 August 2006 15:16, Steven Rostedt wrote:
-> =
+Dave,
 
-> On Wed, 9 Aug 2006, Rafael J. Wysocki wrote:
-> =
+I think we need to focus on defining a powerop interface that will work =
 
-> >
-> > If it's a P4, we rather don't, because the ACPI tables should be above =
-the
-> > last pfn in the normal zone.  Still, Steven please send your dmesg afte=
-r a
-> > fresh boot.
-> >
-> =
+for all (or as close to all as possible) architectures and devices =
 
-> Attached is a gzipped version of my dmesg.
+types including embedded, laptop, server.   As discussed in previous =
 
-Thanks.
+emails, some of the goals for powerop are:
 
-I don't think we overwrite anything important from the hardware's perspecti=
-ve.
+- Architecture/board independent interface
+- Integrate with clk framework (and a voltage framework in the future) =
 
-Rafael
+for SoC/Board register setting abstraction
+- Provide a layer that knows the SoC and board specifics about =
+
+relationship between voltage and frequency and setting operating points =
+
+(we call it PM Core)
+- Provide a clean interface to build on top of (for cpu freq governors, =
+
+etc).
+
+I think we can defer the discussion around creation of op points from =
+
+userspace, suspend/resume integration and transition notifiers.  Once =
+
+we get the basics submitted we can add features piece by piece.
+
+Rather than continue submitting different powerop patches I would =
+
+encourage you to join in the discussion about the interface.  I think =
+
+Eugeny's latest patches are pretty close to satisfying the points made =
+
+so far.  However, we are eagerly waiting feedback because there always =
+
+tradeoffs that need to be made when trying to satisfy the goals listed =
+
+above.
+
+Thanks
+
+Matt
+On Aug 8, 2006, at 11:12 AM, David Singleton wrote:
+
+> The patches provided in the following three emails continue the =
+
+> unified,
+>         simplified PowerOp concept of power management.  The patches
+>         can be found at:
+>
+>                 http://source.mvista.com/~dsingleton
+>
+>                         powerop-core.patch
+>                         powerop-cpufreq.patch
+>                         powerop-x86-centrino.patch
+>
+>
+>                 The patches break the working PowerOP feature into
+>         three logical parts.  The first patch is the powerop-core.patch
+>         that adds support for an operating point in the standard linux
+>         power management infrastructure (CONFIG_PM) and adds a new
+>         function to perform transitioning to operating points other
+>         than suspend to memory or disk.
+>
+>                 The second patch, powerop-cpufreq.patch, adds the =
+
+> cpufreq
+>         portion of the patch that makes cpufreq tables a set of PowerOp
+>         operating points.
+>
+>                 The third patch, powerop-x86-centrino.patch, adds
+>         operating points for all the centrino-speedstep processors.
+>
+>
+>         This set of patches has changed in the following ways.
+>
+>         1) The patch is now broken out of the cpufreq code and =
+
+> implements
+>         operating points for whatever speedstep-centrino the system
+>         detects upon boot.
+>
+>         2) The naming scheme for operating points has been unified to
+>         provide a better interface to the PowerOp power manager daemon.
+>         The names range from:
+>
+>                         highest
+>                         high
+>                         medhigh
+>                         medium
+>                         medlow
+>                         low
+>                         lowest
+>
+>         PowerOp maps the supported processor frequencies onto this
+>         namespace list.  The set of centrino processors it supports =
+
+> have
+>         supported sets of between four and six different operating =
+
+> points.
+>
+>         The PowerOP daemon, coming soon, can simply read the supported
+>         set of operating points and make some simple rules based
+>         decisions about when to transition to various operating points.
+>
+>         The goal of a unified name space is to provide a PowerOp =
+
+> manager
+>         that runs out of the box, with very little setup by the user.
+>
+>
+>         3) This patch supports the ability to provide dynamic, =
+
+> on-the-fly
+>         operating points to the framework via a loadable module.  The
+> operating
+>         point parameters of frequency, voltage and transition latency
+>         can be passed at insmod time to create any new operating point
+>         the centrino hardware will support.
+>
+>
+>         I think I finally understand the 'why' of hardware vendors =
+
+> asking
+>         for a requirement of dynamic, on the fly, operating points.
+>
+>         I have two sets of hardware that support a wide range of
+>         processor speeds and voltages depending on:
+>
+>         a) the rotary and dip switch setting of the board (the =
+
+> mainstone).
+>
+>         or
+>
+>         b) the revision or stepping of the hardware on the board.
+>
+>         Certain revs of hardware support different frequencies and
+> voltages.
+>         Some steppings won't run all the frequencies.
+>
+>         The hardware vendors want to provide support for all the
+>         frequencies and voltages that the system could support,
+>         depending on the switch settings or rev of hardware without
+>         having to change kernel code and recompile the kernel.
+>
+>         The new dynamic, on the fly, operating point module will allow
+>         for this feature.
+>
+>
+> David
+>
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+>
