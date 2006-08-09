@@ -1,84 +1,34 @@
-From: Steven Rostedt <rostedt@goodmis.org>
+From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
 Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Wed, 9 Aug 2006 08:04:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.58.0608090751340.2500@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
-	<20060808235352.GA4751@elf.ucw.cz>
-	<Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com>
-	<20060809073958.GK4886@elf.ucw.cz>
-	<Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
+Date: Wed, 9 Aug 2006 14:07:34 +0200
+Message-ID: <20060809120734.GA30544@rhlx01.fht-esslingen.de>
+References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com> <20060808235352.GA4751@elf.ucw.cz> <Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com> <20060809073958.GK4886@elf.ucw.cz> <Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <suspend2-devel-bounces@lists.suspend2.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161001AbWHIMHh@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
-List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
-List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
-List-Post: <mailto:suspend2-devel@lists.suspend2.net>
-List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
-List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
-Sender: suspend2-devel-bounces@lists.suspend2.net
-Errors-To: suspend2-devel-bounces@lists.suspend2.net
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, ncunningham@linuxmail.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, linux-pm@osdl.org, ncunningham@linuxmail.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Aug 09, 2006 at 07:45:23AM -0400, Steven Rostedt wrote:
+> It does look like something isn't setting up the ACPI power properly on
+> resume, and that the CPU is probably in a busy loop while the machine is
+> idle.  Just a guess.
 
+In that case could you post
+cat /proc/acpi/processor/CPU?/*
+?
 
-On Wed, 9 Aug 2006, Steven Rostedt wrote:
+Perhaps we're losing ACPI C2/C3 state power saving, and checking
+the busmaster activity indicators there would be useful, too.
 
-> >
-> > cat we get contents of /proc/acpi/thermal*/*/* ?
->
-> I'm running after a poweroff (left it running over night in the hotel, and
-> I'm still in the hotel).
->
-> $ grep . /proc/acpi/thermal_zone/THRM/*
-> /proc/acpi/thermal_zone/THRM/cooling_mode:<setting not supported>
-> /proc/acpi/thermal_zone/THRM/cooling_mode:cooling mode: passive
-> /proc/acpi/thermal_zone/THRM/polling_frequency:<polling disabled>
-> /proc/acpi/thermal_zone/THRM/state:state:                   ok
-> /proc/acpi/thermal_zone/THRM/temperature:temperature:             48 C
-> /proc/acpi/thermal_zone/THRM/trip_points:critical (S5):           88 C
-> /proc/acpi/thermal_zone/THRM/trip_points:passive:                 81 C: tc1=4 tc2=3 tsp=100 devices=0xcf6c2338
->
-> Note thermal_zone/THRM was finished with bash tab completion so they are
-> the only things that match the above glob expr.
->
+Oh, in this context maybe it's actually a problem of a misbehaving driver?
+An active USB mouse is known to distort ACPI power saving, causing reduced
+notebook battery operation length (due to busmaster activity preventing
+ACPI idling, I think). Now what if some certain driver actually caused
+permanent busmaster activity...?
 
-Note: I just did a swsusp and resume and here's the same data:
-
-$ grep . /proc/acpi/thermal_zone/THRM/*
-/proc/acpi/thermal_zone/THRM/cooling_mode:<setting not supported>
-/proc/acpi/thermal_zone/THRM/cooling_mode:cooling mode: passive
-/proc/acpi/thermal_zone/THRM/polling_frequency:<polling disabled>
-/proc/acpi/thermal_zone/THRM/state:state:                   ok
-/proc/acpi/thermal_zone/THRM/temperature:temperature:             60 C
-/proc/acpi/thermal_zone/THRM/trip_points:critical (S5):           88 C
-/proc/acpi/thermal_zone/THRM/trip_points:passive:                 81 C: tc1=4 tc2=3 tsp=100 devices=0xcf6c2338
-
-
-And just leaving my system idle for a few minutes:
-
-$ grep . /proc/acpi/thermal_zone/THRM/temperature
-temperature:             62 C
-
-and a few more minutes:
-
-temperature:             64 C
-
-
-And a few more:
-
-temperature:             66 C
-
-
-right now after typing this:
-
-temperature:             69 C
-
-
-So this definitely shows somethings not letting the CPU rest.
-
--- Steve
+Andreas Mohr
