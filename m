@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend to disk not working due to swap space failure
-Date: Wed, 9 Aug 2006 08:04:20 +0200
-Message-ID: <200608090804.21095.rjw@sisk.pl>
-References: <380D9721A8E2114485644D71E87C6AB20250B4CA@PNE-HJN-MBX01.wipro.com>
+From: Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: swsusp and suspend2 like to overheat my laptop
+Date: Wed, 09 Aug 2006 07:14:50 +0100
+Message-ID: <1155104090.5812.5.camel@insmouth>
+References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
+	<200608090750.40111.nigel@suspend2.net>
+	<Pine.LNX.4.58.0608081831580.18586@gandalf.stny.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB20250B4CA@PNE-HJN-MBX01.wipro.com>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0608081831580.18586@gandalf.stny.rr.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,42 +19,27 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: johannes@sipsolutions.net, rasmit.ranjan@wipro.com
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 August 2006 05:05, rasmit.ranjan@wipro.com wrote:
-> =
+On Tue, 2006-08-08 at 19:31 -0400, Steven Rostedt wrote:
+> Hmm, it requires windows, and I've already wiped out that partition.
+> I did a search but it seems really scary to update the BIOS via Linux.
 
-> > -----Original Message-----
-> > From: Johannes Berg [mailto:johannes@sipsolutions.net] =
+I've done it in the past by using memdisk[0] to boot a freedos floppy
+image[1] which I have added the BIOS update to... It worked but it was a
+bit nerve wracking ;-)
 
-> > Sent: Tuesday, August 08, 2006 7:23 PM
-> > To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
-> > Cc: linux-pm@lists.osdl.org
-> > Subject: Re: [linux-pm] suspend to disk not working due to =
+Ian.
 
-> > swap space failure
-> > =
+[0] http://syslinux.zytor.com/memdisk.php
+[1] http://odin.fdos.org/odin2005/ (FWIW I used odin2880.img)
 
-> > rasmit.ranjan@wipro.com wrote:
-> > > So i tried creating a new
-> > > swap space by the command " mkswap". But still my swap =
+-- =
 
-> > partition does =
+Ian Campbell
 
-> > > not come up. I reboot my system but that did not work as well. What =
+BOFH excuse #382:
 
-> > > might be the problem?
-> > Is it listed in /etc/fstab so swapon -a can find it?
-> =
-
-> No it is not listed in /etc/fstab file. But `fdisk -l` shows the swap
-> partition.
-
-OK
-
-What's the name of your swap partition and how does your /etc/fstab look li=
-ke?
-
-Rafael
+Someone was smoking in the computer room and set off the halon systems.
