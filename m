@@ -1,207 +1,95 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC][PATCH -mm 5/5] swsusp: Introduce some helpful constants
-Date: Wed, 9 Aug 2006 12:36:15 +0200
-Message-ID: <20060809103615.GL3308@elf.ucw.cz>
-References: <200608091152.49094.rjw@sisk.pl> <200608091213.18418.rjw@sisk.pl>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: [RFC][PATCH -mm 0/5] swsusp: Fix handling of highmem
+Date: Wed, 9 Aug 2006 20:47:12 +1000
+Message-ID: <200608092047.13493.ncunningham@linuxmail.org>
+References: <200608091152.49094.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030666AbWHIKgb@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200608091213.18418.rjw@sisk.pl>
+Content-Type: multipart/signed;
+  boundary="nextPart1396333.oGUYJeNH2X";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030652AbWHILGz@vger.kernel.org>
+In-Reply-To: <200608091152.49094.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2006-08-09 12:13:18, Rafael J. Wysocki wrote:
-> Introduce some constants that hopefully will help improve the readability kernel/power/snapshot.c |   45 +++++++++++++++++++++++++--------------------
->  1 files changed, 25 insertions(+), 20 deletions(-)
+--nextPart1396333.oGUYJeNH2X
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi.
+
+On Wednesday 09 August 2006 19:52, Rafael J. Wysocki wrote:
+> Hi,
 >
+> Currently swsusp handles highmem in a simplistic way, by trying to store a
+> copy of each saveable highmem page in the "normal" memory before creating
+> the suspend image.  These copies are then copied once again before saving,
+> because they are treated as any other non-highmem pages with data.  For
+> this reason, to save one highmem page swsusp needs two free pages in the
+> "normal" memory, so on a system with high memory it is practically
+> impossible to create a suspend image above 400 kilobytes.  Moreover, if
+> there's much more highmem than the "normal" memory in the system, it may =
+be
+> impossible to suspend at all due to the lack of space for saving
+> non-freeable highmem pages.
+>
+> This limitation may be overcome in a satisfactory way if swsusp does its
+> best to store the copies of saveable highmem pages in the highmem itself.=
+=20
+> However, for this purpose swsusp has to be taught to use pfns, or (struct
+> page *) pointers, instead of kernel virtual addresses to identify memory
+> pages. Yet, if this is to be implemented, we can also attack the minor
+> problem that the current swsusp's internal data structure, the list of pa=
+ge
+> backup entries (aka PBEs), is not very efficient as far as the memory usa=
+ge
+> is concerned.
+>
+> This issue can be addressed by replacing the list of PBEs with a pair of
+> memory bitmaps.  Still, to remove the list of PBEs completely, we would
+> have to make some complicated modifications to the architecture-dependent
+> parts of the code which would be quite undesirable.  However, we can use
+> the observation that memory is only a limiting resource during the suspend
+> phase of the suspend-resume cycle, because during the resume phase
+> many image pages may be loaded directly to their "original" page frames, =
+so
+> we don't need to keep a copy of each of them in the memory.  Thus the list
+> of PBEs may be used safely in the last part of the resume phase without
+> limitting the amount of memory we can use.
+>
+> The following series of patches introduces the memory bitmap data
+> structure, makes swsusp use it to store its internal information and
+> implements the improved handling of saveable highmem pages.
+>
+> Comments welcome.
 
-You probably want to add signed-off-by:... aha, it is below the
-patch. Some script went crazy inserting diff at wrong place. Otherwise
-ACK.
+Thanks for the reminder. I'd forgotten half the reason why I didn't want to=
+=20
+make Suspend2 into incremental patches! You're a brave man!
 
-							Pavel
+Nigel
+=2D-=20
+while (1) {
+  size=3D$RANDOM * 65536 + 1
+  dd if=3D/dev/random bs=3D1 count=3D$size | patch -p0-b
+  make && break
+}
 
-> Index: linux-2.6.18-rc3-mm2/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-2.6.18-rc3-mm2.orig/kernel/power/snapshot.c
-> +++ linux-2.6.18-rc3-mm2/kernel/power/snapshot.c
-> @@ -57,6 +57,11 @@ static void *buffer;
->   *	so that swsusp_free() can release it.
->   */
->  
-> +#define PG_ANY		0
-> +#define PG_SAFE		1
-> +#define PG_UNSAFE_CLEAR	1
-> +#define PG_UNSAFE_KEEP	0
-> +
->  static unsigned int allocated_unsafe_pages;
->  
->  static void *get_image_page(gfp_t gfp_mask, int safe_needed)
-> @@ -357,7 +362,7 @@ create_memory_bm(struct memory_bitmap *b
->  	zone_bm = create_zone_bm_list(nr, &ca);
->  	bm->zone_bm_list = zone_bm;
->  	if (!zone_bm) {
-> -		chain_free(&ca, 1);
-> +		chain_free(&ca, PG_UNSAFE_CLEAR);
->  		return -ENOMEM;
->  	}
->  
-> @@ -410,7 +415,7 @@ create_memory_bm(struct memory_bitmap *b
->  
->  Free:
->  	bm->p_list = ca.chain;
-> -	free_memory_bm(bm, 1);
-> +	free_memory_bm(bm, PG_UNSAFE_CLEAR);
->  	return -ENOMEM;
->  }
->  
-> @@ -936,15 +941,15 @@ swsusp_alloc(struct memory_bitmap *orig_
->  {
->  	int error;
->  
-> -	error = create_memory_bm(orig_bm, GFP_ATOMIC, 0);
-> +	error = create_memory_bm(orig_bm, GFP_ATOMIC, PG_ANY);
->  	if (error)
->  		goto Free;
->  
-> -	error = create_memory_bm(copy_bm, GFP_ATOMIC, 0);
-> +	error = create_memory_bm(copy_bm, GFP_ATOMIC, PG_ANY);
->  	if (error)
->  		goto Free;
->  
-> -	error = get_highmem_buffer(0);
-> +	error = get_highmem_buffer(PG_ANY);
->  	if (error)
->  		goto Free;
->  
-> @@ -1078,7 +1083,7 @@ int snapshot_read_next(struct snapshot_h
->  
->  	if (!buffer) {
->  		/* This makes the buffer be freed by swsusp_free() */
-> -		buffer = get_image_page(GFP_ATOMIC, 0);
-> +		buffer = get_image_page(GFP_ATOMIC, PG_ANY);
->  		if (!buffer)
->  			return -ENOMEM;
->  	}
-> @@ -1299,10 +1304,10 @@ prepare_highmem_image(struct memory_bitm
->  {
->  	unsigned int to_alloc;
->  
-> -	if (create_memory_bm(bm, GFP_ATOMIC, 1))
-> +	if (create_memory_bm(bm, GFP_ATOMIC, PG_SAFE))
->  		return -ENOMEM;
->  
-> -	if (get_highmem_buffer(1))
-> +	if (get_highmem_buffer(PG_SAFE))
->  		return -ENOMEM;
->  
->  	to_alloc = count_free_highmem_pages();
-> @@ -1415,8 +1420,8 @@ static inline int last_highmem_page_copi
->  
->  static inline void free_highmem_data(void)
->  {
-> -	free_memory_bm(safe_highmem_bm, 1);
-> -	free_image_page(buffer, 1);
-> +	free_memory_bm(safe_highmem_bm, PG_UNSAFE_CLEAR);
-> +	free_image_page(buffer, PG_UNSAFE_CLEAR);
->  }
->  #else
->  static inline int get_safe_write_buffer(void) { return 0; }
-> @@ -1465,19 +1470,19 @@ prepare_image(struct memory_bitmap *new_
->  	int error;
->  
->  	/* If there is no highmem, the buffer will not be necessary */
-> -	free_image_page(buffer, 1);
-> +	free_image_page(buffer, PG_UNSAFE_CLEAR);
->  
->  	nr_highmem = count_highmem_image_pages(bm);
->  	error = mark_unsafe_pages(bm);
->  	if (error)
->  		goto Free;
->  
-> -	error = create_memory_bm(new_bm, GFP_ATOMIC, 1);
-> +	error = create_memory_bm(new_bm, GFP_ATOMIC, PG_SAFE);
->  	if (error)
->  		goto Free;
->  
->  	duplicate_memory_bitmap(new_bm, bm);
-> -	free_memory_bm(bm, 0);
-> +	free_memory_bm(bm, PG_UNSAFE_KEEP);
->  	if (nr_highmem > 0) {
->  		error = prepare_highmem_image(bm, &nr_highmem);
->  		if (error)
-> @@ -1494,7 +1499,7 @@ prepare_image(struct memory_bitmap *new_
->  	nr_pages = nr_copy_pages - nr_highmem - allocated_unsafe_pages;
->  	nr_pages = DIV_ROUND_UP(nr_pages, PBES_PER_LINKED_PAGE);
->  	while (nr_pages > 0) {
-> -		lp = get_image_page(GFP_ATOMIC, 1);
-> +		lp = get_image_page(GFP_ATOMIC, PG_SAFE);
->  		if (!lp) {
->  			error = -ENOMEM;
->  			goto Free;
-> @@ -1525,7 +1530,7 @@ prepare_image(struct memory_bitmap *new_
->  	/* Free the reserved safe pages so that chain_alloc() can use them */
->  	while (sp_list) {
->  		lp = sp_list->next;
-> -		free_image_page(sp_list, 1);
-> +		free_image_page(sp_list, PG_UNSAFE_CLEAR);
->  		sp_list = lp;
->  	}
->  	return 0;
-> @@ -1604,7 +1609,7 @@ int snapshot_write_next(struct snapshot_
->  	if (handle->offset == 0) {
->  		if (!buffer)
->  			/* This makes the buffer be freed by swsusp_free() */
-> -			buffer = get_image_page(GFP_ATOMIC, 0);
-> +			buffer = get_image_page(GFP_ATOMIC, PG_ANY);
->  
->  		if (!buffer)
->  			return -ENOMEM;
-> @@ -1618,7 +1623,7 @@ int snapshot_write_next(struct snapshot_
->  			if (error)
->  				return error;
->  
-> -			error = create_memory_bm(&copy_bm, GFP_ATOMIC, 0);
-> +			error = create_memory_bm(&copy_bm, GFP_ATOMIC, PG_ANY);
->  			if (error)
->  				return error;
->  
-> @@ -1668,7 +1673,7 @@ void snapshot_write_finalize(struct snap
->  	copy_last_highmem_page();
->  	/* Free only if we have loaded the image entirely */
->  	if (handle->prev && handle->cur > nr_meta_pages + nr_copy_pages) {
-> -		free_memory_bm(&orig_bm, 1);
-> +		free_memory_bm(&orig_bm, PG_UNSAFE_CLEAR);
->  		free_highmem_data();
->  	}
->  }
-> @@ -1710,7 +1715,7 @@ int restore_highmem(void)
->  	struct highmem_pbe *pbe = highmem_pblist;
->  	void *buf;
->  
-> -	buf = get_image_page(GFP_ATOMIC, 1);
-> +	buf = get_image_page(GFP_ATOMIC, PG_SAFE);
->  	if (!buf)
->  		return -ENOMEM;
->  
-> @@ -1718,7 +1723,7 @@ int restore_highmem(void)
->  		swap_two_pages_data(pbe->copy_page, pbe->orig_page, buf);
->  		pbe = pbe->next;
->  	}
-> -	free_image_page(buf, 1);
-> +	free_image_page(buf, PG_UNSAFE_CLEAR);
->  	return 0;
->  }
->  #endif /* CONFIG_HIGHMEM */
-> 
-> of the code.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
+--nextPart1396333.oGUYJeNH2X
+Content-Type: application/pgp-signature
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBE2b0xN0y+n1M3mo0RArPsAKDKwcs53R7yWpALi4wx7Qt6tp59BACdHgBM
+pFSeLwnIp0r6z9KbQQ3+7KU=
+=I1Yq
+-----END PGP SIGNATURE-----
+
+--nextPart1396333.oGUYJeNH2X--
