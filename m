@@ -1,114 +1,125 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Wed, 9 Aug 2006 07:45:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
-	<20060808235352.GA4751@elf.ucw.cz>
-	<Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com>
-	<20060809073958.GK4886@elf.ucw.cz>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC][PATCH -mm 1/5] swsusp: Introduce memory bitmaps
+Date: Wed, 9 Aug 2006 13:46:28 +0200
+Message-ID: <20060809114628.GR3308@elf.ucw.cz>
+References: <200608091152.49094.rjw@sisk.pl> <200608091158.38458.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <suspend2-devel-bounces@lists.suspend2.net>
-In-Reply-To: <20060809073958.GK4886@elf.ucw.cz>
-List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
-List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
-List-Post: <mailto:suspend2-devel@lists.suspend2.net>
-List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
-List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
-	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
-Sender: suspend2-devel-bounces@lists.suspend2.net
-Errors-To: suspend2-devel-bounces@lists.suspend2.net
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, ncunningham@linuxmail.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030696AbWHILqu@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200608091158.38458.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Wed, 9 Aug 2006, Pavel Machek wrote:
+> Introduce the memory bitmap data structure and make swsusp use in the suspend
+> phase.
+> 
+> The current swsusp's internal data structure is not very efficient from the
+> memory usage point of view, so it seems reasonable to replace it with a data
+> structure that will require less memory, such as a pair of bitmaps.
+> 
+> The idea is to use bitmaps that may be allocated as sets of individual pages,
+> so that we can avoid making allocations of order greater than 0.  For this
+> reason the memory bitmap structure consists of several linked lists of objects
+> that contain pointers to memory pages with the actual bitmap data.  Still, for
+> a typical system all of these lists fit in a single page, so it's reasonable
+> to introduce an additional mechanism allowing us to allocate all of them
+> efficiently without sacrificing the generality of the design.  This is done
+> with the help of the chain_allocator structure and associated functions.
+> 
+> We need to use two memory bitmaps during the suspend phase of the
+> suspend-resume cycle.  One of them is necessary for marking the saveable
+> pages, and the second is used to mark the pages in which to store the copies
+> of them (aka image pages).
+> 
+> First, the bitmaps are created and we allocate as many image pages as needed
+> (the corresponding bits in the second bitmap are set as soon as the pages are
+> allocated).  Second, the bits corresponding to the saveable pages are set in
+> the first bitmap and the saveable pages are copied to the image pages.
+> Finally, the first bitmap is used to save the kernel virtual addresses of the
+> saveable pages and the second one is used to save the contents of the image
+> pages.
 
-> Hi!
->
-> > > > A few months ago, I installed suspend2 on my laptop.  It worked great for
-> > > > a few days, when suddenly my laptop started to get very hot and the fan
-> > > > costantly went off, and then I started getting these:
-> > >
-> > > I take it as "if I keep it for a week powered off, it will not do
-> > > this".
-> >
-> > Not quite.  It's more of, "if I suspend everynight instead of leaving it
-> > running or shutting it down, it will do this" or "if I power off at night
-> > or just leave it running, it will not do this".
->
-> Okay, can you try to leave it up for a week or two (no suspends, no
-> poweroffs) and see what happens?
+Maybe that bitmap code should go to kernel/power/bitmaps.c or
+something?
 
-I've had this laptop running for a couple of months without shutting down
-and it doesn't have a problem.  The only time that I do shut it down is
-when I'm working on site (which I'm doing now). So I only shutdown the
-laptop while traveling.  When I came across suspend2 (and later swsusp), I
-was excited that I didn't need to restart all my applications when leaving
-the place of work and coming back.  But After being on site for several
-days, and using the suspend to disk, I get a hot CPU. But when I've been
-on site while shutting down normally when I leave then I don't have a
-problem.
+> +static inline void bm_position_reset_chunk(struct memory_bitmap *bm)
+> +{
+> +	bm->cur.chunk = 0;
+> +	bm->cur.bit = -1;
+> +}
+> +
+> +static void bm_position_reset(struct memory_bitmap *bm)
+> +{
+> +	struct zone_bitmap *zone_bm;
+> +
+> +	zone_bm = bm->zone_bm_list;
+> +	bm->cur.zone_bm = zone_bm;
+> +	bm->cur.block = zone_bm->bm_blocks;
+> +	bm_position_reset_chunk(bm);
+> +}
+> +
+> +static void free_memory_bm(struct memory_bitmap *bm, int
+> clear_nosave_free);
 
->
-> > > P4 has thermal protection, so you are actually safe.
-> >
-> > Yeah, but still, the keyboard gets pretty hot too, and I'm actually more
-> > worried about damaging something that is close by than damaging the CPU
-> > itself.
->
-> If you damage something, machine was misdesigned in the first place.
+All your other functions use bm_XXX, this is XXX_bm. Well, you are
+mixing it rather freely..
 
-agreed, but you never know ;)  This laptop is currently my lifeline :)
+> +/**
+> + *	memory_bm_set_bit - set the bit in the bitmap @bm that corresponds
+> + *	to given pfn.  The cur_zone_bm member of @bm and the cur_block member
+> + *	of @bm->cur_zone_bm are updated.
+> + *
+> + *	If the bit cannot be set, the function returns -EINVAL .
+> + */
+> +
+> +static int
+> +memory_bm_set_bit(struct memory_bitmap *bm, unsigned long pfn)
+> +{
+> +	struct zone_bitmap *zone_bm;
+> +	struct bm_block *bb;
+> +
+> +	/* Check if the pfn is from the current zone */
+> +	zone_bm = bm->cur.zone_bm;
+> +	if (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
+> +		zone_bm = bm->zone_bm_list;
+> +		/* We don't assume that the zones are sorted by pfns */
+> +		while (pfn < zone_bm->start_pfn || pfn >= zone_bm->end_pfn) {
+> +			zone_bm = zone_bm->next;
+> +			if (unlikely(!zone_bm))
+> +				return -EINVAL;
+> +		}
+> +		bm->cur.zone_bm = zone_bm;
+> +	}
+> +	/* Check if the pfn corresponds to the current bitmap block */
+> +	bb = zone_bm->cur_block;
+> +	if (pfn < bb->start_pfn)
+> +		bb = zone_bm->bm_blocks;
+> +
+> +	while (pfn >= bb->end_pfn) {
+> +		bb = bb->next;
+> +		if (unlikely(!bb))
+> +			return -EINVAL;
+> +	}
+> +	zone_bm->cur_block = bb;
+> +	pfn -= bb->start_pfn;
+> +	set_bit(pfn % BM_BITS_PER_CHUNK, bb->data + pfn / BM_BITS_PER_CHUNK);
+> +	return 0;
+> +}
 
->
-> cat we get contents of /proc/acpi/thermal*/*/* ?
+It seems like this will not really introduce O(n^2) behaviour, since
+you are starting from last position each time?
 
-I'm running after a poweroff (left it running over night in the hotel, and
-I'm still in the hotel).
+You have my ACK here, but maybe it should go _after_ 4/5 and 5/5?
+Those are simple cleanups, this has break-something-potential and
+should rest in -mm for a while.
 
-$ grep . /proc/acpi/thermal_zone/THRM/*
-/proc/acpi/thermal_zone/THRM/cooling_mode:<setting not supported>
-/proc/acpi/thermal_zone/THRM/cooling_mode:cooling mode: passive
-/proc/acpi/thermal_zone/THRM/polling_frequency:<polling disabled>
-/proc/acpi/thermal_zone/THRM/state:state:                   ok
-/proc/acpi/thermal_zone/THRM/temperature:temperature:             48 C
-/proc/acpi/thermal_zone/THRM/trip_points:critical (S5):           88 C
-/proc/acpi/thermal_zone/THRM/trip_points:passive:                 81 C: tc1=4 tc2=3 tsp=100 devices=0xcf6c2338
+								Pavel
 
-Note thermal_zone/THRM was finished with bash tab completion so they are
-the only things that match the above glob expr.
-
->
-> > $ sudo modprobe ibm_acpi
-> > $ ls /proc/acpi/ibm/
-> > bay        bluetooth  driver     led        thermal
-> > beep       cmos       hotkey     light      video
-> >
-> > No fan there
->
-> Does ibm/thermal work?
-
-$ cat /proc/acpi/ibm/thermal
-temperatures:   not supported
-
-I guess not.
-
->
-> Seems like fan is completely controlled by hardware. What may still
-> help: either saving or avoiding saving reserved parts of memory. But
-> this is all magic.
->
-> How s2ram works would be useful info.
-
-No idea.
-
-It does look like something isn't setting up the ACPI power properly on
-resume, and that the CPU is probably in a busy loop while the machine is
-idle.  Just a guess.
-
-Thanks for the support,
-
--- Steve
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
