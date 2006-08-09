@@ -1,38 +1,62 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 2/5] swsusp: Use memory bitmaps during resume
-Date: Wed, 9 Aug 2006 15:33:27 +0200
-Message-ID: <20060809133327.GH3808@elf.ucw.cz>
-References: <200608091152.49094.rjw@sisk.pl> <200608091304.35746.rjw@sisk.pl> <20060809113335.GP3308@elf.ucw.cz> <200608091351.06596.rjw@sisk.pl>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: swsusp and suspend2 like to overheat my laptop
+Date: Wed, 9 Aug 2006 09:35:31 -0400 (EDT)
+Message-ID: <Pine.LNX.4.58.0608090932460.3785@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
+	<20060808235352.GA4751@elf.ucw.cz>
+	<Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com>
+	<20060809073958.GK4886@elf.ucw.cz>
+	<Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
+	<20060809115843.GB3747@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750755AbWHINdn@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200608091351.06596.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <suspend2-devel-bounces@lists.suspend2.net>
+In-Reply-To: <20060809115843.GB3747@elf.ucw.cz>
+List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
+List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
+List-Post: <mailto:suspend2-devel@lists.suspend2.net>
+List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
+List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
+Sender: suspend2-devel-bounces@lists.suspend2.net
+Errors-To: suspend2-devel-bounces@lists.suspend2.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, ncunningham@linuxmail.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > I'm still not sure if highmem support is worth the complexity -- I
-> > hope highmem dies painful death in next 3 weeks or so.
-> 
-> metoo, but currently quite a lot of Core Duo-based notebooks with 1 GB of RAM
-> and more are still being sold, let alone the Celerons, Semprons etc.
+On Wed, 9 Aug 2006, Pavel Machek wrote:
 
-Well, 1GB should still be reasonably well supported, even with current
-code. 3GB+ machines will be different story.
+>
+> > > How s2ram works would be useful info.
+> >
+> > No idea.
+>
+> Well, try it :-). suspend.sf.net.
+>
 
-> The patch is designed so that the higmem-related parts are just dropped by the
-> compiler if CONFIG_HIGHMEM is not set.  That makes it a bit larger, but then
-> they don't get in the way when they are not needed.
-> 
-> [Well, I've been using 64-bit machines only for quite some time anyway, but
-> I thought it would be nice to do something for the others, too. ;-) ]
+Debian testing has it installed already, so I tried that one.
 
-Okay.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+# s2ram
+Machine is unknown.
+This machine can be identified by:
+    sys_vendor   = "IBM"
+    sys_product  = "288679U"
+    sys_version  = "ThinkPad G41"
+    bios_version = "1XET44WW (1.03 )"
+See http://en.opensuse.org/S2ram for details.
+
+If you report a problem, please include the complete output above.
+
+
+
+So then I tried s2ram -f
+
+Well it went to sleep fine.  But when I tried to wake it up again, the
+screen didn't come back. I'm not sure if the keyboard was working either.
+But I could eject the CD and when I put it back in, it seemed to mount it.
+
+Oh well, I'll have to debug that another day ;)
+
+-- Steve
