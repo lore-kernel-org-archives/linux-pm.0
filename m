@@ -1,79 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Wed, 9 Aug 2006 14:15:51 +0200
-Message-ID: <200608091415.51226.rjw@sisk.pl>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com> <Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com> <20060809115843.GB3747@elf.ucw.cz>
+Date: Wed, 9 Aug 2006 08:35:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.58.0608090831440.3177@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
+	<20060808235352.GA4751@elf.ucw.cz>
+	<Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com>
+	<20060809073958.GK4886@elf.ucw.cz>
+	<Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com>
+	<Pine.LNX.4.58.0608090751340.2500@gandalf.stny.rr.com>
+	<20060809120844.GD3747@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750703AbWHIMQ1@vger.kernel.org>
-In-Reply-To: <20060809115843.GB3747@elf.ucw.cz>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <suspend2-devel-bounces@lists.suspend2.net>
+In-Reply-To: <20060809120844.GD3747@elf.ucw.cz>
+List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
+List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
+List-Post: <mailto:suspend2-devel@lists.suspend2.net>
+List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
+List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
+Sender: suspend2-devel-bounces@lists.suspend2.net
+Errors-To: suspend2-devel-bounces@lists.suspend2.net
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, linux-pm@osdl.org, ncunningham@linuxmail.org
+Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, ncunningham@linuxmail.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 August 2006 13:58, Pavel Machek wrote:
-> Hi!
-> 
-> > > Okay, can you try to leave it up for a week or two (no suspends, no
-> > > poweroffs) and see what happens?
-> > 
-> > I've had this laptop running for a couple of months without shutting down
-> > and it doesn't have a problem.  The only time that I do shut it down
-> 
-> Ok.
-> 
-> > > > > P4 has thermal protection, so you are actually safe.
-> > > >
-> > > > Yeah, but still, the keyboard gets pretty hot too, and I'm actually more
-> > > > worried about damaging something that is close by than damaging the CPU
-> > > > itself.
-> > >
-> > > If you damage something, machine was misdesigned in the first place.
-> > 
-> > agreed, but you never know ;)  This laptop is currently my lifeline :)
-> 
-> You'd have good reason to get new one.
-> 
-> > > cat we get contents of /proc/acpi/thermal*/*/* ?
-> > 
-> > I'm running after a poweroff (left it running over night in the hotel, and
-> > I'm still in the hotel).
-> > 
-> > $ grep . /proc/acpi/thermal_zone/THRM/*
-> > /proc/acpi/thermal_zone/THRM/cooling_mode:<setting not supported>
-> > /proc/acpi/thermal_zone/THRM/cooling_mode:cooling mode: passive
-> > /proc/acpi/thermal_zone/THRM/polling_frequency:<polling disabled>
-> > /proc/acpi/thermal_zone/THRM/state:state:                   ok
-> > /proc/acpi/thermal_zone/THRM/temperature:temperature:             48 C
-> > /proc/acpi/thermal_zone/THRM/trip_points:critical (S5):           88 C
-> > /proc/acpi/thermal_zone/THRM/trip_points:passive:                 81 C: tc1=4 tc2=3 tsp=100 devices=0xcf6c2338
-> > 
-> > Note thermal_zone/THRM was finished with bash tab completion so they are
-> > the only things that match the above glob expr.
-> 
-> Ok, so it is the bios doing temperature control up-to 81C. At 81C,
-> linux should start cooling it, and at 88C, linux should shutdown. At
-> little higher temperature, hardware should emergency shutdown.
-> 
-> > > How s2ram works would be useful info.
-> > 
-> > No idea.
-> 
-> Well, try it :-). suspend.sf.net.
-> 
-> > It does look like something isn't setting up the ACPI power properly on
-> > resume, and that the CPU is probably in a busy loop while the machine is
-> > idle.  Just a guess.
-> 
-> Fan is not controlled by ACPI. But we may be saving some memory we
-> should not save, or something like that.
 
-If it's a P4, we rather don't, because the ACPI tables should be above the
-last pfn in the normal zone.  Still, Steven please send your dmesg after a
-fresh boot.
+On Wed, 9 Aug 2006, Pavel Machek wrote:
 
-Rafael
+>
+> Okay, run top to see what goes on, and look for
+> /proc/acpi/processor/*/* -- you are interested in C states before and
+> after suspend.
+> 									Pavel
+
+I don't quite understand.  What am I looking for in top?
+
+Here's the before and after:
+
+before:
+
+$ grep C /proc/acpi/processor/*/*
+/proc/acpi/processor/CPU0/power:active state:            C1
+/proc/acpi/processor/CPU0/power:max_cstate:              C8
+/proc/acpi/processor/CPU0/power:   *C1:                  type[C1]
+promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
+/proc/acpi/processor/CPU1/power:active state:            C1
+/proc/acpi/processor/CPU1/power:max_cstate:              C8
+/proc/acpi/processor/CPU1/power:   *C1:                  type[C1]
+promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
+
+
+after:
+
+grep C /proc/acpi/processor/*/*
+/proc/acpi/processor/CPU0/power:active state:            C1
+/proc/acpi/processor/CPU0/power:max_cstate:              C8
+/proc/acpi/processor/CPU0/power:   *C1:                  type[C1]
+promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
+/proc/acpi/processor/CPU1/power:active
+state:            C1
+/proc/acpi/processor/CPU1/power:max_cstate:              C8
+/proc/acpi/processor/CPU1/power:   *C1:                  type[C1]
+promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
+
+-- Steve
