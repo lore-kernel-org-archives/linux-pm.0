@@ -1,92 +1,41 @@
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+From: Mark Lord <lkml@rtr.ca>
 Subject: Re: swsusp and suspend2 like to overheat my laptop
-Date: Wed, 9 Aug 2006 15:03:18 +0200
-Message-ID: <20060809130318.GA22729@rhlx01.fht-esslingen.de>
-References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com> <20060808235352.GA4751@elf.ucw.cz> <Pine.LNX.4.58.0608082215090.20396@gandalf.stny.rr.com> <20060809073958.GK4886@elf.ucw.cz> <Pine.LNX.4.58.0608090732100.2500@gandalf.stny.rr.com> <20060809120734.GA30544@rhlx01.fht-esslingen.de> <Pine.LNX.4.58.0608090837120.3177@gandalf.stny.rr.com>
+Date: Wed, 09 Aug 2006 09:05:50 -0400
+Message-ID: <44D9DDAE.8080708@rtr.ca>
+References: <Pine.LNX.4.58.0608081612380.17442@gandalf.stny.rr.com>
+	<Pine.LNX.4.58.0608081831580.18586@gandalf.stny.rr.com>
+	<1155080145.26338.130.camel@mindpipe>
+	<200608090942.12404.nigel@suspend2.net>
+	<Pine.LNX.4.58.0608081948100.18586@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750738AbWHINDU@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0608090837120.3177@gandalf.stny.rr.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <suspend2-devel-bounces@lists.suspend2.net>
+In-Reply-To: <Pine.LNX.4.58.0608081948100.18586@gandalf.stny.rr.com>
+List-Unsubscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=unsubscribe>
+List-Archive: <http://lists.suspend2.net/lurker/list/suspend2-devel.html>
+List-Post: <mailto:suspend2-devel@lists.suspend2.net>
+List-Help: <mailto:suspend2-devel-request@lists.suspend2.net?subject=help>
+List-Subscribe: <http://lists.suspend2.net/mailman/listinfo/suspend2-devel>,
+	<mailto:suspend2-devel-request@lists.suspend2.net?subject=subscribe>
+Sender: suspend2-devel-bounces@lists.suspend2.net
+Errors-To: suspend2-devel-bounces@lists.suspend2.net
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>, Suspend2-devel@lists.suspend2.net, linux-pm@osdl.org, ncunningham@linuxmail.org
+Cc: linux-pm@osdl.org, LKML <linux-kernel@vger.kernel.org>, pavel@suse.cz, Lee Revell <rlrevell@joe-job.com>, Suspend2-devel@lists.suspend2.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Wed, Aug 09, 2006 at 08:38:27AM -0400, Steven Rostedt wrote:
-> This is after a suspend:
+Steven Rostedt wrote:
+>
+> I would prefer to do both, but I really can't tell you if the $OTHER_OS
+> works or not. I booted it once with this machine, and that was only to
+> register it with IBM. ;)
 > 
-> $ cat /proc/acpi/processor/CPU*/*
-> processor id:            0
-> acpi id:                 0
-> bus mastering control:   yes
-> power management:        no
-> throttling control:      yes
-> limit interface:         yes
-> active limit:            P0:T0
-> user limit:              P0:T0
-> thermal limit:           P0:T0
-> active state:            C1
-> max_cstate:              C8
-> bus master activity:     00000000
-> states:
->    *C1:                  type[C1] promotion[--] demotion[--] latency[000]
-> usage[00000000] duration[00000000000000000000]
-> state count:             4
-> active state:            T0
-> states:
->    *T0:                  00%
->     T1:                  25%
->     T2:                  50%
->     T3:                  75%
+> After that, I slapped in my Debian install CD and the rest is history.
 
-This is almost *exactly* the same as on my very cheap'n stupid HP/Compaq
-desktop P4 HT which doesn't support ACPI C2/C3 at all despite proper support
-by other P4 HT desktop machines (missing _CST ACPI object in the DSDT,
-as confirmed after messing with Intel's DSDT decompiler):
+My own solution for BIOS updates was to reinstall the MS stuff completely
+to a small old bootable external USB drive, and place it on a shelf for
+contingency / testing uses.  That way it doesn't even require a boot sector
+from the main drive.
 
-# cat /proc/acpi/processor/CPU?/*
-processor id:            0
-acpi id:                 1
-bus mastering control:   no
-power management:        no
-throttling control:      yes
-limit interface:         yes
-active limit:            P0:T0
-user limit:              P0:T0
-thermal limit:           P0:T0
-active state:            C1
-max_cstate:              C8
-bus master activity:     00000000
-states:
-   *C1:                  type[C1] promotion[--] demotion[--] latency[000] usage[00000000] duration[00000000000000000000]
-state count:             8
-active state:            T0
-states:
-   *T0:                  00%
-    T1:                  12%
-    T2:                  25%
-    T3:                  37%
-    T4:                  50%
-    T5:                  62%
-    T6:                  75%
-    T7:                  87%
-
-
-Note that
-
-max_cstate:              C8
-
-can be considered a bug (this is a C state init value from an ACPI define
-mistakenly left unchanged in case of missing _CST) since I thus only have C1
-and it should thus be set to C1.
-
-What would be interesting is this output *before* any suspend, not after ;)
-
-
-Oh, and your temperature after boot goes backwards since booting is a very
-active period, obviously.
-
-Andreas
+Cheers
