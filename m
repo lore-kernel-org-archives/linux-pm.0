@@ -1,13 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend to disk not working due to swap space failure
-Date: Thu, 10 Aug 2006 22:57:04 +0200
-Message-ID: <200608102257.04400.rjw@sisk.pl>
-References: <380D9721A8E2114485644D71E87C6AB20250BB3E@PNE-HJN-MBX01.wipro.com>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: OLS 2006 PM-BOF notes
+Date: Thu, 10 Aug 2006 14:18:18 -0700
+Message-ID: <20060810211818.GA18032@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB20250BB3E@PNE-HJN-MBX01.wipro.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,102 +17,51 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rasmit.ranjan@wipro.com
-Cc: johannes@sipsolutions.net, linux-pm@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 10 August 2006 08:23, rasmit.ranjan@wipro.com wrote:
-> =
+OLS 2006 PM BOF notes
 
-> > -----Original Message-----
-> > From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
-> > Sent: Wednesday, August 09, 2006 11:34 AM
-> > To: linux-pm@lists.osdl.org
-> > Cc: Rasmit Ranjan (WT01 - Semiconductors & Consumer
-> > Electronics); johannes@sipsolutions.net
-> > Subject: Re: [linux-pm] suspend to disk not working due to
-> > swap space failure
-> >
-> > On Wednesday 09 August 2006 05:05, rasmit.ranjan@wipro.com wrote:
-> > >
-> > > > -----Original Message-----
-> > > > From: Johannes Berg [mailto:johannes@sipsolutions.net]
-> > > > Sent: Tuesday, August 08, 2006 7:23 PM
-> > > > To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
-> > > > Cc: linux-pm@lists.osdl.org
-> > > > Subject: Re: [linux-pm] suspend to disk not working due to swap
-> > > > space failure
-> > > >
-> > > > rasmit.ranjan@wipro.com wrote:
-> > > > > So i tried creating a new
-> > > > > swap space by the command " mkswap". But still my swap
-> > > > partition does
-> > > > > not come up. I reboot my system but that did not work as well.
-> > > > > What might be the problem?
-> > > > Is it listed in /etc/fstab so swapon -a can find it?
-> > >
-> > > No it is not listed in /etc/fstab file. But `fdisk -l`
-> > shows the swap
-> > > partition.
-> >
-> > OK
-> >
-> > What's the name of your swap partition and how does your
-> > /etc/fstab look like?
-> >
-> =
+I'm sorry for taking so long to get these out, I misplaced my notes such as
+there are.  The discussions where fragmented and hard to keep up with.  =
 
-> Output of `fdisk -l` :
-> =
 
-> Disk /dev/hda: 40.0 GB, 40007761920 bytes
-> 255 heads, 63 sectors/track, 4864 cylinders
-> Units =3D cylinders of 16065 * 512 =3D 8225280 bytes
-> =
+The following is what I've managed to recall from my chicken scratches.  Fe=
+el
+free to correct and amend these notes or discuss the items.
 
->    Device Boot      Start         End      Blocks   Id  System
-> /dev/hda1               1         383     3076416   12  Compaq
-> diagnostics
-> /dev/hda2   *         384        2612    17904442+   c  W95 FAT32 (LBA)
-> /dev/hda3            2613        3887    10241437+  83  Linux
-> /dev/hda4            3888        4864     7847752+   5  Extended
-> /dev/hda5            3888        3952      522081   82  Linux swap /
-> Solaris
+--mgross
 
-So your swap is supposed to be /dev/hda5.  Please do
+CPUFREQ :
+Too many governors.  Can we collapse some of the governors that have a lot =
+of
+code in common?  Should the conservative governor be implemented as a
+constraint to the on demand driver / implemented by passing tuning paramete=
+rs?
 
-# mkswap /dev/hda5
+Can we remove the power save and performance governors?
 
-[BTW, you could create the swap as a primary partition too.]
+Profiling applications:
 
-> Content of /etc/fstab :
-> =
+Influence is coming from the embedded folks.  About 33% or more of BOF the
+attendees where representing the embedded Linux users.
 
-> # This file is edited by fstab-sync - see 'man fstab-sync' for details
-> LABEL=3D/                 /                       ext3    defaults
-> 1 1
-> /dev/devpts             /dev/pts                devpts  gid=3D5,mode=3D620
-> 0 0
-> /dev/shm                /dev/shm                tmpfs   defaults
-> 0 0
-> /dev/proc               /proc                   proc    defaults
-> 0 0
-> /dev/sys                /sys                    sysfs   defaults
-> 0 0
-> =
+Application hints to OS PM behaviors needed.
 
-> /dev/hdc                /media/cdrecorder       auto
-> pamconsole,exec,noauto,managed 0 0
+How to make dynamic policy changes? (e.g. "shut down cpus on 36-way box on =
+low
+demand times")
 
-Please add the following line to your /etc/fstab:
+Device / driver Policy manager for application based PM:
 
-/dev/hda5	swap	swap	defaults	0 0
+Can drivers be put into lower power states based on application hints, such=
+ as
+I'm doing DVD play back and don't need HD, Ethernet, USB, BT so shut those =
+down
+for now.
 
-Then (assuming you have run mkswap already) please do
+Need drivers to support going to low power states:
+Building the driver knowledge of clock dependencies?
+Nokia's clock/voltage frame work for OMAP
 
-# swapon -a
-
-and check if it shows up in /proc/swaps .
-
-Greetings,
-Rafael
+Predicable suspend and resume times:
