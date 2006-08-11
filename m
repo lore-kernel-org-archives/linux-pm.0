@@ -1,14 +1,12 @@
-From: david singleton <dsingleton@mvista.com>
-Subject: Re: PowerOp core patch
-Date: Thu, 10 Aug 2006 19:38:27 -0700
-Message-ID: <1d4c6c3d497ffd877c4039960211c3bd@mvista.com>
-References: <44D8D45F.80209@mvista.com>
-	<Pine.LNX.4.60.0608102041510.6141@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: <rasmit.ranjan@wipro.com>
+Subject: Re: suspend to disk not working due to swap space failure
+Date: Fri, 11 Aug 2006 10:21:59 +0530
+Message-ID: <380D9721A8E2114485644D71E87C6AB20250BFA2@PNE-HJN-MBX01.wipro.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.60.0608102041510.6141@poirot.grange>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,39 +16,152 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-pm@lists.osdl.org
+To: rjw@sisk.pl
+Cc: johannes@sipsolutions.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+ =
 
-On Aug 10, 2006, at 11:43 AM, Guennadi Liakhovetski wrote:
 
-> On Tue, 8 Aug 2006, David Singleton wrote:
->
->> Here is the core patch for the PowerOp concept.  It adds the powerop
->> struct
->> for opertaing point support to linux/pm.h and adds support to =
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] =
 
->> transition
->> to supported operating points by
->> setting their name into /sys/power/state.
->
-> Sorry, a stupid question - reboot, halt / poweroff (always wanted to =
+> Sent: Friday, August 11, 2006 2:27 AM
+> To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
+> Cc: linux-pm@lists.osdl.org; johannes@sipsolutions.net
+> Subject: Re: [linux-pm] suspend to disk not working due to =
 
-> know
-> the difference...) are not power states, right?...
+> swap space failure
+> =
 
-Correct.  Power states are states in which the system can operate.
-Halt gets the system ready to turn power off,  reboot just brings the =
+> On Thursday 10 August 2006 08:23, rasmit.ranjan@wipro.com wrote:
+> > =
 
-system
-down and then boots it up again.
+> > > -----Original Message-----
+> > > From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
+> > > Sent: Wednesday, August 09, 2006 11:34 AM
+> > > To: linux-pm@lists.osdl.org
+> > > Cc: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics); =
 
->
->> The supported operating points are shown in a readonly sysfs file,
->> /sys/power/supported_states.
->
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski
+> > > johannes@sipsolutions.net
+> > > Subject: Re: [linux-pm] suspend to disk not working due to swap =
+
+> > > space failure
+> > >
+> > > On Wednesday 09 August 2006 05:05, rasmit.ranjan@wipro.com wrote:
+> > > >
+> > > > > -----Original Message-----
+> > > > > From: Johannes Berg [mailto:johannes@sipsolutions.net]
+> > > > > Sent: Tuesday, August 08, 2006 7:23 PM
+> > > > > To: Rasmit Ranjan (WT01 - Semiconductors & Consumer =
+
+> Electronics)
+> > > > > Cc: linux-pm@lists.osdl.org
+> > > > > Subject: Re: [linux-pm] suspend to disk not working =
+
+> due to swap =
+
+> > > > > space failure
+> > > > >
+> > > > > rasmit.ranjan@wipro.com wrote:
+> > > > > > So i tried creating a new
+> > > > > > swap space by the command " mkswap". But still my swap
+> > > > > partition does
+> > > > > > not come up. I reboot my system but that did not =
+
+> work as well.
+> > > > > > What might be the problem?
+> > > > > Is it listed in /etc/fstab so swapon -a can find it?
+> > > >
+> > > > No it is not listed in /etc/fstab file. But `fdisk -l`
+> > > shows the swap
+> > > > partition.
+> > >
+> > > OK
+> > >
+> > > What's the name of your swap partition and how does your =
+
+> /etc/fstab =
+
+> > > look like?
+> > >
+> > =
+
+> > Output of `fdisk -l` :
+> > =
+
+> > Disk /dev/hda: 40.0 GB, 40007761920 bytes
+> > 255 heads, 63 sectors/track, 4864 cylinders Units =3D =
+
+> cylinders of 16065 =
+
+> > * 512 =3D 8225280 bytes
+> > =
+
+> >    Device Boot      Start         End      Blocks   Id  System
+> > /dev/hda1               1         383     3076416   12  Compaq
+> > diagnostics
+> > /dev/hda2   *         384        2612    17904442+   c  W95 =
+
+> FAT32 (LBA)
+> > /dev/hda3            2613        3887    10241437+  83  Linux
+> > /dev/hda4            3888        4864     7847752+   5  Extended
+> > /dev/hda5            3888        3952      522081   82  Linux swap /
+> > Solaris
+> =
+
+> So your swap is supposed to be /dev/hda5.  Please do
+> =
+
+> # mkswap /dev/hda5
+> =
+
+> [BTW, you could create the swap as a primary partition too.]
+> =
+
+> > Content of /etc/fstab :
+> > =
+
+> > # This file is edited by fstab-sync - see 'man fstab-sync' =
+
+> for details
+> > LABEL=3D/                 /                       ext3    defaults
+> > 1 1
+> > /dev/devpts             /dev/pts                devpts  =
+
+> gid=3D5,mode=3D620
+> > 0 0
+> > /dev/shm                /dev/shm                tmpfs   defaults
+> > 0 0
+> > /dev/proc               /proc                   proc    defaults
+> > 0 0
+> > /dev/sys                /sys                    sysfs   defaults
+> > 0 0
+> > =
+
+> > /dev/hdc                /media/cdrecorder       auto
+> > pamconsole,exec,noauto,managed 0 0
+> =
+
+> Please add the following line to your /etc/fstab:
+> =
+
+> /dev/hda5	swap	swap	defaults	0 0
+> =
+
+> Then (assuming you have run mkswap already) please do
+> =
+
+> # swapon -a
+> =
+
+> and check if it shows up in /proc/swaps .
+
+
+Thanks Rafael. It worked and now my suspend to disk is also working.
+Thanks.
+> =
+
+> Greetings,
+> Rafael
+> =
