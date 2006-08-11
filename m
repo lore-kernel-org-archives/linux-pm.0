@@ -1,12 +1,12 @@
-From: <rasmit.ranjan@wipro.com>
-Subject: Re: suspend to disk not working due to swap space failure
-Date: Fri, 11 Aug 2006 10:21:59 +0530
-Message-ID: <380D9721A8E2114485644D71E87C6AB20250BFA2@PNE-HJN-MBX01.wipro.com>
+From: "Scott E. Preece" <preece@motorola.com>
+Subject: Re: OLS 2006 PM-BOF notes
+Date: Fri, 11 Aug 2006 14:14:19 -0500 (CDT)
+Message-ID: <200608111914.k7BJEJ0Q029765@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-reply-to: Mark Gross's message of Thu, 10 Aug 2006 14:18:18 -0700
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,152 +16,71 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rjw@sisk.pl
-Cc: johannes@sipsolutions.net, linux-pm@lists.osdl.org
+To: mgross@linux.intel.com
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
- =
 
 
-> -----Original Message-----
-> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] =
+| From: Mark Gross<mgross@linux.intel.com>
+| =
 
-> Sent: Friday, August 11, 2006 2:27 AM
-> To: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics)
-> Cc: linux-pm@lists.osdl.org; johannes@sipsolutions.net
-> Subject: Re: [linux-pm] suspend to disk not working due to =
+| OLS 2006 PM BOF notes
+| =
 
-> swap space failure
-> =
+| I'm sorry for taking so long to get these out, I misplaced my notes such =
+as
+| there are.  The discussions where fragmented and hard to keep up with.  =
 
-> On Thursday 10 August 2006 08:23, rasmit.ranjan@wipro.com wrote:
-> > =
+| ...
+| Device / driver Policy manager for application based PM:
+| =
 
-> > > -----Original Message-----
-> > > From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
-> > > Sent: Wednesday, August 09, 2006 11:34 AM
-> > > To: linux-pm@lists.osdl.org
-> > > Cc: Rasmit Ranjan (WT01 - Semiconductors & Consumer Electronics); =
+| Can drivers be put into lower power states based on application hints, su=
+ch as
+| I'm doing DVD play back and don't need HD, Ethernet, USB, BT so shut thos=
+e down
+| for now.
+---
 
-> > > johannes@sipsolutions.net
-> > > Subject: Re: [linux-pm] suspend to disk not working due to swap =
+Problem, of course, is that in general-use kind of environment, one
+application doesn't know what another is doing. So, an app could say "I
+need X, Y, Z" or "I don't need X, Y, Z", but something needs to track
+the requirements across the system as a whole. And, then, you either
+have to trust the applications (which seems unworkable, as long as the
+software set can be changed on a deployed system) or else you have to
+have a backup approach that controls things by watching the system. And,
+if you have that, do you really need the app hints, too?
 
-> > > space failure
-> > >
-> > > On Wednesday 09 August 2006 05:05, rasmit.ranjan@wipro.com wrote:
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Johannes Berg [mailto:johannes@sipsolutions.net]
-> > > > > Sent: Tuesday, August 08, 2006 7:23 PM
-> > > > > To: Rasmit Ranjan (WT01 - Semiconductors & Consumer =
+Now, a narrow consumer device with non-replaceable software might be
+able to get away with just voluntary controls, but (a) the FLOSS
+community is getting sensitive about whether non-replaceable software is
+permissible and (b) a lot of consumer devices are skewing more towards
+general use, anyway, so being able to count on cooperative apps is
+probably unrealistic.
 
-> Electronics)
-> > > > > Cc: linux-pm@lists.osdl.org
-> > > > > Subject: Re: [linux-pm] suspend to disk not working =
+Look at the narrow case of CPU demand; most apps (other than simple
+filter-style apps) have multiple execution regimes while they're
+running - the DVD player doesn't need a lit of CPU while it's waiting for
+you to press PLAY. So coders would have to remember to change hints as
+they changed modes, which seems like a stretch. And you need a means of
+expressing your hints in a way that doesn't depend on knowledge of the
+platform, or else the developer needs to test on every supported
+platform and calculate requirements for that hardware.
 
-> due to swap =
+The MontaVista/IBM white paper on DPM talked about seeing gains just
+from stopping during the inter-frame breaks in video decoding. If you've
+got dynamic ticks, and the app is tied to a timer to restart its
+activity for the next frame, you can probably do as well by just letting
+the scheduler drive that as by asking the app to carefully indicate when
+it's not going to need processing.
 
-> > > > > space failure
-> > > > >
-> > > > > rasmit.ranjan@wipro.com wrote:
-> > > > > > So i tried creating a new
-> > > > > > swap space by the command " mkswap". But still my swap
-> > > > > partition does
-> > > > > > not come up. I reboot my system but that did not =
+scott
 
-> work as well.
-> > > > > > What might be the problem?
-> > > > > Is it listed in /etc/fstab so swapon -a can find it?
-> > > >
-> > > > No it is not listed in /etc/fstab file. But `fdisk -l`
-> > > shows the swap
-> > > > partition.
-> > >
-> > > OK
-> > >
-> > > What's the name of your swap partition and how does your =
+-- =
 
-> /etc/fstab =
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
 
-> > > look like?
-> > >
-> > =
-
-> > Output of `fdisk -l` :
-> > =
-
-> > Disk /dev/hda: 40.0 GB, 40007761920 bytes
-> > 255 heads, 63 sectors/track, 4864 cylinders Units =3D =
-
-> cylinders of 16065 =
-
-> > * 512 =3D 8225280 bytes
-> > =
-
-> >    Device Boot      Start         End      Blocks   Id  System
-> > /dev/hda1               1         383     3076416   12  Compaq
-> > diagnostics
-> > /dev/hda2   *         384        2612    17904442+   c  W95 =
-
-> FAT32 (LBA)
-> > /dev/hda3            2613        3887    10241437+  83  Linux
-> > /dev/hda4            3888        4864     7847752+   5  Extended
-> > /dev/hda5            3888        3952      522081   82  Linux swap /
-> > Solaris
-> =
-
-> So your swap is supposed to be /dev/hda5.  Please do
-> =
-
-> # mkswap /dev/hda5
-> =
-
-> [BTW, you could create the swap as a primary partition too.]
-> =
-
-> > Content of /etc/fstab :
-> > =
-
-> > # This file is edited by fstab-sync - see 'man fstab-sync' =
-
-> for details
-> > LABEL=3D/                 /                       ext3    defaults
-> > 1 1
-> > /dev/devpts             /dev/pts                devpts  =
-
-> gid=3D5,mode=3D620
-> > 0 0
-> > /dev/shm                /dev/shm                tmpfs   defaults
-> > 0 0
-> > /dev/proc               /proc                   proc    defaults
-> > 0 0
-> > /dev/sys                /sys                    sysfs   defaults
-> > 0 0
-> > =
-
-> > /dev/hdc                /media/cdrecorder       auto
-> > pamconsole,exec,noauto,managed 0 0
-> =
-
-> Please add the following line to your /etc/fstab:
-> =
-
-> /dev/hda5	swap	swap	defaults	0 0
-> =
-
-> Then (assuming you have run mkswap already) please do
-> =
-
-> # swapon -a
-> =
-
-> and check if it shows up in /proc/swaps .
-
-
-Thanks Rafael. It worked and now my suspend to disk is also working.
-Thanks.
-> =
-
-> Greetings,
-> Rafael
-> =
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
