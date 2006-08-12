@@ -1,15 +1,17 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: OLS 2006 PM-BOF notes
-Date: Fri, 11 Aug 2006 16:20:13 -0700
-Message-ID: <20060811232013.GA6930@linux.intel.com>
-References: <200608111914.k7BJEJ0Q029765@olwen.urbana.css.mot.com>
-Reply-To: mgross@linux.intel.com
+From: "Vitaly Wool" <vitalywool@gmail.com>
+Subject: Re: Dynanic On-The-Fly Operating points for PowerOP
+Date: Sat, 12 Aug 2006 12:07:31 +0400
+Message-ID: <acd2a5930608120107k36653863vdfc8bd3875d395a9@mail.gmail.com>
+References: <44D8D40F.50005@mvista.com>
+	<bb52214749a48f317fba09eb522537bb@nomadgs.com>
+	<5da81756733c335565f969bab0c9b934@mvista.com>
+	<26d93dc005e384544d9ea702baa4a4af@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <26d93dc005e384544d9ea702baa4a4af@nomadgs.com>
 Content-Disposition: inline
-In-Reply-To: <200608111914.k7BJEJ0Q029765@olwen.urbana.css.mot.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,98 +21,51 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org
+To: Matthew Locke <matt@nomadgs.com>
+Cc: linux-pm@lists.osdl.org, david singleton <dsingleton@mvista.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 11, 2006 at 02:14:19PM -0500, Scott E. Preece wrote:
-> =
+> Yes, which is why Eugeny and I sent out the take 3 PowerOP patches.  A
+> good discussion ensued and our updated patches are a result of that
+> discussion.  If you disagree with our approach or think something is
+> missing, give us some specific feedback.  Simply sending out a separate
+> set of PowerOP patches is not joining in the current discussion.  It is
+> confusing and probably turning people off to the ideas.   Is there
+> something specific missing or wrong with the patches we submitted that
+> required another set of patches to be developed?  By joining in the
+> discussion, I mean that you should let us know this information.  If
+> patches are your method for doing so, then at least provide a
+> description of what your patches address that ours does not.  Right
+> now, its just unclear why there are two different powerop patchsets.
 
-> =
+May I disagree? Having an alternative implementation is never a bad
+thing, unless the sides are unable to co-operate ;)
+Let's try to compare implementations and their concepts, and benefit from b=
+oth.
 
-> | From: Mark Gross<mgross@linux.intel.com>
-> | =
+> Um,  I thought the powerop write up and  patches already sent out
+> addressed the goals discussed so far.  We (everyone on the list) need
+> to collaborate on the powerop effort.  Isolated development and
+> attempting to discuss two separate implementations won't get us very
+> far.
 
-> | OLS 2006 PM BOF notes
-> | =
+I would like to suggest both sides to think over what the main
+differences of the concurring implementations are and share the
+thoughts with this list. That should really be helpful to work out the
+common solution.
 
-> | I'm sorry for taking so long to get these out, I misplaced my notes suc=
-h as
-> | there are.  The discussions where fragmented and hard to keep up with.  =
+> My goal is to get PowerOP into the mainline kernel.  If everyone
+> submits a different powerop implementation for those boards, then
+> people will see a fragmented concept that can not be generalized.  The
+> possibility of Andrew and Linus accepting PowerOP will go from high to
+> never.   Again, I don't see any reason for two separate development
+> efforts and patchsets.  Please stop submitting separate patches and at
+> least attempt to collaborate on the current PowerOP patchsets under
+> discussion.
 
-> | ...
-> | Device / driver Policy manager for application based PM:
-> | =
+I wouldn't say so. I would just like to see both implementations
+converging, but that is not to happen immediately. Anyway, this
+implies that both authors pay more attention to the other
+implementation.
 
-> | Can drivers be put into lower power states based on application hints, =
-such as
-> | I'm doing DVD play back and don't need HD, Ethernet, USB, BT so shut th=
-ose down
-> | for now.
-> ---
-> =
-
-> Problem, of course, is that in general-use kind of environment, one
-> application doesn't know what another is doing. So, an app could say "I
-> need X, Y, Z" or "I don't need X, Y, Z", but something needs to track
-> the requirements across the system as a whole. And, then, you either
-> have to trust the applications (which seems unworkable, as long as the
-> software set can be changed on a deployed system) or else you have to
-> have a backup approach that controls things by watching the system. And,
-> if you have that, do you really need the app hints, too?
-
-point
-
-> =
-
-> Now, a narrow consumer device with non-replaceable software might be
-> able to get away with just voluntary controls, but (a) the FLOSS
-> community is getting sensitive about whether non-replaceable software is
-> permissible and (b) a lot of consumer devices are skewing more towards
-> general use, anyway, so being able to count on cooperative apps is
-> probably unrealistic.
-> =
-
-> Look at the narrow case of CPU demand; most apps (other than simple
-> filter-style apps) have multiple execution regimes while they're
-> running - the DVD player doesn't need a lit of CPU while it's waiting for
-> you to press PLAY. So coders would have to remember to change hints as
-> they changed modes, which seems like a stretch. And you need a means of
-> expressing your hints in a way that doesn't depend on knowledge of the
-> platform, or else the developer needs to test on every supported
-> platform and calculate requirements for that hardware.
-
-Now that we have dynaticks coming with HRT in the next few kernels we
-have part of the problme solved.  The next step is to enable better
-resource need predition at the system level based on both responivenes
-and throughput needs to round out the PM story.
-
-If we could know that we need Xmsec responce in UI events, and we have
-Ysec of playback buffer in the audio hardware, and we have similar data
-from key IO devices that know about latencies and throughput collected
-somewhere that a policy manager could do a good job of knowing what
-lower power states can be attempted and by what devices, that would help
-a lot.
-
-> =
-
-> The MontaVista/IBM white paper on DPM talked about seeing gains just
-> from stopping during the inter-frame breaks in video decoding. If you've
-> got dynamic ticks, and the app is tied to a timer to restart its
-> activity for the next frame, you can probably do as well by just letting
-> the scheduler drive that as by asking the app to carefully indicate when
-> it's not going to need processing.
-
-What is needed is a way for media applications to set a deadline based
-on how large the playback buffer is, fill it, yeald and then if the
-system is otherwise idle, drop into a deep C state (x86) or high latency
-sleep (ARM) as a function of how much time is left before the buffer is
-drained out.
-
-For this to work you need the system to know how long before it needs to
-ramp back up and schedule it to do so.
-
-It would be good to consider how this type of latency and CPU wake up
-from deep idle scheduling could look in Linux.
-
---mgross =
+Vitaly
