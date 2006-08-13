@@ -1,73 +1,38 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: Re: Dynanic On-The-Fly Operating points for PowerOP
-Date: Sat, 12 Aug 2006 22:25:58 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD019C04DA@de01exm64.ds.mot.com>
-References: <ea3ff079538ac1f02dd4c7ec48953146@nomadgs.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC][PATCH -mm 0/5] swsusp: Fix handling of highmem
+Date: Mon, 14 Aug 2006 00:34:49 +0200
+Message-ID: <20060813223449.GG6231@elf.ucw.cz>
+References: <200608091152.49094.rjw@sisk.pl> <200608092047.13493.ncunningham@linuxmail.org> <20060809113822.GQ3308@elf.ucw.cz> <200608092152.11122.ncunningham@linuxmail.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <ea3ff079538ac1f02dd4c7ec48953146@nomadgs.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matt@nomadgs.com>, Vitaly Wool <vitalywool@gmail.com>
-Cc: linux-pm@lists.osdl.org, david singleton <dsingleton@mvista.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751693AbWHMWfJ@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200608092152.11122.ncunningham@linuxmail.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nigel Cunningham <ncunningham@linuxmail.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-I'd say that David's recent note provides some useful information about
-why his implementation is different. I don't mind seeing an alternate
-implementation if there's a reason for it, but I have to say that it
-would have been nice to have the exegesis with or before the patches.
+On Wed 2006-08-09 21:52:10, Nigel Cunningham wrote:
+> On Wednesday 09 August 2006 21:38, Pavel Machek wrote:
+> > Hi!
+> >
+> > > > Comments welcome.
+> > >
+> > > Thanks for the reminder. I'd forgotten half the reason why I didn't want
+> > > to make Suspend2 into incremental patches! You're a brave man!
+> >
+> > Why does this serve as a reminder? No, it is not easy to merge big
+> > patches to mainline. But it is actually a feature.
+> 
+> It serves as a reminder because it shows (just the description, I mean), how 
+> inter-related all the changes that are needed are.
+> 
+> I don't get the "it is actually a feature" bit.
 
-scott
-
------Original Message-----
-From: linux-pm-bounces@lists.osdl.org
-[mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Matthew Locke
-Sent: Saturday, August 12, 2006 6:15 PM
-To: Vitaly Wool
-Cc: linux-pm@lists.osdl.org; david singleton
-Subject: Re: [linux-pm] Dynanic On-The-Fly Operating points for PowerOP
-
-
-On Aug 12, 2006, at 1:07 AM, Vitaly Wool wrote:
-> May I disagree? Having an alternative implementation is never a bad =
-
-> thing, unless the sides are unable to co-operate ;) Let's try to =
-
-> compare implementations and their concepts, and benefit from both.
-
-What are you disagreeing with?  Re-read my statement below.   I don't =
-
-see the reason for another implementation.  Rather than guess,  I would
-prefer that Dave tell us why he is submitting a different powerop
-interface.  There must be something driving him to do so.
-
->> Is there
->> something specific missing or wrong with the patches we submitted =
-
->> that required another set of patches to be developed?  By joining in =
-
->> the discussion, I mean that you should let us know this information.
-
->> If patches are your method for doing so, then at least provide a =
-
->> description of what your patches address that ours does not.  Right =
-
->> now, its just unclear why there are two different powerop patchsets.
->>
-
-Matt
-
-_______________________________________________
-linux-pm mailing list
-linux-pm@lists.osdl.org
-https://lists.osdl.org/mailman/listinfo/linux-pm
+Well, it is good that submitting patches is hard ... because kernel
+ends cleaner that way. 
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
