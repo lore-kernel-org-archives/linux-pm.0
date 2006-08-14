@@ -1,14 +1,15 @@
-From: Laurent Riffard <laurent.riffard@free.fr>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: BUG while suspending to swap on LVM
-Date: Mon, 14 Aug 2006 23:25:07 +0200
-Message-ID: <44E0EA33.7080801@free.fr>
-References: <44E0A995.50806@free.fr> <200608142116.26844.rjw@sisk.pl>
-	<44E0D714.2020805@free.fr> <200608142250.06536.rjw@sisk.pl>
+Date: Mon, 14 Aug 2006 23:37:56 +0200
+Message-ID: <200608142337.56843.rjw@sisk.pl>
+References: <44E0A995.50806@free.fr> <200608142250.06536.rjw@sisk.pl>
+	<44E0EA33.7080801@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200608142250.06536.rjw@sisk.pl>
+In-Reply-To: <44E0EA33.7080801@free.fr>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,125 +19,61 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@osdl.org, linux-pm@lists.osdl.org
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Le 14.08.2006 22:50, Rafael J. Wysocki a =E9crit :
-> On Monday 14 August 2006 22:03, Laurent Riffard wrote:
->> Le 14.08.2006 21:16, Rafael J. Wysocki a =E9crit :
->>> On Monday 14 August 2006 19:48, Laurent Riffard wrote:
->>>> Le 14.08.2006 19:30, Rafael J. Wysocki a =E9crit :
->>>>> Hi,
->>>>>
->>>>> Thanks for the report.
->>>>>
->>>>> On Monday 14 August 2006 18:49, Laurent Riffard wrote:
->>>>>> Hello, =
+On Monday 14 August 2006 23:25, Laurent Riffard wrote:
+> Le 14.08.2006 22:50, Rafael J. Wysocki a =E9crit :
+> > On Monday 14 August 2006 22:03, Laurent Riffard wrote:
+> >> Le 14.08.2006 21:16, Rafael J. Wysocki a =E9crit :
+> >>> On Monday 14 August 2006 19:48, Laurent Riffard wrote:
+> >>>> Le 14.08.2006 19:30, Rafael J. Wysocki a =E9crit :
+]--snip--[
+> >> Does it mean it was mistaken on swap device ?
+> > =
 
->>>>>>
->>>>>> I hit a BUG while I was trying to suspend to a swap device on LVM. =
-
->>>>>> The call trace looks like this (see attached picture for detailed =
-
->>>>>> stack trace):
->>>>>>
->>>>>> EIP is at _raw_spin_lock
->>>>>> Call Trace:
->>>>>>   die
->>>>>>   do_page_fault
->>>>>>   error_code
->>>>>>   _spin_lock_irq
->>>>>>   generic_unplug_device
->>>>>>   wait_on_bio_chain
->>>>>>   swap_write_image
->>>>> This should be swap_write_page().
->>>> right.
->>>>>>   swsusp_write
->>>>>>   pm_suspend_disk
->>>>>>   enter_state
->>>>>>   state_store
->>>>>>   susbsys_attr_store
->>>>>>   sysfs_write_file
->>>>>>   vfs_write
->>>>>>   sys_write
->>>>>>   sysenter_past_esp
->>>>>>
->>>>>> It was Linux 2.6.18-rc4-mm1 booted with:
->>>>>> root=3D/dev/vglinux1/lvroot video=3Dvesafb:mtrr splash=3Dsilent resu=
-me=3D/dev/mapper/vglinux1-lvswap init 1
->>>>> Does the unpatched 2.6.18-rc4 work in this configuration?
->>>> Will try.
->>> Well, I'm afraid it won't work.
->> guess what? 2.6.18-rc4 worked!
+> > Yes.  If your resume device is not the first swap, it won't work without
+> > the patch.
 > =
 
-> Strange ...
+> Ok, that's why I had that strange behaviour:
+> - 2 swap devices online, suspend to second one: suspend works.
+> - on resume, it can't find suspend signature on the 2nd swap device, so
+>   it continue with normal boot, fsck all FS and say something like "swapo=
+n: =
+
+>   1st swap device busy". I had to mkswap it.
 > =
 
->>> Can you please try the appended patch?
->> Ok, I'll try on 2.6.18-rc4-mm1.
->>  =
+> I was thinking that my initrd script was broken or I was mistyping the re=
+sume =
 
->>> Rafael
->>>
->>>
->>> ---
->>>  mm/swapfile.c |    3 ++-
->>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>
->>> Index: linux-2.6.18-rc4-mm1/mm/swapfile.c
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> --- linux-2.6.18-rc4-mm1.orig/mm/swapfile.c	2006-08-13 14:54:43.0000000=
-00 +0200
->>> +++ linux-2.6.18-rc4-mm1/mm/swapfile.c	2006-08-14 21:09:09.000000000 +0=
-200
->>> @@ -442,11 +442,12 @@ int swap_type_of(dev_t device)
->>>  =
+> device name in GRUB. Was funny...
 
->>>  		if (!(swap_info[i].flags & SWP_WRITEOK))
->>>  			continue;
->>> +
->>>  		if (!device) {
->>>  			spin_unlock(&swap_lock);
->>>  			return i;
->>>  		}
->>> -		inode =3D swap_info->swap_file->f_dentry->d_inode;
->>> +		inode =3D swap_info[i].swap_file->f_dentry->d_inode;
->>>  		if (S_ISBLK(inode->i_mode) &&
->>>  		    device =3D=3D MKDEV(imajor(inode), iminor(inode))) {
->>>  			spin_unlock(&swap_lock);
->> Does it mean it was mistaken on swap device ?
+Sorry for that.
+
+This is not related to the BUG you've reported, but could you please try to
+suspend using the second swap as your resume partition with a patched kerne=
+l,
+just to make sure the patch works?  I have no boxes with two swaps to verify
+this ...
+
+> >> I did not pay attention on which swap device was online or not.
+> > =
+
+> > Please do when you test it. ;-)
 > =
 
-> Yes.  If your resume device is not the first swap, it won't work without
-> the patch.
+> I tested with only 1 swap device online: /dev/mapper/vglinux1-lvswap: =
 
-Ok, that's why I had that strange behaviour:
-- 2 swap devices online, suspend to second one: suspend works.
-- on resume, it can't find suspend signature on the 2nd swap device, so
-  it continue with normal boot, fsck all FS and say something like "swapon: =
+> same BUG happened with 2.6.18-rc4-mm1 patched.
 
-  1st swap device busy". I had to mkswap it.
+Of course the patch doesn't matter if there's only one swap online. :-)
 
-I was thinking that my initrd script was broken or I was mistyping the resu=
-me =
+I have no ideas for now and I think some debug patches will be needed to fi=
+nd
+out what's up.
 
-device name in GRUB. Was funny...
- =
-
->> I did not pay attention on which swap device was online or not.
-> =
-
-> Please do when you test it. ;-)
-
-I tested with only 1 swap device online: /dev/mapper/vglinux1-lvswap: =
-
-same BUG happened with 2.6.18-rc4-mm1 patched. =
-
-
--- =
-
-laurent
+Greetings,
+Rafael
