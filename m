@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: BUG while suspending to swap on LVM
-Date: Mon, 14 Aug 2006 23:53:38 +0200
-Message-ID: <200608142353.38527.rjw@sisk.pl>
-References: <44E0A995.50806@free.fr> <44E0EA33.7080801@free.fr>
-	<200608142337.56843.rjw@sisk.pl>
-Mime-Version: 1.0
+From: Matthew Locke <matt@nomadgs.com>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Mon, 14 Aug 2006 15:24:19 -0700
+Message-ID: <c948ef9077556626e85291ad716b7ddb@nomadgs.com>
+References: <20060814200735.GC14099@kroah.com>
+Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200608142337.56843.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <20060814200735.GC14099@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,52 +17,115 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: Laurent Riffard <laurent.riffard@free.fr>
+To: Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 14 August 2006 23:37, Rafael J. Wysocki wrote:
-> On Monday 14 August 2006 23:25, Laurent Riffard wrote:
-> > Le 14.08.2006 22:50, Rafael J. Wysocki a =E9crit :
-> > > On Monday 14 August 2006 22:03, Laurent Riffard wrote:
-> > >> Le 14.08.2006 21:16, Rafael J. Wysocki a =E9crit :
-> > >>> On Monday 14 August 2006 19:48, Laurent Riffard wrote:
-> > >>>> Le 14.08.2006 19:30, Rafael J. Wysocki a =E9crit :
-]--snip--[
-> > =
+On Aug 14, 2006, at 1:07 PM, Greg KH wrote:
 
-> > I tested with only 1 swap device online: /dev/mapper/vglinux1-lvswap: =
+> I'm seeing a lot of threads without very much resolution on the
+> differing patches that are flying around here in regards to the rework
+> of the power management stuff (not suspend stuff...)
+>
 
-> > same BUG happened with 2.6.18-rc4-mm1 patched.
-> =
+RIght now there are two sets of patches with the name powerop.
 
-> Of course the patch doesn't matter if there's only one swap online. :-)
-> =
+One set (from Eugeny and myself) is focused on getting agreement for =
 
-> I have no ideas for now and I think some debug patches will be needed to =
-find
-> out what's up.
+the PowerOP interface and operating point definition.  I believe the =
 
-Could you please try to revert the following patches (in this order):
+last patchset Eugeny submitted as incorporated all the comments about =
 
-swsusp-use-memory-bitmaps-during-resume.patch
-swsusp-introduce-memory-bitmaps.patch
-swsusp-struct-snapshot_handle-cleanup.patch
-swsusp-clean-up-browsing-of-pfns.patch
-swsusp-read-speedup-cleanup-2.patch
-swsusp-read-speedup-cleanup.patch
-swsusp-read-speedup-fix.patch
-swsusp-read-speedup.patch
-swsusp-read-timer.patch
-swsusp-write-speedup.patch
-swsusp-write-timer.patch
+PowerOP so far.   I don't think integrating PowerOP with suspend =
 
-from 2.6.18-rc4-mm1 and see if that helps?
+(/sys/power/state) is appropriate at this time (as others agreed).  I =
 
-Rafael
+would rather see PowerOP accepted and used by cpufreq before we tackle =
+
+suspend/resume.
+
+The other set posted by Dave Singleton is geared towards showing how =
+
+PowerOP can be used by both cpufreq and suspend code.  It contains lots =
+
+of features that have not been reviewed or discussed.
 
 
--- =
 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+> So, should I just grab a random patchset from here and add it to my
+> trees and get it into -mm for testing, or does someone want to possibly
+> guide me to the set that everyone seems to agree apon?
+
+No, please don't grab a random patchset:)  IMO,  the patches from =
+
+Eugeny and myself are the ones to grab and put into -mm.  We were =
+
+hoping to get some feedback on the set posted here  =
+
+http://lists.osdl.org/pipermail/linux-pm/2006-August/003196.html but I =
+
+think the two patchsets have confused the situation.   We are working =
+
+on the next rev of these patches which will mostly be some clean up and =
+
+tighter integration  with cpufreq.  Our plan was to get the next rev =
+
+out before we request inclusion in -mm.  However if you are ready to =
+
+look at and play with patches. Start with the ones at the link above.
+
+I am a little concerned that none of the cpufreq developers have =
+
+responded. I was hoping to get their feedback.
+
+>
+> Or, is there two (or more) competing patch sets here that need to get
+> resolved?
+
+I don't view the two patchsets as competing.  Eugeny and I are focused =
+
+on getting the basic building block necessary to do advanced frequency =
+
+and voltage scaling accepted.  If we can get PowerOP in the mainline, =
+
+then we can add more feature by feature.    As Dave outlined in his =
+
+email,  his patches are a starting point for further discussion about =
+
+integrating with other subsystems and additional features.  Let's focus =
+
+on getting PowerOP accepted by starting with Eugeny's patches which =
+
+provides powerop as a separate component and integration with cpufreq.
+
+> (If you can't tell I'm getting a bit annoyed at having to tell people
+> all the time that yes, power management on Linux is bad, and yes, =
+
+> people
+> are working on it, but no, I have no idea when it will ever see the
+> light of day...)
+
+Well, we are working on it.  I think we had some really good =
+
+discussion/feedback over the last weeks and we are almost there.  =
+
+Unfortunately, the discussion tapered off recently when we needed some =
+
+final feedback.  Probably related to having two patchsets with the name =
+
+powerop.  Let's try to get something acceptable in -mm over the next =
+
+couple days.
+
+Thanks
+
+Matt
+>
+> thanks,
+>
+> greg k-h
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+>
