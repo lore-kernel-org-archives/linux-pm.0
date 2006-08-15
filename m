@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC] PowerOP, PowerOP Core 1/3
-Date: Tue, 15 Aug 2006 20:37:57 +0000
-Message-ID: <20060815203756.GI4032@ucw.cz>
-References: <44D7EA4D.1020001@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] PowerOP, OMAP1 PM Core 2/3
+Date: Tue, 15 Aug 2006 20:42:53 +0000
+Message-ID: <20060815204253.GA5950@ucw.cz>
+References: <44D7EA82.9090306@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <44D7EA4D.1020001@gmail.com>
+In-Reply-To: <44D7EA82.9090306@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,87 +24,62 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index fc2d744..f8eaf31 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -65,6 +65,7 @@ obj-$(CONFIG_ISDN)		+=3D isdn/
->  obj-$(CONFIG_EDAC)		+=3D edac/
->  obj-$(CONFIG_MCA)		+=3D mca/
->  obj-$(CONFIG_EISA)		+=3D eisa/
-> +obj-$(CONFIG_POWEROP)		+=3D powerop/
+Not only it does string parsing in generc code, it pushes it to
+architectures, too. Ouch.
 
-Can we make it drivers/power? It is probably suitable for more than
-powerop.
 
-> +static int
-> +get_point(void *md_opt, const char *pwr_params, va_list args)
+> +static char *pwr_param_names_list =3D "cpu_vltg dpll cpu tc per dsp dspm=
+mu lcd ";
+...
+
+> +#define PWR_PARAM_SET	1
+> +#define PWR_PARAM_GET	2
+> +/* FIXME: very temporary implementation, just to prove the concept !! */
+> +static int =
+
+> +process_pwr_param(struct pm_core_point *opt, int op, char *param_name,
+> +		  int va_arg)
 > +{
-
-Uhuh... is there a way to use something safer than unchecked va_list
-s?
-
-
-> +int =
-
-> +powerop_driver_register(struct powerop_driver *p)
-> +{
-> +	int error =3D 0;
+> +	if (strcmp(param_name, "cpu_vltg") =3D=3D 0) {
+> +		if (op =3D=3D PWR_PARAM_SET)
+> +			opt->cpu_vltg =3D va_arg;
+> +		else if (opt !=3D NULL)
+> +			*(int *)va_arg =3D opt->cpu_vltg;
+> +		else if (unlikely((*(int *)va_arg =3D get_vtg("v1")) <=3D 0))
+> +			return -EINVAL;
 > +
-> +	if (! powerop_driver) {
-
-No space between ! and argument...
-
-> +/* =
-
-> + * powerop_register_point - add new operating point with a given name to
-> + * operating points list. A caller passes power parameters for new opera=
-ting
-> + * points as pairs of name/value and passes only those parameter names t=
-he
-> + * caller is interested in. PowerOP Core calls powerop driver to initial=
-ize
-> + * arch dependent part of new operating point and links new named operat=
-ing =
-
-> + * point to the list maintained by PowerOP Core
-> + * =
-
-> + *
-> + * INPUT
-> + *   id         - operating point name
-> + *   pwr_params - set of (power parameter name, value) pairs
-> + *
-> + * OUTPUT
-> + *   none
-> + *
-> + * RETURN
-> + *   zero on success, error code otherwise
-> + *    =
-
-> + */
-> +int =
-
-> +powerop_register_point(const char *id, const char *pwr_params, ...)
-> +{
-> +	int err =3D 0;
-> +	struct powerop_point *opt;
-> +	va_list args;
+> +		return 0;
+> +	}
 > +
-> +	if ((!powerop_initialized) || (id =3D=3D NULL))
-> +		return -EINVAL;
+> +	if (strcmp(param_name, "dpll") =3D=3D 0) {
+> +		if (op =3D=3D PWR_PARAM_SET)
+> +			opt->dpll =3D va_arg;
+> +		else if (opt !=3D NULL)
+> +			*(int *)va_arg =3D opt->dpll;
+> +		else if ((*(int *)va_arg =3D get_clk_rate("ck_dpll1")) <=3D 0)
+> +			return -EINVAL;
 > +
-> +	if ((opt =3D kmalloc(sizeof(struct powerop_point), GFP_KERNEL)) =3D=3D =
-NULL)
-> +		return -ENOMEM;
+> +		return 0;
+> +	}
 > +
-> +	memset(opt, 0, sizeof(struct powerop_point));
+> +	if (strcmp(param_name, "cpu") =3D=3D 0) {
+> +		if (op =3D=3D PWR_PARAM_SET)
+> +			opt->cpu =3D va_arg;
+> +		else if (opt !=3D NULL)
+> +			*(int *)va_arg =3D opt->cpu;
+> +		else if ((*(int *)va_arg =3D get_clk_rate("arm_ck")) <=3D 0)
+> +			return -EINVAL;
+> +
+> +		return 0;
+> +	}
+> +
+> +	/* FIXME: more parameters to process */
+> +
+> +	return -EINVAL;
+> +}
 
-kzalloc?
+It certainly tells me I do not like the concept :-(.
 
-Why do we want one more string parser in kernel?
-
-							Pavel
 -- =
 
 Thanks for all the (sleeping) penguins.
