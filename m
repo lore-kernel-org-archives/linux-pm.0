@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Use suspend_console in swsusp and
-	make it configureable
-Date: Wed, 16 Aug 2006 13:04:51 +0200
-Message-ID: <200608161304.51758.rjw@sisk.pl>
+Subject: [RFC][PATCH 3/3] PM: Remove PM_TRACE from Kconfig
+Date: Wed, 16 Aug 2006 13:14:11 +0200
+Message-ID: <200608161314.11128.rjw@sisk.pl>
 References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz>
+	<200608161304.51758.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060816104143.GC9497@elf.ucw.cz>
+In-Reply-To: <200608161304.51758.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -23,55 +23,45 @@ To: Pavel Machek <pavel@suse.cz>
 Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Remove the CONFIG_PM_TRACE option, which is dangerous and should only be us=
+ed
+by people who know exactly what they are doing, from Kconfig.
 
-On Wednesday 16 August 2006 12:41, Pavel Machek wrote:
-> Hi!
-> =
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/Kconfig |   18 ------------------
+ 1 files changed, 18 deletions(-)
 
-> > The appended patch does the following:
-> > =
+Index: linux-2.6.18-rc4-mm1/kernel/power/Kconfig
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.18-rc4-mm1.orig/kernel/power/Kconfig
++++ linux-2.6.18-rc4-mm1/kernel/power/Kconfig
+@@ -47,24 +47,6 @@ config PM_DISABLE_CONSOLE_SUSPEND
+ 	suspend/resume routines, but may itself lead to problems, for example
+ 	if netconsole is used.
+ =
 
-> > 1) Adds suspend_console() and resume_console() to the suspend-to-disk c=
-ode
-> > paths so that people using netconsole are safe with swsusp.
-
-So I assume this one is OK.
-
-> > 2) Adds a Kconfig option allowing us to disable suspend_/resume_console=
-()
-> > if need be.
-> =
-
-> Slightly ugly, but I guess that is the way to go.
-
-It also seems to be needed to add a 2 sec. dealy in suspend_console() so
-that eg. the network console can send the messages before we try to suspend
-the device.
-
-> > 3) Marks CONFIG_PM_TRACE as dangerous.
-> =
-
-> I do not think that is enough. "(WILL TRASH YOUR CMOS)" would be more
-> suitable. Dangerous is "may cause problems to you". This is "will
-> cause problems to you". And for this to be useful, people have to edit
-> sources, anyway.
-> =
-
-> 								Pavel
-> =
-
-> Can we just delete the config option?
-
-OK, I'll do that.
-
-I have divided the changes into three individual patches that will follow as
-replies to this message.
-
-Rafael
-
-
--- =
-
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+-config PM_TRACE
+-	bool "Suspend/resume event tracing"
+-	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
+-	default n
+-	---help---
+-	This enables some cheesy code to save the last PM event point in the
+-	RTC across reboots, so that you can debug a machine that just hangs
+-	during suspend (or more commonly, during resume).
+-
+-	To use this debugging feature you should attempt to suspend the machine,
+-	then reboot it, then run
+-
+-		dmesg -s 1000000 | grep 'hash matches'
+-
+-	CAUTION: this option will cause your machine's real-time clock to be
+-	set to an invalid time after a resume.
+-
+-
+ config SOFTWARE_SUSPEND
+ 	bool "Software Suspend"
+ 	depends on PM && SWAP && (X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32=
+) && !SMP)
