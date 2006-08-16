@@ -1,15 +1,13 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Wed, 16 Aug 2006 08:25:33 -0700
-Message-ID: <20060816152533.GA16133@linux.intel.com>
-References: <200608160127.k7G1Rndl027916@olwen.urbana.css.mot.com>
-Reply-To: mgross@linux.intel.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: sysfs power/state file & dpm_runtime_suspend()
+Date: Wed, 16 Aug 2006 11:37:17 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0608161127120.7924-100000@iolanthe.rowland.org>
+References: <018801c6c104$0b0ab980$4686190c@dsn.sec.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200608160127.k7G1Rndl027916@olwen.urbana.css.mot.com>
+In-Reply-To: <018801c6c104$0b0ab980$4686190c@dsn.sec.samsung.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,93 +17,69 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org
+To: Ikhwan Lee <ikhwan.lee@samsung.com>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 15, 2006 at 08:27:49PM -0500, Scott E. Preece wrote:
+On Wed, 16 Aug 2006, Ikhwan Lee wrote:
+
+> Now I understand that the drivers are responsible for making runtime power
+> management decisions for individual devices. But there are cases that a
+> device driver does not have enough information to make the most effective
+> decision. In such a case, we may want to employ a high level power manager
+> to make decisions for them.
+
+Yes, these managers are sometimes needed.
+
+> Suppose we have a SoC with an on-chip multimedia codec. The codec can eit=
+her
+> be clock-gated or power-gated, and it shares its power domain with a
+> neighboring IP, say a 3D engine. Clock gating can be done by the driver
+> since the clock can be controlled separately. However, the codec driver c=
+an
+> never perform power-gating since it does not know if the 3D engine is act=
+ive
+> or not. We would prefer a centralized device power manager in this case.
+> This is a common case for state-of-the-art mobile handsets such as a DMB
+> phone.
+
+In which case a centralized power manager would handle things.  But
+there's no reason that power manager couldn't be part of the kernel's
+infrastructure.  The individual device drivers would tell it when they
+need power, and it would gate off the power when nobody needs any.  In
+this case no userspace API is required.  It's merely a platform-level
+design issue.
+
+> As a different example, a system-level power manager may want to put
+> the codec into a low quality (thus low power) mode regarding the battery
+> status. Certainly, this kind of decision cannot be made by the driver.
 > =
 
-> =
+> IMO, having support for such use cases in the PM core and exporting
+> necessary driver APIs would not be a bad idea. Centralized device power
+> manager can keep track of the system power states and interdependencies
+> among devices (the device model perfectly suits for this) while device
+> drivers provide necessary APIs for safe power state transitions.
 
-> | From: Dave Jones<davej@redhat.com>
-> | =
+Unfortunately it's far from clear how or when to do this.  Which drivers =
 
-> | On Tue, Aug 15, 2006 at 01:35:15PM +0300, Amit Kucheria wrote:
-> | =
+need to export such an API?  What form should the API take?  Remember, =
 
-> |  > d. In the end, all this is leading to an interface for a user-space
-> |  > policy manager that will control _system_ power state based on
-> |  > constraints imposed by HW peripherals or on policies implemented by
-> |  > device manufacturer/distro maintainer.
-> | =
+each driver will support its own specialized set of power states.  Putting =
 
-> | How does that interface look from a userspace point of view ?
-> | Hopefully not anything like the tuple described above.
-> | Why would userspace ever care about "interconnect freq" ?
-> | =
+such things in the PM core makes sense only if they can all be constrained =
 
-> | Userspace cares about "save power" or "go fast".
-> | Historically, I wish we had never exposed frequencies, but instead
-> | a performance percentage, so that the various userspace tools
-> | didn't have to care about things like 'what frequencies are available'.
-> | Adding the same mistake for voltages doesn't strike me as a fantastic i=
-dea.
-> ---
-> =
+to follow a common pattern.
 
-> For us, "userspace" means a power policy manager that potentially has a
-> lot of awareness about the power needs of specific applications and the
-> overall use cases driving the device. There is no interface available or
-> visible to a "user".  The policy manager does want to know about
-> specific frequencies and voltages and their interaction, because they
-> determine the circumstances under which it makes sense to make
-> particular transitions.
-> =
+> I have been following the thread. I especially like the section on runtime
+> power management, with lots of examples. I am actually working on some of
+> them, and my claim is that (as stated above) we may need to involve some
+> kind of public power state updating in a system-wide way.
 
-> As I think I mentioned at the PM Summit in April, it's important to
-> recognize that the power and performance implications of operating
-> points are not simply based on frequency. Sometimes you want so shift
-> "sideways", because changing one parameter may be preferable to changing
-> another. =
+It's easy to say "some kind of public power state updating".  The hard =
 
+part comes when you have to specify exactly _what_ kind.  That's when the =
 
-Yes, over time it will become unrealistic to assume that voltage is a 1
-to 1 function of frequency in a power management implementation for most
-architectures.  Additionally the control of more than just CPU power
-consumption will become only a fraction of the runtime platform PM
-story.  =
+flame wars start.
 
-
-What is trying to happen with this work is to take some initial steps to
-enable more global power load controls by adding infrastructure to
-expose the types of platform knobs to the system needed to implement
-more power savings.  =
-
-
-The target is to enable cpufreq styled power load control to multiple
-platform components.  Plugging a PowerOP interface in under CPUFREQ is
-one way to try to get this while not breaking existing work.
-
-I don't know if its ready for the mm tree yet, it should at least build
-for i386 or x86_64 even if today there is not obvious value in non-ACPI
-PM platform throttling for these guys.
-
-It is true that the embedded folks will be the early adopters of this
-type of thing, but the big iron folks will not be far behind, and
-eventually the desktop and laptop crowd will likely follow.
-
-> =
-
-> Note that we also want to be able to run the same code on a range of
-> devices that may have significantly different hardware performance, so
-> an abstract set of names (fastest to slowest, for instance) is also a
-> problem.  =
-
-
-The problem of what to expose to user space will vary from platform to
-platform and use-case to use-case.  I don't think we'll find a one size
-fits all solution to this issue.  =
-
-
---mgross
+Alan Stern
