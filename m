@@ -1,67 +1,141 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 3/3] PM: Remove PM_TRACE from Kconfig
-Date: Wed, 16 Aug 2006 13:14:11 +0200
-Message-ID: <200608161314.11128.rjw@sisk.pl>
-References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz>
-	<200608161304.51758.rjw@sisk.pl>
+Subject: [RFC][PATCH 1/3] swsusp: Use suspend_console
+Date: Wed, 16 Aug 2006 13:06:26 +0200
+Message-ID: <200608161306.26450.rjw@sisk.pl>
+References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz> <200608161304.51758.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750954AbWHPLKm@vger.kernel.org>
 In-Reply-To: <200608161304.51758.rjw@sisk.pl>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Pavel Machek <pavel@suse.cz>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the CONFIG_PM_TRACE option, which is dangerous and should only be us=
-ed
-by people who know exactly what they are doing, from Kconfig.
+Add suspend_console() and resume_console() to the suspend-to-disk code paths
+so that the users of netconsole can use swsusp with it.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/Kconfig |   18 ------------------
- 1 files changed, 18 deletions(-)
+ kernel/power/disk.c |    8 ++++++++
+ kernel/power/user.c |    8 +++++++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.18-rc4-mm1/kernel/power/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.18-rc4-mm1.orig/kernel/power/Kconfig
-+++ linux-2.6.18-rc4-mm1/kernel/power/Kconfig
-@@ -47,24 +47,6 @@ config PM_DISABLE_CONSOLE_SUSPEND
- 	suspend/resume routines, but may itself lead to problems, for example
- 	if netconsole is used.
- =
-
--config PM_TRACE
--	bool "Suspend/resume event tracing"
--	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
--	default n
--	---help---
--	This enables some cheesy code to save the last PM event point in the
--	RTC across reboots, so that you can debug a machine that just hangs
--	during suspend (or more commonly, during resume).
+Index: linux-2.6.18-rc4-mm1/kernel/power/disk.c
+===================================================================
+--- linux-2.6.18-rc4-mm1.orig/kernel/power/disk.c	2006-08-16 11:51:35.000000000 +0200
++++ linux-2.6.18-rc4-mm1/kernel/power/disk.c	2006-08-16 11:58:01.000000000 +0200
+@@ -18,6 +18,7 @@
+ #include <linux/fs.h>
+ #include <linux/mount.h>
+ #include <linux/pm.h>
++#include <linux/console.h>
+ #include <linux/cpu.h>
+ 
+ #include "power.h"
+@@ -119,8 +120,10 @@ int pm_suspend_disk(void)
+ 	if (error)
+ 		return error;
+ 
++	suspend_console();
+ 	error = device_suspend(PMSG_FREEZE);
+ 	if (error) {
++		resume_console();
+ 		printk("Some devices failed to suspend\n");
+ 		unprepare_processes();
+ 		return error;
+@@ -133,6 +136,7 @@ int pm_suspend_disk(void)
+ 
+ 	if (in_suspend) {
+ 		device_resume();
++		resume_console();
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write();
+ 		if (!error)
+@@ -148,6 +152,7 @@ int pm_suspend_disk(void)
+ 	swsusp_free();
+  Done:
+ 	device_resume();
++	resume_console();
+ 	unprepare_processes();
+ 	return error;
+ }
+@@ -212,7 +217,9 @@ static int software_resume(void)
+ 
+ 	pr_debug("PM: Preparing devices for restore.\n");
+ 
++	suspend_console();
+ 	if ((error = device_suspend(PMSG_PRETHAW))) {
++		resume_console();
+ 		printk("Some devices failed to suspend\n");
+ 		swsusp_free();
+ 		goto Thaw;
+@@ -224,6 +231,7 @@ static int software_resume(void)
+ 	swsusp_resume();
+ 	pr_debug("PM: Restore failed, recovering.n");
+ 	device_resume();
++	resume_console();
+  Thaw:
+ 	unprepare_processes();
+  Done:
+Index: linux-2.6.18-rc4-mm1/kernel/power/user.c
+===================================================================
+--- linux-2.6.18-rc4-mm1.orig/kernel/power/user.c	2006-08-16 11:51:35.000000000 +0200
++++ linux-2.6.18-rc4-mm1/kernel/power/user.c	2006-08-16 11:58:01.000000000 +0200
+@@ -19,6 +19,7 @@
+ #include <linux/swapops.h>
+ #include <linux/pm.h>
+ #include <linux/fs.h>
++#include <linux/console.h>
+ #include <linux/cpu.h>
+ 
+ #include <asm/uaccess.h>
+@@ -173,12 +174,14 @@ static int snapshot_ioctl(struct inode *
+ 		/* Free memory before shutting down devices. */
+ 		error = swsusp_shrink_memory();
+ 		if (!error) {
++			suspend_console();
+ 			error = device_suspend(PMSG_FREEZE);
+ 			if (!error) {
+ 				in_suspend = 1;
+ 				error = swsusp_suspend();
+ 				device_resume();
+ 			}
++			resume_console();
+ 		}
+ 		up(&pm_sem);
+ 		if (!error)
+@@ -196,11 +199,13 @@ static int snapshot_ioctl(struct inode *
+ 		}
+ 		down(&pm_sem);
+ 		pm_prepare_console();
++		suspend_console();
+ 		error = device_suspend(PMSG_PRETHAW);
+ 		if (!error) {
+ 			error = swsusp_resume();
+ 			device_resume();
+ 		}
++		resume_console();
+ 		pm_restore_console();
+ 		up(&pm_sem);
+ 		break;
+@@ -289,6 +294,7 @@ static int snapshot_ioctl(struct inode *
+ 		}
+ 
+ 		/* Put devices to sleep */
++		suspend_console();
+ 		error = device_suspend(PMSG_SUSPEND);
+ 		if (error) {
+ 			printk(KERN_ERR "Failed to suspend some devices.\n");
+@@ -299,7 +305,7 @@ static int snapshot_ioctl(struct inode *
+ 			/* Wake up devices */
+ 			device_resume();
+ 		}
 -
--	To use this debugging feature you should attempt to suspend the machine,
--	then reboot it, then run
--
--		dmesg -s 1000000 | grep 'hash matches'
--
--	CAUTION: this option will cause your machine's real-time clock to be
--	set to an invalid time after a resume.
--
--
- config SOFTWARE_SUSPEND
- 	bool "Software Suspend"
- 	depends on PM && SWAP && (X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32=
-) && !SMP)
++		resume_console();
+ 		if (pm_ops->finish)
+ 			pm_ops->finish(PM_SUSPEND_MEM);
+ 
