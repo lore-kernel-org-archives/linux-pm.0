@@ -1,20 +1,12 @@
-From: Dave Jones <davej@redhat.com>
+From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Tue, 15 Aug 2006 15:04:40 -0400
-Message-ID: <20060815190439.GI7612@redhat.com>
-References: <20060814200735.GC14099@kroah.com>
-	<c948ef9077556626e85291ad716b7ddb@nomadgs.com>
-	<20060814224623.GH30814@redhat.com>
-	<221e3d51950d20642b3655617527dc52@nomadgs.com>
-	<20060814234801.GK30814@redhat.com>
-	<20060815010020.GA14251@kroah.com>
-	<1155638115.6736.135.camel@localhost>
+Date: Tue, 15 Aug 2006 20:27:49 -0500 (CDT)
+Message-ID: <200608160127.k7G1Rndl027916@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <1155638115.6736.135.camel@localhost>
+In-reply-to: Dave Jones's message of Tue, 15 Aug 2006 15:04:40 -0400
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,72 +16,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <amit.kucheria@nokia.com>
+To: davej@redhat.com
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 15, 2006 at 01:35:15PM +0300, Amit Kucheria wrote:
 
- > Here is my shot at providing a 10,000ft view:
- > =
 
- > a. For embedded platforms, cpufreq just does not cut it when specifying
- > an operating point for the device. These platforms use tuples such as
- > =
+| From: Dave Jones<davej@redhat.com>
+| =
 
- >   <voltage, pll_freq, core1_freq, core2_freq, interconnect_freq> =
+| On Tue, Aug 15, 2006 at 01:35:15PM +0300, Amit Kucheria wrote:
+| =
 
- > =
+|  > d. In the end, all this is leading to an interface for a user-space
+|  > policy manager that will control _system_ power state based on
+|  > constraints imposed by HW peripherals or on policies implemented by
+|  > device manufacturer/distro maintainer.
+| =
 
- > to signify an 'operating point'. Note that core1 and core2 can be
- > totally different processors e.g. ARM and DSP. x86 platforms hide this
- > complexity behind ACPI.
+| How does that interface look from a userspace point of view ?
+| Hopefully not anything like the tuple described above.
+| Why would userspace ever care about "interconnect freq" ?
+| =
 
-If there are dependancies inherently linking core1 and core2, cpufreq
-should already be programming both parts. For example, the SA1100
-driver programs both CPU and SDRAM controller.  If there isn't any dependan=
-cy
-between them, I don't see the attraction of creating an artificial one
-in the way suggested for no real purpose.
+| Userspace cares about "save power" or "go fast".
+| Historically, I wish we had never exposed frequencies, but instead
+| a performance percentage, so that the various userspace tools
+| didn't have to care about things like 'what frequencies are available'.
+| Adding the same mistake for voltages doesn't strike me as a fantastic ide=
+a.
+---
 
-Things like voltage and frequency are closely tied together, so offering
-any means of controlling them independantly makes no sense afaics.
+For us, "userspace" means a power policy manager that potentially has a
+lot of awareness about the power needs of specific applications and the
+overall use cases driving the device. There is no interface available or
+visible to a "user".  The policy manager does want to know about
+specific frequencies and voltages and their interaction, because they
+determine the circumstances under which it makes sense to make
+particular transitions.
 
- > b. The clocking and voltage dependency tree in embedded devices can be
- > summarised in the clock framework ( find ./arch -name clock* ) and
- > soon-to-be-available voltage framework. These is again done to large
- > extent by ACPI on x86.
+As I think I mentioned at the PM Summit in April, it's important to
+recognize that the power and performance implications of operating
+points are not simply based on frequency. Sometimes you want so shift
+"sideways", because changing one parameter may be preferable to changing
+another. =
 
-Of the 14 x86 cpufreq drivers, 3 of them _optionally_ use ACPI.
-powernow-k7 for example doesn't use it, and is possibly one of the most
-stable cpufreq drivers we've had in the tree (for x86 at least).
 
- > d. In the end, all this is leading to an interface for a user-space
- > policy manager that will control _system_ power state based on
- > constraints imposed by HW peripherals or on policies implemented by
- > device manufacturer/distro maintainer.
+Note that we also want to be able to run the same code on a range of
+devices that may have significantly different hardware performance, so
+an abstract set of names (fastest to slowest, for instance) is also a
+problem.  =
 
-How does that interface look from a userspace point of view ?
-Hopefully not anything like the tuple described above.
-Why would userspace ever care about "interconnect freq" ?
 
-Userspace cares about "save power" or "go fast".
-Historically, I wish we had never exposed frequencies, but instead
-a performance percentage, so that the various userspace tools
-didn't have to care about things like 'what frequencies are available'.
-Adding the same mistake for voltages doesn't strike me as a fantastic idea.
-
- > At this point, PowerOP is an optional component in mainline tree.
- > Cpufreq drivers can _choose_ to use it or not. But now embedded
- > platforms can do the PM dance in a consistent way.
-
-That's about the only part I really like so far. The option to opt-out
-where it makes absolutely no sense to pointlessly abstract stuff
-(which for x86 seems to be the case).  For ARM, I'm going to leave
-Russell to comment/review.
-
-		Dave
-
+scott
 -- =
 
-http://www.codemonkey.org.uk
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
