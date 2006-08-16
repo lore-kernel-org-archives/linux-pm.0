@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: sysfs power/state file & dpm_runtime_suspend()
-Date: Wed, 16 Aug 2006 11:37:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0608161127120.7924-100000@iolanthe.rowland.org>
-References: <018801c6c104$0b0ab980$4686190c@dsn.sec.samsung.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [patch 2.6.18-rc2-mm 1/2] PM: make
+	/sys/devices/.../power/state optional
+Date: Wed, 16 Aug 2006 11:40:53 -0700
+Message-ID: <200608161140.54035.david-b@pacbell.net>
+References: <200607191337.02365.david-b@pacbell.net>
+	<20060816115729.GB10764@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <018801c6c104$0b0ab980$4686190c@dsn.sec.samsung.com>
+In-Reply-To: <20060816115729.GB10764@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,69 +20,68 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ikhwan Lee <ikhwan.lee@samsung.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Aug 2006, Ikhwan Lee wrote:
-
-> Now I understand that the drivers are responsible for making runtime power
-> management decisions for individual devices. But there are cases that a
-> device driver does not have enough information to make the most effective
-> decision. In such a case, we may want to employ a high level power manager
-> to make decisions for them.
-
-Yes, these managers are sometimes needed.
-
-> Suppose we have a SoC with an on-chip multimedia codec. The codec can eit=
-her
-> be clock-gated or power-gated, and it shares its power domain with a
-> neighboring IP, say a 3D engine. Clock gating can be done by the driver
-> since the clock can be controlled separately. However, the codec driver c=
-an
-> never perform power-gating since it does not know if the 3D engine is act=
-ive
-> or not. We would prefer a centralized device power manager in this case.
-> This is a common case for state-of-the-art mobile handsets such as a DMB
-> phone.
-
-In which case a centralized power manager would handle things.  But
-there's no reason that power manager couldn't be part of the kernel's
-infrastructure.  The individual device drivers would tell it when they
-need power, and it would gate off the power when nobody needs any.  In
-this case no userspace API is required.  It's merely a platform-level
-design issue.
-
-> As a different example, a system-level power manager may want to put
-> the codec into a low quality (thus low power) mode regarding the battery
-> status. Certainly, this kind of decision cannot be made by the driver.
+On Wednesday 16 August 2006 4:57 am, Pavel Machek wrote:
+> > Add a new PM_SYSFS_DEPRECATED config option to control whether or
+> > not the /sys/devices/.../power/state files are provided. =A0...
 > =
 
-> IMO, having support for such use cases in the PM core and exporting
-> necessary driver APIs would not be a bad idea. Centralized device power
-> manager can keep track of the system power states and interdependencies
-> among devices (the device model perfectly suits for this) while device
-> drivers provide necessary APIs for safe power state transitions.
+> Looks good to me, ACK.
+> =
 
-Unfortunately it's far from clear how or when to do this.  Which drivers =
+> (And sorry for long delay). =
 
-need to export such an API?  What form should the API take?  Remember, =
 
-each driver will support its own specialized set of power states.  Putting =
+Greg still hasn't merged it; so, no prob.  :)
 
-such things in the PM core makes sense only if they can all be constrained =
+I updated patch 2/2  so that it doesn't test for the problematic and
+incomplete prepare_suspend() method, and to remove prepare_suspend().
+(That removal was discussed separately.)
 
-to follow a common pattern.
 
-> I have been following the thread. I especially like the section on runtime
-> power management, with lots of examples. I am actually working on some of
-> them, and my claim is that (as stated above) we may need to involve some
-> kind of public power state updating in a system-wide way.
 
-It's easy to say "some kind of public power state updating".  The hard =
+> I guess this should go with it...? OTOH andrew wanted alternative,
+> first, before removing the feature... but it is unclear to me if we
+> want the feature at all on the production system, so...
 
-part comes when you have to specify exactly _what_ kind.  That's when the =
+How about this one instead?  The issue is not limited to that sysfs
+file and its use of PM_EVENT_* codes, that's just the most visible
+facet of the problem.
 
-flame wars start.
+- Dave
 
-Alan Stern
+Index: o26/Documentation/feature-removal-schedule.txt
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- o26.orig/Documentation/feature-removal-schedule.txt	2006-07-30 22:08:10=
+.000000000 -0700
++++ o26/Documentation/feature-removal-schedule.txt	2006-08-16 11:34:54.0000=
+00000 -0700
+@@ -6,6 +6,21 @@ be removed from this file.
+ =
+
+ ---------------------------
+ =
+
++What:	/sys/devices/.../power/state
++	dev->power.power_state
++	dpm_runtime_{suspend,resume)()
++When:	July 2007
++Why:	Broken design for runtime control over driver power states, confusing
++	driver-internal runtime power management with:  mechanisms to support
++	system-wide sleep state transitions; event codes that distinguish
++	different phases of swsusp "sleep" transitions; and userspace policy
++	inputs.  This framework was never widely used, and most attempts to
++	use it were broken.  Drivers should instead be exposing domain-specific
++	interfaces either to kernel or to userspace, iff they are even needed.
++Who:	Pavel Machek <pavel@suse.cz>
++
++---------------------------
++
+ What:	RAW driver (CONFIG_RAW_DRIVER)
+ When:	December 2005
+ Why:	declared obsolete since kernel 2.6.3
