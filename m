@@ -1,17 +1,22 @@
-From: Matthew Locke <matthew.a.locke@comcast.net>
-Subject: Re: sysfs power/state file & dpm_runtime_suspend()
-Date: Wed, 16 Aug 2006 23:31:29 -0700
-Message-ID: <ed2f696589d93b4eeae64e16c3ed4815@comcast.net>
-References: <Pine.LNX.4.44L0.0607271027400.6315-100000@iolanthe.rowland.org>
-	<200607270853.54674.david-b@pacbell.net>
-	<018801c6c104$0b0ab980$4686190c@dsn.sec.samsung.com>
-	<200608161209.07004.david-b@pacbell.net>
-	<006a01c6c1a6$ac74b760$4686190c@dsn.sec.samsung.com>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Thu, 17 Aug 2006 16:20:36 +0900
+Message-ID: <20060817072036.GA23027@localhost>
+References: <20060814200735.GC14099@kroah.com>
+	<c948ef9077556626e85291ad716b7ddb@nomadgs.com>
+	<20060814224623.GH30814@redhat.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com>
+	<20060815010020.GA14251@kroah.com>
+	<1155638115.6736.135.camel@localhost>
+	<20060815190439.GI7612@redhat.com>
+	<6165fac0fa0cf9faa26b2c15b7b2378e@comcast.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <006a01c6c1a6$ac74b760$4686190c@dsn.sec.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <6165fac0fa0cf9faa26b2c15b7b2378e@comcast.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,208 +26,78 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ikhwan Lee <ikhwan.lee@samsung.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
+To: Matthew Locke <matthew.a.locke@comcast.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Aug 16, 2006 at 10:20:42PM -0700, Matthew Locke wrote:
+> On Aug 15, 2006, at 12:04 PM, Dave Jones wrote:
+> > If there are dependancies inherently linking core1 and core2, cpufreq
+> > should already be programming both parts. For example, the SA1100
+> > driver programs both CPU and SDRAM controller.  If there isn't any =
 
-On Aug 16, 2006, at 7:41 PM, Ikhwan Lee wrote:
+> > dependancy between them, I don't see the attraction of creating an
+> > artificial one in the way suggested for no real purpose.
+> =
 
-> Thanks for your comments.
->
->>> Now I understand that the drivers are responsible for making runtime
-> power
->>> management decisions for individual devices. But there are cases =
+> Are you arguing against the operating point concept because it creates =
 
->>> that a
->>> device driver does not have enough information to make the most
-> effective
->>> decision. In such a case, we may want to employ a high level power
-> manager
->>> to make decisions for them.
->>
->> And that will need some sort of programming interface.  But those will
->> be providing domain-specific hints and information, not describing the
->> system-wide power state transitions which are being addressed by =
+> an artificial dependency?  I assume your definition of dependency means =
 
->> current
->> bus/class/driver suspend()/resume() methods.
->>
->> Plus, not all drivers will have those cases and thus need new APIs.
->> Best to let just those drivers pay the costs of such interfaces, and
->> not try to inflict them universally.  :)
->
-> Basically agree. Some drivers actually allow applications to manage the
-> device power directly. (usually through ioctl) However, for a
-> battery-operated embedded system, we would prefer to have all the =
+> a physical dependency.
+> =
 
-> drivers
-> provide such interfaces.
+>   The operating point represents both a physical and operational =
 
-Yes, all drivers on the battery power embedded system will need to =
+> dependency.  It is a collection of parameters that can/will be adjusted =
 
-provide the interface and the interface should be the same for these =
+> to reduce power consumption.  However, adjusting these parameters can =
 
-drivers.  I'm thinking we only need to allow userspace to turn the =
+> have a severe impact to performance and operational state of the =
 
-device on and off.   The other states of the device can be managed by =
+> system.  The parameters can not be adjusted individually and still =
 
-the driver with input from another kernel component as discussed =
+> achieve the goal of an operational and power efficient system.   SoC's =
 
-elsewhere in this thread (But I can't find where right now).
+> have a fixed number of values in a fixed number of combinations that =
 
->
->>> This is a common case for state-of-the-art mobile handsets such as a =
+> keep the system operational and power efficient.  Using power op,  a =
 
->>> DMB
->>> phone. As a different example, a system-level power manager may want =
+> piece of controlling software can tell the system to go to  specific =
 
->>> to
-> put
->>> the codec into a low quality (thus low power) mode regarding the =
+> instance of the power parameters that provide the best combination of =
 
->>> battery
->>> status. Certainly, this kind of decision cannot be made by the =
+> power savings and performance/operational integrity according to the =
 
->>> driver.
->>
->> You've got a bit of chicken-vs-egg going on there, in that you're =
+> current state of the system.  This instance is represented by a string.
+> =
 
->> assuming
->> the answer is a system/global manager that knows about the codec!!
+The core1 and core interdependencies are something that cpufreq doesn't
+handle particularly well. If it's something as simple as recalibrating
+your baud rate generator or adjusting the SDRAM controller, these are
+all things that need to be done for normal operation to continue, not
+things that end up being exposed or configurable, so it tends to largely
+ignore the interdependency issue.
 
-Dave,  That is not a chicken v egg problem.  The manager on these =
+The problem occurs when you have independent cores that want to be
+throttled or scaled independently, yet still have some fixed dependency
+between them (say, enabling a synchronization circuit), where failure to
+handle this will ultimately result in core reset or otherwise undefined
+behaviour.
 
-devices will know a lot about the system.  Its really the only way to =
+In order to handle this cleanly, one would need multiple drivers for
+each core, as well as some shared common code for handling the clocks,
+voltage, and sanity checks. This alone already begins to enter the scope
+for what things like PowerOP are reasonably suited for. The operating
+point semantics work well here, as independent core states can be
+trivially defined based off of vendor-defined usage profiles. It's
+necessary to have a big picture view of the operating point in order to
+sanely handle sanity checks and rate validation, which is something that
+gets rather ugly with cpufreq without referencing common validation code
+between each core (which will also cause problems for code reuse in the
+cases where one of the cores is used in another processor).
 
-get maximum balance between power efficiency and keeping the device =
-
-operational for its various use cases.
-
->>  While
-> in
->> fact there can easily be other solutions.  Examples include notifying =
-
->> the
->> user and letting _them_ choose which module to put into lowpower/off =
-
->> mode
->> (maybe the WLAN instead, since the codec is more essential just now), =
-
->> or
->> a general system "cut power usage" notification, which that driver =
-
->> will
->> interpret in that way.
-
-This is the same as having a manager.  Sometimes it will be a user and =
-
-sometimes it will be automatic based on a policy.
-
->>
->> But I certainly agree that there are cases where "higher level" inputs
->> are needed to help drivers manage power usage effectively.  I consider
->> most of those to be domain-specific APIs, outside the specific scope
->> of the PM framework.  (But clearly needing to be pm-aware designs.)
->
-> Maybe it is the PowerOp's scope?
-
-Partially.  and I don't have much more to add specifically right now:)  =
-
-Something will have to tell the audio driver its ok to reduce quality.  =
-
-The connection between powerop and drivers (which doesn't exist yet) =
-
-will have to facilitate this communication.
-
->
->>> and interdependencies
->>> among devices (the device model perfectly suits for this) while =
-
->>> device
->>> drivers provide necessary APIs for safe power state transitions.
->>
->> The device model has glitches in terms of not handling power/voltage
->> domains at all, or devices that sit on multiple busses.  One example
->> I've seen quite often is an external multifunction chip with a =
-
->> highspeed
->> serial bus for a codec data link, and a separate serial bus (I2C, SPI,
-> etc)
->> for its control link and lowspeed non-codec data.  Plus, clusters of
->> interrelated devices aren't handled that well, even if you assume that
->> clock and power domain APIs will handle those issues; my pet example
->> being USB-OTG modules, which started out involving five controllers
->> (host, peripheral, and OTG for USB; plus I2c and external PHY) before
->> chip vendors started to use more integrated design approaches.
->>
->> Given the wide variety of possible device power states, I really think
->> it's best to try to keep the driver model out of that business.
->
-> OK, maybe a power/voltage domain framework will do it, and I hope that =
-
-> it
-> would not be as complex as the device model.
->
->>> I have been following the thread. I especially like the section on
-> runtime
->>> power management, with lots of examples. I am actually working on =
-
->>> some
-> of
->>> them, and my claim is that (as stated above) we may need to involve =
-
->>> some
->>> kind of public power state updating in a system-wide way.
->>
->> I can't disagree with that at all.  :)
->>
->> One of my concerns is how to factor that stuff well -- "architect" it =
-
->> --
-> so
->> that the approach is broadly applicable.  A factoring that works well =
-
->> at
->> the SOC level may not work as well at the board level; working well =
-
->> on one
->> family of SOCs doesn't mean it works well on others.
->
-> This is a real problem. I sometimes even want to distinguish on-chip =
-
-> devices
-> from on-board devices.
->
->> I feel comfortable saying we need a power/voltage domain framework, =
-
->> and an
->> extensible framework for system-wide operating (and non-operating =
-
->> sleep)
->> states.  The rest looks to me like stuff that would best be worked out
->> over time, while integrating those two things and fixing the =
-
->> inevitable
->> botches in the initial designs, as applied to current hardware.
->
-> Can't agree more. =3D) Having a power/voltage domain framework, the clock
-> framework, and a framework for system-wide operating states (maybe =
-
-> PowerOp),
-> we can say that we have a complete power management solution for =
-
-> embedded
-> systems.
->
-
-Well, I have to agree with that too:)
-
-> Ikhwan
->
->
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
->
+PowerOP seems well suited for these sorts of cases, and it's not clear
+that trying to beat cpufreq in to submission will offer any benefits in
+this case, particularly since it's something x86 people largely don't
+seem to care about, given that ACPI does most of the heavy lifting.
