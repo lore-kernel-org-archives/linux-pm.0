@@ -1,32 +1,69 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [RFC][PATCH 3/3] PM: Remove PM_TRACE from Kconfig
-Date: Thu, 17 Aug 2006 11:12:38 +0200
-Message-ID: <20060817091238.GA17899@elf.ucw.cz>
-References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz> <200608161304.51758.rjw@sisk.pl> <200608161314.11128.rjw@sisk.pl> <20060817044011.GB14127@kroah.com>
+From: Amit Kucheria <amit.kucheria@nokia.com>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Thu, 17 Aug 2006 12:18:57 +0300
+Message-ID: <1155806337.30834.17.camel@localhost>
+References: <20060814200735.GC14099@kroah.com>
+	<c948ef9077556626e85291ad716b7ddb@nomadgs.com>
+	<20060814224623.GH30814@redhat.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com> <20060815010020.GA14251@kroah.com>
+	<1155638115.6736.135.camel@localhost>
+	<20060815190439.GI7612@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932375AbWHQJND@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060817044011.GB14127@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060815190439.GI7612@redhat.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: ext Dave Jones <davej@redhat.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 2006-08-15 at 15:04 -0400, ext Dave Jones wrote:
+> =
 
-> > Remove the CONFIG_PM_TRACE option, which is dangerous and should only be used
-> > by people who know exactly what they are doing, from Kconfig.
-> 
-> No, don't remove this, that's not acceptable at all.  This is useful for
-> others (and one specifically who will be pissed to see this removed...)
+>  > d. In the end, all this is leading to an interface for a user-space
+>  > policy manager that will control _system_ power state based on
+>  > constraints imposed by HW peripherals or on policies implemented by
+>  > device manufacturer/distro maintainer.
+> =
 
-Yep, while it breaks suspend for every pool soul that enables it by
-mistake. (And in hard-to-debug way, too).
+> How does that interface look from a userspace point of view ?
+> Hopefully not anything like the tuple described above.
+> Why would userspace ever care about "interconnect freq" ?
+> =
 
-This option has EXACTLY ONE USER... or more precisely used to have one
-user when he was debugging his mac mini...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Userspace cares about "save power" or "go fast".
+> Historically, I wish we had never exposed frequencies, but instead
+> a performance percentage, so that the various userspace tools
+> didn't have to care about things like 'what frequencies are
+> available'.
+> Adding the same mistake for voltages doesn't strike me as a fantastic
+> idea. =
+
+
+The userspace interface in Eungeny's patches is for other userspace
+programs (policy managers) to activate/deactivate valid operating points
+in the system dynamically and if necessary, introduce new ones into the
+system. It will also allow the operating points to be referenced by name
+instead of the tuple.
+
+Then, we will be able to use names like 'video', 'mp3', 'fast',
+'powersave', 'usb' to switch to the relevant operating point based on
+configuration of the policy manager.
+
+Regards,
+Amit
+
+-- =
+
+Amit Kucheria <amit.kucheria@nokia.com>
+Nokia
