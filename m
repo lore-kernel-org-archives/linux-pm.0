@@ -1,38 +1,50 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [linux-pm] [RFC][PATCH 3/3] PM: Remove PM_TRACE from Kconfig
-Date: Thu, 17 Aug 2006 04:52:50 -0700
-Message-ID: <20060817115250.GA6843@kroah.com>
-References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz> <200608161304.51758.rjw@sisk.pl> <200608161314.11128.rjw@sisk.pl> <20060817044011.GB14127@kroah.com> <20060817091238.GA17899@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: sysfs power/state file & dpm_runtime_suspend()
+Date: Thu, 17 Aug 2006 10:18:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0608171010400.6371-100000@iolanthe.rowland.org>
+References: <006001c6c19e$ead15a20$4686190c@dsn.sec.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964833AbWHQL5u@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060817091238.GA17899@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <006001c6c19e$ead15a20$4686190c@dsn.sec.samsung.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Ikhwan Lee <ikhwan.lee@samsung.com>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 17, 2006 at 11:12:38AM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > Remove the CONFIG_PM_TRACE option, which is dangerous and should only be used
-> > > by people who know exactly what they are doing, from Kconfig.
-> > 
-> > No, don't remove this, that's not acceptable at all.  This is useful for
-> > others (and one specifically who will be pissed to see this removed...)
-> 
-> Yep, while it breaks suspend for every pool soul that enables it by
-> mistake. (And in hard-to-debug way, too).
-> 
-> This option has EXACTLY ONE USER... or more precisely used to have one
-> user when he was debugging his mac mini...
+On Thu, 17 Aug 2006, Ikhwan Lee wrote:
 
-I tried it out for a bit when having problems with resume, which I have
-yet to resolve properly, so I'll need it again when I get the chance.
+> We can have the device power manager in the kernel and let the platform
+> designers hardcode the rules specific to their platform. It is easier to
+> implement and we can use that scheme right away.
+> =
 
-And you go tell that "ONE USER" that you disabled his feature :)
+> In the future however, I think it is more clear to have a "power/voltage
+> domain framework, and an extensible framework for system-wide operating (=
+and
+> non-operating sleep) states," quoting from what David said in his response
+> to my message.
 
-thanks,
+The second is a generalized version of the first.  However the issue of
+the scope of a "power/voltage domain framework" is independent of the
+nature of the userspace API for such a framework, which is what you
+originally were discussing.  My point was that in a large number of simple
+cases (like this one) there is no need for a userspace API at all.
 
-greg k-h
+To put it another way, suppose several devices have inter-related power
+requirements, such as a common gated voltage source.  Provided each device
+has only two power states (ON =3D "in use" and OFF =3D "not in use") then a=
+ny
+reasonable framework would be able to manage them adequately even with no
+userspace involvement.
+
+Alan Stern
