@@ -1,20 +1,20 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
+From: Amit Kucheria <amit.kucheria@nokia.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Fri, 18 Aug 2006 13:02:21 +0300
-Message-ID: <1155895341.22100.1.camel@Dogbert.NOE.nokia.com>
+Date: Fri, 18 Aug 2006 14:48:39 +0300
+Message-ID: <1155901719.3659.43.camel@localhost>
 References: <20060814200735.GC14099@kroah.com>
 	<c948ef9077556626e85291ad716b7ddb@nomadgs.com>
 	<20060814224623.GH30814@redhat.com>
 	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com> <20060815010020.GA14251@kroah.com>
 	<1155638115.6736.135.camel@localhost>
 	<20060815190439.GI7612@redhat.com>
-	<1155733089.10017.17.camel@Dogbert.NOE.nokia.com>
-	<20060817213903.GD6450@ucw.cz>
+	<1155806337.30834.17.camel@localhost>  <20060817214031.GE6450@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060817213903.GD6450@ucw.cz>
+In-Reply-To: <20060817214031.GE6450@ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,48 +25,70 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: ext Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.osdl.org, "Kucheria Amit (Nokia-M/Tampere)" <Amit.Kucheria@nokia.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-08-18 at 00:39 +0300, ext Pavel Machek wrote:
-> Hi!
+On Thu, 2006-08-17 at 21:40 +0000, ext Pavel Machek wrote:
+ =
+
+> > The userspace interface in Eungeny's patches is for other userspace
+> > programs (policy managers) to activate/deactivate valid operating points
+> > in the system dynamically and if necessary, introduce new ones into the
+> > system. It will also allow the operating points to be referenced by name
+> > instead of the tuple.
+> > =
+
+> > Then, we will be able to use names like 'video', 'mp3', 'fast',
+> > 'powersave', 'usb' to switch to the relevant operating point based on
+> > configuration of the policy manager.
 > =
 
-> > > If there are dependancies inherently linking core1 and core2,
-> cpufreq
-> > > should already be programming both parts. For example, the SA1100
-> > > driver programs both CPU and SDRAM controller.  If there isn't any
-> > > dependancy
-> > > between them, I don't see the attraction of creating an artificial
-> one
-> > > in the way suggested for no real purpose.
-> > >
-> > > Things like voltage and frequency are closely tied together, so
-> > > offering
-> > > any means of controlling them independantly makes no sense afaics.
+> This seems to be too specific to embedded machine.
 > =
 
-> > Yet a certain subsystem (for example an onboard camera, in a phone)
-> > might require a higher voltage when it's active, effectively
-> loosening
-> > the tight coupling between freq and voltage that the porcessor is
-> > enforcing.
-> =
+> If userspace wants to work with usb and play mp3s at the same time,
+> what does it do?
 
-> So... you expect userland to echo high > state before camera can be
-> used?
-> =
+Switch to 'fast'?
 
-> I'd rather have kernel automagically up the voltage when /dev/video0
-> is opened...
+The operating point for a use-case specifies the _minimum_ required for
+the use-case. You can always go up.
 
-Not really, I meant that the CPU is not the only customer of power
-domains (depend on the HW design), so the relation freq <-> voltage is
-not always true.
+The system designer is responsible for 'designing' operating points that
+take into account multiple use-cases. Designing here refers to mapping
+use-cases to HW operating points.
+
+Consider an example system with a main CPU and a DSP. To simplify
+discussion, lets assume 3 levels for CPU and DSP speeds and system
+voltage. Then, here is what an example operating-point to use-case
+mapping table could look like:
+
+#     CPU speed      DSP speed      Voltage       use-case
+----------------------------------------------------------
+1.    high           high           high          fast, video
+2.    med            high           high          =
+
+3.    med            med            med           usb[1]
+4.    low            med            med           mp3
+5.    low            low            low           powersave
+
+[1] USB has voltage constraint (voltage >=3D med)
+
+Mapping
+=3D=3D=3D=3D=3D=3D=3D
+Performance related: fast, video, mp3
+Power related: powersave
+Miscellaneous: usb
+
+- Now if we are playing mp3, we switch to OP 4.
+- Add usb and we switch to OP 3.
+- Now our performance monitor (e.g load avg) indicates that we need more
+CPU processing. So we switch to OP 2.
+
+Regards,
+Amit
 
 -- =
 
-Cheers,
-           Igor
-
-Igor Stoppa (Nokia M - OSSO / Tampere)
+Amit Kucheria <amit.kucheria@nokia.com>
+Nokia
