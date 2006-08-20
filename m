@@ -1,22 +1,23 @@
-From: Dave Jones <davej@redhat.com>
+From: Igor Stoppa <igor.stoppa@nokia.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Sat, 19 Aug 2006 23:30:44 -0400
-Message-ID: <20060820033044.GA24928@redhat.com>
+Date: Sun, 20 Aug 2006 16:19:29 +0300
+Message-ID: <1156079970.23845.6.camel@Dogbert.NOE.nokia.com>
 References: <20060814200735.GC14099@kroah.com>
 	<c948ef9077556626e85291ad716b7ddb@nomadgs.com>
 	<20060814224623.GH30814@redhat.com>
 	<221e3d51950d20642b3655617527dc52@nomadgs.com>
-	<20060814234801.GK30814@redhat.com>
-	<20060815010020.GA14251@kroah.com>
-	<b324b5ad0608182319y307210a3w6389c83482e43ab8@mail.gmail.com>
-	<20060819184843.GB15644@redhat.com>
-	<b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
+	<1155638115.6736.135.camel@localhost>	<20060815190439.GI7612@redhat.com>
+	<1155733089.10017.17.camel@Dogbert.NOE.nokia.com>
+	<20060817213903.GD6450@ucw.cz>
+	<1155895341.22100.1.camel@Dogbert.NOE.nokia.com>
+	<44E5DCDB.1080306@linux.intel.com>
+	<1155923647.22100.43.camel@Dogbert.NOE.nokia.com>
+	<44E62B84.4080005@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
+In-Reply-To: <44E62B84.4080005@linux.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,32 +27,94 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Singleton <daviado@gmail.com>
-Cc: linux-pm@lists.osdl.org
+To: ext Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Cc: linux-pm@lists.osdl.org, ext Pavel Machek <pavel@ucw.cz>, "Kucheria Amit (Nokia-M/Tampere)" <Amit.Kucheria@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 19, 2006 at 08:20:45PM -0700, David Singleton wrote:
+On Sat, 2006-08-19 at 00:05 +0300, ext Alexey Starikovskiy wrote:
+> Igor Stoppa wrote:
+> > On Fri, 2006-08-18 at 18:29 +0300, ext Alexey Starikovskiy wrote:
+> >> Igor Stoppa wrote:
+> >>> On Fri, 2006-08-18 at 00:39 +0300, ext Pavel Machek wrote:
+> >>>> Hi!
+> >>>>
+> >>>>>> If there are dependancies inherently linking core1 and core2,
+> >>>> cpufreq
+> >>>>>> should already be programming both parts. For example, the
+> SA1100
+> >>>>>> driver programs both CPU and SDRAM controller.  If there isn't
+> >> any
+> >>>>>> dependancy
+> >>>>>> between them, I don't see the attraction of creating an
+> >> artificial
+> >>>> one
+> >>>>>> in the way suggested for no real purpose.
+> >>>>>>
+> >>>>>> Things like voltage and frequency are closely tied together, so
+> >>>>>> offering
+> >>>>>> any means of controlling them independantly makes no sense
+> >> afaics.
+> >>>>> Yet a certain subsystem (for example an onboard camera, in a
+> >> phone)
+> >>>>> might require a higher voltage when it's active, effectively
+> >>>> loosening
+> >>>>> the tight coupling between freq and voltage that the porcessor
+> is
+> >>>>> enforcing.
+> >>>> So... you expect userland to echo high > state before camera can
+> be
+> >>>> used?
+> >>>>
+> >>>> I'd rather have kernel automagically up the voltage
+> >> when /dev/video0
+> >>>> is opened...
+> >>> Not really, I meant that the CPU is not the only customer of power
+> >>> domains (depend on the HW design), so the relation freq <->
+> voltage
+> >> is
+> >>> not always true.
+> >>>
+> >> Then you need to introduce power domains and associate your devices
+> >> with them, isn't it?
+> >> So if your camera appears in the same domain with CPU, the voltage
+> of
+> >> that domain will go up either with camera=3Don, or CPU going to
+> higher
+> >> frequency.
+> >
+> > I used the expression "power domain" to refer to a generic domain,
+> > either voltage or frequency, to indicate that changing either freq
+> or
+> > voltage in a domain implies changing the domain power level.
+> >
+> > Of course it is changing linearly with frequency, while the
+> dependency
+> > from voltage is quadratic.
+> >
+> > So in the camera example we might have 2 different cases:
+> >
+> > -the one mentioned above, where the camera shares the same voltage
+> > domain with CPU and the correlation is the one you described
+> >
+> > -another case where the clock frequency provided to the camera is
+> > related to the resolution being used
+> >
+> > camera off =3D> no constraints
+> > low res =3D> low freq, high voltage
+> > high res =3D> high freq, high voltage
+> >
+> > in such case the currently active resolution would affect whatever
+> > device shares the camera clock, if any.
+> >
+> > But no need to introduce power domains.
+> >
+> How about introducing a frequency domain as well?
 
- > If I had all the existing cpufreq tables transformed
- > into operating points I could make a patch that would remove
- > the bulk of cpufreq code from the kernel and you'd have
- > pretty much the same functionality without the maintenance
- > issues the added layers and complexity bring.
-
-If this is going to fly at all, I think thats where we need to be headed.
-Having two parts of the kernel doing the same thing just seems
-very wrong to me.
-
-The other alternative as suggested earlier this week would be archictures
-getting to 'opt out' of powerop for their cpufreq drivers where it doesn't
-necessarily bring anything but the layer of indirection.
-
-I'm about to disappear for two weeks for a much needed vacation, but
-I'll be interested to see other folks comments/opinions on this
-when I get back.
-
-		Dave
+The clock framework deals with clock correlations and dependencies.
 
 -- =
 
-http://www.codemonkey.org.uk
+Cheers,
+           Igor
+
+Igor Stoppa (Nokia M - OSSO / Tampere)
