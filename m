@@ -1,12 +1,15 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Wed, 23 Aug 2006 14:20:41 -0500
-Message-ID: <EA12F909C0431D458B9D18A176BEE4A50745BBF5@dlee02.ent.ti.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: OSDL Power Management call 8/24/2006 8 a.m. Pacific
+Date: Wed, 23 Aug 2006 14:10:17 -0700
+Message-ID: <20060823211017.GA30082@kroah.com>
+References: <A5A3FA6853175E4D805BCE62B1646029014B220F@SAUSEXMB3.amd.com>
+	<20060822020955.GA22565@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20060822020955.GA22565@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,33 +19,26 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>, Vitaly Wool <vitalywool@gmail.com>
+To: "Miller, Marc" <marc.miller@amd.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-> > I guess it just defines an appropriate policy. You can call it
-> > 'usb_mp3' if you wish ;)
-> > I don't think it's too embedded-specific.
+On Mon, Aug 21, 2006 at 07:09:55PM -0700, Greg KH wrote:
+> On Mon, Aug 21, 2006 at 08:13:17PM -0500, Miller, Marc wrote:
+> > I would like to invite you to participate in our next OSDL Desktop Linux
+> > Technical workgroup call.  The topic this week is power management, and
+> > will be lead by Pat Mochel.  AMD and Intel will be working together for
+> > this call to provide processor-neutral material, and we hope to provide
+> > data that's relevant for the handheld market, notebooks, desktops, and
+> > servers.
 > =
 
-> Well, it leads to exponential number of policies -- not nice. Having
-> usb_mp3_fileserver_webserver is not nice.
+> What is the goal of such a meeting?  And how does it compare to the
+> recently proposed patches here on this mailing list?
+> =
 
-To some extent having lots of specific policies in the embedded space is
-inevitable.  The hardware is very tightly coupled.  You may have almost
-all the functionality of a PC some 5 years back on a single chip.  In
-that kind of environment not taking into account the chip as a whole
-means you do power at a 10x or say 100x of optimal.  You don't get the
-big interconnect savings unless you link the all the individual device
-states with the processor states.  A 400mA@1.3v might sound good to a PC
-centric person, but when the design target is 4mA@1.3v it is not good.
+> Is there a published agenda?
 
-I have some notion that a policy manager can create a state with simple
-& general names like fast, medium, slow (whatever) which is the
-interface in which applications might speak.  A complex policy manager
-will associate this name with device and cpu states in great detail.  A
-more general purpose one only need map it to some governor and its run
-time parameters.
+No response?  Ok, I guess no one will take the time to join then :(
 
-Regards,
-Richard W.
+greg k-h
