@@ -1,13 +1,23 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: T60 not coming out of suspend to RAM
-Date: Tue, 22 Aug 2006 13:37:31 +0300
-Message-ID: <20060822103731.GC13782@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Wed, 23 Aug 2006 14:28:49 +0200
+Message-ID: <20060823122849.GA23456@atrey.karlin.mff.cuni.cz>
+References: <c948ef9077556626e85291ad716b7ddb@nomadgs.com>
+	<20060814224623.GH30814@redhat.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com>
+	<20060815010020.GA14251@kroah.com>
+	<1155638115.6736.135.camel@localhost>
+	<20060815190439.GI7612@redhat.com>
+	<1155806337.30834.17.camel@localhost>
+	<20060817214031.GE6450@ucw.cz>
+	<acd2a5930608172242v7ba6e7eeq8ab90ea11175ef4c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
+In-Reply-To: <acd2a5930608172242v7ba6e7eeq8ab90ea11175ef4c@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,43 +27,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: pavel@suse.cz, linux-pm@osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-I'm running Linus' git tree on my thinkpad T60.
-It generally seems to work fine after suspend to disk.
-However, the system does not come out of suspend to ram,
-with screen staying blank. I'm looking for hints for debugging this.
+> On 8/18/06, Pavel Machek <pavel@ucw.cz> wrote:
+> >> Then, we will be able to use names like 'video', 'mp3', 'fast',
+> >> 'powersave', 'usb' to switch to the relevant operating point based on
+> >> configuration of the policy manager.
+> >
+> >This seems to be too specific to embedded machine.
+> >
+> >If userspace wants to work with usb and play mp3s at the same time,
+> >what does it do?
+> =
 
-If I set suspend/resume event tracing, I see this in dmesg
-after reboot:
+> I guess it just defines an appropriate policy. You can call it
+> 'usb_mp3' if you wish ;)
+> I don't think it's too embedded-specific.
 
-dmesg -s 1000000 | grep 'hash matches'
-  hash matches drivers/base/power/resume.c:42
-  hash matches device serio2
-
-serio2 seems to be the psmouse device:
-ls /sys/bus/serio/drivers/psmouse/
-bind bind_mode description serio0 serio2 unbind
-
-Does this mean the mouse driver blocks the resume?
-
-I've rebuilt psmouse as a module, unloaded it before suspend, and now
-I see the same behaviour but after reboot:
-dmesg -s 1000000 | grep 'hash matches'
-  hash matches drivers/base/power/resume.c:42
-  hash matches device i2c-9191
-
-Which is somewhat weird because
-ls /sys/bus/i2c/devices
-does not list any i2c devices
-
-I could continue disabling stuff - but I am looking in the
-correct place even? How do you debug resume issues?
-
-Thanks,
+Well, it leads to exponential number of policies -- not nice. Having
+usb_mp3_fileserver_webserver is not nice.
+								Pavel
 
 -- =
 
-MST
+Thanks, Sharp!
