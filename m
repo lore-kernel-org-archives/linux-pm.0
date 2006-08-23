@@ -1,14 +1,12 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
+From: "Miller, Marc" <marc.miller@amd.com>
 Subject: Re: OSDL Power Management call 8/24/2006 8 a.m. Pacific
-Date: Wed, 23 Aug 2006 17:46:25 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F732@de01exm64.ds.mot.com>
-References: <20060823213010.GB12096@kroah.com>
+Date: Wed, 23 Aug 2006 16:54:06 -0500
+Message-ID: <A5A3FA6853175E4D805BCE62B1646029015C764B@SAUSEXMB3.amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-class: urn:content-classes:message
-In-Reply-To: <20060823213010.GB12096@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,9 +16,38 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: "Miller, Marc" <marc.miller@amd.com>, linux-pm@lists.osdl.org
+To: Preece Scott-PREECE <scott.preece@motorola.com>, Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
+
+The OSDL Desktop Linux Tech workgroup rotates through a variety of
+topics relevant to desktop developers.  It's an opportunity for
+developers and business people to ask questions about the status of
+Linux development and get realtime answers.  ...but our format is not
+that of a "presentation" but rather a roundtable, similar to the format
+of the OSDL Desktop Architects meetings.  We find that by having a
+meeting like this across multiple communities, we're able to connect
+people to activities they weren't aware of, and leverage off of each
+others' work.
+
+
+Marc J. Miller
+AMD Strategic Alliance Manager
+OSDL Desktop/Client Linux Co-Chairman
+OSDL Carrier Grade Linux Strategist
+W:  +1 (800) 538-8450 x43325
+M:  +1 (408) 425-4017
+ =
+
+
+-----Original Message-----
+From: Preece Scott-PREECE [mailto:scott.preece@motorola.com] =
+
+Sent: Wednesday, August 23, 2006 2:46 PM
+To: Greg KH
+Cc: Miller, Marc; linux-pm@lists.osdl.org
+Subject: RE: [linux-pm] OSDL Power Management call 8/24/2006 8 a.m.
+Pacific
 
  =
 
