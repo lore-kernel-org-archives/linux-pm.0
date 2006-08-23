@@ -1,14 +1,12 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
+From: "Miller, Marc" <marc.miller@amd.com>
 Subject: Re: OSDL Power Management call 8/24/2006 8 a.m. Pacific
-Date: Wed, 23 Aug 2006 18:35:16 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F77A@de01exm64.ds.mot.com>
-References: <20060823220020.GA16302@kroah.com>
+Date: Wed, 23 Aug 2006 18:39:44 -0500
+Message-ID: <A5A3FA6853175E4D805BCE62B1646029015C76CE@SAUSEXMB3.amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-class: urn:content-classes:message
-In-Reply-To: <20060823220020.GA16302@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,9 +16,33 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: "Miller, Marc" <marc.miller@amd.com>, linux-pm@lists.osdl.org
+To: Preece Scott-PREECE <scott.preece@motorola.com>, Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
+
+I've had a hard time getting a hold of Pat (been trying for a few weeks
+now).  Normally we publish the agenda a week in advance.  Thankfully I
+got a response from him today.  After I meet with him tonight and we
+agree on the topics, I'll be sure to send out an agenda so that you can
+determine whether it's worth your time.
+
+Marc J. Miller
+AMD Strategic Alliance Manager
+OSDL Desktop/Client Linux Co-Chairman
+OSDL Carrier Grade Linux Strategist
+W:  +1 (800) 538-8450 x43325
+M:  +1 (408) 425-4017
+ =
+
+
+-----Original Message-----
+From: Preece Scott-PREECE [mailto:scott.preece@motorola.com] =
+
+Sent: Wednesday, August 23, 2006 3:35 PM
+To: Greg KH
+Cc: Miller, Marc; linux-pm@lists.osdl.org
+Subject: RE: [linux-pm] OSDL Power Management call 8/24/2006 8 a.m.
+Pacific
 
  =
 
