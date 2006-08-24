@@ -1,36 +1,65 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Re : [HELP] Power management for embedded system
-Date: Thu, 24 Aug 2006 17:20:34 +0100
-Message-ID: <20060824162034.GB19753@srcf.ucam.org>
-References: <20060824093739.5085.qmail@web25802.mail.ukl.yahoo.com> <1156414325.5555.11.camel@localhost.localdomain>
+From: Greg KH <greg@kroah.com>
+Subject: Re: OSDL Power Management call 8/24/2006 8 a.m. Pacific
+Date: Thu, 24 Aug 2006 11:23:03 -0700
+Message-ID: <20060824182303.GC8808@kroah.com>
+References: <20060824011303.GD18060@kroah.com>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F90A@de01exm64.ds.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030353AbWHXQWJ@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <1156414325.5555.11.camel@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: moreau francis <francis_moreau2000@yahoo.fr>, Russell King <rmk+lkml@arm.linux.org.uk>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F90A@de01exm64.ds.mot.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Preece Scott-PREECE <scott.preece@motorola.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 24, 2006 at 11:12:05AM +0100, Richard Purdie wrote:
+On Thu, Aug 24, 2006 at 10:45:04AM -0400, Preece Scott-PREECE wrote:
+>  =
 
-> It would be nice to move that to some arch independent generic
-> implementation of these things and to leave the APM emulation behind.
-> The battery information should be a sysfs class (see the backlight/led
-> classes as examples of sysfs classes). The suspend/resume event handling
-> would be something new as far as I know and ideally should support
-> suspending/resuming individual sections of device hardware as well as
-> the whole system.
+> > [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Greg KH
+>  ...
+> > > Again, kernel developers have no need to get input from =
 
-Triggering suspend/resume is already generic in the form of the 
-/sys/power/state interface. There's been discussion of producing a 
-generic battery class lately. There's some trend towards tying suspend 
-requests into the input layer, but how appropriate that is may depend on 
-the hardware in question. I think most of the pieces are in place to 
-provide an interface that isn't tied to looking like APM, and there's 
-certainly one or two moderately compelling reasons to avoid the APM 
-emulation limitations.
+> > people outside =
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> > > the mailing-list community and no interest in sharing =
+
+> > information with =
+
+> > > them?
+> > =
+
+> > So are you asking for information from us?  If so, please ask.
+> > =
+
+> > And remember, we are here, in public, all the time.  Working =
+
+> > groups and industry employes are free to contact us at any =
+
+> > time.  You don't have to try to set up a meeting to do so.
+> ---
+> =
+
+> Odd - you're free to be contacted, but when the group contacted you, you
+> complained? I don't think they set up the meeting for the purpose of
+> contacting you; they were already holding the meeting and announced it
+> for anyone who might be interested.
+
+Contact us by emailing us and interacting that way.  Don't ask us to
+attend some random phone call, where the goals and adgenda is not even
+published.  That's not working with us, but rather annoying us (see your
+previous comment about attending meetings with no adgendas...)
+
+thanks,
+
+greg k-h
