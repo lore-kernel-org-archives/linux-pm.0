@@ -1,53 +1,49 @@
-From: "Vitaly Wool" <vitalywool@gmail.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Thu, 24 Aug 2006 16:58:50 +0400
-Message-ID: <acd2a5930608240558k4cc77dadxbd6175c05141fe23@mail.gmail.com>
-References: <c948ef9077556626e85291ad716b7ddb@nomadgs.com>
-	<221e3d51950d20642b3655617527dc52@nomadgs.com>
-	<20060814234801.GK30814@redhat.com> <20060815010020.GA14251@kroah.com>
-	<1155638115.6736.135.camel@localhost>
-	<20060815190439.GI7612@redhat.com>
-	<1155806337.30834.17.camel@localhost> <20060817214031.GE6450@ucw.cz>
-	<acd2a5930608172242v7ba6e7eeq8ab90ea11175ef4c@mail.gmail.com>
-	<20060823122849.GA23456@atrey.karlin.mff.cuni.cz>
+From: moreau francis <francis_moreau2000@yahoo.fr>
+Subject: Re : Re : [HELP] Power management for embedded system
+Date: Thu, 24 Aug 2006 14:42:05 +0000 (GMT)
+Message-ID: <20060824144205.52988.qmail@web25801.mail.ukl.yahoo.com>
+References: <1156414325.5555.11.camel@localhost.localdomain>
+Reply-To: moreau francis <francis_moreau2000@yahoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060823122849.GA23456@atrey.karlin.mff.cuni.cz>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932098AbWHXOmJ@vger.kernel.org>
+In-Reply-To: <1156414325.5555.11.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 8/23/06, Pavel Machek <pavel@ucw.cz> wrote:
-> > >
-> > >This seems to be too specific to embedded machine.
-> > >
-> > >If userspace wants to work with usb and play mp3s at the same time,
-> > >what does it do?
-> >
-> > I guess it just defines an appropriate policy. You can call it
-> > 'usb_mp3' if you wish ;)
-> > I don't think it's too embedded-specific.
->
-> Well, it leads to exponential number of policies -- not nice. Having
-> usb_mp3_fileserver_webserver is not nice.
+Richard Purdie wrote:
+> It provides an apm_bios device which behaves the same way as a "real"
+> APM bios on x86. The same apmd used on x86 can be used on ARM.
+> 
+> Its main purpose is to be to run suspend/resume events past userspace
+> before acting on them (and allow suspend/resume events to be triggered
+> from userspace). It also allows exporting of battery status information
+> to userspace in a rather broken way. 
+> 
+> It would be nice to move that to some arch independent generic
+> implementation of these things and to leave the APM emulation behind.
 
-No. The reason is there's no _real_ difference in 'fileserver' and
-'webserver' from the PM POV, so this will never happen.
-There's no reason to introduce different policies for different use
-cases which however imply similar peripherals utilization.
-Moreover, I never play MP3s on a fileserver/webserver. The example
-you've given is pretty much artificial.
+Yes. Hence the generic code would deal with battery info, suspend/resume
+events to userspace, cpu idle logic. And arches specific code would deal
+with hardware to get status on battery for example. On i386 that would
+lead to call the BIOS, on others arches, they would use whatever available
+on the platform to report the status.
 
-Vitaly
+> The battery information should be a sysfs class (see the backlight/led
+> classes as examples of sysfs classes). The suspend/resume event handling
+> would be something new as far as I know and ideally should support
+> suspending/resuming individual sections of device hardware as well as
+
+Well, maybe the first step is to unify this APM for all arches hence 
+everybody could better improve it.
+
+> the whole system. The linux-pm mailing list might have more of an idea
+> of whether these things are being worked on and their current status.
+> 
+
+That's actually this status I was trying to get when posting my initial
+email.
+
+Francis
