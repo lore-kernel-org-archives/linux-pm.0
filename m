@@ -1,14 +1,12 @@
-From: moreau francis <francis_moreau2000@yahoo.fr>
-Subject: Re : Re : [HELP] Power management for embedded system
-Date: Thu, 24 Aug 2006 10:57:43 +0000 (GMT)
-Message-ID: <20060824105743.60250.qmail@web25811.mail.ukl.yahoo.com>
-References: <20060824101125.GA21439@flint.arm.linux.org.uk>
-Reply-To: moreau francis <francis_moreau2000@yahoo.fr>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Thu, 24 Aug 2006 07:16:01 -0500
+Message-ID: <EA12F909C0431D458B9D18A176BEE4A50745C14B@dlee02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060824101125.GA21439@flint.arm.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,108 +16,61 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Russell King wrote:
-> On Thu, Aug 24, 2006 at 09:37:39AM +0000, moreau francis wrote:
->> Russell King wrote:
->>> On Thu, Aug 24, 2006 at 08:44:25AM +0000, moreau francis wrote:
->>>> Mips one seems to be a copy and paste of arm one and both of them
->>>> have removed all APM bios stuff orginally part of i386 implementation.
->>> The BIOS stuff makes no sense on ARM - there isn't a BIOS to do anything
->>> with.
->> I haven't said that it has been widely/wrongly removed...
+> > To some extent having lots of specific policies in the embedded
+space is
+> > inevitable.  The hardware is very tightly coupled.  You may have
 > =
 
-> ROTFL!  No, you were stating that the APM bios stuff was removed, and
-> I gave the reason for it.  Why are you now objecting to my explaination?
+> Maybe. But you certainly do not have to export that uglyness to
+> userspace. =
+
+
+Some aspects are easier to manage.  If data base like operations and
+such are needed it's a more friendly place.
+
+Sysfs exporting every gory detail about PCI or USB doesn't seem so far
+from this kind of thing.
+
+> > I have some notion that a policy manager can create a state with
+simple
+> > & general names like fast, medium, slow (whatever) which is the
+> > interface in which applications might speak.  A complex policy
+> > manager
 > =
 
+> ...which is very bad interface for applications. See my other
+> mail. Applications should not have to play with fast/medium/slow,
+> explicitely. Instead, on opening /dev/dsp, you should power up the
+> sound system (and maybe adjust cpu frequency if
+> neccessary). Application should not have to do echo fast > somewhere
+> before opening /dev/dsp
 
-Take it easy ! I'm not objecting your explanation. Your explanation, which
-was not asked, sounded to me like I said something wrong/bad on this
-amputation. I have prefered to make things clear, no more.
-
->>>> It doesn't seem that APM is something really stable and finished.
->>> It's complete.  It's purpose is to provide the interface to userland so
->>> that programs know about suspend/resume events, and can initiate suspen=
-ds.
->>> Eg, the X server.
->>>
->> Is there something specific to ARM in this implementation ? I don't think
->> so and it's surely the reason why MIPS did copy it with almost no change=
-s.
-> =
-
-> MIPS copied it because presumably it was useful for them.
-> =
+How does /dev/dsp know at what level it can run at?  On the SOC I
+control the speed of the DSP.  I can adjust its MIPs rate.  =
 
 
-Actually my point is that it could be usefull for _all_ embedded systems,
-whatever the arches it comes from, couldn't it ?
+We do internally have some run time algorithms on the DSP which allow it
+to feed statistics back about how well it is doing... like did I drop
+any frames, and how close was I to my deadline in decoding a sample.  So
+there is some low level things which can be done.  The DSP is currently
+has management code in the kernel (bridge driver) and it has a user
+space component which can load algorithms and such through the bridge to
+do things.
 
->> I understand that ARM implementation has been the first one but maybe now
+A missing pieces is meaningful coordination between devices.  Each
+device is not an island.  Not taking care of all devices on the internal
+interconnects may mean you don't get the big power savings.  For the DSP
+and the Control processor to work you need each device enabled to a
+sufficient performance level.  Setting them to all high means you don't
+get the savings.
 
-So does it make sense to you to have
+Doing this kind of coordination which is very specific to your use case
+is difficult to achieve in a generalized fashion.  Splitting some of
+this work between user and kernel space can help.
 
-linux/driver/apm
-|-- apm_userland_interface_emulation_and_not_a_power_management_infrastruct=
-ure.c
-|-- idle.c
-|-- core.c
-
-linux/arch/arm/kernel/
-|- apm_specific_to_arm_which_is_needed_by_generic_driver.c
-| ...
-
-for example ?
-
-
->> why not making it the common power management for embedded system that
->> could be used by all arches which need it ?
-> =
-
-> It could well become a common interface.  But it is NOT power management
-> infrastructure.  It is merely a _userland_ interface.  Nothing more.  It
-> does not do anything other than that.
-> =
-
-
-apm_queue_event() (and kapmd) doens't seem something usefull for user space.
-It seems to be designed to be used by the kernel no ?
-
->> BTW, why has apm_cpu_idle() logic been removed from ARM implementation ?
-> =
-
-> This APM is just a userland interface.  It has nothing to do with actual
-> power management.  CPU idling is handled entirely differently on ARM.
-> =
-
-
-Could you point out where it is handled ?
-
->>> The power management really comes from the Linux drivers themselves,
->>> which are written to peripherals off when they're not in use.  The other
->>> power saving comes from things like cpufreq - again, nothing to do with
->>> the magical "APM" or "ACPI" terms.
->> BTW why is it still called "APM" on ARM ?
-> =
-
-> That's what the userland interface is called on x86.  We could've called =
-it
-> apm_userland_interface_emulation_and_not_a_power_management_infrastructur=
-e.c
-> but although that clearly states what it is, it would've been far too long
-> a name. 8)
-> =
-
-
-Sure, but something that can reflect that it's a userland interface emulati=
-on
-implementation would have been usefull. APM, despite it's already used by A=
-PM
-BIOS terminology, is rather a name for a complete subsystem.
-
-Francis
+Regards,
+Richard W.
