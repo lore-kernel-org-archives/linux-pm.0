@@ -1,15 +1,12 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [RFC] PowerOP, PowerOP Core 1/3
-Date: Thu, 24 Aug 2006 10:04:49 +0200
-Message-ID: <20060824080449.GH1952@elf.ucw.cz>
-References: <44D7EA4D.1020001@gmail.com> <20060815203756.GI4032@ucw.cz>
-	<44E4EC5A.4090201@gmail.com>
+From: moreau francis <francis_moreau2000@yahoo.fr>
+Subject: [HELP] Power management for embedded system
+Date: Thu, 24 Aug 2006 08:44:25 +0000 (GMT)
+Message-ID: <20060824084425.83538.qmail@web25802.mail.ukl.yahoo.com>
+Reply-To: moreau francis <francis_moreau2000@yahoo.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <44E4EC5A.4090201@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,76 +16,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
-> >>+/* =
+I'm currently working on a small embedded system based on a MIPS
+processor. So far Linux works fine on it and I'd like to implement
+power management on this system. For now I realize that APM and ACPI
+are implemented by the kernel.
 
-> >>+ * powerop_register_point - add new operating point with a given name =
-to
-> >>+ * operating points list. A caller passes power parameters for new =
+I don't think that ACPI is really suited for what I need. So I took a
+look to APM implemetation which seems to be only implemented on i386,
+arm and mips architectures. All of these implementations seem to be
+based on i386 one. Mips one seems to be a copy and paste of arm one
+and both of them have removed all APM bios stuff orginally part of
+i386 implementation. It doesn't seem that APM is something really
+stable and finished. So now I do not know from where to start...
 
-> >>operating
-> >>+ * points as pairs of name/value and passes only those parameter names =
+Is there some other effort in the power management for _embedded_
+systems ? I'd like to help in this area and it would be helpful to
+know of certain projects that are working in this direction.
 
-> >>the
-> >>+ * caller is interested in. PowerOP Core calls powerop driver to =
+thanks
 
-> >>initialize
-> >>+ * arch dependent part of new operating point and links new named =
-
-> >>operating + * point to the list maintained by PowerOP Core
-> >>+ * =
-
-> >>+ *
-> >>+ * INPUT
-> >>+ *   id         - operating point name
-> >>+ *   pwr_params - set of (power parameter name, value) pairs
-> >>+ *
-> >>+ * OUTPUT
-> >>+ *   none
-> >>+ *
-> >>+ * RETURN
-> >>+ *   zero on success, error code otherwise
-> >>+ *    =
-
-> >>+ */
-> >>+int =
-
-> >>+powerop_register_point(const char *id, const char *pwr_params, ...)
-> >
-> >kzalloc?
-> >
-> >Why do we want one more string parser in kernel?
-> >  =
-
-> referencing power parameters by name  interface is result of  gradual =
-
-> evolution of PowerOP interface mainly in order to address the =
-
-> requirement to be truly arch independent interface and to get rid of =
-
-> sharing an arch dependent data structures (a structure which defines =
-
-> operating point for a certain platform) between layers on top and =
-
-> beneath PowerOP (see the picture of the layers; thus a layer which =
-
-> creates operating points with help of PowerOP don't need to include arch =
-
-> dependent definition of operating point structure from PM Core layer). =
-
-> The latter fixes the overall PM architecture with OOP design concept.
-
-We need better solution. Putting string parser into kernel because you
-feel OOP is nice is bad idea. See vfs for example of OOP-like design
-without string parsers.
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Francis
