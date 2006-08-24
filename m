@@ -1,15 +1,11 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: OSDL Power Management call 8/24/2006 8 a.m. Pacific
-Date: Wed, 23 Aug 2006 18:13:03 -0700
-Message-ID: <20060824011303.GD18060@kroah.com>
-References: <20060823220020.GA16302@kroah.com>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F77A@de01exm64.ds.mot.com>
+From: "Miller, Marc" <marc.miller@amd.com>
+Subject: Agenda for tomorrow's call (Power Management)
+Date: Wed, 23 Aug 2006 21:14:52 -0500
+Message-ID: <A5A3FA6853175E4D805BCE62B16460295CA642@SAUSEXMB3.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============2040541618=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F77A@de01exm64.ds.mot.com>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,97 +15,160 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Preece Scott-PREECE <scott.preece@motorola.com>
-Cc: linux-pm@lists.osdl.org
+To: pm-summit@lists.osdl.org, desktop_architects@lists.osdl.org, dtl_tech_board@groups.osdl.org, mli_tech_board@groups.osdl.org, dcl_tech_board@groups.osdl.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 23, 2006 at 06:35:16PM -0400, Preece Scott-PREECE wrote:
-> > From: Greg KH [mailto:greg@kroah.com] =
+This is a multi-part message in MIME format...
 
-> > On Wed, Aug 23, 2006 at 05:46:25PM -0400, Preece Scott-PREECE wrote:
-> > > I'm not sure why you think it's outside "the standard process" to =
+--===============2040541618==
+Content-Type: multipart/alternative;
+    boundary="----------=_1156386057-2510-147"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-> > > issue an open invitation to community members to attend a =
+This is a multi-part message in MIME format...
 
-> > WG meeting.
-> > =
+------------=_1156386057-2510-147
+Content-Type: text/plain;
+ charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > Because kernel development doesn't happen at WG meetings.  It =
+This is a reminder and an agenda update for tomorrow's OSDL Desktop Linux T=
+ech call at 8 a.m. Pacific.  This week's topic will be Power Management.  A=
+s always, this is a round table discussion, not a webinar, so hope you'll a=
+sk questions, volunteer information, or even criticize.  We expect the info=
+rmation to be especially appealing to developers and software engineering m=
+anagers, but anyone is welcome.=20=20
 
-> > happens when code is posted.  To think otherwise is to not =
 
-> > understand the kernel development process.
-> ---
-> =
+Agenda:
 
-> So, kernel developers never talk to each other or non-developers except
-> through mailing lists? I don't suppose kernel development happens at
-> OLS, either, but people seem to go anyway. [Well, looking around the OLS
-> sessions, it was clear that some did, but I'm guessing that wasn't the
-> primary intention of bringing people to Canada.]
+* Power Management successes:
+  + compatibility lists
+   https://wiki.ubuntu.com/HardwareSupportMachinesLaptops
+   http://fedoraproject.org/wiki/HCL/Machines/Laptops
+   http://en.opensuse.org/HCL/Laptops
+  + cpufreq
+  + tools available for optimizing power
+  + building block items with potential
 
-Comparing OLS to an OSDL working group meeting is totally unfair, there
-is no comparison.
+* Areas that need work:
+  + Driver power management capabilities descriptor
+  + Profiles & policies
+    - How to represent different computing environments
+    - Standards for reporting an applications' requirements
 
-> > I do however, doubt that a working group meeting is a useful =
 
-> > thing for any kernel developer to spend their time attending, =
+Call-in details:
 
-> > unless it is at the behalf of their employer.  And I say this =
+Tollfree: 1-800-211-0633=20
+Toll: 1-719-867-0485=20
+Passcode: 942698
 
-> > as someone who has attended many such meetings at OSDL and =
+=20
+Marc J. Miller
+OSDL Desktop Linux Tech Co-Chairman
+AMD Strategic Alliance Manager for Open Source Software
 
-> > other places.
-> ---
-> =
+------------=_1156386057-2510-147
+Content-Type: text/html;
+ charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Again, kernel developers have no need to get input from people outside
-> the mailing-list community and no interest in sharing information with
-> them?
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Diso-8859-=
+1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version 6.5.7638.1">
+<TITLE>Agenda for tomorrow's call (Power Management)</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
 
-So are you asking for information from us?  If so, please ask.
+<P><FONT SIZE=3D2 FACE=3D"Arial">This is a reminder and an agenda update fo=
+r tomorrow's OSDL Desktop Linux Tech call at 8 a.m. Pacific.&nbsp; This wee=
+k's topic will be Power Management.&nbsp; As always, this is a round table =
+discussion, not a webinar, so hope you'll ask questions, volunteer informat=
+ion, or even criticize.&nbsp; We expect the information to be especially ap=
+pealing to developers and software engineering managers, but anyone is welc=
+ome.&nbsp; </FONT></P>
+<BR>
 
-And remember, we are here, in public, all the time.  Working groups and
-industry employes are free to contact us at any time.  You don't have to
-try to set up a meeting to do so.
+<P><FONT SIZE=3D2 FACE=3D"Arial">Agenda:</FONT>
+</P>
 
-Again, if this is the goal of the meeting, then say so.  I have yet to
-see a reason for anyone to attend.
+<P><FONT SIZE=3D2 FACE=3D"Arial">* Power Management successes:</FONT>
 
-> > =
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; + compatibility lists</FONT>
 
-> > Again, I will ask these simple questions:
-> > =
+<BR><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp;&nbsp; <A HREF=3D"https://wik=
+i.ubuntu.com/HardwareSupportMachinesLaptops">https://wiki.ubuntu.com/Hardwa=
+reSupportMachinesLaptops</A></FONT>
 
-> >   - Why is the community being invited to such a meeting?
-> ---
-> =
+<BR><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp;&nbsp; <A HREF=3D"http://fedo=
+raproject.org/wiki/HCL/Machines/Laptops">http://fedoraproject.org/wiki/HCL/=
+Machines/Laptops</A></FONT>
 
-> My assumption was it was (a) intended as a courtesy to involve
-> additional people in what would normally be a members-only meeting and
+<BR><FONT SIZE=3D2 FACE=3D"Courier New">&nbsp;&nbsp; <A HREF=3D"http://en.o=
+pensuse.org/HCL/Laptops">http://en.opensuse.org/HCL/Laptops</A></FONT>
 
-Don't worry, the community doesn't feel like we are slighted if we were
-not invited.
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; + cpufreq</FONT>
 
-> (b) because they wanted an opportunity to speak to and hear from the
-> developers. I'll let Marc or Patrick provide the real answer.
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; + tools available for optimizing p=
+ower</FONT>
 
-Did they?  No one has said this!
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; + building block items with potent=
+ial</FONT>
+</P>
 
-> ---
-> >   - Is there a proposed adgenda so that the community members can
-> >     determine if it is worth their time?
-> ---
-> =
+<P><FONT SIZE=3D2 FACE=3D"Arial">* Areas that need work:</FONT>
 
-> That would be nice (though, if I had a dollar for every meeting I've
-> gone to without a pre-announced agenda, I wouldn't need to go to
-> meetings).
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; + Driver power management capabili=
+ties descriptor</FONT>
 
-But as people would be doing this on their own time, you would not want
-to waste it if it was possible.  Don't force company "you must go to a
-meeting" rules on people who do not have to go.
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; + Profiles &amp; policies</FONT>
 
-thanks,
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp;&nbsp; - How to represent dif=
+ferent computing environments</FONT>
 
-greg k-h
+<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp;&nbsp; - Standards for report=
+ing an applications' requirements</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Call-in details:</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Tollfree: 1-800-211-0633 </FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Toll: 1-719-867-0485 </FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Passcode: 942698</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Marc J. Miller</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">OSDL Desktop Linux Tech Co-Chairman</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">AMD Strategic Alliance Manager for Open S=
+ource Software</FONT>
+</P>
+
+</BODY>
+</HTML>
+------------=_1156386057-2510-147--
+
+--===============2040541618==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============2040541618==--
