@@ -1,14 +1,20 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Thu, 24 Aug 2006 14:29:30 +0200
-Message-ID: <20060824122930.GJ4525@elf.ucw.cz>
-References: <EA12F909C0431D458B9D18A176BEE4A50745C14B@dlee02.ent.ti.com>
+Date: Thu, 24 Aug 2006 14:39:54 +0200
+Message-ID: <20060824123954.GA5513@elf.ucw.cz>
+References: <20060814200735.GC14099@kroah.com>
+	<c948ef9077556626e85291ad716b7ddb@nomadgs.com>
+	<20060814224623.GH30814@redhat.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com>
+	<20060815010020.GA14251@kroah.com>
+	<b324b5ad0608182310v348f8936j527357e60c3a77bb@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A50745C14B@dlee02.ent.ti.com>
+In-Reply-To: <b324b5ad0608182310v348f8936j527357e60c3a77bb@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,42 +24,57 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: David Singleton <daviado@gmail.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-> > > I have some notion that a policy manager can create a state with
-> simple
-> > > & general names like fast, medium, slow (whatever) which is the
-> > > interface in which applications might speak.  A complex policy
-> > > manager
-> > =
 
-> > ...which is very bad interface for applications. See my other
-> > mail. Applications should not have to play with fast/medium/slow,
-> > explicitely. Instead, on opening /dev/dsp, you should power up the
-> > sound system (and maybe adjust cpu frequency if
-> > neccessary). Application should not have to do echo fast > somewhere
-> > before opening /dev/dsp
+> >> This adds a whole bunch of new code, and doesn't seem to make any
+> >> existing code any simpler (to me at least).  From a cpufreq point of =
+
+> >view,
+> >> what does adding this buy us? What problem do we have today that is
+> >> being solved by all this?
 > =
 
-> How does /dev/dsp know at what level it can run at?  On the SOC I
-> control the speed of the DSP.  I can adjust its MIPs rate.  =
+> Greg and Dave,
+> =
 
+>                 there are two competing patch sets for a new power =
 
-(I meant /dev/dsp -- OSS audio device, not Digital Signal Processor). =
+>                 management
+>        framework.   The patch set I sent out simplifies power management,
+>        from both the cpufreq perspective and the embedded world's view of
+>        power management.
+> =
 
+>                I've renamed my patch oppoint so as not confuse it
+>        with the powerop set from Matt Locke (which will probably make
+>        it even more confusing).  I've renamed it so it can be seen as an
+>        alternative design approach, not just an alternative implementation
+>        of the same ideas.  I've also incorporated suggestions from
+>        Pavel in cleaning up the original patches.
+> =
 
-> A missing pieces is meaningful coordination between devices.  Each
-> device is not an island.  Not taking care of all devices on the internal
-> interconnects may mean you don't get the big power savings.  For the DSP
+>                If you'd be willing to take a look at, or try out, the =
 
-For notebooks, devices *are* islands. powerop tries to push
-everything-depends-on-everything model that may be good for some SoC,
-but sucks for notebooks. We need some middle ground.  =
+>                patches
+>        in my patch set you should be able to see how oppoint could simpli=
+fy
+>        cpufreq code.  The first patch is the oppoint-cpufreq.patch and
+>        the second is the oppoint-x86-centrino.patch.
+> =
 
+>                Oppoint could replace large pieces of the cpufreq code
+>        in the kernel, most notably the policy and governor code, which I
+>        believe belongs in user space in the power manager daemon.
 
+I was told (by intel folks) that you can't push governor code into
+userspace, because it is latency-critical on new cpus... so I do not
+think this is going to simplify cpufreq.
+								Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
