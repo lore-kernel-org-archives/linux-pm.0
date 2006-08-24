@@ -1,14 +1,15 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Thu, 24 Aug 2006 10:03:00 +0200
-Message-ID: <20060824080300.GG1952@elf.ucw.cz>
-References: <EA12F909C0431D458B9D18A176BEE4A50745BBF5@dlee02.ent.ti.com>
+Subject: Re: [RFC] PowerOP, PowerOP Core 1/3
+Date: Thu, 24 Aug 2006 10:04:49 +0200
+Message-ID: <20060824080449.GH1952@elf.ucw.cz>
+References: <44D7EA4D.1020001@gmail.com> <20060815203756.GI4032@ucw.cz>
+	<44E4EC5A.4090201@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <EA12F909C0431D458B9D18A176BEE4A50745BBF5@dlee02.ent.ti.com>
+In-Reply-To: <44E4EC5A.4090201@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,40 +19,74 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > I guess it just defines an appropriate policy. You can call it
-> > > 'usb_mp3' if you wish ;)
-> > > I don't think it's too embedded-specific.
-> > =
+> >>+/* =
 
-> > Well, it leads to exponential number of policies -- not nice. Having
-> > usb_mp3_fileserver_webserver is not nice.
-> =
+> >>+ * powerop_register_point - add new operating point with a given name =
+to
+> >>+ * operating points list. A caller passes power parameters for new =
 
-> To some extent having lots of specific policies in the embedded space is
-> inevitable.  The hardware is very tightly coupled.  You may have
+> >>operating
+> >>+ * points as pairs of name/value and passes only those parameter names =
 
-Maybe. But you certainly do not have to export that uglyness to
-userspace.
+> >>the
+> >>+ * caller is interested in. PowerOP Core calls powerop driver to =
 
-> I have some notion that a policy manager can create a state with simple
-> & general names like fast, medium, slow (whatever) which is the
-> interface in which applications might speak.  A complex policy
-> manager
+> >>initialize
+> >>+ * arch dependent part of new operating point and links new named =
 
-...which is very bad interface for applications. See my other
-mail. Applications should not have to play with fast/medium/slow,
-explicitely. Instead, on opening /dev/dsp, you should power up the
-sound system (and maybe adjust cpu frequency if
-neccessary). Application should not have to do echo fast > somewhere
-before opening /dev/dsp.
+> >>operating + * point to the list maintained by PowerOP Core
+> >>+ * =
 
-								Pavel
+> >>+ *
+> >>+ * INPUT
+> >>+ *   id         - operating point name
+> >>+ *   pwr_params - set of (power parameter name, value) pairs
+> >>+ *
+> >>+ * OUTPUT
+> >>+ *   none
+> >>+ *
+> >>+ * RETURN
+> >>+ *   zero on success, error code otherwise
+> >>+ *    =
+
+> >>+ */
+> >>+int =
+
+> >>+powerop_register_point(const char *id, const char *pwr_params, ...)
+> >
+> >kzalloc?
+> >
+> >Why do we want one more string parser in kernel?
+> >  =
+
+> referencing power parameters by name  interface is result of  gradual =
+
+> evolution of PowerOP interface mainly in order to address the =
+
+> requirement to be truly arch independent interface and to get rid of =
+
+> sharing an arch dependent data structures (a structure which defines =
+
+> operating point for a certain platform) between layers on top and =
+
+> beneath PowerOP (see the picture of the layers; thus a layer which =
+
+> creates operating points with help of PowerOP don't need to include arch =
+
+> dependent definition of operating point structure from PM Core layer). =
+
+> The latter fixes the overall PM architecture with OOP design concept.
+
+We need better solution. Putting string parser into kernel because you
+feel OOP is nice is bad idea. See vfs for example of OOP-like design
+without string parsers.
+									Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
