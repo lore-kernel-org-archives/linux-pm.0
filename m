@@ -1,49 +1,124 @@
-From: moreau francis <francis_moreau2000@yahoo.fr>
-Subject: Re : Re : [HELP] Power management for embedded system
-Date: Thu, 24 Aug 2006 14:42:05 +0000 (GMT)
-Message-ID: <20060824144205.52988.qmail@web25801.mail.ukl.yahoo.com>
-References: <1156414325.5555.11.camel@localhost.localdomain>
-Reply-To: moreau francis <francis_moreau2000@yahoo.fr>
+From: "Preece Scott-PREECE" <scott.preece@motorola.com>
+Subject: Re: OSDL Power Management call 8/24/2006 8 a.m. Pacific
+Date: Thu, 24 Aug 2006 10:45:04 -0400
+Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A4F90A@de01exm64.ds.mot.com>
+References: <20060824011303.GD18060@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932098AbWHXOmJ@vger.kernel.org>
-In-Reply-To: <1156414325.5555.11.camel@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+In-Reply-To: <20060824011303.GD18060@kroah.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Richard Purdie wrote:
-> It provides an apm_bios device which behaves the same way as a "real"
-> APM bios on x86. The same apmd used on x86 can be used on ARM.
-> 
-> Its main purpose is to be to run suspend/resume events past userspace
-> before acting on them (and allow suspend/resume events to be triggered
-> from userspace). It also allows exporting of battery status information
-> to userspace in a rather broken way. 
-> 
-> It would be nice to move that to some arch independent generic
-> implementation of these things and to leave the APM emulation behind.
+ =
 
-Yes. Hence the generic code would deal with battery info, suspend/resume
-events to userspace, cpu idle logic. And arches specific code would deal
-with hardware to get status on battery for example. On i386 that would
-lead to call the BIOS, on others arches, they would use whatever available
-on the platform to report the status.
+> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Greg KH
+ ...
+> > Again, kernel developers have no need to get input from =
 
-> The battery information should be a sysfs class (see the backlight/led
-> classes as examples of sysfs classes). The suspend/resume event handling
-> would be something new as far as I know and ideally should support
-> suspending/resuming individual sections of device hardware as well as
+> people outside =
 
-Well, maybe the first step is to unify this APM for all arches hence 
-everybody could better improve it.
+> > the mailing-list community and no interest in sharing =
 
-> the whole system. The linux-pm mailing list might have more of an idea
-> of whether these things are being worked on and their current status.
-> 
+> information with =
 
-That's actually this status I was trying to get when posting my initial
-email.
+> > them?
+> =
 
-Francis
+> So are you asking for information from us?  If so, please ask.
+> =
+
+> And remember, we are here, in public, all the time.  Working =
+
+> groups and industry employes are free to contact us at any =
+
+> time.  You don't have to try to set up a meeting to do so.
+---
+
+Odd - you're free to be contacted, but when the group contacted you, you
+complained? I don't think they set up the meeting for the purpose of
+contacting you; they were already holding the meeting and announced it
+for anyone who might be interested.
+
+---
+> ...
+> > >   - Why is the community being invited to such a meeting?
+> > ---
+> > =
+
+> > My assumption was it was (a) intended as a courtesy to involve =
+
+> > additional people in what would normally be a members-only =
+
+> meeting and
+> =
+
+> Don't worry, the community doesn't feel like we are slighted =
+
+> if we were not invited.
+---
+
+Clearly, I should have just answered, "Why not?" and left it at that.
+
+---
+> =
+
+> > (b) because they wanted an opportunity to speak to and hear =
+
+> from the =
+
+> > developers. I'll let Marc or Patrick provide the real answer.
+> =
+
+> Did they?  No one has said this!
+---
+
+I would have thought that was implicit in an invitation to a working
+group meeting, but that's just me...
+
+---
+> ...
+> > That would be nice (though, if I had a dollar for every =
+
+> meeting I've =
+
+> > gone to without a pre-announced agenda, I wouldn't need to go to =
+
+> > meetings).
+> =
+
+> But as people would be doing this on their own time, you =
+
+> would not want to waste it if it was possible.  Don't force =
+
+> company "you must go to a meeting" rules on people who do not =
+
+> have to go.
+---
+
+Did you feel coerced by the announcement? If you had seen the meeting
+announcement on the bulletin board at your local coffee shop, who you
+have felt similarly negative about the notice having been posted? You
+would have preferred that they not make the offer to anyone, because you
+aren't interested without an agenda?
+
+Rhetorical debate was fun, but I'll let you get back to useful work,
+now, and wait for Patrick or Marc to post the agenda.
+
+Bottom line is that I thought it was a little over-the-top for you to
+decline the invitation on behalf of everyone, ("I guess no one will take
+the time to join then") rather than just for yourself...
+
+Scott
