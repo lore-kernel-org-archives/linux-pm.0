@@ -1,26 +1,54 @@
-From: Ikhwan Lee <ikhwan.lee@samsung.com>
-Subject: Voltage/power domain framework?
-Date: Fri, 25 Aug 2006 16:50:42 +0900
-Message-ID: <002101c6c81b$2c61ffd0$4686190c@dsn.sec.samsung.com>
-References: <mailman.2682.1156469445.1142.linux-pm@lists.osdl.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: T60 not coming out of suspend to RAM
+Date: Fri, 25 Aug 2006 13:04:41 +0200
+Message-ID: <20060825110441.GB8538@elf.ucw.cz>
+References: <20060822103731.GC13782@mellanox.co.il>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750771AbWHYLEw@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060822103731.GC13782@mellanox.co.il>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: linux-pm@osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-I've seen quite a few discussions mentioning the necessity of voltage/power
-domain framework. Is there any project going on? I heard that there were
-some activities by Nokia, but I could not find any on the web.
+Hi!
 
-Ikhwan
+> I'm running Linus' git tree on my thinkpad T60.
+> It generally seems to work fine after suspend to disk.
+> However, the system does not come out of suspend to ram,
+> with screen staying blank. I'm looking for hints for debugging this.
+> 
+> If I set suspend/resume event tracing, I see this in dmesg
+> after reboot:
+> 
+> dmesg -s 1000000 | grep 'hash matches'
+>   hash matches drivers/base/power/resume.c:42
+>   hash matches device serio2
+> 
+> serio2 seems to be the psmouse device:
+> ls /sys/bus/serio/drivers/psmouse/
+> bind bind_mode description serio0 serio2 unbind
+> 
+> Does this mean the mouse driver blocks the resume?
+> 
+> I've rebuilt psmouse as a module, unloaded it before suspend, and now
+> I see the same behaviour but after reboot:
+> dmesg -s 1000000 | grep 'hash matches'
+>   hash matches drivers/base/power/resume.c:42
+>   hash matches device i2c-9191
+> 
+> Which is somewhat weird because
+> ls /sys/bus/i2c/devices
+> does not list any i2c devices
+> 
+> I could continue disabling stuff - but I am looking in the
+> correct place even? How do you debug resume issues?
+
+Yes, disabling stuff is way to go. Just disable everything, and binary
+search from there :-).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
