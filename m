@@ -1,48 +1,45 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Re : Re : [HELP] Power management for embedded system
-Date: Fri, 25 Aug 2006 14:29:19 +0100
-Message-ID: <20060825132919.GA12370@srcf.ucam.org>
-References: <20060824162034.GB19753@srcf.ucam.org>
-	<20060825131843.87416.qmail@web25803.mail.ukl.yahoo.com>
+From: moreau francis <francis_moreau2000@yahoo.fr>
+Subject: Re : Re : Re : [HELP] Power management for embedded system
+Date: Fri, 25 Aug 2006 13:39:25 +0000 (GMT)
+Message-ID: <20060825133925.47842.qmail@web25810.mail.ukl.yahoo.com>
+References: <20060824215650.GB21439@flint.arm.linux.org.uk>
+Reply-To: moreau francis <francis_moreau2000@yahoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20060825131843.87416.qmail@web25803.mail.ukl.yahoo.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: moreau francis <francis_moreau2000@yahoo.fr>
-Cc: linux-pm@lists.osdl.org, Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750798AbWHYNj1@vger.kernel.org>
+In-Reply-To: <20060824215650.GB21439@flint.arm.linux.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 25, 2006 at 01:18:43PM +0000, moreau francis wrote:
-> Matthew Garrett wrote:
-> > Triggering suspend/resume is already generic in the form of the =
+Russell King wrote:
+> We have some folk who want a method to trigger emergency suspends when
+> batteries got low, or if you move the battery cover, etc.  These are
+> events which require fast reactions from the system, and coding up some
+> additional interface to pass such events to userland, have some daemon
+> running to monitor for those events, and issue a PM event is completely
+> overkill and, actually, unreliable.
+> 
 
-> > /sys/power/state interface. There's been discussion of producing a =
+I'm not sure to understand why a daemon is needed. Could you explain ?
 
-> > generic battery class lately. There's some trend towards tying suspend =
+>> Could you point out where it is handled ?
+> 
+> It's both machine class and CPU specific.  I couldn't point you at
+> anything specific, except to say that different machines and ARM CPUs
+> handle it differently.
+> 
+> Some CPUs have "wait for interrupt" instructions, some don't.  Some
+> need special cache handling around this instruction, some don't.  Some
+> machines have a CPU capable of "wait for interrupt" but must not use it.
+> 
+> It's all handled by the CPU abstraction, and the machine class abstraction.
+> 
+> See arch_idle in include/asm-arm/arch-*/system.h as the starting point
+> for the "default" (== always used) idle implementations.
+> 
 
-> > requests into the input layer, but how appropriate that is may depend o=
-n =
+thanks for that.
 
-> > the hardware in question. I think most of the pieces are in place to =
-
-> > provide an interface that isn't tied to looking like APM, and there's
-> =
-
-> what about suspend/resume event handling ? Is there something already in
-> place ?
-
-You mean passing those events out to userspace? Not that I know of.
--- =
-
-Matthew Garrett | mjg59@srcf.ucam.org
+Francis
