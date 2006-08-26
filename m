@@ -1,15 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: waking system up using RTC (was Re: rtcwakeup.c)
-Date: Sat, 26 Aug 2006 23:43:42 +0200
-Message-ID: <20060826214342.GB3784@elf.ucw.cz>
-References: <20060725124941.GD5034@ucw.cz> <20060826145920.GA1826@elf.ucw.cz>
-	<200608261415.33353.david-b@pacbell.net>
+Subject: usb suspend (was Re:  So,
+	what's the status on the recent patches here?)
+Date: Sun, 27 Aug 2006 01:34:08 +0200
+Message-ID: <20060826233408.GE2551@elf.ucw.cz>
+References: <20060825220320.GH9568@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0608252215340.32136-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200608261415.33353.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.44L0.0608252215340.32136-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,82 +20,66 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > Your new RTC driver seems to work for me (thinkpad x60), but no, I
-> > can't get wakeup using RTC to work:
+> > > The idea of the patches is that they will autosuspend a USB hub when =
+it
+> > > has no active (i.e., unsuspended) children, and autosuspending a root=
+ hub
+> > > stops the USB controller from doing DMA.  However, non-hub devices ar=
+e not
+> > > yet automatically suspended, so you will have to suspend the fingerpr=
+int
+> > > scanner by hand.
+> > =
+
+> > That is okay, I can do that. It saves 2 hours of battery life on my
+> > machine...
 > =
 
-> Does it work using /proc/acpi/alarm?  In my experience, ACPI wakeup
-> doesn't work on Linux ... hence my pleasant surprise to see it work
+> Come to think of it, you don't need the autosuspend patches to turn these =
 
-No, I could not get it working using /proc/acpi/alarm.
+> devices off.  You can do it right now with your existing kernel, although =
 
-> at last, albeit just with the RTC, on every system I tried.  (That's
-> using swsusp; and on the system where STR works, also STR.)
+> it's a little easier with -mm.  (The reason is that -mm contains a =
 
-Both swsusp and STR work here.
+> development patch which ties a USB device's interfaces to the device =
 
-> However:
+> itself; suspending the device will automatically suspend all its =
+
+> interfaces, and likewise resuming the device will automatically resume al=
+l =
+
+> its interfaces.  With a vanilla kernel you must manually suspend the =
+
+> interfaces before you can suspend the device and manually resume them =
+
+> after resuming the device.)
 > =
 
-> > root@amd:~# sync; /tmp/rtcwake -s $((2 * 60)) -m disk
-> > rtcwake: wakeup from "disk" using rtc0 at Sun Aug 27 16:54:49 2006
-> > root@amd:~#
+> Anyway, you can use the deprecated =
+
 > =
 
-> That's what it should look like -- with "date" immediately after rtcwake
-> returns showing some time after 16:54.  That is, assuming your system
-> can suspend in 2 minutes ... current versions of swsusp seem to take almo=
-st
-> that long to write snapshots for me, on two different systems with 1GB
-> of RAM, so I've taken to doing "-m disk" tests with 5 minute sleeps.
+> 	echo -n 2 >/sys/devices/.../power/state
 > =
 
-> So you're sure it didn't actually suspend, right?
+> mechanism to suspend all the USB interfaces, devices, and controllers you =
 
-It *did* suspend, but I had to wake it up manually using power button.
+> want -- provided you work your way up from the bottom of the device tree.=
+  =
 
-> > Any ideas? (I tried suspending to RAM, too; no change).
-> =
+> The autosuspend patch just makes it simpler, since it takes care of =
 
-> An updated rtcwake.c is appended, which is a bit pickier about noticing
-> when the write to /sys/power/state fails ... the original code was lazy
-> and used fwrite(), which isn't as good about fault reporting.
+> suspending and resuming all the hubs for you.
 
-No, machine actually suspends okay, it just does not wake up :-(.
-
->  (I'll just
-> assume STR works properly on your system -- a pleasant rarity!)
-
-Yes, it works for me, and if you install code from suspend.sf.net, it
-will work for you, too :-) [probably, we have 90% or so success rate].
-
-> There could also be BIOS issues; folk keep mentioning issues that are
-> specific to the x60.  Make sure you didn't disable RTC wake there,
-> and that the RTC reported something like
-> =
-
->   rtc-acpi 00:06: AT compatible RTC (S4wake) (y3k), 1 year alarm
-
-It says:
-
-rtc-acpi 00:07: AT compatible RTC (S4wake) (y3k), 1 month alarm
-
-> at boot time ... if it doesn't report S4 wake capability, or you're
-> not actually using S4, I'd expect rtc wakeup wouldn't work except
-> from "real" suspend states (S1/standby, S3/STR).
-
-
-...but I'm not sure if I was using right swsusp mode (platform
-vs. shutdown).
-
-Thanks for help,
-								Pavel
+Thanks! That works great and gets my power consumption into reasonable
+range.. plus allows fan to actually stop.
+									Pavel
 
 -- =
 
