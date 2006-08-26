@@ -1,13 +1,15 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: PowerOP, Intro 0/3
-Date: Fri, 25 Aug 2006 22:11:59 +0400
-Message-ID: <44EF3D6F.3030802@gmail.com>
+Date: Sat, 26 Aug 2006 20:38:42 +0000
+Message-ID: <20060826203841.GA4144@ucw.cz>
 References: <44ECFC0E.10803@gmail.com> <20060826082848.GC8538@elf.ucw.cz>
+	<44EF3D6F.3030802@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060826082848.GC8538@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <44EF3D6F.3030802@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,48 +19,68 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
 Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> =
+Hi!
 
->> The PowerOP Core provides completely arch independent interface
->> to create and control operating points which consist of arbitrary
->> subset of power parameters available on a certain platform.
->>
->> PowerOP Core upper layer interface provides the following capabilities:
->> - to register an operating point by passing an idenificator of the point
->> represened by a string and arbitrary substet of power paremeters availab=
-le on a
->> certain platform by a string (parameter name) and value pairs.
->> - to unregister operating point by name
->> - to set operating point by name
->> - to get values of arbitrary subset of platform power parameters associa=
-ted
->> this  a point (point is passed by name or NULL to get current parameter =
-values
->> from hw)
-> =
+> >>PowerOP Core upper layer interface provides the =
 
-> I do not think this can work in notebook world, sorry. You'll just get
-> way too many operating points.
-The only feature for notebook world currently presented in the kernel is =
+> >>following capabilities:
+> >>- to register an operating point by passing an =
 
-CPUFreq. CPUFreq PowerOP integration series I sent out for discussion is =
+> >>idenificator of the point
+> >>represened by a string and arbitrary substet of power =
 
-intended to at least provide the same functionality for notebook world as =
+> >>paremeters available on a
+> >>certain platform by a string (parameter name) and =
 
-current functionality is. Did you glance at this series?
+> >>value pairs.
+> >>- to unregister operating point by name
+> >>- to set operating point by name
+> >>- to get values of arbitrary subset of platform power =
 
-</personal> Pavel,
-please stop removing original recipients from either TO: or CC: lists!
-please, when you snip original message _do_not_ snip names of replied perso=
-ns!
-</end>
-	Eugeny
-> Workable solution would be to create power domains, and group devices
-> into power domains.
-> 								Pavel
+> >>parameters associated
+> >>this  a point (point is passed by name or NULL to get =
+
+> >>current parameter values
+> >>from hw)
+> >
+> >I do not think this can work in notebook world, sorry. =
+
+> >You'll just get
+> >way too many operating points.
+> The only feature for notebook world currently presented =
+
+> in the kernel is CPUFreq. CPUFreq PowerOP integration =
+
+
+Actually no. In the notebook world, we do cpufreq, selective powerdown
+of devices (/sys/**/power/state), and suspend-to-ram/disk (not sure if
+it applies to you, but at least some powerop versions wanted to
+replace that).
+
+> series I sent out for discussion is intended to at least =
+
+> provide the same functionality for notebook world as =
+
+> current functionality is. Did you glance at this series?
+
+Yes.
+
+> </personal> Pavel,
+> please stop removing original recipients from either TO: =
+
+> or CC: lists!
+> please, when you snip original message _do_not_ snip =
+
+> names of replied persons!
+> </end>
+
+Do you have example where I did that?
+							Pavel
+
+-- =
+
+Thanks for all the (sleeping) penguins.
