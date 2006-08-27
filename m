@@ -1,16 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: usb suspend (was Re:  So,
-	what's the status on the recent patches here?)
-Date: Sun, 27 Aug 2006 01:34:08 +0200
-Message-ID: <20060826233408.GE2551@elf.ucw.cz>
-References: <20060825220320.GH9568@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0608252215340.32136-100000@netrider.rowland.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: waking system up using RTC (was Re: rtcwakeup.c)
+Date: Sat, 26 Aug 2006 17:04:04 -0700
+Message-ID: <200608261704.05017.david-b@pacbell.net>
+References: <20060725124941.GD5034@ucw.cz>
+	<200608261415.33353.david-b@pacbell.net>
+	<20060826214342.GB3784@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060826214342.GB3784@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0608252215340.32136-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,69 +20,43 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Saturday 26 August 2006 2:43 pm, Pavel Machek wrote:
+> Hi!
+> =
 
-> > > The idea of the patches is that they will autosuspend a USB hub when =
-it
-> > > has no active (i.e., unsuspended) children, and autosuspending a root=
- hub
-> > > stops the USB controller from doing DMA.  However, non-hub devices ar=
-e not
-> > > yet automatically suspended, so you will have to suspend the fingerpr=
-int
-> > > scanner by hand.
+> > > Your new RTC driver seems to work for me (thinkpad x60), but no, I
+> > > can't get wakeup using RTC to work:
 > > =
 
-> > That is okay, I can do that. It saves 2 hours of battery life on my
-> > machine...
+> > Does it work using /proc/acpi/alarm?  In my experience, ACPI wakeup
+> > doesn't work on Linux ... hence my pleasant surprise to see it work
 > =
 
-> Come to think of it, you don't need the autosuspend patches to turn these =
+> No, I could not get it working using /proc/acpi/alarm.
 
-> devices off.  You can do it right now with your existing kernel, although =
+Then I suspect that's the root cause of your problem ... ACPI code,
+in either Linux or your BIOS, is not sufficiently cooperative.  All
+that the rtc-acpi driver does is move the wakeup code, it doesn't
+actually change what the /proc/acpi/alarm stuff does.
 
-> it's a little easier with -mm.  (The reason is that -mm contains a =
 
-> development patch which ties a USB device's interfaces to the device =
+> No, machine actually suspends okay, it just does not wake up :-(.
 
-> itself; suspending the device will automatically suspend all its =
+The usual ACPI wakeup symptoms I've seen are the hardware giving the
+signal, system starting to wake up, then botching somewhere early in
+the resum.  So I suspect you're not actually getting the hardware
+wakeup signal ... as if maybe it wasn't set up correctly.
 
-> interfaces, and likewise resuming the device will automatically resume al=
-l =
+You may be able to tell your BIOS to do the alarm by itself, and
+then test to see whether Linux handles the wakeup side OK.
 
-> its interfaces.  With a vanilla kernel you must manually suspend the =
 
-> interfaces before you can suspend the device and manually resume them =
+> rtc-acpi 00:07: AT compatible RTC (S4wake) (y3k), 1 month alarm
 
-> after resuming the device.)
-> =
+Seems like Intel's chips won't do one year alarms ... so sad.  :)
 
-> Anyway, you can use the deprecated =
-
-> =
-
-> 	echo -n 2 >/sys/devices/.../power/state
-> =
-
-> mechanism to suspend all the USB interfaces, devices, and controllers you =
-
-> want -- provided you work your way up from the bottom of the device tree.=
-  =
-
-> The autosuspend patch just makes it simpler, since it takes care of =
-
-> suspending and resuming all the hubs for you.
-
-Thanks! That works great and gets my power consumption into reasonable
-range.. plus allows fan to actually stop.
-									Pavel
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+- Dave
