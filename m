@@ -1,23 +1,23 @@
-From: Matthew Locke <matthew.a.locke@comcast.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Tue, 29 Aug 2006 00:51:54 -0700
-Message-ID: <8f6ac3aac5268b8c03e7dafee7992bbe@comcast.net>
-References: <20060817214031.GE6450@ucw.cz>
-	<acd2a5930608172242v7ba6e7eeq8ab90ea11175ef4c@mail.gmail.com>
-	<20060823122849.GA23456@atrey.karlin.mff.cuni.cz>
-	<acd2a5930608240558k4cc77dadxbd6175c05141fe23@mail.gmail.com>
-	<20060825195543.GA9568@elf.ucw.cz>
-	<acd2a5930608251626t36fb1e79w27acd1eaa6fe5947@mail.gmail.com>
-	<20060826101820.GI10257@elf.ucw.cz>
-	<acd2a5930608260630l52c914c0h207866a32a3def4a@mail.gmail.com>
-	<20060826134653.GQ10257@elf.ucw.cz>
-	<20060828164038.GA17944@linux.intel.com>
-	<20060828173957.GF30105@elf.ucw.cz>
-Mime-Version: 1.0 (Apple Message framework v624)
+Date: Sun, 27 Aug 2006 15:41:52 +0000
+Message-ID: <20060827154151.GA4158@ucw.cz>
+References: <c948ef9077556626e85291ad716b7ddb@nomadgs.com>
+	<20060814224623.GH30814@redhat.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com>
+	<20060815010020.GA14251@kroah.com>
+	<b324b5ad0608182319y307210a3w6389c83482e43ab8@mail.gmail.com>
+	<20060819184843.GB15644@redhat.com>
+	<b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
+	<20060820033044.GA24928@redhat.com>
+	<b324b5ad0608262137y24cfb843kb03476a22e462516@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060828173957.GF30105@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <b324b5ad0608262137y24cfb843kb03476a22e462516@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,72 +27,84 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
+To: David Singleton <daviado@gmail.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Aug 28, 2006, at 10:39 AM, Pavel Machek wrote:
+> > The other alternative as suggested earlier this week would be archictur=
+es
+> > getting to 'opt out' of powerop for their cpufreq drivers where it does=
+n't
+> > necessarily bring anything but the layer of indirection.
+> >
+> > I'm about to disappear for two weeks for a much needed vacation, but
+> > I'll be interested to see other folks comments/opinions on this
+> > when I get back.
+> =
 
-> On Mon 2006-08-28 09:40:38, Mark Gross wrote:
->> On Sat, Aug 26, 2006 at 03:46:53PM +0200, Pavel Machek wrote:
->>> On Sat 2006-08-26 17:30:40, Vitaly Wool wrote:
->>>> On 8/26/06, Pavel Machek <pavel@suse.cz> wrote:
->>> Because 8388608 policies is clearly not reasonable, powerop can not
->>> help here, and something better should be developed... like power
->>> domains someone proposed here.
->>>
->>> (Or to say it in another words, powerop forces one big power domain,
->>> which is bad model for notebook-style machine).
->>
->> I doubt notebook-style machines will ever us power op in any
->> significant way.  HPC and embedded will be the first users.
->
-> I agree here... power op look useless for notebooks. But I doubt power
-> op authors would agree...
+>         This week I got some really good feedback and suggestions
+>         from Mark Gross on the kernel interface and usability and
+>         I have two new additions for this patch set.  So I spend the week
+>         working on a well thought out kernel interface.
+> =
 
-Agree that something I work on is useless? Never:)  I know I sound like =
+>         1) I believe I now have the right kernel interface for a common
+>         power management infrastructure.
+> =
 
-a broken record but...
+>         The new kernel interface still uses /sys/power/state to both
+>         show the current operating point and set a desired operating
+>         point, by name. There is a new /sys/power/operating_points direct=
+ory
+>         that shows all the operating points the system supports. An
+>         exampled from my centrino laptop shows:
+> =
 
-PowerOP is the basic building block for scaling power management.  Its =
+>         /sys/power/operating_points/high
+>         /sys/power/operating_points/highest
+>         /sys/power/operating_points/low
+>         /sys/power/operating_points/lowest
+>         /sys/power/operating_points/medium
+>         /sys/power/operating_points/mem
+>         /sys/power/operating_points/standby
 
-as  useless or useful as the cpufreq_driver layer of cpufreq is on =
+What makes you think that mixing operating and sleep states is good
+idea?
 
-laptops.  You can think of PowerOP as a redesign of cpufreq_driver that =
+And '600MHz' makes lot more sense than 'lowest' on centrino.
 
-enables other software in the PM stack to select a group of power =
+>         /sys/power/operating_points/high/frequency
+>         /sys/power/operating_points/high/voltage
+>         /sys/power/operating_points/high/latency
 
-parameter values by a string.  On x86 this other software can continue =
+What is voltage for 'mem'?
 
-to be cpufreq.   On embedded devices the other software can use the =
+>         I've finally had a bit of time to get the sysfs one file - one
+>         value system in place for OpPoint.
+> =
 
-powerop sysfs api or kernel APIs.
+>         2) The really good news is there is a now a power manager for
+> OpPoint now,
+>         both in rpm and src rpm form.  And since the new power manager ru=
+ns off
+>         the new kernel interface and actually does what the cpuspeed daem=
+on does
+>         I think the kernel interface is sound.
+> =
 
->
->> Power domains will likely build on top power op.
->>
->> Power domains adds complexities themselves. Dealing with
->> dependencies and constraints between domains will be a challenge.
->
-> Once we have power domains in/solved... do we still need power op? I
-> thought power op could be useful for solving constrains _inside_ one
-> domain, but...
+>         I took the cpuspeed power manager daemon, version 1.2.1, and modi=
+fied
+>         it Friday to use the oppoint interface. It supports all the
+>         options the cpuspeed daemon does, (and can actually still be comp=
+iled to
+>         be the original cpuspeed daemon) it just uses the interface
+>         described above instead of the cpufreq interfaces.
 
-I don't have a specific answer for this.  We will deal with it when we =
+Congratulations, you now have inferior version of cpufreq ondemand
+governor.
+						Pavel
+-- =
 
-port to hardware that has power domain control.
-
-
-> 								Pavel
-> -- =
-
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) =
-
-> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
->
+Thanks for all the (sleeping) penguins.
