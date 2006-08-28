@@ -1,23 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Mon, 28 Aug 2006 19:39:57 +0200
-Message-ID: <20060828173957.GF30105@elf.ucw.cz>
-References: <20060817214031.GE6450@ucw.cz>
-	<acd2a5930608172242v7ba6e7eeq8ab90ea11175ef4c@mail.gmail.com>
-	<20060823122849.GA23456@atrey.karlin.mff.cuni.cz>
-	<acd2a5930608240558k4cc77dadxbd6175c05141fe23@mail.gmail.com>
-	<20060825195543.GA9568@elf.ucw.cz>
-	<acd2a5930608251626t36fb1e79w27acd1eaa6fe5947@mail.gmail.com>
-	<20060826101820.GI10257@elf.ucw.cz>
-	<acd2a5930608260630l52c914c0h207866a32a3def4a@mail.gmail.com>
-	<20060826134653.GQ10257@elf.ucw.cz>
-	<20060828164038.GA17944@linux.intel.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: T60 not coming out of suspend to RAM
+Date: Mon, 28 Aug 2006 12:25:35 -0700
+Message-ID: <20060828122535.911e593a.akpm@osdl.org>
+References: <20060828154242.GB30105@elf.ucw.cz>
+	<20060828171926.GB25491@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20060828164038.GA17944@linux.intel.com>
+In-Reply-To: <20060828171926.GB25491@mellanox.co.il>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,41 +18,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Mark Gross <mgross@linux.intel.com>
-Cc: linux-pm@lists.osdl.org
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>, Jeff Garzik <jeff@garzik.org>
+Cc: linux-pm@osdl.org, Thomas Glanzmann <sithglan@stud.uni-erlangen.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2006-08-28 09:40:38, Mark Gross wrote:
-> On Sat, Aug 26, 2006 at 03:46:53PM +0200, Pavel Machek wrote:
-> > On Sat 2006-08-26 17:30:40, Vitaly Wool wrote:
-> > > On 8/26/06, Pavel Machek <pavel@suse.cz> wrote:
-> > Because 8388608 policies is clearly not reasonable, powerop can not
-> > help here, and something better should be developed... like power
-> > domains someone proposed here.
+On Mon, 28 Aug 2006 20:19:26 +0300
+"Michael S. Tsirkin" <mst@mellanox.co.il> wrote:
+
+> Quoting r. Pavel Machek <pavel@ucw.cz>:
+> > Subject: Re: T60 not coming out of suspend to RAM
 > > =
 
-> > (Or to say it in another words, powerop forces one big power domain,
-> > which is bad model for notebook-style machine).
+> > On Mon 2006-08-28 16:53:58, Michael S. Tsirkin wrote:
+> > > OK, it turns out the problem was with running SATA drive in AHCI mode.
+> > > =
+
+> > > After applying the following patch from Forrest Zhao
+> > > http://lkml.org/lkml/2006/7/20/56
+> > > both suspend to disk and suspend to ram work fine now.
+> > > This patch is going into 2.6.18, isn't it?
+> > =
+
+> > Not sure, check latest -rc5, and if it is not there, ask akpm...
+> > =
+
 > =
 
-> I doubt notebook-style machines will ever us power op in any
-> significant way.  HPC and embedded will be the first users.
-
-I agree here... power op look useless for notebooks. But I doubt power
-op authors would agree...
-
-> Power domains will likely build on top power op.
+> Andrew, this is going into 2.6.18, isn't it? I don't see it in -rc5.
 > =
 
-> Power domains adds complexities themselves. Dealing with
-> dependencies and constraints between domains will be a challenge.
 
-Once we have power domains in/solved... do we still need power op? I
-thought power op could be useful for solving constrains _inside_ one
-domain, but...
-								Pavel
--- =
+It looks like Forrest's stuff is all queued up in the libata devel tree,
+although in a significantly different-looking form.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+So no, right now it doesn't look good for 2.6.18.
