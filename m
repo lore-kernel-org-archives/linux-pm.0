@@ -1,22 +1,14 @@
-From: "David Singleton" <daviado@gmail.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Sun, 27 Aug 2006 17:07:50 -0700
-Message-ID: <b324b5ad0608271707v107af36cs6c496e823a4af6ed@mail.gmail.com>
-References: <c948ef9077556626e85291ad716b7ddb@nomadgs.com>
-	<221e3d51950d20642b3655617527dc52@nomadgs.com>
-	<20060814234801.GK30814@redhat.com> <20060815010020.GA14251@kroah.com>
-	<b324b5ad0608182319y307210a3w6389c83482e43ab8@mail.gmail.com>
-	<20060819184843.GB15644@redhat.com>
-	<b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
-	<20060820033044.GA24928@redhat.com>
-	<b324b5ad0608262137y24cfb843kb03476a22e462516@mail.gmail.com>
-	<20060827194805.GA24396@kroah.com>
-Mime-Version: 1.0
+From: Matthew Locke <matt@nomadgs.com>
+Subject: Re: PowerOP, Intro 0/3
+Date: Mon, 28 Aug 2006 00:37:44 -0700
+Message-ID: <1d71fc171bd3635111b4da9024db747f@nomadgs.com>
+References: <44ECFC0E.10803@gmail.com> <20060826082848.GC8538@elf.ucw.cz>
+	<44EF3D6F.3030802@gmail.com> <20060826203841.GA4144@ucw.cz>
+Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060827194805.GA24396@kroah.com>
-Content-Disposition: inline
+In-Reply-To: <20060826203841.GA4144@ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,30 +18,58 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 8/27/06, Greg KH <greg@kroah.com> wrote:
-> On Sat, Aug 26, 2006 at 09:37:14PM -0700, David Singleton wrote:
-> >
-> >        The patchset and rpmsl are available at:
-> >
-> >        http://source.mvista.com/~dsingleton
+
+On Aug 26, 2006, at 1:38 PM, Pavel Machek wrote:
+
+> Hi!
 >
-> Care to put up a tarball for those of us running on distros that are not
-> RPM based?
-
-Okay,  there is tarball, patches and spec file in
-
-    http://source.mvista.com/~dsingleton/2.6.18-rc4/oppointd
-
-
-David
-
-
+>>>> PowerOP Core upper layer interface provides the
+>>>> following capabilities:
+>>>> - to register an operating point by passing an
+>>>> idenificator of the point
+>>>> represened by a string and arbitrary substet of power
+>>>> paremeters available on a
+>>>> certain platform by a string (parameter name) and
+>>>> value pairs.
+>>>> - to unregister operating point by name
+>>>> - to set operating point by name
+>>>> - to get values of arbitrary subset of platform power
+>>>> parameters associated
+>>>> this  a point (point is passed by name or NULL to get
+>>>> current parameter values
+>>>> from hw)
+>>>
+>>> I do not think this can work in notebook world, sorry.
+>>> You'll just get
+>>> way too many operating points.
+>> The only feature for notebook world currently presented
+>> in the kernel is CPUFreq. CPUFreq PowerOP integration
 >
-> thanks,
->
-> greg k-h
->
+> Actually no. In the notebook world, we do cpufreq, selective powerdown
+> of devices (/sys/**/power/state), and suspend-to-ram/disk (not sure if
+> it applies to you, but at least some powerop versions wanted to
+> replace that).
+
+
+The main point is that you won't get too many operating points.  You =
+
+will get the number of operating points the x86 port of PowerOP chooses =
+
+to have.  In the cpufreq/PowerOP integration patches you get the same =
+
+number of operating points you have today in cpufreq.   We query ACPI =
+
+for the list or use the hardcoded table.  Also, if we provide a =
+
+userspace API for creating operating points,  distro's can create =
+
+additional operating points that make sense for some specific use cases =
+
+they would like to optimize around.
+
+
+Matt
