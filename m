@@ -1,18 +1,23 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: Voltage/power domain framework?
-Date: Mon, 28 Aug 2006 13:24:46 -0700
-Message-ID: <20060828202446.GA26848@linux.intel.com>
-References: <mailman.2682.1156469445.1142.linux-pm@lists.osdl.org>
-	<002101c6c81b$2c61ffd0$4686190c@dsn.sec.samsung.com>
-	<20060825180017.GA7636@linux.intel.com>
-	<00c701c6c9ce$a721bd50$4686190c@dsn.sec.samsung.com>
-Reply-To: mgross@linux.intel.com
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Tue, 29 Aug 2006 00:18:37 +0200
+Message-ID: <20060828221837.GB1335@elf.ucw.cz>
+References: <20060814224623.GH30814@redhat.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com>
+	<20060815010020.GA14251@kroah.com>
+	<b324b5ad0608182319y307210a3w6389c83482e43ab8@mail.gmail.com>
+	<20060819184843.GB15644@redhat.com>
+	<b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
+	<20060820033044.GA24928@redhat.com>
+	<b324b5ad0608262137y24cfb843kb03476a22e462516@mail.gmail.com>
+	<c55240ed0608271354o7224c903l8b9eae6de22ca8c6@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <00c701c6c9ce$a721bd50$4686190c@dsn.sec.samsung.com>
+In-Reply-To: <c55240ed0608271354o7224c903l8b9eae6de22ca8c6@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,48 +27,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ikhwan Lee <ikhwan.lee@samsung.com>
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 27, 2006 at 08:48:01PM +0900, Ikhwan Lee wrote:
-> Thanks for your note,
-> =
+Hi!
 
-> > > I've seen quite a few discussions mentioning the necessity of
-> voltage/power
-> > > domain framework. Is there any project going on? I heard that there w=
-ere
-> > > some activities by Nokia, but I could not find any on the web.
-> >
-> > There isn't anything formal going on.  However; there is a loose
-> > collection of folks working on the "operating point" patches with an eye
-> > to defining a lower level interface to enable voltage/power/clock domain
-> > framework's.
-> =
+Okay, I never liked opPoint framework... so your critism seems okay,
+but do your patches really solve all the points you raised?
 
-> I have been following the threads on both PowerOp and OpPoint; however, I
-> never thought they would do the job of voltage/power/clock domain
-> frameworks. The way I interpreted is that they _need_ the domain framewor=
-ks
-> so that they could handle lower-level physics better.
-> =
+On Sun 2006-08-27 13:54:31, Eugeny S. Mints wrote:
+> 2006/8/26, David Singleton <daviado@gmail.com>:
+> > On 8/19/06, Dave Jones <davej@redhat.com> wrote:
+> > > On Sat, Aug 19, 2006 at 08:20:45PM -0700, David Singleton wrote:
+...
+> >        1) I believe I now have the right kernel interface for a common
+> >        power management infrastructure.
 
-> > Do you have some design ideas, patches,  or requirements in this area t=
-hat
-> could be
-> > taken into account?
-> =
+> - md_data has an issue from OO design paradigm perspective.  OpPoint
+> requires an entity above PowerOP to know internals of arch md_data (see
+> centrino-dynamic-powerop.c implementation) and thus requires an arch
 
-> I have requirements and some very rough ideas. And I was searching for an
-> existing implementation or a discussion so that I can find a place to sta=
-rt
-> with. Maybe we can start by writing down the requirements. As far as I kn=
-ow,
-> the CELF PM Requirement document does not have a section for voltage/power
-> domain frameworks.
+Is that what you were trying to solve with string parsing?
+								Pavel
+-- =
 
-If you provide me with content then I would be happy to add such a
-section or welcome you to edit the public wiki yourself ;)
-
---mgross
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
