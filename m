@@ -1,52 +1,196 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: T60 not coming out of suspend to RAM
-Date: Mon, 28 Aug 2006 23:19:34 +0300
-Message-ID: <20060828201934.GA26544@mellanox.co.il>
-References: <20060828122535.911e593a.akpm@osdl.org>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: PowerOP vs OpPoint (Was: So,
+	what's the status on the recent patches here?)
+Date: Mon, 28 Aug 2006 13:28:57 -0700
+Message-ID: <c55240ed0608281328k2a1184a9s8848095bb6aba758@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751471AbWH1UT6@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060828122535.911e593a.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@osdl.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@osdl.org, Thomas Glanzmann <sithglan@stud.uni-erlangen.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: David Singleton <daviado@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting r. Andrew Morton <akpm@osdl.org>:
-> Subject: Re: T60 not coming out of suspend to RAM
-> 
-> On Mon, 28 Aug 2006 20:19:26 +0300
-> "Michael S. Tsirkin" <mst@mellanox.co.il> wrote:
-> 
-> > Quoting r. Pavel Machek <pavel@ucw.cz>:
-> > > Subject: Re: T60 not coming out of suspend to RAM
-> > > 
-> > > On Mon 2006-08-28 16:53:58, Michael S. Tsirkin wrote:
-> > > > OK, it turns out the problem was with running SATA drive in AHCI mode.
-> > > > 
-> > > > After applying the following patch from Forrest Zhao
-> > > > http://lkml.org/lkml/2006/7/20/56
-> > > > both suspend to disk and suspend to ram work fine now.
-> > > > This patch is going into 2.6.18, isn't it?
-> > > 
-> > > Not sure, check latest -rc5, and if it is not there, ask akpm...
-> > > 
-> > 
-> > Andrew, this is going into 2.6.18, isn't it? I don't see it in -rc5.
-> > 
-> 
-> It looks like Forrest's stuff is all queued up in the libata devel tree,
-> although in a significantly different-looking form.
-> 
-> So no, right now it doesn't look good for 2.6.18.
-> 
+David Singleton <daviado@gmail.com> wrote:
+> On 8/19/06, Dave Jones <davej@redhat.com> wrote:
+> > On Sat, Aug 19, 2006 at 08:20:45PM -0700, David Singleton wrote:
+> >
+> >  > If I had all the existing cpufreq tables transformed
+> >  > into operating points I could make a patch that would remove
+> >  > the bulk of cpufreq code from the kernel and you'd have
+> >  > pretty much the same functionality without the maintenance
+> >  > issues the added layers and complexity bring.
+> >
+> > If this is going to fly at all, I think thats where we need to be heade=
+d.
+> > Having two parts of the kernel doing the same thing just seems
+> > very wrong to me.
+> >
+> > The other alternative as suggested earlier this week would be archictur=
+es
+> > getting to 'opt out' of powerop for their cpufreq drivers where it does=
+n't
+> > necessarily bring anything but the layer of indirection.
+> >
+> > I'm about to disappear for two weeks for a much needed vacation, but
+> > I'll be interested to see other folks comments/opinions on this
+> > when I get back.
+>
 
-Ugh, more's the pity :(
-How about merging this one patch? T60 is only half as useful without it (no disk
-after resume), and the rate of changes in libata is high so just using a patch
-is gonnu be painful in the long run.
+[snip]
 
--- 
-MST
+>        1) I believe I now have the right kernel interface for a common
+>        power management infrastructure.
+>
+
+OpPoint continues to focus on user space interface development for
+power management in contrast to that there seem to be an agreement in
+the community to defer this integration due to in fact quite a lot of
+open/undiscussed and complex questions about this integration and
+instead to focus on getting a consensus on operating point structure
+definition and methods to work with the structure instances.
+
+OpPoint continues to focus on integration with CPUFreq in a manner
+which was outlined as an unacceptable during recent discussions on the
+list - removing the concept of a in kernel governor and most of the
+CPUFreq feature code.
+
+OpPoint continues to develop userspace interfaces and integration
+based on operating point definition for which Matt and I posted
+issues/questions several time and the posts have been left without a
+reply.
+
+Below I'm trying to summarize all issues I see with OpPoint approach
+sometimes using terms defined in PowerOP approach (for example layer
+names).
+
+'struct powerop' definition
+------------------------------------
+- frequency, voltage fields are arch specific: not to mention any
+complex embedded case but current definition and OpPoint
+implementation does not work even for x86 SMP case.
+
+- latency is not an attribute of a certain operating point but a function of
+two arguments - current operating point and a point we are going to
+switch to. Therefor latency just does not belong to 'struct powerop'
+
+- having proposed hooks for each instance of operating point is
+redundant: the hooks are the same for all operating points
+until we come to the integration with suspend/resume. But we believe the
+integration needs more investigation at the first place and at the second we
+feel like the integration may be handled on PM Core layer instead
+of having per operating point hooks
+
+- prepare_transition and finish_transition may be moved even below PM Core =
+to
+clock/voltage framework; needs more careful investigation though (but OpPoi=
+nt
+example of centrino where these hooks are implemented as some cpufreq relat=
+ed
+code while are expected to be arch dependent code obviously shows issue with
+having these hooks defined on this per point layer)
+
+- md_data has an issue from OO design paradigm perspective.  OpPoint
+requires an entity above PowerOP to know internals of arch md_data (see
+centrino-dynamic-powerop.c implementation) and thus requires an arch
+dependent header file to be included in the code which can be
+implemented in arch independent manner. That would be fine if there was
+no solution to achieve required functionality without such a hack but
+PowerOP provides such approach by dereferencing  power parameters by
+name. File which implements operating points registration in PowerOP
+approach does not include any header file from include/asm-* subtrees.
+
+All further pieces proposed by OpPOint base on the above incorrect
+design of the main structure and therefore have issues.
+
+integration with suspend/resume
+-------------------------------
+- mixing system state and operating point concept (different points
+may correspond to a sleep/standby system state)
+
+- legacy PM states are redefined via new OpPOint interface but do not
+use it (explicit 'if' statements in legacy pm code instead of OpPOint
+hooks utilization)
+
+- names for operating points presented in the original letter below
+implicitly assumed the points are ranged by some order (now it is from
+the highest [power consumption] to the lowest. However having many
+more power parameters than just one freq and one voltage does not
+allow to range the points in such a way and a string name without
+knowledge of a particular power parameter values is not sufficient
+(even in x86 SMP case: not to mention it's hard to me to express SMP
+case in current OpPOint terms but what are names and how to
+distinguish/range 2 CPUs system states corresponded to 'highest point
+for CPU0 + medium for CPU1' against 'low for CPU0 + high for CPU1' ?)
+
+- no example of (at least optional) capability to export information about
+particular power parameter is presented while it was obviously
+highlighted by embedded community that it is a must
+
+- direct utilization of PM internal structure 'pm_state' instead of an atte=
+mpt
+of an API
+
+cpufreq core and a cpufreq driver/OpPOint integration
+-------------------------------
+- integration with legacy cpufreq interface is completely missing in both a=
+rch
+(x86 and pxa) examples. If OpOint was a universal approach it would
+allow to build different interfaces on top of it. In this case you can
+propose more optimized/improved interface if you feel existed
+interface has issues leaving existed interface as a [configurable]
+option and remove it when agreed.
+
+- while clear interfaces design is outlined for so called PM Core
+layer by PowerOP approach this layer is not addressed by OpPoints in
+any way
+
+- a cpufreq driver still should contains code to access arch hardware
+while the functionality of cpufreq driver falls into PM Core layer and
+there is no longer reason to have the functionality related to cpufreq
+concept
+
+- no any integration with clock/voltage framework. Integral solution
+which includes Clock/voltage framework just saves more power [period].
+
+x86 cpufreq/OpPoint integration
+-------------------------------
+- struct powerop hooks are expected to be arch specific but initialized by =
+some
+cpufreq core routines
+
+- arch dependent and arch indepedent cpufreq code still shares
+cpufreq_frequncy_table structure
+
+- integration with legacy cpufreq interface is completely missing
+
+- OpPoint design does not handle SMP case.
+
+oppoint constraints
+----------------------------
+constraints handling is incomplete. It's not enough to assert/deassert a dr=
+iver
+constraints at suspend/resume events only. More dynamic constraints managem=
+ent
+is required.
+
+PowerOP addresses all the issues mentioned above and works for SMP
+case. Integration with legacy kernel PM code (including constraints
+and standalone driver suspend/resume) and a certain userspace
+interface (basically which can be any having current PowerOP interface
+underneath) are the next steps for PowerOP approach  once the correct
+brick of PowerOP layer is in place.
+
+Eugeny
+
+[snip]
