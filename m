@@ -1,14 +1,15 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: Re: PowerOP, Intro 0/3
-Date: Mon, 28 Aug 2006 12:59:47 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A948CF@de01exm64.ds.mot.com>
-References: <1d71fc171bd3635111b4da9024db747f@nomadgs.com>
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Subject: Re: T60 not coming out of suspend to RAM
+Date: Mon, 28 Aug 2006 20:19:26 +0300
+Message-ID: <20060828171926.GB25491@mellanox.co.il>
+References: <20060828154242.GB30105@elf.ucw.cz>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <1d71fc171bd3635111b4da9024db747f@nomadgs.com>
+Content-Disposition: inline
+In-Reply-To: <20060828154242.GB30105@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,123 +19,30 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matt@nomadgs.com>, Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: akpm@osdl.org, linux-pm@osdl.org, Thomas Glanzmann <sithglan@stud.uni-erlangen.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Matt,
-
-Can you (and David, if his thoughts are different) clarify for me the
-scope of the "arbitrary subset of power parameters" managed by PowerOP?
-
-I had visualized this as managing CPU speed, voltage, and some
-associated clock and bus speeds and voltages, as opposed to "devices",
-though there would be some interaction with devices indirectly through
-dependencies on specific speeds and voltages. I put "devices" in quotes
-because it's a somewhat ambiguous - it covers both things that you would
-normally think of as devices (like disk drives) and things that are
-modeled by device drivers but are actually just part of the system
-infrastructure (like the power management IC).
-
-Put another way, I had been thinking of PowerOP as managing system-level
-power control, but that device-level controls would still be layered on
-that. Pavel's comments suggest that he thinks it would be managing
-devices as well (thereby creating a state explosion).
-
-What model did you have in mind?
-
-Thanks,
-scott
-
-> -----Original Message-----
-> From: linux-pm-bounces@lists.osdl.org =
-
-> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Matthew Locke
-> Sent: Monday, August 28, 2006 2:38 AM
-> To: Pavel Machek
-> Cc: pm list
-> Subject: Re: [linux-pm] PowerOP, Intro 0/3
+Quoting r. Pavel Machek <pavel@ucw.cz>:
+> Subject: Re: T60 not coming out of suspend to RAM
 > =
 
+> On Mon 2006-08-28 16:53:58, Michael S. Tsirkin wrote:
+> > OK, it turns out the problem was with running SATA drive in AHCI mode.
+> > =
+
+> > After applying the following patch from Forrest Zhao
+> > http://lkml.org/lkml/2006/7/20/56
+> > both suspend to disk and suspend to ram work fine now.
+> > This patch is going into 2.6.18, isn't it?
 > =
 
-> On Aug 26, 2006, at 1:38 PM, Pavel Machek wrote:
+> Not sure, check latest -rc5, and if it is not there, ask akpm...
 > =
 
-> > Hi!
-> >
-> >>>> PowerOP Core upper layer interface provides the following =
 
-> >>>> capabilities:
-> >>>> - to register an operating point by passing an =
+Andrew, this is going into 2.6.18, isn't it? I don't see it in -rc5.
 
-> idenificator of the =
+-- =
 
-> >>>> point represened by a string and arbitrary substet of power =
-
-> >>>> paremeters available on a certain platform by a string =
-
-> (parameter =
-
-> >>>> name) and value pairs.
-> >>>> - to unregister operating point by name
-> >>>> - to set operating point by name
-> >>>> - to get values of arbitrary subset of platform power parameters =
-
-> >>>> associated this  a point (point is passed by name or NULL to get =
-
-> >>>> current parameter values from hw)
-> >>>
-> >>> I do not think this can work in notebook world, sorry.
-> >>> You'll just get
-> >>> way too many operating points.
-> >> The only feature for notebook world currently presented in =
-
-> the kernel =
-
-> >> is CPUFreq. CPUFreq PowerOP integration
-> >
-> > Actually no. In the notebook world, we do cpufreq, =
-
-> selective powerdown =
-
-> > of devices (/sys/**/power/state), and suspend-to-ram/disk =
-
-> (not sure if =
-
-> > it applies to you, but at least some powerop versions wanted to =
-
-> > replace that).
-> =
-
-> =
-
-> The main point is that you won't get too many operating =
-
-> points.  You will get the number of operating points the x86 =
-
-> port of PowerOP chooses to have.  In the cpufreq/PowerOP =
-
-> integration patches you get the same =
-
-> number of operating points you have today in cpufreq.   We query ACPI =
-
-> for the list or use the hardcoded table.  Also, if we provide =
-
-> a userspace API for creating operating points,  distro's can =
-
-> create additional operating points that make sense for some =
-
-> specific use cases they would like to optimize around.
-> =
-
-> =
-
-> Matt
-> =
-
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
-> =
+MST
