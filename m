@@ -1,14 +1,15 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: PowerOP, Intro 0/3
-Date: Mon, 28 Aug 2006 00:37:44 -0700
-Message-ID: <1d71fc171bd3635111b4da9024db747f@nomadgs.com>
-References: <44ECFC0E.10803@gmail.com> <20060826082848.GC8538@elf.ucw.cz>
-	<44EF3D6F.3030802@gmail.com> <20060826203841.GA4144@ucw.cz>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Subject: Re: T60 not coming out of suspend to RAM
+Date: Mon, 28 Aug 2006 16:53:58 +0300
+Message-ID: <20060828135358.GC24261@mellanox.co.il>
+References: <20060825110441.GB8538@elf.ucw.cz>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060826203841.GA4144@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <20060825110441.GB8538@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,57 +20,19 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.osdl.org>
+Cc: linux-pm@osdl.org, Thomas Glanzmann <sithglan@stud.uni-erlangen.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+OK, it turns out the problem was with running SATA drive in AHCI mode.
 
-On Aug 26, 2006, at 1:38 PM, Pavel Machek wrote:
+After applying the following patch from Forrest Zhao
+http://lkml.org/lkml/2006/7/20/56
+both suspend to disk and suspend to ram work fine now.
+This patch is going into 2.6.18, isn't it?
 
-> Hi!
->
->>>> PowerOP Core upper layer interface provides the
->>>> following capabilities:
->>>> - to register an operating point by passing an
->>>> idenificator of the point
->>>> represened by a string and arbitrary substet of power
->>>> paremeters available on a
->>>> certain platform by a string (parameter name) and
->>>> value pairs.
->>>> - to unregister operating point by name
->>>> - to set operating point by name
->>>> - to get values of arbitrary subset of platform power
->>>> parameters associated
->>>> this  a point (point is passed by name or NULL to get
->>>> current parameter values
->>>> from hw)
->>>
->>> I do not think this can work in notebook world, sorry.
->>> You'll just get
->>> way too many operating points.
->> The only feature for notebook world currently presented
->> in the kernel is CPUFreq. CPUFreq PowerOP integration
->
-> Actually no. In the notebook world, we do cpufreq, selective powerdown
-> of devices (/sys/**/power/state), and suspend-to-ram/disk (not sure if
-> it applies to you, but at least some powerop versions wanted to
-> replace that).
+Huge thanks to Thomas Glanzman for help in tracking this down.
+You rock.
 
+-- =
 
-The main point is that you won't get too many operating points.  You =
-
-will get the number of operating points the x86 port of PowerOP chooses =
-
-to have.  In the cpufreq/PowerOP integration patches you get the same =
-
-number of operating points you have today in cpufreq.   We query ACPI =
-
-for the list or use the hardcoded table.  Also, if we provide a =
-
-userspace API for creating operating points,  distro's can create =
-
-additional operating points that make sense for some specific use cases =
-
-they would like to optimize around.
-
-
-Matt
+MST
