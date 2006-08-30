@@ -1,23 +1,13 @@
 From: Matthew Locke <matthew.a.locke@comcast.net>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Tue, 29 Aug 2006 22:52:00 -0700
-Message-ID: <2b520e23c76213a4954c9b97c5df7012@comcast.net>
-References: <221e3d51950d20642b3655617527dc52@nomadgs.com>
-	<20060815010020.GA14251@kroah.com>
-	<b324b5ad0608182319y307210a3w6389c83482e43ab8@mail.gmail.com>
-	<20060819184843.GB15644@redhat.com>
-	<b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
-	<20060820033044.GA24928@redhat.com>
-	<b324b5ad0608262137y24cfb843kb03476a22e462516@mail.gmail.com>
-	<20060827154151.GA4158@ucw.cz>
-	<b324b5ad0608290855h19a12a86ucfd831fcd9bab498@mail.gmail.com>
-	<20060829163455.GA4821@ucw.cz>
-	<b324b5ad0608292152s72a8f428wf45e9d4881bb3b5d@mail.gmail.com>
+Date: Tue, 29 Aug 2006 23:20:02 -0700
+Message-ID: <1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
+References: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A94E18@de01exm64.ds.mot.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <b324b5ad0608292152s72a8f428wf45e9d4881bb3b5d@mail.gmail.com>
+In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A94E18@de01exm64.ds.mot.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,14 +17,22 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Singleton <daviado@gmail.com>
+To: Preece Scott-PREECE <scott.preece@motorola.com>
 Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
 
-On Aug 29, 2006, at 9:52 PM, David Singleton wrote:
+On Aug 29, 2006, at 10:49 AM, Preece Scott-PREECE wrote:
 
-> On 8/29/06, Pavel Machek <pavel@ucw.cz> wrote:
+>
+>> From: linux-pm-bounces@lists.osdl.org
+>> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Pavel Machek
+>> Sent: Tuesday, August 29, 2006 11:35 AM
+>> To: David Singleton
+>> Cc: linux-pm@lists.osdl.org
+>> Subject: Re: [linux-pm] So, what's the status on the recent
+>> patches here?
+>>
 >> Hi!
 >>>>>         point, by name. There is a new
 >>>> /sys/power/operating_points directory
@@ -51,85 +49,93 @@ On Aug 29, 2006, at 9:52 PM, David Singleton wrote:
 >>>>>         /sys/power/operating_points/standby
 >>>>
 >>>> What makes you think that mixing operating and sleep
->>>> states is good
+>> states is good
 >>>> idea?
 >>>
->>> They are all power states managed by the kernel and in
->>> the operating
->>> point concept they are all operating points the system
->>> supports.
+>>> They are all power states managed by the kernel and in the
+>> operating
+>>> point concept they are all operating points the system supports.
 >>
 >> That does not make mixing them right.
+> ---
 >
-> Both OpPoint and PowerOp are going to 'mix' frequency, voltage
-> and sleep states into their operating point concepts.
+> Could you say why you think they shouldn't be mixed? Absent argument to
+> the contrary,
+> making it a single continuum seems appealing. Why have separate
+> policies?
 
-PowerOP does not mix sleep states with operating points.  We are not =
+I know this questions is directed at Pavel but I have similar concerns. =
 
-pushing for integrating sleep states and operating points.  I haven't =
+   I agree that making sleep states into operating points is appealing.  =
 
-seen an implementation that makes sense yet.  I'm writing another email =
+However,  if the implementation is just going to special case the sleep =
 
-to address this in more detail.
+state operating points then they should be handled separately.  As =
+
+Pavel points out, you can see from Dave's implementation that the =
+
+operating point definition doesn't quite work for both.   Voltage and =
+
+frequency don't have meaning for the sleep points.  The per point =
+
+transition callbacks are needed just to handle the sleep points.  =
+
+Latency has a very different meaning between the two types.  Also,  the =
+
+type field is required to identify which points are sleep points and =
+
+which ones are operating points.  I think the concept of using =
+
+operating points to define sleep states could be a valid one but the =
+
+implementation provided isn't quite right (yet).
+
+However, this should not detract from mainlining PowerOP.  Integrating =
+
+sleep and operating points is not required to use PowerOP.
 
 >
-> The point was not to make it look like I was mixing sleep states and
-> CPU frequency states, but to present all the power states
-> supported by the system in one place and with one interface.  It =
-
-> simplifies
-> not only kernel code, but power manager code as well.
->
+> ---
 >>
 >>> The system can be set to any of the supported states by
->>> setting their name in the /sys/power/state file.  I find
->>> simplicity
->>> is usually a good thing.
+>> setting their
+>>> name in the /sys/power/state file.  I find simplicity is usually a
+>>> good thing.
 >>
 >> I believe the quote is 'make it as simple as possible but not
 >> simpler'.
+> ---
+>
+> So, why don't you think this simplification is possible?
+>
+> ---
 >>
->>>> And '600MHz' makes lot more sense than 'lowest' on
->>>> centrino.
+>>>> And '600MHz' makes lot more sense than 'lowest' on centrino.
 >>>
 >>> Perhaps, but the common name space makes it easy for the
->>> power manager
->>> daemon to perform the same functions without having to
->>> know that the lowest
->>> speed on my laptop is 600Mhz.
+>> power manager
+>>> daemon to perform the same functions without having to know
+>> that the
+>>> lowest speed on my laptop is 600Mhz.
 >>
->> And enumerate english strings in power daemon? Limiting the numver of
->> states?
+>> And enumerate english strings in power daemon? Limiting the
+>> numver of states?
+> ---
 >
-> Hah,  I didn't think of it that way.   I was thinking in the same way
-> "mem" and "disk" and "standy" are strings in the kernel.
->
->  The names themselves don't mean anything other than to imply an order =
+> Are you saying that on your laptop, all possible CPU and bus =
 
-> so the
-> kernel and power manager can understand the same order.
+> frequencies
 >
-> I have the oppointd daemon running on systems of different =
+> can be used independently? So, it would be unnecessarily limiting to
+> have
+> the system designer provide a list of combinations that work? Remember
+> that
+> the scope of this is a limited set of parameters, not all the devices =
 
-> architectures
-> and different numbers of operating points.  Some have only two =
-
-> operating
-> points defined, some have three, some have five and one has six.
+> in
+> the system.
 >
-> The power manager functions the same on all of them because of the =
-
-> ordering
-> presented by the names.
->
-> The oppointd daemon also understands that the operating points =
-
-> associated
-> with the names  may be sparsely populated.  The daemon can  still work
-> correctly on a sparsely populated name space because of the ordering
-> implied. It works unchanged
-> on systems with only two states and on systems with six states.
->
+> ---
 >>
 >>>>
 >>>>>         /sys/power/operating_points/high/frequency
@@ -140,56 +146,44 @@ to address this in more detail.
 >>>
 >>> I don't know what the voltage or latency is for mem.
 >>> Perhaps Intel could better
->>> say what the voltage is in the suspend state and what
->>> the latency was
+>>> say what the voltage is in the suspend state and what the
+>> latency was
 >>> for transistion to that state.  I didn't have the data
->>> available when
+>> available when
 >>> I wrote the code.
 >>
->> And you will not have data available even if intel helps you. What is
->> _frequency_ for mem? These fields are meaningless for sleep states;
->> that should tell you that mixing sleep and operating states is bad
->> idea.
+>> And you will not have data available even if intel helps you.
+>> What is _frequency_ for mem? These fields are meaningless for
+>> sleep states; that should tell you that mixing sleep and
+>> operating states is bad idea.
+> ---
 >
-> Actually the SoC concerns that both OpPoint and PowerOp are trying
-> to deal with have different power consumption levels associated with
-> different sleep states.
+> Why isn't 0 a meaningful value for frequency? And I can imagine
+> that some hardware might have different voltage options for sleep
+> States.  Additionally, these sys entries could represent the frequency,
+> voltage, etc., that the system would go to upon resuming from sleep...
+
+I think its more an issue with the implementation rather than the =
+
+concept.  We can't just have frequency and voltage as shown in oppoint =
+
+patches because we don't know which frequency and voltage they refer =
+
+to.  The number of frequency and voltage parameters are completely =
+
+dependent on the hardware platform.
+
+You bring up a more interesting area to look at integrating sleep =
+
+states and operating points.  Can we add some hooks that allow us to =
+
+define which operating point is selected at resume?  Need to think =
+
+about that a bit:)
+
 >
-> Different sleep states have different power consumption levels
-> and different transition latencies.  The power manager needs to
-> understand both the power consumption level with each
-> sleep state and the transition latency so it can make decisions
-> about when to transition into different sleep states.
+> scott
 >
-> Typically sleep states with the lowest power consumption have
-> the longest transition latencies.  The power manager must know
-> the power consumption and transition latencies so it can decide when =
-
-> best to
-> switch to a sleep state that consumes a bit more power but has
-> a much shorter latency to switch into and out of,  and
-> when it's okay to switch to the lowest sleep state, but longest
-> transition latency.
->
-
-Latency is a good example of how mixing sleep states with operating =
-
-points doesn't  quite work.  Latency for switching to a new operating =
-
-point is very a much a function of the current operating point.   I =
-
-think latency for sleep states is the same every time.  Also which =
-
-direction are you capturing latency for, suspend or resume?  If your =
-
-power manager is making decisions based on latency, I could imagine =
-
-that it needs to know the latency for going into and out of that state.
-
->>
->> --
->> Thanks for all the (sleeping) penguins.
->>
 > _______________________________________________
 > linux-pm mailing list
 > linux-pm@lists.osdl.org
