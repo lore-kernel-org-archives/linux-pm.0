@@ -1,14 +1,14 @@
 From: "Preece Scott-PREECE" <scott.preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Wed, 30 Aug 2006 09:26:46 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A95132@de01exm64.ds.mot.com>
-References: <1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
+Date: Wed, 30 Aug 2006 09:39:44 -0400
+Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A9514B@de01exm64.ds.mot.com>
+References: <2b520e23c76213a4954c9b97c5df7012@comcast.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-class: urn:content-classes:message
-In-Reply-To: <1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
+In-Reply-To: <2b520e23c76213a4954c9b97c5df7012@comcast.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,130 +18,79 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matthew.a.locke@comcast.net>
+To: Matthew Locke <matthew.a.locke@comcast.net>, David Singleton <daviado@gmail.com>
 Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
  =
 
-> From: Matthew Locke [mailto:matthew.a.locke@comcast.net] =
+> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Matthew Locke
 
-> ...
-> > Could you say why you think [frequencies and sleep states]
-> > shouldn't be mixed? Absent argument =
+> Latency is a good example of how mixing sleep states with =
 
-> > to the contrary, making it a single continuum seems appealing. Why =
+> operating points doesn't  quite work.  Latency for switching =
 
-> > have separate policies?
-> =
+> to a new operating =
 
-> I know this questions is directed at Pavel but I have similar =
+> point is very a much a function of the current operating point.   I =
 
-> concerns. =
+> think latency for sleep states is the same every time.  Also =
 
->    I agree that making sleep states into operating points is =
+> which direction are you capturing latency for, suspend or =
 
-> appealing.  =
+> resume?  If your power manager is making decisions based on =
 
-> However,  if the implementation is just going to special case =
+> latency, I could imagine that it needs to know the latency =
 
-> the sleep state operating points then they should be handled =
-
-> separately.  As Pavel points out, you can see from Dave's =
-
-> implementation that the =
-
-> operating point definition doesn't quite work for both.   Voltage and =
-
-> frequency don't have meaning for the sleep points.  The per =
-
-> point transition callbacks are needed just to handle the =
-
-> sleep points.  =
-
-> Latency has a very different meaning between the two types.  =
-
-> Also,  the type field is required to identify which points =
-
-> are sleep points and which ones are operating points.  I =
-
-> think the concept of using operating points to define sleep =
-
-> states could be a valid one but the implementation provided =
-
-> isn't quite right (yet).
+> for going into and out of that state.
 ---
 
-Well, if the object is to present "the right interface" to a user-space
-policy manager, then I think the argument about whether the
-implementations
-are shared is irrelevant - the whole point would be to abstract away the
-implementation, which could conceivably be separate hard-coded routines
-for each operating point.  HOWEVER, the second part of your comment,
-that the interface actually isn't right for describing sleep states, is
-more compelling and might point a direction for future realignment (or
-might just be grist for discussion now about the right attributes for
-operating points. =
+Well, you could also argue that the ability to express latency is =
 
+a good argument for having an approach that does mingle frequency-based,
 
-> ...
-> =
+voltage-based, and sleep-state Ops, though not necessarily exactly =
 
-> I think its more an issue with the implementation rather than =
+what oppoint does! That is, if the policy manager is to make good =
 
-> the concept.  We can't just have frequency and voltage as =
+decisions about whether to shift to a different frequency or sleep =
 
-> shown in oppoint patches because we don't know which =
+at one of n possible sleep levels, it would exactly want to be able =
 
-> frequency and voltage they refer to.  The number of frequency =
+to consider the alternatives in terms of the expected time and power =
 
-> and voltage parameters are completely dependent on the =
+cost of each possible transition and whether the expected time to =
 
-> hardware platform.
----
+remain in that state would be sufficient to recoup those costs.
 
-I agree that the set of parameters =
+That is, you'd like a big state-transition table that has a tuple of =
 
-describing an OP should be flexible.
+costs associated with each possible transition from each possible state.
 
----
-> =
+The utility of the expected times, of course, depends on whether you =
 
-> You bring up a more interesting area to look at integrating =
+are able to infer anything about how long an idle (or low-work) =
 
-> sleep states and operating points.  Can we add some hooks =
+period is likely to persist. I think this is a fertile area for =
 
-> that allow us to define which operating point is selected at =
+experimentation, though we haven't had time to do it, yet.  And, =
 
-> resume?  Need to think about that a bit:)
----
+while it's superficially easier to take on for embedded devices =
 
-It's an interesting question, and one we (Motorola) don't have hard
-data to support, yet. Our current implementation remembers the OP
-in use before sleeping and resumes at the same OP. The argument is
-that this corresponds to an application that is doing work at a =
+that have limited numbers of states, the notion of a system manager =
 
-steady-state level (say decoding video), but that has a brief pause
-to wait for I/O or a timer (say, pausing until the next frame time);
-then it makes sense that the level of effort required on resume will
-be the same as before sleeping.
+that watches work patterns and their corresponding load levels and =
 
-Another possible approach would be to automatically resume at the =
+idle times is not particularly far-fetched.
 
-highest OP, on the assumption that whatever wakes you up will be =
+On the other hand, getting infrastructure in place is more =
 
-work to do, so you should be prepared to do it and then sink back =
+important, today! But, that said, if user-space interfaces =
 
-to a lower OP as the workload diminishes. That argument is especially =
+are forever, you would like to present a user-space interface =
 
-appropriate if you have a mechanism that aggregates timers or does =
+that can be easily extended to support such notions in the future, =
 
-periodic scheduling, so that you wake up less often, but do more =
-
-work at each wakeup.
-
-We're planning to do some research on this, but it's waiting for =
-
-the infrequent time when there's a lull in product development work...
+without breaking compatibility.
 
 Scott
