@@ -1,14 +1,15 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Wed, 30 Aug 2006 09:39:44 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A9514B@de01exm64.ds.mot.com>
-References: <2b520e23c76213a4954c9b97c5df7012@comcast.net>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: T60 not coming out of suspend to RAM
+Date: Wed, 30 Aug 2006 16:46:46 +0200
+Message-ID: <20060830144646.GC1923@elf.ucw.cz>
+References: <20060828122535.911e593a.akpm@osdl.org>
+	<20060828201934.GA26544@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <2b520e23c76213a4954c9b97c5df7012@comcast.net>
+Content-Disposition: inline
+In-Reply-To: <20060828201934.GA26544@mellanox.co.il>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,79 +19,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matthew.a.locke@comcast.net>, David Singleton <daviado@gmail.com>
-Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Thomas Glanzmann <sithglan@stud.uni-erlangen.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
 List-Id: linux-pm@vger.kernel.org
 
- =
+Hi!
 
-> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Matthew Locke
+> > > > > OK, it turns out the problem was with running SATA drive in AHCI =
+mode.
+> > > > > =
 
-> Latency is a good example of how mixing sleep states with =
+> > > > > After applying the following patch from Forrest Zhao
+> > > > > http://lkml.org/lkml/2006/7/20/56
+> > > > > both suspend to disk and suspend to ram work fine now.
+> > > > > This patch is going into 2.6.18, isn't it?
+> > > > =
 
-> operating points doesn't  quite work.  Latency for switching =
+> > > > Not sure, check latest -rc5, and if it is not there, ask akpm...
+> > > > =
 
-> to a new operating =
+> > > =
 
-> point is very a much a function of the current operating point.   I =
+> > > Andrew, this is going into 2.6.18, isn't it? I don't see it in -rc5.
+> > > =
 
-> think latency for sleep states is the same every time.  Also =
+> > =
 
-> which direction are you capturing latency for, suspend or =
+> > It looks like Forrest's stuff is all queued up in the libata devel tree,
+> > although in a significantly different-looking form.
+> > =
 
-> resume?  If your power manager is making decisions based on =
+> > So no, right now it doesn't look good for 2.6.18.
+> > =
 
-> latency, I could imagine that it needs to know the latency =
+> =
 
-> for going into and out of that state.
----
+> Ugh, more's the pity :(
+> How about merging this one patch? T60 is only half as useful without it (=
+no disk
+> after resume), and the rate of changes in libata is high so just using a =
+patch
+> is gonnu be painful in the long run.
 
-Well, you could also argue that the ability to express latency is =
+I guess you need to convince SATA maintainer that patch is safe before
+it can go in...
+									Pavel
+-- =
 
-a good argument for having an approach that does mingle frequency-based,
-
-voltage-based, and sleep-state Ops, though not necessarily exactly =
-
-what oppoint does! That is, if the policy manager is to make good =
-
-decisions about whether to shift to a different frequency or sleep =
-
-at one of n possible sleep levels, it would exactly want to be able =
-
-to consider the alternatives in terms of the expected time and power =
-
-cost of each possible transition and whether the expected time to =
-
-remain in that state would be sufficient to recoup those costs.
-
-That is, you'd like a big state-transition table that has a tuple of =
-
-costs associated with each possible transition from each possible state.
-
-The utility of the expected times, of course, depends on whether you =
-
-are able to infer anything about how long an idle (or low-work) =
-
-period is likely to persist. I think this is a fertile area for =
-
-experimentation, though we haven't had time to do it, yet.  And, =
-
-while it's superficially easier to take on for embedded devices =
-
-that have limited numbers of states, the notion of a system manager =
-
-that watches work patterns and their corresponding load levels and =
-
-idle times is not particularly far-fetched.
-
-On the other hand, getting infrastructure in place is more =
-
-important, today! But, that said, if user-space interfaces =
-
-are forever, you would like to present a user-space interface =
-
-that can be easily extended to support such notions in the future, =
-
-without breaking compatibility.
-
-Scott
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
