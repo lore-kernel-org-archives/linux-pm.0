@@ -1,20 +1,14 @@
-From: Amit Kucheria <amit.kucheria@nokia.com>
+From: "Preece Scott-PREECE" <scott.preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Wed, 30 Aug 2006 14:00:53 +0300
-Message-ID: <1156935653.10909.69.camel@localhost>
-References: <c948ef9077556626e85291ad716b7ddb@nomadgs.com>
-	<20060814224623.GH30814@redhat.com>
-	<221e3d51950d20642b3655617527dc52@nomadgs.com>
-	<20060814234801.GK30814@redhat.com> <20060815010020.GA14251@kroah.com>
-	<1155638115.6736.135.camel@localhost>
-	<20060815190439.GI7612@redhat.com>
-	<1155806337.30834.17.camel@localhost> <20060817214031.GE6450@ucw.cz>
-	<1155901719.3659.43.camel@localhost> <20060824075939.GF1952@elf.ucw.cz>
+Date: Wed, 30 Aug 2006 09:26:46 -0400
+Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A95132@de01exm64.ds.mot.com>
+References: <1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060824075939.GF1952@elf.ucw.cz>
+Content-class: urn:content-classes:message
+In-Reply-To: <1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,180 +18,130 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: ext Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.osdl.org
+To: Matthew Locke <matthew.a.locke@comcast.net>
+Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2006-08-24 at 09:59 +0200, ext Pavel Machek wrote:
-> Hi!
+ =
+
+> From: Matthew Locke [mailto:matthew.a.locke@comcast.net] =
+
+> ...
+> > Could you say why you think [frequencies and sleep states]
+> > shouldn't be mixed? Absent argument =
+
+> > to the contrary, making it a single continuum seems appealing. Why =
+
+> > have separate policies?
 > =
 
-> > > > The userspace interface in Eungeny's patches is for other userspace
-> > > > programs (policy managers) to activate/deactivate valid operating p=
-oints
-> > > > in the system dynamically and if necessary, introduce new ones into=
- the
-> > > > system. It will also allow the operating points to be referenced by=
- name
-> > > > instead of the tuple.
-> > > > =
+> I know this questions is directed at Pavel but I have similar =
 
-> > > > Then, we will be able to use names like 'video', 'mp3', 'fast',
-> > > > 'powersave', 'usb' to switch to the relevant operating point based =
-on
-> > > > configuration of the policy manager.
-> > > =
+> concerns. =
 
-> > > This seems to be too specific to embedded machine.
-> > > =
+>    I agree that making sleep states into operating points is =
 
-> > > If userspace wants to work with usb and play mp3s at the same time,
-> > > what does it do?
-> > =
+> appealing.  =
 
-> > Switch to 'fast'?
-> > =
+> However,  if the implementation is just going to special case =
 
-> > The operating point for a use-case specifies the _minimum_ required for
-> > the use-case. You can always go up.
+> the sleep state operating points then they should be handled =
+
+> separately.  As Pavel points out, you can see from Dave's =
+
+> implementation that the =
+
+> operating point definition doesn't quite work for both.   Voltage and =
+
+> frequency don't have meaning for the sleep points.  The per =
+
+> point transition callbacks are needed just to handle the =
+
+> sleep points.  =
+
+> Latency has a very different meaning between the two types.  =
+
+> Also,  the type field is required to identify which points =
+
+> are sleep points and which ones are operating points.  I =
+
+> think the concept of using operating points to define sleep =
+
+> states could be a valid one but the implementation provided =
+
+> isn't quite right (yet).
+---
+
+Well, if the object is to present "the right interface" to a user-space
+policy manager, then I think the argument about whether the
+implementations
+are shared is irrelevant - the whole point would be to abstract away the
+implementation, which could conceivably be separate hard-coded routines
+for each operating point.  HOWEVER, the second part of your comment,
+that the interface actually isn't right for describing sleep states, is
+more compelling and might point a direction for future realignment (or
+might just be grist for discussion now about the right attributes for
+operating points. =
+
+
+> ...
 > =
 
-> > The system designer is responsible for 'designing' operating points that
-> > take into account multiple use-cases. Designing here refers to mapping
-> > use-cases to HW operating points.
+> I think its more an issue with the implementation rather than =
+
+> the concept.  We can't just have frequency and voltage as =
+
+> shown in oppoint patches because we don't know which =
+
+> frequency and voltage they refer to.  The number of frequency =
+
+> and voltage parameters are completely dependent on the =
+
+> hardware platform.
+---
+
+I agree that the set of parameters =
+
+describing an OP should be flexible.
+
+---
 > =
 
-> Yes, and that's why I argue this is unsuitable for notebook: there are
-> just too many usecases for a notebook.
+> You bring up a more interesting area to look at integrating =
 
-You are trying to make it sound more complex than it really is. For a
-notebook, as you yourself pointed out, things could be handled with the
-present adaptive, load-based system. So you don't need to map _every_
-use-case to an operating point. So you don't need to move to use PowerOP
-today.
+> sleep states and operating points.  Can we add some hooks =
 
-But if someone (distro vendors?) takes the time and effort to map
-possible use-cases, then the power manager could do better prediction of
-performance requirements.
+> that allow us to define which operating point is selected at =
 
-Optionally, _if_ applications were power aware, they would send
-information about their activity to power manager or modify their own
-class-of-service requirements. e.g. Rendering webpage has different
-requirements than simply showing the page. This is NOT being discussed
-at the moment.
+> resume?  Need to think about that a bit:)
+---
 
-But PowerOP would allow SoC-based systems to tune the operating points
-to get the most out of their top-10 use-cases and sleep modes.
+It's an interesting question, and one we (Motorola) don't have hard
+data to support, yet. Our current implementation remembers the OP
+in use before sleeping and resumes at the same OP. The argument is
+that this corresponds to an application that is doing work at a =
 
-> > Consider an example system with a main CPU and a DSP. To simplify
-> > discussion, lets assume 3 levels for CPU and DSP speeds and system
-> > voltage. Then, here is what an example operating-point to use-case
-> > mapping table could look like:
-> > =
+steady-state level (say decoding video), but that has a brief pause
+to wait for I/O or a timer (say, pausing until the next frame time);
+then it makes sense that the level of effort required on resume will
+be the same as before sleeping.
 
-> > #     CPU speed      DSP speed      Voltage       use-case
-> > ----------------------------------------------------------
-> > 1.    high           high           high          fast, video
-> > 2.    med            high           high          =
+Another possible approach would be to automatically resume at the =
 
-> > 3.    med            med            med           usb[1]
-> > 4.    low            med            med           mp3
-> > 5.    low            low            low           powersave
-> > =
+highest OP, on the assumption that whatever wakes you up will be =
 
-> > [1] USB has voltage constraint (voltage >=3D med)
-> =
+work to do, so you should be prepared to do it and then sink back =
 
-> So... you take three independend parametrs and merge them into one,
-> named parameter. Bad idea.
+to a lower OP as the workload diminishes. That argument is especially =
 
-But they are NOT independent parameters! Which is why we want to
-encapsulate them into an 'Operating Point'. We have completely failed in
-our effort to explain the concept of an operating point if that has been
-your assumption all along.
+appropriate if you have a mechanism that aggregates timers or does =
 
-> What about simply having these parameters:
-> =
+periodic scheduling, so that you wake up less often, but do more =
 
-> usb on or off
-> =
+work at each wakeup.
 
-> cpu speed (controlled by cpufreq)
-> =
+We're planning to do some research on this, but it's waiting for =
 
-> dsp speed (controlled by userspace)
-> =
+the infrequent time when there's a lull in product development work...
 
-> Then you can have infrastructure that is able to compute system
-> voltage from usb/cpu/dsp speed, and users stll have interface they can
-> understand.
-
-This is moot for the reason above - cpu/dsp/volt are NOT independent.
-
-And USB (or any device information) is NOT part of the operating point.
-It is just an asynchronous constraint whose appearance/disappearance
-influences operating point tangentially. IOW, on some systems USB could
-run at any operating point, so there would be no constraint. On others,
-use of USB would automatically cause usb clocks to go high which in turn
-would switch the system to an operating point that satisfies the
-constraint - this is handled by clock/voltage framework.
-
-> (How are they supposed to know if video use case is compatible with
-> usb? They should not have to).
-
-Only one human 'user' needs to worry about this detail - the system
-designer, and that too only in SoC-based systems. For PC systems, such
-constraints don't exist; you can be happy with the load-based scaling.
-
-> > - Now if we are playing mp3, we switch to OP 4.
-> =
-
-> Do you expect all mp3 playing applications to play with
-> /sys/.../powerop-point? How do you tell if mp3's are playing? These
-> are hard questions for a notebook.
-
-There are two ways I can think of:
-
-1. Modify every application - Every application then sends messages to
-the power manager about its state e.g. paused, playing, ffwd, stopped.
-This is not meant for PC applications due to their sheer numbers. But it
-is not uncommon on embedded systems to tune application behaviour to
-ease/improve power management.
-
-2. Modify central launcher application - Click on an application icon
-gives us information about what application is about to be launched that
-allows us to change operating point. This might be doable for PC
-applications by modifying KDE/Gnome launchers. But it only tells us what
-applications are loaded, even though they might be idle. Which is where
-the load average helps.
-
-> > - Add usb and we switch to OP 3.
-> > - Now our performance monitor (e.g load avg) indicates that we need more
-> > CPU processing. So we switch to OP 2.
-> =
-
-> That's cpufreq job, please
-
-Yes. Or more particularly, the ondemand governor, right? But load
-average is not the only input used to make decisions. There could be
-thermal alarms, battery alarms, etc. And deciding which of these
-conflicting inputs is given priority is a policy decision made by the
-device manager. We discussed some of this at the PM summit.
-
-    Device manager
-            |
-  -------------------------------------
-  |          |             |           |
- Power     Performance    Thermal     Misc.
- manager    manager       manager
-         (e.g. ondemand)  =
-
-
-
-Regards,
-Amit
-
--- =
-
-Amit Kucheria <amit.kucheria@nokia.com>
-Nokia
+Scott
