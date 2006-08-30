@@ -1,58 +1,100 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: T60 not coming out of suspend to RAM
-Date: Wed, 30 Aug 2006 18:05:36 +0300
-Message-ID: <20060830150535.GA30172@mellanox.co.il>
-References: <20060830144646.GC1923@elf.ucw.cz>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: David Brownell <david-b@pacbell.net>
+Subject: [patch 2.6.18-rc5] PM: add kconfig option for deprecated
+	.../power/state files
+Date: Wed, 30 Aug 2006 13:54:36 -0700
+Message-ID: <200608301354.37478.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060830144646.GC1923@elf.ucw.cz>
-Sender: linux-ide-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Jeff Garzik <jeff@garzik.org>, linux-pm@osdl.org, Thomas Glanzmann <sithglan@stud.uni-erlangen.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting r. Pavel Machek <pavel@suse.cz>:
-> Subject: Re: T60 not coming out of suspend to RAM
-> 
-> Hi!
-> 
-> > > > > > OK, it turns out the problem was with running SATA drive in AHCI mode.
-> > > > > > 
-> > > > > > After applying the following patch from Forrest Zhao
-> > > > > > http://lkml.org/lkml/2006/7/20/56
-> > > > > > both suspend to disk and suspend to ram work fine now.
-> > > > > > This patch is going into 2.6.18, isn't it?
-> > > > > 
-> > > > > Not sure, check latest -rc5, and if it is not there, ask akpm...
-> > > > > 
-> > > > 
-> > > > Andrew, this is going into 2.6.18, isn't it? I don't see it in -rc5.
-> > > > 
-> > > 
-> > > It looks like Forrest's stuff is all queued up in the libata devel tree,
-> > > although in a significantly different-looking form.
-> > > 
-> > > So no, right now it doesn't look good for 2.6.18.
-> > > 
-> > 
-> > Ugh, more's the pity :( How about merging this one patch? T60 is only half
-> > as useful without it (no disk after resume), and the rate of changes in
-> > libata is high so just using a patch is gonnu be painful in the long run.
-> 
-> I guess you need to convince SATA maintainer that patch is safe before
-> it can go in...
+[ resend ... Pavel, ISTR you did ack this but correct me if not ]
 
-Right.
+Add a new PM_SYSFS_DEPRECATED config option to control whether or
+not the /sys/devices/.../power/state files are provided.  This will
+make it easier to get rid of that mechanism when the time comes,
+and to verify that userspace tools work right without it.
 
-Jeff, could you please ack whether the following patch from Forrest Zhao
-is safe for 2.6.18?
-http://lkml.org/lkml/2006/7/20/56
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Acked-by: Pavel Machek <pavel@suse.cz>
 
-Without it, no disk access is possible after resume from suspend-to-ram
-on my T60.
+Index: linux/kernel/power/Kconfig
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/kernel/power/Kconfig	2006-07-18 11:00:35.000000000 -0700
++++ linux/kernel/power/Kconfig	2006-07-18 11:14:57.000000000 -0700
+@@ -53,6 +53,17 @@
+ 	CAUTION: this option will cause your machine's real-time clock to be
+ 	set to an invalid time after a resume.
+ =
 
--- 
-MST
++config PM_SYSFS_DEPRECATED
++	bool "Driver model /sys/devices/.../power/state files (DEPRECATED)"
++	depends on PM && SYSFS
++	default n
++	help
++	  The driver model started out with a sysfs file intended to provide
++	  a userspace hook for device power management.  This feature has never
++	  worked very well, except for limited testing purposes, and so it will
++	  be removed.   It's not clear that a generic mechanism could really
++	  handle the wide variability of device power states; any replacements
++	  are likely to be bus or driver specific.
+ =
+
+ config SOFTWARE_SUSPEND
+ 	bool "Software Suspend"
+Index: linux/drivers/base/power/sysfs.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/drivers/base/power/sysfs.c	2006-07-18 11:13:56.000000000 -07=
+00
++++ linux/drivers/base/power/sysfs.c	2006-07-18 11:15:24.000000000 -0700
+@@ -7,6 +7,8 @@
+ #include "power.h"
+ =
+
+ =
+
++#ifdef	CONFIG_PM_SYSFS_DEPRECATED
++
+ /**
+  *	state - Control current power state of device
+  *
+@@ -67,6 +69,8 @@
+ =
+
+ static DEVICE_ATTR(state, 0644, state_show, state_store);
+ =
+
++#endif	/* CONFIG_PM_SYSFS_DEPRECATED */
++
+ /*
+  *	wakeup - Report/change current wakeup option for device
+  *
+@@ -140,7 +144,9 @@
+ =
+
+ =
+
+ static struct attribute * power_attrs[] =3D {
++#ifdef	CONFIG_PM_SYSFS_DEPRECATED
+ 	&dev_attr_state.attr,
++#endif
+ 	&dev_attr_wakeup.attr,
+ 	NULL,
+ };
