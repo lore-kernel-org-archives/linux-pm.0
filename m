@@ -1,13 +1,24 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2.6.18-rc5 + pm patches] PM: update docs for
-	writing .../power/state
-Date: Wed, 30 Aug 2006 14:12:48 -0700
-Message-ID: <200608301412.49442.david-b@pacbell.net>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Wed, 30 Aug 2006 15:13:54 -0700
+Message-ID: <20060830221354.GA12186@linux.intel.com>
+References: <acd2a5930608172242v7ba6e7eeq8ab90ea11175ef4c@mail.gmail.com>
+	<20060823122849.GA23456@atrey.karlin.mff.cuni.cz>
+	<acd2a5930608240558k4cc77dadxbd6175c05141fe23@mail.gmail.com>
+	<20060825195543.GA9568@elf.ucw.cz>
+	<acd2a5930608251626t36fb1e79w27acd1eaa6fe5947@mail.gmail.com>
+	<20060826101820.GI10257@elf.ucw.cz>
+	<acd2a5930608260630l52c914c0h207866a32a3def4a@mail.gmail.com>
+	<20060826134653.GQ10257@elf.ucw.cz>
+	<20060828164038.GA17944@linux.intel.com>
+	<20060828173957.GF30105@elf.ucw.cz>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
+In-Reply-To: <20060828173957.GF30105@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,74 +28,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-[ resend, goes on top of Linus' patch ]
+On Mon, Aug 28, 2006 at 07:39:57PM +0200, Pavel Machek wrote:
+> On Mon 2006-08-28 09:40:38, Mark Gross wrote:
+> > On Sat, Aug 26, 2006 at 03:46:53PM +0200, Pavel Machek wrote:
+> > > On Sat 2006-08-26 17:30:40, Vitaly Wool wrote:
+> > > > On 8/26/06, Pavel Machek <pavel@suse.cz> wrote:
+> > > Because 8388608 policies is clearly not reasonable, powerop can not
+> > > help here, and something better should be developed... like power
+> > > domains someone proposed here.
+> > > =
 
-Updates to match current code:
+> > > (Or to say it in another words, powerop forces one big power domain,
+> > > which is bad model for notebook-style machine).
+> > =
 
- - Make writes to the /sys/devices/.../power/state files fail cleanly
-   if the device requires the irqs-off call variants.
+> > I doubt notebook-style machines will ever us power op in any
+> > significant way.  HPC and embedded will be the first users.
+> =
 
- - Fix comments describing the /sys/devices/.../power/state file writes
-   to match the code; the last several releases have invalidated the
-   previous text.
+> I agree here... power op look useless for notebooks. But I doubt power
+> op authors would agree...
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Concluding that it will be useless for notebooks may be premature.
 
-Index: g26/drivers/base/power/sysfs.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- g26.orig/drivers/base/power/sysfs.c	2006-08-30 09:51:42.000000000 -0700
-+++ g26/drivers/base/power/sysfs.c	2006-08-30 14:09:57.000000000 -0700
-@@ -11,18 +11,23 @@
-  *	state - Control current power state of device
-  *
-  *	show() returns the current power state of the device. '0' indicates
-- *	the device is on. Other values (1-3) indicate the device is in a low
-+ *	the device is on. Other values (2) indicate the device is in some low
-  *	power state.
-  *
-- *	store() sets the current power state, which is an integer value
-- *	between 0-3. If the device is on ('0'), and the value written is
-- *	greater than 0, then the device is placed directly into the low-power
-- *	state (via its driver's ->suspend() method).
-- *	If the device is currently in a low-power state, and the value is 0,
-- *	the device is powered back on (via the ->resume() method).
-- *	If the device is in a low-power state, and a different low-power state
-- *	is requested, the device is first resumed, then suspended into the new
-- *	low-power state.
-+ *	store() sets the current power state, which is an integer valued
-+ *	0, 2, or 3.  Devices with bus.suspend_late(), or bus.resume_early()
-+ *	methods fail this operation; those methods couldn't be called.
-+ *	Otherwise,
-+ *
-+ *	- If the recorded dev->power.power_state.event matches the
-+ *	  target value, nothing is done.
-+ *	- If the recorded event code is nonzero, the device is reactivated
-+ *	  by calling bus.resume() and/or class.resume().
-+ *	- If the target value is nonzero, the device is suspended by
-+ *	  calling class.suspend() and/or bus.suspend() with event code
-+ *	  PM_EVENT_SUSPEND.
-+ *
-+ *	This mechanism is DEPRECATED and should only be used for testing.
-  */
- =
+I see powerop as the bottom of an future PM stack.  As the upper layers
+take shape who knows what platforms will use it?
 
- static ssize_t state_show(struct device * dev, struct device_attribute *at=
-tr, char * buf)
-@@ -38,6 +43,10 @@ static ssize_t state_store(struct device
- 	pm_message_t state;
- 	int error =3D -EINVAL;
- =
+> =
 
-+	/* disallow incomplete suspend sequences */
-+	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
-+		return error;
-+
- 	state.event =3D PM_EVENT_SUSPEND;
- 	/* Older apps expected to write "3" here - confused with PCI D3 */
- 	if ((n =3D=3D 1) && !strcmp(buf, "3"))
+> > Power domains will likely build on top power op.
+> > =
+
+> > Power domains adds complexities themselves. Dealing with
+> > dependencies and constraints between domains will be a challenge.
+> =
+
+> Once we have power domains in/solved... do we still need power op? I
+> thought power op could be useful for solving constrains _inside_ one
+> domain, but...
+
+Power domains and the components within them will likely be accessed as
+operating points.  I think we need to build the power domain
+abstractions on top of operating points.  This is why I want to see
+support for multiple power_op_driver instances or a story for how
+operating points are added to a running system or even platform to
+enable and deal with domains.
+
+--mgross
