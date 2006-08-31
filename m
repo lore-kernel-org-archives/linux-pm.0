@@ -1,15 +1,22 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Amit Kucheria <amit.kucheria@nokia.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Thu, 31 Aug 2006 14:04:54 +0200
-Message-ID: <20060831120454.GS3923@elf.ucw.cz>
-References: <20060830225057.GG3923@elf.ucw.cz>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01A9555F@de01exm64.ds.mot.com>
+Date: Thu, 31 Aug 2006 16:27:18 +0300
+Message-ID: <1157030838.10909.144.camel@localhost>
+References: <20060814200735.GC14099@kroah.com>
+	<221e3d51950d20642b3655617527dc52@nomadgs.com>
+	<20060814234801.GK30814@redhat.com> <20060815010020.GA14251@kroah.com>
+	<b324b5ad0608182319y307210a3w6389c83482e43ab8@mail.gmail.com>
+	<20060819184843.GB15644@redhat.com>
+	<b324b5ad0608192020n6584f749h501e05e141b1f557@mail.gmail.com>
+	<20060820033044.GA24928@redhat.com>
+	<b324b5ad0608262137y24cfb843kb03476a22e462516@mail.gmail.com>
+	<c55240ed0608271354o7224c903l8b9eae6de22ca8c6@mail.gmail.com>
+	<b324b5ad0608281829t66bb3060r9fda9fc08841b51@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A9555F@de01exm64.ds.mot.com>
+In-Reply-To: <b324b5ad0608281829t66bb3060r9fda9fc08841b51@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,70 +26,37 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Preece Scott-PREECE <scott.preece@motorola.com>
-Cc: Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org
+To: ext David Singleton <daviado@gmail.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Mon, 2006-08-28 at 18:29 -0700, ext David Singleton wrote:
 
-> > We may have confusion here.
-> > =
-
-> > On PC, it is definitely not possible to enter sleep state =
-
-> > between frames of video... because video is powered off.
-> > =
-
-> > On PC, sleep states are *system* sleep states. CPU sleep =
-
-> > states exist, too, but that's in-kernel implementation =
-
-> > detail. They are called C1..C4.
-> ---
+> >
+> > - latency is not an attribute of a certain operating point but a
+> function of
+> > two arguments - current operating point and a point we are goint to
+> > switch to. Therefor latency just does not belong to 'struct powerop'
 > =
 
-> Well, we have some hardware where we can sleep everything but =
+> I disagree.
 
-> memory and some where we can also leave the display active (and =
+Problem is that you disagree without giving your reasons. Here is
+another reason putting latency into your operating point definition
+isn't going to fly:
 
-> backlit). In fact, however, today the latency for going to sleep =
+http://lwn.net/Articles/196900/ <--- An API for specifying latency
+constraints
 
-> is too great to do so between frames, so we just do a wait there. =
+http://lwn.net/Articles/197282/
 
-> We would LIKE to be able to sleep there at some point in the =
+Please comment on PowerOP patches; dissect them if need be on why you
+don't agree with the approach.
 
-> future and would prefer a power model that made that cleanly =
-
-> part of a continuum of operating points.
-> =
-
-> However, we definitely DO sleep (with self-refreshing RAM) during =
-
-> relatively short periods, with the wakeup resulting from an =
-
-> interrupt from the RTC (which is self-powered and is set =
-
-> to timeout at the next scheduled timer when we go to sleep) =
-
-> or another hardware interrupt. We think of this as a system-level =
-
-> sleep state.
-> =
-
-> I'm not sure how you distinguish between a "system" sleep state =
-
-> and a "CPU" sleep state - seems like there's a collection of =
-
-> things that can be shut down or not; except for true OFF, there's
-> always something on.
-
-Well, even in "true OFF", RTC keeps ticking. And in "disk" state
-(swsusp), machine is basically "true OFF" but it still retains state.
-
-								Pavel
+Regards,
+Amit
 
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Amit Kucheria <amit.kucheria@nokia.com>
+Nokia
