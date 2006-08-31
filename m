@@ -1,14 +1,12 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
+From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Wed, 30 Aug 2006 20:22:56 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A9555F@de01exm64.ds.mot.com>
-References: <20060830225057.GG3923@elf.ucw.cz>
+Date: Wed, 30 Aug 2006 19:52:24 -0500 (CDT)
+Message-ID: <200608310052.k7V0qOZS017752@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20060830225057.GG3923@elf.ucw.cz>
+In-reply-to: Pavel Machek's message of Thu, 31 Aug 2006 00:43:52 +0200
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,87 +16,60 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org
+To: pavel@ucw.cz
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
- =
 
-> From: Pavel Machek [mailto:pavel@ucw.cz] =
 
-> > It's an interesting question, and one we (Motorola) don't have hard =
+| From linux-pm-bounces@lists.osdl.org Wed Aug 30 17:48:27 2006
+| =
 
-> > data to support, yet. Our current implementation remembers =
+| On Tue 2006-08-29 21:52:26, David Singleton wrote:
+| > >> >>         /sys/power/operating_points/mem
+| > >> >>         /sys/power/operating_points/standby
+| ....
+| > >That does not make mixing them right.
+| > =
 
-> the OP in =
+| > Both OpPoint and PowerOp are going to 'mix' frequency, voltage
+| > and sleep states into their operating point concepts.
+| > =
 
-> > use before sleeping and resumes at the same OP. The =
+| > The point was not to make it look like I was mixing sleep states and
+| > CPU frequency states, but to present all the power states
+| > supported by the system in one place and with one interface.  It simpli=
+fies
+| > not only kernel code, but power manager code as well.
+| =
 
-> argument is that =
+| It is also wrong. And no, I do not think your power manager can
+| properly use "mem" state.
+| =
 
-> > this corresponds to an application that is doing work at a =
-
-> > steady-state level (say decoding video), but that has a =
-
-> brief pause to =
-
-> > wait for I/O or a timer (say, pausing until the next frame =
-
-> time); then =
-
-> > it makes sense that the level of effort required on resume =
-
-> will be the =
-
-> > same as before sleeping.
-> =
-
-> We may have confusion here.
-> =
-
-> On PC, it is definitely not possible to enter sleep state =
-
-> between frames of video... because video is powered off.
-> =
-
-> On PC, sleep states are *system* sleep states. CPU sleep =
-
-> states exist, too, but that's in-kernel implementation =
-
-> detail. They are called C1..C4.
+| You see, "mem" is very different from lowest. To exit lowest, you have
+| to "echo highest > state". To exit "mem", you need power
+| button. That's very different operation.
 ---
 
-Well, we have some hardware where we can sleep everything but =
+Not sure exactly what is meant by "mem" operating point. I was assuming
+it meant "suspend-to-RAM" (almost everything shut down, memory self
+refreshing). In my world, our current policy manager does manage mem
+(which we call "sleep" and is the deepest suspend we do) separately from
+frequency changes, but that's accident rather than intention.
 
-memory and some where we can also leave the display active (and =
+I agree that there is some difference between them, since we do
+frequency changes in response to load, but sleep-state changes based on
+idleness. However, there's no real reason why those can't be inputs to
+the same policy manager. We actually do make both decisions in the Idle
+handler (well, there's more plumbing than that, but they're both driven
+by going idle).
 
-backlit). In fact, however, today the latency for going to sleep =
+scott
+-- =
 
-is too great to do so between frames, so we just do a wait there. =
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
 
-We would LIKE to be able to sleep there at some point in the =
-
-future and would prefer a power model that made that cleanly =
-
-part of a continuum of operating points.
-
-However, we definitely DO sleep (with self-refreshing RAM) during =
-
-relatively short periods, with the wakeup resulting from an =
-
-interrupt from the RTC (which is self-powered and is set =
-
-to timeout at the next scheduled timer when we go to sleep) =
-
-or another hardware interrupt. We think of this as a system-level =
-
-sleep state.
-
-I'm not sure how you distinguish between a "system" sleep state =
-
-and a "CPU" sleep state - seems like there's a collection of =
-
-things that can be shut down or not; except for true OFF, there's
-always something on.
-
-Scott
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
