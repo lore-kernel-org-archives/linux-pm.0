@@ -1,12 +1,14 @@
-From: "Scott E. Preece" <preece@motorola.com>
+From: "Preece Scott-PREECE" <scott.preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Thu, 31 Aug 2006 10:14:30 -0500 (CDT)
-Message-ID: <200608311514.k7VFEUgl003359@olwen.urbana.css.mot.com>
+Date: Thu, 31 Aug 2006 15:22:50 -0400
+Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A95886@de01exm64.ds.mot.com>
+References: <1157030838.10909.144.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: Pavel Machek's message of Thu, 31 Aug 2006 14:04:54 +0200
+Content-class: urn:content-classes:message
+In-Reply-To: <1157030838.10909.144.camel@localhost>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,45 +18,74 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: pavel@suse.cz
-Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com
+To: Amit Kucheria <amit.kucheria@nokia.com>, ext David Singleton <daviado@gmail.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Amit Kucheria
+> =
 
-| From: Pavel Machek<pavel@suse.cz>
-| ...
-| > I'm not sure how you distinguish between a "system" sleep state =
+> > >
+> > > - latency is not an attribute of a certain operating point but a
+> > function of
+> > > two arguments - current operating point and a point we =
 
-| > and a "CPU" sleep state - seems like there's a collection of =
+> are goint to =
 
-| > things that can be shut down or not; except for true OFF, there's
-| > always something on.
-| =
+> > > switch to. Therefor latency just does not belong to =
 
-| Well, even in "true OFF", RTC keeps ticking. And in "disk" state
-| (swsusp), machine is basically "true OFF" but it still retains state.
+> 'struct powerop'
+> > =
+
+> > I disagree.
+> =
+
+> Problem is that you disagree without giving your reasons. =
+
+> Here is another reason putting latency into your operating =
+
+> point definition isn't going to fly:
+> =
+
+> http://lwn.net/Articles/196900/ <--- An API for specifying =
+
+> latency constraints
+> =
+
+> http://lwn.net/Articles/197282/
 ---
 
-In our sleep state (which I would aligned with "mem", in the previous
-list), the application processor part of the system is basically true
-off, but retains state in memory. In our systems, of course, there's a
-second processor that is independently going in and out of its own
-low-power modes while waking up every so many milliseconds to stay
-camped on a cellular network.
+Actually, the proposed acceptable_latency functions just make it =
 
-One "interesting" diffference between "disk" and "mem" (as we would use
-them, though we don't have a disk, so we don't have a "disk" state), is
-that suspend-to-disk today requires rebooting, while suspend-to-RAM
-doesn't.  I don't see why that distinction can't still be below the
-interface abstraction presented to a user-space power manager, but it's
-the most qualitative difference across the range of proposed operating
-points...
+more useful to add latency information to the operating point =
 
-scott
--- =
+definitions. The new interfaces set a [global] acceptable =
 
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+latency, the operating point attribute would define the maximum =
 
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+latency that could occur for a particular OP or sleep mode. =
+
+You need both sides - you need to know what's an acceptable =
+
+latency and you need to know what latency a particular =
+
+operation (like transitioning to a different OP) will impose; =
+
+then you can decide whether a particular transition can be =
+
+made while still meeting the required latency.
+
+So, if a driver had set acceptable_latency to 300ms, the
+Power-Management policy manager could look at the range of
+available Ops and pick the lowest-power OP that met the
+expected load and would also meet the required latency
+guarantee. [And note that the acceptable latency has to include
+both the resume time and whatever part of suspend happens with
+interrupts blocked and can't be aborted.]
+
+I like this new facility a lot. Now we just need something similar
+for expressing anticipated required processing capacity ("I need
+n thousand instructions executed in the next s seconds") in a nice
+platform-independent way...
+
+Scott
