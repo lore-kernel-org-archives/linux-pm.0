@@ -1,12 +1,12 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Fri, 1 Sep 2006 09:49:06 -0500 (CDT)
-Message-ID: <200609011449.k81En6YD025595@olwen.urbana.css.mot.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: [patch 2.6.18-rc-mm] PM: platform_bus and
+ late_suspend/early_resume
+Date: Fri, 01 Sep 2006 20:51:14 -0700
+Message-ID: <20060902035114.4C154195C8B@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: Amit Kucheria's message of Fri, 01 Sep 2006 11:11:36 +0300
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,48 +16,91 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: amit.kucheria@nokia.com
-Cc: linux-pm@lists.osdl.org, scott.preece@motorola.com
+To: greg@kroah.com
+Cc: torvalds@osdl.com, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-| From Amit.Kucheria@nokia.com Fri Sep  1 03:14:57 2006
-| =
 
-| On Thu, 2006-08-31 at 15:22 -0400, ext Preece Scott-PREECE wrote:
-| ...
-| > So, if a driver had set acceptable_latency to 300ms, the
-| > Power-Management policy manager could look at the range of
-| > available Ops and pick the lowest-power OP that met the
-| > expected load and would also meet the required latency
-| > guarantee. [And note that the acceptable latency has to include
-| > both the resume time and whatever part of suspend happens with
-| > interrupts blocked and can't be aborted.]
-| =
+Teach platform_bus about the new suspend_late/resume_early PM calls,
+issued with IRQs off.  Do we really need sysdev and friends any more,
+or can janitors start switching its users over to platform_device so
+we can do a minor code-ectomy?
 
-| Thinking of it that way, latency is possibly useful. Needs more
-| thinking. But what latency values are associated with the OP? The values
-| from the spec sheet provided by the silicon vendor do not take into
-| account the other operations necessary before you can safely switch to a
-| new OP. Some of these operations require indeterminate amount of time.
----
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-That's something the system designer would have to work out and provide
-as part of the information associated with each possible OP transtion
-(that is, it would potentially be different for each (currentOP, newOP)
-pair).
+Index: g26/drivers/base/platform.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- g26.orig/drivers/base/platform.c	2006-06-28 22:02:04.000000000 -0700
++++ g26/drivers/base/platform.c	2006-08-31 19:36:07.000000000 -0700
+@@ -505,12 +505,36 @@ static int platform_match(struct device =
 
-The system designer would also need to decide whether the latencies had
-to be worst-case guarantees or whether the system could tolerate
-occasionally missing a latency deadline. This would vary depending on
-the system (a heart pacemaker might find deadlines to be more important
-than a PDA).
+ 	return (strncmp(pdev->name, drv->name, BUS_ID_SIZE) =3D=3D 0);
+ }
+ =
 
-scott
+-static int platform_suspend(struct device * dev, pm_message_t state)
++static int platform_suspend(struct device *dev, pm_message_t mesg)
+ {
+ 	int ret =3D 0;
+ =
 
--- =
+ 	if (dev->driver && dev->driver->suspend)
+-		ret =3D dev->driver->suspend(dev, state);
++		ret =3D dev->driver->suspend(dev, mesg);
++
++	return ret;
++}
++
++static int platform_suspend_late(struct device *dev, pm_message_t mesg)
++{
++	struct platform_driver *drv =3D to_platform_driver(dev->driver);
++	struct platform_device *pdev =3D container_of(dev, struct platform_device=
+, dev);
++	int ret =3D 0;
++
++	if (dev->driver && drv->suspend_late)
++		ret =3D drv->suspend_late(pdev, mesg);
++
++	return ret;
++}
++
++static int platform_resume_early(struct device *dev)
++{
++	struct platform_driver *drv =3D to_platform_driver(dev->driver);
++	struct platform_device *pdev =3D container_of(dev, struct platform_device=
+, dev);
++	int ret =3D 0;
++
++	if (dev->driver && drv->resume_early)
++		ret =3D drv->resume_early(pdev);
+ =
 
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+ 	return ret;
+ }
+@@ -531,6 +555,8 @@ struct bus_type platform_bus_type =3D {
+ 	.match		=3D platform_match,
+ 	.uevent		=3D platform_uevent,
+ 	.suspend	=3D platform_suspend,
++	.suspend	=3D platform_suspend_late,
++	.resume		=3D platform_resume_early,
+ 	.resume		=3D platform_resume,
+ };
+ EXPORT_SYMBOL_GPL(platform_bus_type);
+Index: g26/include/linux/platform_device.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- g26.orig/include/linux/platform_device.h	2006-08-31 19:30:33.000000000 =
+-0700
++++ g26/include/linux/platform_device.h	2006-08-31 19:30:46.000000000 -0700
+@@ -49,6 +49,8 @@ struct platform_driver {
+ 	int (*remove)(struct platform_device *);
+ 	void (*shutdown)(struct platform_device *);
+ 	int (*suspend)(struct platform_device *, pm_message_t state);
++	int (*suspend_late)(struct platform_device *, pm_message_t state);
++	int (*resume_early)(struct platform_device *);
+ 	int (*resume)(struct platform_device *);
+ 	struct device_driver driver;
+ };
