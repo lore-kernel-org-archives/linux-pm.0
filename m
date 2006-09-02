@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: linux-pm list AWOL?
-Date: Sat, 2 Sep 2006 11:36:07 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0609021135260.8866-100000@netrider.rowland.org>
-References: <200608311705.59273.david-b@pacbell.net>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: [PATCH] PowerOP, Intro 0/2
+Date: Sat, 02 Sep 2006 19:14:58 +0400
+Message-ID: <44F99FF2.1010909@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200608311705.59273.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,24 +15,66 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 31 Aug 2006, David Brownell wrote:
+The PowerOP Core provides completely arch independent interface
+to create and control operating points which consist of arbitrary
+subset of power parameters available on a certain platform.
 
-> Just checking ... I've not received any postings on this list
-> since maybe 12-August.  Yet I see the list archive gets updated.
-> =
+PowerOP Core upper layer interface provides the following capabilities:
+- to register an operating point by passing an identifier of the point
+represented by a string and arbitrary subset of power parameters available =
+on a
+certain platform by a string (parameter name) and value pairs.
+- to unregister operating point by name
+- to set operating point by name
+- to get values of arbitrary subset of platform power parameters associated
+this  a point (point is passed by name or NULL to get current parameter val=
+ues
+from hw)
+- _optional_ SysFS interface. If SysFs interface is enabled each operating =
+point
+registered with PowerOP core appears under /sys/power/. /sys/power/<op>/ wi=
+ll
+contain an attribute for each power parameter. Power parameters are rw. An
+operating point may be activated by writing its name to /sys/power/active. =
+The
+hardware power parameters currently set may be read via /sys/power/hw/, a
+special operating point that reads parameter attribute values from hardware=
+, for
+diagnostic purposes.
+Operating points creation with help of SysFS interface is _optional_
+_configurable_ feature. Operating points are created by writing the name of=
+ the
+operating point to /sys/power/new.  This may be a job for configfs.
 
-> - Dave
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
 
-I've been getting plenty of messages from the list reflector.  In fact, =
+PowerOP get and register point APIs use name/value pairs for the power
+parameters which eliminate the need for data structure sharing between
+the PM core and consumers of the PowerOP API.   Earlier versions
+required include/asm-xxx/power_params.h to be included in both places.
 
-that's how I received this one.
+This also enables a variable argument list for the registration and get
+APIs.  Some operating points may only need to work with a subset of the
+power parameters.  In this case the creator of the operating point only
+needs to provide the name/value pair for the parameters required for
+that point.  The rest are set to a don't care value by the internals.
 
-Alan Stern
+PowerOP is a building block for power management on systems that have a
+large set of power parameter that can adjusted to maximize power and
+operational efficiency.   Mobile consumer devices are examples of these
+systems that require the PowerOP features.   However, PowerOP works
+just as well on systems with one or two parameters.  The API allows the
+h/w layer to define what parameters are available on that platform.
+
+Operating points can be registered at anytime.  Registration can occur
+from a architecture init-call, loadable kernel module or some other
+layer.  Operating point registration notifiers are provided for layers,
+such as cpufreq, that could take advantage of new operating
+points that become available or just need to know when operating points
+are loaded.
+
+PowerOP continues to support in kernel governor concepts from cpufreq as we=
+ll
+as userspace policy managers.
