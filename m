@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Sat, 2 Sep 2006 21:30:59 +0200
-Message-ID: <200609022130.59256.rjw@sisk.pl>
-References: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A94E18@de01exm64.ds.mot.com>
-	<1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
-	<b324b5ad0609021105u7fcab8c3w6d21bfca9caa93d1@mail.gmail.com>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: Re: [PATCH] PowerOP, PowerOP Core, 1/3
+Date: Sun, 03 Sep 2006 03:06:01 +0400
+Message-ID: <44FA0E59.5070303@gmail.com>
+References: <44ECFC97.5060609@gmail.com> <20060825055643.GA24226@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <b324b5ad0609021105u7fcab8c3w6d21bfca9caa93d1@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <20060825055643.GA24226@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,80 +17,114 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Singleton <daviado@gmail.com>
-Cc: Preece Scott-PREECE <scott.preece@motorola.com>, Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 02 September 2006 20:05, David Singleton wrote:
-> On 8/29/06, Matthew Locke <matthew.a.locke@comcast.net> wrote:
-> >
-> > On Aug 29, 2006, at 10:49 AM, Preece Scott-PREECE wrote:
-> >
-> > >
-> > >> From: linux-pm-bounces@lists.osdl.org
-> > >> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Pavel Machek
-> > >> Sent: Tuesday, August 29, 2006 11:35 AM
-> > >> To: David Singleton
-> > >> Cc: linux-pm@lists.osdl.org
-> > >> Subject: Re: [linux-pm] So, what's the status on the recent
-> > >> patches here?
-> > >>
-> > >> Hi!
-> > >>>>>         point, by name. There is a new
-> > >>>> /sys/power/operating_points directory
-> > >>>>>         that shows all the operating points the
-> > >>>> system supports. An
-> > >>>>>         exampled from my centrino laptop shows:
-> > >>>>>
-> > >>>>>         /sys/power/operating_points/high
-> > >>>>>         /sys/power/operating_points/highest
-> > >>>>>         /sys/power/operating_points/low
-> > >>>>>         /sys/power/operating_points/lowest
-> > >>>>>         /sys/power/operating_points/medium
-> > >>>>>         /sys/power/operating_points/mem
-> > >>>>>         /sys/power/operating_points/standby
-> > >>>>
-> > >>>> What makes you think that mixing operating and sleep
-> > >> states is good
-> > >>>> idea?
-> > >>>
-> > >>> They are all power states managed by the kernel and in the
-> > >> operating
-> > >>> point concept they are all operating points the system supports.
-> > >>
-> > >> That does not make mixing them right.
-> > > ---
-> > >
-> > > Could you say why you think they shouldn't be mixed? Absent argument =
-to
-> > > the contrary,
-> > > making it a single continuum seems appealing. Why have separate
-> > > policies?
-> >
-> > I know this questions is directed at Pavel but I have similar concerns.
-> >    I agree that making sleep states into operating points is appealing.
-> > However,  if the implementation is just going to special case the sleep
-> > state operating points then they should be handled separately.  As
-> > Pavel points out, you can see from Dave's implementation that the
-> > operating point definition doesn't quite work for both.   Voltage and
-> > frequency don't have meaning for the sleep points.
+Greg,
+
+Greg KH wrote:
+> On Thu, Aug 24, 2006 at 05:10:47AM +0400, Eugeny S. Mints wrote:
+[snip]
+>> +struct powerop_point {
+>> +	struct kobject   kobj;   /* hook to reference an operating point in
+>> +				  * some arch independent way
+>> +				  */
 > =
 
-> Actually what I was trying, unsuccessfully, to explain was that
-> suspend states are valid, supported operating states the
-> system can be in for power management.    And that they are the
-> same as an operating point for a processor frequency.
+> What do you do with this kobject?  It looks as if you only use the name
+> portion of it, which seems like a big waste of memory for a whole
+> kobject.
+> =
 
-That depends on the definition, but I think of suspend states as the ones
-that require processes to be frozen before they can be entered.  IMHO it is
-quite clear that such states cannot be handled in the same way as those
-that do not require the freezing of processes, so they are not the same.
+> It's also the first time I've seen a struct kobject abused this way :)
+> =
 
-Greetings,
-Rafael
+it is a shim for sysfs interface which is now implemented in the next take =
+of =
 
+the patchset.
+>> +static void *
+>> +create_point(const char *pwr_params, va_list args)
+> =
 
--- =
+> Return types on the same line please.
+I ran lindent script and now return types locate in the same line. Personal=
+ly =
 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+I'd prefer to have it as I put it since such type of coding allows to searc=
+h a =
+
+function _implementation_ much simpler by "grep ^function_name" and to =
+
+distinguish implementation from function declaration/forward declaration/ca=
+lls =
+
+and similar function names. Isn't it a purpose of coding style among others?
+[snip]
+>> +struct powerop_driver {
+>> +	char *name;
+>> +	void *(*create_point)(const char *pwr_params, va_list args);
+>> +	int  (*set_point)(void *md_opt);
+>> +	int  (*get_point)(void *md_opt, const char *pwr_params, va_list args);
+>> +};
+> =
+
+> Module owner perhaps too?  You need to handle these drivers in modules
+> properly with the correct usage counting.
+Current design assumes only one powerop driver in the system and powerop co=
+re
+checks pointers to the routines against NULL value before every call. Power=
+OP
+core does not share any data with powerop driver so I don't see the reason =
+to lock
+powerop driver in this case.
+
+Eugeny
+>> +
+>> +int powerop_driver_register(struct powerop_driver *p);
+>> +void powerop_driver_unregister(struct powerop_driver *p);
+>> +
+>> +/* Main PowerOP Core interface */
+>> +
+>> +/* =
+
+>> + * powerop_register_point - add new operating point with a given name to
+>> + * operating points list. A caller passes power parameters for new oper=
+ating
+>> + * points as pairs of name/value and passes only those parameter names =
+the
+>> + * caller is interested in. PowerOP Core calls powerop driver to initia=
+lize
+>> + * arch dependent part of new operating point and links new named opera=
+ting =
+
+>> + * point to the list maintained by PowerOP Core
+>> + * =
+
+>> + *
+>> + * INPUT
+>> + *   id         - operating point name
+>> + *   pwr_params - set of (power parameter name, value) pairs
+>> + *
+>> + * OUTPUT
+>> + *   none
+>> + *
+>> + * RETURN
+>> + *   zero on success, error code otherwise
+>> + *    =
+
+>> + */
+>> +int powerop_register_point(const char *id, const char *pwr_params, ...);
+> =
+
+> Again with the wierd documentation style.  Also, this does not belong in
+> a .h file, kerneldoc can be generated from the .c files.  Please do it
+> that way instead of duplicating it twice.
+> =
+
+> thanks,
+> =
+
+> greg k-h
+> =
