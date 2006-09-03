@@ -1,12 +1,12 @@
 From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Sun, 3 Sep 2006 18:00:56 -0500 (CDT)
-Message-ID: <200609032300.k83N0uL6016830@olwen.urbana.css.mot.com>
+Date: Sun, 3 Sep 2006 18:05:28 -0500 (CDT)
+Message-ID: <200609032305.k83N5SP9017385@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: "Rafael J. Wysocki"'s message of Mon, 4 Sep 2006 00:10:47 +0200
+In-reply-to: Pavel Machek's message of Mon, 4 Sep 2006 00:41:32 +0200
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,142 +16,90 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rjw@sisk.pl
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org, pavel@ucw.cz
+To: pavel@ucw.cz
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
-| From: "Rafael J. Wysocki" <rjw@sisk.pl>
+| From: Pavel Machek<pavel@ucw.cz>
 | =
 
-| On Sunday, 3 September 2006 23:34, Scott E. Preece wrote:
-| > =
-
-| > | From: "Rafael J. Wysocki" <rjw@sisk.pl>
+| On Sun 2006-09-03 17:31:02, Scott E. Preece wrote:
+| > | From: Pavel Machek<pavel@ucw.cz>
+| > | Cc: <amit.kucheria@nokia.com>, <linux-pm@lists.osdl.org>
+| > | User-Agent: Mutt/1.5.11+cvs20060126
 | > | =
 
-| > | On Sunday, 3 September 2006 18:25, David Singleton wrote:
-| > | > On 9/2/06, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-| > | > >
-| > | > > That depends on the definition, but I think of suspend states as =
-the ones
-| > | > > that require processes to be frozen before they can be entered.  =
-IMHO it is
-| > | > > quite clear that such states cannot be handled in the same way as=
- those
-| > | > > that do not require the freezing of processes, so they are not th=
-e same.
-| > | > =
-
-| > | > You are correct, processes do need to be frozen before a suspend.
-| > | > That's the prepare to suspend part of the suspend process, and
-| > | > the transtition is the suspending and finish is the un-freezing
-| > | > of the processes to resume execution.
-| > | > =
-
-| > | > And those same steps are the same steps required to transition the
-| > | > system to a new operating point, whether it's suspend or change
-| > | > from 1.4GHz to 600MHz.
+| > | On Sun 2006-09-03 16:21:34, Scott E. Preece wrote:
+| > | > | From: Pavel Machek<pavel@ucw.cz>
+| > | > some reason, in your perception, why definition of operating points
+| > | > really needs to be in the kernel?  Definition of the operating poin=
+ts,
+| > | > as opposed to changing from one OP to another, shouldn't have any t=
+iming
+| > | > issues, so why isn't a privileged user-space manager a reasonable
+| > | > approach?
 | > | =
 
-| > | There are only a few states that require the processes to be frozen a=
-nd I
-| > | think that's a good enough reason to handle them separately.
-| > =
-
+| > | For one thing, is not powerop needed for boot? You need to boot in
+| > | some operating point after all :-).
 | > ---
 | > =
 
-| > But, surely that distinction can be handled in the implementation behind
-| > the interface, rather than exsposed in the interface.
+| > In the implementation we use, the initial OP is set by the boot
+| > loader. Our kernel power management driver is a module. The assumption
+| > is that booting involves a lot of processing and it makes sense to just
+| > use the highest OP anyway.  That makes sense in our environment, but I
+| > wouldn't recommend our version as a general solution, anyway.
 | =
 
-| I don't think you can handle that behind the interface in a satisfactory =
-way.
-| For example during a suspend to disk we carry out several transitions of
-| devices within the suspend-resume cycle.
-| =
-
-| > Does that distinction matter to the policy manager?
-| =
-
-| I think so.
-| =
-
-| > I would argue that it =
-
-| > increases the latency, which would be important to the policy manager,
-| > but that the nature of the latency isn't important to making a policy
-| > decision,  and the proposed interface already exposes the latency as
-| > something that can be used in making transition decisions.
-| =
-
-| From the policy manager perspective it may be just a latency fator,
-| but for all of the things _outside_ of the policy manager it's much more
-| than that.
-| =
-
-| For example transitions like a CPU frequency change are transparent for k=
-ernel
-| threads, but the suspend "transitions" are not, because the kernel thread=
-s need
-| to be informed that the system is suspending and they are expected to fre=
-eze
-| themselves voluntarily.
-| =
-
-| Really, I think that the "states" which are entered only after tasks are
-| frozen should be considered as special and handled separately.
+| That's actually regression; cpufreq saves power even while booting.
 ---
 
-My point is that if the only kernel interface is set-op(), then the code
-in the kernel that implements set-op() is the thing that's going to
-drive the details of suspending the system, just as it does today. The
-abstraction at the kernel interface is about as simple as it can be and
-all the policy issues are moved outside the kernel.
+Well, the kernel boot phase is relatively brief. The module could be
+loaded and managing the OP before you start bringing up the rest of user
+space. However, I'm not arguing that our approach to that is generally
+applicable - I was just giving an existence proof.
 
-My question is whether there are aspects of suspending, other than
-latency, that the policy manager would need to consider in deciding
-whether to suspend or not.
+scott
 
-Look at it this way. In one scheme the policy manager code is:
+| =
 
-   new_OP =3D select_transition(current_OP, decision_factors);
-   set_OP(new_OP);
+| > | > As noted previously, OPs bundle together more than just the
+| > | > frequency. Those of us supporting the OP model believe that you can=
+'t
+| > | > intelligently change CPU frequency in isolation and you can't change
+| > | > some of those parameters independently, because only certain
+| > | > combinations work.
+| > | =
 
-in the other the policy manager code is:
+| > | That's okay. User gives you combination he wants, and you select "next
+| > | higher" working operating point.
+| > ---
+| > =
 
-   new_OP =3D select_transition(current_OP, decision_factors);
-   if (new_OP =3D=3D SUSPEND)
-      suspend();
-   else
-      set_OP(new_OP);
+| > Hmm. I need to think about that. I guess the OP abstraction *could* be
+| > entirely inside the user-space policy manager, with the kernel exposing
+| > individual interfaces for every parameter that the policy manager would
+| > need to adjust. However, that means that the whole mess has to be at
+| > user level (kernel just implements simple knobs for individual
+| > parameters), because the dependency management between the parameters =
 
-The only practical difference is whether the kernel has one interface or
-two; in the one-interface case, there's code in the kernel's
-implementation of set_OP() that does the same conditional and calls the
-same implementation of suspend. In Pavel's preferred idiom, the calls
-to set_OP() are replaced by a sequence of
+| > would only be known at user level, and means a relatively bulky kernel
+| > interface, since it would expose more things at the interface. =
 
-   set_power_parameter(PARM, VALUE) calls
+| =
 
-All dreadfully oversimplified, of course, but I know that the general
-approach is possible, because our PM subsystem works in a vaguely
-similar manner. The simplification isn't completely ignorable, though,
-because the mechanisms driving the transitions involve input from the
-kernel (entry to idle, interrupts, clock events, load information, etc.).
-The interaction between the kernel and the policy manager may actually
-be too complex to support doing all of policy management in user space
-(our implementation actually has some kernel bits and some user-spec
-bits). Not sure that affects the question of whether suspend is an
-operating point, though - that seems (to me) to work the same whether
-the policy decision is in the kernel or in user space.
+| That would work for me.
+| =
 
-The one question that I see as interesting on that score is whether the
-policy decision to suspend is based on factors that are wholly different
-than the factors that drive frequency/voltage changes. If that were the
-case, then there would be no point to making the decisions in the same
-place.  Honestly, I'm not sure of the answer to that...
+| But my idea was actually opposite: expose individual knobs to
+| userspace, and then select some operating point (inside kernel) that
+| satisfies given knobs.
+---
+
+But then the kernel needs to know about the operating points, so aren't
+you back where we were before?
 
 scott
 -- =
