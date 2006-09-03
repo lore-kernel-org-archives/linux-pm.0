@@ -1,64 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 2/3] PM: Make console suspending configureable
-Date: Mon, 4 Sep 2006 13:02:30 +0200
-Message-ID: <20060904110229.GM9991@elf.ucw.cz>
-References: <200608151509.06087.rjw@sisk.pl> <200608161309.34370.rjw@sisk.pl> <20060904090820.GA4500@suse.de> <200609041303.25817.rjw@sisk.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: PowerOP, Whatchanged/Issues/TODO 2/2
+Date: Sun, 3 Sep 2006 12:44:29 +0000
+Message-ID: <20060903124428.GF4884@ucw.cz>
+References: <44F9A031.8020203@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932130AbWIDLC4@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200609041303.25817.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stefan Seyfried <seife@suse.de>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <44F9A031.8020203@gmail.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2006-09-04 13:03:25, Rafael J. Wysocki wrote:
-> On Monday, 4 September 2006 11:08, Stefan Seyfried wrote:
-> > Hi,
-> > 
-> > sorry, i am only slowly catching up after vacation.
-> > 
-> > On Wed, Aug 16, 2006 at 01:09:34PM +0200, Rafael J. Wysocki wrote:
-> > > Change suspend_console() so that it waits for all consoles to flush the
-> > > remaining messages and make it possible to switch the console suspending
-> > > off with the help of a Kconfig option.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > > +#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
-> > >  /**
-> > >   * suspend_console - suspend the console subsystem
-> > >   *
-> > > @@ -709,8 +710,14 @@ int __init add_preferred_console(char *n
-> > >   */
-> > >  void suspend_console(void)
-> > >  {
-> > > +	printk("Suspending console(s)\n");
-> > >  	acquire_console_sem();
-> > >  	console_suspended = 1;
-> > > +	/* This is needed so that all of the messages that have already been
-> > > +	 * written to all consoles can be actually transmitted (eg. over a
-> > > +	 * network) before we try to suspend the consoles' devices.
-> > > +	 */
-> > > +	ssleep(2);
-> > 
-> > Sorry, but no. Suspend and resume is already slow enough, no need to make
-> > both of them much slower.
-> > If we can condition this on the netconsole being used, ok, but not for the
-> > most common case of "console is on plain VGA".
-> 
-> Hm, it already is in -mm, but of course I can prepare a patch that removes
-> this ssleep().
-> 
-> Pavel, what do you think?
+Hi!
 
-Well, in suspend-to-ram case, 2 seconds is quite a lot... like more
-than rest of suspend, so stefan has some point...
+> whatchanged:
+> - optional sysfs interface is added
+> - code is moved under kernel/power
+> - Greg's comments on kobject and coding style are addressed
+> =
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> todo/issues:
+> - better implementation for getting registered operating point names
+> - move string parsing into powerop generic code
 
--- 
-VGER BF report: H 1.68641e-06
+Can we get rid of string parsing altogether? It should be possible to
+design better in-kernel interface than char *. Can you just use opaque
+structure?
+
+-- =
+
+Thanks for all the (sleeping) penguins.
