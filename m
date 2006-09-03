@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Sun, 3 Sep 2006 22:57:49 +0200
-Message-ID: <200609032257.50025.rjw@sisk.pl>
-References: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A94E18@de01exm64.ds.mot.com>
-	<200609022130.59256.rjw@sisk.pl>
-	<b324b5ad0609030925p1d82385bs4da21663d47f44c3@mail.gmail.com>
+Date: Sun, 3 Sep 2006 16:21:34 -0500 (CDT)
+Message-ID: <200609032121.k83LLYjK004651@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <b324b5ad0609030925p1d82385bs4da21663d47f44c3@mail.gmail.com>
-Content-Disposition: inline
+In-reply-to: Pavel Machek's message of Sat, 2 Sep 2006 13:17:40 +0200
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,102 +16,85 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Singleton <daviado@gmail.com>
-Cc: Preece Scott-PREECE <scott.preece@motorola.com>, Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: pavel@ucw.cz
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 3 September 2006 18:25, David Singleton wrote:
-> On 9/2/06, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday 02 September 2006 20:05, David Singleton wrote:
-> > > On 8/29/06, Matthew Locke <matthew.a.locke@comcast.net> wrote:
-> > > >
-> > > > On Aug 29, 2006, at 10:49 AM, Preece Scott-PREECE wrote:
-> > > >
-> > > > >
-> > > > >> From: linux-pm-bounces@lists.osdl.org
-> > > > >> [mailto:linux-pm-bounces@lists.osdl.org] On Behalf Of Pavel Mach=
-ek
-> > > > >> Sent: Tuesday, August 29, 2006 11:35 AM
-> > > > >> To: David Singleton
-> > > > >> Cc: linux-pm@lists.osdl.org
-> > > > >> Subject: Re: [linux-pm] So, what's the status on the recent
-> > > > >> patches here?
-> > > > >>
-> > > > >> Hi!
-> > > > >>>>>         point, by name. There is a new
-> > > > >>>> /sys/power/operating_points directory
-> > > > >>>>>         that shows all the operating points the
-> > > > >>>> system supports. An
-> > > > >>>>>         exampled from my centrino laptop shows:
-> > > > >>>>>
-> > > > >>>>>         /sys/power/operating_points/high
-> > > > >>>>>         /sys/power/operating_points/highest
-> > > > >>>>>         /sys/power/operating_points/low
-> > > > >>>>>         /sys/power/operating_points/lowest
-> > > > >>>>>         /sys/power/operating_points/medium
-> > > > >>>>>         /sys/power/operating_points/mem
-> > > > >>>>>         /sys/power/operating_points/standby
-> > > > >>>>
-> > > > >>>> What makes you think that mixing operating and sleep
-> > > > >> states is good
-> > > > >>>> idea?
-> > > > >>>
-> > > > >>> They are all power states managed by the kernel and in the
-> > > > >> operating
-> > > > >>> point concept they are all operating points the system supports.
-> > > > >>
-> > > > >> That does not make mixing them right.
-> > > > > ---
-> > > > >
-> > > > > Could you say why you think they shouldn't be mixed? Absent argum=
-ent to
-> > > > > the contrary,
-> > > > > making it a single continuum seems appealing. Why have separate
-> > > > > policies?
-> > > >
-> > > > I know this questions is directed at Pavel but I have similar conce=
-rns.
-> > > >    I agree that making sleep states into operating points is appeal=
-ing.
-> > > > However,  if the implementation is just going to special case the s=
-leep
-> > > > state operating points then they should be handled separately.  As
-> > > > Pavel points out, you can see from Dave's implementation that the
-> > > > operating point definition doesn't quite work for both.   Voltage a=
-nd
-> > > > frequency don't have meaning for the sleep points.
-> > >
-> > > Actually what I was trying, unsuccessfully, to explain was that
-> > > suspend states are valid, supported operating states the
-> > > system can be in for power management.    And that they are the
-> > > same as an operating point for a processor frequency.
-> >
-> > That depends on the definition, but I think of suspend states as the on=
-es
-> > that require processes to be frozen before they can be entered.  IMHO i=
-t is
-> > quite clear that such states cannot be handled in the same way as those
-> > that do not require the freezing of processes, so they are not the same.
-> =
 
-> You are correct, processes do need to be frozen before a suspend.
-> That's the prepare to suspend part of the suspend process, and
-> the transtition is the suspending and finish is the un-freezing
-> of the processes to resume execution.
-> =
 
-> And those same steps are the same steps required to transition the
-> system to a new operating point, whether it's suspend or change
-> from 1.4GHz to 600MHz.
+| From: Pavel Machek<pavel@ucw.cz>
+| =
 
-There are only a few states that require the processes to be frozen and I
-think that's a good enough reason to handle them separately.
+| Hi!
+| =
 
-Greetings,
-Rafael
+| On Thu 2006-08-31 16:44:12, Amit Kucheria wrote:
+| > On Thu, 2006-08-31 at 00:36 +0200, ext Pavel Machek wrote:
+| > > On Wed 2006-08-30 14:00:53, Amit Kucheria wrote:
+| > > > But PowerOP would allow SoC-based systems to tune the operating poi=
+nts
+| > > > to get the most out of their top-10 use-cases and sleep modes.
+| > > =
 
+| > > Question is: can we get similar savings without ugly interface powerop
+| > > presents?
+| > =
+
+| > If I have understood correctly, your main objection is to defining new
+| > operating points from userspace?
+| =
+
+| Well, that is big objection, but not my main one. I believe that "new
+| operating points from userspace" are non-starter. "So obviously wrong
+| that noone would merge that".
+---
+
+Why? Are you interpreting "from user space" as "under user control"? A
+lot of us have been taught for some time that it's a good thing to move
+stuff out of the kernel, unless it really needs to be there. Is there
+some reason, in your perception, why definition of operating points
+really needs to be in the kernel?  Definition of the operating points,
+as opposed to changing from one OP to another, shouldn't have any timing
+issues, so why isn't a privileged user-space manager a reasonable
+approach?
+
+---
+| =
+
+| > The only other interface is the actually setting of a (named) operating
+| > point and that is _required_ to do anything useful.
+| =
+
+| No, they are not.
+| =
+
+| We already have interface for selecting cpu frequency. Lets keep it.
+---
+
+As noted previously, OPs bundle together more than just the
+frequency. Those of us supporting the OP model believe that you can't
+intelligently change CPU frequency in isolation and you can't change
+some of those parameters independently, because only certain
+combinations work.
+
+---
+| ...
+| Now, it should be up-to the powerop framework to select best operating
+| point given "cpu speed, dsp speed, usb on/off" state. But I argue that
+| this should be done in-kernel and hidden from user.
+---
+
+Well, I agree with hiding it from the user, but there's no particular
+reason that means it needs to be done in the kernel. Again, we like to
+have it run from user-space, so we can replace it easily (without
+recompiling/restarting the kernel) in development.
+
+scott
 
 -- =
 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
