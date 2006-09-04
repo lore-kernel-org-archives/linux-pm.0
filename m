@@ -1,65 +1,85 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Mon, 4 Sep 2006 10:43:13 -0500 (CDT)
-Message-ID: <200609041543.k84FhDAe019372@olwen.urbana.css.mot.com>
+From: Laurent Riffard <laurent.riffard@free.fr>
+Subject: Re: [RFC][PATCH 2/3] PM: Make console suspending configureable
+Date: Mon, 04 Sep 2006 23:27:42 +0200
+Message-ID: <44FC9A4E.9070604@free.fr>
+References: <200608151509.06087.rjw@sisk.pl> <200608161309.34370.rjw@sisk.pl> <20060904090820.GA4500@suse.de> <200609041303.25817.rjw@sisk.pl> <20060904110229.GM9991@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: Pavel Machek's message of Mon, 4 Sep 2006 11:12:40 +0200
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: pavel@ucw.cz
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964988AbWIDV2I@vger.kernel.org>
+In-Reply-To: <20060904110229.GM9991@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Stefan Seyfried <seife@suse.de>, Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-| From: Pavel Machek<pavel@ucw.cz>
-| >... =
+Le 04.09.2006 13:02, Pavel Machek a =E9crit :
+> On Mon 2006-09-04 13:03:25, Rafael J. Wysocki wrote:
+>> On Monday, 4 September 2006 11:08, Stefan Seyfried wrote:
+>>> Hi,
+>>>
+>>> sorry, i am only slowly catching up after vacation.
+>>>
+>>> On Wed, Aug 16, 2006 at 01:09:34PM +0200, Rafael J. Wysocki wrote:
+>>>> Change suspend_console() so that it waits for all consoles to flus=
+h the
+>>>> remaining messages and make it possible to switch the console susp=
+ending
+>>>> off with the help of a Kconfig option.
+>>>>
+>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>> +#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+>>>>  /**
+>>>>   * suspend_console - suspend the console subsystem
+>>>>   *
+>>>> @@ -709,8 +710,14 @@ int __init add_preferred_console(char *n
+>>>>   */
+>>>>  void suspend_console(void)
+>>>>  {
+>>>> +	printk("Suspending console(s)\n");
+>>>>  	acquire_console_sem();
+>>>>  	console_suspended =3D 1;
+>>>> +	/* This is needed so that all of the messages that have already =
+been
+>>>> +	 * written to all consoles can be actually transmitted (eg. over=
+ a
+>>>> +	 * network) before we try to suspend the consoles' devices.
+>>>> +	 */
+>>>> +	ssleep(2);
+>>> Sorry, but no. Suspend and resume is already slow enough, no need t=
+o make
+>>> both of them much slower.
+>>> If we can condition this on the netconsole being used, ok, but not =
+for the
+>>> most common case of "console is on plain VGA".
+>> Hm, it already is in -mm, but of course I can prepare a patch that r=
+emoves
+>> this ssleep().
+>>
+>> Pavel, what do you think?
+>=20
+> Well, in suspend-to-ram case, 2 seconds is quite a lot... like more
+> than rest of suspend, so stefan has some point...
 
-| > My question is whether there are aspects of suspending, other than
-| > latency, that the policy manager would need to consider in deciding
-| > whether to suspend or not.
-| > =
+Rafael added this "ssleep 2" because of a bug I reported on LKML,=20
+see the thread "2.6.18-rc4-mm1: eth0: trigger_send() called with=20
+the transmitter busy"
+(http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D115565636718377&w=3D=
+2).
 
-| > Look at it this way. In one scheme the policy manager code is:
-| > =
+Basically, I was having issues when suspending with netconsole
+on my Realtek RTL-8029 network card (ne2k-pci).
 
-| >    new_OP =3D select_transition(current_OP, decision_factors);
-| >    set_OP(new_OP);
-| =
+But further investigations revealed that this driver (ne2k-pci)
+have issues with suspend/resume even when netconsole is disabled
+(see http://bugzilla.kernel.org/show_bug.cgi?id=3D7082). These days,
+I'm unable to do some tests with latest kernels because my ADSL
+router is broken.
 
-| No, it would be =
+The point of this mail is that we should get rid of this "ssleep
+2" since nobody else reported such an issue with netconsole and
+the network driver I'm using appears to be not so clean.
 
-| =
-
-|     new_OP =3D select_transition(current_OP, decision_factors);
-| if (new_OP =3D=3D SUSPEND) {
-| 	setup wakeup events ...
-| }
-|     set_OP(new_OP);
----
-
-Sorry; in our implementation, the devices are responsible for
-configuring the wakeup events, either globally or in their suspend
-routines, so it would look like my example code.  However, I would have
-expected the setup of wakeup events to happen in the kernel's set_OP
-implementation, rather than in the policy manager, anyway.
-
-Again, this model puts the decision to change in user space and the
-implementation of the decision in the kernel.
-
-scott
--- =
-
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+~~
+laurent
