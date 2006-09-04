@@ -1,63 +1,85 @@
-From: Stefan Seyfried <seife@suse.de>
-Subject: Re: [RFC][PATCH 2/3] PM: Make console suspending configureable
-Date: Mon, 4 Sep 2006 11:08:20 +0200
-Message-ID: <20060904090820.GA4500@suse.de>
-References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz> <200608161304.51758.rjw@sisk.pl> <200608161309.34370.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Mon, 4 Sep 2006 11:09:48 +0200
+Message-ID: <20060904090935.GK9991@elf.ucw.cz>
+References: <200609032305.k83N5SP9017385@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751097AbWIDJIn@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200608161309.34370.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+In-Reply-To: <200609032305.k83N5SP9017385@olwen.urbana.css.mot.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi!
 
-sorry, i am only slowly catching up after vacation.
+> | > In the implementation we use, the initial OP is set by the boot
+> | > loader. Our kernel power management driver is a module. The assumption
+> | > is that booting involves a lot of processing and it makes sense to ju=
+st
+> | > use the highest OP anyway.  That makes sense in our environment, but I
+> | > wouldn't recommend our version as a general solution, anyway.
+> | =
 
-On Wed, Aug 16, 2006 at 01:09:34PM +0200, Rafael J. Wysocki wrote:
-> Change suspend_console() so that it waits for all consoles to flush t=
-he
-> remaining messages and make it possible to switch the console suspend=
-ing
-> off with the help of a Kconfig option.
->=20
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> | That's actually regression; cpufreq saves power even while booting.
+> ---
+> =
 
-> +#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
->  /**
->   * suspend_console - suspend the console subsystem
->   *
-> @@ -709,8 +710,14 @@ int __init add_preferred_console(char *n
->   */
->  void suspend_console(void)
->  {
-> +	printk("Suspending console(s)\n");
->  	acquire_console_sem();
->  	console_suspended =3D 1;
-> +	/* This is needed so that all of the messages that have already bee=
-n
-> +	 * written to all consoles can be actually transmitted (eg. over a
-> +	 * network) before we try to suspend the consoles' devices.
-> +	 */
-> +	ssleep(2);
+> Well, the kernel boot phase is relatively brief. The module could be
+> loaded and managing the OP before you start bringing up the rest of user
+> space. However, I'm not arguing that our approach to that is generally
+> applicable - I was just giving an existence proof.
 
-Sorry, but no. Suspend and resume is already slow enough, no need to ma=
-ke
-both of them much slower.
-If we can condition this on the netconsole being used, ok, but not for =
-the
-most common case of "console is on plain VGA".
+powernow-k8 machines can't even run in highest OP point on battery
+power.
 
---=20
-Stefan Seyfried                  \ "I didn't want to write for pay. I
-QA / R&D Team Mobile Devices      \ wanted to be paid for what I write.=
-"
-SUSE LINUX Products GmbH, N=FCrnberg \                    -- Leonard Co=
-hen
+> | > Hmm. I need to think about that. I guess the OP abstraction *could* be
+> | > entirely inside the user-space policy manager, with the kernel exposi=
+ng
+> | > individual interfaces for every parameter that the policy manager wou=
+ld
+> | > need to adjust. However, that means that the whole mess has to be at
+> | > user level (kernel just implements simple knobs for individual
+> | > parameters), because the dependency management between the parameters =
 
---=20
-VGER BF report: U 0.49988
+> | > would only be known at user level, and means a relatively bulky kernel
+> | > interface, since it would expose more things at the interface. =
+
+> | =
+
+> | That would work for me.
+> | =
+
+> | But my idea was actually opposite: expose individual knobs to
+> | userspace, and then select some operating point (inside kernel) that
+> | satisfies given knobs.
+> ---
+> =
+
+> But then the kernel needs to know about the operating points, so aren't
+> you back where we were before?
+
+Yes, it will be similar to your solution, but
+
+a) I'll need not use oppoints on PCs where parameters are independend
+
+and
+
+b) I'll still get reasonable user<->kernel interface.
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
