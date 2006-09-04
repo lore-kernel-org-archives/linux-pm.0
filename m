@@ -1,62 +1,63 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Mon, 4 Sep 2006 11:06:45 +0200
-Message-ID: <20060904090626.GJ9991@elf.ucw.cz>
-References: <200609032240.k83MeRhV014303@olwen.urbana.css.mot.com>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [RFC][PATCH 2/3] PM: Make console suspending configureable
+Date: Mon, 4 Sep 2006 11:08:20 +0200
+Message-ID: <20060904090820.GA4500@suse.de>
+References: <200608151509.06087.rjw@sisk.pl> <20060816104143.GC9497@elf.ucw.cz> <200608161304.51758.rjw@sisk.pl> <200608161309.34370.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751097AbWIDJIn@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200609032240.k83MeRhV014303@olwen.urbana.css.mot.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org
+In-Reply-To: <200608161309.34370.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2006-09-03 17:40:27, Scott E. Preece wrote:
-> =
+Hi,
 
-> | From: Pavel Machek<pavel@ucw.cz>
-> | =
+sorry, i am only slowly catching up after vacation.
 
-> | On Sun 2006-09-03 17:12:22, Scott E. Preece wrote:
-> | > | From: Pavel Machek<pavel@ucw.cz>
+On Wed, Aug 16, 2006 at 01:09:34PM +0200, Rafael J. Wysocki wrote:
+> Change suspend_console() so that it waits for all consoles to flush t=
+he
+> remaining messages and make it possible to switch the console suspend=
+ing
+> off with the help of a Kconfig option.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> | > Not speaking to either of the current code submissions, I would say t=
-hat
-> | > having a kernel interface for defining OPs and a kernel interface for
-> | > setting the OP, was a reasonably clean interface.
-> | =
+> +#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+>  /**
+>   * suspend_console - suspend the console subsystem
+>   *
+> @@ -709,8 +710,14 @@ int __init add_preferred_console(char *n
+>   */
+>  void suspend_console(void)
+>  {
+> +	printk("Suspending console(s)\n");
+>  	acquire_console_sem();
+>  	console_suspended =3D 1;
+> +	/* This is needed so that all of the messages that have already bee=
+n
+> +	 * written to all consoles can be actually transmitted (eg. over a
+> +	 * network) before we try to suspend the consoles' devices.
+> +	 */
+> +	ssleep(2);
 
-> | Well, me and Rafael disagree, and you do not really listen to
-> | arguments. Now you can either fix the interface, or try to submit code
-> | to lkml despite our NAKs. Go ahead and prepare for some flaming...
-> ---
-> =
+Sorry, but no. Suspend and resume is already slow enough, no need to ma=
+ke
+both of them much slower.
+If we can condition this on the netconsole being used, ok, but not for =
+the
+most common case of "console is on plain VGA".
 
-> I think I'm listening to arguments just as much as you guys are! We just
-> disagree. What are your criteria for "a clean interface"? Why do you
-> think that n separate set-parameter() interfaces, with no consistency
-> relationship between them, are cleaner than one define-op() and one
-> set-op() interface?
+--=20
+Stefan Seyfried                  \ "I didn't want to write for pay. I
+QA / R&D Team Mobile Devices      \ wanted to be paid for what I write.=
+"
+SUSE LINUX Products GmbH, N=FCrnberg \                    -- Leonard Co=
+hen
 
-Because we already have cpufreq-set-parameter() interface and
-enter-suspend-state() interface. We can't really get rid of them.
-
-If you add set-op() replacing both cpufreq-set-parameter() and
-enter-suspend-state(), we'll end up with two different interfaces for
-each interface; that's considered "mess".
-								Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+--=20
+VGER BF report: U 0.49988
