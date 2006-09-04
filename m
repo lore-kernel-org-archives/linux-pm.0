@@ -1,14 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: So, what's the status on the recent patches here?
-Date: Mon, 4 Sep 2006 11:09:48 +0200
-Message-ID: <20060904090935.GK9991@elf.ucw.cz>
-References: <200609032305.k83N5SP9017385@olwen.urbana.css.mot.com>
+Date: Mon, 4 Sep 2006 11:12:40 +0200
+Message-ID: <20060904091230.GL9991@elf.ucw.cz>
+References: <200609032300.k83N0uL6016830@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200609032305.k83N5SP9017385@olwen.urbana.css.mot.com>
+In-Reply-To: <200609032300.k83N0uL6016830@olwen.urbana.css.mot.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,65 +18,61 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org
+Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> | > In the implementation we use, the initial OP is set by the boot
-> | > loader. Our kernel power management driver is a module. The assumption
-> | > is that booting involves a lot of processing and it makes sense to ju=
-st
-> | > use the highest OP anyway.  That makes sense in our environment, but I
-> | > wouldn't recommend our version as a general solution, anyway.
-> | =
-
-> | That's actually regression; cpufreq saves power even while booting.
+> | Really, I think that the "states" which are entered only after tasks are
+> | frozen should be considered as special and handled separately.
 > ---
 > =
 
-> Well, the kernel boot phase is relatively brief. The module could be
-> loaded and managing the OP before you start bringing up the rest of user
-> space. However, I'm not arguing that our approach to that is generally
-> applicable - I was just giving an existence proof.
-
-powernow-k8 machines can't even run in highest OP point on battery
-power.
-
-> | > Hmm. I need to think about that. I guess the OP abstraction *could* be
-> | > entirely inside the user-space policy manager, with the kernel exposi=
-ng
-> | > individual interfaces for every parameter that the policy manager wou=
-ld
-> | > need to adjust. However, that means that the whole mess has to be at
-> | > user level (kernel just implements simple knobs for individual
-> | > parameters), because the dependency management between the parameters =
-
-> | > would only be known at user level, and means a relatively bulky kernel
-> | > interface, since it would expose more things at the interface. =
-
-> | =
-
-> | That would work for me.
-> | =
-
-> | But my idea was actually opposite: expose individual knobs to
-> | userspace, and then select some operating point (inside kernel) that
-> | satisfies given knobs.
-> ---
+> My point is that if the only kernel interface is set-op(), then the code
+> in the kernel that implements set-op() is the thing that's going to
+> drive the details of suspending the system, just as it does today. The
+> abstraction at the kernel interface is about as simple as it can be and
+> all the policy issues are moved outside the kernel.
 > =
 
-> But then the kernel needs to know about the operating points, so aren't
-> you back where we were before?
+> My question is whether there are aspects of suspending, other than
+> latency, that the policy manager would need to consider in deciding
+> whether to suspend or not.
+> =
 
-Yes, it will be similar to your solution, but
+> Look at it this way. In one scheme the policy manager code is:
+> =
 
-a) I'll need not use oppoints on PCs where parameters are independend
+>    new_OP =3D select_transition(current_OP, decision_factors);
+>    set_OP(new_OP);
 
-and
+No, it would be =
 
-b) I'll still get reasonable user<->kernel interface.
+
+    new_OP =3D select_transition(current_OP, decision_factors);
+if (new_OP =3D=3D SUSPEND) {
+	setup wakeup events ...
+}
+    set_OP(new_OP);
+
+
+> in the other the policy manager code is:
+> =
+
+>    new_OP =3D select_transition(current_OP, decision_factors);
+>    if (new_OP =3D=3D SUSPEND)
+>       suspend();
+>    else
+>       set_OP(new_OP);
+...
+> The one question that I see as interesting on that score is whether the
+> policy decision to suspend is based on factors that are wholly different
+> than the factors that drive frequency/voltage changes. If that were the
+> case, then there would be no point to making the decisions in the same
+> place.  Honestly, I'm not sure of the answer to that...
+
+I'm pretty sure decision to suspend is other factors. Remember most
+machines are non-functional during suspend.
 									Pavel
 -- =
 
