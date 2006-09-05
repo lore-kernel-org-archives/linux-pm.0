@@ -1,72 +1,99 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: So, what's the status on the recent patches here?
-Date: Tue, 5 Sep 2006 11:03:33 -0500 (CDT)
-Message-ID: <200609051603.k85G3Xsm017278@olwen.urbana.css.mot.com>
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [RFC] USB device persistence across
+ suspend-to-disk
+Date: Tue, 5 Sep 2006 09:13:18 -0700
+Message-ID: <20060905091318.42c273d2.rdunlap@xenotime.net>
+References: <Pine.LNX.4.44L0.0609051104260.14667-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: "Rafael J. Wysocki"'s message of Tue, 5 Sep 2006 12:31:58 +0200
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: rjw@sisk.pl
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org, pavel@ucw.cz
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0609051104260.14667-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>, Linux-pm@sc8-sf-spam2.sourceforge.net, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 5 Sep 2006 11:26:48 -0400 (EDT) Alan Stern wrote:
 
-| From: "Rafael J. Wysocki" <rjw@sisk.pl>
-| =
+> Index: mm/Documentation/usb/persist.txt
+> ===================================================================
+> --- /dev/null
+> +++ mm/Documentation/usb/persist.txt
+> @@ -0,0 +1,154 @@
+> +
+> +	What is the solution?
+> +
+> +Setting the "persist=y" module parameter for usbcore will cause the
 
-| On Monday, 4 September 2006 01:00, Scott E. Preece wrote:
-| > policy decision to suspend is based on factors that are wholly different
-| > than the factors that drive frequency/voltage changes. If that were the
-| > case, then there would be no point to making the decisions in the same
-| > place.  Honestly, I'm not sure of the answer to that...
-| =
+                persist=1 ??
 
-| I think the decision to suspend is made
-| a) by the user,
-| b) by a policy manager in case when, for example, the battery is running
-| critical (ie. on emergency).
-| and the decision to change a frequency/voltage is usually based on some
-| efficiency factors.
-| =
+> +kernel to work around these issues.  If usbcore is build into the
 
-| Also, the suspend "transitions" are never transparent to the user and the
-| changes of frequency/voltage usually are, at least as far as CPUs are
-| concerned.
+s/build/built/
+
+> +main kernel instead of as a separate module, you can put
+> +"usbcore.persist=1" on the boot command line.  You can also change the
+> +kernel's behavior on the fly using sysfs: Type
+> +
+> +	echo y >/sys/module/usbcore/parameters/persist
+
+Does sysfs treat 'y' as '1'?
+Anyway, it would be Good to be consistent.
+
+> +to turn the option on, and replace the 'y' with an 'n' to turn it off.
+> +
+> +The "persist" option enables a mode in which the core USB device data
+> +structures are allowed to persist across a power-session disruption.
+> +It works like this.  If the kernel sees that a USB host controller is
+> +not in the expected state during resume (i.e., if the controller was
+> +reset or otherwise had lost power) then it applies a persistence check
+> +to each of the USB devices below that controller.  It doesn't try to
+> +resume the device; that can't work once the power session is gone.
+> +Instead it issues a USB port reset followed by a re-enumeration.
+> +(This is exactly the same thing that happens whenever a USB device is
+> +reset.)  If the re-enumeration shows that the device now attached to
+> +that port has the same descriptors as before, including the Vendor and
+> +Product IDs, then the kernel continues to use the same device
+> +structure.  In effect, the kernel treats the device as though it had
+> +merely been reset instead of unplugged.
+
+so does the USB device also retain its same USB address?
+
+
+> Index: mm/drivers/usb/core/message.c
+> ===================================================================
+> --- mm.orig/drivers/usb/core/message.c
+> +++ mm/drivers/usb/core/message.c
+> @@ -764,7 +764,7 @@ int usb_string(struct usb_device *dev, i
+>  			err = -EINVAL;
+>  			goto errout;
+>  		} else {
+> -			dev->have_langid = -1;
+> +			dev->have_langid = 1;
+>  			dev->string_langid = tbuf[2] | (tbuf[3]<< 8);
+>  				/* always use the first langid listed */
+>  			dev_dbg (&dev->dev, "default language 0x%04x\n",
+
+Different patch (?).
+
 ---
+~Randy
 
-Your scope is too narrow. In our domain (mobile phones) the user has no
-control at all over power management and decisions to suspend are always
-transparent.
-
-In our own implementation, the user-space policy manager initiates
-frequency and voltage changes and enabled suspends, but doesn't actually
-initiate them. That is, the policy manager says "based on current user
-activity, it would be OK to suspend now", and a kernel component then
-looks for a good time to do it, based on the system being idle.
-
-We have thought about merging the decisions into a single range of
-operating points, but the added plumbing to get idle information back to
-the policy manager seemed unappealing.
-
-We don't use cpufreq, so Pavel's arguments about not changing the kernel
-interface weren't a concern, for us. We're using a kernel interface that
-is all our own (and unappealingly ioctl-based).
-
-scott
--- =
-
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
