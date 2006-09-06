@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Greg KH <greg@kroah.com>
 Subject: Re: [linux-pm] [RFC] USB device persistence
 	across suspend-to-disk
-Date: Wed, 6 Sep 2006 05:36:38 +0000
-Message-ID: <20060906053637.GI7043@ucw.cz>
+Date: Wed, 6 Sep 2006 08:09:57 -0700
+Message-ID: <20060906150957.GA27983@kroah.com>
 References: <20060905091318.42c273d2.rdunlap@xenotime.net>
 	<Pine.LNX.4.44L0.0609051252240.5763-100000@iolanthe.rowland.org>
+	<20060906053637.GI7043@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0609051252240.5763-100000@iolanthe.rowland.org>
+In-Reply-To: <20060906053637.GI7043@ucw.cz>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
@@ -20,29 +21,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
 	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-usb-devel-bounces@lists.sourceforge.net
 Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Randy.Dunlap" <rdunlap@xenotime.net>, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Alan Stern <stern@rowland.harvard.edu>, USB development list <linux-usb-devel@lists.sourceforge.net>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > +main kernel instead of as a separate module, you can put
-> > > +"usbcore.persist=1" on the boot command line.  You can also change the
-> > > +kernel's behavior on the fly using sysfs: Type
-> > > +
-> > > +	echo y >/sys/module/usbcore/parameters/persist
-> > 
-> > Does sysfs treat 'y' as '1'?
-> > Anyway, it would be Good to be consistent.
+On Wed, Sep 06, 2006 at 05:36:38AM +0000, Pavel Machek wrote:
+> Hi!
 > 
-> Yes; I'll change everything to 'y'.
+> > > > +main kernel instead of as a separate module, you can put
+> > > > +"usbcore.persist=1" on the boot command line.  You can also change the
+> > > > +kernel's behavior on the fly using sysfs: Type
+> > > > +
+> > > > +	echo y >/sys/module/usbcore/parameters/persist
+> > > 
+> > > Does sysfs treat 'y' as '1'?
+> > > Anyway, it would be Good to be consistent.
+> > 
+> > Yes; I'll change everything to 'y'.
+> 
+> Actually I'd prefer 0/1... that's what other parts of kernel use IIRC.
 
-Actually I'd prefer 0/1... that's what other parts of kernel use IIRC.
+The module paramater parsing code in the kernel will accept either, so
+it really isn't a big deal.
 
-Otherwise it looks good to me.
-						Pavel
--- 
-Thanks for all the (sleeping) penguins.
+thanks,
+
+greg k-h
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
