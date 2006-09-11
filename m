@@ -1,17 +1,18 @@
 From: Matthew Locke <matt@nomadgs.com>
 Subject: Re: community PM requirements/issues and PowerOP [Was:
 	Re: So, what's the status on the recent patches here?]
-Date: Mon, 11 Sep 2006 13:25:42 -0700
-Message-ID: <991df5640aa53989f0801feecf46c979@nomadgs.com>
+Date: Mon, 11 Sep 2006 13:33:00 -0700
+Message-ID: <6d5d95c88706be8a338f703579cd62b9@nomadgs.com>
 References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
 	<450530BD.8090101@gmail.com> <20060911193637.GA11901@elf.ucw.cz>
 	<c728abebb17f975089390dd3f87069af@nomadgs.com>
 	<20060911200636.GC11901@elf.ucw.cz>
+	<20060911200936.GA12433@elf.ucw.cz>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060911200636.GC11901@elf.ucw.cz>
+In-Reply-To: <20060911200936.GA12433@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,100 +27,39 @@ Cc: Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osd
 List-Id: linux-pm@vger.kernel.org
 
 
-On Sep 11, 2006, at 1:06 PM, Pavel Machek wrote:
+On Sep 11, 2006, at 1:09 PM, Pavel Machek wrote:
 
-> On Mon 2006-09-11 12:53:27, Matthew Locke wrote:
->> On Sep 11, 2006, at 12:36 PM, Pavel Machek wrote:
->>
->>>>> You did echo low > something to change CPU frequency, IIRC.
->>>> My patch set presents two different interfaces built on top of
->>>> PowerOP -
->>>> cpufreq and sysfs interfaces. So _no_, PowerOP is not all about
->>>
->>> Okay, drop sysfs interface, and we may have something that can be
->>> reviewed.
->>
->> Sysfs is a separate patch that can rejected.  Nothing is stopping
->> people from reviewing.
+> On Mon 2006-09-11 22:06:36, Pavel Machek wrote:
+>> On Mon 2006-09-11 12:53:27, Matthew Locke wrote:
+>>> On Sep 11, 2006, at 12:36 PM, Pavel Machek wrote:
 >
-> If you submit patch series with one bad patch, you are very unlikely
-> to get feedback for the good patches.
+>>> btw, if people on this list are not ready to ACK PowerOP, I would =
+
+>>> like
+>>> to hear why before we go elsewhere.   It looks like all major issues
+>>> have been addressed by our approach and implementation.
 >
->>> Actually that's good idea. Submit powerop without doing _any_ kernel
->>> interface changes, so we can see that it makes sense...
->>
->> Just to be clear this is the approach we did and are doing.
->
-> That's not what I remember. Please resubmit, then. And cc lkml this
-> time.
->
->> btw, if people on this list are not ready to ACK PowerOP, I would like
->> to hear why before we go elsewhere.   It looks like all major issues
->> have been addressed by our approach and implementation.
->
-> No, I'm not ready to ACK. Actually I'd describe it as "broken piece of
-> code noone needs".
+> Oh and I am pretty tired of teaching you 'how to submit a patch', so
+> if I'm quiet, do not take it as an "ACK".
 
-But people on this list from TI, Nokia, and Motorola have explained why =
+Tired of teaching me?  We are following the same process documented and =
 
-its needed.  Also, we explained why in the f2f linux-pm summit.  Can =
+that everyone else is doing.  I just don't understand your reasons for =
 
-you give some concrete reasons why its not needed that have not been =
+not ACKing and requesting we move this discussion to lkml before people =
 
-addressed already?
+on this list are ready to ACK.  That has nothing to do with the process =
 
-> And IIRC Greg's last question was "what is it good
-> for?".
+for submitting a patch.  No teaching involved or necessary.
 
-That was a long time ago and again many people from the embedded =
+What does your going quiet mean?  You have had some good feedback so I =
 
-community have provided lots of answers.
+much prefer we reach some sort of understanding.  If your final =
 
-> Dave Jones was not too pleased with cpufreq/powerop
-> integration.
+statement is that PowerOP is not needed and you are never going to like =
 
-Really?!  I don't think he has reviewed our latest integration patches. =
+it or ACK It, let us know.  We can agree to disagree.
 
-  Our first submission was a result of discussion with Dominik at the =
-
-linux-pm summit.  The latest submission is a result of Dave Jones =
-
-comments.  I think we have addressed all expressed concerns.  I can't =
-
-force anybody to review this stuff and I'm sure Dave is still catching =
-
-up from his vacation.
-
->  Intel people explained you broke centrino
-> speedstep.
-
-I didn't see that.  Was it off-list?  We did not break centrino.  In =
-
-fact we use both the acpi and hardcoded tables just as  cpufreq does.  =
-
-If its broken, then it was already broken.
-
->  Shall I continue?
-
-Please.  Again,  I still say we have addressed all expressed =
-
-concerns/questions/issues.  If you don't feel we have, please give some =
-
-concrete statements that you are concerned about or don't understand.  =
-
-As you can see, many people are happy to help explain.
-
-PowerOP is necessary to build the power management software required =
-
-for embedded mobile devices, so we need to reach an understanding.  If =
-
-the power management guys on this list don't understand PowerOP, then =
-
-moving this discussion to lkml isn't going to help.  I much prefer to =
-
-work together to figure out something than throw it over the wall.
-
->
 > 								Pavel
 > -- =
 
