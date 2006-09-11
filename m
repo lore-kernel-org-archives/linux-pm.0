@@ -1,18 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: cpufreq terminally broken [was Re: community PM
-	requirements/issues and PowerOP]
-Date: Tue, 12 Sep 2006 00:56:17 +0200
-Message-ID: <20060911225617.GB13474@elf.ucw.cz>
-References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
-	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
-	<20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com>
-	<20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com>
+Subject: cpufreq user<->kernel interface removal [was Re:
+	community PM requirements/issues and PowerOP]
+Date: Tue, 12 Sep 2006 01:05:29 +0200
+Message-ID: <20060911230529.GC13474@elf.ucw.cz>
+References: <20060911210026.GG11901@elf.ucw.cz>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B1D623@de01exm64.ds.mot.com>
+	<20060911213930.GJ11901@elf.ucw.cz> <4505E62F.1000203@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <4505DDA6.8080603@gmail.com>
+In-Reply-To: <4505E62F.1000203@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,77 +21,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: kernel list <linux-kernel@vger.kernel.org>, "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>, lkml@elf.ucw.cz
+Cc: Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-Just for the record... this goes out to the lkml. This discussion was
-internal for way too long. (for interested lkml readers, I'm sure
-linux-pm mailing list has public archive somewhere).
+(cc-ed to lkml).
 
-On Tue 2006-09-12 02:05:26, Eugeny S. Mints wrote:
-> Pavel Machek wrote:
-> >>>>- PowerOP is only one layer (towards the bottom) in a power managemen=
-t =
-
-> >>>>solution.
-> >>>>- PowerOP does *not* replace cpufreq
-> >>>PowerOP provides userland interface for changing processor
-> >>>frequency. That's bad -- duplicate interface.
-> >>Basically the biggest problem with cpufreq interface is that cpufreq ha=
-s =
-
-> >>"chose
-> >>predefined closest to a given frequency" functionality implemented in t=
-he
-> >>kernel while there is _no_ any reason to have this functionality =
-
-> >>implemented in
-> >>the kernel if we have sysfs interface exported by PowerOP in place - yo=
-u =
-
-> >>just
+> >>Just as a data point, "keeping the cpufreq interface" is
+> >>irrelevant to a number of us, because we configure it out
+> >>of the system.  I'm not really arguing that we should get
+> >>rid of an existing kernel interface, but I don't see any
+> >>reason why we shouldn't be able to have a separately
+> >>configurable interface if cpufreq doesn't meet our needs.
 > >
-> >No, there is reason to keep that in kernel -- so that cpufreq
-> >userspace interface can be kept, and so that resulting kernel<->user
-> >interface is not ugly.
-> Cpuferq defines cpufreq_frequency_table structure in arch independent =
+> >Configurable interfaces are evil,
+> Are you saying that not having sysfs attribute nodes for entities which =
 
-> header while it's arch dependent data structure. A lot of code is built =
+> don't exist in a certain configuration is evil?
 
-> around this invalid basic brick and therefore is invalid: cpufreq tables, =
+I'm saying that
 
-> interface with cpu freq drivers, etc. Notion of transition latency as it =
+#ifdef CONFIG_FOO
+	provide user<->kernel interface
+#endif
 
-> defined by cpufreq is wrong because it's not a function of cpu type but =
+is evil.
 
-> function of current and next operating point. no runtime control on =
+> >patch. You have developed your own little interface that suits your
+> >needs -- and that's fine -- but now you are trying to push it into
+> >mainline... and that is not, because those interfaces were not really
+> >designed to work together.
 
-> operating points set. it's always the same set of operating points for al=
-l =
-
-> system cpus in smp case and no way to define different sets or track any =
-
-> dependencies in case say multi core cpus. insufficient kernel<->user spac=
+> once cpufreq userland interface functionality which does not belong to th=
 e =
 
-> interface to handle embedded requirements and no way to extend it within =
+> kernel is moved out of the kernel cpufreq interface becomes a subset of =
 
-> current design. Shall I continue?  Why should then anyone want to keep =
+> PowerOP sysfs interface. In other words this means that improvements of P=
+M =
 
-> cpufreq userspace interface just due to keep it?
+>  stack layers/interfaces design will allow to design/develop an universal =
 
-Yes, please continue. I do not think we can just rip cpufreq interface
-out of kernel, and I do not think it is as broken as you claim it
-is. Ripping interface out of kernel takes years.
+> userspace interface. We'd prefer to move gracefully in this direction =
 
-I'm sure cpufreq_frequency_table could be moved to asm/ header if you
-felt strongly about that.
+> though.
 
-I believe we need to fix cpufreq if it is broken for embedded
-cases.
+<tongue-in-cheek warning>
+
+Yes, once cpufreq userland interface is removed from kernel, merging
+powerop is reasonable thing to do. But please get at least
+Documentation/feature-removal-schedule.txt patch merged to mainline
+before attempting next powerop submission :-P.
+
+<I'm trying to explain that removing cpufreq userland interface is
+about as probable as MS Linux, and only a bit less likely than hell
+freezing over.>
 								Pavel
 -- =
 
