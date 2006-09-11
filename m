@@ -1,14 +1,21 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
- Re: So, what's the status on the recent patches here?]
-Date: Mon, 11 Sep 2006 13:47:41 +0400
-Message-ID: <450530BD.8090101@gmail.com>
-References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
+From: "David Singleton" <daviado@gmail.com>
+Subject: Re: So, what's the status on the recent patches here?
+Date: Mon, 11 Sep 2006 08:11:20 -0700
+Message-ID: <b324b5ad0609110811p3a24e5fem88ef852a9711066b@mail.gmail.com>
+References: <ADE4D9DBCFC3A345AAA95C195F62B6DD01A94E18@de01exm64.ds.mot.com>
+	<1ac6c8e2a817eb0e11257b47199872f8@comcast.net>
+	<b324b5ad0609021105u7fcab8c3w6d21bfca9caa93d1@mail.gmail.com>
+	<200609022130.59256.rjw@sisk.pl>
+	<b324b5ad0609030925p1d82385bs4da21663d47f44c3@mail.gmail.com>
+	<20060903213325.GB9991@elf.ucw.cz>
+	<b324b5ad0609081739q1477fa99h58827ce7deaa78a8@mail.gmail.com>
+	<20060909121720.GD4277@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060911082025.GD1898@elf.ucw.cz>
+In-Reply-To: <20060909121720.GD4277@ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,121 +26,58 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.osdl.org>, scott.preece@motorola.com
+Cc: linux-pm@lists.osdl.org, Matthew Locke <matthew.a.locke@comcast.net>, Preece Scott-PREECE <scott.preece@motorola.com>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> =
+On 9/9/06, Pavel Machek <pavel@ucw.cz> wrote:
+> On Fri 08-09-06 17:39:52, David Singleton wrote:
+> > On 9/3/06, Pavel Machek <pavel@ucw.cz> wrote:
+> > > > And those same steps are the same steps required to transition the
+> > > > system to a new operating point, whether it's suspend or change
+> > > > from 1.4GHz to 600MHz.
+> > >
+> > > No, processes are not frozen for simple cpu frequency change -- on
+> > > non-broken cpus.
+> >
+> > I didn't say cpu frequency changes freeze processes.  I said a suspend
+> > does a prepare to suspend step (which freezes processes) and a cpu freq=
+uency
+> > change does a prepare to change frequency step (where it will run the d=
+river
+> > notifier list to get drivers set to scale).
+>
+> Yep, and switching consoles is also same. It is prepare to switch, do
+> a switch, notify people you switched. Shall we use same code?
 
-> On Mon 2006-09-11 11:57:28, Eugeny S. Mints wrote:
->> [snip]
->>>> Are you arguing that the cpufreq interface be morphed to support power
->>>> op applications?
->>> No. I'm arguing that
->>>
->>> * cpufreq interface should be used for changing cpu frequency
->> the patch set i sent out has cpufreq used for changing cpu frequency,
->> hasn't it?
-> =
+No.  Since switching console is not dealing with changing the operating
+state of the system.  It's just switching which device is the console.
 
-> I was talking about kernel<->user interface.
-me too. PowerOP is inkernel interface but which _allows_ to build various
-different kernel<->user interfaces on top of it. This PowerOP _advantage_ a=
-llows =
+>
+> > They both do the same three steps:
+> >
+> > 1) prepare to transition
+> >
+> > 2) transition
+> >
+> > 3) finish transition
+> >
+> > That's one of my arguements as to why suspend states should be treated
+> > just like frequency states.
+>
+> Cat and horse is a same animal. They both have 4 legs, one head and a
+> tail.
+>
+> Anyway, as a software suspend maintainer, I do not want you to add
+> non-sleeping states to /sys/power/state. I will NAK any attempt to do
+> so. Please find more suitable interface.
 
-community to experiment with various kernel<->user interfaces on top and =
+You are right.  The power/state files for devices are for suspend
+states as well.  I'll find a different interface for operating states and
+leave suspend states in /sys/power/state.
 
-eventually end up with the best solution. The solution can be either one =
-
-universal, agreed by community kernel<-> user interface on top or I can ima=
-ging =
-
-the approach when kernel<-> user interfaces on top are configurable feature=
- and =
-
-system designer choses kernel<->user interface which fits best the systems =
-
-he/she builds.
-> =
-
-> You did echo low > something to change CPU frequency, IIRC.
-My patch set presents two different interfaces built on top of PowerOP - cp=
-ufreq =
-
-and sysfs interfaces. So _no_, PowerOP is not all about 'echo low > somethi=
-ng'. =
-
-Such kernel<-> user interface is  an _option_. PowerOP supports full _legac=
-y_ =
-
-cpufreq interface as another option - please check out PowerOP/cpufreq =
-
-integration patch set. The goal is either to end up with one kernel<->user =
-
-interface which addresses both pc world and embedded world requirements to =
-
-user<->kernel interface _or_ - as an alternative I'd prefer - have these =
-
-kernel<->user interfaces configurable: if you build laptop  system - chose =
-
-cpufreq interface on top of PowerOP; if you build embedded - chose sysfs =
-
-interface. But with the approach when everything is built on top PowerOP[PM =
-
-Core, Clock framework] you just eliminate all unnecessary duplication if PM =
-
-functionality in PM  stack.
-
-Just in case you are confused by the fact I didn;t send out PowerOP/cpufreq =
-
-integration patch along with the last PowerOP Core take: PowereOP Core patc=
-h I =
-
-sent out in the last take is a standalone functional piece. PowerOP/cpufreq =
-
-integration patch is just a further extension and applies to the most recen=
-t =
-
-POwerOP Core without any changes so there was no reason to resend =
-
-PowerOP/cpufreq integration.
-> =
-
->> can we eventually start talking more close to the code rather than
->> speculating without it?
-> =
-
-> Lets get kernel<->user interface right, first. You'll need to create
-> Documentation/ entries for your interfaces, eventually, so lets do
-> that, first, and then talk about code.
-Documentation/ piece is fine, I will add it. But I feel I put quite detaile=
-d =
-
-comments along with the patches at least to explain interfaces.
-> Oh and it would be nice to cc
-> lkml on that document, too. New kernel<->user interface is not
-> decision taken lightly.
-PowerOP Core and PowerOP/cpufreq integration patch sets present two clear a=
-nd =
-
-configurable kernel<->user interfaces. I personally feel that interfaces =
-
-configuration feature allows graceful interface discussion and possibility =
-to =
-
-get a decision smoothly instead of a flame on a list. If you argue against =
-
-configuration feature please put comments on exactly configuration feature. =
-
-Otherwise please explicitly list the requirements for kernel<->user interfa=
-ce =
-
-you have which are not addressed by these two interfaces assuming you can c=
-hose =
-
-either interface having PowerOP underneath.
-
-Thanks,
-	Eugeny
-> 									Pavel
+David
+>
+>                                                         Pavel
+> --
+> Thanks for all the (sleeping) penguins.
+>
