@@ -1,16 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: community PM requirements/issues and PowerOP [Was:
 	Re: So, what's the status on the recent patches here?]
-Date: Mon, 11 Sep 2006 21:55:46 +0200
-Message-ID: <20060911195546.GB11901@elf.ucw.cz>
+Date: Mon, 11 Sep 2006 22:06:36 +0200
+Message-ID: <20060911200636.GC11901@elf.ucw.cz>
 References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
-	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+	<450530BD.8090101@gmail.com> <20060911193637.GA11901@elf.ucw.cz>
+	<c728abebb17f975089390dd3f87069af@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+In-Reply-To: <c728abebb17f975089390dd3f87069af@nomadgs.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,47 +25,49 @@ To: Matthew Locke <matt@nomadgs.com>
 Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Mon 2006-09-11 12:53:27, Matthew Locke wrote:
+> On Sep 11, 2006, at 12:36 PM, Pavel Machek wrote:
+> =
 
-> I know its confusing having oppoint (from Dave Singleton) and powerop =
+> >>>You did echo low > something to change CPU frequency, IIRC.
+> >>My patch set presents two different interfaces built on top of =
 
-> being discussed at the same time.  However, I believe we (PowerOP)
-> have =
+> >>PowerOP -
+> >>cpufreq and sysfs interfaces. So _no_, PowerOP is not all about
+> >
+> >Okay, drop sysfs interface, and we may have something that can be
+> >reviewed.
+> =
 
+> Sysfs is a separate patch that can rejected.  Nothing is stopping =
 
-Yes, it is.
+> people from reviewing.
 
-> - PowerOP is only one layer (towards the bottom) in a power management =
+If you submit patch series with one bad patch, you are very unlikely
+to get feedback for the good patches.
 
-> solution.
-> - PowerOP does *not* replace cpufreq
+> >Actually that's good idea. Submit powerop without doing _any_ kernel
+> >interface changes, so we can see that it makes sense...
+> =
 
-PowerOP provides userland interface for changing processor
-frequency. That's bad -- duplicate interface.
+> Just to be clear this is the approach we did and are doing.
 
-> - The PowerOP interface was discussed in detail on this list and we =
+That's not what I remember. Please resubmit, then. And cc lkml this
+time.
 
-> haven't heard any negative comments.
+> btw, if people on this list are not ready to ACK PowerOP, I would like =
 
-Eh? Was I on different list?
+> to hear why before we go elsewhere.   It looks like all major issues =
 
-> - We are not advocating the integration with sleep states.  We want to =
+> have been addressed by our approach and implementation.
 
-> get the PowerOP interface accepted and then we can build on it.
+No, I'm not ready to ACK. Actually I'd describe it as "broken piece of
+code noone needs". And IIRC Greg's last question was "what is it good
+for?". Dave Jones was not too pleased with cpufreq/powerop
+integration. Intel people explained you broke centrino
+speedstep. Shall I continue?
 
-Good.
-
-> We have a few more comments from Greg to take care of and  we can add a =
-
-> Documentation/ file. Then I think its time to get the PowerOP patches =
-
-> in the queue for acceptance.    Any comments about this?
-
-Well, you'll only get good interface review when you have
-Documentation/ , and it needs to go to lkml before it goes to any
-queues.
 								Pavel
-
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
