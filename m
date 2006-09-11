@@ -1,22 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Tue, 12 Sep 2006 00:50:33 +0200
-Message-ID: <20060911225033.GA13474@elf.ucw.cz>
+Subject: cpufreq terminally broken [was Re: community PM
+	requirements/issues and PowerOP]
+Date: Tue, 12 Sep 2006 00:56:17 +0200
+Message-ID: <20060911225617.GB13474@elf.ucw.cz>
 References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
-	<450530BD.8090101@gmail.com> <20060911193637.GA11901@elf.ucw.cz>
-	<c728abebb17f975089390dd3f87069af@nomadgs.com>
-	<20060911200636.GC11901@elf.ucw.cz>
-	<20060911200936.GA12433@elf.ucw.cz>
-	<6d5d95c88706be8a338f703579cd62b9@nomadgs.com>
-	<20060911210634.GI11901@elf.ucw.cz>
-	<c63579dda747a35a5ba48ba5495b3d72@nomadgs.com>
+	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+	<20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com>
+	<20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <c63579dda747a35a5ba48ba5495b3d72@nomadgs.com>
+In-Reply-To: <4505DDA6.8080603@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,71 +22,77 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Matthew Locke <matt@nomadgs.com>
-Cc: Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: kernel list <linux-kernel@vger.kernel.org>, "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>
 List-Id: linux-pm@vger.kernel.org
 
-> >>What does your going quiet mean?  You have had some good feedback so I
-> >>much prefer we reach some sort of understanding.  If your final
-> >>statement is that PowerOP is not needed and you are never going to =
+Hi!
 
-> >>like
-> >>it or ACK It, let us know.  We can agree to disagree.
+Just for the record... this goes out to the lkml. This discussion was
+internal for way too long. (for interested lkml readers, I'm sure
+linux-pm mailing list has public archive somewhere).
+
+On Tue 2006-09-12 02:05:26, Eugeny S. Mints wrote:
+> Pavel Machek wrote:
+> >>>>- PowerOP is only one layer (towards the bottom) in a power managemen=
+t =
+
+> >>>>solution.
+> >>>>- PowerOP does *not* replace cpufreq
+> >>>PowerOP provides userland interface for changing processor
+> >>>frequency. That's bad -- duplicate interface.
+> >>Basically the biggest problem with cpufreq interface is that cpufreq ha=
+s =
+
+> >>"chose
+> >>predefined closest to a given frequency" functionality implemented in t=
+he
+> >>kernel while there is _no_ any reason to have this functionality =
+
+> >>implemented in
+> >>the kernel if we have sysfs interface exported by PowerOP in place - yo=
+u =
+
+> >>just
 > >
-> >You got the interfaces wrong. While I believe that something like
-> >powerop can indeed be useful for system-on-chip platforms, I do not
-> >think it should be exposed outside of kernel.
-> =
+> >No, there is reason to keep that in kernel -- so that cpufreq
+> >userspace interface can be kept, and so that resulting kernel<->user
+> >interface is not ugly.
+> Cpuferq defines cpufreq_frequency_table structure in arch independent =
 
-> =
+> header while it's arch dependent data structure. A lot of code is built =
 
-> Ok.  I don't think its wrong because its designed from understanding =
+> around this invalid basic brick and therefore is invalid: cpufreq tables, =
 
-> the requirements of pm software for embedded mobile devices.   I
->think =
+> interface with cpu freq drivers, etc. Notion of transition latency as it =
 
-> the embedded folk all agree that the type of interface submitted is =
+> defined by cpufreq is wrong because it's not a function of cpu type but =
 
-> required.  I don't understand why you think its wrong.  Just to be =
+> function of current and next operating point. no runtime control on =
 
+> operating points set. it's always the same set of operating points for al=
+l =
 
-So you'll have to do lots of explaining. On lkml.
+> system cpus in smp case and no way to define different sets or track any =
 
-> clear, your previous email made it very clear you don't like the =
+> dependencies in case say multi core cpus. insufficient kernel<->user spac=
+e =
 
-> userspace interface but this email says interfaces generically.  =
+> interface to handle embedded requirements and no way to extend it within =
 
+> current design. Shall I continue?  Why should then anyone want to keep =
 
-I meant user<->kernel interface.
+> cpufreq userspace interface just due to keep it?
 
-> assuming your only objection at this point is the userspace interface.  =
+Yes, please continue. I do not think we can just rip cpufreq interface
+out of kernel, and I do not think it is as broken as you claim it
+is. Ripping interface out of kernel takes years.
 
->  We are more than willing to work this out.  The current sysfs =
+I'm sure cpufreq_frequency_table could be moved to asm/ header if you
+felt strongly about that.
 
-> interface is surrounded by ifdefs and is optional.  If there is no =
-
-> exposure to userspace, then testing/debuging will be more difficult.
-
-Having interface surrounded by #ifdefs is evil. You can test it
-separately, then just remove that code before submission. Or maybe
-move it to debugfs.
-
-> Greg, Pavel, Dominik, Dave J and Dave B,
-> =
-
-> I would like to get a plan in place for acceptance with the power =
-
-> management guys before we move this to lkml.  =
-
-
-Documentation/SubmittingPatches says:
-#5) Select your CC (e-mail carbon copy) list.
-#
-#Unless you have a reason NOT to do so, CC
-#linux-kernel@vger.kernel.org.
-
-and sorry, but I insist on using proper procedure here. And no, "we
-are afraid of being flamed" is not good enough reason not to.
+I believe we need to fix cpufreq if it is broken for embedded
+cases.
 								Pavel
 -- =
 
