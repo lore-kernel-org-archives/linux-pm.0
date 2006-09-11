@@ -1,15 +1,16 @@
-From: Matthew Locke <matt@nomadgs.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: community PM requirements/issues and PowerOP [Was:
 	Re: So, what's the status on the recent patches here?]
-Date: Mon, 11 Sep 2006 12:53:27 -0700
-Message-ID: <c728abebb17f975089390dd3f87069af@nomadgs.com>
+Date: Mon, 11 Sep 2006 21:55:46 +0200
+Message-ID: <20060911195546.GB11901@elf.ucw.cz>
 References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
-	<450530BD.8090101@gmail.com> <20060911193637.GA11901@elf.ucw.cz>
-Mime-Version: 1.0 (Apple Message framework v624)
+	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060911193637.GA11901@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,60 +20,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>
+To: Matthew Locke <matt@nomadgs.com>
 Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Sep 11, 2006, at 12:36 PM, Pavel Machek wrote:
+> I know its confusing having oppoint (from Dave Singleton) and powerop =
 
->>> You did echo low > something to change CPU frequency, IIRC.
->> My patch set presents two different interfaces built on top of =
-
->> PowerOP -
->> cpufreq and sysfs interfaces. So _no_, PowerOP is not all about
->
-> Okay, drop sysfs interface, and we may have something that can be
-> reviewed.
->
-
-Sysfs is a separate patch that can rejected.  Nothing is stopping =
-
-people from reviewing.
+> being discussed at the same time.  However, I believe we (PowerOP)
+> have =
 
 
-> Actually that's good idea. Submit powerop without doing _any_ kernel
-> interface changes, so we can see that it makes sense...
+Yes, it is.
 
+> - PowerOP is only one layer (towards the bottom) in a power management =
 
-Just to be clear this is the approach we did and are doing.
-> Your code should be good enough to survive some flaming. I do not
-> think it is, so yes, I think submitting it to lkml is good
-> idea. You'll have to do that at some point, anyway.
->
-> (And note lkml only flames you when you are doing something wrong.)
+> solution.
+> - PowerOP does *not* replace cpufreq
 
+PowerOP provides userland interface for changing processor
+frequency. That's bad -- duplicate interface.
 
-Isn't this (linux-pm) the place to discuss power management patches and =
+> - The PowerOP interface was discussed in detail on this list and we =
 
-interfaces?  I thought we would get ACK's from the power management =
+> haven't heard any negative comments.
 
-maintainers and then the patches go into -mm.  Who on lkml needs to be =
+Eh? Was I on different list?
 
-in this discussion that is not on this list?
+> - We are not advocating the integration with sleep states.  We want to =
 
-btw, if people on this list are not ready to ACK PowerOP, I would like =
+> get the PowerOP interface accepted and then we can build on it.
 
-to hear why before we go elsewhere.   It looks like all major issues =
+Good.
 
-have been addressed by our approach and implementation.
+> We have a few more comments from Greg to take care of and  we can add a =
 
->
-> 								Pavel
-> -- =
+> Documentation/ file. Then I think its time to get the PowerOP patches =
 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) =
+> in the queue for acceptance.    Any comments about this?
 
-> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+Well, you'll only get good interface review when you have
+Documentation/ , and it needs to go to lkml before it goes to any
+queues.
+								Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
