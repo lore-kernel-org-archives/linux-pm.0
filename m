@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
 Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Mon, 11 Sep 2006 22:34:42 +0200
-Message-ID: <20060911203442.GF11901@elf.ucw.cz>
+ Re: So, what's the status on the recent patches here?]
+Date: Tue, 12 Sep 2006 00:53:46 +0400
+Message-ID: <4505CCDA.8020501@gmail.com>
 References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
-	<450530BD.8090101@gmail.com> <20060911193637.GA11901@elf.ucw.cz>
-	<4505C5F9.4060704@gmail.com>
+	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+	<20060911195546.GB11901@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <4505C5F9.4060704@gmail.com>
+In-Reply-To: <20060911195546.GB11901@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,40 +20,81 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: pm list <linux-pm@lists.osdl.org>, scott.preece@motorola.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2006-09-12 00:24:25, Eugeny S. Mints wrote:
-> Pavel Machek wrote:
+Pavel Machek wrote:
+> Hi!
+> =
 
-> >>>I was talking about kernel<->user interface.
-> >>me too. PowerOP is inkernel interface but which _allows_ to build vario=
-us
-> >>different kernel<->user interfaces on top of it. This PowerOP _advantag=
-e_ =
+>> I know its confusing having oppoint (from Dave Singleton) and powerop =
 
-> >>allows community to experiment with various kernel<->user interfaces
-> >>on top =
+>> being discussed at the same time.  However, I believe we (PowerOP)
+>> have =
 
-> >
-> >Kernel interface is not something to be experimented with.
-> it is since current interface (cpufreq in conjunction with =
+> =
 
-> /sys/power/state, etc) does not address all requirements to the
->interface.
+> Yes, it is.
+> =
 
-Removing kernel interface takes 2+ years. So no, kernel interface is
-not something to be experimented with, at least not on mainline.
+>> - PowerOP is only one layer (towards the bottom) in a power management =
 
-> >Actually that's good idea. Submit powerop without doing _any_ kernel
-> >interface changes, so we can see that it makes sense...
-> It was submitted this way several times.
+>> solution.
+>> - PowerOP does *not* replace cpufreq
+> =
 
-So try again, and cc lkml this time.
-								Pavel
--- =
+> PowerOP provides userland interface for changing processor
+> frequency. That's bad -- duplicate interface.
+Basically the biggest problem with cpufreq interface is that cpufreq has "c=
+hose
+predefined closest to a given frequency" functionality implemented in the
+kernel while there is _no_ any reason to have this functionality implemente=
+d in
+the kernel if we have sysfs interface exported by PowerOP in place - you ju=
+st
+_have_ to keep all possible functionality out of the kernel. CPufreq interf=
+ace
+is just subset of sysfs interface provided by PowerOP and _must_ be impleme=
+nted
+in userspace on top of sysfs interface - this is the proper way to scape
+duplication. Such issue with cpufreq<->kernel userspace interface is conseq=
+uence
+of the fact that cpufreq implements incorrect design of PM stack layers and
+interfaces. PowerOP solves this issues as well.
+> =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+>> - The PowerOP interface was discussed in detail on this list and we =
+
+>> haven't heard any negative comments.
+> =
+
+> Eh? Was I on different list?vb dfgdfv
+> =
+
+>> - We are not advocating the integration with sleep states.  We want to =
+
+>> get the PowerOP interface accepted and then we can build on it.
+> =
+
+> Good.
+> =
+
+>> We have a few more comments from Greg to take care of and  we can add a =
+
+>> Documentation/ file. Then I think its time to get the PowerOP patches =
+
+>> in the queue for acceptance.    Any comments about this?
+> =
+
+> Well, you'll only get good interface review when you have
+> Documentation/ , and it needs to go to lkml before it goes to any
+> queues.
+PM stack is too complex and heavy part to go in such pieces thru lkml. i ex=
+pect =
+
+all linux  pm experts to be on this list
+
+Eugeny
+> 								Pavel
+> =
