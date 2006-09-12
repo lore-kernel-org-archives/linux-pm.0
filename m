@@ -1,19 +1,18 @@
 From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: cpufreq user<->kernel interface removal [was Re:
-	community PM requirements/issues and PowerOP]
-Date: Mon, 11 Sep 2006 16:50:25 -0700
-Message-ID: <20060911235025.GA14234@linux.intel.com>
-References: <20060911210026.GG11901@elf.ucw.cz>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B1D623@de01exm64.ds.mot.com>
-	<20060911213930.GJ11901@elf.ucw.cz> <4505E62F.1000203@gmail.com>
-	<20060911230529.GC13474@elf.ucw.cz>
+Subject: Re: community PM requirements/issues and PowerOP [Was:
+	Re: So, what's the status on the recent patches here?]
+Date: Mon, 11 Sep 2006 17:00:00 -0700
+Message-ID: <20060912000000.GB14234@linux.intel.com>
+References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
+	<20060911215303.GA12176@linux.intel.com>
+	<20060911224313.GA13536@elf.ucw.cz>
 Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060911230529.GC13474@elf.ucw.cz>
+In-Reply-To: <20060911224313.GA13536@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,78 +23,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: lkml@elf.ucw.cz, Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
+Cc: pm list <linux-pm@lists.osdl.org>, scott.preece@motorola.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 12, 2006 at 01:05:29AM +0200, Pavel Machek wrote:
-> Hi!
+On Tue, Sep 12, 2006 at 12:43:13AM +0200, Pavel Machek wrote:
+> On Mon 2006-09-11 14:53:03, Mark Gross wrote:
+> > On Mon, Sep 11, 2006 at 10:20:25AM +0200, Pavel Machek wrote:
+> > > Lets get kernel<->user interface right, first. You'll need to create
+> > > Documentation/ entries for your interfaces, eventually, so lets do
+> > > that, first, and then talk about code. Oh and it would be nice to cc
+> > > lkml on that document, too. New kernel<->user interface is not
+> > > decision taken lightly.
+> > =
+
+> > Is this just trying delay power op getting into the kernel?  We are
+> > building up / evolving a PM stack from bottom up and you want to the
+> > high level interface to be well defined and agreed upon first?
 > =
 
-> (cc-ed to lkml).
+> As long as you do not introduce _any_ user<->kernel interfaces within
+> patch series, going without Documentation is okay. But IIRC that was
+> not the case.
 > =
 
-> > >>Just as a data point, "keeping the cpufreq interface" is
-> > >>irrelevant to a number of us, because we configure it out
-> > >>of the system.  I'm not really arguing that we should get
-> > >>rid of an existing kernel interface, but I don't see any
-> > >>reason why we shouldn't be able to have a separately
-> > >>configurable interface if cpufreq doesn't meet our needs.
-> > >
-> > >Configurable interfaces are evil,
-> > Are you saying that not having sysfs attribute nodes for entities which =
 
-> > don't exist in a certain configuration is evil?
-> =
-
-> I'm saying that
-> =
-
-> #ifdef CONFIG_FOO
-> 	provide user<->kernel interface
-> #endif
-> =
-
-> is evil.
->
-
-I disagree.
-
-> > >patch. You have developed your own little interface that suits your
-> > >needs -- and that's fine -- but now you are trying to push it into
-> > >mainline... and that is not, because those interfaces were not really
-> > >designed to work together.
-> =
-
-> > once cpufreq userland interface functionality which does not belong to =
-the =
-
-> > kernel is moved out of the kernel cpufreq interface becomes a subset of =
-
-> > PowerOP sysfs interface. In other words this means that improvements of=
- PM =
-
-> >  stack layers/interfaces design will allow to design/develop an univers=
-al =
-
-> > userspace interface. We'd prefer to move gracefully in this direction =
-
-> > though.
-> =
-
-> <tongue-in-cheek warning>
-> =
-
-> Yes, once cpufreq userland interface is removed from kernel, merging
-> powerop is reasonable thing to do. But please get at least
-> Documentation/feature-removal-schedule.txt patch merged to mainline
-> before attempting next powerop submission :-P.
-> =
-
-> <I'm trying to explain that removing cpufreq userland interface is
-> about as probable as MS Linux, and only a bit less likely than hell
-> freezing over.>
-
-The PowerOP patch has nothing to do with the removal of cpufreq.  You
-may be confusing this work with the david signleton patch.
+I don't think providing Documentation on whatever interface will be a
+problem.
 
 --mgross
