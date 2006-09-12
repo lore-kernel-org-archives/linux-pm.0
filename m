@@ -1,41 +1,47 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: cpufreq terminally broken [was Re: community PM requirements/issues and PowerOP]
-Date: Mon, 11 Sep 2006 20:37:00 -0700
-Message-ID: <20060912033700.GD27397@kroah.com>
-References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz> <b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com> <20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com> <20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com> <20060911225617.GB13474@elf.ucw.cz> <20060912001701.GC14234@linux.intel.com>
+Subject: Re: cpufreq user<->kernel interface removal [was Re:
+	community PM requirements/issues and PowerOP]
+Date: Mon, 11 Sep 2006 20:35:37 -0700
+Message-ID: <20060912033537.GC27397@kroah.com>
+References: <20060911210026.GG11901@elf.ucw.cz>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B1D623@de01exm64.ds.mot.com>
+	<20060911213930.GJ11901@elf.ucw.cz> <4505E62F.1000203@gmail.com>
+	<20060911230529.GC13474@elf.ucw.cz>
+	<20060911235025.GA14234@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964987AbWILD5R@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060912001701.GC14234@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20060911235025.GA14234@linux.intel.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: Mark Gross <mgross@linux.intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Eugeny S. Mints" <eugeny.mints@gmail.com>, Matthew Locke <matt@nomadgs.com>, Amit Kucheria <amit.kucheria@nokia.com>, pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>, Igor Stoppa <igor.stoppa@nokia.com>
+Cc: lkml@elf.ucw.cz.kroah.org, Pavel Machek <pavel@ucw.cz>, Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 11, 2006 at 05:17:01PM -0700, Mark Gross wrote:
-> 
-> cpufreq is broken at the cpufreq_driver interface for embedded
-> applications needing control over more than one control variable at a
-> time.
-> 
-> That interface only supports setting target frequencies, and expanding it
-> to set target frequencies and voltages is not possible without something
-> like PowerOP.  Adding the types of parameters to cpufreq would likely
-> make cpufreq a mess.  I think we would be better off with something that
-> coexists with cpufreq, like the powerop patch from Eugeny.
-> 
-> God help you if you try to use cpufreq on a complex non-PC platform with
-> multiple power and clock domains that need to be tweaked to squeeze out
-> competitive battery life.
-> 
-> Because of the existing user base of cpufreq removing cpufreq will never
-> happen.  No one supporting the PowerOP patch has never recommended
-> such a thing.  However; holding back innovation because of an existing
-> solution that doesn't support a large class of users seems dumb.
+On Mon, Sep 11, 2006 at 04:50:25PM -0700, Mark Gross wrote:
+> The PowerOP patch has nothing to do with the removal of cpufreq.  You
+> may be confusing this work with the david signleton patch.
 
-But you can't break the existing stuff, and it seems that some of these
-proposals are doing just that. :(
+I am totally confused about who is working on what, and what provides
+what.
+
+Can someone make  quick cheat-sheet that shows the different
+developers/companies and projects here?  The fact that it's impossible
+to keep this straight in the first place does not bode well...
+
+Or, can each of the different projects send a _short_, 1 paragraph, 4
+sentance maximum summary of the different things.  Think of it as your
+"elevator pitch".  The different multi-page summaries ware making my
+eyes glaze over...
 
 thanks,
 
