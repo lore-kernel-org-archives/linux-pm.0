@@ -1,22 +1,20 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Tue, 12 Sep 2006 01:26:29 -0700
-Message-ID: <de6b6331fa0bc1e3bfe825f611b6c3a2@nomadgs.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: cpufreq terminally broken [was Re: community PM
+	requirements/issues and PowerOP]
+Date: Tue, 12 Sep 2006 10:33:28 +0200
+Message-ID: <20060912083328.GA19197@elf.ucw.cz>
 References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
-	<450530BD.8090101@gmail.com> <20060911193637.GA11901@elf.ucw.cz>
-	<c728abebb17f975089390dd3f87069af@nomadgs.com>
-	<20060911200636.GC11901@elf.ucw.cz>
-	<20060911200936.GA12433@elf.ucw.cz>
-	<6d5d95c88706be8a338f703579cd62b9@nomadgs.com>
-	<20060911210634.GI11901@elf.ucw.cz>
-	<c63579dda747a35a5ba48ba5495b3d72@nomadgs.com>
-	<20060912033143.GB27397@kroah.com>
-Mime-Version: 1.0 (Apple Message framework v624)
+	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+	<20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com>
+	<20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com>
+	<20060911225617.GB13474@elf.ucw.cz>
+	<20060912001701.GC14234@linux.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060912033143.GB27397@kroah.com>
+Content-Disposition: inline
+In-Reply-To: <20060912001701.GC14234@linux.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,84 +24,80 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: pm list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>, Preece Scott-PREECE <scott.preece@motorola.com>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Sep 11, 2006, at 8:31 PM, Greg KH wrote:
+> > > >No, there is reason to keep that in kernel -- so that cpufreq
+> > > >userspace interface can be kept, and so that resulting kernel<->user
+> > > >interface is not ugly.
+> > > Cpuferq defines cpufreq_frequency_table structure in arch independent =
 
-> On Mon, Sep 11, 2006 at 02:50:04PM -0700, Matthew Locke wrote:
->>
->> I would like to get a plan in place for acceptance with the power
->> management guys before we move this to lkml.
->
-> Sure, let's see something here that we all agree on.  You have yet to
-> achieve that, so you still have work to do.
->
->> I propose that we submit the current set of PowerOP patches plus final
->> few changes (from Greg's comments and a Documentation/ file).
->
-> Nothing is keeping you from sending these to the list now.  Please do
-> so.
+> > > header while it's arch dependent data structure. A lot of code is bui=
+lt =
 
-The only thing stopping us is time:)  It will happen soon.
+> > > around this invalid basic brick and therefore is invalid: cpufreq tab=
+les, =
 
->
->> The patches do not affect anyone else.  The sysfs interface is
->> optional.
->
-> If so, it will be interesting to see why the code is even needed, I
-> await the patches :)
+> > > interface with cpu freq drivers, etc. Notion of transition latency as=
+ it =
 
-PowerOP patches have been submitted to this list several times for =
+> > > defined by cpufreq is wrong because it's not a function of cpu type b=
+ut =
 
-review.  You even reviewed a version or two.  The main comments we are =
+> > > function of current and next operating point. no runtime control on =
 
-addressing are small issues such as add a file in Documentation and =
+> > > operating points set. it's always the same set of operating points fo=
+r all =
 
-module reference counting.  Not much else will change so you have the =
+> > > system cpus in smp case and no way to define different sets or track =
+any =
 
-code.  The cpufreq<->PowerOP integration patches have also been =
+> > > dependencies in case say multi core cpus. insufficient kernel<->user =
+space =
 
-submitted but no one has responded to those.
+> > > interface to handle embedded requirements and no way to extend it wit=
+hin =
 
-Just read the other emails.  I will stop here.  It's time to reset the =
+> > > current design. Shall I continue?  Why should then anyone want to kee=
+p =
 
-discussion again.
+> > > cpufreq userspace interface just due to keep it?
+> > =
 
->
->> If necessary Eugeny and I will maintain userspace interface patches
->> outside the mainline for now.
->
-> Why?  What good would the in-kernel patches be then if it can't be used
-> except for some external patches?  That's not acceptable.  And the user
-> interface has been tied to the other kernel code, so I think you need
-> them both, but am willing to be convinced otherwise.
+> > Yes, please continue. I do not think we can just rip cpufreq interface
+> > out of kernel, and I do not think it is as broken as you claim it
+> > is. Ripping interface out of kernel takes years.
+> > =
 
-I think so too.  This offer is in response to Pavel's comment that =
+> > I'm sure cpufreq_frequency_table could be moved to asm/ header if you
+> > felt strongly about that.
+> > =
 
-PowerOP is ok for in-kernel usage but not userspace.
+> > I believe we need to fix cpufreq if it is broken for embedded
+> > cases.
+> =
 
->
->> Will any of the power management maintainers ACK this plan and then
->> ACK the patches?
->
-> Let's see the code please.
->
->> If no one here is willing to ACK, then I don't see what will change by
->> submitting to lkml.
->
-> Let's get this agreed on first, I feel that you still have some way to
-> go here.
->
-> Sending stuff to lkml is fine too, you should be doing that for such a
-> core change anyway.  I don't see why you can't do that at the same =
+> cpufreq is broken at the cpufreq_driver interface for embedded
+> applications needing control over more than one control variable at a
+> time.
+> =
 
-> time,
-> it's just an extra email on the CC: line...
->
-> thanks,
->
-> greg k-h
->
+> That interface only supports setting target frequencies, and expanding it
+> to set target frequencies and voltages is not possible without something
+> like PowerOP.  Adding the types of parameters to cpufreq would likely
+> make cpufreq a mess.
+
+Can we at least try adding that, before deciding cpufreq is unsuitable
+and starting new interface? I do not think issues are nearly as big as
+you think.. (at user<->kernel interface level, anyway; you'll need big
+changes under the hood).
+								Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
