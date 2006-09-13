@@ -1,70 +1,83 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Wed, 13 Sep 2006 07:39:21 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
-References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+From: "David Singleton" <daviado@gmail.com>
+Subject: Re: [linux-pm] cpufreq terminally broken [was Re: community PM requirements/issues and PowerOP]
+Date: Wed, 13 Sep 2006 16:50:43 -0700
+Message-ID: <b324b5ad0609131650q1b7a78cfsa90e3fbe8d7b4093@mail.gmail.com>
+References: <450516E8.9010403@gmail.com> <20060911082025.GD1898@elf.ucw.cz>
+	 <b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+	 <20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com>
+	 <20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com>
+	 <20060911225617.GB13474@elf.ucw.cz>
+	 <20060912001701.GC14234@linux.intel.com>
+	 <20060912033700.GD27397@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>, pavel@ucw.cz
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751252AbWIMXup@vger.kernel.org>
+In-Reply-To: <20060912033700.GD27397@kroah.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.osdl.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
- =
+Greg,
+   here's a few paragraphs about the power management code I'm working on.
+The OpPoint patch set is a fully functionaly power management solution,
+from kernel operating state support to userland power manager.
 
-> From: David Brownell [mailto:david-b@pacbell.net] =
+OpPoint constructs operating points for all supported frequency, voltage
+and suspend states for PC and SoC solutions running Linux.  OpPoint
+does not break or replace cpufreq.  It leverages cpufreq code to provide
+the same driver scaling functions when cpu frequency changes affect drivers.
 
-> =
+(The ARM pxa27x patch uses the cpufreq scaling routines to scale the LCD
+when frequencies are changed and works well when playing mpeg movies on
+the LCD during frequency scaling operations).
 
-> > Date: Mon, 11 Sep 2006 21:36:37 +0200
-> > From: Pavel Machek <pavel@ucw.cz>
-> >
-> > Kernel interface is not something to be experimented with.
-> =
+The Operating Points in OpPoint are simply created at compile time, in
+the same manner cpufreq tables are, and registered in
+/sys/power/operating_states directory when the cpu is identified at boot time.
 
-> Disagree.  How else to get it right??
-> Try, learn, improve.  That's experimentation.
-> Linux has no "stable API nonsense" ...
-> =
+The states are ordered by name on their power consumption level from lowest
+to highest so the power manager can operate correctly regardless of what
+frequencies or voltages are associated with the lowest or highest
+operating points.
 
-> The point of "cathedral vs. bazaar" was that experimentation =
+There is no kernel interface to parse and create all the parameters
+needed to create an operating point.  Platform specific information
+is supplied to the oppoint structure through an ops vector of three
+routines and a void * pointer to supply the platform specific data,
+in the same manner drivers have a void * for their private data.
 
-> and evolution are more successful processes than "get it =
+The ops vectors provide operating point specific functions to prepare
+to change to a new operating point, transition to the target operating
+point, and a finish transition routine to either notify driver that
+the clocks have scaled and operation of bus and DMA traffic may continue.
 
-> right the first time".
----
+OpPoint draws the line about what's needed in the kernel a bit differently
+than Matt's PowerOp code.  OpPoint only puts operating point support in
+the kernel.  Polices for operting states and classes of operating states
+are left to the power manager, in userland.  This simplifies the
+kernel code, no string parsers for operating point parameter construction,
+and makes it easier to customize a solution by customizing the power
+manager.
 
-I think Pavel's point was that the userspace interface to =
+A power manager is supplied with the OpPoint patch set as well.  I borrowed
+the cpuspeed deamon and made a simple patch that uses the new OpPoint
+sysfs interface.  The daemon can be compiled as the original cpuspeed or
+oppointd deamon depending on the users choice.  The daemon provides the
+same functions as the cpuspeed daemon.
 
-the kernel (at least the syscall interface) is stable (open to
-Extension by addition of syscalls, but closed to modification
-or deletion of existing and that any experimentation needs to =
+OpPoint is a fully functional solution ready for testing and evaluation
+in Andrew's or your tree.
 
-happen before functionality goes into the mainstream. =
+The kernel patches are available at:
+
+        http://source.mvista.com/~dsingleton/2.6.1-rc6
+
+the power manager source code and patch is available at:
+
+        http://source.mvista.com/~dsingleton/oppointd
 
 
-That said, I do think we probably need to add a new interface to
-cover operating points, because some of believe that policy needs
-to be in user space and the whole point of the OP abstraction is =
-
-that operating points are atomic. You can't just add knobs to
-control more factors, because all those knobs need to be turned
-at the same time. Setting an operating point is inherently an
-atomic operation, not n separate operations that can be taken
-serially.
-
-scott
- =
+David
