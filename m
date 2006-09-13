@@ -1,19 +1,21 @@
-From: Jon Loeliger <jdl@freescale.com>
-Subject: Re: cpufreq user<->kernel interface removal [was
-	Re:	community PM requirements/issues and PowerOP]
-Date: Tue, 12 Sep 2006 12:03:01 -0500
-Message-ID: <1158080580.27129.205.camel@cashmere.sps.mot.com>
-References: <20060911210026.GG11901@elf.ucw.cz>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B1D623@de01exm64.ds.mot.com>
-	<20060911213930.GJ11901@elf.ucw.cz> <4505E62F.1000203@gmail.com>
-	<20060911230529.GC13474@elf.ucw.cz>
-	<20060911235025.GA14234@linux.intel.com>
-	<20060912033537.GC27397@kroah.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: community PM requirements/issues and PowerOP [Was:
+	Re: So, what's the status on the recent patches here?]
+Date: Tue, 12 Sep 2006 21:22:09 -0700
+Message-ID: <20060913042209.10DEC1A0082@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <450516E8.9010403@gmail.com>
+	<20060911082025.GD1898@elf.ucw.cz> <450530BD.8090101@gmail.com>
+	<20060911193637.GA11901@elf.ucw.cz>
+	<c728abebb17f975089390dd3f87069af@nomadgs.com>
+	<20060911200636.GC11901@elf.ucw.cz> <20060911200936.GA12433@elf.ucw.cz>
+	<6d5d95c88706be8a338f703579cd62b9@nomadgs.com>
+	<20060911210634.GI11901@elf.ucw.cz>
+	<c63579dda747a35a5ba48ba5495b3d72@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060912033537.GC27397@kroah.com>
+In-Reply-To: <c63579dda747a35a5ba48ba5495b3d72@nomadgs.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,57 +25,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: lkml@elf.ucw.cz.kroah.org, Preece Scott-PREECE <scott.preece@motorola.com>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>
+To: pavel@ucw.cz, matt@nomadgs.com, linux@dominikbrodowski.net, greg@kroah.com, davej@redhat.com
+Cc: linux-pm@lists.osdl.org, scott.preece@motorola.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2006-09-11 at 22:35, Greg KH wrote:
-> On Mon, Sep 11, 2006 at 04:50:25PM -0700, Mark Gross wrote:
-> > The PowerOP patch has nothing to do with the removal of cpufreq.  You
-> > may be confusing this work with the david signleton patch.
-> =
+Hi Matt,
 
-> I am totally confused about who is working on what, and what provides
-> what.
+> From matt@nomadgs.com  Mon Sep 11 14:56:58 2006
+>
+> Greg, Pavel, Dominik, Dave J and Dave B,
+>
+> I would like to get a plan in place for acceptance with the power =
 
-Me too.
+> management guys before we move this to lkml.  I propose that we submit =
 
-> Can someone make  quick cheat-sheet that shows the different
-> developers/companies and projects here?  The fact that it's impossible
-> to keep this straight in the first place does not bode well...
+> the current set of PowerOP patches plus final few changes (from Greg's =
 
-And while we are summarizing, can we review the strategy
-for the large-scale improvements we are contemplating here?
-And then maybe even offer a list of ordered steps?
+> comments and a Documentation/ file).  The patches do not affect anyone =
 
-Like, do we all agree/disagree that we should do any/all
-of these?
+> else.  The sysfs interface is optional.  If necessary Eugeny and I will =
 
-    - Generalize the cpufreq codebase
-    - Generalize the cpufreq code with generalized concept
-      of Operating Point
-    - Unify handling of reduced operating states with
-      actual sleep/off states
-    - Unify the PowerOP code with the Op Point code
-    - Unify the PowerOP, OpPoint, cpufreq and ACPI code
-    - Dispense with PM unification entirely and let specific
-      implementations emerge for now
-    - Rewrite the lowest level of operating point handling
-    - Implement a user<->kernel interface for Power Management
-    - Allow only kernel control of PM
-    - Allow user-level control of PM
-    - Allow both/either User and Kernel code to decide on
-      PM state transitions
-    - Provide distinct code bases at the lowest level for
-      handling different components of an operating point
-      and recognize cpufreq as one part of that, with other
-      parts needing to be written first, before a generalized
-      operating point handler can be written at the next layer
+> maintain userspace interface patches outside the mainline for now.  =
 
-I think there has been some focus lost in this discussion,
-and I'd like to see a clear delineation of some requirements
-and direction just to make sure it is all headed in a common,
-right direction.
+> Will any of the power management maintainers ACK this plan and then ACK =
 
-Thanks,
-jdl
+> the patches?  If no one here is willing to ACK, then I don't see what =
+
+> will change by submitting to lkml.
+
+The Linux-PM list booted me off itself for a while, and I just got
+back on and haven't gotten through the backlog yet.  Right now the
+distinctions and relationships between any of the "recent patches"
+and system-wide mechanisms like
+
+    - lowpower idle tasks;
+
+    - multiple run states ... cpufreq doing an inadequte subset,
+      even if you're only interested in CPUs;
+
+    - multiple sleep states ... /sys/power/state listing "standby"
+      and/or "mem" (kind of weak for embedded systems) and "disk"
+      (which is checkpoint/resume, not really sleep);
+
+are not fully evident to me, so acking anything seems premature.
+Plus there's an "ACPI way" to do so much of that, which doesn't
+much help most non-x86 systems.
+
+I thought I saw patches generalizing both sleep and run states
+(separate patch sets!) ... plus a good comment from Greg that
+a short (!) "elevator pitch" seemed to be lacking.
+
+- Dave
