@@ -1,44 +1,65 @@
-From: "Vitaly Wool" <vitalywool@gmail.com>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Thu, 14 Sep 2006 17:26:49 +0400
-Message-ID: <acd2a5930609140626i565ac997rb3d66a8b10991205@mail.gmail.com>
-References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
-	<20060914091211.GA14874@elf.ucw.cz>
-	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
-	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
-	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
-	<20060914130311.GA2224@elf.ucw.cz>
-	<acd2a5930609140615r5ee11e5amd48857198e1cd8c7@mail.gmail.com>
-	<20060914132037.GC2029@elf.ucw.cz>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: [PATCH] PowerOP, Intro 0/2
+Date: Thu, 14 Sep 2006 18:37:06 +0400
+Message-ID: <45096912.9010603@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060914132037.GC2029@elf.ucw.cz>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.osdl.org, Matthew Locke <matthew.a.locke@comcast.net>, Preece Scott-PREECE <scott.preece@motorola.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750867AbWINOhG@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: pm list <linux-pm@lists.osdl.org>
+Cc: Matthew Locke <matt@nomadgs.com>, Amit Kucheria <amit.kucheria@nokia.com>, Igor Stoppa <igor.stoppa@nokia.com>, Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9/14/06, Pavel Machek <pavel@suse.cz> wrote:
+The PowerOP Core provides completely arch independent interface
+to create and control operating points which consist of arbitrary
+subset of power parameters available on a certain platform.
 
-> Well, for now, Nokia 770 is zaurus with wifi but without keyboard
-> (mostly). It seems to be very similar to zaurus pm-wise.
+PowerOP Core upper layer interface provides the following capabilities:
+- to register an operating point by passing an identifier of the point
+represented by a string and arbitrary subset of power parameters available on a
+certain platform by a string (parameter name) and value pairs.
+- to unregister operating point by name
+- to set operating point by name
+- to get values of arbitrary subset of platform power parameters associated
+this  a point (point is passed by name or NULL to get current parameter values
+from hw)
+- _optional_ SysFS interface. If SysFs interface is enabled each operating point
+registered with PowerOP core appears under /sys/power/. /sys/power/<op>/ will
+contain an attribute for each power parameter. Power parameters are rw. An
+operating point may be activated by writing its name to /sys/power/active. The
+hardware power parameters currently set may be read via /sys/power/hw/, a
+special operating point that reads parameter attribute values from hardware, for
+diagnostic purposes.
+Operating points creation with help of SysFS interface is _optional_
+_configurable_ feature. Operating points are created by writing the name of the
+operating point to /sys/power/new.  This may be a job for configfs.
 
-Yea, but AFAIK from FOSDEM/OLS Nokia folks are not satisfied with that
-and would like to have a more comprehensive PM framework... like
-PowerOP, for instance :)
-That's my impression.
 
-Vitaly
+PowerOP get and register point APIs use name/value pairs for the power
+parameters which eliminate the need for data structure sharing between
+the PM core and consumers of the PowerOP API.   Earlier versions
+required include/asm-xxx/power_params.h to be included in both places.
+
+This also enables a variable argument list for the registration and get
+APIs.  Some operating points may only need to work with a subset of the
+power parameters.  In this case the creator of the operating point only
+needs to provide the name/value pair for the parameters required for
+that point.  The rest are set to a don't care value by the internals.
+
+PowerOP is a building block for power management on systems that have a
+large set of power parameter that can adjusted to maximize power and
+operational efficiency.   Mobile consumer devices are examples of these
+systems that require the PowerOP features.   However, PowerOP works
+just as well on systems with one or two parameters.  The API allows the
+h/w layer to define what parameters are available on that platform.
+
+Operating points can be registered at anytime.  Registration can occur
+from a architecture init-call, loadable kernel module or some other
+layer.  Operating point registration notifiers are provided for layers,
+such as cpufreq, that could take advantage of new operating
+points that become available or just need to know when operating points
+are loaded.
+
+PowerOP continues to support in kernel governor concepts from cpufreq as well
+as userspace policy managers.
