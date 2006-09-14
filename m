@@ -1,23 +1,21 @@
 From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: cpufreq terminally broken [was Re: community PM
-	requirements/issues and PowerOP]
-Date: Thu, 14 Sep 2006 08:04:14 -0700
-Message-ID: <20060914150414.GB6008@linux.intel.com>
-References: <20060911082025.GD1898@elf.ucw.cz>
-	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
-	<20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com>
-	<20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com>
-	<20060911225617.GB13474@elf.ucw.cz>
-	<20060912001701.GC14234@linux.intel.com>
-	<20060912083328.GA19197@elf.ucw.cz>
-	<acd2a5930609120210w7ee5a156s5fa5bbc59aeabad8@mail.gmail.com>
+Subject: Re: cpufreq user<->kernel interface removal [was Re:
+	community PM requirements/issues and PowerOP]
+Date: Thu, 14 Sep 2006 09:26:23 -0700
+Message-ID: <20060914162623.GA6867@linux.intel.com>
+References: <20060911210026.GG11901@elf.ucw.cz>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B1D623@de01exm64.ds.mot.com>
+	<20060911213930.GJ11901@elf.ucw.cz> <4505E62F.1000203@gmail.com>
+	<20060911230529.GC13474@elf.ucw.cz>
+	<20060911235025.GA14234@linux.intel.com>
+	<20060912033537.GC27397@kroah.com>
 Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <acd2a5930609120210w7ee5a156s5fa5bbc59aeabad8@mail.gmail.com>
+In-Reply-To: <20060912033537.GC27397@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,29 +25,64 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: lkml@elf.ucw.cz.kroah.org, Pavel Machek <pavel@ucw.cz>, Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 12, 2006 at 01:10:24PM +0400, Vitaly Wool wrote:
-> Pavel,
+On Mon, Sep 11, 2006 at 08:35:37PM -0700, Greg KH wrote:
+> On Mon, Sep 11, 2006 at 04:50:25PM -0700, Mark Gross wrote:
+> > The PowerOP patch has nothing to do with the removal of cpufreq.  You
+> > may be confusing this work with the david signleton patch.
 > =
 
-> On 9/12/06, Pavel Machek <pavel@ucw.cz> wrote:
-> >Can we at least try adding that, before deciding cpufreq is unsuitable
-> >and starting new interface? I do not think issues are nearly as big as
-> >you think.. (at user<->kernel interface level, anyway; you'll need big
-> >changes under the hood).
+> I am totally confused about who is working on what, and what provides
+> what.
 > =
 
-> who talks about user <-> kernel interface level changes at the moment?!
->
+> Can someone make  quick cheat-sheet that shows the different
+> developers/companies and projects here?  The fact that it's impossible
+> to keep this straight in the first place does not bode well...
 
-Mostly Pavel is.
+Power-OP: Matt, Eugeny, Igor, myself to a much lesser extent
+Oppoint: David
 
-There are questions on how to set/get operating points between the
-platform and user space, and some questions on one to make the space of
-operating points extensible outside of compile time deployment nice.
-But these questions aren't the ones I see folks fussing about.
+Interested parties to getting operating point concepts into the main
+line kernel are CELF and MLI members.
 
---mgross
+> =
+
+> Or, can each of the different projects send a _short_, 1 paragraph, 4
+> sentance maximum summary of the different things.  Think of it as your
+> "elevator pitch".  The different multi-page summaries ware making my
+> eyes glaze over...
+> =
+
+
+CE and embedded Linux users have not been able to use cpufreq, mostly
+because those platforms don't have ACPI like FW for controlling all the
+power parameters NOT exposed on PC's and laptops, where the PM control
+possibilities are much more exposed to the OS requiring OS support to
+leverage.
+
+The notion of operating point has become very popular in the CE
+/embedded space.  Some variant of it is used in every CE device and
+there is a need to get some common way to tickle the platform PM for non
+PC hardware.
+
+PowerOP is the derived from Operating Point interface portion of the DPM
+and is an attempt to provide a common way for this.  It started life as
+a patch that came out about 1 year ago by Todd Poyner.  This version of
+PowerOP has been a collaboration of a group of folks that got together
+at the PM-Summit last April.
+
+Oppoint is also derived from the interface portion of DPM but goes
+farther to include more of DPM, causes confusion and controversy and was
+pushed at a bad time.  It would be nice if the Oppoint patch be
+re-submitted as a patch to the PowerOP patch once it gets some traction
+in the MM tree.
+
+
+> thanks,
+> =
+
+> greg k-h
