@@ -1,22 +1,23 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Thu, 14 Sep 2006 07:59:23 -0700
-Message-ID: <20060914145923.A99E7195C63@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
-	<20060914091211.GA14874@elf.ucw.cz>
-	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
-	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
-	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
-	<20060914130311.GA2224@elf.ucw.cz>
-	<acd2a5930609140615r5ee11e5amd48857198e1cd8c7@mail.gmail.com>
-	<20060914132037.GC2029@elf.ucw.cz>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: Re: cpufreq terminally broken [was Re: community PM
+	requirements/issues and PowerOP]
+Date: Thu, 14 Sep 2006 08:04:14 -0700
+Message-ID: <20060914150414.GB6008@linux.intel.com>
+References: <20060911082025.GD1898@elf.ucw.cz>
+	<b0623b9bb79afacc77cddc6e39c96b62@nomadgs.com>
+	<20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com>
+	<20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com>
+	<20060911225617.GB13474@elf.ucw.cz>
+	<20060912001701.GC14234@linux.intel.com>
+	<20060912083328.GA19197@elf.ucw.cz>
+	<acd2a5930609120210w7ee5a156s5fa5bbc59aeabad8@mail.gmail.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060914132037.GC2029@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <acd2a5930609120210w7ee5a156s5fa5bbc59aeabad8@mail.gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,12 +27,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: vitalywool@gmail.com, pavel@suse.cz
-Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: pm list <linux-pm@lists.osdl.org>, Preece Scott-PREECE <scott.preece@motorola.com>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-> Well, for now, Nokia 770 is zaurus with wifi but without keyboard
-> (mostly). It seems to be very similar to zaurus pm-wise.
+On Tue, Sep 12, 2006 at 01:10:24PM +0400, Vitaly Wool wrote:
+> Pavel,
+> =
 
-Not hardly.  I suggest you _start_ by looking at the clock tree
-specs for the OMAP5912 (very similar to the OMAP1710 in N770) ...
+> On 9/12/06, Pavel Machek <pavel@ucw.cz> wrote:
+> >Can we at least try adding that, before deciding cpufreq is unsuitable
+> >and starting new interface? I do not think issues are nearly as big as
+> >you think.. (at user<->kernel interface level, anyway; you'll need big
+> >changes under the hood).
+> =
+
+> who talks about user <-> kernel interface level changes at the moment?!
+>
+
+Mostly Pavel is.
+
+There are questions on how to set/get operating points between the
+platform and user space, and some questions on one to make the space of
+operating points extensible outside of compile time deployment nice.
+But these questions aren't the ones I see folks fussing about.
+
+--mgross
