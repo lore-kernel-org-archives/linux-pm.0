@@ -1,11 +1,15 @@
 From: Matthew Locke <matthew.a.locke@comcast.net>
-Subject: PowerOP vs OPpoint
-Date: Thu, 14 Sep 2006 02:22:25 -0700
-Message-ID: <ff355e0e9a7ba8350241ffe483c664ab@comcast.net>
+Subject: PowerOP on lkml or linux-pm?
+Date: Thu, 14 Sep 2006 02:32:03 -0700
+Message-ID: <e6432982cff738586deabb583e237d9f@comcast.net>
+References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
+	<20060914091211.GA14874@elf.ucw.cz>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060914091211.GA14874@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,64 +19,28 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: pm list <linux-pm@lists.osdl.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Unfortunately, there are two efforts underway that makes this confusing =
+Pavel, Greg,
 
-and I think require a bit more than the short summary requested.  A one =
+I started CC'ing lkml as you guys requested (well forced really).  Now =
 
-paragraph summary can't address the why and how.  This email briefly =
+we have half the discussion occurring on linux-pm and the other half on =
 
-describes the why and the differences.
+both.  The guys on lkml are going to be lost and even more confused =
 
-There are two main reasons for both these efforts:
-- existing power management interfaces do not enable the power =
+than the people on this list.  If you guys want lkml to see the =
 
-management features on the latest SOC's used in embedded mobile  =
+discussion, make sure you add them to the CC when replying to linux-pm =
 
-devices
-- existing power management interfaces do not provide the API necessary =
+only emails.
 
-to build power managers (userspace and/or kernel space) that optimize =
+Perhaps we should keep the discussion on linux-pm until we are all =
 
-power consumption to level required by embedded mobile devices
+straight and then send the results to lkml.  I'm open to whatever you =
 
-PowerOP
-Focus is on a platform independent interface for selecting and creating =
-
-operating points.  We want to get the basic power management block in =
-
-place and build on it.  Integrating with other existing power =
-
-management interfaces as it makes sense.  The first natural integration =
-
-point is the cpufreq_driver layer in cpufreq and does not affect the =
-
-userspace interface.
-
-OPpoint
-Goal is to show how all existing interfaces can use the operating point =
-
-concept.  It is more than an interface for selecting and creating =
-
-operating points.  It integrates with cpufreq and sleep states defining =
-
-new userspace interfaces and using existing interfaces in different =
-
-ways.  There are a lot of issues with the OPpoint operating point =
-
-interface that was discussed here: =
-
-http://lists.osdl.org/pipermail/linux-pm/2006-August/003541.html .  =
-
-Many objections to the sleep state integration.  Most of the negative =
-
-comments about cpufreq are about the OPpoint patches.
-
-I have not seen or heard any justification for the OPpoint patches to =
-
-create a different operating point interface.
+want as along as we are consistent.
 
 Matt
