@@ -1,11 +1,16 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: PowerOP summary
-Date: Thu, 14 Sep 2006 01:28:25 -0700
-Message-ID: <330177f4f8f83d0d39034c8f05d4b1f7@nomadgs.com>
-Mime-Version: 1.0 (Apple Message framework v624)
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: community PM requirements/issues and PowerOP [Was:
+	Re: So, what's the status on the recent patches here?]
+Date: Thu, 14 Sep 2006 11:12:11 +0200
+Message-ID: <20060914091211.GA14874@elf.ucw.cz>
+References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,68 +20,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.osdl.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>
+To: Preece Scott-PREECE <scott.preece@motorola.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-As a result of some discussion during the Linux PM summit between =
+Hi!
 
-myself, Todd Poynor, Dominik Brodowski, Mark Gross, Amit Kucheria and a =
+> > > Date: Mon, 11 Sep 2006 21:36:37 +0200
+> > > From: Pavel Machek <pavel@ucw.cz>
+> > >
+> > > Kernel interface is not something to be experimented with.
+> > =
 
-few others,  Eugeny and I have been working on getting a power =
+> > Disagree.  How else to get it right??
+> > Try, learn, improve.  That's experimentation.
+> > Linux has no "stable API nonsense" ...
+> > =
 
-management interface called PowerOP accepted.   A good bit of =
+> > The point of "cathedral vs. bazaar" was that experimentation =
 
-discussion has occurred on linux-pm over the last couple months about =
+> > and evolution are more successful processes than "get it =
 
-PowerOP interfaces and why its needed.  Here is a short summary =
+> > right the first time".
+> ---
+> =
 
-requested by Greg:
+> I think Pavel's point was that the userspace interface to =
 
-Summary
-PowerOP is an interface to create and select operating points.  =
+> the kernel (at least the syscall interface) is stable (open to
+> Extension by addition of syscalls, but closed to modification
+> or deletion of existing and that any experimentation needs to =
 
-Operating points are a collection of platform specific system =
-
-parameters (ie not i/o devices) that affect power consumption.  These =
-
-parameters include cpu frequency, voltages, clock sources and dividers =
-
-and others.  PowerOP provides a platform independent interface to =
-
-control these platform specific parameters.   This interface is a basic =
-
-building block of a power management stack for advanced power =
-
-management on embedded mobile devices.  For those familiar with =
-
-cpufreq, it can be viewed as a redesign of the cpufreq_driver layer to =
-
-be platform independent and enable more advanced governors and policies =
-
-on hardware with lots of power parameters.
-
-Developers
-Matthew Locke and Eugeny Mints are the main guys behind PowerOP now but =
-
-many have contributed to get to this point.
-
-A few key points
-- PowerOP does not replace cpufreq
-- PowerOP authors and advocates are not suggesting to replace cpufreq
-- PowerOP is required for doing power management on embedded mobile =
-
-devices
-- PowerOP patches are standalone and do not require integration with =
-
-cpufreq or suspend/resume subsystems
-- PowerOP does not break anything including existing userspace =
-
-interface and centrino code.
-
-We will resend the patches again for review and discussion.  Each patch =
-
-contains more detailed description.
+> happen before functionality goes into the mainstream. =
 
 
-Matt and Eugeny
+Yes, that was my point. (And I'd add "plus you can't get around that
+by introducing interface hidden by #ifdef").
+
+> That said, I do think we probably need to add a new interface to
+> cover operating points, because some of believe that policy needs
+> to be in user space and the whole point of the OP abstraction is =
+
+> that operating points are atomic. You can't just add knobs to
+> control more factors, because all those knobs need to be turned
+> at the same time. Setting an operating point is inherently an
+> atomic operation, not n separate operations that can be taken
+> serially.
+
+Ok, "needs to be atomic" is first real argument for OP abstraction. I
+wonder if we can get around that by delaying the transaction until
+userspace tells us it made all the changes... otoh that is going to be
+messy.
+
+But do you have some reasonable way to integrate OP with cpufreq?
+
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
