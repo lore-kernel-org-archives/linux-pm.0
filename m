@@ -1,65 +1,23 @@
 From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: [PATCH] PowerOP, Intro 0/2
-Date: Thu, 14 Sep 2006 18:37:06 +0400
-Message-ID: <45096912.9010603@gmail.com>
+Subject: PowerOP, Whatchanged/Issues/TODO 2/2
+Date: Thu, 14 Sep 2006 18:38:53 +0400
+Message-ID: <4509697D.1050107@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750867AbWINOhG@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750872AbWINOiq@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: pm list <linux-pm@lists.osdl.org>
-Cc: Matthew Locke <matt@nomadgs.com>, Amit Kucheria <amit.kucheria@nokia.com>, Igor Stoppa <igor.stoppa@nokia.com>, Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>
+Cc: Matthew Locke <matt@nomadgs.com>, Amit Kucheria <amit.kucheria@nokia.com>, Igor Stoppa <igor.stoppa@nokia.com>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The PowerOP Core provides completely arch independent interface
-to create and control operating points which consist of arbitrary
-subset of power parameters available on a certain platform.
+whatchanged:
+- optional sysfs interface is added
+- code is moved under kernel/power
+- Greg's comments on kobject and coding style are addressed
 
-PowerOP Core upper layer interface provides the following capabilities:
-- to register an operating point by passing an identifier of the point
-represented by a string and arbitrary subset of power parameters available on a
-certain platform by a string (parameter name) and value pairs.
-- to unregister operating point by name
-- to set operating point by name
-- to get values of arbitrary subset of platform power parameters associated
-this  a point (point is passed by name or NULL to get current parameter values
-from hw)
-- _optional_ SysFS interface. If SysFs interface is enabled each operating point
-registered with PowerOP core appears under /sys/power/. /sys/power/<op>/ will
-contain an attribute for each power parameter. Power parameters are rw. An
-operating point may be activated by writing its name to /sys/power/active. The
-hardware power parameters currently set may be read via /sys/power/hw/, a
-special operating point that reads parameter attribute values from hardware, for
-diagnostic purposes.
-Operating points creation with help of SysFS interface is _optional_
-_configurable_ feature. Operating points are created by writing the name of the
-operating point to /sys/power/new.  This may be a job for configfs.
-
-
-PowerOP get and register point APIs use name/value pairs for the power
-parameters which eliminate the need for data structure sharing between
-the PM core and consumers of the PowerOP API.   Earlier versions
-required include/asm-xxx/power_params.h to be included in both places.
-
-This also enables a variable argument list for the registration and get
-APIs.  Some operating points may only need to work with a subset of the
-power parameters.  In this case the creator of the operating point only
-needs to provide the name/value pair for the parameters required for
-that point.  The rest are set to a don't care value by the internals.
-
-PowerOP is a building block for power management on systems that have a
-large set of power parameter that can adjusted to maximize power and
-operational efficiency.   Mobile consumer devices are examples of these
-systems that require the PowerOP features.   However, PowerOP works
-just as well on systems with one or two parameters.  The API allows the
-h/w layer to define what parameters are available on that platform.
-
-Operating points can be registered at anytime.  Registration can occur
-from a architecture init-call, loadable kernel module or some other
-layer.  Operating point registration notifiers are provided for layers,
-such as cpufreq, that could take advantage of new operating
-points that become available or just need to know when operating points
-are loaded.
-
-PowerOP continues to support in kernel governor concepts from cpufreq as well
-as userspace policy managers.
+todo/issues:
+- better implementation for getting registered operating point names
+- move string parsing into powerop generic code
+- configfs for operating points creation from user space
+- powerop driver module refcounting
