@@ -1,1055 +1,124 @@
 From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: [RFC] CPUFreq PowerOP integratoin, CPUFreq core 1/3
-Date: Thu, 14 Sep 2006 18:43:07 +0400
-Message-ID: <45096A7B.2070007@gmail.com>
+Subject: [RFC] CPUFreq PowerOP integration, Centrino PM Core and OPs registration
+ 2/3
+Date: Thu, 14 Sep 2006 18:50:02 +0400
+Message-ID: <45096C1A.7010008@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="------------080003030500000207030709"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750765AbWINOnJ@vger.kernel.org>
+ boundary="------------060207060305070002040201"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750699AbWINOuD@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: pm list <linux-pm@lists.osdl.org>
 Cc: Matthew Locke <matt@nomadgs.com>, Amit Kucheria <amit.kucheria@nokia.com>, Igor Stoppa <igor.stoppa@nokia.com>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------080003030500000207030709
+--------------060207060305070002040201
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-This patch touches cpufreq.c and freq_tables.c
+This patch adds support for centrino PM Core and operating points registration
+module.
+
+Operating points registration module uses hardcoded values or values retrieved
+from ACPI to register operating points using PowerOP interface. The module is
+completely independent from either cpufreq or centrino PM Core.
+
+PM Core defines power parameters for the platform and handles all hw related
+steps to set system to an operating point or retrieve a power parameter value.
+
+Both speedstep-centrino-pm_core.c and speedstep-centrino.c do not belong to 
+cpufreq anymore and should be removed from cpufreq
+folder but were left there to simplify the diff investigation.
 
 
---------------080003030500000207030709
+
+--------------060207060305070002040201
 Content-Type: text/x-patch;
- name="cpufreq.powerop.integration.patch"
+ name="centrino.pm.core.opt.regisration.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="cpufreq.powerop.integration.patch"
+ filename="centrino.pm.core.opt.regisration.patch"
 
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 71fc3b4..73f2e37 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -1,5 +1,5 @@
- # CPUfreq core
--obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o
-+obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_helpers.o
- # CPUfreq stats
- obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
+diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
+index f71fb4a..62d7523 100644
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -814,6 +814,18 @@ source kernel/power/Kconfig
  
-@@ -10,6 +10,3 @@ obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+= 
- obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+= cpufreq_ondemand.o
- obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)	+= cpufreq_conservative.o
+ source "drivers/acpi/Kconfig"
  
--# CPUfreq cross-arch helpers
--obj-$(CONFIG_CPU_FREQ_TABLE)		+= freq_table.o
--
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b3df613..28d71f2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -9,6 +9,13 @@
-  *  Feb 2006 - Jacob Shin <jacob.shin@amd.com>
-  *	Fix handling for CPU hotplug -- affected CPUs
-  *
-+ *  Aug 2006 - Eugeny S. Mints <eugeny.@nomad.com>
-+ *      splitting original cpufreq code on functional layers, integration with
-+ *      PowerOP, got rid of cpufreq driver
-+ *  
-+ *        
-+ *  2006 (C) Nomad Global Solutions, Inc. 
-+ *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
-@@ -28,17 +35,17 @@ #include <linux/slab.h>
- #include <linux/cpu.h>
- #include <linux/completion.h>
- #include <linux/mutex.h>
-+#include <linux/powerop.h>
++menu "PM Core"
 +
-+#include "freq_helpers.h"
- 
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_CORE, "cpufreq-core", msg)
- 
--/**
-- * The "cpufreq driver" - the arch- or hardware-dependend low
-- * level driver of CPUFreq support, and its spinlock. This lock
-- * also protects the cpufreq_cpu_data array.
-- */
--static struct cpufreq_driver *cpufreq_driver;
-+/* if defined CPUFreq uses set_policy instead of target method */
-+static unsigned int smart_cpu = 0;
++config PM_CORE
++	tristate "PM Core"
++	depends POWEROP
++	help
++	This enables i386 PM Core to control platform freq/voltage via
++	PowerOP interface
 +
- static struct cpufreq_policy *cpufreq_cpu_data[NR_CPUS];
--static DEFINE_SPINLOCK(cpufreq_driver_lock);
-+static DEFINE_SPINLOCK(cpufreq_cpu_data_lock);
- 
- /* internal prototypes */
- static int __cpufreq_governor(struct cpufreq_policy *policy, unsigned int event);
-@@ -67,31 +74,22 @@ struct cpufreq_policy *cpufreq_cpu_get(u
- 		goto err_out;
- 
- 	/* get the cpufreq driver */
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--
--	if (!cpufreq_driver)
--		goto err_out_unlock;
--
--	if (!try_module_get(cpufreq_driver->owner))
--		goto err_out_unlock;
--
-+	spin_lock_irqsave(&cpufreq_cpu_data_lock, flags);
- 
- 	/* get the CPU */
- 	data = cpufreq_cpu_data[cpu];
- 
- 	if (!data)
--		goto err_out_put_module;
-+		goto err_out_unlock;
- 
- 	if (!kobject_get(&data->kobj))
--		goto err_out_put_module;
-+		goto err_out_unlock;
- 
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 	return data;
- 
--err_out_put_module:
--	module_put(cpufreq_driver->owner);
- err_out_unlock:
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- err_out:
- 	return NULL;
- }
-@@ -101,7 +99,6 @@ EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
- void cpufreq_cpu_put(struct cpufreq_policy *data)
- {
- 	kobject_put(&data->kobj);
--	module_put(cpufreq_driver->owner);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
- 
-@@ -241,10 +238,10 @@ void cpufreq_notify_transition(struct cp
- 
- 	BUG_ON(irqs_disabled());
- 
--	freqs->flags = cpufreq_driver->flags;
- 	dprintk("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
- 
-+	/* FIXME: don't we need a lock here? */
- 	policy = cpufreq_cpu_data[freqs->cpu];
- 	switch (state) {
- 
-@@ -253,14 +250,12 @@ void cpufreq_notify_transition(struct cp
- 		 * which is not equal to what the cpufreq core thinks is
- 		 * "old frequency".
- 		 */
--		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
--			if ((policy) && (policy->cpu == freqs->cpu) &&
--			    (policy->cur) && (policy->cur != freqs->old)) {
--				dprintk("Warning: CPU frequency is"
--					" %u, cpufreq assumed %u kHz.\n",
--					freqs->old, policy->cur);
--				freqs->old = policy->cur;
--			}
-+		if ((policy) && (policy->cpu == freqs->cpu) &&
-+		    (policy->cur) && (policy->cur != freqs->old)) {
-+			dprintk("Warning: CPU frequency is"
-+				" %u, cpufreq assumed %u kHz.\n",
-+				freqs->old, policy->cur);
-+			freqs->old = policy->cur;
- 		}
- 		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
- 				CPUFREQ_PRECHANGE, freqs);
-@@ -303,10 +298,7 @@ static int cpufreq_parse_governor (char 
- {
- 	int err = -EINVAL;
- 
--	if (!cpufreq_driver)
--		goto out;
--
--	if (cpufreq_driver->setpolicy) {
-+	if (smart_cpu) {
- 		if (!strnicmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
- 			*policy = CPUFREQ_POLICY_PERFORMANCE;
- 			err = 0;
-@@ -314,7 +306,7 @@ static int cpufreq_parse_governor (char 
- 			*policy = CPUFREQ_POLICY_POWERSAVE;
- 			err = 0;
- 		}
--	} else if (cpufreq_driver->target) {
-+	} else {
- 		struct cpufreq_governor *t;
- 
- 		mutex_lock(&cpufreq_governor_mutex);
-@@ -345,7 +337,6 @@ static int cpufreq_parse_governor (char 
- 
- 		mutex_unlock(&cpufreq_governor_mutex);
- 	}
--  out:
- 	return err;
- }
- 
-@@ -433,6 +424,40 @@ static ssize_t show_scaling_governor (st
- 	return -EINVAL;
- }
- 
-+/**
-+ * show_scaling_governor - show the current policy for the specified CPU
-+ */
-+static ssize_t 
-+show_available_freqs(struct cpufreq_policy *policy, char *buf)
-+{	
-+	int rc = 0;
-+	unsigned int i = 0, freq = 0;
-+	ssize_t count = 0;
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
-+	char **opt_names_list;
-+	int opt_names_list_size;
++endmenu
 +
-+	CPUFREQ_CPU_N_FREQ(freq_n, policy->cpu);
 +
-+	rc = powerop_get_registered_opt_names(opt_names_list,
-+					      &opt_names_list_size);
-+	if (rc != 0)
-+		return rc;
-+
-+	for (i = 0; i < opt_names_list_size; i++) {
-+		if (powerop_get_point(opt_names_list[i], freq_n, &freq))
-+			continue;
-+
-+		if (freq == CPUFREQ_ENTRY_INVALID)
-+			continue;
-+		count += sprintf(&buf[count], "%d ", freq);
-+	}
-+	powerop_put_registered_opt_names(opt_names_list);
-+
-+	count += sprintf(&buf[count], "\n");
-+
-+	return count;
-+}
+ menu "APM (Advanced Power Management) BIOS Support"
+ depends on PM && !X86_VISWS
  
- /**
-  * store_scaling_governor - store policy for the specified CPU
-@@ -472,14 +497,6 @@ static ssize_t store_scaling_governor (s
- }
+diff --git a/arch/i386/kernel/cpu/cpufreq/Kconfig b/arch/i386/kernel/cpu/cpufreq/Kconfig
+index ccc1edf..a1ce5a3 100644
+--- a/arch/i386/kernel/cpu/cpufreq/Kconfig
++++ b/arch/i386/kernel/cpu/cpufreq/Kconfig
+@@ -106,17 +106,11 @@ config X86_GX_SUSPMOD
+ 	 If in doubt, say N.
  
- /**
-- * show_scaling_driver - show the cpufreq driver currently loaded
-- */
--static ssize_t show_scaling_driver (struct cpufreq_policy * policy, char *buf)
--{
--	return scnprintf(buf, CPUFREQ_NAME_LEN, "%s\n", cpufreq_driver->name);
--}
+ config X86_SPEEDSTEP_CENTRINO
+-	tristate "Intel Enhanced SpeedStep"
+-	select CPU_FREQ_TABLE
++	tristate "SpeedStep operatin points registration"
++	depends on POWEROP
+ 	select X86_SPEEDSTEP_CENTRINO_TABLE if (!X86_SPEEDSTEP_CENTRINO_ACPI)
+ 	help
+-	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+-	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs. However,
+-	  you also need to say Y to "Use ACPI tables to decode..." below
+-	  [which might imply enabling ACPI] if you want to use this driver
+-	  on non-Banias CPUs.
 -
--/**
-  * show_scaling_available_governors - show the available CPUfreq governors
-  */
- static ssize_t show_scaling_available_governors (struct cpufreq_policy * policy,
-@@ -488,7 +505,7 @@ static ssize_t show_scaling_available_go
- 	ssize_t i = 0;
- 	struct cpufreq_governor *t;
- 
--	if (!cpufreq_driver->target) {
-+	if (smart_cpu) {
- 		i += sprintf(buf, "performance powersave");
- 		goto out;
- 	}
-@@ -538,12 +555,12 @@ define_one_ro0400(cpuinfo_cur_freq);
- define_one_ro(cpuinfo_min_freq);
- define_one_ro(cpuinfo_max_freq);
- define_one_ro(scaling_available_governors);
--define_one_ro(scaling_driver);
- define_one_ro(scaling_cur_freq);
- define_one_ro(affected_cpus);
- define_one_rw(scaling_min_freq);
- define_one_rw(scaling_max_freq);
- define_one_rw(scaling_governor);
-+define_one_ro(available_freqs);
- 
- static struct attribute * default_attrs[] = {
- 	&cpuinfo_min_freq.attr,
-@@ -552,8 +569,8 @@ static struct attribute * default_attrs[
- 	&scaling_max_freq.attr,
- 	&affected_cpus.attr,
- 	&scaling_governor.attr,
--	&scaling_driver.attr,
- 	&scaling_available_governors.attr,
-+	&available_freqs.attr,
- 	NULL
- };
- 
-@@ -605,6 +622,7 @@ static struct kobj_type ktype_cpufreq = 
- 	.release	= cpufreq_sysfs_release,
- };
- 
-+extern cpumask_t arch_get_dependent_cpus_mask(int cpu);
- 
- /**
-  * cpufreq_add_dev - add a CPU device
-@@ -617,10 +635,10 @@ static int cpufreq_add_dev (struct sys_d
- 	int ret = 0;
- 	struct cpufreq_policy new_policy;
- 	struct cpufreq_policy *policy;
--	struct freq_attr **drv_attr;
- 	struct sys_device *cpu_sys_dev;
- 	unsigned long flags;
- 	unsigned int j;
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
- #ifdef CONFIG_SMP
- 	struct cpufreq_policy *managed_policy;
- #endif
-@@ -630,7 +648,7 @@ #endif
- 
- 	cpufreq_debug_disable_ratelimit();
- 	dprintk("adding CPU %u\n", cpu);
--
-+	
- #ifdef CONFIG_SMP
- 	/* check whether a different CPU already registered this
- 	 * CPU because it is in the same boat. */
-@@ -638,15 +656,9 @@ #ifdef CONFIG_SMP
- 	if (unlikely(policy)) {
- 		cpufreq_cpu_put(policy);
- 		cpufreq_debug_enable_ratelimit();
--		return 0;
-+		return ret;
- 	}
- #endif
--
--	if (!try_module_get(cpufreq_driver->owner)) {
--		ret = -EINVAL;
--		goto module_out;
--	}
--
- 	policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
- 	if (!policy) {
- 		ret = -ENOMEM;
-@@ -654,23 +666,38 @@ #endif
- 	}
- 
- 	policy->cpu = cpu;
--	policy->cpus = cpumask_of_cpu(cpu);
-+
-+	/* 
-+	 * FIXME: this will go away once notifications moved to lower layers 
-+	 * presumably to clock/voltage framework level
-+	 */
-+	policy->cpus = arch_get_dependent_cpus_mask(cpu);
- 
- 	mutex_init(&policy->lock);
- 	mutex_lock(&policy->lock);
- 	init_completion(&policy->kobj_unregister);
- 	INIT_WORK(&policy->update, handle_update, (void *)(long)cpu);
- 
--	/* call driver. From then on the cpufreq must be able
--	 * to accept all calls to ->verify and ->setpolicy for this CPU
--	 */
--	ret = cpufreq_driver->init(policy);
--	if (ret) {
-+	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
-+
-+	/* FIXME: soon this will come from PowerOP Core as well */
-+	policy->cpuinfo.transition_latency = 10000; /* 10uS latency */
-+
-+	CPUFREQ_CPU_N_FREQ(freq_n, cpu);	
-+	ret = powerop_get_point(NULL, freq_n, &policy->cur);
-+	if (ret != 0) {
- 		dprintk("initialization failed\n");
- 		mutex_unlock(&policy->lock);
- 		goto err_out;
- 	}
- 
-+	ret = cpufreq_cpuinfo(policy);
-+	if (ret) {
-+		dprintk("cpuinfo initialization failed\n");
-+		mutex_unlock(&policy->lock);
-+		goto err_out;
-+	}
-+
- #ifdef CONFIG_SMP
- 	for_each_cpu_mask(j, policy->cpus) {
- 		if (cpu == j)
-@@ -681,10 +708,10 @@ #ifdef CONFIG_SMP
- 		 */
- 		managed_policy = cpufreq_cpu_get(j);
- 		if (unlikely(managed_policy)) {
--			spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+			spin_lock_irqsave(&cpufreq_cpu_data_lock, flags);
- 			managed_policy->cpus = policy->cpus;
- 			cpufreq_cpu_data[cpu] = managed_policy;
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 
- 			dprintk("CPU already managed, adding link\n");
- 			sysfs_create_link(&sys_dev->kobj,
-@@ -692,8 +719,16 @@ #ifdef CONFIG_SMP
- 
- 			cpufreq_debug_enable_ratelimit();
- 			mutex_unlock(&policy->lock);
--			ret = 0;
--			goto err_out_driver_exit; /* call driver->exit() */
-+			/* 
-+			 * FIXME: interesting... cpufreq handles one policy 
-+			 * entry for all affected CPUs... it works since 
-+			 * currently same set of freq/voltage pairs are always 
-+			 * registered for all CPUs. That bacomes not the case
-+			 * with PowerOP approach when we can have different
-+			 * set of operating points even for affected CPUs
-+			 */ 
-+			kfree(policy);
-+			return 0;
- 		}
- 	}
- #endif
-@@ -707,23 +742,16 @@ #endif
- 	ret = kobject_register(&policy->kobj);
- 	if (ret) {
- 		mutex_unlock(&policy->lock);
--		goto err_out_driver_exit;
--	}
--	/* set up files for this cpu device */
--	drv_attr = cpufreq_driver->attr;
--	while ((drv_attr) && (*drv_attr)) {
--		sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
--		drv_attr++;
-+		goto err_out;
- 	}
--	if (cpufreq_driver->get)
--		sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
--	if (cpufreq_driver->target)
--		sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
-+	sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
-+
-+	spin_lock_irqsave(&cpufreq_cpu_data_lock, flags);
- 	for_each_cpu_mask(j, policy->cpus)
- 		cpufreq_cpu_data[j] = policy;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 
- 	/* symlink affected CPUs */
- 	for_each_cpu_mask(j, policy->cpus) {
-@@ -750,32 +778,25 @@ #endif
- 		goto err_out_unregister;
- 	}
- 
--	module_put(cpufreq_driver->owner);
- 	dprintk("initialization complete\n");
- 	cpufreq_debug_enable_ratelimit();
- 
- 	return 0;
- 
--
- err_out_unregister:
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	/* FIXME: original CPUFreq bug: sysfs is not cleaned up properly */
-+	spin_lock_irqsave(&cpufreq_cpu_data_lock, flags);
- 	for_each_cpu_mask(j, policy->cpus)
- 		cpufreq_cpu_data[j] = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 
- 	kobject_unregister(&policy->kobj);
- 	wait_for_completion(&policy->kobj_unregister);
- 
--err_out_driver_exit:
--	if (cpufreq_driver->exit)
--		cpufreq_driver->exit(policy);
--
- err_out:
- 	kfree(policy);
- 
- nomem_out:
--	module_put(cpufreq_driver->owner);
--module_out:
- 	cpufreq_debug_enable_ratelimit();
- 	return ret;
- }
-@@ -785,6 +806,11 @@ module_out:
-  * cpufreq_remove_dev - remove a CPU device
-  *
-  * Removes the cpufreq interface for a CPU device.
-+ *
-+ * FIXME: are sysdev driver/device infrastructure for cpus and hotplug 
-+ * notification redundant? It's important question for PowerOP since for a cpu
-+ * [core] suspend (which iiuc now is handled via hotplug] we most probably 
-+ * don't want unregister operating points
-  */
- static int cpufreq_remove_dev (struct sys_device * sys_dev)
- {
-@@ -799,11 +825,11 @@ #endif
- 	cpufreq_debug_disable_ratelimit();
- 	dprintk("unregistering CPU %u\n", cpu);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_cpu_data_lock, flags);
- 	data = cpufreq_cpu_data[cpu];
- 
- 	if (!data) {
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 		cpufreq_debug_enable_ratelimit();
- 		return -EINVAL;
- 	}
-@@ -817,7 +843,7 @@ #ifdef CONFIG_SMP
- 	if (unlikely(cpu != data->cpu)) {
- 		dprintk("removing link\n");
- 		cpu_clear(cpu, data->cpus);
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 		sysfs_remove_link(&sys_dev->kobj, "cpufreq");
- 		cpufreq_cpu_put(data);
- 		cpufreq_debug_enable_ratelimit();
-@@ -825,9 +851,8 @@ #ifdef CONFIG_SMP
- 	}
- #endif
- 
--
- 	if (!kobject_get(&data->kobj)) {
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 		cpufreq_debug_enable_ratelimit();
- 		return -EFAULT;
- 	}
-@@ -842,11 +867,18 @@ #ifdef CONFIG_SMP
- 		for_each_cpu_mask(j, data->cpus) {
- 			if (j == cpu)
- 				continue;
-+			/* 
-+			 * FIXME: hmm, we "remove" affected CPUs once a 
-+			 * "leader" CPU is down...is it hw limitation?
-+			 * why not just cpufreq_cpu_data[cpu] = NULL ?
-+			 * ...so far unregister operating points for affected
-+			 * CPUs
-+			 */   
- 			cpufreq_cpu_data[j] = NULL;
- 		}
- 	}
- 
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- 
- 	if (unlikely(cpus_weight(data->cpus) > 1)) {
- 		for_each_cpu_mask(j, data->cpus) {
-@@ -859,11 +891,11 @@ #ifdef CONFIG_SMP
- 		}
- 	}
- #else
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_cpu_data_lock, flags);
- #endif
- 
- 	mutex_lock(&data->lock);
--	if (cpufreq_driver->target)
-+	if (!smart_cpu)
- 		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
- 	mutex_unlock(&data->lock);
- 
-@@ -879,11 +911,7 @@ #endif
- 	wait_for_completion(&data->kobj_unregister);
- 	dprintk("wait complete\n");
- 
--	if (cpufreq_driver->exit)
--		cpufreq_driver->exit(data);
--
- 	kfree(data);
--
- 	cpufreq_debug_enable_ratelimit();
- 	return 0;
- }
-@@ -944,6 +972,7 @@ unsigned int cpufreq_quick_get(unsigned 
- EXPORT_SYMBOL(cpufreq_quick_get);
- 
- 
-+/* FIXME: REVISIT: this routine returns 0 on error! */
- /**
-  * cpufreq_get - get the current CPU frequency (in kHz)
-  * @cpu: CPU number
-@@ -954,45 +983,52 @@ unsigned int cpufreq_get(unsigned int cp
- {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 	unsigned int ret = 0;
-+	int clock_freq = 0;
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
- 
- 	if (!policy)
- 		return 0;
- 
--	if (!cpufreq_driver->get)
--		goto out;
--
- 	mutex_lock(&policy->lock);
- 
--	ret = cpufreq_driver->get(cpu);
-+	CPUFREQ_CPU_N_FREQ(freq_n, cpu);	
-+	ret = powerop_get_point(NULL, freq_n, &clock_freq);
-+	if (ret != 0) {
-+		mutex_unlock(&policy->lock);
-+		cpufreq_cpu_put(policy);
-+		return 0;	
-+	}
- 
--	if (ret && policy->cur && !(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
--		/* verify no discrepancy between actual and saved value exists */
--		if (unlikely(ret != policy->cur)) {
--			cpufreq_out_of_sync(cpu, policy->cur, ret);
--			schedule_work(&policy->update);
--		}
-+	if (clock_freq && policy->cur && unlikely(clock_freq != policy->cur)) {
-+		/* 
-+		 * verify no discrepancy between actual and saved 
-+		 * value exists 
-+		 */
-+		cpufreq_out_of_sync(cpu, policy->cur, clock_freq);
-+		schedule_work(&policy->update);
- 	}
- 
- 	mutex_unlock(&policy->lock);
- 
--out:
- 	cpufreq_cpu_put(policy);
- 
--	return (ret);
-+	return clock_freq;
- }
- EXPORT_SYMBOL(cpufreq_get);
- 
- 
- /**
-  *	cpufreq_suspend - let the low level driver prepare for suspend
-+ * with PowerOP cpufreq_suspend() handles internal cpufreq core 
-+ * needs only. PM Core handles all low layer needs 
-  */
- 
- static int cpufreq_suspend(struct sys_device * sysdev, pm_message_t pmsg)
- {
- 	int cpu = sysdev->id;
--	unsigned int ret = 0;
- 	unsigned int cur_freq = 0;
- 	struct cpufreq_policy *cpu_policy;
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
- 
- 	dprintk("resuming cpu %u\n", cpu);
- 
-@@ -1014,23 +1050,10 @@ static int cpufreq_suspend(struct sys_de
- 		return 0;
- 	}
- 
--	if (cpufreq_driver->suspend) {
--		ret = cpufreq_driver->suspend(cpu_policy, pmsg);
--		if (ret) {
--			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
--					"step on CPU %u\n", cpu_policy->cpu);
--			cpufreq_cpu_put(cpu_policy);
--			return ret;
--		}
--	}
--
--
--	if (cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)
-+	CPUFREQ_CPU_N_FREQ(freq_n, cpu);
-+	if (powerop_get_point(NULL, freq_n, &cur_freq))
- 		goto out;
- 
--	if (cpufreq_driver->get)
--		cur_freq = cpufreq_driver->get(cpu_policy->cpu);
--
- 	if (!cur_freq || !cpu_policy->cur) {
- 		printk(KERN_ERR "cpufreq: suspend failed to assert current "
- 		       "frequency is what timing core thinks it is.\n");
-@@ -1040,10 +1063,9 @@ static int cpufreq_suspend(struct sys_de
- 	if (unlikely(cur_freq != cpu_policy->cur)) {
- 		struct cpufreq_freqs freqs;
- 
--		if (!(cpufreq_driver->flags & CPUFREQ_PM_NO_WARN))
--			dprintk("Warning: CPU frequency is %u, "
--			       "cpufreq assumed %u kHz.\n",
--			       cur_freq, cpu_policy->cur);
-+		dprintk("Warning: CPU frequency is %u, "
-+		       "cpufreq assumed %u kHz.\n",
-+		       cur_freq, cpu_policy->cur);
- 
- 		freqs.cpu = cpu;
- 		freqs.old = cpu_policy->cur;
-@@ -1063,8 +1085,9 @@ out:
- 
- /**
-  *	cpufreq_resume -  restore proper CPU frequency handling after resume
-- *
-- *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
-+ * 
-+ * with PowerOP cpufreq_resume() handles internal cpufreq core 
-+ * needs only. PM Core handles all low layer needs 
-  *	2.) if ->target and !CPUFREQ_CONST_LOOPS: verify we're in sync
-  *	3.) schedule call cpufreq_update_policy() ASAP as interrupts are
-  *	    restored.
-@@ -1074,6 +1097,9 @@ static int cpufreq_resume(struct sys_dev
- 	int cpu = sysdev->id;
- 	unsigned int ret = 0;
- 	struct cpufreq_policy *cpu_policy;
-+	unsigned int cur_freq = 0;
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
-+
- 
- 	dprintk("resuming cpu %u\n", cpu);
- 
-@@ -1095,50 +1121,34 @@ static int cpufreq_resume(struct sys_dev
- 		return 0;
- 	}
- 
--	if (cpufreq_driver->resume) {
--		ret = cpufreq_driver->resume(cpu_policy);
--		if (ret) {
--			printk(KERN_ERR "cpufreq: resume failed in ->resume "
--					"step on CPU %u\n", cpu_policy->cpu);
--			cpufreq_cpu_put(cpu_policy);
--			return ret;
--		}
--	}
--
--	if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
--		unsigned int cur_freq = 0;
- 
--		if (cpufreq_driver->get)
--			cur_freq = cpufreq_driver->get(cpu_policy->cpu);
--
--		if (!cur_freq || !cpu_policy->cur) {
--			printk(KERN_ERR "cpufreq: resume failed to assert "
--					"current frequency is what timing core "
--					"thinks it is.\n");
--			goto out;
--		}
-+	CPUFREQ_CPU_N_FREQ(freq_n, cpu);
-+	if (powerop_get_point(NULL, freq_n, &cur_freq))
-+		goto out;
- 
--		if (unlikely(cur_freq != cpu_policy->cur)) {
--			struct cpufreq_freqs freqs;
-+	if (!cur_freq || !cpu_policy->cur) {
-+		printk(KERN_ERR "cpufreq: resume failed to assert "
-+				"current frequency is what timing core "
-+				"thinks it is.\n");
-+		goto out;
-+	}
- 
--			if (!(cpufreq_driver->flags & CPUFREQ_PM_NO_WARN))
--				dprintk("Warning: CPU frequency"
--				       "is %u, cpufreq assumed %u kHz.\n",
--				       cur_freq, cpu_policy->cur);
-+	if (unlikely(cur_freq != cpu_policy->cur)) {
-+		struct cpufreq_freqs freqs;
- 
--			freqs.cpu = cpu;
--			freqs.old = cpu_policy->cur;
--			freqs.new = cur_freq;
-+		dprintk("Warning: CPU frequency"
-+		       "is %u, cpufreq assumed %u kHz.\n",
-+		       cur_freq, cpu_policy->cur);
- 
--			blocking_notifier_call_chain(
--					&cpufreq_transition_notifier_list,
--					CPUFREQ_RESUMECHANGE, &freqs);
--			adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
-+		freqs.cpu = cpu;
-+		freqs.old = cpu_policy->cur;
-+		freqs.new = cur_freq;
- 
--			cpu_policy->cur = cur_freq;
--		}
-+		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+					     CPUFREQ_RESUMECHANGE, &freqs);
-+		adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
-+		cpu_policy->cur = cur_freq;
- 	}
--
- out:
- 	schedule_work(&cpu_policy->update);
- 	cpufreq_cpu_put(cpu_policy);
-@@ -1238,8 +1248,9 @@ int __cpufreq_driver_target(struct cpufr
- 
- 	dprintk("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
- 		target_freq, relation);
--	if (cpu_online(policy->cpu) && cpufreq_driver->target)
--		retval = cpufreq_driver->target(policy, target_freq, relation);
-+	if (cpu_online(policy->cpu))
-+		retval = cpufreq_target(policy, target_freq, 
-+							relation);
- 
- 	return retval;
- }
-@@ -1377,7 +1388,7 @@ static int __cpufreq_set_policy(struct c
- 	}
- 
- 	/* verify the cpu speed can be set within this limit */
--	ret = cpufreq_driver->verify(policy);
-+	ret = cpufreq_verify(policy);
- 	if (ret)
- 		goto error_out;
- 
-@@ -1391,7 +1402,7 @@ static int __cpufreq_set_policy(struct c
- 
- 	/* verify the cpu speed can be set within this limit,
- 	   which might be different to the first one */
--	ret = cpufreq_driver->verify(policy);
-+	ret = cpufreq_verify(policy);
- 	if (ret)
- 		goto error_out;
- 
-@@ -1404,10 +1415,10 @@ static int __cpufreq_set_policy(struct c
- 
- 	dprintk("new min and max freqs are %u - %u kHz\n", data->min, data->max);
- 
--	if (cpufreq_driver->setpolicy) {
-+	if (smart_cpu) {
- 		data->policy = policy->policy;
- 		dprintk("setting range\n");
--		ret = cpufreq_driver->setpolicy(policy);
-+		ret = cpufreq_setpolicy(policy);
- 	} else {
- 		if (policy->governor != data->governor) {
- 			/* save old, working values */
-@@ -1492,6 +1503,7 @@ int cpufreq_update_policy(unsigned int c
- {
- 	struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
- 	struct cpufreq_policy policy;
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
- 	int ret = 0;
- 
- 	if (!data)
-@@ -1509,26 +1521,35 @@ int cpufreq_update_policy(unsigned int c
- 
- 	/* BIOS might change freq behind our back
- 	  -> ask driver for current freq and notify governors about a change */
--	if (cpufreq_driver->get) {
--		policy.cur = cpufreq_driver->get(cpu);
--		if (!data->cur) {
--			dprintk("Driver did not initialize current freq");
--			data->cur = policy.cur;
--		} else {
--			if (data->cur != policy.cur)
--				cpufreq_out_of_sync(cpu, data->cur, policy.cur);
--		}
-+	CPUFREQ_CPU_N_FREQ(freq_n, cpu);
-+	ret = powerop_get_point(NULL, freq_n, &policy.cur);
-+	if (ret != 0)
-+		goto out_failed;
-+
-+	if (!data->cur) {
-+		dprintk("Driver did not initialize current freq");
-+		data->cur = policy.cur;
-+	} else {
-+		if (data->cur != policy.cur)
-+			cpufreq_out_of_sync(cpu, data->cur, policy.cur);
- 	}
- 
- 	ret = __cpufreq_set_policy(data, &policy);
- 
-+out_failed:
- 	mutex_unlock(&data->lock);
- 	unlock_cpu_hotplug();
- 	cpufreq_cpu_put(data);
- 	return ret;
- }
- EXPORT_SYMBOL(cpufreq_update_policy);
--
-+/* 
-+ * FIXME: why do we need separate hotplug callback and sysdev_driver->add() 
-+ * routine is not enough? Doesn't acpi call arch_register_cpu() and trigger
-+ * sysdev_driver->add() in case of ACPI is enabled (CONFIG_ACPI_HOTPLUG_CPU)?
-+ * Seems hotplug code does not ever (indirectly) call register_cpu() from
-+ * drivers/base/cpu.c . Why? Am I missing something?  
-+ */ 
- #ifdef CONFIG_HOTPLUG_CPU
- static int cpufreq_cpu_callback(struct notifier_block *nfb,
- 					unsigned long action, void *hcpu)
-@@ -1551,10 +1572,11 @@ static int cpufreq_cpu_callback(struct n
- 			 * hardware-managed P-State to switch other related
- 			 * threads to min or higher speeds if possible.
- 			 */
-+			/* FIXME: no any locking here? */
- 			policy = cpufreq_cpu_data[cpu];
- 			if (policy) {
--				cpufreq_driver_target(policy, policy->min,
--						CPUFREQ_RELATION_H);
-+				cpufreq_target(policy, policy->min,
-+					       CPUFREQ_RELATION_H);
- 			}
- 			break;
- 		case CPU_DEAD:
-@@ -1571,6 +1593,49 @@ static struct notifier_block __cpuinitda
- };
- #endif /* CONFIG_HOTPLUG_CPU */
- 
-+static int 
-+cpufreq_powerop_callback(struct notifier_block *nfb, unsigned long action, 
-+			 void *name)
-+{
-+	char freq_n[CPUFREQ_FREQ_STR_SIZE];
-+	int freq = 0, i, rc = 0;
-+	struct cpufreq_policy *policy;
-+
-+	switch (action) {
-+		case POWEROP_REGISTER_EVENT:
-+			for (i = 0; i < NR_CPUS; i++) {
-+				CPUFREQ_CPU_N_FREQ(freq_n, i);
-+				rc = powerop_get_point(name, freq_n, &freq);
-+				if (rc != 0)
-+					break;
-+				if (freq != -1) {
-+					policy = cpufreq_cpu_get(i);
-+					if (freq < policy->min)
-+						policy->min = freq;
-+					if (freq > policy->max)
-+						policy->max = freq;
-+					if (policy->max > 
-+					    policy->cpuinfo.max_freq)
-+						policy->cpuinfo.max_freq = 
-+								   policy->max;
-+					if (policy->min < 
-+					    policy->cpuinfo.min_freq)
-+						policy->cpuinfo.min_freq =
-+								   policy->min;
-+					schedule_work(&policy->update);
-+					cpufreq_cpu_put(policy);
-+				}
-+			}
-+			break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block cpufreq_powerop_notifier =
-+{
-+    .notifier_call = cpufreq_powerop_callback,
-+};
-+
- /*********************************************************************
-  *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
-  *********************************************************************/
-@@ -1585,89 +1650,36 @@ #endif /* CONFIG_HOTPLUG_CPU */
-  * (and isn't unregistered in the meantime).
-  *
-  */
--int cpufreq_register_driver(struct cpufreq_driver *driver_data)
-+int cpufreq_core_init(void)
- {
--	unsigned long flags;
- 	int ret;
- 
--	if (!driver_data || !driver_data->verify || !driver_data->init ||
--	    ((!driver_data->setpolicy) && (!driver_data->target)))
--		return -EINVAL;
--
--	dprintk("trying to register driver %s\n", driver_data->name);
--
--	if (driver_data->setpolicy)
--		driver_data->flags |= CPUFREQ_CONST_LOOPS;
--
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--	if (cpufreq_driver) {
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
--		return -EBUSY;
--	}
--	cpufreq_driver = driver_data;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
- 	ret = sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
-+	if (ret != 0)
-+		return ret;
- 
--	if ((!ret) && !(cpufreq_driver->flags & CPUFREQ_STICKY)) {
--		int i;
--		ret = -ENODEV;
--
--		/* check for at least one working CPU */
--		for (i=0; i<NR_CPUS; i++)
--			if (cpufreq_cpu_data[i])
--				ret = 0;
--
--		/* if all ->init() calls failed, unregister */
--		if (ret) {
--			dprintk("no CPU initialized for driver %s\n", driver_data->name);
--			sysdev_driver_unregister(&cpu_sysdev_class, &cpufreq_sysdev_driver);
--
--			spin_lock_irqsave(&cpufreq_driver_lock, flags);
--			cpufreq_driver = NULL;
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
--		}
--	}
--
--	if (!ret) {
--		register_hotcpu_notifier(&cpufreq_cpu_notifier);
--		dprintk("driver %s up and running\n", driver_data->name);
--		cpufreq_debug_enable_ratelimit();
--	}
-+	powerop_register_notifier(&cpufreq_powerop_notifier);
-+	register_hotcpu_notifier(&cpufreq_cpu_notifier);
-+	dprintk("driver %s up and running\n", driver_data->name);
-+	cpufreq_debug_enable_ratelimit();
- 
- 	return (ret);
- }
--EXPORT_SYMBOL_GPL(cpufreq_register_driver);
--
- 
--/**
-- * cpufreq_unregister_driver - unregister the current CPUFreq driver
-- *
-- *    Unregister the current CPUFreq driver. Only call this if you have
-- * the right to do so, i.e. if you have succeeded in initialising before!
-- * Returns zero if successful, and -EINVAL if the cpufreq_driver is
-- * currently not initialised.
-- */
--int cpufreq_unregister_driver(struct cpufreq_driver *driver)
-+void
-+cpufreq_core_exit(void)
- {
--	unsigned long flags;
--
- 	cpufreq_debug_disable_ratelimit();
--
--	if (!cpufreq_driver || (driver != cpufreq_driver)) {
--		cpufreq_debug_enable_ratelimit();
--		return -EINVAL;
--	}
--
- 	dprintk("unregistering driver %s\n", driver->name);
- 
-+	powerop_unregister_notifier(&cpufreq_powerop_notifier);
- 	sysdev_driver_unregister(&cpu_sysdev_class, &cpufreq_sysdev_driver);
- 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
-+}
-+module_init(cpufreq_core_init);
-+module_exit(cpufreq_core_exit);
-+
-+module_param(smart_cpu, uint, 0644);
-+MODULE_PARM_DESC(smart_cpu, "Define if cpu handles frequency intervals insted oftarget frequencies");
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--	cpufreq_driver = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	return 0;
--}
--EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
-diff --git a/drivers/cpufreq/freq_helpers.c b/drivers/cpufreq/freq_helpers.c
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
++	  Opeatin points registration module for SpeedStep Centrino
+ 
+ 	  If in doubt, say N.
+ 
+diff --git a/arch/i386/kernel/cpu/cpufreq/Makefile b/arch/i386/kernel/cpu/cpufreq/Makefile
+index 2e894f1..62753f6 100644
+--- a/arch/i386/kernel/cpu/cpufreq/Makefile
++++ b/arch/i386/kernel/cpu/cpufreq/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_X86_LONGRUN)		+= longrun.o 
+ obj-$(CONFIG_X86_GX_SUSPMOD)		+= gx-suspmod.o
+ obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= speedstep-ich.o
+ obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
++obj-$(CONFIG_PM_CORE)			+= speedstep-centrino-pm_core.o
+ obj-$(CONFIG_X86_SPEEDSTEP_LIB)		+= speedstep-lib.o
+ obj-$(CONFIG_X86_SPEEDSTEP_SMI)		+= speedstep-smi.o
+ obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
+diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino-pm_core.c b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino-pm_core.c
 new file mode 100644
-index 0000000..3e631f3
+index 0000000..8ed9008
 --- /dev/null
-+++ b/drivers/cpufreq/freq_helpers.c
-@@ -0,0 +1,317 @@
++++ b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino-pm_core.c
+@@ -0,0 +1,644 @@
 +/*
-+ * linux/drivers/cpufreq/freq_heplers.c
-+ * CPUFreq Core helpers
++ * PM Core driver for Enhanced SpeedStep, as found in Intel's Pentium
++ * M (part of the Centrino chipset).
 + *
-+ * Modified for PowerOP by Eugeny S. Mints <eugeny@nomadgs.com>
++ * Since the original Pentium M, most new Intel CPUs support Enhanced
++ * SpeedStep.
++ *
++ * Despite the "SpeedStep" in the name, this is almost entirely unlike
++ * traditional SpeedStep.
++ *
++ * Modelled on speedstep.c
++ *
++ * Author: Eugeny S. Mints <eugeny@nomadgs.com>
 + *
 + * Copyright (C) 2006 Nomad Global Solutions, Inc. This file is licensed under
 + * the terms of the GNU General Public License version 2. This program
@@ -1057,711 +126,1649 @@ index 0000000..3e631f3
 + * or implied.
 + *
 + * Based on code by
-+ * Copyright (C) 2002 - 2003 Dominik Brodowski
++ * Copyright (C) 2003 Jeremy Fitzhardinge <jeremy@goop.org>
 + */
-+
 +#include <linux/kernel.h>
 +#include <linux/module.h>
 +#include <linux/init.h>
-+#include <linux/cpufreq.h>
++#include <linux/sched.h>	/* current */
++#include <linux/delay.h>
++#include <linux/compiler.h>
 +#include <linux/powerop.h>
-+#include "freq_helpers.h" 
 +
-+#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_CORE, "freq-table", msg)
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++#include <linux/acpi.h>
++#include <acpi/processor.h>
++#endif
 +
-+/*********************************************************************
-+ *                     CPUFREQ HELPERS                               *
-+ *********************************************************************/
++#include <asm/msr.h>
++#include <asm/processor.h>
++#include <asm/cpufeature.h>
++#include <asm/pm_core.h>
 +
-+int cpufreq_cpuinfo(struct cpufreq_policy *policy)
++static cpumask_t acpi_get_shared_mask(int cpu);
++
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++struct acpi_processor_performance *acpi_perf_data[NR_CPUS];
++#endif
++
++static long 
++get_vtg(int cpu)
 +{
-+	int          rc = 0;
-+	unsigned int min_freq = ~0;
-+	unsigned int max_freq = 0;
-+	unsigned int i;
-+	unsigned int freq;
-+	char         freq_n[CPUFREQ_FREQ_STR_SIZE];
-+	char **opt_names_list = NULL;
-+	int opt_names_list_size = 0;
++	int v = 0;
++	unsigned l, h;
++	cpumask_t saved_mask;
 +
-+	/* 
-+	 * generate parameter name we are looking for. For CPU N name is
-+	 * "freqN"
-+	 */
-+	CPUFREQ_CPU_N_FREQ(freq_n, policy->cpu);
-+
-+	rc = powerop_get_registered_opt_names(opt_names_list,
-+					      &opt_names_list_size);
-+	if (rc != 0)
-+		return rc;
-+
-+	for (i = 0; i < opt_names_list_size; i++) {
-+		rc = powerop_get_point(opt_names_list[i], freq_n, &freq);
-+		if (rc != 0) {
-+			powerop_put_registered_opt_names(opt_names_list);
-+			return rc;
-+		}
-+	
-+		if (freq == CPUFREQ_ENTRY_INVALID) {
-+			dprintk("table entry %u is invalid, skipping\n", i);
-+			continue;
-+		}
-+	
-+		dprintk("point %s: %u kHz\n", opt_names_list[i], freq);
-+		if (freq < min_freq)
-+			min_freq = freq;
-+		if (freq > max_freq)
-+			max_freq = freq;
-+	}
-+	powerop_put_registered_opt_names(opt_names_list);
-+
-+	policy->min = policy->cpuinfo.min_freq = min_freq;
-+	policy->max = policy->cpuinfo.max_freq = max_freq;
-+
-+	if (policy->min == ~0)
-+		return -EINVAL;
-+	else
++	saved_mask = current->cpus_allowed;
++	set_cpus_allowed(current, cpumask_of_cpu(cpu));
++	if (smp_processor_id() != cpu)
 +		return 0;
++
++	rdmsr(MSR_IA32_PERF_STATUS, l, h);
++	v = (l & 0xff) * 16 + 700;
++
++	set_cpus_allowed(current, saved_mask);
++
++	return v;
++}
++
++/* Return the current CPU frequency in kHz 
++ * FIXME: 0 on return means error but the rc almost never is checked 
++ * against 0
++ * FIXME: due to direct calculation from msr this may work not for all cases
++ */ 
++static unsigned int 
++get_freq(int cpu)
++{
++	unsigned l, h;
++	unsigned clock_freq;
++	cpumask_t saved_mask;
++
++	saved_mask = current->cpus_allowed;
++	set_cpus_allowed(current, cpumask_of_cpu(cpu));
++	if (smp_processor_id() != cpu)
++		return 0;
++
++	rdmsr(MSR_IA32_PERF_STATUS, l, h);
++	clock_freq = (l >> 8) & 0xff;
++
++	if (unlikely(clock_freq == 0)) {
++		/*
++		 * On some CPUs, we can see transient MSR values (which are
++		 * not present in _PSS), while CPU is doing some automatic
++		 * P-state transition (like TM2). Get the last freq set 
++		 * in PERF_CTL.
++		 */
++		rdmsr(MSR_IA32_PERF_CTL, l, h);
++		clock_freq = (l >> 8) & 0xff;
++	}
++
++	set_cpus_allowed(current, saved_mask);
++
++	return clock_freq * 100 * 1000;
 +}
 +
 +
-+int cpufreq_verify(struct cpufreq_policy *policy)
++/* FIXME: verification is incomplete */
++static int
++sc_pm_core_verify_opt(struct pm_core_point *opt)
 +{
-+	int          rc = -EINVAL;
-+	unsigned int next_larger = ~0;
-+	unsigned int i;
-+	unsigned int count = 0;
-+	unsigned int freq;
-+	char         freq_n[CPUFREQ_FREQ_STR_SIZE];
-+	char **opt_names_list = NULL;
-+	int opt_names_list_size = 0;
++	/* 
++	 * Let's do some upfront error checking. If we fail any of these, 
++	 * then the whole operating point is suspect and therefore invalid.
++	 *
++	 * Vrification includes but is not limited to checking that passed
++	 * parameters are withing ranges.
++	 */
++	if (opt == NULL)
++		return -EINVAL;
 +
++	/* TODO: implement all necessary checking */
 +
-+	CPUFREQ_CPU_N_FREQ(freq_n, policy->cpu);
++	return 0;
++}
 +
-+	dprintk("request for verification of policy (%u - %u kHz) for cpu %u\n", policy->min, policy->max, policy->cpu);
++#define PWR_PARAM_SET	1
++#define PWR_PARAM_GET	2
 +
-+	if (!cpu_online(policy->cpu))
-+		return rc;
++/* 
++ * FIXME: very temporary implementation, just to prove the concept !! 
++ */
++static int 
++process_pwr_param(struct pm_core_point *opt, int op, char *param_name,
++		  int va_arg)
++{
++	int cpu = 0;
++	char buf[8];
 +
-+	cpufreq_verify_within_limits(policy,
-+				     policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
++	for (cpu = 0; cpu < NR_CPUS; cpu++)
++	{
++		sprintf(buf, "v%d", cpu);
 +
-+	rc = powerop_get_registered_opt_names(opt_names_list, 
-+					      &opt_names_list_size);
-+	if (rc != 0)
-+		return rc;
-+
-+	for (i = 0; i < opt_names_list_size; i++) {
-+		rc = powerop_get_point(opt_names_list[i], freq_n, &freq);
-+		if (rc != 0) {
-+			powerop_put_registered_opt_names(opt_names_list);
-+			return rc;
++		if (strcmp(param_name, buf) == 0) {
++			if (op == PWR_PARAM_SET)
++				opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_V] = 
++									va_arg;
++			else if (opt != NULL)
++				*(int *)va_arg = 
++				     opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_V];
++			else if ((*(int *)va_arg = get_vtg(cpu)) <= 0)
++				return -EINVAL;
++			return 0;
 +		}
 +
-+		if (freq == CPUFREQ_ENTRY_INVALID)
-+			continue;
-+		if ((freq >= policy->min) && (freq <= policy->max))
-+			count++;
-+		else if ((next_larger > freq) && (freq > policy->max))
-+			next_larger = freq;
++		sprintf(buf, "freq%d", cpu);
++
++		if (strcmp(param_name, buf) == 0) {
++			if (op == PWR_PARAM_SET)
++				opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_FREQ] = 
++									va_arg;
++			else if (opt != NULL)
++				*(int *)va_arg = 
++				  opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_FREQ];
++			else if ((*(int *)va_arg = get_freq(cpu)) <= 0)
++				return -EINVAL;
++
++			return 0;
++		}
 +	}
 +
-+	powerop_put_registered_opt_names(opt_names_list);
++	return -EINVAL;
++}
 +
-+	if (!count)
-+		policy->max = next_larger;
++#define PWR_PARAM_MAX_LENGTH	20
++static void *
++sc_pm_create_point(const char *pwr_params, va_list args)
++{
++	struct pm_core_point *opt;
++	char buf[PWR_PARAM_MAX_LENGTH + 1];
++	int i = 0;
++	int err;
 +
-+	cpufreq_verify_within_limits(policy,
-+				     policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
++	opt = kmalloc(sizeof(struct pm_core_point), GFP_KERNEL);
++	if (opt == NULL)
++		return NULL;
++	/* 
++	 * PM Core puts '-1' for all power parameters which are 
++	 * not listed explicitly
++	 */
++	I386_PM_CORE_INIT_OPT(opt);
 +
-+	dprintk("verification lead to (%u - %u kHz) for cpu %u\n", policy->min, policy->max, policy->cpu);
++	i = 0;
++	while (*pwr_params) {
++		if (*pwr_params != ' ') {
++			buf[i] = *pwr_params++;
++			i++;
++		}
++		else {
++			buf[i] = 0;
++			err = process_pwr_param(opt, PWR_PARAM_SET, buf, 
++			                        (int)va_arg(args, int));
++			if (err != 0)
++				goto out;
++			i = 0;
++		}
++	}
++
++	return (void *)opt;
++out:
++	kfree(opt);
++	return NULL;
++}
++
++static int 
++sc_pm_core_set_opt(void *md_opt)
++{
++	int rc = 0, i = 0;
++	struct pm_core_point *opt = (struct pm_core_point *)md_opt;
++	unsigned int	msr, oldmsr = 0, h = 0, cpu = 0;
++	cpumask_t		online_policy_cpus;
++	cpumask_t		saved_mask;
++	cpumask_t		set_mask, cpus;
++	cpumask_t		covered_cpus;
++	int			retval = 0;
++	unsigned int		j, first_cpu;
++	
++	rc = sc_pm_core_verify_opt(opt);
++	if (rc != 0)
++		return rc;
++	/* 
++	 * here current i386 pm core implenetation relies on the fact that 
++	 * nowadays all operation points have the following view: 
++	 * { -1, -1, ..., vtlgN, freqN, -1, -1 }
++	 * once the assumption is not true implementation needs to be adjusted
++	 * properly
++	 */
++	for (i = 0; i < NR_CPUS; i++)
++		if (opt->opt[i].pwpr[_I386_PM_CORE_POINT_FREQ] != -1) {
++			cpu = i;
++			break;
++		}	
++
++	cpus = acpi_get_shared_mask(i);
++	
++#ifdef CONFIG_HOTPLUG_CPU
++	/* cpufreq holds the hotplug lock, so we are safe from here on */
++	cpus_and(online_policy_cpus, cpu_online_map, cpus);
++#else
++	online_policy_cpus = cpus;
++#endif
++
++	saved_mask = current->cpus_allowed;
++	first_cpu = 1;
++	cpus_clear(covered_cpus);
++	for_each_cpu_mask(j, online_policy_cpus) {
++		/*
++		 * Support for SMP systems.
++		 * Make sure we are running on CPU that wants to change freq
++		 */
++		cpus_clear(set_mask);
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++		if (acpi_perf_data[cpu]->shared_type == 
++						     DOMAIN_COORD_TYPE_SW_ANY)
++			cpus_or(set_mask, set_mask, online_policy_cpus);
++		else
++#endif
++			cpu_set(j, set_mask);
++
++		set_cpus_allowed(current, set_mask);
++		if (unlikely(!cpu_isset(smp_processor_id(), set_mask))) {
++			printk("couldn't limit to CPUs in this domain\n");
++			retval = -EAGAIN;
++			if (first_cpu) {
++				/* We haven't started the transition yet. */
++				goto migrate_end;
++			}
++			break;
++		}
++
++		msr = 
++		  (((opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_FREQ])/100) << 8) | 
++		   ((opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_V] - 700) / 16);
++
++		if (first_cpu) {
++			rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++			if (msr == (oldmsr & 0xffff)) {
++				printk("no change needed - msr was and needs "
++					"to be %x\n", oldmsr);
++				retval = 0;
++				goto migrate_end;
++			}
++
++			first_cpu = 0;
++			/* all but 16 LSB are reserved, treat them with care */
++			oldmsr &= ~0xffff;
++			msr &= 0xffff;
++			oldmsr |= msr;
++		}
++
++		wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++		if (acpi_perf_data[cpu]->shared_type == 
++						      DOMAIN_COORD_TYPE_SW_ANY)
++			break;
++#endif
++		cpu_set(j, covered_cpus);
++	}
++
++	if (unlikely(retval)) {
++		/*
++		 * We have failed halfway through the frequency change.
++		 * We have sent callbacks to policy->cpus and
++		 * MSRs have already been written on coverd_cpus.
++		 * Best effort undo..
++		 */
++
++		if (!cpus_empty(covered_cpus)) {
++			for_each_cpu_mask(j, covered_cpus) {
++				set_cpus_allowed(current, cpumask_of_cpu(j));
++				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++			}
++		}
++	}
++
++migrate_end:
++	set_cpus_allowed(current, saved_mask);
++
++	return retval;
++}
++
++static int
++sc_pm_core_get_opt(void *md_opt, const char *pwr_params, va_list args)
++{
++	int err = 0;
++	int i = 0;
++	struct pm_core_point *opt = (struct pm_core_point *)md_opt;
++	char buf[PWR_PARAM_MAX_LENGTH + 1];
++
++	i = 0;
++	while (*pwr_params) {
++		if (*pwr_params != ' ') {
++			buf[i] = *pwr_params++;
++			i++;
++		}
++		else {
++			buf[i] = 0;
++			err = process_pwr_param(opt, PWR_PARAM_GET, buf, 
++			                        (int)va_arg(args, int));
++			if (err != 0)
++				return err;
++			i = 0;
++		}
++	}
 +
 +	return 0;
 +}
 +
 +
-+int 
-+cpufreq_target(struct cpufreq_policy *policy,
-+	       unsigned int target_freq,
-+	       unsigned int relation)
++static struct powerop_driver sc_pm_core_driver = {
++	.name                   = "speedstep-centrino pm core driver",
++	.create_point           = sc_pm_create_point,
++	.get_point              = sc_pm_core_get_opt,
++	.set_point              = sc_pm_core_set_opt, 
++};
++
++/* 
++ * ACPI auxiliary routines are needed since PM Core needs access to 
++ * p->shared_cpu_map at set point time
++ * FIXME: all auxiliary routine might be elsewhere, especially 
++ * arch_get_shared_mask_on_cpu()
++ */
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++static cpumask_t 
++acpi_get_shared_mask(int cpu)
 +{
-+	/* FIXME: hide 3 fields in a structure */
-+	int           rc = -EINVAL;
-+	unsigned int  optimal = 0;
-+	unsigned int  optimal_found = 0;
-+	char         *optimal_name = NULL;
-+	unsigned int  suboptimal = 0;
-+	unsigned int  suboptimal_found = 0;
-+	char         *suboptimal_name = NULL;
-+	unsigned int  i, j;
-+	char         **opt_names_list = NULL;
-+	unsigned int  opt_names_list_size = 0;
-+	char         *target_opt_name;
-+	char          freq_n[CPUFREQ_FREQ_STR_SIZE];
-+	struct cpufreq_freqs freqs;
-+	cpumask_t     online_policy_cpus;
++	struct acpi_processor_performance       *p;
 +
-+	dprintk("request for target %u kHz (relation: %u) for cpu %u\n", target_freq, relation, policy->cpu);
++	p = acpi_perf_data[cpu];
++	if (p->shared_type == DOMAIN_COORD_TYPE_SW_ALL||
++	    p->shared_type == DOMAIN_COORD_TYPE_SW_ANY)
++		return p->shared_cpu_map;
++	else
++		return cpumask_of_cpu(cpu); 
++}
 +
-+	CPUFREQ_CPU_N_FREQ(freq_n, policy->cpu);
++/*
++ * cpu_early_init_acpi - Do the preregistering with ACPI P-States
++ * library
++ *
++ * Before doing the actual init, we need to do _PSD related setup whenever
++ * supported by the BIOS. These are handled by this early_init routine.
++ */
++static int 
++acpi_early_init(void)
++{
++	unsigned int	i, j;
++	struct acpi_processor_performance	*data;
 +
-+	switch (relation) {
-+	case CPUFREQ_RELATION_H:
-+		suboptimal = ~0;
-+		break;
-+	case CPUFREQ_RELATION_L:
-+		optimal = ~0;
-+		break;
++	for_each_possible_cpu(i) {
++		data = kzalloc(sizeof(struct acpi_processor_performance), 
++				GFP_KERNEL);
++		if (!data) {
++			for_each_possible_cpu(j) {
++				kfree(acpi_perf_data[j]);
++				acpi_perf_data[j] = NULL;
++			}
++			return -ENOMEM;
++		}
++		acpi_perf_data[i] = data;
 +	}
 +
-+	if (!cpu_online(policy->cpu))
-+		return rc;
++	acpi_processor_preregister_performance(acpi_perf_data);
++	return 0;
++}
 +
-+	if (powerop_get_registered_opt_names(opt_names_list,
-+					     &opt_names_list_size))
-+		return rc;
-+
-+	for (i = 0; i < opt_names_list_size; i++) {
-+		unsigned int freq;
-+
-+		rc = powerop_get_point(opt_names_list[i], freq_n, &freq);
-+		if (rc != 0) {
-+			powerop_put_registered_opt_names(opt_names_list);
-+			return rc;
-+		}
-+
-+		if (freq == CPUFREQ_ENTRY_INVALID)
-+			continue;
-+		if ((freq < policy->min) || (freq > policy->max))
-+			continue;
-+		switch(relation) {
-+		case CPUFREQ_RELATION_H:
-+			if (freq <= target_freq) {
-+				if (freq >= optimal) {
-+					optimal = freq;
-+					optimal_found = 1;
-+					optimal_name = opt_names_list[i];
-+				}
-+			} else {
-+				if (freq <= suboptimal) {
-+					suboptimal = freq;
-+					suboptimal_found = 1;
-+					suboptimal_name = opt_names_list[i];
-+				}
-+			}
-+			break;
-+		case CPUFREQ_RELATION_L:
-+			if (freq >= target_freq) {
-+				if (freq <= optimal) {
-+					optimal = freq;
-+					optimal_found = 1;
-+					optimal_name = opt_names_list[i];
-+				}
-+			} else {
-+				if (freq >= suboptimal) {
-+					suboptimal = freq;
-+					suboptimal_found = 1;
-+					suboptimal_name = opt_names_list[i];
-+				}
-+			}
-+			break;
-+		}
-+	}
-+	powerop_put_registered_opt_names(opt_names_list);
-+
-+	if (!optimal_found) {
-+		if (!suboptimal_found)
-+			return -EINVAL;
-+		target_opt_name = suboptimal_name;
-+	} else
-+		target_opt_name = optimal_name;
-+
-+	rc = powerop_get_point(NULL, freq_n, &freqs.old);
-+	if (rc != 0)
-+		return rc;
-+
-+	rc = powerop_get_point(target_opt_name, freq_n, &freqs.new); 
-+	if (rc != 0)
-+		return rc;
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	/* cpufreq holds the hotplug lock, so we are safe from here on */
-+	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
-+#else
-+	online_policy_cpus = policy->cpus;
++static int 
++acpi_cpu_data_init(int cpu)
++{
++	int result = 0;
++	struct cpuinfo_x86 *x86_cpu = &cpu_data[cpu];
++	int i;
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++	struct acpi_processor_performance *p;
 +#endif
 +
-+	for_each_cpu_mask(j, online_policy_cpus) {
-+		freqs.cpu = j;
-+		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++	/* Only Intel makes Enhanced Speedstep-capable CPUs */
++	if (x86_cpu->x86_vendor != X86_VENDOR_INTEL ||
++	    !cpu_has(x86_cpu, X86_FEATURE_EST))
++		return -ENODEV;
++
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++	p = acpi_perf_data[cpu];
++
++	/* register with ACPI core */
++	if (acpi_processor_register_performance(p, cpu)) {
++		printk("obtaining ACPI data failed\n");
++		return -EIO;
 +	}
 +
-+	rc = powerop_set_point(target_opt_name);
-+	if (rc != 0) {
-+		int tmp;
-+		tmp = freqs.new;
-+		freqs.new = freqs.old;
-+		freqs.old = tmp;
-+		for_each_cpu_mask(j, online_policy_cpus) {
-+			freqs.cpu = j;
-+			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++	/* verify the acpi_data */
++	if (p->state_count <= 1) {
++		printk("No P-States\n");
++		result = -ENODEV;
++		goto err_unreg;
++	}
++
++	if ((p->control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
++	    (p->status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
++		printk("Invalid control/status registers (%x - %x)\n",
++			p->control_register.space_id, 
++			p->status_register.space_id);
++		result = -EIO;
++		goto err_unreg;
++	}
++
++	for (i = 0; i < p->state_count; i++) {
++		if (p->states[i].control != p->states[i].status) {
++			printk("Different control (%llu) and status values"
++				" (%llu)\n",
++				p->states[i].control, p->states[i].status);
++			result = -EINVAL;
++			goto err_unreg;
 +		}
-+	} else {
-+		for_each_cpu_mask(j, online_policy_cpus) {
-+			freqs.cpu = j;
-+			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++
++		if (!p->states[i].core_frequency) {
++			printk("Zero core frequency for state %u\n", i);
++			result = -EINVAL;
++			goto err_unreg;
++		}
++
++		if (p->states[i].core_frequency > p->states[0].core_frequency) {
++			printk("P%u has larger frequency (%llu) than P0 "
++				"(%llu), skipping\n", i,
++				p->states[i].core_frequency, 
++				p->states[0].core_frequency);
++			p->states[i].core_frequency = 0;
++			continue;
 +		}
 +	}
++
++	return 0;
++
++err_unreg:
++	acpi_processor_unregister_performance(p, cpu);
++	printk("invalid ACPI data\n");
++#endif	
++	return result;
++}
++#else
++static inline int acpi_early_init(void) { return 0; }
++static inline int acpi_cpu_data_init(int cpu) { return 0; }
++static cpumask_t acpi_get_shared_mask(int cpu) { return cpumask_of_cpu(cpu); }
++#endif
++
++cpumask_t 
++arch_get_dependent_cpus_mask(int cpu)
++{
++	return acpi_get_shared_mask(cpu);
++}
++EXPORT_SYMBOL_GPL(arch_get_dependent_cpus_mask);
++
++static int 
++sc_pm_core_add_dev(struct sys_device *sys_dev)
++{
++	unsigned int cpu = sys_dev->id;
++	struct cpuinfo_x86 *x86_cpu = &cpu_data[cpu];
++	int rc = 0, l, h;
++	cpumask_t saved_mask;
++
++	if ((x86_cpu->x86_vendor != X86_VENDOR_INTEL) || 
++	    !cpu_has(x86_cpu, X86_FEATURE_EST))
++		return -ENODEV;
++
++	/* 
++	 * Check to see if Enhanced SpeedStep is enabled, and try to
++	 * enable it if not. 
++	 */
++	saved_mask = current->cpus_allowed;
++	set_cpus_allowed(current, cpumask_of_cpu(cpu));
++
++	if (smp_processor_id() != cpu) 
++		return -EAGAIN;
++
++	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++
++	if (!(l & (1<<16))) {
++		l |= (1<<16);
++
++		printk("trying to enable Enhanced SpeedStep (%x)\n", l);
++		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
++
++		/* check to see if it stuck */
++		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++		if (!(l & (1<<16))) {
++			printk("couldn't enable Enhanced SpeedStep\n");
++			set_cpus_allowed(current, saved_mask);
++			return -ENODEV;
++		}
++	}
++
++	set_cpus_allowed(current, saved_mask);
++
++	rc = acpi_cpu_data_init(cpu);
++	if (rc != 0)
++		return rc;
++	
++	/* notify BIOS that we exist */
++	acpi_processor_notify_smm(THIS_MODULE);
 +
 +	return rc;
 +}
 +
-+int 
-+cpufreq_setpolicy(struct cpufreq_policy *policy)
++static int 
++sc_pm_core_remove_dev (struct sys_device * sys_dev)
 +{
-+	char lfreq_hfreq[20];
-+	int cpu = policy->cpu;
-+	int i, rc;
-+	char **opt_names_list = NULL;
-+	int opt_names_list_size = 0;
++	unsigned int cpu = sys_dev->id;
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++	struct acpi_processor_performance *p;
 +
-+	/* 
-+	 * FIXME: just reference code
-+	 * if you specify smart_cpu cpufreq expects your PM Core
-+	 * support the following power parameter names:
-+	 * "lfreqN", "hfreqN"
-+	 */
-+	powerop_get_registered_opt_names(opt_names_list,
-+                                             &opt_names_list_size); 
-+	sprintf(lfreq_hfreq, "lfreq%d hfreq%d ", cpu, cpu);
-+	for (i = 0; i < opt_names_list_size; i++) {
-+		unsigned int lfreq, hfreq;
-+
-+		rc = powerop_get_point(opt_names_list[i], lfreq_hfreq, &lfreq, 
-+				       &hfreq);
-+		if (rc != 0) {
-+			powerop_put_registered_opt_names(opt_names_list);
-+			return rc;
-+		}
-+
-+		if ((lfreq == CPUFREQ_ENTRY_INVALID) || 
-+		     (hfreq == CPUFREQ_ENTRY_INVALID))
-+			continue;
-+		if ((lfreq > policy->min) && (hfreq < policy->max)) {
-+			/* point fits */
-+			powerop_set_point(opt_names_list[i]);
-+			break;	
-+		}
++	if (acpi_perf_data[cpu]) {
++		p = acpi_perf_data[cpu];
++		acpi_processor_unregister_performance(p, cpu);
 +	}
++#endif  
 +	return 0;
 +}
 +
-+MODULE_AUTHOR ("Dominik Brodowski <linux@brodo.de>");
-+MODULE_DESCRIPTION ("CPUfreq core helpers");
++static int 
++sc_pm_core_suspend(struct sys_device * sysdev, pm_message_t pmsg)
++{
++	return 0;
++}
++
++static int 
++sc_pm_core_resume(struct sys_device * sysdev)
++{
++	return 0;
++}
++
++static struct sysdev_driver pm_core_sysdev_driver = {
++	.add		= sc_pm_core_add_dev,
++	.remove		= sc_pm_core_remove_dev,
++	.suspend	= sc_pm_core_suspend,
++	.resume		= sc_pm_core_resume,
++};
++
++/* FIXME: will add HOTPLUG handler similar to cpureq as soon as understand
++ * why hotplug cannot be handled via sysdev driver
++ */
++int __init
++sc_pm_core_init(void)
++{
++	int rc = 0, j = 0;
++	rc = acpi_early_init();
++	if (rc != 0)
++		return rc;
++
++	rc = sysdev_driver_register(&cpu_sysdev_class, &pm_core_sysdev_driver);
++	if (rc != 0)
++		goto out_free;
++
++	rc = powerop_driver_register(&sc_pm_core_driver);
++	if (rc != 0) {
++		sysdev_driver_unregister(&cpu_sysdev_class, 
++					 &pm_core_sysdev_driver);
++		goto out_free;
++	}
++
++	return rc;
++out_free:
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++	for_each_possible_cpu(j) {
++		kfree(acpi_perf_data[j]);
++		acpi_perf_data[j] = NULL;
++	}
++#endif /* CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI */
++	return rc;
++}
++
++
++static void __exit 
++sc_pm_core_exit(void)
++{
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++	unsigned int j;
++#endif
++
++	powerop_driver_unregister(&sc_pm_core_driver);
++	sysdev_driver_unregister(&cpu_sysdev_class, &pm_core_sysdev_driver);
++
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++	for_each_possible_cpu(j) {
++		kfree(acpi_perf_data[j]);
++		acpi_perf_data[j] = NULL;
++	}
++#endif
++}
++
++
++module_init(sc_pm_core_init);
++module_exit(sc_pm_core_exit);
++
++
++MODULE_AUTHOR ("Eugeny S. Mints <eugeny.mints@gmail.com");
++MODULE_DESCRIPTION ("PM Core driver for Intel Pentium M processors.");
 +MODULE_LICENSE ("GPL");
 +
-diff --git a/drivers/cpufreq/freq_helpers.h b/drivers/cpufreq/freq_helpers.h
-new file mode 100644
-index 0000000..78780ef
---- /dev/null
-+++ b/drivers/cpufreq/freq_helpers.h
-@@ -0,0 +1,22 @@
-+/*
-+ * cpufreq core helpers
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#ifndef __LINUX_CPUFREQ_HELPERS_H__
-+#define __LINUX_CPUFREQ_HELPERS_H__
-+
-+#include <linux/cpufreq.h>
-+
-+#define CPUFREQ_ENTRY_INVALID	~0
-+
-+int cpufreq_cpuinfo(struct cpufreq_policy *policy);
-+int cpufreq_verify(struct cpufreq_policy *policy);
-+int cpufreq_target(struct cpufreq_policy *policy, unsigned int target_freq,
-+		   unsigned int relation);
-+int cpufreq_setpolicy(struct cpufreq_policy *policy);
-+
-+#endif /* __LINUX_CPUFREQ_POWEROP_H__ */
-+
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-deleted file mode 100644
-index 551f4cc..0000000
---- a/drivers/cpufreq/freq_table.c
-+++ /dev/null
-@@ -1,227 +0,0 @@
--/*
-- * linux/drivers/cpufreq/freq_table.c
+diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+index b77f135..60e619d 100644
+--- a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
++++ b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -1,18 +1,19 @@
+ /*
+- * cpufreq driver for Enhanced SpeedStep, as found in Intel's Pentium
+- * M (part of the Centrino chipset).
++ * This kernel module registeres a predefine set of operating points
++ * for x86 a speedstep-centrino platform with PowerOP. The operating points
++ * are either derived from data received from ACPI or defined as harcoded 
++ * tables if ACPI is not configured or functional. 
+  *
+- * Since the original Pentium M, most new Intel CPUs support Enhanced
+- * SpeedStep.
++ * Author: Eugeny S. Mints <eugeny@nomadgs.com>
+  *
+- * Despite the "SpeedStep" in the name, this is almost entirely unlike
+- * traditional SpeedStep.
 - *
-- * Copyright (C) 2002 - 2003 Dominik Brodowski
+- * Modelled on speedstep.c
++ * Copyright (C) 2006 Nomad Global Solutions, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
+  *
++ * Based on code by
+  * Copyright (C) 2003 Jeremy Fitzhardinge <jeremy@goop.org>
+  */
+-
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -20,6 +21,7 @@ #include <linux/cpufreq.h>
+ #include <linux/sched.h>	/* current */
+ #include <linux/delay.h>
+ #include <linux/compiler.h>
++#include <linux/powerop.h>
+ 
+ #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+ #include <linux/acpi.h>
+@@ -30,11 +32,14 @@ #include <asm/msr.h>
+ #include <asm/processor.h>
+ #include <asm/cpufeature.h>
+ 
+-#define PFX		"speedstep-centrino: "
+-#define MAINTAINER	"cpufreq@lists.linux.org.uk"
++#define PFX		"speedstep-centrino-op-points: "
++#define MAINTAINER	"linux-pm@lists.osld.org"
+ 
+ #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "speedstep-centrino", msg)
+ 
++#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
++extern struct acpi_processor_performance *acpi_perf_data[];
++#endif
+ 
+ struct cpu_id
+ {
+@@ -62,22 +67,37 @@ static const struct cpu_id cpu_ids[] = {
+ };
+ #define N_IDS	ARRAY_SIZE(cpu_ids)
+ 
++#define CENTRINO_EXTRACT_VLTG(index) (((index) & 0xFF) * 16 + 700) 
++#define SC_TABLE_END_MARK  ~1
++/* 
++ * please note that this structure has nothing to do with pm_core_point, it's
++ * completely internal structure of this particula "registration" driver which
++ * is an instance of a layer above PowerOP
++ * for example 'index' field value is not a voltage value but an aggregated 
++ * value initially designed to match format returned by ACPI
++ *
++ * this strucure may be improved to be more straightforward by replacing index
++ * with real voltage value since now PowerOP is underneath interface but left
++ * almost untouched to order to leave cprufreq code recognazible 
++ */
++struct sc_opt {
++	unsigned int frequency;
++	unsigned int index;
++};
++
+ struct cpu_model
+ {
+ 	const struct cpu_id *cpu_id;
+-	const char	*model_name;
+-	unsigned	max_freq; /* max clock in kHz */
+-
+-	struct cpufreq_frequency_table *op_points; /* clock/voltage pairs */
++	const char          *model_name;
++	unsigned             max_freq; /* max clock in kHz */
++	struct sc_opt       *op_points; /* clock/voltage pairs */
+ };
+ static int centrino_verify_cpu_id(const struct cpuinfo_x86 *c, const struct cpu_id *x);
+ 
+-/* Operating points for current CPU */
+ static struct cpu_model *centrino_model[NR_CPUS];
+ static const struct cpu_id *centrino_cpu[NR_CPUS];
+ 
+-static struct cpufreq_driver centrino_driver;
+-
++/* Operating point tables */
+ #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
+ 
+ /* Computes the correct form for IA32_PERF_CTL MSR for a particular
+@@ -97,38 +117,38 @@ #define OP(mhz, mv)							\
+  */
+ 
+ /* Ultra Low Voltage Intel Pentium M processor 900MHz (Banias) */
+-static struct cpufreq_frequency_table banias_900[] =
++static struct sc_opt banias_900[] =
+ {
+ 	OP(600,  844),
+ 	OP(800,  988),
+ 	OP(900, 1004),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Ultra Low Voltage Intel Pentium M processor 1000MHz (Banias) */
+-static struct cpufreq_frequency_table banias_1000[] =
++static struct sc_opt banias_1000[] =
+ {
+ 	OP(600,   844),
+ 	OP(800,   972),
+ 	OP(900,   988),
+ 	OP(1000, 1004),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Low Voltage Intel Pentium M processor 1.10GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1100[] =
++static struct sc_opt banias_1100[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1020),
+ 	OP( 900, 1100),
+ 	OP(1000, 1164),
+ 	OP(1100, 1180),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ 
+ /* Low Voltage Intel Pentium M processor 1.20GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1200[] =
++static struct sc_opt banias_1200[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1004),
+@@ -136,33 +156,33 @@ static struct cpufreq_frequency_table ba
+ 	OP(1000, 1100),
+ 	OP(1100, 1164),
+ 	OP(1200, 1180),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Intel Pentium M processor 1.30GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1300[] =
++static struct sc_opt banias_1300[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1260),
+ 	OP(1000, 1292),
+ 	OP(1200, 1356),
+ 	OP(1300, 1388),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Intel Pentium M processor 1.40GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1400[] =
++static struct sc_opt banias_1400[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1180),
+ 	OP(1000, 1308),
+ 	OP(1200, 1436),
+ 	OP(1400, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Intel Pentium M processor 1.50GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1500[] =
++static struct sc_opt banias_1500[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1116),
+@@ -170,11 +190,11 @@ static struct cpufreq_frequency_table ba
+ 	OP(1200, 1356),
+ 	OP(1400, 1452),
+ 	OP(1500, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Intel Pentium M processor 1.60GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1600[] =
++static struct sc_opt banias_1600[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1036),
+@@ -182,11 +202,11 @@ static struct cpufreq_frequency_table ba
+ 	OP(1200, 1276),
+ 	OP(1400, 1420),
+ 	OP(1600, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ 
+ /* Intel Pentium M processor 1.70GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1700[] =
++static struct sc_opt banias_1700[] =
+ {
+ 	OP( 600,  956),
+ 	OP( 800, 1004),
+@@ -194,7 +214,7 @@ static struct cpufreq_frequency_table ba
+ 	OP(1200, 1228),
+ 	OP(1400, 1308),
+ 	OP(1700, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
++	{ .frequency = SC_TABLE_END_MARK }
+ };
+ #undef OP
+ 
+@@ -232,10 +252,13 @@ static struct cpu_model models[] =
+ #undef _BANIAS
+ #undef BANIAS
+ 
+-static int centrino_cpu_init_table(struct cpufreq_policy *policy)
++
++static int 
++centrino_register_table_operating_points(int cpu_idx)
+ {
+-	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
++	struct cpuinfo_x86 *cpu = &cpu_data[cpu_idx];
+ 	struct cpu_model *model;
++	int i = 0, rc = 0;
+ 
+ 	for(model = models; model->cpu_id != NULL; model++)
+ 		if (centrino_verify_cpu_id(cpu, model->cpu_id) &&
+@@ -261,16 +284,36 @@ #endif
+ 		return -ENOENT;
+ 	}
+ 
+-	centrino_model[policy->cpu] = model;
++	/* register operating points */
++	for (i = 0; model->op_points[i].frequency != SC_TABLE_END_MARK; i++) {
++		char opt_params[CPUFREQ_FREQ_OP_SIZE];
++		char opt_name[CPUFREQ_OP_NAME_SIZE];
++
++		CPUFREQ_CPU_N_FREQ_V(opt_params, cpu_idx);
++		CPUFREQ_CPU_N_GNRT_OP_NAME(opt_name, cpu_idx, i);
++
++		rc = powerop_register_point(opt_name, opt_params, 
++			CENTRINO_EXTRACT_VLTG(model->op_points[i].index),
++			model->op_points[i].frequency);
++		if (rc != 0) {
++			dprintk("%s: registration of operating point %s"
++				" failed %d\n", __FUNCTION__, opt_name, rc);
++			return rc;
++		}
++		
++	}	
++
++	centrino_model[cpu_idx] = model;
+ 
+ 	dprintk("found \"%s\": max frequency: %dkHz\n",
+ 	       model->model_name, model->max_freq);
+ 
+ 	return 0;
+ }
+-
+ #else
+-static inline int centrino_cpu_init_table(struct cpufreq_policy *policy) { return -ENODEV; }
++static inline int 
++centrino_register_table_operating_points(int cpu_idx) 
++{ return -ENODEV; }
+ #endif /* CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE */
+ 
+ static int centrino_verify_cpu_id(const struct cpuinfo_x86 *c, const struct cpu_id *x)
+@@ -282,8 +325,8 @@ static int centrino_verify_cpu_id(const 
+ 	return 0;
+ }
+ 
+-/* To be called only after centrino_model is initialized */
+-static unsigned extract_clock(unsigned msr, unsigned int cpu, int failsafe)
++static unsigned 
++decode_clock(unsigned value2decode, unsigned int cpu, int failsafe)
+ {
+ 	int i;
+ 
+@@ -295,16 +338,19 @@ static unsigned extract_clock(unsigned m
+ 	if ((centrino_cpu[cpu] == &cpu_ids[CPU_BANIAS]) ||
+ 	    (centrino_cpu[cpu] == &cpu_ids[CPU_DOTHAN_A1]) ||
+ 	    (centrino_cpu[cpu] == &cpu_ids[CPU_DOTHAN_B0])) {
+-		msr = (msr >> 8) & 0xff;
+-		return msr * 100000;
++		value2decode = (value2decode >> 8) & 0xff;
++		return value2decode * 100;
+ 	}
+ 
+ 	if ((!centrino_model[cpu]) || (!centrino_model[cpu]->op_points))
+ 		return 0;
+ 
+-	msr &= 0xffff;
+-	for (i=0;centrino_model[cpu]->op_points[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		if (msr == centrino_model[cpu]->op_points[i].index)
++	value2decode &= 0xffff;
++	for (i = 0; 
++	     centrino_model[cpu]->op_points[i].frequency != SC_TABLE_END_MARK;
++	     i++) 
++	{
++		if (value2decode == centrino_model[cpu]->op_points[i].index)
+ 			return centrino_model[cpu]->op_points[i].frequency;
+ 	}
+ 	if (failsafe)
+@@ -313,513 +359,138 @@ static unsigned extract_clock(unsigned m
+ 		return 0;
+ }
+ 
+-/* Return the current CPU frequency in kHz */
+-static unsigned int get_cur_freq(unsigned int cpu)
++/* 
++ * Return the current CPU frequency in kHz
++ * FIXME: not necessary to be implemented via powerop
++ */ 
++static unsigned int 
++get_cur_freq(unsigned int cpu)
+ {
+-	unsigned l, h;
+-	unsigned clock_freq;
+-	cpumask_t saved_mask;
++	int clock_freq = 0;
++	char freq_n[CPUFREQ_FREQ_STR_SIZE];
+ 
+-	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed(current, cpumask_of_cpu(cpu));
+-	if (smp_processor_id() != cpu)
++	CPUFREQ_CPU_N_FREQ(freq_n, cpu);
++	if (powerop_get_point(NULL, freq_n, &clock_freq))
+ 		return 0;
+ 
+-	rdmsr(MSR_IA32_PERF_STATUS, l, h);
+-	clock_freq = extract_clock(l, cpu, 0);
+-
+-	if (unlikely(clock_freq == 0)) {
+-		/*
+-		 * On some CPUs, we can see transient MSR values (which are
+-		 * not present in _PSS), while CPU is doing some automatic
+-		 * P-state transition (like TM2). Get the last freq set 
+-		 * in PERF_CTL.
+-		 */
+-		rdmsr(MSR_IA32_PERF_CTL, l, h);
+-		clock_freq = extract_clock(l, cpu, 1);
+-	}
+-
+-	set_cpus_allowed(current, saved_mask);
+ 	return clock_freq;
+ }
+ 
+-
+ #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-
+-static struct acpi_processor_performance *acpi_perf_data[NR_CPUS];
+-
+-/*
+- * centrino_cpu_early_init_acpi - Do the preregistering with ACPI P-States
+- * library
+- *
+- * Before doing the actual init, we need to do _PSD related setup whenever
+- * supported by the BIOS. These are handled by this early_init routine.
 - */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/cpufreq.h>
--
--#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_CORE, "freq-table", msg)
--
--/*********************************************************************
-- *                     FREQUENCY TABLE HELPERS                       *
-- *********************************************************************/
--
--int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
--				    struct cpufreq_frequency_table *table)
+-static int centrino_cpu_early_init_acpi(void)
 -{
--	unsigned int min_freq = ~0;
--	unsigned int max_freq = 0;
--	unsigned int i;
+-	unsigned int	i, j;
+-	struct acpi_processor_performance	*data;
 -
--	for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID) {
--			dprintk("table entry %u is invalid, skipping\n", i);
--
--			continue;
+-	for_each_possible_cpu(i) {
+-		data = kzalloc(sizeof(struct acpi_processor_performance), 
+-				GFP_KERNEL);
+-		if (!data) {
+-			for_each_possible_cpu(j) {
+-				kfree(acpi_perf_data[j]);
+-				acpi_perf_data[j] = NULL;
+-			}
+-			return (-ENOMEM);
 -		}
--		dprintk("table entry %u: %u kHz, %u index\n", i, freq, table[i].index);
--		if (freq < min_freq)
--			min_freq = freq;
--		if (freq > max_freq)
--			max_freq = freq;
+-		acpi_perf_data[i] = data;
 -	}
 -
--	policy->min = policy->cpuinfo.min_freq = min_freq;
--	policy->max = policy->cpuinfo.max_freq = max_freq;
--
--	if (policy->min == ~0)
--		return -EINVAL;
--	else
--		return 0;
--}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_table_cpuinfo);
--
--
--int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
--				   struct cpufreq_frequency_table *table)
--{
--	unsigned int next_larger = ~0;
--	unsigned int i;
--	unsigned int count = 0;
--
--	dprintk("request for verification of policy (%u - %u kHz) for cpu %u\n", policy->min, policy->max, policy->cpu);
--
--	if (!cpu_online(policy->cpu))
--		return -EINVAL;
--
--	cpufreq_verify_within_limits(policy,
--				     policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
--
--	for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
--		if ((freq >= policy->min) && (freq <= policy->max))
--			count++;
--		else if ((next_larger > freq) && (freq > policy->max))
--			next_larger = freq;
--	}
--
--	if (!count)
--		policy->max = next_larger;
--
--	cpufreq_verify_within_limits(policy,
--				     policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
--
--	dprintk("verification lead to (%u - %u kHz) for cpu %u\n", policy->min, policy->max, policy->cpu);
--
+-	acpi_processor_preregister_performance(acpi_perf_data);
 -	return 0;
 -}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_table_verify);
 -
+ /*
+- * centrino_cpu_init_acpi - register with ACPI P-States library
++ * centrino_register_acpi_operating_points - register operating points based
++ * on data coming from  ACPI 
+  *
+- * Register with the ACPI P-States library (part of drivers/acpi/processor.c)
+- * in order to determine correct frequency and voltage pairings by reading
+- * the _PSS of the ACPI DSDT or SSDT tables.
++ * ASSUMPTIONS:
++ *   acpi_perf_data[] is successfully initialized by PM Core
+  */
+-static int centrino_cpu_init_acpi(struct cpufreq_policy *policy)
++static int 
++centrino_register_acpi_operating_points(int cpu)
+ {
+-	unsigned long			cur_freq;
+-	int				result = 0, i;
+-	unsigned int			cpu = policy->cpu;
+-	struct acpi_processor_performance	*p;
++	struct acpi_processor_performance *p;
++	unsigned long cur_freq;
++	int i, result = 0;
+ 
+ 	p = acpi_perf_data[cpu];
+ 
+-	/* register with ACPI core */
+-	if (acpi_processor_register_performance(p, cpu)) {
+-		dprintk(PFX "obtaining ACPI data failed\n");
+-		return -EIO;
+-	}
+-	policy->shared_type = p->shared_type;
+-	/*
+-	 * Will let policy->cpus know about dependency only when software 
+-	 * coordination is required.
+-	 */
+-	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL ||
+-	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-		policy->cpus = p->shared_cpu_map;
 -
--int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				   struct cpufreq_frequency_table *table,
--				   unsigned int target_freq,
--				   unsigned int relation,
--				   unsigned int *index)
--{
--	struct cpufreq_frequency_table optimal = {
--		.index = ~0,
--		.frequency = 0,
--	};
--	struct cpufreq_frequency_table suboptimal = {
--		.index = ~0,
--		.frequency = 0,
--	};
--	unsigned int i;
--
--	dprintk("request for target %u kHz (relation: %u) for cpu %u\n", target_freq, relation, policy->cpu);
--
--	switch (relation) {
--	case CPUFREQ_RELATION_H:
--		suboptimal.frequency = ~0;
--		break;
--	case CPUFREQ_RELATION_L:
--		optimal.frequency = ~0;
--		break;
+-	/* verify the acpi_data */
+-	if (p->state_count <= 1) {
+-		dprintk("No P-States\n");
+-		result = -ENODEV;
+-		goto err_unreg;
 -	}
 -
--	if (!cpu_online(policy->cpu))
--		return -EINVAL;
+-	if ((p->control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
+-	    (p->status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
+-		dprintk("Invalid control/status registers (%x - %x)\n",
+-			p->control_register.space_id, p->status_register.space_id);
+-		result = -EIO;
+-		goto err_unreg;
+-	}
 -
--	for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID)
+-	for (i=0; i<p->state_count; i++) {
+-		if (p->states[i].control != p->states[i].status) {
+-			dprintk("Different control (%llu) and status values (%llu)\n",
+-				p->states[i].control, p->states[i].status);
+-			result = -EINVAL;
+-			goto err_unreg;
+-		}
+-
+-		if (!p->states[i].core_frequency) {
+-			dprintk("Zero core frequency for state %u\n", i);
+-			result = -EINVAL;
+-			goto err_unreg;
+-		}
+-
+-		if (p->states[i].core_frequency > p->states[0].core_frequency) {
+-			dprintk("P%u has larger frequency (%llu) than P0 (%llu), skipping\n", i,
+-				p->states[i].core_frequency, p->states[0].core_frequency);
+-			p->states[i].core_frequency = 0;
 -			continue;
--		if ((freq < policy->min) || (freq > policy->max))
--			continue;
--		switch(relation) {
--		case CPUFREQ_RELATION_H:
--			if (freq <= target_freq) {
--				if (freq >= optimal.frequency) {
--					optimal.frequency = freq;
--					optimal.index = i;
--				}
--			} else {
--				if (freq <= suboptimal.frequency) {
--					suboptimal.frequency = freq;
--					suboptimal.index = i;
--				}
--			}
--			break;
--		case CPUFREQ_RELATION_L:
--			if (freq >= target_freq) {
--				if (freq <= optimal.frequency) {
--					optimal.frequency = freq;
--					optimal.index = i;
--				}
--			} else {
--				if (freq >= suboptimal.frequency) {
--					suboptimal.frequency = freq;
--					suboptimal.index = i;
--				}
--			}
--			break;
 -		}
 -	}
--	if (optimal.index > i) {
--		if (suboptimal.index > i)
--			return -EINVAL;
--		*index = suboptimal.index;
--	} else
--		*index = optimal.index;
++	cur_freq = get_cur_freq(cpu);
+ 
+-	centrino_model[cpu] = kzalloc(sizeof(struct cpu_model), GFP_KERNEL);
+-	if (!centrino_model[cpu]) {
+-		result = -ENOMEM;
+-		goto err_unreg;
+-	}
++        for (i = 0; i < p->state_count; i++) {
++		char opt_params[CPUFREQ_FREQ_OP_SIZE];
++		char opt_name[CPUFREQ_OP_NAME_SIZE];
+ 
+-	centrino_model[cpu]->model_name=NULL;
+-	centrino_model[cpu]->max_freq = p->states[0].core_frequency * 1000;
+-	centrino_model[cpu]->op_points =  kmalloc(sizeof(struct cpufreq_frequency_table) *
+-					     (p->state_count + 1), GFP_KERNEL);
+-        if (!centrino_model[cpu]->op_points) {
+-                result = -ENOMEM;
+-                goto err_kfree;
+-        }
 -
--	dprintk("target is %u (%u kHz, %u)\n", *index, table[*index].frequency,
--		table[*index].index);
+-        for (i=0; i<p->state_count; i++) {
+-		centrino_model[cpu]->op_points[i].index = p->states[i].control;
+-		centrino_model[cpu]->op_points[i].frequency = p->states[i].core_frequency * 1000;
+-		dprintk("adding state %i with frequency %u and control value %04x\n", 
+-			i, centrino_model[cpu]->op_points[i].frequency, centrino_model[cpu]->op_points[i].index);
+-	}
+-	centrino_model[cpu]->op_points[p->state_count].frequency = CPUFREQ_TABLE_END;
++		CPUFREQ_CPU_N_FREQ_V(opt_params, cpu);
++		CPUFREQ_CPU_N_GNRT_OP_NAME(opt_name, cpu, i);
+ 
+-	cur_freq = get_cur_freq(cpu);
++		dprintk("%s: adding state %i with name %s, frequency %u and "
++			"voltage value %04x\n (control 0x%x)", __FUNCTION__,
++			opt_name, p->states[i].core_frequency * 1000,
++			CENTRINO_EXTRACT_VLTG(p->states[i].control)
++			p->states[i].control);
+ 
+-	for (i=0; i<p->state_count; i++) {
+ 		if (!p->states[i].core_frequency) {
+ 			dprintk("skipping state %u\n", i);
+-			centrino_model[cpu]->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
+ 			continue;
+ 		}
+-		
+-		if (extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0) !=
+-		    (centrino_model[cpu]->op_points[i].frequency)) {
+-			dprintk("Invalid encoded frequency (%u vs. %u)\n",
+-				extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0),
+-				centrino_model[cpu]->op_points[i].frequency);
+-			result = -EINVAL;
+-			goto err_kfree_all;
+-		}
+-
+-		if (cur_freq == centrino_model[cpu]->op_points[i].frequency)
+-			p->state = i;
+-	}
+-
+-	/* notify BIOS that we exist */
+-	acpi_processor_notify_smm(THIS_MODULE);
 -
 -	return 0;
+-
+- err_kfree_all:
+-	kfree(centrino_model[cpu]->op_points);
+- err_kfree:
+-	kfree(centrino_model[cpu]);
+- err_unreg:
+-	acpi_processor_unregister_performance(p, cpu);
+-	dprintk(PFX "invalid ACPI data\n");
+-	return (result);
 -}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
+-#else
+-static inline int centrino_cpu_init_acpi(struct cpufreq_policy *policy) { return -ENODEV; }
+-static inline int centrino_cpu_early_init_acpi(void) { return 0; }
+-#endif
 -
--static struct cpufreq_frequency_table *show_table[NR_CPUS];
--/**
-- * show_scaling_governor - show the current policy for the specified CPU
-- */
--static ssize_t show_available_freqs (struct cpufreq_policy *policy, char *buf)
+-static int centrino_cpu_init(struct cpufreq_policy *policy)
 -{
--	unsigned int i = 0;
--	unsigned int cpu = policy->cpu;
--	ssize_t count = 0;
--	struct cpufreq_frequency_table *table;
+-	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
+-	unsigned freq;
+-	unsigned l, h;
+-	int ret;
+-	int i;
 -
--	if (!show_table[cpu])
+-	/* Only Intel makes Enhanced Speedstep-capable CPUs */
+-	if (cpu->x86_vendor != X86_VENDOR_INTEL || !cpu_has(cpu, X86_FEATURE_EST))
 -		return -ENODEV;
 -
--	table = show_table[cpu];
+-	if (cpu_has(cpu, X86_FEATURE_CONSTANT_TSC))
+-		centrino_driver.flags |= CPUFREQ_CONST_LOOPS;
 -
--	for (i=0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
--		count += sprintf(&buf[count], "%d ", table[i].frequency);
+-	if (centrino_cpu_init_acpi(policy)) {
+-		if (policy->cpu != 0)
+-			return -ENODEV;
+-
+-		for (i = 0; i < N_IDS; i++)
+-			if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
+-				break;
+-
+-		if (i != N_IDS)
+-			centrino_cpu[policy->cpu] = &cpu_ids[i];
+-
+-		if (!centrino_cpu[policy->cpu]) {
+-			dprintk("found unsupported CPU with "
+-			"Enhanced SpeedStep: send /proc/cpuinfo to "
+-			MAINTAINER "\n");
+-			return -ENODEV;
+-		}
+ 
+-		if (centrino_cpu_init_table(policy)) {
+-			return -ENODEV;
++		if (decode_clock(p->states[i].control, cpu, 0) !=
++		    (p->states[i].core_frequency * 1000)) {
++			dprintk("Invalid encoded frequency (%u vs. %u)\n",
++				decode_clock(p->states[i].control, cpu, 0),
++				p->states[i].core_frequency * 1000);
++			continue;
+ 		}
 -	}
--	count += sprintf(&buf[count], "\n");
 -
--	return count;
+-	/* Check to see if Enhanced SpeedStep is enabled, and try to
+-	   enable it if not. */
+-	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
 -
+-	if (!(l & (1<<16))) {
+-		l |= (1<<16);
+-		dprintk("trying to enable Enhanced SpeedStep (%x)\n", l);
+-		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
+ 
+-		/* check to see if it stuck */
+-		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-		if (!(l & (1<<16))) {
+-			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
+-			return -ENODEV;
++		/* register operating point w/ PowerOP Core */
++		result = powerop_register_point(opt_name, opt_params, 
++				   CENTRINO_EXTRACT_VLTG(p->states[i].control),
++			 	   p->states[i].core_frequency * 1000);
++		if (result != 0) {
++			dprintk("%s: registration of operating point %s"
++				" failed %d\n", __FUNCTION__, 
++				opt_name, result);
++			continue;
+ 		}
+-	}
+-
+-	freq = get_cur_freq(policy->cpu);
+-
+-	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.transition_latency = 10000; /* 10uS transition latency */
+-	policy->cur = freq;
+-
+-	dprintk("centrino_cpu_init: cur=%dkHz\n", policy->cur);
+ 
+-	ret = cpufreq_frequency_table_cpuinfo(policy, centrino_model[policy->cpu]->op_points);
+-	if (ret)
+-		return (ret);
+-
+-	cpufreq_frequency_table_get_attr(centrino_model[policy->cpu]->op_points, policy->cpu);
+-
+-	return 0;
 -}
 -
--struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
--	.attr = { .name = "scaling_available_frequencies", .mode = 0444, .owner=THIS_MODULE },
--	.show = show_available_freqs,
--};
--EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
+-static int centrino_cpu_exit(struct cpufreq_policy *policy)
+-{
+-	unsigned int cpu = policy->cpu;
 -
--/*
-- * if you use these, you must assure that the frequency table is valid
-- * all the time between get_attr and put_attr!
+-	if (!centrino_model[cpu])
+-		return -ENODEV;
+-
+-	cpufreq_frequency_table_put_attr(cpu);
++		/* FIXME: why freq is still what we've got in cur_freq */
++		if (p->states[i].core_frequency * 1000 == cur_freq)
++			p->state = i;
+ 
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	if (!centrino_model[cpu]->model_name) {
+-		static struct acpi_processor_performance *p;
+-
+-		if (acpi_perf_data[cpu]) {
+-			p = acpi_perf_data[cpu];
+-			dprintk("unregistering and freeing ACPI data\n");
+-			acpi_processor_unregister_performance(p, cpu);
+-			kfree(centrino_model[cpu]->op_points);
+-			kfree(centrino_model[cpu]);
+-		}
+ 	}
+-#endif
+-
+-	centrino_model[cpu] = NULL;
+ 
+ 	return 0;
+ }
+-
+-/**
+- * centrino_verify - verifies a new CPUFreq policy
+- * @policy: new policy
+- *
+- * Limit must be within this model's frequency range at least one
+- * border included.
 - */
--void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
--				      unsigned int cpu)
+-static int centrino_verify (struct cpufreq_policy *policy)
 -{
--	dprintk("setting show_table for cpu %u to %p\n", cpu, table);
--	show_table[cpu] = table;
+-	return cpufreq_frequency_table_verify(policy, centrino_model[policy->cpu]->op_points);
 -}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_attr);
 -
--void cpufreq_frequency_table_put_attr(unsigned int cpu)
+-/**
+- * centrino_setpolicy - set a new CPUFreq policy
+- * @policy: new policy
+- * @target_freq: the target frequency
+- * @relation: how that frequency relates to achieved frequency (CPUFREQ_RELATION_L or CPUFREQ_RELATION_H)
+- *
+- * Sets a new CPUFreq policy.
+- */
+-static int centrino_target (struct cpufreq_policy *policy,
+-			    unsigned int target_freq,
+-			    unsigned int relation)
 -{
--	dprintk("clearing show_table for cpu %u\n", cpu);
--	show_table[cpu] = NULL;
--}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
+-	unsigned int    newstate = 0;
+-	unsigned int	msr, oldmsr = 0, h = 0, cpu = policy->cpu;
+-	struct cpufreq_freqs	freqs;
+-	cpumask_t		online_policy_cpus;
+-	cpumask_t		saved_mask;
+-	cpumask_t		set_mask;
+-	cpumask_t		covered_cpus;
+-	int			retval = 0;
+-	unsigned int		j, k, first_cpu, tmp;
 -
--struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
--{
--	return show_table[cpu];
--}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
+-	if (unlikely(centrino_model[cpu] == NULL))
+-		return -ENODEV;
 -
--MODULE_AUTHOR ("Dominik Brodowski <linux@brodo.de>");
--MODULE_DESCRIPTION ("CPUfreq frequency table helpers");
--MODULE_LICENSE ("GPL");
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 4ea39fe..6e85cb4 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -3,7 +3,10 @@
-  *
-  *  Copyright (C) 2001 Russell King
-  *            (C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
-- *            
-+ *  
-+ *  Eugeny S. Mints <eugeny@nomadgs.com> 
-+ *  
-+ *  Interface update (get rid of cpufreq driver, integation with PowerOP
-  *
-  * $Id: cpufreq.h,v 1.36 2003/01/20 17:31:48 db Exp $
-  *
-@@ -27,7 +30,20 @@ #include <asm/div64.h>
- 
- #define CPUFREQ_NAME_LEN 16
- 
+-	if (unlikely(cpufreq_frequency_table_target(policy,
+-			centrino_model[cpu]->op_points,
+-			target_freq,
+-			relation,
+-			&newstate))) {
+-		return -EINVAL;
+-	}
 -
-+/*********************************************************************
-+ * cpufreq PowerOP glue for multi cpu support 
-+ *
-+ * cpufreq layer refers to frequency and voltage of cpuN by "vN", "freqN" 
-+ * string when calls powerop_regiter/get_point()
-+ ********************************************************************/
-+/* FIXME: request review */
-+#define CPUFREQ_FREQ_STR_SIZE	8
-+#define CPUFREQ_FREQ_OP_SIZE	20
-+#define CPUFREQ_OP_NAME_SIZE    12
-+#define CPUFREQ_CPU_N_FREQ(freq, n) sprintf((freq), "freq%d ", (n))
-+#define CPUFREQ_CPU_N_FREQ_V(op, n) sprintf((op), "v%d freq%d ", (n), (n))
-+#define CPUFREQ_CPU_N_GNRT_OP_NAME(res, cpu, idx) \
-+	sprintf((res), "cpu%d_opt%d", (cpu), (idx))
- /*********************************************************************
-  *                     CPUFREQ NOTIFIER INTERFACE                    *
-  *********************************************************************/
-@@ -100,11 +116,6 @@ #define CPUFREQ_ADJUST		(0)
- #define CPUFREQ_INCOMPATIBLE	(1)
- #define CPUFREQ_NOTIFY		(2)
- 
--#define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
--#define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
--#define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
--#define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
--
- /******************** cpufreq transition notifiers *******************/
- 
- #define CPUFREQ_PRECHANGE	(0)
-@@ -185,31 +196,6 @@ #define CPUFREQ_RELATION_H 1  /* highest
- 
- struct freq_attr;
- 
--struct cpufreq_driver {
--	struct module           *owner;
--	char			name[CPUFREQ_NAME_LEN];
--	u8			flags;
--
--	/* needed by all drivers */
--	int	(*init)		(struct cpufreq_policy *policy);
--	int	(*verify)	(struct cpufreq_policy *policy);
--
--	/* define one out of two */
--	int	(*setpolicy)	(struct cpufreq_policy *policy);
--	int	(*target)	(struct cpufreq_policy *policy,
--				 unsigned int target_freq,
--				 unsigned int relation);
--
--	/* should be defined, if possible */
--	unsigned int	(*get)	(unsigned int cpu);
--
--	/* optional */
--	int	(*exit)		(struct cpufreq_policy *policy);
--	int	(*suspend)	(struct cpufreq_policy *policy, pm_message_t pmsg);
--	int	(*resume)	(struct cpufreq_policy *policy);
--	struct freq_attr	**attr;
--};
--
- /* flags */
- 
- #define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if 
-@@ -220,10 +206,6 @@ #define CPUFREQ_CONST_LOOPS 	0x02	/* loo
- #define CPUFREQ_PM_NO_WARN	0x04	/* don't warn on suspend/resume speed
- 					 * mismatches */
- 
--int cpufreq_register_driver(struct cpufreq_driver *driver_data);
--int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
--
--
- void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state);
- 
- 
-@@ -284,45 +266,9 @@ #define CPUFREQ_DEFAULT_GOVERNOR	&cpufre
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
+ #else
+-	online_policy_cpus = policy->cpus;
++static inline int 
++centrino_register_acpi_operating_points(int cpu) 
++{ return -ENODEV; }
  #endif
  
+-	saved_mask = current->cpus_allowed;
+-	first_cpu = 1;
+-	cpus_clear(covered_cpus);
+-	for_each_cpu_mask(j, online_policy_cpus) {
+-		/*
+-		 * Support for SMP systems.
+-		 * Make sure we are running on CPU that wants to change freq
+-		 */
+-		cpus_clear(set_mask);
+-		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			cpus_or(set_mask, set_mask, online_policy_cpus);
+-		else
+-			cpu_set(j, set_mask);
+-
+-		set_cpus_allowed(current, set_mask);
+-		if (unlikely(!cpu_isset(smp_processor_id(), set_mask))) {
+-			dprintk("couldn't limit to CPUs in this domain\n");
+-			retval = -EAGAIN;
+-			if (first_cpu) {
+-				/* We haven't started the transition yet. */
+-				goto migrate_end;
+-			}
+-			break;
+-		}
+-
+-		msr = centrino_model[cpu]->op_points[newstate].index;
+-
+-		if (first_cpu) {
+-			rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-			if (msr == (oldmsr & 0xffff)) {
+-				dprintk("no change needed - msr was and needs "
+-					"to be %x\n", oldmsr);
+-				retval = 0;
+-				goto migrate_end;
+-			}
+-
+-			freqs.old = extract_clock(oldmsr, cpu, 0);
+-			freqs.new = extract_clock(msr, cpu, 0);
++int
++centrino_register_operating_points(void)
++{
++	int cpu,i;
  
--/*********************************************************************
-- *                     FREQUENCY TABLE HELPERS                       *
-- *********************************************************************/
+-			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+-				target_freq, freqs.old, freqs.new, msr);
++	for_each_possible_cpu(cpu) {
++		if (centrino_register_acpi_operating_points(cpu)) {
++			if (cpu != 0)
++				return -ENODEV;
+ 
+-			for_each_cpu_mask(k, online_policy_cpus) {
+-				freqs.cpu = k;
+-				cpufreq_notify_transition(&freqs,
+-					CPUFREQ_PRECHANGE);
++			for (i = 0; i < N_IDS; i++)
++				if (centrino_verify_cpu_id(&cpu_data[cpu], 
++							   &cpu_ids[i]))
++					break;
++	
++			if (i != N_IDS)
++				centrino_cpu[cpu] = &cpu_ids[i];
++
++			if (!centrino_cpu[cpu]) {
++				dprintk("found unsupported CPU with "
++				"Enhanced SpeedStep: send /proc/cpuinfo to "
++				MAINTAINER "\n");
++				return -ENODEV;
+ 			}
+ 
+-			first_cpu = 0;
+-			/* all but 16 LSB are reserved, treat them with care */
+-			oldmsr &= ~0xffff;
+-			msr &= 0xffff;
+-			oldmsr |= msr;
+-		}
 -
--#define CPUFREQ_ENTRY_INVALID ~0
--#define CPUFREQ_TABLE_END     ~1
+-		wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			break;
 -
--struct cpufreq_frequency_table {
--	unsigned int	index;     /* any */
--	unsigned int	frequency; /* kHz - doesn't need to be in ascending
--				    * order */
+-		cpu_set(j, covered_cpus);
+-	}
+-
+-	for_each_cpu_mask(k, online_policy_cpus) {
+-		freqs.cpu = k;
+-		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+-	}
+-
+-	if (unlikely(retval)) {
+-		/*
+-		 * We have failed halfway through the frequency change.
+-		 * We have sent callbacks to policy->cpus and
+-		 * MSRs have already been written on coverd_cpus.
+-		 * Best effort undo..
+-		 */
+-
+-		if (!cpus_empty(covered_cpus)) {
+-			for_each_cpu_mask(j, covered_cpus) {
+-				set_cpus_allowed(current, cpumask_of_cpu(j));
+-				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++			if (centrino_register_table_operating_points(cpu)) {
++				return -ENODEV;
+ 			}
+ 		}
+-
+-		tmp = freqs.new;
+-		freqs.new = freqs.old;
+-		freqs.old = tmp;
+-		for_each_cpu_mask(j, online_policy_cpus) {
+-			freqs.cpu = j;
+-			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+-			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+-		}
+ 	}
+ 
+-migrate_end:
+-	set_cpus_allowed(current, saved_mask);
+ 	return 0;
+ }
+ 
+-static struct freq_attr* centrino_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
 -};
 -
--int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
--				    struct cpufreq_frequency_table *table);
+-static struct cpufreq_driver centrino_driver = {
+-	.name		= "centrino", /* should be speedstep-centrino,
+-					 but there's a 16 char limit */
+-	.init		= centrino_cpu_init,
+-	.exit		= centrino_cpu_exit,
+-	.verify		= centrino_verify,
+-	.target		= centrino_target,
+-	.get		= get_cur_freq,
+-	.attr           = centrino_attr,
+-	.owner		= THIS_MODULE,
+-};
 -
--int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
--				   struct cpufreq_frequency_table *table);
 -
--int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				   struct cpufreq_frequency_table *table,
--				   unsigned int target_freq,
--				   unsigned int relation,
--				   unsigned int *index);
+-/**
+- * centrino_init - initializes the Enhanced SpeedStep CPUFreq driver
+- *
+- * Initializes the Enhanced SpeedStep support. Returns -ENODEV on
+- * unsupported devices, -ENOENT if there's no voltage table for this
+- * particular CPU model, -EINVAL on problems during initiatization,
+- * and zero on success.
+- *
+- * This is quite picky.  Not only does the CPU have to advertise the
+- * "est" flag in the cpuid capability flags, we look for a specific
+- * CPU model and stepping, and we need to have the exact model name in
+- * our voltage tables.  That is, be paranoid about not releasing
+- * someone's valuable magic smoke.
+- */
+-static int __init centrino_init(void)
++/* see comments in the file header for deprecated */
++void
++centrino_unregister_operating_points(void)
+ {
+-	struct cpuinfo_x86 *cpu = cpu_data;
 -
--/* the following 3 funtions are for cpufreq core use only */
--struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
- struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
- void   cpufreq_cpu_put (struct cpufreq_policy *data);
+-	if (!cpu_has(cpu, X86_FEATURE_EST))
+-		return -ENODEV;
+-
+-	centrino_cpu_early_init_acpi();
+-
+-	return cpufreq_register_driver(&centrino_driver);
++	/* FIXME: TODO */
+ }
  
--/* the following are really really optional */
--extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+-static void __exit centrino_exit(void)
+-{
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	unsigned int j;
+-#endif
+-	
+-	cpufreq_unregister_driver(&centrino_driver);
 -
--void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table, 
--				      unsigned int cpu);
--
--void cpufreq_frequency_table_put_attr(unsigned int cpu);
--
--
- /*********************************************************************
-  *                     UNIFIED DEBUG HELPERS                         *
-  *********************************************************************/
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	for_each_possible_cpu(j) {
+-		kfree(acpi_perf_data[j]);
+-		acpi_perf_data[j] = NULL;
+-	}
+-#endif
+-}
++module_init(centrino_register_operating_points);
++module_exit(centrino_unregister_operating_points);
+ 
+-MODULE_AUTHOR ("Jeremy Fitzhardinge <jeremy@goop.org>");
+-MODULE_DESCRIPTION ("Enhanced SpeedStep driver for Intel Pentium M processors.");
++MODULE_AUTHOR ("Eugeny S. Mints <eugeny@nomadgs.com>");
++MODULE_DESCRIPTION ("Centrino operating points registration module");
+ MODULE_LICENSE ("GPL");
+ 
+-late_initcall(centrino_init);
+-module_exit(centrino_exit);
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 7ba5e49..277b4d2 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -682,12 +682,8 @@ int acpi_processor_preregister_performan
+ 		/* Validate the Domain info */
+ 		count_target = pdomain->num_processors;
+ 		count = 1;
+-		if (pdomain->coord_type == DOMAIN_COORD_TYPE_SW_ALL)
+-			pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+-		else if (pdomain->coord_type == DOMAIN_COORD_TYPE_HW_ALL)
+-			pr->performance->shared_type = CPUFREQ_SHARED_TYPE_HW;
+-		else if (pdomain->coord_type == DOMAIN_COORD_TYPE_SW_ANY)
+-			pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ANY;
++
++		pr->performance->shared_type = pdomain->coord_type;
+ 
+ 		for_each_possible_cpu(j) {
+ 			if (i == j)
+@@ -751,7 +747,7 @@ err_ret:
+ 		if (retval) {
+ 			cpus_clear(pr->performance->shared_cpu_map);
+ 			cpu_set(i, pr->performance->shared_cpu_map);
+-			pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
++			pr->performance->shared_type = DOMAIN_COORD_TYPE_SW_ALL;
+ 		}
+ 		pr->performance = NULL; /* Will be set for real in register */
+ 	}
+diff --git a/include/asm-i386/pm_core.h b/include/asm-i386/pm_core.h
+new file mode 100644
+index 0000000..ea56c40
+--- /dev/null
++++ b/include/asm-i386/pm_core.h
+@@ -0,0 +1,72 @@
++/*
++ * Definition of operating point structure (power parameters set) for i386
++ *
++ * Author: Eugeny S. Mints <eugeny@nomadgs.com>
++ *
++ * 2006 (c) Nomad Global Solutions. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ *
++ */
++#ifndef __ASM_I386_PM_CORE_H__
++#define __ASM_I386_PM_CORE_H__
++
++#define _I386_PM_CORE_POINT_V        0
++#define _I386_PM_CORE_POINT_FREQ     1
++
++#define _I386_PM_CORE_PWRP_LAST      (_I386_PM_CORE_POINT_FREQ + 1)
++#define _I386_PWRP_NUM               _I386_PM_CORE_PWRP_LAST
++
++/* per CPU parameters: voltage and frquency */ 
++struct _cpu_pwr_params {
++	int pwpr[_I386_PWRP_NUM]; /* voltage in mV, freq in KHz */
++};
++
++/* 
++ * an i386 platfrom operating point structure. an operating point 
++ * contains volage/frequency pair for each possible CPU on a certain 
++ * platform. Any additional power parameters may be defined here if 
++ * supported by a platform.
++ *
++ * Instances of this structure define operating points
++ *
++ * Any power parameter value may be a positive value, zero, or reserved '-1'
++ * value. 
++ *
++ * IMPORTANT: 
++ *
++ * '-1' means any value from a range of valid values for a certain 
++ * parameter may be used during switch to this particular point. I.e. 
++ * assuming a platform power parameters are: p1, p2 (i.e. 
++ * struct pm_core_point {
++ *	int p1;
++ * 	int p2;
++ * }
++ * ) and that value ranges are {v1, v2} and {v3, v4} for p1 and p2 respectivly
++ * defining a point 
++ * struct pm_core_point point1 = {
++ * 	.p1 = v1; 
++ * 	.p2 = -1;
++ * }
++ * _must_ mean that both combinations {v1, v3} and {v1, v4} are valid (i.e.
++ * system will now hang or crash).  
++ *
++ * It's strickly upto a platform power designer to utilize '-1' value 
++ * properly given the above assumption.   
++ */
++struct pm_core_point {
++	struct _cpu_pwr_params opt[NR_CPUS];
++};
++
++#define I386_PM_CORE_INIT_OPT(point)                   \
++	do {                                           \
++		int i = 0, j = 0;                      \
++		for (j = 0; j < _I386_PWRP_NUM; j++)   \
++			(point)->opt[i].pwpr[j] = -1;  \
++		i++;                                   \
++	} while (i < NR_CPUS)   
++
++
++#endif /* __ASM_I386_PM_CORE_H__ */
++
 
-
---------------080003030500000207030709--
+--------------060207060305070002040201--
