@@ -1,11 +1,20 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: [RFC] CPUFreq PowerOP integration, Issues/TODO 3/3
-Date: Thu, 14 Sep 2006 18:52:33 +0400
-Message-ID: <45096CB1.5030104@gmail.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: community PM requirements/issues and PowerOP [Was:
+	Re: So, what's the status on the recent patches here?]
+Date: Thu, 14 Sep 2006 07:56:45 -0700
+Message-ID: <20060914145645.0024B19E189@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
+	<20060914091211.GA14874@elf.ucw.cz>
+	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
+	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
+	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
+	<20060914130311.GA2224@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20060914130311.GA2224@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,24 +24,21 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: pm list <linux-pm@lists.osdl.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>
+To: vitalywool@gmail.com, pavel@ucw.cz
+Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com
 List-Id: linux-pm@vger.kernel.org
 
-- speedstep-centrino.c and speedstep-centrino-pm_core.c are no longer relev=
-ant
-to CPUFreq - need to be moved out of cpufreq folder
-- drivers/acpi/processor_perflib.c: needs cleanup. Now it is used by PM Core
-but is compiled under CONFIG_CPU_FREQ and contains CPUFreq dependent code
-- cpufreq.c code needs fixing to handle creation of operating points at
-arbitrary moment ( to function properly on empty points list). For the time
-being it is assumed that initialization order is: acpi, pm core, powerop, p=
-oints
-registration, cpufreq core
-- cpufreq statistics is broken
-- hotplug/sysdev_driver needs investigation
-- pm core needs hotplug support
-- example of dependent operating point registration module
-- is any functionality affected by removing flags export from legacy cpufreq
-driver?
-- suspend/resume
+> > May I remind you that Linux world is not only laptops and Sharp Zaurus?=
+ ;)
+>
+> Actually, laptops and zauruses seem to be the only "interesting"
+> machines from pm perspective. Then there are Motorola cellphones, but
+> Motorola tried hard not to enable users changing kernel... so they are
+> irrelevant.
+
+Get yourself some OMAP hardware then; your blinders are way too effective!
+
+OMAP1 hardware is easily had; an OSK, or a Nokia N770.  The latter is
+battery powered already, without the hardware mods...
+
+- Dave
