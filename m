@@ -1,13 +1,13 @@
 From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: community PM requirements/issues and PowerOP [Was:
 	Re: So, what's the status on the recent patches here?]
-Date: Thu, 14 Sep 2006 22:05:06 -0500 (CDT)
-Message-ID: <200609150305.k8F356IY029193@olwen.urbana.css.mot.com>
+Date: Thu, 14 Sep 2006 22:16:56 -0500 (CDT)
+Message-ID: <200609150316.k8F3GuE9000653@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: "Vitaly Wool"'s message of Thu, 14 Sep 2006 17:15:04 +0400
+In-reply-to: David Brownell's message of Thu, 14 Sep 2006 07:56:45 -0700
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,35 +17,15 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: vitalywool@gmail.com
+To: david-b@pacbell.net
 Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
 
-| From: "Vitaly Wool"<vitalywool@gmail.com>
+
+| From: David Brownell<david-b@pacbell.net>
 | =
 
-| Pavel,
-| =
-
-| On 9/14/06, Pavel Machek <pavel@ucw.cz> wrote:
-| >
-| > > Pavel,
-| >
-| > > > > operating points it is possible to implement the "cpufreq frequen=
-cy
-| > > > > selection logic" in user space and having such functionality in t=
-he kernel
-| > > > > just violates the main rule of having everything possible outside=
- of the
-| > > > > kernel.
-| > > >
-| > > > You got the rules wrong. "Keep the code out of kernel" is important
-| > > > rule, but probably not the main one.
-| > >
-| > > from aside, it looks like you're choosing 'rules' and assign then
-| > > 'priorities' in a too arbitrary way which is by a strange accident
-| > > fits your point of view best of all.
 | > > May I remind you that Linux world is not only laptops and Sharp Zauru=
 s? ;)
 | >
@@ -55,31 +35,18 @@ s? ;)
 | > irrelevant.
 | =
 
-| Well, I never said Zaurus was no good :)
-| Please don't forget about Nokia 770 and its possible follow-ups.
-| Also, please keep in mind that if we come to a joint PM solution that
-| is in mainline, Motorola will use it... and will be contributing
-| changes back to the community. If there was a PM solution adopted in
-| mainline which fit the needs of embedded devices, more vendors would
-| turn to using Linux.
-| I. e., what prevents Sharp from making a open-code Lnux-based cell
-| phone? I do think that the absense of PM framework suitable for
-| embedded is one of the main engineering reasons... So let us broaden
-| our views and work together :)
+| Get yourself some OMAP hardware then; your blinders are way too effective!
 | =
 
-| Vitaly
+| OMAP1 hardware is easily had; an OSK, or a Nokia N770.  The latter is
+| battery powered already, without the hardware mods...
 ---
 
-Source for the power management in current Motorola products is
-available on opensource.motorola.com. However, mainstream power
-management did not meet our needs, so what's there is a replacement,
-rather than modifications. Because it's product-specific, it's not
-particularly generalized and probably wouldn't be suitable for use
-in a laptop...
+And, if you don't want to buy a target board, you can use the CE Linux
+Forum's on-line test lab to build and test kernels on target hardware
+remotely.
 
 scott
-
 -- =
 
 scott preece
