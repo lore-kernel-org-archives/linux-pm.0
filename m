@@ -1,15 +1,22 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: cpufreq user<->kernel interface removal [was Re:
-	community PM requirements/issues and PowerOP]
-Date: Sun, 17 Sep 2006 14:37:59 +0200
-Message-ID: <20060917123759.GD2741@elf.ucw.cz>
-References: <20060914162623.GA6867@linux.intel.com>
+From: Amit Kucheria <amit.kucheria@nokia.com>
+Subject: Re: community PM requirements/issues and PowerOP
+	[Was:	Re: So, what's the status on the recent patches here?]
+Date: Sun, 17 Sep 2006 13:53:34 +0300
+Message-ID: <1158490414.22541.2.camel@localhost>
+References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
+	<20060914091211.GA14874@elf.ucw.cz>
+	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
+	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
+	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
+	<20060914130311.GA2224@elf.ucw.cz>
+	<acd2a5930609140615r5ee11e5amd48857198e1cd8c7@mail.gmail.com>
+	<20060914132037.GC2029@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20060914162623.GA6867@linux.intel.com>
+In-Reply-To: <20060914132037.GC2029@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,38 +26,43 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Mark Gross <mgross@linux.intel.com>
-Cc: lkml@elf.ucw.cz.kroah.org, Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
+To: ext Pavel Machek <pavel@suse.cz>
+Cc: Preece Scott-PREECE <scott.preece@motorola.com>, Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-hi!
-
-> Power-OP: Matt, Eugeny, Igor, myself to a much lesser extent
-> Oppoint: David
+On Thu, 2006-09-14 at 15:20 +0200, ext Pavel Machek wrote:
+> Hi!
 > =
 
-> Interested parties to getting operating point concepts into the main
-> line kernel are CELF and MLI members.
+> > >> from aside, it looks like you're choosing 'rules' and assign then
+> > >> 'priorities' in a too arbitrary way which is by a strange accident
+> > >> fits your point of view best of all.
+> > >> May I remind you that Linux world is not only laptops and Sharp Zaur=
+us? =
 
-Thanks.
+> > >;)
+> > >
+> > >Actually, laptops and zauruses seem to be the only "interesting"
+> > >machines from pm perspective. Then there are Motorola cellphones, but
+> > >Motorola tried hard not to enable users changing kernel... so they are
+> > >irrelevant.
+> > =
 
-> > Or, can each of the different projects send a _short_, 1 paragraph, 4
-> > sentance maximum summary of the different things.  Think of it as your
-> > "elevator pitch".  The different multi-page summaries ware making my
-> > eyes glaze over...
+> > Well, I never said Zaurus was no good :)
+> > Please don't forget about Nokia 770 and its possible follow-ups.
 > =
 
-> CE and embedded Linux users have not been able to use cpufreq, mostly
-> because those platforms don't have ACPI like FW for controlling all
-> > the
+> Well, for now, Nokia 770 is zaurus with wifi but without keyboard
+> (mostly). It seems to be very similar to zaurus pm-wise.
 
-?? zaurus uses cpufreq just fine, and you could do that on omap. You'd
-not have powersavings coming out of powering down devices, but
-otherwise it should be doable.
+You have conveniently chosen to forget that Nokia 770 does not support
+suspend-to-disk - it is a S-T-R device. In fact, personally I agree with
+Linus' comments elsewhere about S-T-D being irrelevant.
 
-								Pavel
+Regards,
+Amit
+
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Amit Kucheria <amit.kucheria@nokia.com>
+Nokia
