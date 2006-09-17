@@ -1,23 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Preece Scott-PREECE" <scott.preece@motorola.com>
 Subject: Re: community PM requirements/issues and PowerOP [Was:
 	Re: So, what's the status on the recent patches here?]
-Date: Sun, 17 Sep 2006 15:40:07 +0200
-Message-ID: <20060917134006.GO2741@elf.ucw.cz>
-References: <a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
-	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
-	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
-	<20060914130311.GA2224@elf.ucw.cz>
-	<acd2a5930609140615r5ee11e5amd48857198e1cd8c7@mail.gmail.com>
-	<20060914132037.GC2029@elf.ucw.cz>
-	<1158490414.22541.2.camel@localhost>
-	<20060917131831.GM2741@elf.ucw.cz>
-	<1158499703.22773.11.camel@localhost>
+Date: Sun, 17 Sep 2006 13:32:29 -0400
+Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01BB2484@de01exm64.ds.mot.com>
+References: <20060917124639.GE2741@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <1158499703.22773.11.camel@localhost>
+Content-class: urn:content-classes:message
+In-Reply-To: <20060917124639.GE2741@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -27,44 +19,76 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <amit.kucheria@nokia.com>
-Cc: Preece Scott-PREECE <scott.preece@motorola.com>, Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>, Jon Loeliger <jdl@freescale.com>
+Cc: Matthew Locke <matthew.a.locke@comcast.net>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2006-09-17 16:28:23, Amit Kucheria wrote:
-> On Sun, 2006-09-17 at 15:18 +0200, ext Pavel Machek wrote:
-> >  =
+> From: Pavel Machek [mailto:pavel@ucw.cz] =
 
-> > > > Well, for now, Nokia 770 is zaurus with wifi but without keyboard
-> > > > (mostly). It seems to be very similar to zaurus pm-wise.
-> > > =
-
-> > > You have conveniently chosen to forget that Nokia 770 does not support
-> > > suspend-to-disk - it is a S-T-R device. In fact, personally I agree w=
-ith
-> > > Linus' comments elsewhere about S-T-D being irrelevant.
-> > =
-
-> > Now I do not understand... this was power savings debate, no? Zaurus
-> > basically does not support S-T-D either (or at least I do not use it
-> > there), and I agree that S-T-D is irrelevant in the long term. And it
-> > is hardly relevant for non-PC machines _now_.
 > =
 
-> I was referring to the default method of power save on Zaurus on the
-> Sharp ROMs. It was S-T-D (Flash), IIRC. I do not recall drivers doing
-> runtime power management on Zaurus; that is a major difference from
-> Nokia 770.
+> On Thu 2006-09-14 14:25:32, Jon Loeliger wrote:
+> > On Thu, 2006-09-14 at 08:03, Pavel Machek wrote:
+> > =
 
-I'm pretty sure Zauruses do s-t-ram. Flash is read only during normal
-operation.
+> > > Actually, laptops and zauruses seem to be the only "interesting"
+> > > machines from pm perspective.
+> > =
 
-I'm very sure Sharp zaurus sl-5500 does s-t-ram. After all, it has
-16MB of flash and 64MB of ram. Suspend-to-flash is not an option.
+> > Well, and future parts and machines that are in the works.
+> > =
 
-								Pavel
--- =
+> > >  Then there are Motorola cellphones, but Motorola tried =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+> hard not to =
+
+> > > enable users changing kernel... so they are irrelevant.
+> > =
+
+> > That might be a bit unfair.  Those engineers at Motorola =
+
+> who put linux =
+
+> > on the cellphones and mobile devices do need to have the PM =
+
+> support.  =
+
+> > They are NOT irrelevant.
+> =
+
+> Of course I am unfair. It is nice that motorola ships =
+
+> linux-based cellphones, but they made really sure that users =
+
+> can't hack them... which is considered anti-social by the community. =
+
+> =
+
+> So it would be nice if kernel matched requirements by =
+
+> Motorola, but it is *way* more important that it matches =
+
+> requirements by Sharp and notebook requirements... because =
+
+> Sharp & notebook manufacturers actually play fair.
+---
+
+Depends, of course, on your definition of "fair". The CE =
+
+manufacturers are investing a lot of work in Linux, either
+directly or through hiring developers and working through
+distributors. And they're giving their enhancements back
+to the community, which is what was generally considered
+"fair" for open-source development. The power management
+stuff may be too narrow to be interesting to laptop-based
+developers,but things like reduced boot time ought to be
+Of more general interest.
+
+I expect modifiable kernels in the future, but that requires
+a lot of extra engineering (beyond just making the device
+work) to harden the non-open elements so that malicious
+kernel changes couldn't compromise them. None of the
+manufacturers is going to build a cellphone or DVR that
+service providers won't allow on their networks...
+
+scott
