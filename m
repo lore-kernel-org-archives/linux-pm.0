@@ -1,81 +1,47 @@
-From: "Preece Scott-PREECE" <scott.preece@motorola.com>
-Subject: Re: community PM requirements/issues and
-	PowerOP[Was:	Re: So, what's the status on the recent patches here?]
-Date: Sun, 17 Sep 2006 14:25:18 -0400
-Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01BB248A@de01exm64.ds.mot.com>
-References: <1158502497.22773.16.camel@localhost>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: OpPoint summary
+Date: Sun, 17 Sep 2006 19:48:35 +0200
+Message-ID: <20060917174835.GA2225@elf.ucw.cz>
+References: <20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com> <20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com> <20060911225617.GB13474@elf.ucw.cz> <20060912001701.GC14234@linux.intel.com> <20060912033700.GD27397@kroah.com> <b324b5ad0609131650q1b7a78cfsa90e3fbe8d7b4093@mail.gmail.com> <20060914055529.GA18031@kroah.com> <b324b5ad0609141007i2a26cf60r45ebf1175c7bcc7d@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <1158502497.22773.16.camel@localhost>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <amit.kucheria@nokia.com>, ext Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965110AbWIQVTT@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <b324b5ad0609141007i2a26cf60r45ebf1175c7bcc7d@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Singleton <daviado@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-pm@lists.osdl.org, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
- > From:  Amit Kucheria
-> =
+Hi!
 
-> On Sun, 2006-09-17 at 15:40 +0200, ext Pavel Machek wrote:
-> > On Sun 2006-09-17 16:28:23, Amit Kucheria wrote:
-> > > On Sun, 2006-09-17 at 15:18 +0200, ext Pavel Machek wrote:
-...
-> > > I was referring to the default method of power save on =
+> >Care to resend your patches in the proper format, through email so that
+> >we can see them, and possibly get some testing in -mm if they look sane?
+> 
+> Greg,
+>   here's the patch that implements operating points for different 
+>   frequencies
+> for the speedstep-centrino line of processors.  Operating points are created
+> in much the same manner that cpufreq tables are.  This works for both
+> simple implementations like the centrino and more complex SoC systems
+> like the arm-pxa72x which has several clocks to control, and different clock
+> divisors and multipliers.
 
-> Zaurus on the =
+> +static struct oppoint lowest = {
+> +       .name = "lowest",
+> +       .type = PM_FREQ_CHANGE,
+> +       .frequency = 0,
+> +       .voltage = 0,
+> +       .latency = 15,
+> +       .prepare_transition  = cpufreq_prepare_transition,
+> +       .transition = centrino_transition,
+> +       .finish_transition = cpufreq_finish_transition,
+> +};
 
-> > > Sharp ROMs. It was S-T-D (Flash), IIRC. I do not recall drivers =
+We had nice, descriptive interface... with numbers. Now you want to
+introduce english state names... looks like a step back to me.
 
-> > > doing runtime power management on Zaurus; that is a major =
-
-> difference =
-
-> > > from Nokia 770.
-> > =
-
-> > I'm pretty sure Zauruses do s-t-ram. Flash is read only =
-
-> during normal =
-
-> > operation.
-> > =
-
-> > I'm very sure Sharp zaurus sl-5500 does s-t-ram. After all, it has =
-
-> > 16MB of flash and 64MB of ram. Suspend-to-flash is not an option.
-> > =
-
-> > 								Pavel
-> =
-
-> If that is the case, I stand corrected. Did the drivers =
-
-> support dynamic idling?
-> =
-
-> Although something about the time it took to resume still =
-
-> bothers me....
-> I will try to find time to flash it and check.
-
-Google provided a reference to what appears to be a student
-paper on power management in the Zaurus, at:
-<http://personals.ac.upc.edu/mpericas/zaurus_project-final.pdf#search=3D%2
-2%22power%20management%22%20zaurus%20linux%22>.
-
->From the paper, it sounds like it has cpufreq =
-
-scaling and a sleep mode that is basically suspend-to-RAM.
-This was apparently done via backporting stuff to 2.4.
-
-Scott
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
