@@ -1,17 +1,22 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: cpufreq user<->kernel interface removal [was Re:
-	community PM requirements/issues and PowerOP]
-Date: Sun, 17 Sep 2006 15:20:19 +0200
-Message-ID: <20060917132019.GN2741@elf.ucw.cz>
-References: <20060914162623.GA6867@linux.intel.com>
-	<20060917123759.GD2741@elf.ucw.cz>
-	<acd2a5930609170610l14fef014k54dc60159dcf8703@mail.gmail.com>
+From: Amit Kucheria <amit.kucheria@nokia.com>
+Subject: Re: community PM requirements/issues and PowerOP
+	[Was:	Re: So, what's the status on the recent patches here?]
+Date: Sun, 17 Sep 2006 16:28:23 +0300
+Message-ID: <1158499703.22773.11.camel@localhost>
+References: <ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
+	<20060914091211.GA14874@elf.ucw.cz>
+	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
+	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
+	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
+	<20060914130311.GA2224@elf.ucw.cz>
+	<acd2a5930609140615r5ee11e5amd48857198e1cd8c7@mail.gmail.com>
+	<20060914132037.GC2029@elf.ucw.cz> <1158490414.22541.2.camel@localhost>
+	<20060917131831.GM2741@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <acd2a5930609170610l14fef014k54dc60159dcf8703@mail.gmail.com>
+In-Reply-To: <20060917131831.GM2741@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,36 +26,38 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: lkml@elf.ucw.cz.kroah.org, Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
+To: ext Pavel Machek <pavel@ucw.cz>
+Cc: Preece Scott-PREECE <scott.preece@motorola.com>, Matthew Locke <matthew.a.locke@comcast.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2006-09-17 17:10:36, Vitaly Wool wrote:
-> Pavel,
+On Sun, 2006-09-17 at 15:18 +0200, ext Pavel Machek wrote:
+>  =
+
+> > > Well, for now, Nokia 770 is zaurus with wifi but without keyboard
+> > > (mostly). It seems to be very similar to zaurus pm-wise.
+> > =
+
+> > You have conveniently chosen to forget that Nokia 770 does not support
+> > suspend-to-disk - it is a S-T-R device. In fact, personally I agree with
+> > Linus' comments elsewhere about S-T-D being irrelevant.
 > =
 
-> On 9/17/06, Pavel Machek <pavel@ucw.cz> wrote:
-> >?? zaurus uses cpufreq just fine, and you could do that on omap. You'd
-> >not have powersavings coming out of powering down devices, but
-> >otherwise it should be doable.
+> Now I do not understand... this was power savings debate, no? Zaurus
+> basically does not support S-T-D either (or at least I do not use it
+> there), and I agree that S-T-D is irrelevant in the long term. And it
+> is hardly relevant for non-PC machines _now_.
 > =
 
-> I do think you'd better broaden your views here ;)
-> cpufreq as it is is not well-suitable for complex power management
-> cases where you need to switch between multiple oscillators/clock
-> sources/PLLs etc to gain the most efficien power management.
-> Zaurus is not that complicated in PM AFAIK and I'm sure it could be
-> even better if it used PowerOP or similar solution. :)
+> 								Pavel
 
-Well, I do think you'd better broaden your views here ;)
-Solutions you propose are not well-suitable for big systems, like 8
-cpu server box with 40 PCI devices.
+I was referring to the default method of power save on Zaurus on the
+Sharp ROMs. It was S-T-D (Flash), IIRC. I do not recall drivers doing
+runtime power management on Zaurus; that is a major difference from
+Nokia 770.
 
-What we need to do is something that works well from whole range, from
-770 through thinkpad x60 to 8x Xeon server.
-								Pavel
+Regards,
+Amit
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Amit Kucheria <amit.kucheria@nokia.com>
+Nokia
