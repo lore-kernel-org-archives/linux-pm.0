@@ -1,32 +1,62 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: OpPoint summary
-Date: Sun, 17 Sep 2006 14:58:34 +0200
-Message-ID: <20060917125834.GK2741@elf.ucw.cz>
-References: <20060911195546.GB11901@elf.ucw.cz> <4505CCDA.8020501@gmail.com> <20060911210026.GG11901@elf.ucw.cz> <4505DDA6.8080603@gmail.com> <20060911225617.GB13474@elf.ucw.cz> <20060912001701.GC14234@linux.intel.com> <20060912033700.GD27397@kroah.com> <b324b5ad0609131650q1b7a78cfsa90e3fbe8d7b4093@mail.gmail.com> <20060914055529.GA18031@kroah.com> <b324b5ad0609162207o269c826cuae051ecfa61c4362@mail.gmail.com>
+Subject: Re: community PM requirements/issues and PowerOP [Was:
+	Re: So, what's the status on the recent patches here?]
+Date: Sun, 17 Sep 2006 14:34:02 +0200
+Message-ID: <20060917123402.GC2741@elf.ucw.cz>
+References: <20060913045405.BA7DD1A0084@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
+	<20060914091211.GA14874@elf.ucw.cz>
+	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
+	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
+	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
+	<20060914130311.GA2224@elf.ucw.cz>
+	<20060914145645.0024B19E189@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964965AbWIQM6c@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <b324b5ad0609162207o269c826cuae051ecfa61c4362@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Singleton <daviado@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-pm@lists.osdl.org, kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20060914145645.0024B19E189@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2006-09-16 22:07:15, David Singleton wrote:
-> Pavel and Greg,
-> 
-> I've incorporated Pavels suggestions and only put suspend states
-> in the /sys/power/state file.  The control file for frequency and
-> voltage operating
-> point transitions is now in
-> /sys/power/operating_points/current_point.
+Hi!
 
-Ouch and it still needs description of your proposed user<->kernel
-interface, explanation why it is good thing (I do not thing it is),
-and probably explanation why you are competing with powerOP framework,
-rather than working with them.
+> > > May I remind you that Linux world is not only laptops and Sharp Zauru=
+s? ;)
+> >
+> > Actually, laptops and zauruses seem to be the only "interesting"
+> > machines from pm perspective. Then there are Motorola cellphones, but
+> > Motorola tried hard not to enable users changing kernel... so they are
+> > irrelevant.
+> =
+
+> Get yourself some OMAP hardware then; your blinders are way too effective!
+> =
+
+> OMAP1 hardware is easily had; an OSK, or a Nokia N770.  The latter is
+> battery powered already, without the hardware mods...
+
+Well, I already have zaurus, and nokia 770 is inferior AFAICT. So the
+next one will be linux cellphone...
+
+(And IIRC zaurus lasts longer on batteries than 770 does... or at
+least comparable. Maybe OMAP is more complex, but is it actually good
+thing?)
 								Pavel
--- 
+
+-- =
+
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
