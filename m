@@ -1,15 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Sun, 17 Sep 2006 14:48:51 +0200
-Message-ID: <20060917124851.GF2741@elf.ucw.cz>
-References: <200609150316.k8F3GuE9000653@olwen.urbana.css.mot.com>
+Subject: Re: cpufreq user<->kernel interface removal [was Re:
+	community PM requirements/issues and PowerOP]
+Date: Sun, 17 Sep 2006 14:37:59 +0200
+Message-ID: <20060917123759.GD2741@elf.ucw.cz>
+References: <20060914162623.GA6867@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200609150316.k8F3GuE9000653@olwen.urbana.css.mot.com>
+In-Reply-To: <20060914162623.GA6867@linux.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,37 +19,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com
+To: Mark Gross <mgross@linux.intel.com>
+Cc: lkml@elf.ucw.cz.kroah.org, Preece Scott-PREECE <scott.preece@motorola.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+hi!
 
-> | > > May I remind you that Linux world is not only laptops and Sharp Zau=
-rus? ;)
-> | >
-> | > Actually, laptops and zauruses seem to be the only "interesting"
-> | > machines from pm perspective. Then there are Motorola cellphones, but
-> | > Motorola tried hard not to enable users changing kernel... so they are
-> | > irrelevant.
-> | =
-
-> | Get yourself some OMAP hardware then; your blinders are way too effecti=
-ve!
-> | =
-
-> | OMAP1 hardware is easily had; an OSK, or a Nokia N770.  The latter is
-> | battery powered already, without the hardware mods...
-> ---
+> Power-OP: Matt, Eugeny, Igor, myself to a much lesser extent
+> Oppoint: David
 > =
 
-> And, if you don't want to buy a target board, you can use the CE Linux
-> Forum's on-line test lab to build and test kernels on target hardware
-> remotely.
+> Interested parties to getting operating point concepts into the main
+> line kernel are CELF and MLI members.
 
-I'll get linux-based cellphone sooner or later; debugging hardware
-remotely sucks, as does my current internet connection (latency wise).
+Thanks.
 
-Plus it should be motorola / CE manufacturers doing this work, not me.
+> > Or, can each of the different projects send a _short_, 1 paragraph, 4
+> > sentance maximum summary of the different things.  Think of it as your
+> > "elevator pitch".  The different multi-page summaries ware making my
+> > eyes glaze over...
+> =
+
+> CE and embedded Linux users have not been able to use cpufreq, mostly
+> because those platforms don't have ACPI like FW for controlling all
+> > the
+
+?? zaurus uses cpufreq just fine, and you could do that on omap. You'd
+not have powersavings coming out of powering down devices, but
+otherwise it should be doable.
+
 								Pavel
 -- =
 
