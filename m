@@ -1,63 +1,42 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Mon, 18 Sep 2006 12:53:15 +0200
-Message-ID: <20060918105315.GO3746@elf.ucw.cz>
-References: <ADE4D9DBCFC3A345AAA95C195F62B6DD01B6A3D9@de01exm64.ds.mot.com>
-	<20060914091211.GA14874@elf.ucw.cz>
-	<a1a8b0b5c71a78fafd450c10ec52a60d@comcast.net>
-	<45092968.7070508@gmail.com> <20060914101704.GA17820@elf.ucw.cz>
-	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
-	<20060914130311.GA2224@elf.ucw.cz>
-	<20060914145645.0024B19E189@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<20060917123402.GC2741@elf.ucw.cz>
-	<1158576364.28629.7.camel@localhost>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: Re: [linux-pm] [RFC] CPUFreq PowerOP integration, Centrino PM Core
+ and OPs registration 2/3
+Date: Mon, 18 Sep 2006 15:16:59 +0400
+Message-ID: <450E802B.800@gmail.com>
+References: <45096C1A.7010008@gmail.com> <20060918104624.GB4973@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <1158576364.28629.7.camel@localhost>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <amit.kucheria@nokia.com>
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932246AbWIRLQl@vger.kernel.org>
+In-Reply-To: <20060918104624.GB4973@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2006-09-18 13:46:04, Amit Kucheria wrote:
-> On Sun, 2006-09-17 at 14:34 +0200, ext Pavel Machek wrote:
-> =
+Pavel Machek wrote:
+> Hi!
+> 
+>> +/* 
+>> + * FIXME: very temporary implementation, just to prove the concept !! 
+>> + */
+>> +static int 
+>> +process_pwr_param(struct pm_core_point *opt, int op, char *param_name,
+>> +		  int va_arg)
+> 
+> Ok, so can we get final implementation? Parsing strings in drivers is
+> evil...
+ok, i saw this your comment when you mentioned it for the first time and I 
+explicitly put it in TODO letter sent along with the patchset.
 
-> > > OMAP1 hardware is easily had; an OSK, or a Nokia N770.  The latter is
-> > > battery powered already, without the hardware mods...
-> > =
+Can you instead of such implementation details try to review and give us your 
+comments if any on interfaces approach and namely on cpufreq/PowerOP integration 
+at cpufreq_driver layer; comments _based_ on the code. The issue with string 
+parsing does not affect cpufreq/PowerOP integration interfaces since currently I 
+keep going with parameter names(strings) interface for PowerOP Core regardless 
+of whether parsing will eventually occur - at PM Core or POwerOP Core.
 
-> > Well, I already have zaurus, and nokia 770 is inferior AFAICT. So the
-> > next one will be linux cellphone...
-> > =
-
-> > (And IIRC zaurus lasts longer on batteries than 770 does... or at
-> > least comparable. Maybe OMAP is more complex, but is it actually good
-> > thing?)
-> =
-
-> Wifi + Significantly higher resolution display tend to play a 'small'
-> role in this.
-
-640x480 display vs. 800x480 display does not sound like _that_ big
-deal to me. You are right with wifi, that beasts eat 1W-or-so. (and it
-would be great if someone implemented wifi power saving...)
-
-								Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+	Eugeny
+> 
+> 									Pavel
+> 
