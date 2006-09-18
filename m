@@ -1,61 +1,80 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Mon, 18 Sep 2006 11:02:29 +0200
-Message-ID: <20060918090229.GA3746@elf.ucw.cz>
-References: <20060914101704.GA17820@elf.ucw.cz>
-	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
-	<20060914130311.GA2224@elf.ucw.cz>
-	<acd2a5930609140615r5ee11e5amd48857198e1cd8c7@mail.gmail.com>
-	<20060914132037.GC2029@elf.ucw.cz>
-	<1158490414.22541.2.camel@localhost>
-	<20060917131831.GM2741@elf.ucw.cz>
-	<1158499703.22773.11.camel@localhost>
-	<20060917134006.GO2741@elf.ucw.cz>
-	<1158502497.22773.16.camel@localhost>
+Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
+Date: Mon, 18 Sep 2006 12:44:37 +0200
+Message-ID: <20060918104437.GA4973@elf.ucw.cz>
+References: <45096933.4070405@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751647AbWIRKog@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1158502497.22773.16.camel@localhost>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <amit.kucheria@nokia.com>
-Cc: linux-pm@lists.osdl.org
+In-Reply-To: <45096933.4070405@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: pm list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> (Modified recipient list)
+Hi!
 
-> > I'm pretty sure Zauruses do s-t-ram. Flash is read only during normal
-> > operation.
-> > =
+> The PowerOP Core provides completely arch independent interface
+> to create and control operating points which consist of arbitrary
+> subset of power parameters available on a certain platform.
+> Also, PowerOP Core provides optional SysFS interface to access
+> operating point from userspace.
 
-> > I'm very sure Sharp zaurus sl-5500 does s-t-ram. After all, it has
-> > 16MB of flash and 64MB of ram. Suspend-to-flash is not an option.
-> =
+Please inline patches and sign them off.
 
-> If that is the case, I stand corrected. Did the drivers support dynamic
-> idling?
+Also if you are providing new userland interface, describe it... in
+Documentation/ABI.
 
-Not sure about that one.
+> +struct powerop_driver {
+> +	char *name;
+> +	void *(*create_point) (const char *pwr_params, va_list args);
+> +	int (*set_point) (void *md_opt);
+> +	int (*get_point) (void *md_opt, const char *pwr_params, va_list args);
+> +};
 
-> Although something about the time it took to resume still bothers me....
-> I will try to find time to flash it and check.
+We can certainly get better interface than va_list, right?
 
-Well, in 2.6.X suspend-to-RAM means console switch and process
-freezing. (Yes, it would be nice to fix that).
+> +
+> +#
+> +# powerop
+> +#
+> +
+> +menu "PowerOP (Power Management)"
+> +
+> +config POWEROP
+> +	tristate "PowerOP Core"
+> +	help
+
+Hohum, this is certainly going to be clear to confused user...
+
+> +	list_add_tail(&opt->node, &named_opt_list);
+> +	strcpy(registered_names[registered_opt_number], id);
+> +	registered_opt_number++;
+> +	up(&named_opt_list_mutex);
+> +
+> +	blocking_notifier_call_chain(&powerop_notifier_list,
+> +				     POWEROP_REGISTER_EVENT, id);
+> +	return 0;
+> +
+> +      fail_set_name:
+> +	kfree(opt->md_opt);
+> +
+> +      fail_opt_create:
+> +	kfree(registered_names[registered_opt_number]);
+> +
+> +      fail_name_nomem:
+> +	kfree(opt);
+> +	return err;
+> +}
+
+Careful about spaces vs. tabs...
+
+...so, you got support for 20 operating points... And this should
+include devices, too, right? How is it going to work on 8cpu box? will
+you have states like cpu1_800MHz_cpu2_1600MHz_cpu3_800MHz_... ?
+
 								Pavel
-
--- =
-
+-- 
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
