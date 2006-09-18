@@ -1,46 +1,39 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
-Date: Mon, 18 Sep 2006 23:58:04 +0400
-Message-ID: <450EFA4C.1070004@gmail.com>
-References: <45096933.4070405@gmail.com> <20060918104437.GA4973@elf.ucw.cz> <450E83DC.4050503@gmail.com>
+From: "Vitaly Wool" <vitalywool@gmail.com>
+Subject: Re: [PATCH] PowerOP, PowerOP Core, 1/2
+Date: Tue, 19 Sep 2006 00:07:22 +0400
+Message-ID: <acd2a5930609181307y793242f3sef5d59487bc7dad@mail.gmail.com>
+References: <45096933.4070405@gmail.com> <20060918104437.GA4973@elf.ucw.cz>
+	<450E83DC.4050503@gmail.com> <450EFA4C.1070004@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751898AbWIRT5f@vger.kernel.org>
-In-Reply-To: <450E83DC.4050503@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Eugeny S. Mints" <eugeny.mints@gmail.com>, pm list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <450EFA4C.1070004@gmail.com>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: pm list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Eugeny S. Mints wrote:
-> Pavel Machek wrote:
->> Hi!
->>
-[skip]
->> How is it going to work on 8cpu box? will
->> you have states like cpu1_800MHz_cpu2_1600MHz_cpu3_800MHz_... ?
+Eugeny,
 
-basically I guess you are asking about what the names of operating points are 
-and how to distinguish between operating points from userspace on 8cpu box.
+On 9/18/06, Eugeny S. Mints <eugeny.mints@gmail.com> wrote:
 
-An advantage of PowerOP approach is that operating point name is used as a 
-_handle_ and may or may not be meaningful. The idea is that if a policy manager 
-  needs to make a decision and needs to distinguish between operating points it 
-can check value of any power parameters of operating points in question. Power 
-parameter values may be obtained under <op_name> dir name.
+> With such approach a policy manger may compare operating points at runtim=
+e and
+> should not rely on compile time knowledge about what name corresponds to =
+ what
+> set of power parameter values. It uses name as a handle.
 
-With such approach a policy manger may compare operating points at runtime and 
-should not rely on compile time knowledge about what name corresponds to  what 
-set of power parameter values. It uses name as a handle.
+I suggest that you supply a meaningful yet simple example for SMP case.
 
-	Eugeny
-> 
-> i do not operate with term 'state' so I don't understand what it means 
-> here.
-> 
->     Eugeny
-> 
->>                                 Pavel
-> 
-> 
+Thanks,
+   Vitaly
