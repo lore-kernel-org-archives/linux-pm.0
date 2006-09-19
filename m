@@ -1,25 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: nokia 770 [was Re: community PM requirements/issues
-	and PowerOP [Was: Re: So,
-	what's the status on the recent patches here?]]
-Date: Tue, 19 Sep 2006 20:25:23 +0200
-Message-ID: <20060919182523.GE7099@elf.ucw.cz>
-References: <20060914101704.GA17820@elf.ucw.cz>
-	<acd2a5930609140515j5c57583cm43615b6f48a265aa@mail.gmail.com>
-	<20060914130311.GA2224@elf.ucw.cz>
-	<20060914145645.0024B19E189@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<20060917123402.GC2741@elf.ucw.cz>
-	<1158576364.28629.7.camel@localhost>
-	<20060918105315.GO3746@elf.ucw.cz>
-	<1158580875.5401.1.camel@Dogbert.NOE.nokia.com>
-	<20060918121115.GB5370@elf.ucw.cz>
-	<1158583334.28629.19.camel@localhost>
+From: "Preece Scott-PREECE" <scott.preece@motorola.com>
+Subject: Re: community PM requirements/issues and PowerOP [Was:
+	Re: So, what's the status on the recent patches here?]
+Date: Tue, 19 Sep 2006 15:11:13 -0400
+Message-ID: <ADE4D9DBCFC3A345AAA95C195F62B6DD01BB2D20@de01exm64.ds.mot.com>
+References: <20060919182011.GC7099@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <1158583334.28629.19.camel@localhost>
+Content-class: urn:content-classes:message
+In-Reply-To: <20060919182011.GC7099@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -29,54 +19,125 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <amit.kucheria@nokia.com>
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Locke <matthew.a.locke@comcast.net>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> From: Pavel Machek [mailto:pavel@ucw.cz] =
 
-> > > > 640x480 display vs. 800x480 display does not sound like _that_ big
-> > > > deal to me. You are right with wifi, that beasts eat 1W-or-so. (and=
- it
-> > > > would be great if someone implemented wifi power saving...)
-> > > =
-
-> > > wifi power saving does exist and you have it already in 770
-> > > and also color depth probably affects performance: do they have the s=
-ame
-> > > number of bits per pixel?
-> > =
-
-> > Not sure, but I believe it has 65000 colors.
-> > =
-
-> > What wireless chip is included in 770? Are you using devicespace
-> > stack? Is wifi driver opensource?
 > =
 
-> It is similar to other 'open-sourced' drivers - binary firmware, open
-> source driver.
+> ... because Sharp & notebook manufacturers =
 
-Ok.
+> > > actually play fair.
+> > ---
+> > =
 
-> Anyways... this is getting off-topic. Sharp Zaurus was great hardware,
-> but its not shipped in USA/Europe anymore.
+> > Depends, of course, on your definition of "fair". The CE =
 
-Agreed, this is getting off-topic.
+> manufacturers =
 
-> And if the only criteria for hardware-that-matters is hackability, then
-> Nokia 770 can be flashed with your own kernel and rootfs. Check
-> www.maemo.org
+> > are investing a lot of work in Linux, either directly or through =
 
-I agree that Nokia is doing the right thing (tm) here (and
-THANKS!). (Excluding charging circuity, but someone is going to fix
-that). Unfortunately Motorola is not doing the right thing...
+> > hiring developers and working through distributors. And =
 
-Could you perhaps provide list of operating points for 770? It would
-help understanding a bit, I'd say.
-									Pavel
--- =
+> they're giving =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+> > their enhancements back to the community, which is what was =
+
+> generally =
+
+> > considered "fair" for open-source development. The power management
+> =
+
+> Well, CE equipment usually uses obsolete, heavily modified =
+
+> kernels, and developed in-house (as opposed by community). =
+
+> Yes, it is nice that Motorola uses Linux and not WindowsCE...
+---
+
+There are perfectly sensible business reasons why device manufacturers
+need to freeze their development on old kernels (and other components)
+for long periods of time. Are you saying this is "unfair" to the
+developers? I understand that it makes the patches less useful, in
+many cases, but unfair?
+
+I do hope that Motorola, and other CE manufacturers, will start working
+more closely with the community.  The CE Linux Forum was set up in part
+to make that easier and more effective. I believe it would be better =
+
+for both the manufacturers and the community.
+
+---
+> ... =
+
+> > I expect modifiable kernels in the future, but that =
+
+> requires a lot of =
+
+> > extra engineering (beyond just making the device
+> > work) to harden the non-open elements so that malicious =
+
+> kernel changes =
+
+> > couldn't compromise them. None of the
+> =
+
+> What is the issue here? I thought that GSM stack runs on =
+
+> separate CPU, anyway? And in practice, it is probably =
+
+> possible to flash your equipment... Like small shops offering =
+
+> "unlocking" do it all the time.
+---
+[NOTE again that I do not speak for Motorola in this mailing list;
+these comments are not based on direct knowledge of policy, and
+IANAL!]
+
+The issue is "due diligence" - a manufacturer could be held liable
+for damage done by a modified device if they have not made a good
+faith effort to make such modification either (a) safe or
+(b) very difficult. Yes, this is non-value-add work, but there are
+people in the world who do malicious things, and manufacturers are
+very worried about courts finding that they were negligent in
+not making a greater effort to stop such malicious people.
+
+There is also a liability issue with non-malicious changes, in that
+manufacturers can sometimes be held liable for things that users
+do to themselves. [If you believe that disclaimers of liability or =
+
+warranty will actually protect you in court, you're probably =
+
+being na=EFve.]
+
+There are also, of course, contractual issues with carriers and
+content owners, who could also sue if a manufacturer didn't make a
+sufficient effort to protect the terms of the contract. The
+carriers and content owners are continually raising the bar on the
+level of protection they require.
+
+---
+> =
+
+> > manufacturers is going to build a cellphone or DVR that service =
+
+> > providers won't allow on their networks...
+> =
+
+> What is the issue? I can do whatever I want (including =
+
+> modifying phone-side firmware so that phone works without =
+
+> SIMcard, just with Ki) with siemens ME45 already. Of course =
+
+> Siemens will not support me doing that... That should not be =
+
+> too different with Motorola...?
+---
+
+While legal specifics may vary from country to country, for US
+Manufacturers, the same issues as above...
+
+scott
