@@ -1,64 +1,54 @@
 From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
-Date: Tue, 19 Sep 2006 14:46:19 -0500 (CDT)
-Message-ID: <200609191946.k8JJkJmx028840@olwen.urbana.css.mot.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752006AbWISTq1@vger.kernel.org>
-In-reply-to: Pavel Machek's message of Tue, 19 Sep 2006 20:22:20 +0200
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: Re: nokia 770 [was Re: community PM requirements/issues
+	and PowerOP [Was: Re: So,
+	what's the status on the recent patches here?]]
+Date: Tue, 19 Sep 2006 14:54:06 -0500 (CDT)
+Message-ID: <200609191954.k8JJs6sK028848@olwen.urbana.css.mot.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-reply-to: Pavel Machek's message of Tue, 19 Sep 2006 20:25:23 +0200
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: pavel@ucw.cz
-Cc: eugeny.mints@gmail.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Cc: scott.preece@motorola.com, linux-pm@lists.osdl.org, matthew.a.locke@comcast.net
 List-Id: linux-pm@vger.kernel.org
 
 
-
-| From: Pavel Machek<pavel@ucw.cz>
-| 
-| > >>+struct powerop_driver {
-| > >>+	char *name;
-| > >>+	void *(*create_point) (const char *pwr_params, va_list args);
-| > >>+	int (*set_point) (void *md_opt);
-| > >>+	int (*get_point) (void *md_opt, const char *pwr_params, va_list 
-| > >>args);
-| > >>+};
-| > >
-| > >We can certainly get better interface than va_list, right?
-| > 
-| > Please elaborate.
-| 
-| va_list does not provide adequate type checking. I do not think it
-| suitable in driver<->core interface.
----
-
-Well, in this particular case the typing probably has to be weak, one
-way or another. The meaning of the parameters is arguably opaque at
-the interface - the attributes may be meaningful to specific components
-of the system, but are not defined in the standardized interface (which
-would otherwise have to know about all possible kinds of power
-attributes and be changed every time a new one is added).
-
-So, if you'd rather have an array of char* or void* values, that would
-probably also meet the need, but my guess is that the typing is
-intentionally opaque.
-
----
+| From pavel@ucw.cz Tue Sep 19 13:27:27 2006
 | ...
-| > >How is it going to work on 8cpu box? will
-| > >you have states like cpu1_800MHz_cpu2_1600MHz_cpu3_800MHz_... ?
-| > 
-| > i do not operate with term 'state' so I don't understand what it means here.
-| 
-| Okay, state here means "operating point". How will operating points
-| look on 8cpu box? That's 256 states if cpus only support "low" and
-| "high". How do you name them?
+| > And if the only criteria for hardware-that-matters is hackability, then
+| > Nokia 770 can be flashed with your own kernel and rootfs. Check
+| > www.maemo.org
+| =
+
+| I agree that Nokia is doing the right thing (tm) here (and
+| THANKS!). (Excluding charging circuity, but someone is going to fix
+| that). Unfortunately Motorola is not doing the right thing...
 ---
 
-I don't think you would name the compounded states. Each CPU would need
-to have its own defined set of operating points (since the capabilities
-of the CPUs can reasonably be different).
+Note that the 770 doesn't talk to a public network, over regulated
+frequencies and power ranges, and isn't constrained by, for instance,
+the GSM standards, and they're not constrained by the requirements
+of middlemen (carriers), so it's not really an apples-to-apples
+comparison.
+
+That said, I do respect the way they have been working directly in
+community projects.
 
 scott
--- 
+-- =
+
 scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+
 e-mail:	preece@motorola.com	fax:	+1-217-384-8550
 phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
