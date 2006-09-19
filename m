@@ -1,70 +1,151 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
-Date: Wed, 20 Sep 2006 00:06:04 +0400
-Message-ID: <45104DAC.2000000@gmail.com>
-References: <200609191946.k8JJkJmx028840@olwen.urbana.css.mot.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] USB device persistence across
+	suspend-to-disk
+Date: Tue, 19 Sep 2006 16:25:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0609191604080.4631-100000@iolanthe.rowland.org>
+References: <200609191052.58196.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751101AbWISUFc@vger.kernel.org>
-In-Reply-To: <200609191946.k8JJkJmx028840@olwen.urbana.css.mot.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: pavel@ucw.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <200609191052.58196.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-usb-devel@lists.sourceforge.net, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Scott E. Preece wrote:
-> | From: Pavel Machek<pavel@ucw.cz>
-> | 
-> | > >>+struct powerop_driver {
-> | > >>+	char *name;
-> | > >>+	void *(*create_point) (const char *pwr_params, va_list args);
-> | > >>+	int (*set_point) (void *md_opt);
-> | > >>+	int (*get_point) (void *md_opt, const char *pwr_params, va_list 
-> | > >>args);
-> | > >>+};
-> | > >
-> | > >We can certainly get better interface than va_list, right?
-> | > 
-> | > Please elaborate.
-> | 
-> | va_list does not provide adequate type checking. I do not think it
-> | suitable in driver<->core interface.
-> ---
+On Tue, 19 Sep 2006, David Brownell wrote:
+
+> > what matters is that people have been forced to unmount all 
+> > filesystems on USB devices before doing suspend-to-disk.  On some systems
+> > this is necessary even for suspend-to-RAM.
 > 
-> Well, in this particular case the typing probably has to be weak, one
-> way or another. The meaning of the parameters is arguably opaque at
-> the interface - the attributes may be meaningful to specific components
-> of the system, but are not defined in the standardized interface (which
-> would otherwise have to know about all possible kinds of power
-> attributes and be changed every time a new one is added).
+> Most PCs maintain the USB connections during suspend-to-RAM; ISTR seeing
+> some hardware design guidelines from SFT saying to do it that way, so that
+> remote wakeup works.  (E.g. on systems with only USB keyboards and mice,
+> you want wakeup to be natural.)
+
+I also saw some guidelines from Microsoft, perhaps the very same ones.  
+They described the tasks the BIOS was supposed to undertake with regard to 
+USB controllers.  However they didn't address the (IMO) really important 
+issues.  And the vendor in question at the time interpreted the document 
+to mean exactly the opposite of what you're saying!  (Of course, that's 
+not saying much...)
+
+> A mechanism that's this dangerous deserves to be discouraged much more
+> strongly, if it's even merged.  (I'm not a big fan of giving people
+> quite that much rope.)  Having it depend on CONFIG_EMBEDDED as well as
+> CONFIG_EXPERIMENTAL (or better yet CONFIG_DANGEROUS) seems a better route...
+
+I'll be happy to change the enabling mechanism from a module parameter to 
+a config option -- or even both.
+
+How dangerous would this turn out to be in the real world?  It's hard to 
+say.  No doubt there would be occasional instances of crashes, but just 
+how occasional is impossible to estimate.  My guess is pretty infrequent.
+
+> > + * changed.  If the user replaces a flash memory card while the system is
+> > + * asleep, he will have only himself to blame when the filesystem on the
+> > + * new card is corrupted and the system crashes.
 > 
-> So, if you'd rather have an array of char* or void* values, that would
-> probably also meet the need, but my guess is that the typing is
-> intentionally opaque.
+> I'll disagree on the "only himself to blame".  If this mechanism is trivial
+> to kick in, it will be kicked in even by (or on behalf of) users that have
+> no reason to understand how dangerous this is.
 
-exactly. Thanks Scott, I don't have anything meaningful to add here.
+This is the flip side of the argument.  How easy should it be to invoke 
+this feature?  Most users at the level of ignorance you're assuming don't 
+ever set up nontrivial module parameters.  Even fewer users bother to 
+recompile kernels with config options different from those used by their 
+distribution.
 
-> ---
-> | ...
-> | > >How is it going to work on 8cpu box? will
-> | > >you have states like cpu1_800MHz_cpu2_1600MHz_cpu3_800MHz_... ?
-> | > 
-> | > i do not operate with term 'state' so I don't understand what it means here.
-> | 
-> | Okay, state here means "operating point". How will operating points
-> | look on 8cpu box? That's 256 states if cpus only support "low" and
-> | "high". How do you name them?
-> ---
+> > +			WARNING!!  If a USB mass-storage device or its media
+> > +			are changed while the system is suspended, the kernel
+> > +			may not realize what has happened.  If this option is
+> > +			enabled then filesystem corruption and a system crash
+> > +			may result.
+>                         ^^^
+>                         File system corruption ** WILL ** result...
+
+Not necessarily.  The example that provoked this was an embedded system 
+with its root fs on a non-accessible USB flash device.
+
+> > +According to the USB specification, when a USB bus is suspended the
+> > +bus must continue to supply suspend current (around 1-5 mA).  This
 > 
-> I don't think you would name the compounded states. Each CPU would need
-> to have its own defined set of operating points (since the capabilities
-> of the CPUs can reasonably be different).
+> No ... it's normally 500 uA, or for high powered devices up to 2500 uA.
+> The specification is a per-device average over 1 second, not per bus.
 
-i'm not sure - may be it's the mail list issues but in fact I sent out
-my additional comment on this question in a separate letter on this thread
-a while ago.
+Okay, so I wrote that from memory and I was off by a factor of 2 (it does
+say "around"!).  Since I didn't say whether the figure was per-device or
+per-bus, you can't criticize that aspect.  :-)
 
-Eugeny
+> > +Loss of power isn't the only mechanism to worry about.  Anything that
+> > +interrupts a power session will have the same effect.  For example,
+> > +even though suspend current may have been maintained while the system
+> > +was asleep, on many systems during the initial stages of wakeup the
+> > +firmware (i.e., the BIOS) resets the motherboard's USB host
+> > +controllers. 
+> 
+> That's called a BUG ... firmware shouldn't have reset any device
+> that the OS was managing.  And in fact during true system suspend
+> states, I've not heard any reports of a BIOS resetting a USB host
+> controller.  Do you have examples of these "many" systems??
 
-> scott
+I don't have statistics.  But I have run across quite a few examples of
+systems where this happens.  Lots of bug reports, plus at least one of my
+own machines.  (I think -- haven't checked it recently.)
+
+> > +On many systems the USB host controllers will get reset after a
+>       ^^^^
+>       "some" ... by numbers, not very many since ISTR it's against
+> the hardware design guidelines from MSFT.
+
+I wouldn't go so far as to say that, unless you can actually produce the
+relevant quite from the guidelines document.  In any case, even if the
+percentage of machines where this happens is relatively low it can still
+amount to a lot of systems.
+
+> > +suspend-to-RAM.  On almost all systems, no suspend current is
+> > +available during suspend-to-disk (also known as swsusp).  You can
+> > +check the kernel log after resuming to see if either of these has
+> > +happened; look for lines saying "root hub lost power or was reset".
+> > +
+> > +In practice, people are forced to unmount any filesystems on a USB
+> > +device before suspending.  
+> 
+> Just like for ** ALL ** other kinds of removable media, on any system
+> where userspace isn't facilitating data corruption.
+
+What about floppy disks?
+
+> > +	WARNING: Using "persist=y" can be dangerous!!
+> 
+> You're understating this.  I really think that such a mechanism would
+> need to be explicitly configured into the kernel.  Distros that want
+> to cope with all the end-user "your kernel trashed my disk!!" service
+> calls could do so ... others would keep that option off, and save lots
+> of customer support and end user pain.
+
+Would you prefer just a config option or a config option plus a module
+parameter (both must be set to enable the feature)?
+
+Alan Stern
+
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys -- and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
