@@ -1,64 +1,70 @@
-From: John Goerzen <jgoerzen@complete.org>
-Subject: Suspend and slight video corruption
-Date: Thu, 21 Sep 2006 16:02:44 -0500
-Message-ID: <20060921210244.GB5888@excelhustler.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
+Date: Fri, 22 Sep 2006 16:09:37 +0200
+Message-ID: <20060922140937.GL3478@elf.ucw.cz>
+References: <200609191946.k8JJkJmx028840@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932499AbWIVOJl@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+In-Reply-To: <200609191946.k8JJkJmx028840@olwen.urbana.css.mot.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: eugeny.mints@gmail.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi!
 
-I'm trying to use suspend to disk in a MacBook Pro and am having an odd iss=
-ue:
+> | > >>+struct powerop_driver {
+> | > >>+	char *name;
+> | > >>+	void *(*create_point) (const char *pwr_params, va_list args);
+> | > >>+	int (*set_point) (void *md_opt);
+> | > >>+	int (*get_point) (void *md_opt, const char *pwr_params, va_list 
+> | > >>args);
+> | > >>+};
+> | > >
+> | > >We can certainly get better interface than va_list, right?
+> | > 
+> | > Please elaborate.
+> | 
+> | va_list does not provide adequate type checking. I do not think it
+> | suitable in driver<->core interface.
+> ---
+> 
+> Well, in this particular case the typing probably has to be weak, one
+> way or another. The meaning of the parameters is arguably opaque at
 
-colors get corrupted -- but only slightly -- after a resume.  The screen
-appears as if it just dropped from 24-bit color mode to 8-bit color mode
-and is doing a poor job of dithering.
+Why not have struct powerop_parameters, defined in machine-specific
+header somewhere, but used everywhere?
 
-The problem is most easily visible with an image such as
-http://debblue.debian.net/images/debblue/gdm-debblue.png.  Before a
-suspend, it looks fine.  After a suspend, there are concentric circles
-going out from the center with hard-edged color changes.  With many
-things, this problem is not even noticable.  I wouldn't be surprised if
-this has happened to many before without being detected.
+> the interface - the attributes may be meaningful to specific components
+> of the system, but are not defined in the standardized interface (which
+> would otherwise have to know about all possible kinds of power
+> attributes and be changed every time a new one is added).
+> 
+> So, if you'd rather have an array of char* or void* values, that would
+> probably also meet the need, but my guess is that the typing is
+> intentionally opaque.
 
-This happens no matter what viewer I am using to display the image in X.
-It also persists even if I restart the viewer, switch to the console and
-back, etc.  But restarting the X server fixes it.
+Actually array of integers would be better than this.
 
-I tried running xinit /bin/false -- :1, but that hung the machine (it
-does not hang the machine when run before a suspend).
+> | > >How is it going to work on 8cpu box? will
+> | > >you have states like cpu1_800MHz_cpu2_1600MHz_cpu3_800MHz_... ?
+> | > 
+> | > i do not operate with term 'state' so I don't understand what it means here.
+> | 
+> | Okay, state here means "operating point". How will operating points
+> | look on 8cpu box? That's 256 states if cpus only support "low" and
+> | "high". How do you name them?
+> 
+> I don't think you would name the compounded states. Each CPU would need
+> to have its own defined set of operating points (since the capabilities
+> of the CPUs can reasonably be different).
 
-I have tried both uswsusp and suspend2 and get the same results with
-each.
+Well, having few "powerop domains" per system would likely solve that
+problem... and problem of 20 devices on my PC. Can we get that?
 
-This is a Debian etch system, kernel.org 2.6.18 (with the small
-mactel-linux patches), booting without EFI, XOrg 7.0.0, ATI fglrx driver
-8.28.8.
-
-Is there any idea what is going on?  Any suggestion on how I could help
-track it down?  I'm happy to gather whatever information would be
-helpful.
-
-I should also add that I tried using vbetool to save/restore state on
-the commandline manually, but that didn't help.  (Trying to POST the
-card manually after restore hung the machine.)  I wonder why the tools
-such as powersaved offer to automate VBE for suspend to RAM but not
-suspend to disk...
-
-Thanks,
-
--- John
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
