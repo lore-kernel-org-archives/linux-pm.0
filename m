@@ -1,74 +1,40 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
+From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
-Date: Fri, 22 Sep 2006 17:48:55 +0300
-Message-ID: <1158936535.26687.20.camel@Dogbert.NOE.nokia.com>
-References: <200609192137.k8JLb4NX029061@olwen.urbana.css.mot.com>
-	 <20060922141127.GM3478@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932554AbWIVOtv@vger.kernel.org>
-In-Reply-To: <20060922141127.GM3478@elf.ucw.cz>
+Date: Fri, 22 Sep 2006 15:28:23 -0500 (CDT)
+Message-ID: <200609222028.k8MKSN5h008476@olwen.urbana.css.mot.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964888AbWIVU2r@vger.kernel.org>
+In-reply-to: Pavel Machek's message of Fri, 22 Sep 2006 16:09:37 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-To: ext Pavel Machek <pavel@ucw.cz>
-Cc: "Scott E. Preece" <preece@motorola.com>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: pavel@ucw.cz
+Cc: eugeny.mints@gmail.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-09-22 at 16:11 +0200, ext Pavel Machek wrote:
-> Hi!
-> 
-> > Hmm. If you assume the CPUs in an SMP system can be in different
-> > operating points, this would (as Pavel pointed out) result in an
-> > explosion of operating points.
-> 
-> Problem is not only CPUs, devices are mostly independent in PC
-> case... it would be nice to solve that problem with same approach.
-> 
-> 								Pavel
 
-This whole discussion is, imho, very misleading.
+| From pavel@ucw.cz Fri Sep 22 09:12:25 2006
 
-The number of CPU in a box or the number of cores in a chip is not a
-significant element, per se.
+Hi, Pavel,
 
-What is really important is how interdependent they are.
-In the case of a board with 2, 4 or 8 CPU, the decisione if their states
-are tied together or not is not based on the packaging, but rather on
-the (possibly suboptimal) HW design: shared clock or power sources
-impose constraints and correlations.
+| ...
+|
+| > | Okay, state here means "operating point". How will operating points
+| > | look on 8cpu box? That's 256 states if cpus only support "low" and
+| > | "high". How do you name them?
+| > 
+| > I don't think you would name the compounded states. Each CPU would need
+| > to have its own defined set of operating points (since the capabilities
+| > of the CPUs can reasonably be different).
+| 
+| Well, having few "powerop domains" per system would likely solve that
+| problem... and problem of 20 devices on my PC. Can we get that?
+---
 
-Correlations lead to the multiplication of subsystem states, while
-constraints curb the number, because if CPU1 and CPU2 share the same
-voltage source, then of all the possible states, only those where this
-constraint is satisfied are possible.
+I've been hoping somebody would send a good description of exactly what
+they mean by "power domain" or "voltage domain", so we could talk about
+it... 
 
-Remember what an OP is:
-a set of values that exaustively and uniquely define the state of a
-system.
-
-So if your box has 256 CPUs, I bet that they are not all on the same
-board and probably you also have several independently programmable
-power sources.
-If every power source feeds say 8 CPUs, then the box contains 16
-independent subsystems.
-
-Of course one probably would like to orchestrate all of them, but that's
-a 2nd level problem, that could be addressed by a power/workload
-manager.
-
-However, even starting with localised dynamic power management would
-yeld a significant improvement.
-
-About other device within a PC: SW design cannot really change whatever
-constraints the HW design is imposing: if 2 devices are sharing a
-programmable v/f source, the source is generating a system which
-comprises both devices and it has to be addressed as such.
-
-The innterdipendency could be masked at some high abstract level, but
-then going down, close to HW, it has to be explicitly dealt with.
-
+scott
 -- 
-Cheers,
-           Igor
-
-Igor Stoppa (Nokia M - OSSO / Tampere)
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
