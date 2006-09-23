@@ -1,16 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Sun, 24 Sep 2006 01:39:28 +0200
-Message-ID: <20060923233928.GG21187@elf.ucw.cz>
-References: <20060919182011.GC7099@elf.ucw.cz>
-	<ADE4D9DBCFC3A345AAA95C195F62B6DD01BB2D20@de01exm64.ds.mot.com>
+Subject: Re: nokia 770 [was Re: community PM requirements/issues
+	and PowerOP [Was: Re: So,
+	what's the status on the recent patches here?]]
+Date: Sun, 24 Sep 2006 01:50:36 +0200
+Message-ID: <20060923235036.GH21187@elf.ucw.cz>
+References: <200609191954.k8JJs6sK028848@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <ADE4D9DBCFC3A345AAA95C195F62B6DD01BB2D20@de01exm64.ds.mot.com>
+In-Reply-To: <200609191954.k8JJs6sK028848@olwen.urbana.css.mot.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,106 +20,42 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Preece Scott-PREECE <scott.preece@motorola.com>
-Cc: Matthew Locke <matthew.a.locke@comcast.net>, linux-pm <linux-pm@lists.osdl.org>
+Cc: scott.preece@motorola.com, linux-pm@lists.osdl.org, matthew.a.locke@comcast.net
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > ... because Sharp & notebook manufacturers =
+> | ...
+> | > And if the only criteria for hardware-that-matters is hackability, th=
+en
+> | > Nokia 770 can be flashed with your own kernel and rootfs. Check
+> | > www.maemo.org
+> | =
 
-> > > > actually play fair.
-> > > ---
-> > > =
-
-> > > Depends, of course, on your definition of "fair". The CE =
-
-> > manufacturers =
-
-> > > are investing a lot of work in Linux, either directly or through =
-
-> > > hiring developers and working through distributors. And =
-
-> > they're giving =
-
-> > > their enhancements back to the community, which is what was =
-
-> > generally =
-
-> > > considered "fair" for open-source development. The power management
-> > =
-
-> > Well, CE equipment usually uses obsolete, heavily modified =
-
-> > kernels, and developed in-house (as opposed by community). =
-
-> > Yes, it is nice that Motorola uses Linux and not WindowsCE...
+> | I agree that Nokia is doing the right thing (tm) here (and
+> | THANKS!). (Excluding charging circuity, but someone is going to fix
+> | that). Unfortunately Motorola is not doing the right thing...
 > ---
 > =
 
-> There are perfectly sensible business reasons why device manufacturers
-> need to freeze their development on old kernels (and other components)
-> for long periods of time. Are you saying this is "unfair" to the
-> developers? I understand that it makes the patches less useful, in
-> many cases, but unfair?
+> Note that the 770 doesn't talk to a public network, over regulated
+> frequencies and power ranges, and isn't constrained by, for instance,
+> the GSM standards, and they're not constrained by the requirements
+> of middlemen (carriers), so it's not really an apples-to-apples
+> comparison.
 
-No, I call "you may not use your own kernel on your own hardware",
-even if manufacturer of that hardware is using your code and code is
-GPLed "unfair". Being locked onto old kernel is unfortunate, but fair.
+Yes, 770 is in easier position...
 
-> I do hope that Motorola, and other CE manufacturers, will start working
-> more closely with the community.  The CE Linux Forum was set up in
+> That said, I do respect the way they have been working directly in
+> community projects.
 
-Yep, I hope so, too.
+...still, publicly downloadable SDK for userland software on
+a1200/a780 would be nice. I do not think userland software can break
+power levels/frequencies, so you should be okay, and symbian /
+windowsCE certainly solved that problem before you...
 
-> > ... =
-
-> > > I expect modifiable kernels in the future, but that =
-
-> > requires a lot of =
-
-> > > extra engineering (beyond just making the device
-> > > work) to harden the non-open elements so that malicious =
-
-> > kernel changes =
-
-> > > couldn't compromise them. None of the
-> > =
-
-> > What is the issue here? I thought that GSM stack runs on =
-
-> > separate CPU, anyway? And in practice, it is probably =
-
-> > possible to flash your equipment... Like small shops offering =
-
-> > "unlocking" do it all the time.
-> =
-
-> The issue is "due diligence" - a manufacturer could be held liable
-> for damage done by a modified device if they have not made a good
-> faith effort to make such modification either (a) safe or
-> (b) very difficult. Yes, this is non-value-add work, but there are
-> people in the world who do malicious things, and manufacturers are
-> very worried about courts finding that they were negligent in
-> not making a greater effort to stop such malicious people.
-
-Well, I believe Motorola is going a bit further than "due
-diligence". Making directories inaccessible on running system (not
-even read only!) was probably not mandatory, right? And even M$
-smartphones support end-user updating of firmware.
-
-> There are also, of course, contractual issues with carriers and
-> content owners, who could also sue if a manufacturer didn't make a
-> sufficient effort to protect the terms of the contract. The
-> carriers and content owners are continually raising the bar on the
-> level of protection they require.
-
-Yep, I see it sucks being phone manufacturer. But you have separate
-CPU doing GSM stack in current cellphones, right? I believe you even
-use AT commands for communication... That should be about as hard as
-pcmcia card to "harden", and yes, people are routinelly selling pcmcia
-GSM cards.
-
+To sum it up "it is nice that motorola uses linux, but you could do a
+bit better".
 								Pavel
 -- =
 
