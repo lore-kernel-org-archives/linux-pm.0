@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: USB autosuspend patch series
-Date: Mon, 25 Sep 2006 15:49:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0609251542410.5680-101000@iolanthe.rowland.org>
-References: <20060924211939.GH1873@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspending to disk on FC6 not working
+Date: Mon, 25 Sep 2006 22:15:19 +0200
+Message-ID: <200609252215.19257.rjw@sisk.pl>
+References: <1159138520.19021.11.camel@soncomputer>
+	<200609252043.23219.rjw@sisk.pl>
+	<1159212870.2520.5.camel@soncomputer>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-1559625215-1258259746-1159213774=:5680"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20060924211939.GH1873@elf.ucw.cz>
+In-Reply-To: <1159212870.2520.5.camel@soncomputer>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,241 +20,83 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Louis Garcia <louisg00@bellsouth.net>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+On Monday, 25 September 2006 21:34, Louis Garcia wrote:
+> On Mon, 2006-09-25 at 20:43 +0200, Rafael J. Wysocki wrote:
+> > On Monday, 25 September 2006 19:10, Louis Garcia wrote:
+> > > On Mon, 2006-09-25 at 09:16 +0200, Rafael J. Wysocki wrote:
+> > > > On Monday, 25 September 2006 00:55, Louis Garcia wrote:
+> > > > > When I first installed FC6 test 2 suspend to disk worked on my bo=
+x which
+> > > > > is a Dell dimension 8200 (P4). During the kernel-2.6.17-xxx updat=
+es this
+> > > > > has stopped working. Now kernel-2.6.18 has come out and I'm havin=
+g the
+> > > > > same problems. I have tried to get this resolved on there mailing=
+ list
+> > > > > but it's not high on there things todo. I would like to debug sus=
+pend to
+> > > > > see what is happening. What is the proper way to do this? Has thi=
+s been
+> > > > > discussed before? Is there a separate mailing-list for suspend?
+> > > > =
 
----1559625215-1258259746-1159213774=:5680
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+> > > > Generally you're not giving enough information to trace the problem.
+> > > > =
 
-On Sun, 24 Sep 2006, Pavel Machek wrote:
+> > > > First, what doesn't work, the suspend to disk or the resume?
+> > > > =
 
-> On Sun 2006-09-24 17:13:35, Alan Stern wrote:
-> > On Sun, 24 Sep 2006, Pavel Machek wrote:
-> > 
-> > > Are autosuspend patches available somewhere? (Relative to -mm, or
-> > > relative to 2.6.18?) I'd like to play with them...
-> > 
-> > The versions in the mailing list archives are a little old.  I'll post
-> > some updates later this week.
-> 
-> Thanks!
+> > > > Rafael
+> > > > =
 
-Attached is a gzipped tar archive of a quilt "patches" directory for
-2.6.18-mm1, with all the USB autosuspend code.  These patches include the
-related updates and bug fixes that have been or will soon be submitted.  
-The autosuspend facility is dependent on CONFIG_USB_SUSPEND, so check your 
-.config before building this code.
+> > > > =
 
-Some of the patches are still rather experimental.  If anyone has any 
-problem using them (with or without CONFIG_USB_SUSPEND), please let me 
-know.
+> > > =
 
-Alan Stern
+> > > Suspend to disk does not work. When trying to suspend, from gnome, it
+> > > goes normally. The power button blinks and then restarts. I'm back to
+> > > the screensaver lock screen but the mouse and keyboard are dead.
+> > =
 
----1559625215-1258259746-1159213774=:5680
-Content-Type: APPLICATION/x-gzip; name="usb-autosuspend-patches.tgz"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.44L0.0609251549340.5680@iolanthe.rowland.org>
-Content-Description: 
-Content-Disposition: attachment; filename="usb-autosuspend-patches.tgz"
+> > Can you please try booting the kernel with init=3D/bin/bash, mount /pro=
+c,
+> > mount /sys, do "/sbin/swapon -a" and "echo disk > /sys/power/state"?
+> > =
 
-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
-TnWqU53q9L9PfwPlQv/gAKAAAA==
----1559625215-1258259746-1159213774=:5680
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > Rafael
+> > =
+
+> > =
+
+> After the echo command the box turned off. The power button was not
+> blinking. I restarted it and went into grub,
+
+Did you append init=3D/bin/bash to the kernel command line after it had gone
+into GRUB?
+
+> linux booted into bash.
+
+Had it been displaying a progress meter before the bash came up?
+
+> When suspend was working the power button flashed and when I pressed it
+> the box booted right into linux and the screensaver lock screen
+> bypassing grub altogether.
+
+That's because if you suspend "normally", some scripts run before the suspe=
+nd
+that change your GRUB configuration and use the "platform" suspend method.
+However, the problem seems to be on much lower level and to debug it we need
+to bypass these things.
+
+Greetings,
+Rafael
 
 
----1559625215-1258259746-1159213774=:5680--
+-- =
+
+You never change things by fighting the existing reality.
+		R. Buckminster Fuller
