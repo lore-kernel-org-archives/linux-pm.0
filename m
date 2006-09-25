@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspending to disk on FC6 not working
-Date: Mon, 25 Sep 2006 09:16:08 +0200
-Message-ID: <200609250916.09098.rjw@sisk.pl>
-References: <1159138520.19021.11.camel@soncomputer>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Suspend and slight video corruption
+Date: Mon, 25 Sep 2006 10:12:22 +0200
+Message-ID: <20060925081222.GA2107@elf.ucw.cz>
+References: <20060921210244.GB5888@excelhustler.com>
+	<20060924094153.GA4057@ucw.cz>
+	<20060924230213.GA21162@katherina.lan.complete.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1159138520.19021.11.camel@soncomputer>
 Content-Disposition: inline
+In-Reply-To: <20060924230213.GA21162@katherina.lan.complete.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,26 +20,42 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+To: John Goerzen <jgoerzen@complete.org>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 25 September 2006 00:55, Louis Garcia wrote:
-> When I first installed FC6 test 2 suspend to disk worked on my box which
-> is a Dell dimension 8200 (P4). During the kernel-2.6.17-xxx updates this
-> has stopped working. Now kernel-2.6.18 has come out and I'm having the
-> same problems. I have tried to get this resolved on there mailing list
-> but it's not high on there things todo. I would like to debug suspend to
-> see what is happening. What is the proper way to do this? Has this been
-> discussed before? Is there a separate mailing-list for suspend?
+On Sun 2006-09-24 18:02:13, John Goerzen wrote:
+> On Sun, Sep 24, 2006 at 09:41:53AM +0000, Pavel Machek wrote:
+> > > I have tried both uswsusp and suspend2 and get the same results with
+> > > each.
+> > > =
 
-Generally you're not giving enough information to trace the problem.
+> > > This is a Debian etch system, kernel.org 2.6.18 (with the small
+> > > mactel-linux patches), booting without EFI, XOrg 7.0.0, ATI fglrx dri=
+ver
+> > > 8.28.8.
+> > =
 
-First, what doesn't work, the suspend to disk or the resume?
+> > You are using ati closed video drivers, experience video problem, and
+> > expect us to help? Huh? Ask ATI.
+> =
 
-Rafael
+> I understand your position, and would be quite happy to be free of
+> fglrx -- X.org doesn't yet support this video card, so I have no other
+> choice.
 
+You do not need X.org support. vesafb should work nice, for
+example. Maybe even radeonfb.
 
+> As I'm sure you're aware, ATI doesn't provide any support for their
+> driver.  I was merely hoping someone may have seen this behavior
+
+As I'm sure you're aware, we don't provide any support for
+closed-source systems. Anyway, indicate that system includes closed
+components in the subject line next time...
+								Pavel
 -- =
 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
