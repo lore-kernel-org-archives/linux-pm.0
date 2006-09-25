@@ -1,13 +1,14 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: community PM requirements/issues and PowerOP [Was:
-	Re: So, what's the status on the recent patches here?]
-Date: Mon, 25 Sep 2006 07:43:41 -0500 (CDT)
-Message-ID: <200609251243.k8PChf6N014935@olwen.urbana.css.mot.com>
+From: Louis Garcia <louisg00@bellsouth.net>
+Subject: Re: suspending to disk on FC6 not working
+Date: Mon, 25 Sep 2006 13:10:29 -0400
+Message-ID: <1159204229.2507.11.camel@soncomputer>
+References: <1159138520.19021.11.camel@soncomputer>
+	<200609250916.09098.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: Pavel Machek's message of Sun, 24 Sep 2006 01:39:28 +0200
+In-Reply-To: <200609250916.09098.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,41 +18,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: pavel@ucw.cz
-Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-| From pavel@ucw.cz Sat Sep 23 18:42:14 2006
-| =
+On Mon, 2006-09-25 at 09:16 +0200, Rafael J. Wysocki wrote:
+> On Monday, 25 September 2006 00:55, Louis Garcia wrote:
+> > When I first installed FC6 test 2 suspend to disk worked on my box which
+> > is a Dell dimension 8200 (P4). During the kernel-2.6.17-xxx updates this
+> > has stopped working. Now kernel-2.6.18 has come out and I'm having the
+> > same problems. I have tried to get this resolved on there mailing list
+> > but it's not high on there things todo. I would like to debug suspend to
+> > see what is happening. What is the proper way to do this? Has this been
+> > discussed before? Is there a separate mailing-list for suspend?
+> =
 
-| Hi!
-| =
+> Generally you're not giving enough information to trace the problem.
+> =
 
-| > There are also, of course, contractual issues with carriers and
-| > content owners, who could also sue if a manufacturer didn't make a
-| > sufficient effort to protect the terms of the contract. The
-| > carriers and content owners are continually raising the bar on the
-| > level of protection they require.
-| =
+> First, what doesn't work, the suspend to disk or the resume?
+> =
 
-| Yep, I see it sucks being phone manufacturer. But you have separate
-| CPU doing GSM stack in current cellphones, right? I believe you even
-| use AT commands for communication... That should be about as hard as
-| pcmcia card to "harden", and yes, people are routinelly selling pcmcia
-| GSM cards.
----
+> Rafael
+> =
 
-Yes, as I've said elsewhere, I believe the modem software and
-communication between the applications and modem processors could be
-hardened to a point where it would be safe to make the kernel
-replaceable. However, the folks who designed the current product didn't
-have that as a requirement, so it wasn't designed that way...
+> =
 
-scott
--- =
 
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+Suspend to disk does not work. When trying to suspend, from gnome, it
+goes normally. The power button blinks and then restarts. I'm back to
+the screensaver lock screen but the mouse and keyboard are dead.
 
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+-Louis
