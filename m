@@ -1,140 +1,106 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspending to disk on FC6 not working
-Date: Tue, 26 Sep 2006 12:00:28 +0200
-Message-ID: <200609261200.28635.rjw@sisk.pl>
-References: <1159138520.19021.11.camel@soncomputer>
-	<200609252215.19257.rjw@sisk.pl>
-	<1159225475.3014.6.camel@soncomputer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1159225475.3014.6.camel@soncomputer>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Louis Garcia <louisg00@bellsouth.net>
-Cc: linux-pm@lists.osdl.org
+From: Matthew Locke <matt@nomadgs.com>
+Subject: Re: [linux-pm] [PATCH] PowerOP, PowerOP Core, 1/2
+Date: Tue, 26 Sep 2006 14:45:56 -0700
+Message-ID: <d1d1aeaa8d132e6bf987956d9623ad88@nomadgs.com>
+References: <200609191946.k8JJkJmx028840@olwen.urbana.css.mot.com> <20060922140937.GL3478@elf.ucw.cz>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964846AbWIZVp6@vger.kernel.org>
+In-Reply-To: <20060922140937.GL3478@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.osdl.org, "Scott E. Preece" <preece@motorola.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 26 September 2006 01:04, Louis Garcia wrote:
-> On Mon, 2006-09-25 at 22:15 +0200, Rafael J. Wysocki wrote:
-> > On Monday, 25 September 2006 21:34, Louis Garcia wrote:
-> > > On Mon, 2006-09-25 at 20:43 +0200, Rafael J. Wysocki wrote:
-> > > > On Monday, 25 September 2006 19:10, Louis Garcia wrote:
-> > > > > On Mon, 2006-09-25 at 09:16 +0200, Rafael J. Wysocki wrote:
-> > > > > > On Monday, 25 September 2006 00:55, Louis Garcia wrote:
-> > > > > > > When I first installed FC6 test 2 suspend to disk worked on m=
-y box which
-> > > > > > > is a Dell dimension 8200 (P4). During the kernel-2.6.17-xxx u=
-pdates this
-> > > > > > > has stopped working. Now kernel-2.6.18 has come out and I'm h=
-aving the
-> > > > > > > same problems. I have tried to get this resolved on there mai=
-ling list
-> > > > > > > but it's not high on there things todo. I would like to debug=
- suspend to
-> > > > > > > see what is happening. What is the proper way to do this? Has=
- this been
-> > > > > > > discussed before? Is there a separate mailing-list for suspen=
-d?
-> > > > > > =
 
-> > > > > > Generally you're not giving enough information to trace the pro=
-blem.
-> > > > > > =
+On Sep 22, 2006, at 7:09 AM, Pavel Machek wrote:
 
-> > > > > > First, what doesn't work, the suspend to disk or the resume?
-> > > > > > =
+> Hi!
+>
+>> | > >>+struct powerop_driver {
+>> | > >>+	char *name;
+>> | > >>+	void *(*create_point) (const char *pwr_params, va_list args);
+>> | > >>+	int (*set_point) (void *md_opt);
+>> | > >>+	int (*get_point) (void *md_opt, const char *pwr_params, 
+>> va_list
+>> | > >>args);
+>> | > >>+};
+>> | > >
+>> | > >We can certainly get better interface than va_list, right?
+>> | >
+>> | > Please elaborate.
+>> |
+>> | va_list does not provide adequate type checking. I do not think it
+>> | suitable in driver<->core interface.
+>> ---
+>>
+>> Well, in this particular case the typing probably has to be weak, one
+>> way or another. The meaning of the parameters is arguably opaque at
+>
+> Why not have struct powerop_parameters, defined in machine-specific
+> header somewhere, but used everywhere?
 
-> > > > > > Rafael
-> > > > > > =
+We started out with a machine-specific header.  The general feedback on 
+the linux-pm list was that a complete machine independent interface was 
+preferred.  At first Eugeny and I were against that but the resulting 
+interface is much more flexible.  Users of the PowerOP API do not have 
+to include an asm/powerop.h to use it.  Instead you can get all the 
+information you need from the interface.  Also, using the current 
+implementation you can get/set any arbitrary number and order of the 
+power parameters.  For example, a platform has parameters p0-p5.  An 
+operating point could be registered with values for p0,p1 and another 
+with p0,p1,p2,p3,p4 and p5.  The code that registers operating points 
+and accesses existing operating points don't have to know the correct 
+order of  parameters, provide values for the entire parameter list or 
+have a machine specific header.  In addition to being machine 
+independent, the current implementation seems to  works nicely for 
+integrating with cpufreq.
 
-> > > > > > =
-
-> > > > > =
-
-> > > > > Suspend to disk does not work. When trying to suspend, from gnome=
-, it
-> > > > > goes normally. The power button blinks and then restarts. I'm bac=
-k to
-> > > > > the screensaver lock screen but the mouse and keyboard are dead.
-> > > > =
-
-> > > > Can you please try booting the kernel with init=3D/bin/bash, mount =
-/proc,
-> > > > mount /sys, do "/sbin/swapon -a" and "echo disk > /sys/power/state"?
-> > > > =
-
-> > > > Rafael
-> > > > =
-
-> > > > =
-
-> > > After the echo command the box turned off. The power button was not
-> > > blinking. I restarted it and went into grub,
-> > =
-
-> > Did you append init=3D/bin/bash to the kernel command line after it had=
- gone
-> > into GRUB?
-> =
-
-> No, first I booted with init=3D/bin/bash. Then I did the things you said,
-> When the box was off I booted normally. You saying I should append
-> init=3D/bin/bash before and after trying to suspend.
-
-Well, it shouldn't matter if you append init=3D/bin/bash after trying to
-suspend, but if the shell appears without it, this means the system actually
-suspended and resumed.
-
-> > > linux booted into bash.
-> > =
-
-> > Had it been displaying a progress meter before the bash came up?
-> =
-
-> Never saw a meter before.
-> =
-
-> > > When suspend was working the power button flashed and when I pressed =
-it
-> > > the box booted right into linux and the screensaver lock screen
-> > > bypassing grub altogether.
-> > =
-
-> > That's because if you suspend "normally", some scripts run before the s=
-uspend
-> > that change your GRUB configuration and use the "platform" suspend meth=
-od.
-> > However, the problem seems to be on much lower level and to debug it we=
- need
-> > to bypass these things.
-> =
-
-> Yes, something in the kernel I assume. How do I debug this further? =
+We are not completely satisfied with the string parsing that results 
+from the current interface but we can improve it over time.
 
 
-Please boot the kernel with "2" appended to the command line, so the system
-goes to the 2nd runlevel (ie. without network servers and X).  Then log in
-as root, do "echo 8 > /proc/sys/kernel/printk" and
-"echo disk > /sys/power/state".  The system should suspend to disk and power
-off the machine.  If it doesn't do that (ie. if it returns to the shell
-immediately), please do "dmesg > dmesg.log" and send the dmesg.log file
-to me.
-
-Greetings,
-Rafael
-
-
--- =
-
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+>
+>> the interface - the attributes may be meaningful to specific 
+>> components
+>> of the system, but are not defined in the standardized interface 
+>> (which
+>> would otherwise have to know about all possible kinds of power
+>> attributes and be changed every time a new one is added).
+>>
+>> So, if you'd rather have an array of char* or void* values, that would
+>> probably also meet the need, but my guess is that the typing is
+>> intentionally opaque.
+>
+> Actually array of integers would be better than this.
+>
+>> | > >How is it going to work on 8cpu box? will
+>> | > >you have states like cpu1_800MHz_cpu2_1600MHz_cpu3_800MHz_... ?
+>> | >
+>> | > i do not operate with term 'state' so I don't understand what it 
+>> means here.
+>> |
+>> | Okay, state here means "operating point". How will operating points
+>> | look on 8cpu box? That's 256 states if cpus only support "low" and
+>> | "high". How do you name them?
+>>
+>> I don't think you would name the compounded states. Each CPU would 
+>> need
+>> to have its own defined set of operating points (since the 
+>> capabilities
+>> of the CPUs can reasonably be different).
+>
+> Well, having few "powerop domains" per system would likely solve that
+> problem... and problem of 20 devices on my PC. Can we get that?
+>
+> 								Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) 
+> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+>
