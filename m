@@ -1,38 +1,55 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: T30 boot hang with CONFIG_PM_LEGACY=n
-Date: Wed, 27 Sep 2006 13:15:12 -0400
-Message-ID: <20060927171512.GF997@redhat.com>
-References: <20060927024628.GA29182@redhat.com> <200609270000.40760.len.brown@intel.com> <20060927042029.GA3571@redhat.com> <20060927144731.GA3641@srcf.ucam.org>
+From: Eduard =?iso-8859-1?q?Gim=E9nez?= <edu@badopi.org>
+Subject: Request for suggestions
+Date: Thu, 28 Sep 2006 00:23:23 +0200
+Message-ID: <200609280023.23798.edu@badopi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060927144731.GA3641@srcf.ucam.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Len Brown <lenb@kernel.org>, Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 27, 2006 at 03:47:31PM +0100, Matthew Garrett wrote:
- > On Wed, Sep 27, 2006 at 12:20:29AM -0400, Dave Jones wrote:
- > 
- > > Good question.  There's no real replacement for pm_active in the non-legacy
- > > config afaik. Perhaps the cleanest alternative is to undeprecate that macro?
- > > The only other option I can think of is doing something like this in apm.c ...
- > > 
- > > +#ifdef CONFIG_ACPI
- > > -        if (PM_IS_ACTIVE()) {
- > >                  printk(KERN_NOTICE "apm: overridden by ACPI.\n");
- > >                  apm_info.disabled = 1;
- > >                  return -ENODEV;
- > > -         }
- > > +#endif
- > 
- > That's not a good choice - it needs to be a runtime check, not a 
- > compile-time one. Don't we have an acpi_enabled() function?
- 
-You're right, the above would break if booted with acpi=off.
+Hello, =
 
-Hmm.
 
-	Dave 
+As a Final Project to the Diploma in Computer Systems I'm researching ways =
+to improve =
+
+power savings consumption on idle systems. We're aiming to improve the usag=
+e of =
+
+low power states on the processor (Px and Cx states on ACPI jargon) mainly =
+on x86 =
+
+computers, but when possible all improvements will be done architecture ind=
+ependent.
+
+We have been thinking of direct improvements (p.e. better algorithms for CP=
+U =
+
+frequency/state management) and indirect improvements, things like dynticks =
+
+or trying the reduce the USB poll rate.
+
+Currently I'm writting a list of proposals, and as far as I want to do some =
+
+useful work I ask you if there is any new feature or improvement that would=
+ be welcomed.
+
+Any suggestion will be added to the proposals list to be reviewed.
+
+Thank you in advance!
+
+-- =
+
+edu
