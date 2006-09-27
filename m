@@ -1,18 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: suspending to disk on FC6 not working
-Date: Wed, 27 Sep 2006 01:12:49 +0200
-Message-ID: <20060926231249.GG4714@elf.ucw.cz>
+Date: Tue, 26 Sep 2006 22:36:31 -0400
+Message-ID: <20060927023631.GD3108@redhat.com>
 References: <1159138520.19021.11.camel@soncomputer>
-	<1159310353.3566.7.camel@soncomputer>
-	<20060926224554.GE4714@elf.ucw.cz> <200609270054.14016.rjw@sisk.pl>
-	<20060926225802.GF4714@elf.ucw.cz>
-	<1159312141.4309.3.camel@soncomputer>
+	<200609261200.28635.rjw@sisk.pl>
+	<1159307254.2780.4.camel@soncomputer>
+	<200609270001.50063.rjw@sisk.pl> <20060926221556.GD4714@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <1159312141.4309.3.camel@soncomputer>
+In-Reply-To: <20060926221556.GD4714@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,116 +21,60 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Louis Garcia <louisg00@bellsouth.net>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2006-09-26 19:09:01, Louis Garcia wrote:
-> On Wed, 2006-09-27 at 00:58 +0200, Pavel Machek wrote:
-> > On Wed 2006-09-27 00:54:13, Rafael J. Wysocki wrote:
-> > > On Wednesday, 27 September 2006 00:45, Pavel Machek wrote:
-> > > > On Tue 2006-09-26 18:39:13, Louis Garcia wrote:
-> > > > > On Wed, 2006-09-27 at 00:26 +0200, Rafael J. Wysocki wrote:
-> > > > > > On Wednesday, 27 September 2006 00:15, Pavel Machek wrote:
-> > > > > > > Hi!
-> > > > > > > =
+On Wed, Sep 27, 2006 at 12:15:56AM +0200, Pavel Machek wrote:
+ > Hi!
+ > =
 
-> > > > > > > > > > Please boot the kernel with "2" appended to the command=
- line, so the system
-> > > > > > > > > > goes to the 2nd runlevel (ie. without network servers a=
-nd X).  Then log in
-> > > > > > > > > > as root, do "echo 8 > /proc/sys/kernel/printk" and
-> > > > > > > > > > "echo disk > /sys/power/state".  The system should susp=
-end to disk and power
-> > > > > > > > > > off the machine.  If it doesn't do that (ie. if it retu=
-rns to the shell
-> > > > > > > > > > immediately), please do "dmesg > dmesg.log" and send th=
-e dmesg.log file
-> > > > > > > > > > to me.
-> > > > > > > > > =
+ > > > > Please boot the kernel with "2" appended to the command line, so t=
+he system
+ > > > > goes to the 2nd runlevel (ie. without network servers and X).  The=
+n log in
+ > > > > as root, do "echo 8 > /proc/sys/kernel/printk" and
+ > > > > "echo disk > /sys/power/state".  The system should suspend to disk=
+ and power
+ > > > > off the machine.  If it doesn't do that (ie. if it returns to the =
+shell
+ > > > > immediately), please do "dmesg > dmesg.log" and send the dmesg.log=
+ file
+ > > > > to me.
+ > > > =
 
-> > > > > > > > > The system didn't power off, it returned to the shell. I =
-attached dmesg.
-> > > > > > > > =
+ > > > The system didn't power off, it returned to the shell. I attached dm=
+esg.
+ > > =
 
-> > > > > > > > Thanks.
-> > > > > > > > =
+ > > Pavel, it looks like we have a problem with the CPU suspend on this bo=
+x:
+ > > =
 
-> > > > > > > > Pavel, it looks like we have a problem with the CPU suspend=
- on this box:
-> > > > > > > > =
+ > > acpi acpi: freeze
+ > > PM: snapshotting memory.
+ > > Class driver suspend failed for cpu0
+ > > Could not power down device &q->lock: error -22
 
-> > > > > > > > acpi acpi: freeze
-> > > > > > > > PM: snapshotting memory.
-> > > > > > > > Class driver suspend failed for cpu0
-> > > > > > > > Could not power down device &q->lock: error -22
-> > > > > > > > Some devices failed to power down, aborting suspend
-> > > > > > > > acpi acpi: resuming
-> > > > > > > =
+That's an interesting device name.
 
-> > > > > > > That looks like cpufreq/acpi, no?
-> > > > > > > =
+ > > Some devices failed to power down, aborting suspend
+ > > acpi acpi: resuming
+ > =
 
-> > > > > > > Can we get bugzilla.kernel.org report?
-> > > > > > =
+ > That looks like cpufreq/acpi, no?
 
-> > > > > > Ah, it may be the same bug as http://bugzilla.kernel.org/show_b=
-ug.cgi?id=3D7188
-> > > > > > =
+Looking at drivers/cpufreq/cpufreq.c:cpufreq_suspend(),
+There's only two ways we can fail that function. In one way,
+we'll see a printk, and the other we silently -EINVAL.
+Given the log doesn't show the printk, we must be failing here..
 
-> > > > > > > Can you try without acpi processor and cpufreq?
-> > > > > > =
+    cpu_policy =3D cpufreq_cpu_get(cpu);
+    if (!cpu_policy)
+        return -EINVAL;
 
-> > > > > > First, please try to remove the acpi_cpufreq module before the =
-suspend.
-> > > > > > =
+cpufreq_cpu_get has a number of potential ways it could fail however,
+and isn't very chatty about failing, so we've no real idea
+what's falling apart there.
 
-> > > > > > Greetings,
-> > > > > > Rafael
-> > > > > =
-
-> > > > > Yep sure is. I removed the acpi_cpufreq module and my box suspend=
-ed and
-> > > > > resumed nicely, from gnome even.
-> > > > > =
-
-> > > > > This has not been working since 2.6.17. Something in cpufreq in t=
-he
-> > > > > 2.6.18pre series broke.
-> > > > =
-
-> > > > bugzilla time, cc dave jones and acpi people.
-> > > =
-
-> > > We _already_ _have_ a bugzilla entry for that (please see above).
-> > =
-
-> > Sorry.
-> > =
-
-> > > Louis, could you please add a "me too" to the bugzilla entry at the a=
-bove
-> > > address?
-> > =
-
-> > Also state that it worked okay in 2.6.17...
-> > =
-
-> > ...hmm, and at this point you should be able to git bisect...
-> > =
-
-> > ...or perhaps it is easier to add printks into acpi_cpufreq and find
-> > _why_ its class suspend fails?
-> =
-
-> Sorry this is beyond my abilities. If you can provide a patch with the
-> necessary printks I can recompile and test.
-
-Okay, I guess that's "git bisect" for you, then. There are good
-descriptions how to do it on the net ;-).
-								Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+	Dave
