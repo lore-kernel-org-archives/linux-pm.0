@@ -1,75 +1,86 @@
-From: Heikki Orsila <shd@zakalwe.fi>
-Subject: Re: [RFC] OMAP1 PM Core, PM Core  Implementation 2/2
-Date: Sun, 1 Oct 2006 18:22:28 +0300
-Message-ID: <20061001152228.GA24539@zakalwe.fi>
-References: <20060930022435.b2344b5f.eugeny.mints@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Suspend to disk with PCMCIA card plugged in with
+	kernel 2.6.16.28
+Date: Sun, 1 Oct 2006 19:05:09 +0200
+Message-ID: <20061001170509.GD2254@elf.ucw.cz>
+References: <380D9721A8E2114485644D71E87C6AB202902396@PNE-HJN-MBX01.wipro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750992AbWJAPXY@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20060930022435.b2344b5f.eugeny.mints@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, matt@nomadgs.com, amit.kucheria@nokia.com, igor.stoppa@nokia.com, ext-Tuukka.Tikkanen@nokia.com
+In-Reply-To: <380D9721A8E2114485644D71E87C6AB202902396@PNE-HJN-MBX01.wipro.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: rasmit.ranjan@wipro.com
+Cc: deepti.chotai@wipro.com, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Some nitpicking about the patch follows..
+Hi!
 
-On Sat, Sep 30, 2006 at 02:24:35AM +0400, Eugeny S. Mints wrote:
-> +static long 
-> +get_vtg(const char *vdomain)
-> +{
-> +	long ret = 0;
+> 	I have a PCMCIA card hosting a USB port. I am facing some
+> problems while trying to suspend my laptop to disk . Given below are
+> some of my observations:
+> =
 
-Unnecessary initialisation.
+> 1. With kernel 2.6.15.4, my system does not get suspended to disk with
+> the PCMCIA card plugged in. I went through the mailing list and found a
+> mail thread desribing the same.
+> http://lists.infradead.org/pipermail/linux-pcmcia/2006-January/003123.ht
+> ml
+> =
 
-> +static long 
-> +set_vtg(const char *vdomain, int val)
-> +{
-> +	long ret = 0;
+> This seems to be the breakage in resume path and not fixed in 2.6.15.4.
+> So the final thing is, I have to remove my PCMCIA card before trying to
+> suspend my system to disk.
+> =
 
-here too. This and 'int i = 0;' happens in many functions.
+> 2. With the kernel 2.6.16.28, the above breakage seems to be fixed. So I
+> tried suspending my system to disk with my PCMCIA card plugged in but
+> without any device connected to the USB port of the PCMCIA card. This
+> works fine. My system responds fine, suspends to disk properly and
+> resumes back as well.
+> =
 
-> +	err = omap_pm_core_verify_opt(opt);
-> +	if (err != 0)
-> +		goto out;
-> +
-> +	return (void *)opt;
-> +out:
-> +	kfree(opt);
-> +	return NULL;
-> +}
+> 3. Now I try a step ahead and tried suspending the system to disk with
+> the PCMCIA card plugged in as well as a USB speaker/webcam connected to
+> the USB port of PCMCIA card. This also works fine. My system is
+> suspended and resumed properly.
+> =
 
-Maybe use if (err != 0) { kfree(opt); return NULL; } because goto out is 
-only used once?
+> 4. Now again going a step ahead. I plugged in my PCMCIA card, then I
+> connected a USB speaker to the USB port of the card and started playing
+> a song. Now I suspended the system to disk while the transfer was in
+> progress( song was being played). But this time my system hangs. This
+> happens with other isochronous devices like webcam and bulk device like
+> USB key as well. So suspend to disk fails if any USB transfer is in
+> progress ( through the USB port of my PCMCIA card).
+> =
 
-> +static int cpu_vltg_show(void *md_opt, int *value)
-> +{
-> +	int rc = 0;
-> +	if (md_opt == NULL) {
-> +		if ((*value = get_vtg("v1")) <= 0)
-> +			return -EIO;
-> +	}
-> +	else {
-> +		struct pm_core_point *opt = (struct pm_core_point *)md_opt;
-> +		*value = opt->cpu_vltg;
-> +	}
-> +
-> +	return rc;
-> +}
+> I tried debugging the problem and used kdb to find out the reason. For
+> all the devices I found out the following thing :
+> =
 
-int rc is unnecessary because the function always returns 0. This 
-happens in many places.
+> The system hangs in following path: usb_disconnect -->
+> usb_disable_device --> put_device.
+> After put_device the system hangs. As I was in kdb mode I could not save
+> the stack trace.
+> =
 
-> +	int dpll;     /* in KHz */
-> +	int cpu;      /* CPU frequency in KHz */
-> +	int tc;       /* in KHz */
-> +	int per;      /* in KHz */
-> +	int dsp;      /* in KHz */
-> +	int dspmmu;   /* in KHz */
-> +	int lcd;      /* in KHz */
-> +};
+> Is it a known kernel problem with 2.6.16.28 ? Please suggest.
 
-The SI multiplier is 'k', not 'K'.
+Reproduce it with 2.6.18, then it is bugzilla time, or post to
+linux-usb mailing list.
+								Pavel
+-- =
 
-- Heikki
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
