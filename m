@@ -1,43 +1,80 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [RFC] OMAP1 PM Core,  Platform Power Parameter 1/2
-Date: Sat, 30 Sep 2006 22:52:58 +0200
-Message-ID: <20060930205258.GB3061@elf.ucw.cz>
-References: <20060930022428.e27d4c53.eugeny.mints@gmail.com>
+From: Louis Garcia <louisg00@bellsouth.net>
+Subject: Re: suspending to disk on FC6 not working
+Date: Sat, 30 Sep 2006 22:49:42 -0400
+Message-ID: <1159670982.3714.3.camel@soncomputer>
+References: <EB12A50964762B4D8111D55B764A8454ABBB3D@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751964AbWI3UxK@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060930022428.e27d4c53.eugeny.mints@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, ext-Tuukka.Tikkanen@nokia.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <EB12A50964762B4D8111D55B764A8454ABBB3D@scsmsx413.amr.corp.intel.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Fri, 2006-09-29 at 15:55 -0700, Pallipadi, Venkatesh wrote:
+>  =
 
-> Basic building block for PM Core layer is platform power parameter concept. A platform power parameter is a name, get and set methods.  
-> 
-> Although an PM Core implementation is completely arch specific any PM Core is
-> supposed to utilize platform power parameter concept.
-> 
-> Also any PM Core is supposed to export names of all platform power parameters
-> available on a platform. Any entity which registeres operating points is primary
-> consumer of platform_pwr_param_get_names() interface.
-> 
-> (Probably this interface routine might be moved to be a part of PowerOP Core 
-> interface)
-> 
-> diff --git a/include/linux/plat_pwr_param.h b/include/linux/plat_pwr_param.h
-> new file mode 100644
-> index 0000000..3a78d2b
-> --- /dev/null
-> +++ b/include/linux/plat_pwr_param.h
+> >-----Original Message-----
+> >From: Dave Jones [mailto:davej@redhat.com] =
 
-This is generic code (and please select some more reasonable
-filename). It should not be in patch marked "OMAP1".
+> >Sent: Friday, September 29, 2006 3:26 PM
+> >To: Pallipadi, Venkatesh
+> >Cc: Louis Garcia; Pavel Machek; linux-pm@lists.osdl.org
+> >Subject: Re: [linux-pm] suspending to disk on FC6 not working
+> >
+> >On Fri, Sep 29, 2006 at 02:35:43PM -0700, Pallipadi, Venkatesh wrote:
+> > =
 
-								Pavel
+> > > cpufreq_cpu_data[] =3D NULL; only happens when acpi_cpufreq =
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> >driver init
+> > > fails;
+> > > Looks like acpi_cpufreq driver init is failing at some point in this
+> > > case and the driver is staying loaded after that failure. =
+
+> >That in turn
+> > > seems similar to one other bug I saw recently.
+> >
+> >Ah, that was because it was marked CPUFREQ_STICKY in 2.6.18.
+> >That was added to work around another problem : If it was =
+
+> >built modular,
+> >a modprobe acpi-cpufreq would be really noisy when it get an -ENODEV
+> >
+> =
+
+> That's it.. This issue seems to be a side effect of that patch...
+> =
+
+> Louis: After normal boot of 2.6.18, if you are not seeing the directory
+> /sys/devices/system/cpu/cpu0/cpufreq
+> =
+
+> Then try reverting this patch
+> http://www.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=
+=3Dc
+> ommit;h=3D911cb74bb9e77e40749abc2fca6fe74d87d940f3
+> =
+
+> and then check whether the suspend resume issue goes away. =
+
+> =
+
+> Thanks,
+> Venki
+
+I reverted this patch and my suspend issue is gone. Though the
+directory /sys/devices/system/cpu/cpu0/cpufreq is non existent, with or
+without this patch.
+
+-Louis
