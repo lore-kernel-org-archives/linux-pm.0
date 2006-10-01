@@ -1,13 +1,15 @@
-From: Louis Garcia <louisg00@bellsouth.net>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: suspending to disk on FC6 not working
-Date: Sat, 30 Sep 2006 22:49:42 -0400
-Message-ID: <1159670982.3714.3.camel@soncomputer>
+Date: Sat, 30 Sep 2006 23:21:35 -0400
+Message-ID: <20061001032135.GB21796@redhat.com>
 References: <EB12A50964762B4D8111D55B764A8454ABBB3D@scsmsx413.amr.corp.intel.com>
+	<1159670982.3714.3.camel@soncomputer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454ABBB3D@scsmsx413.amr.corp.intel.com>
+Content-Disposition: inline
+In-Reply-To: <1159670982.3714.3.camel@soncomputer>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,64 +19,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Louis Garcia <louisg00@bellsouth.net>
 Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-09-29 at 15:55 -0700, Pallipadi, Venkatesh wrote:
->  =
+On Sat, Sep 30, 2006 at 10:49:42PM -0400, Louis Garcia wrote:
+ > On Fri, 2006-09-29 at 15:55 -0700, Pallipadi, Venkatesh wrote:
+ > > That's it.. This issue seems to be a side effect of that patch...
+ > > =
 
-> >-----Original Message-----
-> >From: Dave Jones [mailto:davej@redhat.com] =
+ > > Louis: After normal boot of 2.6.18, if you are not seeing the directory
+ > > /sys/devices/system/cpu/cpu0/cpufreq
+ > > =
 
-> >Sent: Friday, September 29, 2006 3:26 PM
-> >To: Pallipadi, Venkatesh
-> >Cc: Louis Garcia; Pavel Machek; linux-pm@lists.osdl.org
-> >Subject: Re: [linux-pm] suspending to disk on FC6 not working
-> >
-> >On Fri, Sep 29, 2006 at 02:35:43PM -0700, Pallipadi, Venkatesh wrote:
-> > =
+ > > Then try reverting this patch
+ > > http://www.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git=
+;a=3Dc
+ > > ommit;h=3D911cb74bb9e77e40749abc2fca6fe74d87d940f3
+ > > =
 
-> > > cpufreq_cpu_data[] =3D NULL; only happens when acpi_cpufreq =
+ > > and then check whether the suspend resume issue goes away. =
 
-> >driver init
-> > > fails;
-> > > Looks like acpi_cpufreq driver init is failing at some point in this
-> > > case and the driver is staying loaded after that failure. =
+ > > =
 
-> >That in turn
-> > > seems similar to one other bug I saw recently.
-> >
-> >Ah, that was because it was marked CPUFREQ_STICKY in 2.6.18.
-> >That was added to work around another problem : If it was =
+ > > Thanks,
+ > > Venki
+ > =
 
-> >built modular,
-> >a modprobe acpi-cpufreq would be really noisy when it get an -ENODEV
-> >
-> =
+ > I reverted this patch and my suspend issue is gone. Though the
+ > directory /sys/devices/system/cpu/cpu0/cpufreq is non existent, with or
+ > without this patch.
 
-> That's it.. This issue seems to be a side effect of that patch...
-> =
+Ok, I've backed that out in cpufreq.git, it'll go along to Linus soon.
+If you build acpi-cpufreq as a module, and you modprobe acpi-cpufreq,
+does it fail silently ? Or does it revert us back to the behaviour
+where it's noisy again?
 
-> Louis: After normal boot of 2.6.18, if you are not seeing the directory
-> /sys/devices/system/cpu/cpu0/cpufreq
-> =
-
-> Then try reverting this patch
-> http://www.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=
-=3Dc
-> ommit;h=3D911cb74bb9e77e40749abc2fca6fe74d87d940f3
-> =
-
-> and then check whether the suspend resume issue goes away. =
-
-> =
-
-> Thanks,
-> Venki
-
-I reverted this patch and my suspend issue is gone. Though the
-directory /sys/devices/system/cpu/cpu0/cpufreq is non existent, with or
-without this patch.
-
--Louis
+	Dave
