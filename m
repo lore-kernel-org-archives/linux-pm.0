@@ -1,49 +1,30 @@
-From: "Scott E. Preece" <preece@motorola.com>
+From: Heikki Orsila <shd@zakalwe.fi>
 Subject: Re: [linux-pm] [RFC] OMAP1 PM Core, PM Core  Implementation 2/2
-Date: Mon, 2 Oct 2006 14:19:22 -0500 (CDT)
-Message-ID: <200610021919.k92JJMs1011215@olwen.urbana.css.mot.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965360AbWJBTTb@vger.kernel.org>
-In-reply-to: Heikki Orsila's message of Sun, 1 Oct 2006 20:32:52 +0300
+Date: Mon, 2 Oct 2006 23:44:25 +0300
+Message-ID: <20061002204425.GC24539@zakalwe.fi>
+References: <200610021858.k92IwXJg011184@olwen.urbana.css.mot.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964985AbWJBUpX@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200610021858.k92IwXJg011184@olwen.urbana.css.mot.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: shd@zakalwe.fi
-Cc: pavel@ucw.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, ext-Tuukka.Tikkanen@nokia.com
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: eugeny.mints@gmail.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, ext-Tuukka.Tikkanen@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Oct 02, 2006 at 01:58:33PM -0500, Scott E. Preece wrote:
+> It also helps with static analysis tools.
 
-| From: Heikki Orsila<shd@zakalwe.fi>
-| 
-| On Sun, Oct 01, 2006 at 07:10:32PM +0200, Pavel Machek wrote:
-| > On Sun 2006-10-01 18:22:28, Heikki Orsila wrote:
-| > > Some nitpicking about the patch follows..
-| > > 
-| > > On Sat, Sep 30, 2006 at 02:24:35AM +0400, Eugeny S. Mints wrote:
-| > > > +static long 
-| > > > +get_vtg(const char *vdomain)
-| > > > +{
-| > > > +	long ret = 0;
-| > > 
-| > > Unnecessary initialisation.
-| > 
-| > No, sorry.
-| 
-| In get_vtg(), if VOLTAGE_FRAMEWORK is defined then
-| 
-| 	ret = vtg_get_voltage(v);
-| 
-| is the first user. If VOLTAGE_FRAMEWORK is not defined, the first user is:
-| 
-| 	ret = vtg_get_voltage(&vhandle);
-| 
-| Then "return ret;" follows. I cannot see a path where 
-| pre-initialisation of ret does anything useful. If someone removed the
-| #else part, the compiler would bark.
----
+I'd say those analysis tools are pretty useless if they can not handle 
+trivial cases like this.
 
-True, but a good compiler should remove the dead initialization...
+> CodingStyle seems to
+> be silent on the point, but points to Kernighan and Ritchie, who say
+> "These initializations are actually unnecessary, since all are zero, but
+> it's a good idea to make them explicit anyway."
 
-scott
--- 
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+It was a local variable. They are not autoinitialised. Are you perhaps 
+mixing this with statics and globals?
+
+- Heikki
