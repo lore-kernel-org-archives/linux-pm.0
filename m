@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Suspend to disk with PCMCIA card plugged in with
-	kernel 2.6.16.28
-Date: Wed, 4 Oct 2006 00:02:43 +0200
-Message-ID: <20061003220243.GD2353@elf.ucw.cz>
-References: <380D9721A8E2114485644D71E87C6AB202902D60@PNE-HJN-MBX01.wipro.com>
+From: Wes Felter <wesley@felter.org>
+Subject: Re: Request for suggestions
+Date: Tue, 03 Oct 2006 17:24:49 -0500
+Message-ID: <efunvl$8up$1@sea.gmane.org>
+References: <200609280023.23798.edu@badopi.org>
+	<20060928081938.GA26128@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <380D9721A8E2114485644D71E87C6AB202902D60@PNE-HJN-MBX01.wipro.com>
+In-Reply-To: <20060928081938.GA26128@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,29 +18,15 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: rasmit.ranjan@wipro.com
-Cc: deepti.chotai@wipro.com, linux-pm@lists.osdl.org, linux-usb-devel@lists.sourceforge.net
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Pavel Machek wrote:
 
-> > Reproduce it with 2.6.18, then it is bugzilla time, or post =
+> Hotunplugging memory then turning it off to save power was probably
+> craziest idea I had ;-).
 
-> > to linux-usb mailing list.
-> =
+See Hai Huang's papers about this topic:
+http://www.eecs.umich.edu/~haih/index1.html
 
-> Thanks Pavel. I tried with kernel 2.6.18. It worked fine with bulk
-> device ( USB key). But does not work with isochronous device and system
-> hangs. This time I did not have kdb so could not figure out where did it
-> hang.
-> Is it that for 2.6.16.28, this path is still broken for some cases like
-> suspend to disk when transfer is in progress??
-
-No idea, ask on the usb lists. And update to 2.6.18, if you can.
-
-								Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Wes Felter - wesley@felter.org
