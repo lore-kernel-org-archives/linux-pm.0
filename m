@@ -1,191 +1,82 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [RFC] CPUFreq PowerOP integratoin, CPUFreq core 1/3
-Date: Fri, 6 Oct 2006 23:19:28 -0400
-Message-ID: <20061007031928.GB1494@dominikbrodowski.de>
-References: <45096A7B.2070007@gmail.com>
+Subject: Re: [RFC] CPUFreq PowerOP integration,
+	Centrino PM Core and OPs registration 2/3
+Date: Fri, 6 Oct 2006 23:19:10 -0400
+Message-ID: <20061007031910.GA1494@dominikbrodowski.de>
+References: <45096C1A.7010008@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932471AbWJGDTs@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <45096A7B.2070007@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <45096C1A.7010008@gmail.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: pm list <linux-pm@lists.osdl.org>, Matthew Locke <matt@nomadgs.com>, Amit Kucheria <amit.kucheria@nokia.com>, Igor Stoppa <igor.stoppa@nokia.com>, kernel list <linux-kernel@vger.kernel.org>
+Cc: pm list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-> -obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o
-> +obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_helpers.o
+On Thu, Sep 14, 2006 at 06:50:02PM +0400, Eugeny S. Mints wrote:
 
-So every driver is now required to use freq_helpers, even if it does not
-even allow for the setting of a specific frequency, but only a frequency
-range (longrun)? And drivers are limitied to a specific amount of CPU
-frequency states to export?
+> +static int =
 
-> -	freqs->flags = cpufreq_driver->flags;
->  	dprintk("notification %u of frequency transition to %u kHz\n",
->  		state, freqs->new);
->  
-> +	/* FIXME: don't we need a lock here? */
-
-We're already holding a lock here, unless you changed the calling
-conventions.
-
-> -		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-> -			if ((policy) && (policy->cpu == freqs->cpu) &&
-> -			    (policy->cur) && (policy->cur != freqs->old)) {
-> -				dprintk("Warning: CPU frequency is"
-> -					" %u, cpufreq assumed %u kHz.\n",
-> -					freqs->old, policy->cur);
-> -				freqs->old = policy->cur;
-> -			}
-> +		if ((policy) && (policy->cpu == freqs->cpu) &&
-> +		    (policy->cur) && (policy->cur != freqs->old)) {
-> +			dprintk("Warning: CPU frequency is"
-> +				" %u, cpufreq assumed %u kHz.\n",
-> +				freqs->old, policy->cur);
-> +			freqs->old = policy->cur;
->  		}
-Why are you removing the check for CONST_LOOPS here?
-
-> +/**
-> + * show_scaling_governor - show the current policy for the specified CPU
-> + */
-> +static ssize_t 
-> +show_available_freqs(struct cpufreq_policy *policy, char *buf)
-
-Description does not match function name; also please return type and
-function on one line (yes, I know, the current cpufreq core gets this wrong
-too, but still...)
-
->  /**
-> - * show_scaling_driver - show the cpufreq driver currently loaded
-> - */
-> -static ssize_t show_scaling_driver (struct cpufreq_policy * policy, char *buf)
-> -{
-> -	return scnprintf(buf, CPUFREQ_NAME_LEN, "%s\n", cpufreq_driver->name);
-> -}
-> -
-
-That breaks userspace.
-
-> +extern cpumask_t arch_get_dependent_cpus_mask(int cpu);
-
-
->  
->  /**
->   * cpufreq_add_dev - add a CPU device
-> @@ -617,10 +635,10 @@ static int cpufreq_add_dev (struct sys_d
->  	int ret = 0;
->  	struct cpufreq_policy new_policy;
->  	struct cpufreq_policy *policy;
-> -	struct freq_attr **drv_attr;
->  	struct sys_device *cpu_sys_dev;
->  	unsigned long flags;
->  	unsigned int j;
-> +	char freq_n[CPUFREQ_FREQ_STR_SIZE];
-
-Will cause troubles for gx-suspmod which would want to export >10.000
-states.
-
->  #ifdef CONFIG_SMP
->  	struct cpufreq_policy *managed_policy;
->  #endif
-> @@ -630,7 +648,7 @@ #endif
->  
->  	cpufreq_debug_disable_ratelimit();
->  	dprintk("adding CPU %u\n", cpu);
-> -
-> +	
-
-Inserting trailing whitespace
-
->  #ifdef CONFIG_SMP
->  	/* check whether a different CPU already registered this
->  	 * CPU because it is in the same boat. */
-> @@ -638,15 +656,9 @@ #ifdef CONFIG_SMP
->  	if (unlikely(policy)) {
->  		cpufreq_cpu_put(policy);
->  		cpufreq_debug_enable_ratelimit();
-> -		return 0;
-> +		return ret;
->  	}
->  #endif
-
-Why are you returning an error here?
-
-> @@ -654,23 +666,38 @@ #endif
->  	}
->  
->  	policy->cpu = cpu;
-> -	policy->cpus = cpumask_of_cpu(cpu);
+> +process_pwr_param(struct pm_core_point *opt, int op, char *param_name,
+> +		  int va_arg)
+> +{
+> +	int cpu =3D 0;
+> +	char buf[8];
 > +
-> +	/* 
-> +	 * FIXME: this will go away once notifications moved to lower layers 
-> +	 * presumably to clock/voltage framework level
-> +	 */
-> +	policy->cpus = arch_get_dependent_cpus_mask(cpu);
-
-Can't find arch_get_dependent_cpus_mask defined anywhere or in this patch.
-As each patch should at least compile and boot, that won't work.
-
->  	mutex_init(&policy->lock);
->  	mutex_lock(&policy->lock);
->  	init_completion(&policy->kobj_unregister);
->  	INIT_WORK(&policy->update, handle_update, (void *)(long)cpu);
->  
-> -	/* call driver. From then on the cpufreq must be able
-> -	 * to accept all calls to ->verify and ->setpolicy for this CPU
-> -	 */
-> -	ret = cpufreq_driver->init(policy);
-> -	if (ret) {
-> +	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+> +	for (cpu =3D 0; cpu < NR_CPUS; cpu++)
+> +	{
+> +		sprintf(buf, "v%d", cpu);
 > +
-> +	/* FIXME: soon this will come from PowerOP Core as well */
-> +	policy->cpuinfo.transition_latency = 10000; /* 10uS latency */
+> +		if (strcmp(param_name, buf) =3D=3D 0) {
+> +			if (op =3D=3D PWR_PARAM_SET)
+> +				opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_V] =3D =
 
-Ouch.
+> +									va_arg;
+> +			else if (opt !=3D NULL)
+> +				*(int *)va_arg =3D =
 
-> @@ -692,8 +719,16 @@ #ifdef CONFIG_SMP
->  
->  			cpufreq_debug_enable_ratelimit();
->  			mutex_unlock(&policy->lock);
-> -			ret = 0;
-> -			goto err_out_driver_exit; /* call driver->exit() */
-> +			/* 
-> +			 * FIXME: interesting... cpufreq handles one policy 
-> +			 * entry for all affected CPUs... it works since 
-> +			 * currently same set of freq/voltage pairs are always 
-> +			 * registered for all CPUs. That bacomes not the case
-> +			 * with PowerOP approach when we can have different
-> +			 * set of operating points even for affected CPUs
-> +			 */ 
-> +			kfree(policy);
+> +				     opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_V];
+> +			else if ((*(int *)va_arg =3D get_vtg(cpu)) <=3D 0)
+> +				return -EINVAL;
 > +			return 0;
+> +		}
+> +
+> +		sprintf(buf, "freq%d", cpu);
+> +
+> +		if (strcmp(param_name, buf) =3D=3D 0) {
+> +			if (op =3D=3D PWR_PARAM_SET)
+> +				opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_FREQ] =3D =
 
-No, that's not true -- "affected CPUs" can only be set to the same frequency
-at any point. It's the same "clock domain". Therefore, your statement is
-invalid.
+> +									va_arg;
+> +			else if (opt !=3D NULL)
+> +				*(int *)va_arg =3D =
 
-> @@ -944,6 +972,7 @@ unsigned int cpufreq_quick_get(unsigned 
->  EXPORT_SYMBOL(cpufreq_quick_get);
->  
->  
-> +/* FIXME: REVISIT: this routine returns 0 on error! */
->  /**
->   * cpufreq_get - get the current CPU frequency (in kHz)
+> +				  opt->opt[cpu].pwpr[_I386_PM_CORE_POINT_FREQ];
+> +			else if ((*(int *)va_arg =3D get_freq(cpu)) <=3D 0)
+> +				return -EINVAL;
+> +
+> +			return 0;
+> +		}
+> +	}
+> +
+> +	return -EINVAL;
+> +}
 
-Yes. For if it were to return -EINVAL, userspace would tell you
-that you've got at ~4294 GHz CPU.
-
-> +module_param(smart_cpu, uint, 0644);
-> +MODULE_PARM_DESC(smart_cpu, "Define if cpu handles frequency intervals insted oftarget frequencies");
-
-Ouch.
-
-These were just a few comments on the code. On the "big picture", I'll write
-a separate e-mail.
+Ouch. IIRC Pavel had some fine comments about such string parsing deep in
+arch code... Other than that I see lots of indirection, lots of code being
+added (~400 lines) for no gain in functionality for the x86 case.
 
 Thanks,
 	Dominik
