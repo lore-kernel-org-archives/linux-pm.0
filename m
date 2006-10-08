@@ -1,52 +1,45 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.19-rc1 regression: airo suspend fails
-Date: Sun, 8 Oct 2006 08:43:03 +0200
-Message-ID: <20061008064303.GA3111@elf.ucw.cz>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <871wpmoyjv.fsf@sycorax.lbl.gov> <20061006184706.GR16812@stusta.de> <1160250771.24902.6.camel@kleikamp.austin.ibm.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: x60 backlight Re: [discuss] 2.6.19-rc1: known regressions (v2)
+Date: Sun, 8 Oct 2006 07:12:54 +0000
+Message-ID: <20061008071254.GA5672@ucw.cz>
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <20061007214620.GB8810@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1160250771.24902.6.camel@kleikamp.austin.ibm.com>
-Sender: netdev-owner@vger.kernel.org
-To: Dave Kleikamp <shaggy@austin.ibm.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Alex Romosan <romosan@sycorax.lbl.gov>, linux-kernel@vger.kernel.org, linville@tuxdriver.com, netdev@vger.kernel.org, linux-pm@osdl.org
+In-Reply-To: <20061007214620.GB8810@stusta.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > it breaks suspend when the airo module is loaded:
-> > > 
-> > > kernel: Stopping tasks: =================================================================================
-> > > kernel:  stopping tasks timed out after 20 seconds (1 tasks remaining):
-> > > kernel:   eth1
-> > > kernel: Restarting tasks...<6> Strange, eth1 not stopped
-> > > 
-> > > if i remove the airo module suspend works normally (this is on a
-> > > thinkpad t40).
-> > 
-> > Thanks for your report.
-> > 
-> > Let's try to figure out what broke it.
+On Sat 07-10-06 23:46:21, Adrian Bunk wrote:
+> This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
+> that are not yet fixed Linus' tree.
 > 
-> I believe it was broken by:
-> http://www.kernel.org/git/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3b4c7d640376dbccfe80fc4f7b8772ecc7de28c5
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you was declared guilty for a breakage or I'm considering you in any
+> other way possibly involved with one or more of these issues.
 > 
-> I have seen this in the -mm tree, but didn't follow up at the time.  I
-> was able to fix it with the following patch.  I don't know if it's the
-> best fix, but it seems to follow the same logic as the original code.
+> Due to the huge amount of recipients, please trim the Cc when answering.
+...
+> Subject    : T60 stops triggering any ACPI events
+> References : http://lkml.org/lkml/2006/10/4/425
+> Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
+> Status     : unknown
 > 
 > 
-> The airo driver used to break out of while loop if there were any signals
-> pending.  Since it no longer checks for signals, it at least needs to check
-> if it needs to be frozen.
-> 
-> Signed-off-by: Dave Kleikamp <shaggy@austin.ibm.com>
+> Subject    : thinkpad x60: brightness no longer adjustable in 2.6.18-git
+> References : http://lkml.org/lkml/2006/10/2/300
+> Submitter  : Pavel Machek <pavel@ucw.cz>
+> Status     : unknown, related to the issue above?
 
-ACK. Please push it to akpm or airo maintainers...
-
-								Pavel
+Strange, problem went away after reboot. I guess I'll write it off as
+an acpi glitch... there's definitely something strange going on with
+backlight around s2ram: during normal operation, backlight changes are
+fast. After s2ram, backlight change from keyboard takes 300msec or so.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks for all the (sleeping) penguins.
