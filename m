@@ -1,64 +1,52 @@
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: 2.6.19-rc1: known regressions (v2)
-Date: 7 Oct 2006 21:43:51 -0700
-Message-ID: <EXSVLRB01xe0ymQ1WE900000265__6233.8009862744$1160282679$gmane$org@exsvlrb01.hq.netapp.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.19-rc1 regression: airo suspend fails
+Date: Sun, 8 Oct 2006 08:43:03 +0200
+Message-ID: <20061008064303.GA3111@elf.ucw.cz>
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <871wpmoyjv.fsf@sycorax.lbl.gov> <20061006184706.GR16812@stusta.de> <1160250771.24902.6.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1160250771.24902.6.camel@kleikamp.austin.ibm.com>
+Sender: netdev-owner@vger.kernel.org
+To: Dave Kleikamp <shaggy@austin.ibm.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Alex Romosan <romosan@sycorax.lbl.gov>, linux-kernel@vger.kernel.org, linville@tuxdriver.com, netdev@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Cc: Linus Torvalds <torvalds@osdl.org>, Linux Kernel Mailing List <linux-ke=
-rnel@vger.kernel.org>, art@usfltd.com, ak@suse.de, discuss@x86-64.org,  Pra=
-kash Punnoor <prakash@punnoor.de>, perex@suse.cz, alsa-devel@alsa-project.o=
-rg, Steve Fox <drfickle@us.ibm.com>,  netdev@vger.kernel.org, "Michael S. T=
-sirkin" <mst@mellanox.co.il>,  len.brown@intel.com, linux-acpi@vger.kernel.=
-org, Pavel Machek <pavel@ucw.cz>,  Olaf Hering <olaf@aepfle.de>, Antonino D=
-aplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net,  Thierry =
-Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.o=
-rg, Ernst Herzberg <list-lkml@net4u.de>, Matthieu Castet <castet.matthieu@f=
-ree.fr>,  linux-usb-devel@lists.sourceforge.net, Jens Axboe <axboe@oracle.c=
-om>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@osdl.org,=
- linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@suse.de>,  Mel Gorman <mel=
-@skynet.ie>, Alex Romosan <romosan@sycorax.lbl.gov>, Sukadev Bhattiprolu <s=
-ukadev@us.ibm.!
- com>, Dave Kleikamp <shaggy@austin.ibm.com>, Torsten Kaiser <kernel@bardio=
-c.dyndns.org>, Magnus Damm <magnus.damm@gmail.com>, Vivek Goyal <vgoyal@in.=
-ibm.com>, ebiederm@xmission.com, fastboot@osdl.org, Alistair John Strachan =
-<s0348365@sms.ed.ac.uk>, Stefan Richter <stefanr@s5r6.in-berlin.de>,  linux=
-1394-devel@lists.sourceforge.net
-In-Reply-To: <20061007214620.GB8810@stusta.de>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-	 <20061007214620.GB8810@stusta.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Sun, 08 Oct 2006 00:43:35 -0400
-Message-Id: <1160282615.5506.9.camel@lade.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 =
+Hi!
 
+> > > it breaks suspend when the airo module is loaded:
+> > > 
+> > > kernel: Stopping tasks: =================================================================================
+> > > kernel:  stopping tasks timed out after 20 seconds (1 tasks remaining):
+> > > kernel:   eth1
+> > > kernel: Restarting tasks...<6> Strange, eth1 not stopped
+> > > 
+> > > if i remove the airo module suspend works normally (this is on a
+> > > thinkpad t40).
+> > 
+> > Thanks for your report.
+> > 
+> > Let's try to figure out what broke it.
+> 
+> I believe it was broken by:
+> http://www.kernel.org/git/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3b4c7d640376dbccfe80fc4f7b8772ecc7de28c5
+> 
+> I have seen this in the -mm tree, but didn't follow up at the time.  I
+> was able to fix it with the following patch.  I don't know if it's the
+> best fix, but it seems to follow the same logic as the original code.
+> 
+> 
+> The airo driver used to break out of while loop if there were any signals
+> pending.  Since it no longer checks for signals, it at least needs to check
+> if it needs to be frozen.
+> 
+> Signed-off-by: Dave Kleikamp <shaggy@austin.ibm.com>
 
-On Sat, 2006-10-07 at 23:46 +0200, Adrian Bunk wrote:
+ACK. Please push it to akpm or airo maintainers...
 
-> Subject    : NFSv4 fails to mount (timeout)
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=3D7274
-> Submitter  : Torsten Kaiser <kernel@bardioc.dyndns.org>
-> Guilty     : Trond Myklebust <Trond.Myklebust@netapp.com>
->              commit 51b6ded4d9a94a61035deba1d8f51a54e3a3dd86
-> Handled-By : Trond Myklebust <Trond.Myklebust@netapp.com>
-> Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=3D7274
-> Status     : patch available
+								Pavel
 
-Thanks... Always nice to hear that you have been judged and found
-guilty. Now go and reread that fucking bug report...
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
