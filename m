@@ -1,33 +1,52 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Funky "Blue screen" issue while rebooting from X with 2.6.18-git21
-Date: Sun, 8 Oct 2006 18:34:06 +0000
-Message-ID: <20061008183406.GA4496@ucw.cz>
-References: <9a8748490610041316w3ad442a6rf8f5fc5189fd72ac@mail.gmail.com> <20061008174759.GF6755@stusta.de>
+Subject: Re: x60 backlight Re: [discuss] 2.6.19-rc1: known regressions (v2)
+Date: Sun, 8 Oct 2006 18:36:02 +0000
+Message-ID: <20061008183602.GB4496@ucw.cz>
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <20061007214620.GB8810@stusta.de> <20061008071254.GA5672@ucw.cz> <20061008173809.GE6755@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750903AbWJHSeT@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750892AbWJHSgR@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20061008174759.GF6755@stusta.de>
+In-Reply-To: <20061008173809.GE6755@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Adrian Bunk <bunk@stusta.de>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@osdl.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-On Sun 08-10-06 19:47:59, Adrian Bunk wrote:
-> On Wed, Oct 04, 2006 at 10:16:41PM +0200, Jesper Juhl wrote:
-> > I have a strange "problem" with 2.6.18-git21 that I've never had with
-> > any previous kernel. If I open up an xterm in X, su to root and
-> > 'reboot' (or 'shutdown -r now') I instantly get a blue screen that
-> > persists until the box actually reboots.
+On Sun 08-10-06 19:38:09, Adrian Bunk wrote:
+> On Sun, Oct 08, 2006 at 07:12:54AM +0000, Pavel Machek wrote:
+> > 
+> > On Sat 07-10-06 23:46:21, Adrian Bunk wrote:
+> > > This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
+> > > that are not yet fixed Linus' tree.
+> > > 
+> > > If you find your name in the Cc header, you are either submitter of one
+> > > of the bugs, maintainer of an affectected subsystem or driver, a patch
+> > > of you was declared guilty for a breakage or I'm considering you in any
+> > > other way possibly involved with one or more of these issues.
+> > > 
+> > > Due to the huge amount of recipients, please trim the Cc when answering.
+> > ...
+> > > Subject    : T60 stops triggering any ACPI events
+> > > References : http://lkml.org/lkml/2006/10/4/425
+> > > Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
+> > > Status     : unknown
+> > > 
+> > > 
+> > > Subject    : thinkpad x60: brightness no longer adjustable in 2.6.18-git
+> > > References : http://lkml.org/lkml/2006/10/2/300
+> > > Submitter  : Pavel Machek <pavel@ucw.cz>
+> > > Status     : unknown, related to the issue above?
+> > 
+> > Strange, problem went away after reboot. I guess I'll write it off as
+> > an acpi glitch... there's definitely something strange going on with
+> > backlight around s2ram: during normal operation, backlight changes are
+> > fast. After s2ram, backlight change from keyboard takes 300msec or so.
 > 
-> Pavel, is this a known issue or should Jesper bisect?
+> Is this a regression compared to 2.6.18 or an older issue?
 
-Jesper should show it is kernel problem and not userland race.
-
-If userspace does kill -15 -1; kill -9 -1, and X fails to shut down in
-time, it is userland problem ('should wait for X to shut down').
+Slowness is not something I'd classify as serious problem, and
+breakage is not reproducible. Ignore it for now.
 
 -- 
 Thanks for all the (sleeping) penguins.
