@@ -1,126 +1,58 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq
-	PowerOPintegration, Intro 0/3]
-Date: Sun, 8 Oct 2006 09:28:15 -0500
-Message-ID: <EA12F909C0431D458B9D18A176BEE4A50800FCF4@dlee02.ent.ti.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: x60 backlight Re: [discuss] 2.6.19-rc1: known regressions (v2)
+Date: Sun, 8 Oct 2006 19:38:09 +0200
+Message-ID: <20061008173809.GE6755@stusta.de>
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <20061007214620.GB8810@stusta.de> <20061008071254.GA5672@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>, "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Cc: pm list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20061008071254.GA5672@ucw.cz>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
 List-Id: linux-pm@vger.kernel.org
 
-> C) Notification
-> =
+On Sun, Oct 08, 2006 at 07:12:54AM +0000, Pavel Machek wrote:
+> 
+> On Sat 07-10-06 23:46:21, Adrian Bunk wrote:
+> > This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
+> > that are not yet fixed Linus' tree.
+> > 
+> > If you find your name in the Cc header, you are either submitter of one
+> > of the bugs, maintainer of an affectected subsystem or driver, a patch
+> > of you was declared guilty for a breakage or I'm considering you in any
+> > other way possibly involved with one or more of these issues.
+> > 
+> > Due to the huge amount of recipients, please trim the Cc when answering.
+> ...
+> > Subject    : T60 stops triggering any ACPI events
+> > References : http://lkml.org/lkml/2006/10/4/425
+> > Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
+> > Status     : unknown
+> > 
+> > 
+> > Subject    : thinkpad x60: brightness no longer adjustable in 2.6.18-git
+> > References : http://lkml.org/lkml/2006/10/2/300
+> > Submitter  : Pavel Machek <pavel@ucw.cz>
+> > Status     : unknown, related to the issue above?
+> 
+> Strange, problem went away after reboot. I guess I'll write it off as
+> an acpi glitch... there's definitely something strange going on with
+> backlight around s2ram: during normal operation, backlight changes are
+> fast. After s2ram, backlight change from keyboard takes 300msec or so.
 
-> Let's look at the "notification" stage first -- that's what =
+Is this a regression compared to 2.6.18 or an older issue?
 
-> current cpufreq
-> notifiers do in a very basic way. However, this is also what =
+If it's a regression can you bisect?
 
-> the new clock
-> and voltage frameworks are trying to do, right? So that's the =
+TIA
+Adrian
 
-> lesser problem
-> now.
+-- 
 
-No, the clock frame work does not do notifications to drivers.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-The procedure for system wide frequency scaling using the clock frame
-work:
- 1: Get a root clock handle (clk_get)
- 2: Validate a new target clock rate (clk_get_rate + clk_round_rate)
-*3: Use Notification services from some _other_ frame work to drivers
- 4: Set the new rate (clk_set_rate)
-	- This setting changes potentially several levels of derived
-clocks
-
-The clock frame work allows simple maintenance of device local clocks or
-the ability to change root clocks or groups of root clocks.  Root clock
-changes are the ones which are used with system frequency scaling and
-these changes _may_ need the notification depending on the level of
-system coupling.
-
-
-* Reading below in your message you address and seem to get this...  The
-following text just shows generally what happens in some current
-operating point centric systems.
-
---------------------
-- In an operating point centric system the key root clocks (or other
-fundamental system wide variables like power domain) are parameters in
-the operating point.  =
-
-
-- Prior to trying to change in an operating point or a parameter in a
-given point, the frame work does a dependency check to registered
-drivers which care about operating point parameter changes.  Drivers
-which are sensitive to these changes may register constraints to be
-_considered_ by the frame work at change times.
-
-- Once the system has decided the change is ok it then notifies the
-driver to prepare for the parameter set change.  The controlling frame
-works (possibly multiple ones) are used to make the system changes.  The
-driver is then notified the change is done.
---------------------
-
-> D) Verification
-> =
-
-> So, how to do this verification? Basically, there are two approaches:
-> =
-
-> 1) ask every other subsystem whether the new value is OK with it.
-> 	This is what cpufreq currently suggests to do. It is evident
-> 	that this gets overly complicated with lots of dependencies
-> 	and dependencies within the dependencies -- both in terms
-> 	of concept and in terms of time the verification code takes
-> 	to execute.
-> 	Advantages:
-> 	- easy to expand, also in runtime (e.g. USB system is
-> 		modprobed and telling you of a new minimum voltage
-> 		requirement on certain circumstances)
-> 	- does not limit choices for each knob
-> 	Disadvantages:
-> 	- might get very complex
-> =
-
-> 2) look up all valid states in a table
-> 	This is basically what PowerOP and the "operating points"
-> 	concept suggests: if you want to change one value, you check
-> 	what operating points a) contain the new value and b) is
-> 	most suitable to you.
-> 	Advantages:
-> 	- fast
-> 	- pre-defined set of operating points which the system
-> 	  designer is comfortable with
-> 	Disadvantages:
-> 	- needs to be limited to "core" of the system as else
-> 	  the tables may get overly large
-> 	- limits the choices
-
-That is a pretty good summary.
-
-Depending on your operating point definition you don't always have to
-limit yourself here.  An operating point parameter need not directly be
-associated with the physical value of the domain it represents.  Meaning
-you don't need to put 1.05 volts in for the parameter, you can define it
-as some other value which needs translating/defining by the core.
-
-> E) So, why not combine the best of both worlds?
-
-More reading necessary ...
-
-Thanks,
-Richard W.
