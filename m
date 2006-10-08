@@ -1,58 +1,63 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: x60 backlight Re: [discuss] 2.6.19-rc1: known regressions (v2)
-Date: Sun, 8 Oct 2006 19:38:09 +0200
-Message-ID: <20061008173809.GE6755@stusta.de>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <20061007214620.GB8810@stusta.de> <20061008071254.GA5672@ucw.cz>
+Subject: Re: Funky "Blue screen" issue while rebooting from X
+	with 2.6.18-git21
+Date: Sun, 8 Oct 2006 19:47:59 +0200
+Message-ID: <20061008174759.GF6755@stusta.de>
+References: <9a8748490610041316w3ad442a6rf8f5fc5189fd72ac@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20061008071254.GA5672@ucw.cz>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
+In-Reply-To: <9a8748490610041316w3ad442a6rf8f5fc5189fd72ac@mail.gmail.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Jesper Juhl <jesper.juhl@gmail.com>, pavel@suse.cz
+Cc: linux-pm@osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Oct 08, 2006 at 07:12:54AM +0000, Pavel Machek wrote:
-> 
-> On Sat 07-10-06 23:46:21, Adrian Bunk wrote:
-> > This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
-> > that are not yet fixed Linus' tree.
-> > 
-> > If you find your name in the Cc header, you are either submitter of one
-> > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > of you was declared guilty for a breakage or I'm considering you in any
-> > other way possibly involved with one or more of these issues.
-> > 
-> > Due to the huge amount of recipients, please trim the Cc when answering.
-> ...
-> > Subject    : T60 stops triggering any ACPI events
-> > References : http://lkml.org/lkml/2006/10/4/425
-> > Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
-> > Status     : unknown
-> > 
-> > 
-> > Subject    : thinkpad x60: brightness no longer adjustable in 2.6.18-git
-> > References : http://lkml.org/lkml/2006/10/2/300
-> > Submitter  : Pavel Machek <pavel@ucw.cz>
-> > Status     : unknown, related to the issue above?
-> 
-> Strange, problem went away after reboot. I guess I'll write it off as
-> an acpi glitch... there's definitely something strange going on with
-> backlight around s2ram: during normal operation, backlight changes are
-> fast. After s2ram, backlight change from keyboard takes 300msec or so.
+On Wed, Oct 04, 2006 at 10:16:41PM +0200, Jesper Juhl wrote:
+> I have a strange "problem" with 2.6.18-git21 that I've never had with
+> any previous kernel. If I open up an xterm in X, su to root and
+> 'reboot' (or 'shutdown -r now') I instantly get a blue screen that
+> persists until the box actually reboots.
 
-Is this a regression compared to 2.6.18 or an older issue?
+Pavel, is this a known issue or should Jesper bisect?
 
-If it's a regression can you bisect?
+> With previous kernels (all that I can remember, latest tested being
+> 2.6.18-git15 (then I jumped from -git15 to -git21)) what happened was
+> that X would die and I would be returned to text mode so that I could
+> actually see all the shutdown messages from my init scripts (which is
+> very nice).
+> =
 
-TIA
+> I don't really know what info would be relevant to provide regarding
+> this issue, so please ask for any info you need.
+> =
+
+> I can start testing kernels between 2.6.18-git15 and 2.6.18-git21
+> and/or  doing git bisects if anyone thinks it will be useful. If you
+> want that, please speak up, since I would rather not build and
+> test-boot a lot of kernels for no reason if nobody wants the info. But
+> if it will be useful I'll be happy to do it.
+> =
+
+> Anyway, there's a bug somewhere, let's squash it ;-)
+
+cu
 Adrian
 
--- 
+-- =
+
 
        "Is there not promise of rain?" Ling Tan asked suddenly out
         of the darkness. There had been need of rain for many days.
        "Only a promise," Lao Er said.
                                        Pearl S. Buck - Dragon Seed
-
