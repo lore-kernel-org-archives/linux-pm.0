@@ -1,67 +1,126 @@
-From: matthieu castet <castet.matthieu@free.fr>
-Subject: Re: 2.6.19-rc1: known regressions (v2)
-Date: Sun, 08 Oct 2006 10:56:39 +0200
-Message-ID: <4528BD47.5030509@free.fr>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-	<20061007214620.GB8810@stusta.de>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq
+	PowerOPintegration, Intro 0/3]
+Date: Sun, 8 Oct 2006 09:28:15 -0500
+Message-ID: <EA12F909C0431D458B9D18A176BEE4A50800FCF4@dlee02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-Return-path: <fastboot-bounces@lists.osdl.org>
-In-Reply-To: <20061007214620.GB8810@stusta.de>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
-	<mailto:fastboot-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/fastboot>
-List-Post: <mailto:fastboot@lists.osdl.org>
-List-Help: <mailto:fastboot-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
-	<mailto:fastboot-request@lists.osdl.org?subject=subscribe>
-Sender: fastboot-bounces@lists.osdl.org
-Errors-To: fastboot-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: len.brown@intel.com, alsa-devel@alsa-project.org, Thierry Vignaud <tvignaud@mandriva.com>, linux-pm@osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alex Romosan <romosan@sycorax.lbl.gov>, Torsten Kaiser <kernel@bardioc.dyndns.org>, Olaf Hering <olaf@aepfle.de>, ak@suse.de, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, fastboot@osdl.org, Dave Kleikamp <shaggy@austin.ibm.com>, Pavel Machek <pavel@ucw.cz>, Antonino Daplas <adaplas@pol.net>, linux1394-devel@lists.sourceforge.net, perex@suse.cz, Alistair John Strachan <s0348365@sms.ed.ac.uk>, discuss@x86-64.org, linux-fbdev-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>, linuxppc-dev@ozlabs.org, Steve Fox <drfickle@us.ibm.com>, netdev@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Linux
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>, "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Adrian Bunk wrote:
-> This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
-> that are not yet fixed Linus' tree.
+> C) Notification
 > =
 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you was declared guilty for a breakage or I'm considering you in any
-> other way possibly involved with one or more of these issues.
+> Let's look at the "notification" stage first -- that's what =
+
+> current cpufreq
+> notifiers do in a very basic way. However, this is also what =
+
+> the new clock
+> and voltage frameworks are trying to do, right? So that's the =
+
+> lesser problem
+> now.
+
+No, the clock frame work does not do notifications to drivers.
+
+The procedure for system wide frequency scaling using the clock frame
+work:
+ 1: Get a root clock handle (clk_get)
+ 2: Validate a new target clock rate (clk_get_rate + clk_round_rate)
+*3: Use Notification services from some _other_ frame work to drivers
+ 4: Set the new rate (clk_set_rate)
+	- This setting changes potentially several levels of derived
+clocks
+
+The clock frame work allows simple maintenance of device local clocks or
+the ability to change root clocks or groups of root clocks.  Root clock
+changes are the ones which are used with system frequency scaling and
+these changes _may_ need the notification depending on the level of
+system coupling.
+
+
+* Reading below in your message you address and seem to get this...  The
+following text just shows generally what happens in some current
+operating point centric systems.
+
+--------------------
+- In an operating point centric system the key root clocks (or other
+fundamental system wide variables like power domain) are parameters in
+the operating point.  =
+
+
+- Prior to trying to change in an operating point or a parameter in a
+given point, the frame work does a dependency check to registered
+drivers which care about operating point parameter changes.  Drivers
+which are sensitive to these changes may register constraints to be
+_considered_ by the frame work at change times.
+
+- Once the system has decided the change is ok it then notifies the
+driver to prepare for the parameter set change.  The controlling frame
+works (possibly multiple ones) are used to make the system changes.  The
+driver is then notified the change is done.
+--------------------
+
+> D) Verification
 > =
 
-> Due to the huge amount of recipients, please trim the Cc when answering.
+> So, how to do this verification? Basically, there are two approaches:
 > =
 
+> 1) ask every other subsystem whether the new value is OK with it.
+> 	This is what cpufreq currently suggests to do. It is evident
+> 	that this gets overly complicated with lots of dependencies
+> 	and dependencies within the dependencies -- both in terms
+> 	of concept and in terms of time the verification code takes
+> 	to execute.
+> 	Advantages:
+> 	- easy to expand, also in runtime (e.g. USB system is
+> 		modprobed and telling you of a new minimum voltage
+> 		requirement on certain circumstances)
+> 	- does not limit choices for each knob
+> 	Disadvantages:
+> 	- might get very complex
 > =
 
+> 2) look up all valid states in a table
+> 	This is basically what PowerOP and the "operating points"
+> 	concept suggests: if you want to change one value, you check
+> 	what operating points a) contain the new value and b) is
+> 	most suitable to you.
+> 	Advantages:
+> 	- fast
+> 	- pre-defined set of operating points which the system
+> 	  designer is comfortable with
+> 	Disadvantages:
+> 	- needs to be limited to "core" of the system as else
+> 	  the tables may get overly large
+> 	- limits the choices
 
-> =
+That is a pretty good summary.
 
-> Subject    : ueagle-atm Oops
-> References : http://lkml.org/lkml/2006/10/6/390
-> Submitter  : Ernst Herzberg <list-lkml@net4u.de>
-> Handled-By : Matthieu Castet <castet.matthieu@free.fr>
-> Status     : unknown
-> =
+Depending on your operating point definition you don't always have to
+limit yourself here.  An operating point parameter need not directly be
+associated with the physical value of the domain it represents.  Meaning
+you don't need to put 1.05 volts in for the parameter, you can define it
+as some other value which needs translating/defining by the core.
 
-> =
+> E) So, why not combine the best of both worlds?
 
-Guilty     :
-http://www.kernel.org/git/gitweb.cgi?p=3Dlinux/kernel/git/torvalds/linux-2.=
-6.git;a=3Dcommitdiff;h=3De7ccdfec087f02930c5cdc81143d4a045ae8d361
+More reading necessary ...
 
-Patch available at =
-
-https://mail.gna.org/public/ueagleatm-dev/2006-10/msg00022.html , but =
-
-some cleaning is need (I wasn't aware of "USB: fix __must_check warnings =
-
-in drivers/usb/atm/" patch).
-
-Matthieu
+Thanks,
+Richard W.
