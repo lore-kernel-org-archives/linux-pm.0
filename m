@@ -1,45 +1,64 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: x60 backlight Re: [discuss] 2.6.19-rc1: known regressions (v2)
-Date: Sun, 8 Oct 2006 07:12:54 +0000
-Message-ID: <20061008071254.GA5672@ucw.cz>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org> <20061007214620.GB8810@stusta.de>
+Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq PowerOP
+	integration, Intro 0/3]
+Date: Sun, 8 Oct 2006 07:16:49 +0000
+Message-ID: <20061008071649.GB5672@ucw.cz>
+References: <44ECFF94.3030506@gmail.com>
+	<20061007023620.GD30380@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20061007214620.GB8810@stusta.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org
+In-Reply-To: <20061007023620.GD30380@dominikbrodowski.de>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-On Sat 07-10-06 23:46:21, Adrian Bunk wrote:
-> This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
-> that are not yet fixed Linus' tree.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you was declared guilty for a breakage or I'm considering you in any
-> other way possibly involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-...
-> Subject    : T60 stops triggering any ACPI events
-> References : http://lkml.org/lkml/2006/10/4/425
-> Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
-> Status     : unknown
-> 
-> 
-> Subject    : thinkpad x60: brightness no longer adjustable in 2.6.18-git
-> References : http://lkml.org/lkml/2006/10/2/300
-> Submitter  : Pavel Machek <pavel@ucw.cz>
-> Status     : unknown, related to the issue above?
+> F) So, how would this work for OMAP1?
+> =
 
-Strange, problem went away after reboot. I guess I'll write it off as
-an acpi glitch... there's definitely something strange going on with
-backlight around s2ram: during normal operation, backlight changes are
-fast. After s2ram, backlight change from keyboard takes 300msec or so.
+> Let's limit it, to keep it somewhat simple, to the values contained in yo=
+ur
+> "struct pm_core_point" for OMAP:
+> =
 
--- 
+> 	int cpu_vltg; /* voltage in mV */
+> 	int dpll;     /* in KHz */
+> 	int cpu;      /* CPU frequency in KHz */
+> 	int tc;       /* in KHz */
+> 	int per;      /* in KHz */
+> 	int dsp;      /* in KHz */
+> 	int dspmmu;   /* in KHz */
+> 	int lcd;      /* in KHz */
+> =
+
+> and let's also add a
+> =
+
+> 	int i_am_special;
+
+Hehe, nice idea.
+
+> I think that this might be much easier to implement than your PowerOP /
+> operating points / PM core / PowerOP - cpufreq interaction patches. As a
+> matter of fact, some parts of your operating points table infrastructure
+> may be usable for the concept outlined above. So, what do you think? What
+> does everyone else involved think about this alternative approach?
+
+Looks okay to me. Unlike powerop design, this actually works for
+everyone.
+-- =
+
 Thanks for all the (sleeping) penguins.
