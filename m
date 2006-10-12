@@ -1,8 +1,8 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq PowerOP
 	integration, Intro 0/3]
-Date: Thu, 12 Oct 2006 18:02:03 +0200
-Message-ID: <20061012160203.GA27219@isilmar.linta.de>
+Date: Thu, 12 Oct 2006 18:48:13 +0200
+Message-ID: <20061012164813.GA4624@elf.ucw.cz>
 References: <44ECFF94.3030506@gmail.com>
 	<20061007023620.GD30380@dominikbrodowski.de>
 	<20061008071649.GB5672@ucw.cz>
@@ -23,12 +23,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Mark Gross <mgross@linux.intel.com>
-Cc: pm list <linux-pm@lists.osdl.org>
+Cc: pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark,
+On Thu 2006-10-12 08:38:21, Mark Gross wrote:
+> On Sun, Oct 08, 2006 at 07:16:49AM +0000, Pavel Machek wrote:
+> > Hi!
+> > =
 
-On Thu, Oct 12, 2006 at 08:38:21AM -0700, Mark Gross wrote:
+> > > F) So, how would this work for OMAP1?
+> > > =
+
+> > > Let's limit it, to keep it somewhat simple, to the values contained i=
+n your
+> > > "struct pm_core_point" for OMAP:
+> > > =
+
+> > > 	int cpu_vltg; /* voltage in mV */
+> > > 	int dpll;     /* in KHz */
+> > > 	int cpu;      /* CPU frequency in KHz */
+> > > 	int tc;       /* in KHz */
+> > > 	int per;      /* in KHz */
+> > > 	int dsp;      /* in KHz */
+> > > 	int dspmmu;   /* in KHz */
+> > > 	int lcd;      /* in KHz */
+> > > =
+
+> > > and let's also add a
+> > > =
+
+> > > 	int i_am_special;
+> > =
+
+> > Hehe, nice idea.
+> > =
+
 > > > I think that this might be much easier to implement than your PowerOP=
  /
 > > > operating points / PM core / PowerOP - cpufreq interaction patches. A=
@@ -50,17 +79,24 @@ What
 > to bring to the table.  =
 
 
-Oh no. PowerOP does it top->bottom; I try to do it bototm->top. That's the
-difference, and it is a _fundamental_ difference. Yes, both will lead to a
-concept of "operating points" on systems which may need it. But still the
-way you get there (which is important if you want to keep it flexible, and
-you do want to keep it flexible to allow for cpufreq) is different.
+I believe I did pay attention. What PowerOP has is crappy patches,
+crappy changelogs, and when you don't like it, you are obviously
+biased (or not paying attention).
+
+And no, what Dominik describes is very reasonable, unlike powerop.
 
 > PowerOP is not a policy engine like what Dominic is talking about.  And
 > what Dominic is talking about will need to build on something that will
 > end up looking so much like power op that it wont be funny.
 
-This I dare to doubt.
+Great, so you think you do not have that much work to do. Go ahead and
+do it.
 
-Thanks,
-	Dominik
+(Unlike powerop, this has actually chance of working with 256
+cpus. Unlike powerop people, Dominik did his homework.)
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
