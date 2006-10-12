@@ -1,18 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Vitaly Wool" <vitalywool@gmail.com>
 Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq PowerOP
 	integration, Intro 0/3]
-Date: Thu, 12 Oct 2006 18:48:13 +0200
-Message-ID: <20061012164813.GA4624@elf.ucw.cz>
+Date: Thu, 12 Oct 2006 21:12:20 +0400
+Message-ID: <acd2a5930610121012m5d3e532amc0f53df7eb2431f8@mail.gmail.com>
 References: <44ECFF94.3030506@gmail.com>
 	<20061007023620.GD30380@dominikbrodowski.de>
 	<20061008071649.GB5672@ucw.cz>
 	<20061012153821.GA30804@linux.intel.com>
+	<20061012164813.GA4624@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0550282721=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20061012153821.GA30804@linux.intel.com>
+In-Reply-To: <20061012164813.GA4624@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,81 +21,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Mark Gross <mgross@linux.intel.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2006-10-12 08:38:21, Mark Gross wrote:
-> On Sun, Oct 08, 2006 at 07:16:49AM +0000, Pavel Machek wrote:
-> > Hi!
-> > =
+This is a multi-part message in MIME format...
 
-> > > F) So, how would this work for OMAP1?
-> > > =
+--===============0550282721==
+Content-Type: multipart/alternative;
+    boundary="----------=_1160673150-24993-429"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-> > > Let's limit it, to keep it somewhat simple, to the values contained i=
-n your
-> > > "struct pm_core_point" for OMAP:
-> > > =
+This is a multi-part message in MIME format...
 
-> > > 	int cpu_vltg; /* voltage in mV */
-> > > 	int dpll;     /* in KHz */
-> > > 	int cpu;      /* CPU frequency in KHz */
-> > > 	int tc;       /* in KHz */
-> > > 	int per;      /* in KHz */
-> > > 	int dsp;      /* in KHz */
-> > > 	int dspmmu;   /* in KHz */
-> > > 	int lcd;      /* in KHz */
-> > > =
+------------=_1160673150-24993-429
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> > > and let's also add a
-> > > =
-
-> > > 	int i_am_special;
-> > =
-
-> > Hehe, nice idea.
-> > =
-
-> > > I think that this might be much easier to implement than your PowerOP=
- /
-> > > operating points / PM core / PowerOP - cpufreq interaction patches. A=
-s a
-> > > matter of fact, some parts of your operating points table infrastruct=
-ure
-> > > may be usable for the concept outlined above. So, what do you think? =
-What
-> > > does everyone else involved think about this alternative approach?
-> > =
-
-> > Looks okay to me. Unlike powerop design, this actually works for
-> > everyone.
-> =
-
-> Pavel, if you would pay attention better you would notice that at the
-> underneath of what Dominic is talking about is a concept of *more knobs*
-> for controlling platform power states.  This is what PowerOP is trying
-> to bring to the table.  =
+On 10/12/06, Pavel Machek <pavel@ucw.cz> wrote:
+>
+> I believe I did pay attention. What PowerOP has is crappy patches,
+> crappy changelogs, and when you don't like it, you are obviously
+> biased (or not paying attention).
 
 
-I believe I did pay attention. What PowerOP has is crappy patches,
-crappy changelogs, and when you don't like it, you are obviously
-biased (or not paying attention).
+I would say that by these words and by what you say later you confirm you
+just haven't got any valid points you can prove your position with.
 
-And no, what Dominik describes is very reasonable, unlike powerop.
+Vitaly
 
-> PowerOP is not a policy engine like what Dominic is talking about.  And
-> what Dominic is talking about will need to build on something that will
-> end up looking so much like power op that it wont be funny.
+------------=_1160673150-24993-429
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Great, so you think you do not have that much work to do. Go ahead and
-do it.
+On 10/12/06, <b class="gmail_sendername">Pavel Machek</b> &lt;<a href="mailto:pavel@ucw.cz">pavel@ucw.cz</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" DEFANGED_style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+I believe I did pay attention. What PowerOP has is crappy patches,<br>crappy changelogs, and when you don't like it, you are obviously<br>biased (or not paying attention).</blockquote><div><br>I would say that by these words and by what you say later you confirm you just haven't got any valid points you can prove your position with.
+<br></div></div><br>Vitaly<br>
 
-(Unlike powerop, this has actually chance of working with 256
-cpus. Unlike powerop people, Dominik did his homework.)
-									Pavel
--- =
+------------=_1160673150-24993-429--
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+--===============0550282721==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0550282721==--
