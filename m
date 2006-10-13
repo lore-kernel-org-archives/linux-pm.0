@@ -1,71 +1,36 @@
-From: Adam Belay <abelay@MIT.EDU>
-Subject: Re: Bug in PCI core
-Date: Fri, 13 Oct 2006 12:40:31 -0400
-Message-ID: <1160757632.26091.121.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0610131024340.6460-100000@iolanthe.rowland.org>
-	<1160753187.25218.52.camel@localhost.localdomain>
-	<1160753390.3000.494.camel@laptopd505.fenrus.org>
+From: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [linux-pm] Bug in PCI core
+Date: Fri, 13 Oct 2006 10:36:35 -0600
+Message-ID: <20061013163635.GC11633@parisc-linux.org>
+References: <Pine.LNX.4.44L0.0610131024340.6460-100000@iolanthe.rowland.org> <1160753187.25218.52.camel@localhost.localdomain> <1160753390.3000.494.camel@laptopd505.fenrus.org> <1160755562.25218.60.camel@localhost.localdomain> <1160757260.26091.115.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1160753390.3000.494.camel@laptopd505.fenrus.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751749AbWJMQgi@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1160757260.26091.115.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adam Belay <abelay@MIT.EDU>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz, Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-10-13 at 17:29 +0200, Arjan van de Ven wrote:
-> On Fri, 2006-10-13 at 16:26 +0100, Alan Cox wrote:
-> > Ar Gwe, 2006-10-13 am 10:29 -0400, ysgrifennodd Alan Stern:
-> > > > I'd like to propose that we have the pci config sysfs interface ret=
-urn
-> > > > -EIO  when it's blocked (e.g. active BIST or D3cold).  This accurat=
-ely
-> > > > reflects the state of the device to userspace, reduces complexity, =
-and
-> > > > could potentially save some memory per PCI device instance.
-> > > =
+On Fri, Oct 13, 2006 at 12:34:20PM -0400, Adam Belay wrote:
+> I agree this needs to be fixed.  However, as I previously mentioned,
+> this isn't the right place to attack the problem.  Remember, this wasn't
+> originally a kernel regression.  Rather it's a workaround for a known
+> X/lspci/whatever bug.  It's not the kernel's job to babysit userspace.
+> If a userspace app that has the proper permissions decides to take a
+> course of action that could potentially crash the system, then it has a
+> right to do so.  There are probably dozens of vectors for these sorts of
+> problems (e.g. mmap as Arjan has mentioned) so why stop at the pci
+> config sysfs interface?
 
-> > > Could you resubmit your old patches and include a corresponding fix f=
-or =
+The patch I posted (to deny user access while the device is
+transitioning D-states) is to fix a bug where *any* local user can bring
+the system into undefined territory, simply by typing lspci at the right
+moment.  No special permission is needed.
 
-> > > this access problem?
-> > =
-
-> > And then you can fix the applications it breaks, like the X server which
-> > does actually want to know where all the devices are located in PCI
-> > space.
-> > =
-
-> =
-
-> .. but which could equally well mmap the resource from sysfs ;)
-> =
-
-> =
-
-> also the thing this patch does is ONLY when the device is effectively
-> off the bus return -EIO.
-> One can argue that -EAGAIN is nicer since it's only a temporary
-> condition though....
-> =
-
-> =
-
-
-Yeah, perhaps -EAGAIN would be more appropriate, especially in the power
-state transition and BIST cases.  An interesting possibility might be to
-have the file actually block, although I'm not sure if the O_NONBLOCK
-flag or polling for that matter can be supported through the
-sysfs/driver-core API.
-
--Adam
+I hadn't realised that pci_block_user_cfg_access() would call
+pci_save_state().  There's only one other user of pci_block_user_cfg_access()
+-- drivers/scsi/ipr.c and I think it could be induced to call
+pci_save_state() itself.  It's an odd asymmetry anyway -- block calls
+save state, but unblock doesn't call restore_state.
