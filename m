@@ -1,49 +1,22 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Bug in PCI core
-Date: Fri, 13 Oct 2006 13:57:48 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0610131355550.6612-100000@iolanthe.rowland.org>
-References: <1160760867.25218.77.camel@localhost.localdomain>
+From: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [linux-pm] Bug in PCI core
+Date: Fri, 13 Oct 2006 13:18:54 -0600
+Message-ID: <20061013191854.GF11633@parisc-linux.org>
+References: <1160760867.25218.77.camel@localhost.localdomain> <Pine.LNX.4.44L0.0610131355550.6612-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1160760867.25218.77.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, Adam Belay <abelay@MIT.EDU>, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751825AbWJMTS4@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0610131355550.6612-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adam Belay <abelay@MIT.EDU>, Arjan van de Ven <arjan@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz, Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 13 Oct 2006, Alan Cox wrote:
+On Fri, Oct 13, 2006 at 01:57:48PM -0400, Alan Stern wrote:
+> Would it be okay for pci_block_user_cfg_access() to use its own cache, so 
+> it doesn't interfere with data previously cached by pci_save_state()?
 
-> Ar Gwe, 2006-10-13 am 10:49 -0600, ysgrifennodd Matthew Wilcox:
-> > No it didn't.  It's undefined behaviour to perform *any* PCI config
-> > access to the device while it's doing a D-state transition.  It may have
-> =
-
-> I think you missed the earlier parts of the story - the kernel caches
-> the base config register state.
-> =
-
-> > happened to work with the chips you tried it with, but more likely you
-> > never hit that window because X simply didn't try to do that.
-> =
-
-> Which is why the kernel caches the register state. This all came up long
-> ago and the solution we currently have was the one chosen after
-> considerable debate and analysis about things like locking. We preserved
-> the historical reliable interface going back to the early Linux PCI
-> support and used by all the apps.
-
-Would it be okay for pci_block_user_cfg_access() to use its own cache, so =
-
-it doesn't interfere with data previously cached by pci_save_state()?
-
-Alan Stern
+My suggestion is just to require that the callers have previously called
+pci_save_state().  The PCI PM stack already has, and it's a one-line
+change to the IPR driver.
