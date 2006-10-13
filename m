@@ -1,15 +1,8 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Bug in PCI core
-Date: Fri, 13 Oct 2006 19:13:52 +0200
-Message-ID: <1160759632.14815.4.camel@laptopd505.fenrus.org>
-References: <Pine.LNX.4.44L0.0610131024340.6460-100000@iolanthe.rowland.org>
-	<1160753187.25218.52.camel@localhost.localdomain>
-	<1160753390.3000.494.camel@laptopd505.fenrus.org>
-	<1160755562.25218.60.camel@localhost.localdomain>
-	<1160757260.26091.115.camel@localhost.localdomain>
-	<1160759349.25218.62.camel@localhost.localdomain>
-	<20061013164933.GD11633@parisc-linux.org>
-	<1160760867.25218.77.camel@localhost.localdomain>
+Date: Fri, 13 Oct 2006 13:57:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0610131355550.6612-100000@iolanthe.rowland.org>
+References: <1160760867.25218.77.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -25,10 +18,11 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, Adam Belay <abelay@MIT.EDU>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, Adam Belay <abelay@MIT.EDU>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2006-10-13 at 18:34 +0100, Alan Cox wrote:
+On Fri, 13 Oct 2006, Alan Cox wrote:
+
 > Ar Gwe, 2006-10-13 am 10:49 -0600, ysgrifennodd Matthew Wilcox:
 > > No it didn't.  It's undefined behaviour to perform *any* PCI config
 > > access to the device while it's doing a D-state transition.  It may have
@@ -42,8 +36,14 @@ On Fri, 2006-10-13 at 18:34 +0100, Alan Cox wrote:
 > > never hit that window because X simply didn't try to do that.
 > =
 
-> Which is why the kernel caches the register state. =
+> Which is why the kernel caches the register state. This all came up long
+> ago and the solution we currently have was the one chosen after
+> considerable debate and analysis about things like locking. We preserved
+> the historical reliable interface going back to the early Linux PCI
+> support and used by all the apps.
 
+Would it be okay for pci_block_user_cfg_access() to use its own cache, so =
 
-but... it didn't USE the cache in the case we're protecting here.
-Instead the hardware would just go splat.
+it doesn't interfere with data previously cached by pci_save_state()?
+
+Alan Stern
