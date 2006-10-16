@@ -1,18 +1,20 @@
 From: Mark Gross <mgross@linux.intel.com>
 Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq PowerOP
 	integration, Intro 0/3]
-Date: Mon, 16 Oct 2006 14:44:54 -0700
-Message-ID: <20061016214454.GA18975@linux.intel.com>
+Date: Mon, 16 Oct 2006 14:56:06 -0700
+Message-ID: <20061016215606.GB18975@linux.intel.com>
 References: <44ECFF94.3030506@gmail.com>
 	<20061007023620.GD30380@dominikbrodowski.de>
-	<452EC524.5000608@gmail.com> <20061013105504.GA1913@elf.ucw.cz>
+	<20061008071649.GB5672@ucw.cz>
+	<20061012153821.GA30804@linux.intel.com>
+	<20061012160203.GA27219@isilmar.linta.de>
 Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20061013105504.GA1913@elf.ucw.cz>
+In-Reply-To: <20061012160203.GA27219@isilmar.linta.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,86 +24,58 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 13, 2006 at 12:55:04PM +0200, Pavel Machek wrote:
-> Hi!
+On Thu, Oct 12, 2006 at 06:02:03PM +0200, Dominik Brodowski wrote:
+> Hi Mark,
 > =
 
-> > That's it. Bottom line is: what you are talking about is NOT an Alterna=
-tive
-> > Concept but a particular case instead. While PowerOP design is
-> > generic case.
+> On Thu, Oct 12, 2006 at 08:38:21AM -0700, Mark Gross wrote:
+> > > > I think that this might be much easier to implement than your Power=
+OP /
+> > > > operating points / PM core / PowerOP - cpufreq interaction patches.=
+ As a
+> > > > matter of fact, some parts of your operating points table infrastru=
+cture
+> > > > may be usable for the concept outlined above. So, what do you think=
+? What
+> > > > does everyone else involved think about this alternative approach?
+> > > =
+
+> > > Looks okay to me. Unlike powerop design, this actually works for
+> > > everyone.
+> > =
+
+> > Pavel, if you would pay attention better you would notice that at the
+> > underneath of what Dominic is talking about is a concept of *more knobs*
+> > for controlling platform power states.  This is what PowerOP is trying
+> > to bring to the table.  =
+
 > =
 
-> Fine then; submit powerOP with interface Dominik suggested. Notice
-> that his solution exposes all the knobs to userspace directly, so his
-> interface _is_ different to yours. "i_am_special" is just one of knobs.
+> Oh no. PowerOP does it top->bottom; I try to do it bototm->top. That's the
+> difference, and it is a _fundamental_ difference. Yes, both will lead to a
+> concept of "operating points" on systems which may need it. But still the
+> way you get there (which is important if you want to keep it flexible, and
+> you do want to keep it flexible to allow for cpufreq) is different.
 
-I am very keen on Dominic's design concept, however; I missed his sysfs
-interface that exposes the knobs to userspace.  =
-
-
-I've search the archives and still don't see any interface to user space
-users. =
-
+I'll take a closer look at both.  It really looks to me that folks are in
+violent agreement more than anything else.  I also prefer a bottom->top
+approach.
 
 --mgross
+
 > =
 
-> > The last remark about 256 CPU case. Leveraging POwerOP such systems wil=
-l be
-> > built using just one (current) operating point approach as described
-> > above.
+> > PowerOP is not a policy engine like what Dominic is talking about.  And
+> > what Dominic is talking about will need to build on something that will
+> > end up looking so much like power op that it wont be funny.
 > =
 
-> Notice that Dominik's solution still allows to have more than one
-> operating point for each of 256 CPUs without explosion of number of
-> states.
+> This I dare to doubt.
 > =
 
-> 								Pavel
-> =
-
-> > > F) So, how would this work for OMAP1?
-> > > =
-
-> > > Let's limit it, to keep it somewhat simple, to the values contained i=
-n your
-> > > "struct pm_core_point" for OMAP:
-> > > =
-
-> > > 	int cpu_vltg; /* voltage in mV */
-> > > 	int dpll;     /* in KHz */
-> > > 	int cpu;      /* CPU frequency in KHz */
-> > > 	int tc;       /* in KHz */
-> > > 	int per;      /* in KHz */
-> > > 	int dsp;      /* in KHz */
-> > > 	int dspmmu;   /* in KHz */
-> > > 	int lcd;      /* in KHz */
-> > > =
-
-> > > and let's also add a
-> > > =
-
-> > > 	int i_am_special;
-> > > =
-
-> > > Let's assume that there is an OMAP1 PM module which implements a ->se=
-t and
-> > > ->get function for all of them. A yet-to-be-defined interface then te=
-lls
-> > > this PM module
-> =
-
-> -- =
-
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
+> Thanks,
+> 	Dominik
