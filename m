@@ -1,32 +1,46 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [PATCH] Block on access to temporarily unavailable
- pci device
-Date: Wed, 18 Oct 2006 11:52:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0610181151450.6766-100000@iolanthe.rowland.org>
-References: <20061018145141.GO22289@parisc-linux.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Block on access to temporarily
+	unavailable	pci device
+Date: Wed, 18 Oct 2006 17:05:02 +0100
+Message-ID: <1161187503.9363.75.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0610181151450.6766-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161178AbWJRPxB@vger.kernel.org>
-In-Reply-To: <20061018145141.GO22289@parisc-linux.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Brian King <brking@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Adam Belay <abelay@MIT.EDU>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0610181151450.6766-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Brian King <brking@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Adam Belay <abelay@MIT.EDU>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 18 Oct 2006, Matthew Wilcox wrote:
+Ar Mer, 2006-10-18 am 11:52 -0400, ysgrifennodd Alan Stern:
+> Don't you want the user process to wait in TASK_INTERRUPTIBLE?  It would =
 
-> On Wed, Oct 18, 2006 at 10:38:20AM -0400, Alan Stern wrote:
-> > You have to do _something_, because a user task could be about to read the
-> > configuration space at the exact moment you want to start the BIST.  That
-> > means ipr would have to wait until the user access is finished, which
-> > means it has to be prepared to sleep one way or another.
-> 
-> Actually, it only has to spin until the user has finished accessing
-> config space.  See the patch I just posted.
+> require only a very simple change.
 
-I stand corrected.
+That just makes the problem even worse, to go with the kernel driver
+"what the hell do do if.." we get a user space one thats based around
+incompatibility with the existing behaviour.
 
-Don't you want the user process to wait in TASK_INTERRUPTIBLE?  It would 
-require only a very simple change.
+There are much saner ways to sort that out without breaking the API
 
-Alan Stern
+If its going to be a bounded short wait -> pause
+If its might be a long wait -> cached
+If its gone for good then error
+
+If the user specified O_NDELAY then -EWOULDBLOCK not wait
+
+That way you don't break anything and you get sensible Unix semantics.
+The wait queue Matthew added also means select() can be fitted up to do
+the right thing for the O_NDELAY case.
+
+Alan
