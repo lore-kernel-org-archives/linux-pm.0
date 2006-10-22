@@ -1,102 +1,273 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.19-rc2: known unfixed regressions (v3)
-Date: Sun, 22 Oct 2006 14:23:55 +0200
-Message-ID: <20061022122355.GC3502@stusta.de>
-References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH -mm] Make swsusp work on i386 with PAE
+Date: Sun, 22 Oct 2006 15:48:47 +0200
+Message-ID: <200610221548.48204.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Meelis Roos <mroos@linux.ee>, paulus@samba.org, linuxppc-dev@ozlabs.org, Martin Lorenz <martin@lorenz.eu.org>, "Michael S. Tsirkin" <mst@mellanox.co.il>, len.brown@intel.com, linux-acpi@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org, Jesper Juhl <jesper.juhl@gmail.com>, David Howells <dhowells@redhat.com>, James.Bottomley@HansenPartnership.com, pazke@donpac.ru, linux-visws-devel@lists.sf.net, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, art@usfltd.com, ak@suse.de, discuss@x86-64.org, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Christian <christiand59@web.de>, Mark Langsdorf <mark.langsdorf@amd.com>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Stephen Hemminger <shemminger@osdl.org>, Greg KH <greg@kroah.com>, linux-pci@atrey.k
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Linux PM <linux-pm@osdl.org>
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-This email lists some known unfixed regressions in 2.6.19-rc2 compared 
-to 2.6.18 that are not yet fixed Linus' tree.
+Hi,
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+The purpose of the appended patch is to make swsusp work on i386 with PAE,
+but it should also allow i386 systems without PSE to use swsusp.
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+The patch creates temporary page tables located in resume-safe page frames
+during the resume and uses them for restoring the suspend image (the same
+approach is used on x86-64).
 
+It has been tested on an i386 system with PAE and survived several
+suspend-resume cycles in a row, but I have no systems without PSE, so that
+requires some testing.
 
-Subject    : ppc prep boot hang
-References : http://lkml.org/lkml/2006/10/14/58
-Submitter  : Meelis Roos <mroos@linux.ee>
-Status     : unknown
+Comments welcome.
 
-
-Subject    : X60s: BUG()s, lose ACPI events after suspend/resume
-References : http://lkml.org/lkml/2006/10/10/39
-Submitter  : Martin Lorenz <martin@lorenz.eu.org>
-Status     : unknown
+Greetings,
+Rafael
 
 
-Subject    : T60 stops triggering any ACPI events
-References : http://lkml.org/lkml/2006/10/4/425
-             http://lkml.org/lkml/2006/10/16/262
-Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
-Status     : unknown
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/i386/power/Makefile  |    2 =
 
+ arch/i386/power/suspend.c |  153 +++++++++++++++++++++++++++++++++++++++++=
++++++
+ arch/i386/power/swsusp.S  |    9 ++
+ kernel/power/Kconfig      |    2 =
 
-Subject    : CONFIG_X86_VOYAGER=y, CONFIG_SMP=n compile error
-References : http://lkml.org/lkml/2006/10/7/51
-Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
-Caused-By  : David Howells <dhowells@redhat.com>
-             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
-Status     : unknown
+ 4 files changed, 162 insertions(+), 4 deletions(-)
 
+Index: linux-2.6.19-rc2-mm2/arch/i386/power/swsusp.S
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.19-rc2-mm2.orig/arch/i386/power/swsusp.S
++++ linux-2.6.19-rc2-mm2/arch/i386/power/swsusp.S
+@@ -28,8 +28,9 @@ ENTRY(swsusp_arch_suspend)
+ 	call swsusp_save
+ 	ret
+ =
 
-Subject    : CONFIG_X86_VISWS=y, CONFIG_SMP=n compile error
-References : http://lkml.org/lkml/2006/10/7/51
-Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
-Caused-By  : David Howells <dhowells@redhat.com>
-             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
-Status     : unknown
+-ENTRY(swsusp_arch_resume)
+-	movl	$swsusp_pg_dir-__PAGE_OFFSET, %ecx
++ENTRY(restore_image)
++	movl	resume_pg_dir, %ecx
++	subl	$__PAGE_OFFSET, %ecx
+ 	movl	%ecx, %cr3
+ =
 
+ 	movl	restore_pblist, %edx
+@@ -51,6 +52,10 @@ copy_loop:
+ 	.p2align 4,,7
+ =
 
-Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
-Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
-Status     : unknown
+ done:
++	/* go back to the original page tables */
++	movl	$swapper_pg_dir, %ecx
++	subl	$__PAGE_OFFSET, %ecx
++	movl	%ecx, %cr3
+ 	/* Flush TLB, including "global" things (vmalloc) */
+ 	movl	mmu_cr4_features, %eax
+ 	movl	%eax, %edx
+Index: linux-2.6.19-rc2-mm2/arch/i386/power/suspend.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- /dev/null
++++ linux-2.6.19-rc2-mm2/arch/i386/power/suspend.c
+@@ -0,0 +1,153 @@
++/*
++ * Suspend support specific for i386 - temporary page tables
++ *
++ * Distribute under GPLv2
++ *
++ * Copyright (c) 2006 Rafael J. Wysocki <rjw@sisk.pl>
++ */
++
++#include <linux/suspend.h>
++#include <linux/bootmem.h>
++
++#include <asm/system.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++
++/* Defined in arch/i386/power/swsusp.S */
++extern int restore_image(void);
++
++/* Pointer to the temporary resume page tables */
++pgd_t *resume_pg_dir;
++
++/* The following three functions are based on the analogous code in
++ * arch/i386/mm/init.c
++ */
++
++/*
++ * Create a middle page table on a resume-safe page and put a pointer to i=
+t in
++ * the given global directory entry.  This only returns the gd entry
++ * in non-PAE compilation mode, since the middle layer is folded.
++ */
++static pmd_t *resume_one_md_table_init(pgd_t *pgd)
++{
++	pud_t *pud;
++	pmd_t *pmd_table;
++
++#ifdef CONFIG_X86_PAE
++	pmd_table =3D (pmd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pmd_table)
++		return pmd_table;
++
++	set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
++	pud =3D pud_offset(pgd, 0);
++
++	BUG_ON(pmd_table !=3D pmd_offset(pud, 0));
++#else
++	pud =3D pud_offset(pgd, 0);
++	pmd_table =3D pmd_offset(pud, 0);
++#endif
++
++	return pmd_table;
++}
++
++/*
++ * Create a page table on a resume-safe page and place a pointer to it in
++ * a middle page directory entry.
++ */
++static pte_t *resume_one_page_table_init(pmd_t *pmd)
++{
++	if (pmd_none(*pmd)) {
++		pte_t *page_table =3D (pte_t *)get_safe_page(GFP_ATOMIC);
++		if (!page_table)
++			return page_table;
++
++		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
++
++		BUG_ON(page_table !=3D pte_offset_kernel(pmd, 0));
++
++		return page_table;
++	}
++
++	return pte_offset_kernel(pmd, 0);
++}
++
++/*
++ * This maps the physical memory to kernel virtual address space, a total
++ * of max_low_pfn pages, by creating page tables starting from address
++ * PAGE_OFFSET.  The page tables are allocated out of resume-safe pages.
++ */
++static int resume_physical_mapping_init(pgd_t *pgd_base)
++{
++	unsigned long pfn;
++	pgd_t *pgd;
++	pmd_t *pmd;
++	pte_t *pte;
++	int pgd_idx, pmd_idx;
++
++	pgd_idx =3D pgd_index(PAGE_OFFSET);
++	pgd =3D pgd_base + pgd_idx;
++	pfn =3D 0;
++
++	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {
++		pmd =3D resume_one_md_table_init(pgd);
++		if (!pmd)
++			return -ENOMEM;
++
++		if (pfn >=3D max_low_pfn)
++			continue;
++
++		for (pmd_idx =3D 0; pmd_idx < PTRS_PER_PMD; pmd++, pmd_idx++) {
++			if (pfn >=3D max_low_pfn)
++				break;
++
++			/* Map with big pages if possible, otherwise create
++			 * normal page tables.
++			 * NOTE: We can mark everything as executable here
++			 */
++			if (cpu_has_pse) {
++				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
++				pfn +=3D PTRS_PER_PTE;
++			} else {
++				pte_t *max_pte;
++
++				pte =3D resume_one_page_table_init(pmd);
++				if (!pte)
++					return -ENOMEM;
++
++				max_pte =3D pte + PTRS_PER_PTE;
++				for (; pte < max_pte; pte++, pfn++) {
++					if (pfn >=3D max_low_pfn)
++						break;
++
++					set_pte(pte, pfn_pte(pfn, PAGE_KERNEL_EXEC));
++				}
++			}
++		}
++	}
++	return 0;
++}
++
++int swsusp_arch_resume(void)
++{
++	int error;
++
++	resume_pg_dir =3D (pgd_t *)get_safe_page(GFP_ATOMIC);
++	if (!resume_pg_dir)
++		return -ENOMEM;
++
++#ifdef CONFIG_X86_PAE
++	int i;
++	/* Init entries of the first-level page table to the zero page */
++	for (i =3D 0; i < PTRS_PER_PGD; i++)
++		set_pgd(resume_pg_dir + i,
++			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
++#endif
++
++	error =3D resume_physical_mapping_init(resume_pg_dir);
++	if (error)
++		return error;
++
++	/* We have got enough memory and from now on we cannot recover */
++	restore_image();
++	return 0;
++}
+Index: linux-2.6.19-rc2-mm2/arch/i386/power/Makefile
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.19-rc2-mm2.orig/arch/i386/power/Makefile
++++ linux-2.6.19-rc2-mm2/arch/i386/power/Makefile
+@@ -1,2 +1,2 @@
+ obj-$(CONFIG_PM)		+=3D cpu.o
+-obj-$(CONFIG_SOFTWARE_SUSPEND)	+=3D swsusp.o
++obj-$(CONFIG_SOFTWARE_SUSPEND)	+=3D swsusp.o suspend.o
+Index: linux-2.6.19-rc2-mm2/kernel/power/Kconfig
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.19-rc2-mm2.orig/kernel/power/Kconfig
++++ linux-2.6.19-rc2-mm2/kernel/power/Kconfig
+@@ -78,7 +78,7 @@ config PM_SYSFS_DEPRECATED
+ =
 
-
-Subject    : SMP x86_64 boot problem
-References : http://lkml.org/lkml/2006/9/28/330
-             http://lkml.org/lkml/2006/10/5/289
-Submitter  : art@usfltd.com
-Status     : submitter was asked to git bisect
-             result of bisecting seems to be wrong
-
-
-Subject    : unable to rip cd
-References : http://lkml.org/lkml/2006/10/13/100
-Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
-Status     : unknown
-
-
-Subject    : cpufreq not working on AMD K8
-References : http://lkml.org/lkml/2006/10/10/114
-Submitter  : Christian <christiand59@web.de>
-Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
-Status     : Mark is investigating
-
-
-Subject    : MSI errors during boot (CONFIG_PCI_MULTITHREAD_PROBE)
-References : http://lkml.org/lkml/2006/10/16/291
-Submitter  : Stephen Hemminger <shemminger@osdl.org>
-Handled-By : Greg KH <greg@kroah.com>
-Status     : Greg is working on a fix
-
-
-Subject    : snd-hda-intel <-> forcedeth MSI problem
-References : http://lkml.org/lkml/2006/10/5/40
-             http://lkml.org/lkml/2006/10/7/164
-Submitter  : Prakash Punnoor <prakash@punnoor.de>
-Status     : patches are being discussed
-
-
+ config SOFTWARE_SUSPEND
+ 	bool "Software Suspend"
+-	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP) && !X86_PAE) || (=
+(FRV || PPC32) && !SMP))
++	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC3=
+2) && !SMP))
+ 	---help---
+ 	  Enable the possibility of suspending the machine.
+ 	  It doesn't need ACPI or APM.
