@@ -1,36 +1,97 @@
-From: "Annabelle Caldwell" <xmg@artbydavidgarcia.com>
-Subject: Essential note. You need to read.
-Date: Mon, 23 Oct 2006 15:17:04 -0540
-Message-ID: <01c6f6b6$4c29b3c0$6c822ecf@xmg>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] Make swsusp work on i386 with PAE
+Date: Mon, 23 Oct 2006 17:29:10 +0200
+Message-ID: <200610231729.10925.rjw@sisk.pl>
+References: <200610221548.48204.rjw@sisk.pl> <20061023145033.GB31273@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964940AbWJWP3s@vger.kernel.org>
+In-Reply-To: <20061023145033.GB31273@elf.ucw.cz>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM <linux-pm@osdl.org>, Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-The great prognosis are drawn up. =
+Hi,
 
-The increase is up to 70% last time.
-(MXXR) is the profitable deal and those who knows it is making money.
-The drilling results of this highly capable oil company exceeded all its ex=
-pectations. =
+On Monday, 23 October 2006 16:50, Pavel Machek wrote:
+> Hi!
+> 
+> > The purpose of the appended patch is to make swsusp work on i386 with PAE,
+> > but it should also allow i386 systems without PSE to use swsusp.
+> > 
+> > The patch creates temporary page tables located in resume-safe page frames
+> > during the resume and uses them for restoring the suspend image (the same
+> > approach is used on x86-64).
+> > 
+> > It has been tested on an i386 system with PAE and survived several
+> > suspend-resume cycles in a row, but I have no systems without PSE, so that
+> > requires some testing.
+> 
+> Thanks, looks okay to me. I guess Andi Kleen would be right person to
+> review it in detail?
 
-One time this fact hits the street there will be no stopping this one.
-Right now it's about 0.022 but we are waiting it to triple. =
+Yes, I think so.
 
-Once the news is made and the PR gets into full brandish.
-Don't hesitate and miss out.  We advise you to buy today.
-The key is getting in early and time is limited. We have been told that Mon=
-day is the day this one will expode. Find your position =
+> Lack of assembly modifications is good.
+> 
+> I guess this should be now removed? (include/asm-i386/suspend.h)
+> 
+> arch_prepare_suspend(void)
+> {
+>         /* If you want to make non-PSE machine work, turn off paging
+>            in swsusp_arch_suspend. swsusp_pg_dir should have identity mapping, so
+>            it could work...  */
+>         if (!cpu_has_pse) {
+>                 printk(KERN_ERR "PSE is required for swsusp.\n");
+>                 return -EPERM;
+>         }
 
-before that happens.
+Yes, it should.  I though it went away when the Kconfig was changed ...
+
+> > +/*
+> > + * Create a middle page table on a resume-safe page and put a pointer to it in
+> > + * the given global directory entry.  This only returns the gd entry
+> > + * in non-PAE compilation mode, since the middle layer is folded.
+> > + */
+> > +static pmd_t *resume_one_md_table_init(pgd_t *pgd)
+> > +{
+> > +	pud_t *pud;
+> > +	pmd_t *pmd_table;
+> > +
+> > +#ifdef CONFIG_X86_PAE
+> > +	pmd_table = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> > +	if (!pmd_table)
+> > +		return pmd_table;
+> 
+> I'd do plain old return NULL; here.
+
+OK
+
+> > +			/* Map with big pages if possible, otherwise create
+> > +			 * normal page tables.
+> > +			 * NOTE: We can mark everything as executable here
+> > +			 */
+> > +			if (cpu_has_pse) {
+> > +				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
+> > +				pfn += PTRS_PER_PTE;
+> 
+> Perhaps disabling PSE here can help getting some testing?
+
+Well, I don't really want to make everyone test the !PSE scenario. ;-)
+
+> Okay, I guess I should really test this one... Seems good enough for
+> -mm to me, but it should preferably stay there for a _long_ time.
+
+I think so too.
+
+Greetings,
+Rafael
+
+
+-- 
+You never change things by fighting the existing reality.
+		R. Buckminster Fuller
