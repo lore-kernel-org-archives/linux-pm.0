@@ -1,97 +1,29 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm] Make swsusp work on i386 with PAE
-Date: Mon, 23 Oct 2006 17:29:10 +0200
-Message-ID: <200610231729.10925.rjw@sisk.pl>
-References: <200610221548.48204.rjw@sisk.pl> <20061023145033.GB31273@elf.ucw.cz>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: Building ACPI for PPC architecture
+Date: Mon, 23 Oct 2006 09:43:12 -0600
+Message-ID: <200610230943.13125.bjorn.helgaas@hp.com>
+References: <200610230655.MAA16239@WS0005.indiatimes.com> <453C9B23.4020706@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964940AbWJWP3s@vger.kernel.org>
-In-Reply-To: <20061023145033.GB31273@elf.ucw.cz>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <453C9B23.4020706@linux.intel.com>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@osdl.org>, Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@linuxmail.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Cc: rajeshprabhu72721 <rajeshprabhu72721@indiatimes.com>, linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Monday 23 October 2006 04:36, Alexey Starikovskiy wrote:
+> You should try to build ACPI CA interpreter in user-space for your architecture first.
+> Get it here: http://www.intel.com/technology/iapc/acpi/downloads.htm
+> There is a big chance that you will find too many endian issues.
 
-On Monday, 23 October 2006 16:50, Pavel Machek wrote:
-> Hi!
-> 
-> > The purpose of the appended patch is to make swsusp work on i386 with PAE,
-> > but it should also allow i386 systems without PSE to use swsusp.
-> > 
-> > The patch creates temporary page tables located in resume-safe page frames
-> > during the resume and uses them for restoring the suspend image (the same
-> > approach is used on x86-64).
-> > 
-> > It has been tested on an i386 system with PAE and survived several
-> > suspend-resume cycles in a row, but I have no systems without PSE, so that
-> > requires some testing.
-> 
-> Thanks, looks okay to me. I guess Andi Kleen would be right person to
-> review it in detail?
+That is certainly an issue.  I think HP-UX used to run the CA in
+big-endian mode, so they probably sorted out some of the issues.
+But I think it was an ongoing headache, so they finally gave up and
+wrote wrappers to run the CA in little-endian mode while the rest
+of the OS runs in big-endian mode.
 
-Yes, I think so.
-
-> Lack of assembly modifications is good.
-> 
-> I guess this should be now removed? (include/asm-i386/suspend.h)
-> 
-> arch_prepare_suspend(void)
-> {
->         /* If you want to make non-PSE machine work, turn off paging
->            in swsusp_arch_suspend. swsusp_pg_dir should have identity mapping, so
->            it could work...  */
->         if (!cpu_has_pse) {
->                 printk(KERN_ERR "PSE is required for swsusp.\n");
->                 return -EPERM;
->         }
-
-Yes, it should.  I though it went away when the Kconfig was changed ...
-
-> > +/*
-> > + * Create a middle page table on a resume-safe page and put a pointer to it in
-> > + * the given global directory entry.  This only returns the gd entry
-> > + * in non-PAE compilation mode, since the middle layer is folded.
-> > + */
-> > +static pmd_t *resume_one_md_table_init(pgd_t *pgd)
-> > +{
-> > +	pud_t *pud;
-> > +	pmd_t *pmd_table;
-> > +
-> > +#ifdef CONFIG_X86_PAE
-> > +	pmd_table = (pmd_t *)get_safe_page(GFP_ATOMIC);
-> > +	if (!pmd_table)
-> > +		return pmd_table;
-> 
-> I'd do plain old return NULL; here.
-
-OK
-
-> > +			/* Map with big pages if possible, otherwise create
-> > +			 * normal page tables.
-> > +			 * NOTE: We can mark everything as executable here
-> > +			 */
-> > +			if (cpu_has_pse) {
-> > +				set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
-> > +				pfn += PTRS_PER_PTE;
-> 
-> Perhaps disabling PSE here can help getting some testing?
-
-Well, I don't really want to make everyone test the !PSE scenario. ;-)
-
-> Okay, I guess I should really test this one... Seems good enough for
-> -mm to me, but it should preferably stay there for a _long_ time.
-
-I think so too.
-
-Greetings,
-Rafael
-
-
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+Bjorn
