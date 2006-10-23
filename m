@@ -1,47 +1,37 @@
-From: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
-Subject: Re: Building ACPI for PPC architecture
-Date: Mon, 23 Oct 2006 14:36:19 +0400
-Message-ID: <453C9B23.4020706@linux.intel.com>
-References: <200610230655.MAA16239@WS0005.indiatimes.com>
+From: "Danielle Wolff" <gdvf@artskipper.com>
+Subject: Weighty note. You have to read.
+Date: Mon, 23 Oct 2006 11:04:45 +0000 (UTC)
+Message-ID: <01c6d1ae$e089cdc0$6c822ecf@gdvf>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200610230655.MAA16239@WS0005.indiatimes.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: rajeshprabhu72721 <rajeshprabhu72721@indiatimes.com>
-Cc: linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Wed, 6 Sep 2006 12:20:44 -0060
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-You should try to build ACPI CA interpreter in user-space for your architecture first.
-Get it here: http://www.intel.com/technology/iapc/acpi/downloads.htm
-There is a big chance that you will find too many endian issues.
+The great prognosis are made. =
 
-Regards,
-	Alex.
+The increase is up to 70% last time.
+(MXXR) is the worthwhile deal and those who knows it is making money.
+The drilling achivements of this highly capable oil company exceeded all it=
+s expectations. =
 
-rajeshprabhu72721 wrote:
-> 
-> We are trying to build ACPI for PPC e300 core . The problem is we donot have a BIOS running to supply the System Descriptor Tables to ACPI during boot. So ACPI gets disabled during boot. Are the system desc tables must for the ACPI to run? Or is there a method where we can avoid these tables and make ACPI work directly. Without BIOS how do we make ACPI up and running?
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> Have you checked out the new-look www.indiatimes.com yet?Have you checked out the new-look www.indiatimes.com yet?
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Once this information hits the road there will be no stopping this one.
+today it's around 0.022 but we are expecting it to triple. =
+
+Once the info is made and the PR gets into full swing.
+Don't hesitate and miss out.  We recommend you to buy today.
+The key is getting in early and the time is pressing. They say that Monday =
+is the day this one will detonate. Take your place =
+
+before that happens.
