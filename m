@@ -1,15 +1,17 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: 2.6.19-rc2: known unfixed regressions (v3)
-Date: Wed, 25 Oct 2006 10:37:11 +0200
-Message-ID: <20061025083711.GB9518@mellanox.co.il>
-References: <20061025082820.GD7083@elf.ucw.cz>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq PowerOP
+	integration, Intro 0/3]
+Date: Wed, 25 Oct 2006 23:06:42 -0400
+Message-ID: <20061026030642.GB18549@dominikbrodowski.de>
+References: <44ECFF94.3030506@gmail.com>
+	<20061007023620.GD30380@dominikbrodowski.de>
+	<20061009182123.GA1714@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20061025082820.GD7083@elf.ucw.cz>
+In-Reply-To: <20061009182123.GA1714@linux.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,36 +21,74 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Linus Torvalds <torvalds@osdl.org>, linux-pm@osdl.org, linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting r. Pavel Machek <pavel@suse.cz>:
-> > >
-> > > Subject    : T60 stops triggering any ACPI events
-> > > References : http://lkml.org/lkml/2006/10/4/425
-> > >              http://lkml.org/lkml/2006/10/16/262
-> > > Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
-> > > Status     : unknown
+Hi,
+
+On Mon, Oct 09, 2006 at 11:21:23AM -0700, Mark Gross wrote:
+> > D) Verification
+> i.e. constraint checking and enforcement
+
+Exactly.
+
+> > Let's assume that there is an OMAP1 PM module which implements a ->set =
+and
+> > ->get function for all of them. A yet-to-be-defined interface then tells
+> > this PM module
 > > =
 
-> > Just retested with 2.6.19-rc3 - it's still there:
-> > e.g. after I do a full kernel compile, my T60 stops triggering any ACPI=
- events:
-> > tail -f /var/log/acpid does not show anything, even on Fn/F4 which is s=
-upposed
-> > to be always enabled.  Restarting the acpid doesn't do anything either =
-- ACPI
-> > starts working again, for a while, only after reboot.
+> > "I want to increase the CPU frequency from C1 MHz to C2 MHz!"
 > > =
 
-> > Works fine in 2.6.18 ( + this patch http://lkml.org/lkml/2006/7/20/56).
+> > ->set(CPU_VLTG, C2);
+> did you mean ->set(CPU, C2) ?
+
+Yes, sorry about the confusion.
+
+> > The core would determine that the latter two states are now allwed, and
+> > using some sensible algorithm (e.g. "where do I not have to switch too =
+many
+> > knobs", or minimize the costs of switching) decide between those two.
+> > Basically, it would recignize now that it is OK to proceed from state N=
+r. 1
+> > to Nr. 3, but that this means that "tc" also needs to be changed. After
+> > notifing relevant subsystems using the clock and voltage frameworks, it
+> > would then proceed to set the hardware accordingly.
 > =
 
-> Bugzilla.kernel.org, assign it to acpi people...
+> This adds a sort of tree search defining a power state path from a
+> current state to one of the possible target stats with C2.  In this case
+> the only way to get to CPU=3D=3DC2 is to change TC to D2 and deal with all
+> the ripples that will cause.
+> =
 
-Already done, http://bugzilla.kernel.org/show_bug.cgi?id=3D7408
+> One question is how do we know that changing TC is a better way to go
+> than changing CPU_VLTG?  We'll need to figure out an ordering in the
+> phase space of power states.  Thinking out loud, I would try to pick the
+> target state based on latency if there are more than one targets to
+> satisfy the ->set() request.
 
--- =
+That sounds like an interesting approach.
 
-MST
+> > I think that this might be much easier to implement than your PowerOP /
+> > operating points / PM core / PowerOP - cpufreq interaction patches. As a
+> > matter of fact, some parts of your operating points table infrastructure
+> > may be usable for the concept outlined above. So, what do you think? Wh=
+at
+> > does everyone else involved think about this alternative approach?
+> > =
+
+> =
+
+> I still see a need to take the first step of enabling "lots of knobs".
+> This is the primary goal of the PowerOp patch set.  The stuff with the
+> sysfs is just an interface to set/get the operating points while a
+> more complete solution like what you are talking about evolves.
+
+Unfortunately, PowerOp gets the "lots of knobs" on its head, in my
+opinion...
+
+Thanks,
+	Dominik
