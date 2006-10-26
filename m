@@ -1,92 +1,96 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq
-	PowerOPintegration, Intro 0/3]
-Date: Thu, 26 Oct 2006 12:36:18 -0500
-Message-ID: <EA12F909C0431D458B9D18A176BEE4A5084E4681@dlee02.ent.ti.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc3: known unfixed regressions (v2)
+Date: Fri, 27 Oct 2006 00:45:41 +0200
+Message-ID: <20061026224541.GQ27968@stusta.de>
+References: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: pm list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz, Stephen Hemminger <shemminger@osdl.org>, Philipp Zabel <philipp.zabel@gmail.com>, rmk@arm.linux.org.uk, Martin Lorenz <martin@lorenz.eu.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Komuro <komurojun-mbn@nifty.com>, Thomas Gleixner <tglx@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, Christian <christiand59@web.de>, Mark Langsdorf <mark.langsdorf@amd.com>, davej@codemonkey.org.uk, cpufreq@
 List-Id: linux-pm@vger.kernel.org
 
+This email lists some known regressions in 2.6.19-rc3 compared to 2.6.18
+that are not yet fixed Linus' tree.
 
-Hi,
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-> > Depending on your operating point definition you don't always have
-to
-> > limit yourself here.  An operating point parameter need not directly
-be
-> > associated with the physical value of the domain it represents.
-Meaning
-> > you don't need to put 1.05 volts in for the parameter, you can
-define it
-> > as some other value which needs translating/defining by the core.
-> =
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-> First, thanks for your insightful comments. Second, well, we can of
-course
-> use some discrete values instead of "real" values -- however, if we
-get
-> the
-> chance, I think it's nicer to put the "real" values there. Unless we
-need
-> floating point ;)
 
-Yes, floating point funny... really I was hoping for denormalized number
-usage, not just '1.05V' instead of 1050mV ;)
+Subject    : swsusp initialized after SATA (CONFIG_PCI_MULTITHREAD_PROBE)
+References : http://lkml.org/lkml/2006/10/14/31
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Status     : unknown
 
-For me an operating point ends up being a mix of directly interpretable
-physical parameters and a couple more generic ones.  They are all
-'fundamental'. The generic ones describe a level for an entire domain.
-Upon parameter change I would update the specific domain control
-register, then, a secondary (usually symmetric) action may need to be
-preformed to members of that domain.
 
-For example I have 3 domains.  I want to put one domain into a higher
-latency idle state and leave the other two in a higher responsive state.
-I have 3 parameters in my OPP for those domains generic idle state.  I
-change the parameter to put that one domain into idle.  This gets
-translated into a call out where each member module (peripheral) enables
-a local idle feature (perhaps more as necessary).  There may be 2 or 20
-or ? modules contained in that domain.  Next, the domains master idle
-bit is set, and once all the members reach idle the domain can change
-state.
+Subject    : MSI errors during boot (CONFIG_PCI_MULTITHREAD_PROBE)
+References : http://lkml.org/lkml/2006/10/16/291
+Submitter  : Stephen Hemminger <shemminger@osdl.org>
+Handled-By : Greg KH <greg@kroah.com>
+Status     : Greg is working on a fix
 
-Listing all 20 devices in the OPP isn't necessary when you are looking
-to achieve a fundamental domain specific action.  A single parameter to
-express this is useful.
 
-There was recently a latency patch I saw on lkml used with a wireless
-driver.  I think that patch along with some decision logic would fit
-nicely into this kind of scheme.  Before I set a domain idle bit, I can
-have available the latency information to say if it will work out.
+Subject    : arm: Oops in __wake_up_common during htc magician resume
+References : http://lkml.org/lkml/2006/10/25/73
+Submitter  : Philipp Zabel <philipp.zabel@gmail.com>
+Status     : unknown
 
-In our implementation you must track the stack up of latencies.  Each
-level of idle from the device, to the interconnect, to the domain, and
-to the DPLL will add another additive level of latency.  If you just set
-individual ones with out summing them up, you will find your quality of
-service will be bad and you get bad playback on mp3 and the like with
-certain device state mixes.
 
-If you don't associate the devices in this type of system you end up
-limiting the kind of power savings which is achievable.
+Subject    : X60s: BUG()s, lose ACPI events after suspend/resume
+References : http://lkml.org/lkml/2006/10/10/39
+Submitter  : Martin Lorenz <martin@lorenz.eu.org>
+Status     : unknown
 
-Regards/Thanks,
-Richard W.
 
-> =
+Subject    : T60 stops triggering any ACPI events
+References : http://lkml.org/lkml/2006/10/4/425
+             http://lkml.org/lkml/2006/10/16/262
+             http://bugzilla.kernel.org/show_bug.cgi?id=7408
+Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
+Status     : unknown
 
-> Thanks,
-> 	Dominik
+
+Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
+Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
+Status     : unknown
+
+
+Subject    : unable to rip cd
+References : http://lkml.org/lkml/2006/10/13/100
+Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
+Status     : unknown
+
+
+Subject    : SMP kernel can not generate ISA irq properly
+References : http://lkml.org/lkml/2006/10/22/15
+Submitter  : Komuro <komurojun-mbn@nifty.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : Thomas will investigate
+
+
+Subject    : ohci1394 on PPC_PMAC:
+             pci_set_power_state() failure and breaking suspend
+References : http://lkml.org/lkml/2006/10/24/13
+Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Caused-By  : Stefan Richter <stefanr@s5r6.in-berlin.de>
+             commit ea6104c22468239083857fa07425c312b1ecb424
+Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
+Status     : Stefan Richter: looking for an answer when to ignore
+             the return code of pci_set_power_state
+
+
+Subject    : cpufreq not working on AMD K8
+References : http://lkml.org/lkml/2006/10/10/114
+Submitter  : Christian <christiand59@web.de>
+Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
+Status     : Mark is investigating
+
+
