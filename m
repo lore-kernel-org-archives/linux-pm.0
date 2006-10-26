@@ -1,88 +1,92 @@
-From: teunis <teunis@wintersgift.com>
-Subject: Re: 2.6.19-rc3: known unfixed regressions: confirmations
-Date: Thu, 26 Oct 2006 08:54:11 -0700
-Message-ID: <4540DA23.7060104@wintersgift.com>
-References: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org> <20061024202104.GF27968@stusta.de> <453E8921.2090406@wintersgift.com> <20061026153142.GJ27968@stusta.de>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: Re: Alternative Concept [Was: Re: [RFC] CPUFreq
+	PowerOPintegration, Intro 0/3]
+Date: Thu, 26 Oct 2006 12:36:18 -0500
+Message-ID: <EA12F909C0431D458B9D18A176BEE4A5084E4681@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423586AbWJZPyw@vger.kernel.org>
-In-Reply-To: <20061026153142.GJ27968@stusta.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: teunis <teunis@wintersgift.com>, linux-kernel@vger.kernel.org, art@usfltd.com, Jiri Slaby <jirislaby@gmail.com>, Jeff Dike <jdike@addtoit.com>, pavel@suse.cz, linux-pm@osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Adrian Bunk wrote:
-> On Tue, Oct 24, 2006 at 02:44:01PM -0700, teunis wrote:
->> Adrian Bunk wrote:
->>> This email lists some known unfixed regressions in 2.6.19-rc3 compared 
->>> to 2.6.18.
->> ...
->>
->> I'm not directly testing -rc3 as yet...  rc2-mm2 + a few modifications
->> works on the equipment I'm testing and as I can't afford more lost time
->> due to faults - I'm keeping to that build for the short term.
->>
->>> Subject    : shutdown problem
->>> References : http://lkml.org/lkml/2006/10/22/140
->>> Submitter  : art@usfltd.com
->>>              teunis@wintersgift.com
->>>              Jiri Slaby <jirislaby@gmail.com>
->>> Status     : unknown
->> repaired by Jeff Dike's patch to fs/proc/array.c
->> ...
-> 
-> Can you give me a pointer to this patch?
-> 
-> cu
-> Adrian
-> 
+Hi,
 
-I have no idea how to look up the link any other way - so here's a copy
-of the details from my mailbox (I've been keeping an archive local as I
-frequently work offline)
+> > Depending on your operating point definition you don't always have
+to
+> > limit yourself here.  An operating point parameter need not directly
+be
+> > associated with the physical value of the domain it represents.
+Meaning
+> > you don't need to put 1.05 volts in for the parameter, you can
+define it
+> > as some other value which needs translating/defining by the core.
+> =
 
-posted by: akpm@osdl.org; 23/10/06 10:34 AM
+> First, thanks for your insightful comments. Second, well, we can of
+course
+> use some discrete values instead of "real" values -- however, if we
+get
+> the
+> chance, I think it's nicer to put the "real" values there. Unless we
+need
+> floating point ;)
 
-From: Jeff Dike <jdike@addtoit.com>
+Yes, floating point funny... really I was hoping for denormalized number
+usage, not just '1.05V' instead of 1050mV ;)
 
-add-process_session-helper-routine-deprecate-old-field-fix-warnings.patch
-in -mm causes UML to hang at shutdown - init is sitting in a select on the
-initctl socket.
+For me an operating point ends up being a mix of directly interpretable
+physical parameters and a couple more generic ones.  They are all
+'fundamental'. The generic ones describe a level for an entire domain.
+Upon parameter change I would update the specific domain control
+register, then, a secondary (usually symmetric) action may need to be
+preformed to members of that domain.
 
-This patch fixes it for me.
+For example I have 3 domains.  I want to put one domain into a higher
+latency idle state and leave the other two in a higher responsive state.
+I have 3 parameters in my OPP for those domains generic idle state.  I
+change the parameter to put that one domain into idle.  This gets
+translated into a call out where each member module (peripheral) enables
+a local idle feature (perhaps more as necessary).  There may be 2 or 20
+or ? modules contained in that domain.  Next, the domains master idle
+bit is set, and once all the members reach idle the domain can change
+state.
 
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-- ---
+Listing all 20 devices in the OPP isn't necessary when you are looking
+to achieve a fundamental domain specific action.  A single parameter to
+express this is useful.
 
- fs/proc/array.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+There was recently a latency patch I saw on lkml used with a wireless
+driver.  I think that patch along with some decision logic would fit
+nicely into this kind of scheme.  Before I set a domain idle bit, I can
+have available the latency information to say if it will work out.
 
-diff -puN
-fs/proc/array.c~add-process_session-helper-routine-deprecate-old-field-fix-warnings-fix
-fs/proc/array.c
-- ---
-a/fs/proc/array.c~add-process_session-helper-routine-deprecate-old-field-fix-warnings-fix
-+++ a/fs/proc/array.c
-@@ -388,7 +388,7 @@ static int do_task_stat(struct task_stru
- 			stime = cputime_add(stime, sig->stime);
- 		}
+In our implementation you must track the stack up of latencies.  Each
+level of idle from the device, to the interconnect, to the domain, and
+to the DPLL will add another additive level of latency.  If you just set
+individual ones with out summing them up, you will find your quality of
+service will be bad and you get bad playback on mp3 and the like with
+certain device state mixes.
 
-- -		signal_session(sig);
-+		sid = signal_session(sig);
- 		pgid = process_group(task);
- 		ppid = rcu_dereference(task->real_parent)->tgid;
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+If you don't associate the devices in this type of system you end up
+limiting the kind of power savings which is achievable.
 
-iD8DBQFFQNojbFT/SAfwLKMRAqioAJ9+l+87bNRFJaHknJBGu6bYfrTlrACeOyts
-gkeCAiYDPBmR7E052LEMAtU=
-=eyIw
------END PGP SIGNATURE-----
+Regards/Thanks,
+Richard W.
+
+> =
+
+> Thanks,
+> 	Dominik
