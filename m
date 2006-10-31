@@ -1,70 +1,46 @@
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: [PATCH 2.6.19-rc3] (1/2) fix bd_claim_by_kobject error handling
-Date: Mon, 30 Oct 2006 16:23:45 -0500
-Message-ID: <45466D61.5070701@ce.jp.nec.com>
+From: Martin Lorenz <martin@lorenz.eu.org>
+Subject: Re: 2.6.19-rc3: known unfixed regressions (v3)
+Date: Tue, 31 Oct 2006 13:47:47 +0100
+Message-ID: <20061031124747.GG27390@gimli>
+References: <20061029231358.GI27968@stusta.de> <20061030135625.GB1601@mellanox.co.il> <45462591.7020200@ce.jp.nec.com> <Pine.LNX.4.64.0610300834060.25218@g5.osdl.org> <454637BE.6090309@ce.jp.nec.com> <Pine.LNX.4.64.0610300953150.25218@g5.osdl.org> <20061030183522.GL27968@stusta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------000600020308020906090007"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161503AbWJ3VZs@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: torvalds@osdl.org, akpm@osdl.org, rdunlap@xenotime.net, mst@mellanox.co.il, linux-kernel@vger.kernel.org
-Cc: bunk@stusta.de, pavel@suse.cz, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, martin@lorenz.eu.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20061030183522.GL27968@stusta.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, Jun'ichi Nomura <j-nomura@ce.jp.nec.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Randy.Dunlap" <rdunlap@xenotime.net>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000600020308020906090007
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+On Mon, Oct 30, 2006 at 07:35:22PM +0100, Adrian Bunk wrote:
+> On Mon, Oct 30, 2006 at 10:16:34AM -0800, Linus Torvalds wrote:
+[...]
+> Martin, Michael, can you send complete "dmesg -s 1000000" for both 
+> 2.6.18.1 and a non-working 2.6.19-rc kernel after resume?
+> I don't have high hopes, but perhaps looking at the dmesg and/or 
+> diff'ing them might give a hint.
+> 
+there are quite a few outputs from different kernels on my webpage
+www.lorenz.eu.org/~mlo/kernel/?C=M;O=D
 
-Hi,
+I hope I can go deeper into that tonight, but at the moment I can't promise
+anything.
 
-Excuse me for the long Cc list.
-I kept people in the thread below in Cc.
-http://marc.theaimsgroup.com/?l=linux-kernel&m=116221664710826&w=2
 
-The patch below fixes bd_claim_by_kobject to release bdev correctly
-in case that bd_claim succeeds but following add_bd_holder fails.
+gruss
+  mlo
+--
+Dipl.-Ing. Martin Lorenz
 
-If it happens, the caller takes it didn't bd_claim() where actually
-it did. The bdev becomes no longer bd_claim-able from others.
-I don't have any reproducible test case for it but it's a bug.
-The bug is introduced in 2.6.18-rc1-mm2 and now in 2.6.19-rc3.
+            They that can give up essential liberty 
+	    to obtain a little temporary safety 
+	    deserve neither liberty nor safety.
+                                   Benjamin Franklin
 
-Please consider to apply.
+please encrypt your mail to me
+GnuPG key-ID: F1AAD37D
+get it here:
+http://blackhole.pca.dfn.de:11371/pks/lookup?op=get&search=0xF1AAD37D
 
-Thanks,
--- 
-Jun'ichi Nomura, NEC Corporation of America
-
---------------000600020308020906090007
-Content-Type: text/x-patch;
- name="fix-bd_claim_by_kobject-error-handling.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-bd_claim_by_kobject-error-handling.patch"
-
-The patch below fixes bd_claim_by_kobject to release bdev correctly
-in case that bd_claim succeeds but following add_bd_holder fails.
-
- fs/block_dev.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-
---- linux-2.6.orig/fs/block_dev.c	2006-10-30 10:07:16.000000000 -0500
-+++ linux-2.6/fs/block_dev.c	2006-10-30 15:38:21.000000000 -0500
-@@ -751,8 +751,11 @@ static int bd_claim_by_kobject(struct bl
- 
- 	mutex_lock_nested(&bdev->bd_mutex, BD_MUTEX_PARTITION);
- 	res = bd_claim(bdev, holder);
--	if (res == 0)
-+	if (res == 0) {
- 		res = add_bd_holder(bdev, bo);
-+		if (res)
-+			bd_release(bdev);
-+	}
- 	if (res)
- 		free_bd_holder(bo);
- 	mutex_unlock(&bdev->bd_mutex);
-
---------------000600020308020906090007--
+ICQ UIN: 33588107
