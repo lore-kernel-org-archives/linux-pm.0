@@ -1,38 +1,65 @@
-From: Stefan Seyfried <seife@suse.de>
+From: Hugh Dickins <hugh@veritas.com>
 Subject: Re: 2.6.19-rc <-> ThinkPads
-Date: Wed, 1 Nov 2006 14:50:26 +0100
-Message-ID: <20061101135026.GA25751@suse.de>
-References: <20061029231358.GI27968@stusta.de> <20061101030126.GE27968@stusta.de> <200610312215.44454.len.brown@intel.com> <200611010611.30445.earny@net4u.de> <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>
+Date: Wed, 1 Nov 2006 16:36:51 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611011616460.6462@blonde.wat.veritas.com>
+References: <20061029231358.GI27968@stusta.de>
+	<20061030135625.GB1601@mellanox.co.il>
+	<20061101030126.GE27968@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Hugh Dickins <hugh@veritas.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Martin Lorenz <martin@lorenz.eu.org>, Adrian Bunk <bunk@stusta.de>, Ernst Herzberg <earny@net4u.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20061101030126.GE27968@stusta.de>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, linux-pm@osdl.org, linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Linus Torvalds <torvalds@osdl.org>, Martin Lorenz <martin@lorenz.eu.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 31, 2006 at 09:26:12PM -0800, Linus Torvalds wrote:
-> (Or it might not. Sometimes the patch that triggers changes really do=
-esn't=20
-> seem to have anything to do with anything, and it literally was just =
-a=20
-> latent bug that just happened to be exposed by something that had not=
-hing=20
-> to do with anything at all but perhaps timing.
+On Wed, 1 Nov 2006, Adrian Bunk wrote:
+> =
 
-Especially when "booting on AC works, but on battery it doesn't", (or t=
-he
-other way round), looking at timing problems seems sane to me.
---=20
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out."=
-=20
--
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Subject    : Thinkpad R50p: boot fail with (lapic && on_battery)
+> References : http://lkml.org/lkml/2006/10/31/333
+> Submitter  : Ernst Herzberg <earny@net4u.de>
+> Status     : submitter was asked to bisect
+> =
+
+> It seems to be completely unrelated (except that it's also a ThinkPad), =
+
+> but it might be worth a try whether a (non-SMP) kernel without APIC =
+
+> support fixes the issues after resume.
+> =
+
+> Hugh, your laptop seems to be a non-SMP laptop.
+
+That's right.
+
+> Do you have APIC enabled, and if yes does disabling help?
+
+Yes, I do.  But I've just tried booting with "noapic" and with "nolapic"
+and with "noapic nolapic", but none of those make any difference.
+
+(That is, they make no difference to the FnF4-ineffective-after-resume
+behaviour that I'm finding fairly easy to reproduce at will today on
+2.6.19-rc4; whereas yesterday it was seeming to me that -rc4 was much
+better than -rc3 in this regard.  Something I have learnt today is that
+the key is ineffective "for a while", but may become effective later.
+It's conceivable that the behaviour I'm reproducing today is not quite
+the same as what I was experiencing earlier with real-life suspends.)
+
+More to the point, with great hope in my heart, I've tried backing
+out Andi's git-cf4c6a2f27f5db810b69dcb1da7f194489e8ff88.patch
+to arch/i386/kernel/io_apic.c, the one which Michael and Linus have
+homed in on.  But sadly that makes no difference for me: I'd better
+get down to my own bisection.
+
+Hugh
