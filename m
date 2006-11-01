@@ -1,16 +1,14 @@
-From: Andi Kleen <ak@suse.de>
+From: Bill Davidsen <davidsen@tmr.com>
 Subject: Re: 2.6.19-rc <-> ThinkPads
-Date: Wed, 1 Nov 2006 22:15:51 +0100
-Message-ID: <200611012215.51459.ak@suse.de>
-References: <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>
-	<200611012034.06128.ak@suse.de>
-	<Pine.LNX.4.64.0611011148130.25218@g5.osdl.org>
+Date: Wed, 01 Nov 2006 17:35:55 -0500
+Message-ID: <4549214B.1000103@tmr.com>
+References: <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>	<20061101055435.GB4933@mellanox.co.il>
+	<Pine.LNX.4.64.0610312206390.25218@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0611011148130.25218@g5.osdl.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0610312206390.25218@g5.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,38 +19,36 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Hugh Dickins <hugh@veritas.com>, Martin Lorenz <martin@lorenz.eu.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Martin Lorenz <martin@lorenz.eu.org>, linux-acpi@vger.kernel.org, Ernst Herzberg <earny@net4u.de>, Hugh Dickins <hugh@veritas.com>, Adrian Bunk <bunk@stusta.de>, Andi Kleen <ak@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 01 November 2006 20:52, Linus Torvalds wrote:
+Linus Torvalds wrote:
+
+> I wonder if the order matters more, though. Andi? We _used_ to write the =
+
+> high word first, and I think the order matters. The low word contains the =
+
+> enable bit, for example, so when enabling an interrupt, you should write =
+
+> the low word last, when you disable it you should write the low word =
+
+> first.
 > =
 
-> On Wed, 1 Nov 2006, Andi Kleen wrote:
-> > =
+Although you can argue that anyone coding here should be a guru, in =
 
-> > Fix race in IO-APIC routing entry setup.
-> > =
+practice things this subtle really would be helped by a comment in the =
 
-> > Interrupt could happen between setting the IO-APIC entry
-> > and setting its interrupt data.
-> =
+initial code. I don't agree that "if it was hard to write it should be =
 
-> This doesn't fix anything at all.
-> =
+hard to understand." Clearly several competent people missed this =
 
-> The interrupt can come in on another CPU, =
+dependency, or the patch would not have gone in.
 
+-- =
 
-Only BP should be active at this point. At least not until
-we implement IO-APIC hotplug, but so far that isn't there.
-
-Ok in theory the BIOS could have put the other CPUs into
-weird states where they are still doing something and causing
-interrupts, but that would be a BIOS bug.
-
-I suppose it could happen with kexec, but that has still
-other problems anyways.
-
-The common case of no kexec shouldn't be affected at least.
-
--Andi
+Bill Davidsen <davidsen@tmr.com>
+   Obscure bug of 2004: BASH BUFFER OVERFLOW - if bash is being run by a
+normal user and is setuid root, with the "vi" line edit mode selected,
+and the character set is "big5," an off-by-one errors occurs during
+wildcard (glob) expansion.
