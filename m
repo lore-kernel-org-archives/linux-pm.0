@@ -1,14 +1,16 @@
 From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: 2.6.19-rc <-> ThinkPads
-Date: Wed, 1 Nov 2006 11:44:22 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0611011141450.25218@g5.osdl.org>
-References: <Pine.LNX.4.64.0611011003270.25218@g5.osdl.org>
-	<20061101193333.GC9085@mellanox.co.il>
+Date: Wed, 1 Nov 2006 11:52:52 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0611011148130.25218@g5.osdl.org>
+References: <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>
+	<200611011825.47710.ak@suse.de>
+	<Pine.LNX.4.64.0611011003270.25218@g5.osdl.org>
+	<200611012034.06128.ak@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20061101193333.GC9085@mellanox.co.il>
+In-Reply-To: <200611012034.06128.ak@suse.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,48 +20,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Andi Kleen <ak@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Hugh Dickins <hugh@veritas.com>, Adrian Bunk <bunk@stusta.de>, Martin Lorenz <martin@lorenz.eu.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Hugh Dickins <hugh@veritas.com>, Martin Lorenz <martin@lorenz.eu.org>
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On Wed, 1 Nov 2006, Michael S. Tsirkin wrote:
-
-> > I've pushed out the changes, but here is the part that may or may not =
-
-> > matter for anybody who wants to test it if they don't use git or if it =
-
-> > hasn't mirrored out yet. Michael? Martin?
+On Wed, 1 Nov 2006, Andi Kleen wrote:
 > =
 
-> I pulled the latest git, and seems to work for me, thanks.
-> This still could be a false negative (happened already) so I'll
-> continue using this, and will post the results.
-
-Ok, thanks.
-
-> > Somebody should look into that case. Does anybody feel like they want t=
-o =
-
-> > learn more about the IO-APIC? Halloween is over and gone, but if you wa=
-nt =
-
-> > to scare small children _next_ year, telling them about the IO-APIC is =
-
-> > likely a good strategy.
+> Fix race in IO-APIC routing entry setup.
 > =
 
-> Hmm, sounds interesting :)
-> Is this a good place to start (I'm feeling lucky hit for IO-APIC)?
-> http://www.intel.com/design/chipsets/datashts/290566.htm
+> Interrupt could happen between setting the IO-APIC entry
+> and setting its interrupt data.
 
-Yeah, that's the datasheet. Note that a lot of the IO-APIC complexity is =
+This doesn't fix anything at all.
 
-not so much in the programming interfaces themselves, but in keeping track =
+The interrupt can come in on another CPU, and if we end up having an =
 
-of how the heck the thing is connected (ie ExtINT vs SCI vs "normal apic =
+affinity change due to that, we then have "set_ioapic_affinity_irq()" =
 
-interrupt" etc).
+called on that other irq, and it might get to mess with the cpumask =
 
-		Linus
+because we dropped the ioapic_lock.
+
+In other words, the problem is not that interrupts were re-enabled, the =
+
+problem is literally that the locking is _wrong_. =
+
+
+It's a small window, but we simply should not release the ioapic_lock in =
+
+between setting the routing and doing the "set_native_irq_info()" call.
+
+So I think doing the locking inside "ioapic_write_entry()" is simply =
+
+fundamentally wrong. When you did the cleanup, your commit message talked =
+
+about how it might add a few more lock/unlock things:
+
+    In a few cases the IO APIC lock is taken more often now, but this
+    isn't a problem because it's all initialization/shutdown only
+    slow path code.
+
+but the point is, this is not about "performance". It's about =
+
+_correctness_.
+
+			Linus
