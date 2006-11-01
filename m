@@ -1,48 +1,38 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: Stefan Seyfried <seife@suse.de>
 Subject: Re: 2.6.19-rc <-> ThinkPads
-Date: Wed, 1 Nov 2006 14:02:39 +0200
-Message-ID: <20061101120239.GA7679@mellanox.co.il>
-References: <20061101093320.GA18641@elf.ucw.cz>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Date: Wed, 1 Nov 2006 14:50:26 +0100
+Message-ID: <20061101135026.GA25751@suse.de>
+References: <20061029231358.GI27968@stusta.de> <20061101030126.GE27968@stusta.de> <200610312215.44454.len.brown@intel.com> <200611010611.30445.earny@net4u.de> <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20061101093320.GA18641@elf.ucw.cz>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Andi Kleen <ak@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, Hugh Dickins <hugh@veritas.com>, Adrian Bunk <bunk@stusta.de>, Martin Lorenz <martin@lorenz.eu.org>
+In-Reply-To: <Pine.LNX.4.64.0610312123320.25218@g5.osdl.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Hugh Dickins <hugh@veritas.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Martin Lorenz <martin@lorenz.eu.org>, Adrian Bunk <bunk@stusta.de>, Ernst Herzberg <earny@net4u.de>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Pavel Machek <pavel@ucw.cz>:
-> > > What I plan to do is using eea0e11c1f0d6ef89e64182b2f1223a4ca2b74a2
-> > > for a couple of days and see how this works out.
-> > =
+On Tue, Oct 31, 2006 at 09:26:12PM -0800, Linus Torvalds wrote:
+> (Or it might not. Sometimes the patch that triggers changes really do=
+esn't=20
+> seem to have anything to do with anything, and it literally was just =
+a=20
+> latent bug that just happened to be exposed by something that had not=
+hing=20
+> to do with anything at all but perhaps timing.
 
-> > Ugh. Unfortunately in that kernel version, the e1000 driver says
-> > the eeprom checksum is bad (works fine with 2.6.19-rc3).
-> > So, I tried some suspends/resumes and things seem to work, but
-> > I won't be able to test it under real use conditions.
-> =
-
-> Just comment out the eeprom checksum check...
-> =
-
-
-Right, that worked, thanks.
-I'm running on eea0e11c1f0d6ef89e64182b2f1223a4ca2b74a2 now, seems to be fi=
-ne
-so far.
-
--- =
-
-MST
+Especially when "booting on AC works, but on battery it doesn't", (or t=
+he
+other way round), looking at timing problems seems sane to me.
+--=20
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out."=
+=20
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
