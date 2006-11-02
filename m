@@ -1,14 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] Make swsusp work on i386 with PAE
-Date: Thu, 2 Nov 2006 11:31:19 +0100
-Message-ID: <20061102103119.GG1990@elf.ucw.cz>
-References: <200610221548.48204.rjw@sisk.pl>
+From: "Brett Mccray" <BrettMccray@glmech.com>
+Subject: Neo-hebrew off-turning
+Date: Thu, 2 Nov 2006 11:49:48 +0000 (UTC)
+Message-ID: <01c6fe74$d2b66cb0$6c822ecf@akstcglmechmnsdgs>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200610221548.48204.rjw@sisk.pl>
+Date: Thu, 2 Dec 2006 11:48:33 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,33 +16,9 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@linuxmail.org>
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> The purpose of the appended patch is to make swsusp work on i386 with PAE,
-> but it should also allow i386 systems without PSE to use swsusp.
-> =
-
-> The patch creates temporary page tables located in resume-safe page frames
-> during the resume and uses them for restoring the suspend image (the same
-> approach is used on x86-64).
-> =
-
-> It has been tested on an i386 system with PAE and survived several
-> suspend-resume cycles in a row, but I have no systems without PSE, so that
-> requires some testing.
-> =
-
-> Comments welcome.
-
-Just a short update. I actualy tried it, and it seems to work
-ok. Thanks!
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+"in nursing your sister i am sure you have pleasure," said bingley; "and i =
+hope it will be soonball. they returned, therefore, in good spirits to long=
+bourn, the village where they lived, and of which
