@@ -1,11 +1,12 @@
-From: "Damian Tillman" <akstcalimarketmnsdgs@alimarket.es>
-Subject: off-center par value
-Date: Fri, 3 Nov 2006 09:58:35 +0000 (UTC)
-Message-ID: <919766584.70080239160134@thebat.net>
+From: Guillaume FORTAINE <guillaume.fortaine@wanadoo.fr>
+Subject: Power Management - Engineers
+Date: Fri, 3 Nov 2006 21:05:18 +0100
+Message-ID: <200611032105.18800.guillaume.fortaine@wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1162547889-5966-456"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Fri, 3 Dec 2006 09:57:17 -0330
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,55 +16,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+Hello,
 
-------------=_1162547889-5966-456
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Let me introduce myself : Guillaume FORTAINE, French engineer in informatic=
+s.
+I would want to build a start up to sell mobile phones ( OEM Level ). I am
+currently in discussions with investors.
 
-"la! you are so strange! but i must tell you how it went off. we were marri=
-ed, you know, at st."i have been thinking it over again, elizabeth," said h=
-er uncle, as they drove from the town; "and
+=A0We are currently searching people with a strong background in =A0Power =
 
-_______________________________________________
-linux-pm mailing list
-linux-pm@lists.osdl.org
-https://lists.osdl.org/mailman/listinfo/linux-pm
+Management.
 
-------------=_1162547889-5966-456
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+Our business model is in its early stage, but we would be interested into a
+break oppposite to the legacy one of our competitors who are nearly all
+ARM based. Our choice is to use the PowerPC =A0architecture : all the chall=
+enge
+is here, that's why we need people with a strong background... =A0 This is a
+very big project.
 
-Spam detection software, running on the system "fire-2.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or block
-similar future email.  If you have any questions, see
-the administrator of that system for details.
+We are ready to sign a contract with people who will be able able to work o=
+n =
 
-Content preview:  "la! you are so strange! but i must tell you how it
-  went off. we were married, you know, at st."i have been thinking it
-  over again, elizabeth," said her uncle, as they drove from the town;
-  "and linux-pm mailing list linux-pm@lists.osdl.org
-  https://lists.osdl.org/mailman/listinfo/linux-pm [...] 
+the Power Management issues of the overall design.
 
-Content analysis details:   (5.1 points, 5.0 required)
+=A0We look forward to your answer,
 
- pts rule name              description
----- ---------------------- --------------------------------------------------
--1.0 OSDL_HEADER_SUBJECT_BRACKETED Subject starts with []'d phrase
--1.0 OSDL_HEADER_LISTID_KNOWN List-Id contains a known mailing list
- 2.0 OUTFLUX_THEBAT         X-Mailer is from "The Bat"
- 2.5 DATE_IN_FUTURE_96_XX   Date: is 96 hours or more after Received: date
- 2.8 FORGED_MUA_THEBAT_CS   Mail pretending to be from The Bat! (charset)
--0.2 AWL                    AWL: Auto-whitelist adjustment
+=A0Best Regards,
 
-
-
-------------=_1162547889-5966-456--
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0Guillaume
