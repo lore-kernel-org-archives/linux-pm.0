@@ -1,49 +1,71 @@
-From: Guillaume FORTAINE <guillaume.fortaine@wanadoo.fr>
-Subject: Power Management - Engineers
-Date: Fri, 3 Nov 2006 21:05:18 +0100
-Message-ID: <200611032105.18800.guillaume.fortaine@wanadoo.fr>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc <-> ThinkPads, summary
+Date: Sat, 4 Nov 2006 04:49:07 +0100
+Message-ID: <20061104034906.GO13381@stusta.de>
+References: <20061029231358.GI27968@stusta.de> <20061030135625.GB1601@mellanox.co.il> <20061101030126.GE27968@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-serial-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
+In-Reply-To: <20061101030126.GE27968@stusta.de>
+Sender: linux-serial-owner@vger.kernel.org
+To: Hugh Dickins <hugh@veritas.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@suse.cz>, Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, Martin Lorenz <martin@lorenz.eu.org>, Andi Kleen <ak@suse.de>, discuss@x86-64.org, Russell King <rmk@dyn-67.arm.linux.org.uk>, linux-serial@vger.kernel.org, linux-thinkpad@linux-thinkpad.org, Ernst Herzberg <earny@net4u.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+As far as I can see, the 2.6.19-rc ThinkPad situation is still 
+confusing and we don't even know how many different bugs we are 
+chasing...
 
-Let me introduce myself : Guillaume FORTAINE, French engineer in informatic=
-s.
-I would want to build a start up to sell mobile phones ( OEM Level ). I am
-currently in discussions with investors.
+Below is all the information I have found, plus some questions for the 
+four people who reported problems that might hopefully bring us nearer 
+to solutions.
 
-=A0We are currently searching people with a strong background in =A0Power =
 
-Management.
+Michael S. Tsirkin:
+- ThinkPad T60 not coming out of suspend to RAM
+- broken by commit cf4c6a2f27f5db810b69dcb1da7f194489e8ff88
+  ("i386: Factor out common io apic routing entry access")
+- question: Did the post -rc4 arch/i386/kernel/io_apic.c changes fix it?
 
-Our business model is in its early stage, but we would be interested into a
-break oppposite to the legacy one of our competitors who are nearly all
-ARM based. Our choice is to use the PowerPC =A0architecture : all the chall=
-enge
-is here, that's why we need people with a strong background... =A0 This is a
-very big project.
 
-We are ready to sign a contract with people who will be able able to work o=
-n =
+Ernst Herzberg:
+- ThinkPad R50p: boot fail with (lapic && on_battery)
+- kernel compiled without cardbus support works
+- question: Does reverting  the bisected
+            commit 1fbbac4bcb03033d325c71fc7273aa0b9c1d9a03 
+            ("serial_cs: convert multi-port table to quirk table")
+            fix the problem?
+- question: Does reverting commit cf4c6a2f27f5db810b69dcb1da7f194489e8ff88
+            ("i386: Factor out common io apic routing entry access") help?
+- question: If yes, did the post -rc4 arch/i386/kernel/io_apic.c changes
+            fix it?
 
-the Power Management issues of the overall design.
 
-=A0We look forward to your answer,
+Hugh Dickins:
+- ThinkPad T43p
+- booting with "noapic nolapic" didn't make any difference
+- reverting commit cf4c6a2f27f5db810b69dcb1da7f194489e8ff88
+  ("i386: Factor out common io apic routing entry access") didn't help
+- question: Was your bisecting successful?
 
-=A0Best Regards,
 
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0Guillaume
+Martin Lorenz:
+- ThinkPad X60: lose ACPI events after suspend/resume
+                not every time, but roughly 3 out of 4 times
+- question: Does reverting commit cf4c6a2f27f5db810b69dcb1da7f194489e8ff88
+            ("i386: Factor out common io apic routing entry access")
+            in -rc4 help?
+- question: If yes, did the post -rc4 arch/i386/kernel/io_apic.c changes
+            fix it?
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
