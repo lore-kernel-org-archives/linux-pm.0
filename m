@@ -1,15 +1,14 @@
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.19-rc4: known unfixed regressions (v3)
-Date: Sun, 5 Nov 2006 17:30:27 +0800
-Message-ID: <b6a2187b0611050130s325d777che069a7d9619f061b@mail.gmail.com>
-References: <Pine.LNX.4.64.0610302019560.25218@g5.osdl.org>
-	<20061105064801.GV13381@stusta.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Power Management - Engineers
+Date: Sun, 5 Nov 2006 12:30:44 +0100
+Message-ID: <20061105113044.GA4966@elf.ucw.cz>
+References: <200611032105.18800.guillaume.fortaine@wanadoo.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20061105064801.GV13381@stusta.de>
 Content-Disposition: inline
+In-Reply-To: <200611032105.18800.guillaume.fortaine@wanadoo.fr>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,29 +18,39 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Komuro <komurojun-mbn@nifty.com>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Christian <christiand59@web.de>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, ak@suse.de, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, discuss@x86-64.org, Thierry Vignaud <tvignaud@mandriva.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, neilb@cse.unsw.edu.au, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net, "Eric W. Biederman" <ebiederm@xmission.com>, cpufreq@lists.linux.org.uk, "Michael S. Tsirkin" <mst@mellan>
+To: Guillaume FORTAINE <guillaume.fortaine@wanadoo.fr>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/5/06, Adrian Bunk <bunk@stusta.de> wrote:
+Hi!
+> =
 
-> Subject    : PCI: MMCONFIG breakage
-> References : http://lkml.org/lkml/2006/10/27/251
-> Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
-> Status     : unknown, both BIOS and Direct work
->              Greg said it should already be fixed
+> Let me introduce myself : Guillaume FORTAINE, French engineer in informat=
+ics.
+> I would want to build a start up to sell mobile phones ( OEM Level ). I am
+> currently in discussions with investors.
+> =
 
-Here's results with vanilla 2.6.19-rc4 (gcc version 3.4.5) ...
+> =A0We are currently searching people with a strong background in =A0Power =
 
-1) PCI access mode (Any) ... FAILED
+> Management.
+> =
 
-2) PCI access mode (MMConfig) ... FAILED
+> Our business model is in its early stage, but we would be interested into=
+ a
+> break oppposite to the legacy one of our competitors who are nearly all
+> ARM based. Our choice is to use the PowerPC =A0architecture : all the cha=
+llenge
+> is here, that's why we need people with a strong background... =A0 This i=
+s a
+> very big project.
 
-3) PCI access mode (Direct) ... PASSED
+Hmm... Why would you want to use ppc? I thought ppc is dead, and there
+are good reason everyone uses arm...
+									Pavel
 
-4) PCI access mode (BIOS) ... PASSED
+-- =
 
-Looks like it's still having problem with Dell Optiplex GX620.
-
-Thanks,
-Jeff.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
