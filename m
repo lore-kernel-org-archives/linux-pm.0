@@ -1,17 +1,15 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: [discuss] Re: 2.6.19-rc4: known unfixed regressions
-	(v3)
-Date: Wed, 8 Nov 2006 16:14:01 +0100
-Message-ID: <200611081614.03735.ak@suse.de>
-References: <Pine.LNX.4.64.0611080056480.12828@silvia.corp.fedex.com>
-	<20061107171143.GU27140@parisc-linux.org>
-	<8f95bb250611070950m3dc45674gbd370e3173b6168d@mail.gmail.com>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: 2.6.19-rc5: known regressions
+Date: Wed, 8 Nov 2006 07:47:07 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0611080745150.3667@g5.osdl.org>
+References: <Pine.LNX.4.64.0611071829340.3667@g5.osdl.org>
+	<20061108085235.GT4729@stusta.de>
+	<m1y7qm425l.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <8f95bb250611070950m3dc45674gbd370e3173b6168d@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <m1y7qm425l.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,21 +19,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: discuss@x86-64.org
-Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Thierry Vignaud <tvignaud@mandriva.com>, Matthew Wilcox <matthew@wil.cx>, Ernst Herzberg <earny@net4u.de>, Aaron Durbin <adurbin@google.com>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, neilb@cse.unsw.edu.au, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, linux-pm@osdl.org, Komuro <komurojun-mbn@nifty.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Christian <christiand59@web.de>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@osdl.org>, Len Brown <len.brown@intel.com>, gregkh@suse.de, Thierry Vignaud <tvignaud@mandriva.com>, discuss@x86-64.org, Ernst Herzberg <earny@net4u.de>, Aaron Durbin <adurbin@google.com>, Olivier Mondoloni <olivier.mondoloni@waika9.com>, Alex Romosan <romosan@sycorax.lbl.gov>, ak@suse.de, linux-ide@vger.kernel.org, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@linux.intel.com>, Bryan O'Sullivan <bos@serpentine.com>, linux-pm@osdl.org, Tim Chen <tim.c.chen@linux.intel.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Paolo Ornati <ornati@fastwebnet.it>, phil.el@wanadoo.fr, Matthew Wilcox <matthew@wil.cx>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, mingo@redhat.comK
 List-Id: linux-pm@vger.kernel.org
 
 
 
-> I can patch up the pci_mmcfg_insert_resource to verify if =
+On Wed, 8 Nov 2006, Eric W. Biederman wrote:
+> =
 
-> the region that is exported by ACPI is reserved in e820 and printk an
-> error message if it is not and skip the resource insertion.
+> I haven't seen anyone reproduce this but Tim Chen, and Tim wasn't
+> able to root cause the problem so I believe we are going to have
+> this regression :(
 
-It probably should get its information from pci_mcfg_init()
-and only reserve what is used there instead of adding duplicate
-e820 checking code somewhere else.
+Note that you really shouldn't look too closely at lmbench scheduling =
 
-Or perhaps only reserve when the bus is discovered?
+fluctuations. They can fluctuate a _lot_, especially under SMP, and it can =
 
--Andi
+depend on things like cache layout that has nothing to do with the =
+
+scheduler (ie just code movement can make the lmbench numbers change).
+
+So there are "regressions" and there are "shit happens". It can sometimes =
+
+be hard to tell the two apart, of course ;)
+
+		Linus
