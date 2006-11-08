@@ -1,15 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: 2.6.19-rc5: known regressions
-Date: Wed, 08 Nov 2006 04:18:46 -0700
-Message-ID: <m1y7qm425l.fsf@ebiederm.dsl.xmission.com>
-References: <Pine.LNX.4.64.0611071829340.3667@g5.osdl.org>
-	<20061108085235.GT4729@stusta.de>
+From: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [discuss] Re: 2.6.19-rc4: known unfixed regressions
+	(v3)
+Date: Wed, 8 Nov 2006 05:22:37 -0700
+Message-ID: <20061108122237.GF27140@parisc-linux.org>
+References: <Pine.LNX.4.64.0611080056480.12828@silvia.corp.fedex.com>
+	<20061107171143.GU27140@parisc-linux.org>
+	<200611080839.46670.ak@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20061108085235.GT4729@stusta.de> (Adrian Bunk's message of "Wed,
-	8 Nov 2006 09:52:35 +0100")
+Content-Disposition: inline
+In-Reply-To: <200611080839.46670.ak@suse.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,31 +21,24 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, Len Brown <len.brown@intel.com>, gregkh@suse.de, Thierry Vignaud <tvignaud@mandriva.com>, discuss@x86-64.org, Ernst Herzberg <earny@net4u.de>, Aaron Durbin <adurbin@google.com>, Olivier Mondoloni <olivier.mondoloni@waika9.com>, Alex Romosan <romosan@sycorax.lbl.gov>, ak@suse.de, linux-ide@vger.kernel.org, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@linux.intel.com>, Bryan O'Sullivan <bos@serpentine.com>, Linus Torvalds <torvalds@osdl.org>, linux-pm@osdl.org, Tim Chen <tim.c.chen@linux.intel.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Paolo Ornati <ornati@fastwebnet.it>, phil.el@wanadoo.fr, Matthew Wilcox <matthew@wil.cx>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, mingo@redhat.com
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Thierry Vignaud <tvignaud@mandriva.com>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Aaron Durbin <adurbin@google.com>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, neilb@cse.unsw.edu.au, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, discuss@x86-64.org, Komuro <komurojun-mbn@nifty.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Christian <christiand59@web.de>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net, Eric W. Bied
 List-Id: linux-pm@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> writes:
+On Wed, Nov 08, 2006 at 08:39:44AM +0100, Andi Kleen wrote:
+> ACPI knows the number of busses.
 
-> Subject    : x86_64: NR_IRQ increase causes 11.5% slowdown
->                      in lmbench's fork benchmark
-> References : http://lkml.org/lkml/2006/11/2/192
-> Submitter  : Tim Chen <tim.c.chen@linux.intel.com>
-> Caused-By  : Eric W. Biederman <ebiederm@xmission.com>
->              commit 550f2299ac8ffaba943cf211380d3a8d3fa75301
-> Status     : unknown
+But what if the number of busses increases later, eg by hotplugging
+a card with a PCI-PCI bridge on it?  Or does it know the number of
+busses which can be supported by this machine's MMCONFIG region?
+If so, why isn't this information reported in the MCFG table properly
+instead of claiming to support 0-255?
 
-I'm not really certain who to cc on this one.
+> Just need to get the information there, which is a ordering issue
+> (normally MCFG initialization is before this is known I think)
+> =
 
-It appears the problem sequence is:
-fork()
-sched_setaffinity()
+> Len, ACPI folks, any ideas how to fix this cleanly?
+> =
 
-It got worse just because NR_IRQS doubled (and all of the associated
-arrays doubled in size).
-
-I haven't seen anyone reproduce this but Tim Chen, and Tim wasn't
-able to root cause the problem so I believe we are going to have
-this regression :(
-
-Eric
+> -Andi
