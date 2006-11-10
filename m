@@ -1,15 +1,17 @@
-From: Martin Lorenz <martin@lorenz.eu.org>
-Subject: Re: 2.6.19-rc5: known regressions
-Date: Thu, 9 Nov 2006 14:55:30 +0100
-Message-ID: <20061109135530.GA6600@gimli>
-References: <Pine.LNX.4.64.0611071829340.3667@g5.osdl.org>
-	<20061108085235.GT4729@stusta.de> <20061109080458.GB6073@gimli>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: [discuss] Re: 2.6.19-rc4: known unfixed regressions
+	(v3)
+Date: Fri, 10 Nov 2006 07:52:54 +0100
+Message-ID: <200611100752.55517.ak@suse.de>
+References: <Pine.LNX.4.64.0611080056480.12828@silvia.corp.fedex.com>
+	<Pine.LNX.4.64.0611081048330.3667@g5.osdl.org>
+	<m1r6wd3fnd.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <m1r6wd3fnd.fsf@ebiederm.dsl.xmission.com>
 Content-Disposition: inline
-In-Reply-To: <20061109080458.GB6073@gimli>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,116 +21,26 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ernst Herzberg <earny@net4u.de>, Len Brown <len.brown@intel.com>, mingo@redhat.com, pavel@suse.cz, linux-pm@osdl.org, Paolo Ornati <ornati@fastwebnet.it>, Olivier Mondoloni <olivier.mondoloni@waika9.com>, linux-acpi@vger.kernel.org, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Prakash Punnoor <prakash@punnoor.de>, phil.el@wanadoo.fr, oprofile-list@lists.sourceforge.net, ak@suse.de, discuss@x86-64.org, Tim Chen <tim.c.chen@linux.intel.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Aaron Durbin <adurbin@google.com>, Matthew
+To: discuss@x86-64.org
+Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Thierry Vignaud <tvignaud@mandriva.com>, Matthew Wilcox <matthew@wil.cx>, Ernst Herzberg <earny@net4u.de>, Aaron Durbin <adurbin@google.com>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, neilb@cse.unsw.edu.au, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, linux-pm@osdl.org, Komuro <komurojun-mbn@nifty.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Christian <christiand59@web.de>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-> =
 
-> current kernel is 2.6.19-rc5+ieee80211+e1000-45.3+1909-g6a4abeae-dirty
-> =
+> So we should have the infrastructure to only use mmconfig for some set
+> of busses.  If that interface is well described we can probably
+> bootstrap sanely, only enabling what we know exists and like wise
+> only reserving what we know is used.
 
-> Commit: 6a4abeaefae897ded6b39ed3f3a84662923e6b60
-> Author: Martin Lorenz <mlo@gimli.(none)> Wed, 08 Nov 2006 19:58:44 +0100
-> =
+Unfortunately there is a chicken and egg problem on those few broken
+systems (like some x86 Macs) where only mcfg works. Without mcfg you
+won't be able to probe the bus. Ok you could trust ACPI when it says
+it's there, but I'm not sure Linus would like that.
 
-> which is my e1000 patch =
+Still perhaps I guess only reserving when the bus is probed is probably
+a good idea. In most cases we only probe a small number of busses =
 
-> =
+because ACPI tells us the number.
 
-> Commit: 17dfbe2264b50308189de1fe4068bdffbf065dfc
-> Author: Martin Lorenz <mlo@gimli.(none)> Wed, 08 Nov 2006 19:58:44 +0100
-> =
+This basically means pci_mcfg_init() should be split up.
 
-> which is the patch to upgrade ieee80211 to V.1.2.15 so I can use ipw3945
-> =
-
-> =
-
-> Commit: 48797ebd9e8b16fddcd4ef062f792314a6b9219a
-> Author: Linus Torvalds <torvalds@merom.osdl.org> Wed, 08 Nov 2006 10:27:54
-> -0800
-> =
-
-> ...the version I pulled
-> =
-
-> $ cg-status
-> Heads:
->     >master     6a4abeaefae897ded6b39ed3f3a84662923e6b60
->      origin     082f2f84be5db164280483efa7eb1549d867353d
-> =
-
-> =
-
-> it's an X60s BTW
-> > =
-
-> > Subject    : ThinkPad T60: no screen after resume
-> > References : http://mail.matrix.de/pipermail/linux-thinkpad/2006-Novemb=
-er/037011.html
-> > Submitter  : Martin Lorenz <martin@lorenz.eu.org>
-> > Status     : unknown
-> > =
-
-> > =
-
-> seems fixed
-> I have to retest it, but it came back nicely on two subsequent
-> suspend/resume cycles
-
-did a lot of testing now.
-no more black screen after resume
-
-> =
-
-> > Subject    : ThinkPad T60: lose ACPI events after suspend/resume
-> > References : http://lkml.org/lkml/2006/10/10/39
-> > Submitter  : Martin Lorenz <martin@lorenz.eu.org>
-> > Status     : problem might be fixed by
-> >              commit f9dadfa71bc594df09044da61d1c72701121d802
-> > =
-
-> =
-
-> same as above
-ACPI seems to be ok as well
-nothing strange happening anymore even after a LOT of fancy playing around
-
-> =
-
-> > =
-
-> > Subject    : i386: more DWARFs and strange messages
-> > References : http://lkml.org/lkml/2006/10/29/127
-> > Submitter  : Martin Lorenz <martin@lorenz.eu.org>
-> > Status     : should be fixed by
-> >              commit 4b96b1a10cb00c867103b21f0f2a6c91b705db11
-> =
-
-> none present in my current dmesg
-not one since I booted this kernel
-
-> =
-
-> I will keep testing and reporting :-)
-> =
-
-> thanks a lot =
-
-  mlo
---
-Dipl.-Ing. Martin Lorenz
-
-            They that can give up essential liberty =
-
-	    to obtain a little temporary safety =
-
-	    deserve neither liberty nor safety.
-                                   Benjamin Franklin
-
-please encrypt your mail to me
-GnuPG key-ID: F1AAD37D
-get it here:
-http://blackhole.pca.dfn.de:11371/pks/lookup?op=3Dget&search=3D0xF1AAD37D
-
-ICQ UIN: 33588107
+-Andi
