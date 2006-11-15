@@ -1,50 +1,71 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [RFC] ACPI vs device ordering on resume
-Date: Tue, 14 Nov 2006 15:59:40 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0611141545440.4144@woody.osdl.org>
+From: Len Brown <len.brown@intel.com>
+Subject: Re: [linux-pm] [RFC] ACPI vs device ordering on resume
+Date: Wed, 15 Nov 2006 02:03:30 -0500
+Message-ID: <200611150203.30965.len.brown@intel.com>
 References: <20061114153026.730deb94@freekitty>
+Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20061114153026.730deb94@freekitty>
+Content-Disposition: inline
 Sender: linux-acpi-owner@vger.kernel.org
-To: Stephen Hemminger <shemminger@osdl.org>
-Cc: len.brown@intel.com, Greg KH <greg@kroah.com>, Pavel Machek <pavel@suse.cz>, linux-acpi@vger.kernel.org, linux-pm@osdl.org, Andrew Morton <akpm@osdl.org>
+To: linux-pm@lists.osdl.org
+Cc: Stephen Hemminger <shemminger@osdl.org>, Greg KH <greg@kroah.com>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Tue, 14 Nov 2006, Stephen Hemminger wrote:
+On Tuesday 14 November 2006 18:30, Stephen Hemminger wrote:
+> If I do a suspend-to-ram then resume on a Sony Vaio laptop with sky2 driver,
+> the first interrupt gets misrouted to the original shared IRQ, rather than
+> to the MSI irq expected.
 > 
 > During the pci_restore process, the MSI information and the PCI command register 
 > are restored properly. But later during resume, inside the ACPI evaluation of
 > the WAK method, the PCI_COMMAND  INTX_DISABLE (0x400) flag is being cleared.
 > My guess is that the BIOS ends up doing some resetting of devices.
+> 
+> I may be able to workaround the problem for this one device, but it brings up
+> a more general issue about what the ordering should be during resume. If ACPI
+> evaluation (which I assume talks to the BIOS), might change device state, it
+> seems that ACPI code should execute before resuming devices not after. But changing
+> the order here seems drastic.
+> 
+> An alternate solution would be to have two pm_ops, one for early_resume
+> and another for late, and split the ACPI work.
+> 
+> --- 2.6.19-rc5.orig/kernel/power/main.c	2006-11-14 14:24:37.000000000 -0800
+> +++ 2.6.19-rc5/kernel/power/main.c	2006-11-14 14:25:23.000000000 -0800
+> @@ -132,12 +132,12 @@
+>  
+>  static void suspend_finish(suspend_state_t state)
+>  {
+> +	if (pm_ops && pm_ops->finish)
+> +		pm_ops->finish(state);
+>  	device_resume();
+>  	resume_console();
+>  	thaw_processes();
+>  	enable_nonboot_cpus();
+> -	if (pm_ops && pm_ops->finish)
+> -		pm_ops->finish(state);
+>  	pm_restore_console();
+>  }
 
-Hmm.. I think calling "pm_ops->finish()" early is the right thing to do, 
-so your patch looks fine. I'd hate to apply it at this stage in the 2.6.19 
-development, though. Comments?
+Yes, I agree that _WAK needs to come before device_resume().
+Need to let any BIOS nasties happen and get over with before we restore device drivers.
+This is consistent with the wording in ACPI 3.0b (section 7.4) that says
+11. _WAK is run
+12. OSPM notifies all native device drivefrs of the return from the sleep state transition
 
-Looking at the code (at least for ACPI), pm_ops->finish() function does 
-things that we'd generally want done early. I'm a bit nervous about the 
-"nesting", though - we call the "->prepare" function _before_ we do the 
-device suspend stuff, so if "->finish" undoes something that was done by 
-"->prepare", then we will restore the devices with the state they were in 
-_after_ the "->prepare".
+However, commit 1a38416cea8ac801ae8f261074721f35317613dc says that
+_WAK must follow INIT -- ie finish() must come after enable_nonboot_cpus(),
+and this patch as it stands would violate that.
 
-So from a logical _nesting_ perspective, the "->finish()" routine should 
-happen after devices have been restored. And anything that ACPI does to 
-undo "->enter" should have been done early by ACPI itself as it was 
-exiting that "->enter" routine - that would make the things nest properly.
+So it looks like we need this sequence:
 
-Gaah. Since there is no way to know what the HELL those ACPI routines will 
-actually end up doing, there is no way to know what is the right answer. 
-Does anybody know what Windows does? 
+enable_nonboot_cpus() /* INIT */
+finish()	/* _WAK */
+device_resume()
 
-I think Stephen's patch is likely good, but I really don't see myself 
-applying it to my tree right now. It should either go into -mm, or early 
-into the post-2.6.19 tree (or, most likely, both).
-
-Anybody?
-
-		Linus
+-Len
