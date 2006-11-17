@@ -1,59 +1,263 @@
-From: Mark Stosberg <mark@summersault.com>
-Subject: Re: 2.6.19-rc <-> ThinkPads, (related Ubuntu bug report)
-Date: Thu, 16 Nov 2006 20:53:40 -0500
-Message-ID: <ejj4nl$d1n$1@sea.gmane.org>
-References: <20061029231358.GI27968@stusta.de> <20061030135625.GB1601@mellanox.co.il> <20061101030126.GE27968@stusta.de> <20061104034906.GO13381@stusta.de>
-Reply-To: linux-thinkpad@linux-thinkpad.org
+From: Stephen Hemminger <shemminger@osdl.org>
+Subject: [PATCH] convert pm_sem to a mutex
+Date: Fri, 17 Nov 2006 11:13:08 -0800
+Message-ID: <20061117111308.5dbaa60e@freekitty>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-thinkpad-admin@linux-thinkpad.org>
-In-Reply-To: <20061104034906.GO13381@stusta.de>
-Sender: linux-thinkpad-admin@linux-thinkpad.org
-Errors-To: linux-thinkpad-admin@linux-thinkpad.org
-List-Help: <mailto:linux-thinkpad-request@linux-thinkpad.org?subject=help>
-List-Post: <mailto:linux-thinkpad@linux-thinkpad.org>
-List-Subscribe: <http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad>,
-	<mailto:linux-thinkpad-request@linux-thinkpad.org?subject=subscribe>
-List-Unsubscribe: <http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad>,
-	<mailto:linux-thinkpad-request@linux-thinkpad.org?subject=unsubscribe>
-List-Archive: <http://mailman.linux-thinkpad.org/pipermail/linux-thinkpad/>
-To: linux-thinkpad@linux-thinkpad.org
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, discuss@x86-64.orglinux-kernel@vger.kernel.orglinux-acpi@vger.kernel.orglinux-pm@lists.osdl.orglinux-kernel@vger.kernel.orglinux-pm@lists.osdl.orgdiscuss@x86-64.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@suse.cz>
+Cc: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Adrian Bunk wrote:
-> As far as I can see, the 2.6.19-rc ThinkPad situation is still 
-> confusing and we don't even know how many different bugs we are 
-> chasing...
+The power management semaphore is only used as mutex, so convert it.
 
-Hello,
+Signed-off-by: Stephen Hemminger <shemminger@osdl.org>
 
-I just hoped on this list to see what "ThinkPad" discussion there was.
-Here my own observations:
 
-Using Mandriva 2006 with 2.6.12, ACPI suspend/resume works great on a
-ThinkPad T20. It didn't work with 2.6.14, and it doesn't work with
-2.6.17 with Mandriva. Further, it doesn't seem to work with on some
-ThinkPads with Ubuntu and 2.6.15 and 2.6.17 either, as this now-lengthy
-bug report documents:
+--- linux-2.6.19-rc6.orig/kernel/power/disk.c	2006-11-17 10:54:21.000000000=
+ -0800
++++ linux-2.6.19-rc6/kernel/power/disk.c	2006-11-17 10:50:54.000000000 -0800
+@@ -189,10 +189,10 @@
+ {
+ 	int error;
+ =
 
-https://launchpad.net/distros/ubuntu/+source/linux-source-2.6.17/+bug/50031
+-	down(&pm_sem);
++	mutex_lock(&pm_mutex);
+ 	if (!swsusp_resume_device) {
+ 		if (!strlen(resume_file)) {
+-			up(&pm_sem);
++			mutex_unlock(&pm_mutex);
+ 			return -ENOENT;
+ 		}
+ 		swsusp_resume_device =3D name_to_dev_t(resume_file);
+@@ -207,7 +207,7 @@
+ 		 * FIXME: If noresume is specified, we need to find the partition
+ 		 * and reset it back to normal swap space.
+ 		 */
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 		return 0;
+ 	}
+ =
 
-I added a comment there encouraging the other bug reporters to include
-the kind of information requested on the ACPI website, but so far no have.
+@@ -251,7 +251,7 @@
+ 	unprepare_processes();
+  Done:
+ 	/* For success case, the suspend path will release the lock */
+-	up(&pm_sem);
++	mutex_unlock(&pm_mutex);
+ 	pr_debug("PM: Resume from disk failed.\n");
+ 	return 0;
+ }
+@@ -312,7 +312,7 @@
+ 	p =3D memchr(buf, '\n', n);
+ 	len =3D p ? p - buf : n;
+ =
 
-Personally, I'm still using 2.6.12 daily because of this regression.
+-	down(&pm_sem);
++	mutex_lock(&pm_mutex);
+ 	for (i =3D PM_DISK_FIRMWARE; i < PM_DISK_MAX; i++) {
+ 		if (!strncmp(buf, pm_disk_modes[i], len)) {
+ 			mode =3D i;
+@@ -336,7 +336,7 @@
+ =
 
-I'm interested to help resolve it, but am not currently tracking the
-latest kernel sources.
+ 	pr_debug("PM: suspend-to-disk mode set to '%s'\n",
+ 		 pm_disk_modes[mode]);
+-	up(&pm_sem);
++	mutex_unlock(&pm_mutex);
+ 	return error ? error : n;
+ }
+ =
 
-I realize this bug report is a bit out of date with respect to 2.6.19,
-but as another poster suggested, this could simply indicate that at
-least one regressions may not be recent.
+@@ -361,9 +361,9 @@
+ 	if (maj !=3D MAJOR(res) || min !=3D MINOR(res))
+ 		goto out;
+ =
 
-   Mark
+-	down(&pm_sem);
++	mutex_lock(&pm_mutex);
+ 	swsusp_resume_device =3D res;
+-	up(&pm_sem);
++	mutex_unlock(&pm_mutex);
+ 	printk("Attempting manual resume\n");
+ 	noresume =3D 0;
+ 	software_resume();
+--- sky2.orig/kernel/power/main.c	2006-11-17 10:54:21.000000000 -0800
++++ sky2/kernel/power/main.c	2006-11-17 10:55:24.000000000 -0800
+@@ -24,7 +24,7 @@
+ /*This is just an arbitrary number */
+ #define FREE_PAGE_NUMBER (100)
+ =
 
--- 
-The linux-thinkpad mailing list home page is at:
-http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad
+-DECLARE_MUTEX(pm_sem);
++DEFINE_MUTEX(pm_mutex);
+ =
+
+ struct pm_ops *pm_ops;
+ suspend_disk_method_t pm_disk_mode =3D PM_DISK_SHUTDOWN;
+@@ -36,9 +36,9 @@
+ =
+
+ void pm_set_ops(struct pm_ops * ops)
+ {
+-	down(&pm_sem);
++	mutex_lock(&pm_mutex);
+ 	pm_ops =3D ops;
+-	up(&pm_sem);
++	mutex_unlock(&pm_mutex);
+ }
+ =
+
+ =
+
+@@ -182,7 +182,7 @@
+ =
+
+ 	if (!valid_state(state))
+ 		return -ENODEV;
+-	if (down_trylock(&pm_sem))
++	if (mutex_trylock(&pm_mutex))
+ 		return -EBUSY;
+ =
+
+ 	if (state =3D=3D PM_SUSPEND_DISK) {
+@@ -200,7 +200,7 @@
+ 	pr_debug("PM: Finishing wakeup.\n");
+ 	suspend_finish(state);
+  Unlock:
+-	up(&pm_sem);
++	mutex_unlock(&pm_mutex);
+ 	return error;
+ }
+ =
+
+--- sky2.orig/kernel/power/power.h	2006-11-17 10:49:25.000000000 -0800
++++ sky2/kernel/power/power.h	2006-11-17 10:49:55.000000000 -0800
+@@ -22,7 +22,9 @@
+ 	return -EPERM;
+ }
+ #endif
+-extern struct semaphore pm_sem;
++
++extern struct mutex pm_mutex;
++
+ #define power_attr(_name) \
+ static struct subsys_attribute _name##_attr =3D {	\
+ 	.attr	=3D {				\
+--- sky2.orig/kernel/power/user.c	2006-11-17 10:54:21.000000000 -0800
++++ sky2/kernel/power/user.c	2006-11-17 10:55:42.000000000 -0800
+@@ -76,10 +76,10 @@
+ 	free_all_swap_pages(data->swap, data->bitmap);
+ 	free_bitmap(data->bitmap);
+ 	if (data->frozen) {
+-		down(&pm_sem);
++		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+ 		enable_nonboot_cpus();
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 	}
+ 	atomic_inc(&device_available);
+ 	return 0;
+@@ -140,7 +140,7 @@
+ 	case SNAPSHOT_FREEZE:
+ 		if (data->frozen)
+ 			break;
+-		down(&pm_sem);
++		mutex_lock(&pm_mutex);
+ 		error =3D disable_nonboot_cpus();
+ 		if (!error) {
+ 			error =3D freeze_processes();
+@@ -150,7 +150,7 @@
+ 				error =3D -EBUSY;
+ 			}
+ 		}
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			data->frozen =3D 1;
+ 		break;
+@@ -158,10 +158,10 @@
+ 	case SNAPSHOT_UNFREEZE:
+ 		if (!data->frozen)
+ 			break;
+-		down(&pm_sem);
++		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+ 		enable_nonboot_cpus();
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 		data->frozen =3D 0;
+ 		break;
+ =
+
+@@ -170,7 +170,7 @@
+ 			error =3D -EPERM;
+ 			break;
+ 		}
+-		down(&pm_sem);
++		mutex_lock(&pm_mutex);
+ 		/* Free memory before shutting down devices. */
+ 		error =3D swsusp_shrink_memory();
+ 		if (!error) {
+@@ -183,7 +183,7 @@
+ 			}
+ 			resume_console();
+ 		}
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			error =3D put_user(in_suspend, (unsigned int __user *)arg);
+ 		if (!error)
+@@ -197,7 +197,7 @@
+ 			break;
+ 		}
+ 		snapshot_free_unused_memory(&data->handle);
+-		down(&pm_sem);
++		mutex_lock(&pm_mutex);
+ 		pm_prepare_console();
+ 		suspend_console();
+ 		error =3D device_suspend(PMSG_PRETHAW);
+@@ -207,7 +207,7 @@
+ 		}
+ 		resume_console();
+ 		pm_restore_console();
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 		break;
+ =
+
+ 	case SNAPSHOT_FREE:
+@@ -282,7 +282,7 @@
+ 			break;
+ 		}
+ =
+
+-		if (down_trylock(&pm_sem)) {
++		if (mutex_trylock(&pm_mutex)) {
+ 			error =3D -EBUSY;
+ 			break;
+ 		}
+@@ -310,7 +310,7 @@
+ 			pm_ops->finish(PM_SUSPEND_MEM);
+ =
+
+ OutS3:
+-		up(&pm_sem);
++		mutex_unlock(&pm_mutex);
+ 		break;
+ =
+
+ 	default:
