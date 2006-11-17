@@ -1,77 +1,59 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [linux-pm] [RFC] ACPI vs device ordering on resume
-Date: Wed, 15 Nov 2006 08:47:22 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0611150839040.3349@woody.osdl.org>
-References: <20061114153026.730deb94@freekitty> <200611150203.30965.len.brown@intel.com>
+From: Mark Stosberg <mark@summersault.com>
+Subject: Re: 2.6.19-rc <-> ThinkPads, (related Ubuntu bug report)
+Date: Thu, 16 Nov 2006 20:53:40 -0500
+Message-ID: <ejj4nl$d1n$1@sea.gmane.org>
+References: <20061029231358.GI27968@stusta.de> <20061030135625.GB1601@mellanox.co.il> <20061101030126.GE27968@stusta.de> <20061104034906.GO13381@stusta.de>
+Reply-To: linux-thinkpad@linux-thinkpad.org
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200611150203.30965.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.osdl.org, Stephen Hemminger <shemminger@osdl.org>, Greg KH <greg@kroah.com>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-thinkpad-admin@linux-thinkpad.org>
+In-Reply-To: <20061104034906.GO13381@stusta.de>
+Sender: linux-thinkpad-admin@linux-thinkpad.org
+Errors-To: linux-thinkpad-admin@linux-thinkpad.org
+List-Help: <mailto:linux-thinkpad-request@linux-thinkpad.org?subject=help>
+List-Post: <mailto:linux-thinkpad@linux-thinkpad.org>
+List-Subscribe: <http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad>,
+	<mailto:linux-thinkpad-request@linux-thinkpad.org?subject=subscribe>
+List-Unsubscribe: <http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad>,
+	<mailto:linux-thinkpad-request@linux-thinkpad.org?subject=unsubscribe>
+List-Archive: <http://mailman.linux-thinkpad.org/pipermail/linux-thinkpad/>
+To: linux-thinkpad@linux-thinkpad.org
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, discuss@x86-64.orglinux-kernel@vger.kernel.orglinux-acpi@vger.kernel.orglinux-pm@lists.osdl.orglinux-kernel@vger.kernel.orglinux-pm@lists.osdl.orgdiscuss@x86-64.org
 List-Id: linux-pm@vger.kernel.org
 
+Adrian Bunk wrote:
+> As far as I can see, the 2.6.19-rc ThinkPad situation is still 
+> confusing and we don't even know how many different bugs we are 
+> chasing...
 
+Hello,
 
-On Wed, 15 Nov 2006, Len Brown wrote:
-> 
-> So it looks like we need this sequence:
-> 
-> enable_nonboot_cpus() /* INIT */
-> finish()	/* _WAK */
-> device_resume()
+I just hoped on this list to see what "ThinkPad" discussion there was.
+Here my own observations:
 
-Can somebody remind me about this immediately after 2.6.19?
+Using Mandriva 2006 with 2.6.12, ACPI suspend/resume works great on a
+ThinkPad T20. It didn't work with 2.6.14, and it doesn't work with
+2.6.17 with Mandriva. Further, it doesn't seem to work with on some
+ThinkPads with Ubuntu and 2.6.15 and 2.6.17 either, as this now-lengthy
+bug report documents:
 
-No way am I going to make that kind of a major ordering change right now, 
-especially as the thing isn't apparently even a real regression (just more 
-fallout from enabling MSI).
+https://launchpad.net/distros/ubuntu/+source/linux-source-2.6.17/+bug/50031
 
-It would be good if people who are affected (and people in general that 
-are interested in power management) would test out the patch.
+I added a comment there encouraging the other bug reporters to include
+the kind of information requested on the ACPI website, but so far no have.
 
-In particular, this is an even bigger change than the one suggested by 
-Stephen. It means, for example, that we will have device resume (and 
-process thawing) being called when we're in SMP mode - and that may or may 
-not have issues. So this is a really scary patch to me, no way in hell 
-will I apply it right now.
+Personally, I'm still using 2.6.12 daily because of this regression.
 
-But if people try it out, it would be good..
+I'm interested to help resolve it, but am not currently tracking the
+latest kernel sources.
 
-Btw, this is a clear example of where it might be good to start actively 
-using the "early_resume" thing, and do PCI bus resume there. We might want 
-to do early_resume _before_ calling the bios (I'm not at all convinced 
-that the firmware will do the right thing without the PCI buses set up, 
-for example), and _before_ thawing processes. Then, we might let 
-individual devices do their "device resume" in the normal late resume 
-phase.
+I realize this bug report is a bit out of date with respect to 2.6.19,
+but as another poster suggested, this could simply indicate that at
+least one regressions may not be recent.
 
-Greg already carries the patch around for that PCI bus early resume thing, 
-I think. 
+   Mark
 
-We need to test these things.
-
-		Linus
-
-----
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 873228c..2989609 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -132,12 +132,12 @@ int suspend_enter(suspend_state_t state)
- 
- static void suspend_finish(suspend_state_t state)
- {
--	device_resume();
--	resume_console();
--	thaw_processes();
- 	enable_nonboot_cpus();
- 	if (pm_ops && pm_ops->finish)
- 		pm_ops->finish(state);
-+	device_resume();
-+	resume_console();
-+	thaw_processes();
- 	pm_restore_console();
- }
- 
+-- 
+The linux-thinkpad mailing list home page is at:
+http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad
