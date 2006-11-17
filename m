@@ -1,7 +1,7 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH] convert pm_sem to a mutex
-Date: Fri, 17 Nov 2006 20:15:54 +0100
-Message-ID: <20061117191554.GB19101@elte.hu>
+Date: Fri, 17 Nov 2006 22:29:06 +0100
+Message-ID: <20061117212906.GA9111@elf.ucw.cz>
 References: <20061117111308.5dbaa60e@freekitty>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
@@ -19,19 +19,24 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Stephen Hemminger <shemminger@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@osdl.org, Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Stephen Hemminger <shemminger@osdl.org> wrote:
+Hi!
 
 > The power management semaphore is only used as mutex, so convert it.
 > =
 
 > Signed-off-by: Stephen Hemminger <shemminger@osdl.org>
 
-looks good to me.
+Looks ok to me (I just hope it does not produce some warnings from
+lockdep, or something).
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+ACK.
+								Pavel
 
-	Ingo
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
