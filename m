@@ -1,46 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.19-rc5-mm2: suspend related BLOCK=n compile error
-Date: Wed, 22 Nov 2006 12:20:55 +0100
-Message-ID: <200611221220.56618.rjw@sisk.pl>
-References: <20061114014125.dd315fff.akpm@osdl.org> <20061122032341.GV5200@stusta.de> <20061121193454.728e1bbd.randy.dunlap@oracle.com>
+From: "Mr.KIM CHUNG." <kimchung@hotmail.com>
+Subject: DEAR CONFIDANT
+Date: Fri, 24 Nov 2006 19:19:17 +0000
+Message-ID: <E1GngZx-0001as-7D@vps1.netroma.com>
+Reply-To: kimchung47@hotmail.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750991AbWKVLYn@vger.kernel.org>
-In-Reply-To: <20061121193454.728e1bbd.randy.dunlap@oracle.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, Nigel Cunningham <nigel@suspend2.net>, pavel@suse.cz, linux-pm@osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 22 November 2006 04:34, Randy Dunlap wrote:
-> On Wed, 22 Nov 2006 04:23:41 +0100 Adrian Bunk wrote:
-> 
-> > swsusp-freeze-filesystems-during-suspend-rev-2.patch causes the 
-> > following compile error with CONFIG_BLOCK=n:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   CC      kernel/power/process.o
-> > /home/bunk/linux/kernel-2.6/linux-2.6.19-rc5-mm2/kernel/power/process.c: In function 'freeze_processes':
-> > /home/bunk/linux/kernel-2.6/linux-2.6.19-rc5-mm2/kernel/power/process.c:124: error: implicit declaration of function 'freeze_filesystems'
-> > /home/bunk/linux/kernel-2.6/linux-2.6.19-rc5-mm2/kernel/power/process.c: In function 'thaw_processes':
-> > /home/bunk/linux/kernel-2.6/linux-2.6.19-rc5-mm2/kernel/power/process.c:189: error: implicit declaration of function 'thaw_filesystems'
-> > make[3]: *** [kernel/power/process.o] Error 1
-> 
-> Yes, I sent a patch for that, but Pavel said that they will be
-> removing/dropping that code anyway.
+Dear Confidant,
+My name is Mr. KIM CHUNG a citizen of North Korea and I would like you to g=
+uide me through the most viable investment opportunities in your Country. =
 
-AFAICT, the swsusp-freeze-filesystems-during-suspend-rev-2.patch has been
-dropped from -mm already.
+Alternatively, I can invest in your line of business perhaps if it&#8217;s =
+viable. I am one of the defectors from the North and I am currently residin=
+g(Refugee Camp) in South Korea.
+I have been in this country for sometime after defecting from the North, I =
+was into currency exchange business and I was always traveling to other par=
+ts of Asia and Europe and during that period, I was able to move out my fun=
+ds and deposit it in a financial institution in Europe.
+I want to invest this funds in your country with your help and advice becau=
+se we are being treated as foreigners here and watched because the Korean g=
+overnment believe we are a security threat, A lot of defectors now go on to=
+ Canada or the United States and some parts of Europe to live. For more det=
+ails, please see the followingwebsites:
 
-Greetings,
-Rafael
+http://www.freerepublic.com/focus/f-news/1181380/posts
+
+I want you to send me a complete breakdown of the investment opportunities =
+in your country and also let me know what exactly I need to do to enable yo=
+u invest the funds for me in your country.If interested,on my freedom, I wi=
+ll then come over to your country after you receive the funds and work out =
+the investment plans with you. After I hear from you and find out the best =
+investment business you can introduce to me, I will tell you how much is in=
+volved.If you are interested kindly forward your reply to this email addres=
+s: =
 
 
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+kimchung47@hotmail.com
+
+Reply as soon as possible.
+Regards and God Bless
+Mr.KIM CHUNG.
