@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 5/5] PM: Change code ordering in
-	main.c
-Date: Sat, 25 Nov 2006 22:49:05 +0100
-Message-ID: <200611252249.06306.rjw@sisk.pl>
-References: <200611252210.58203.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm] PM: Change ordering of suspend and
+	resume code
+Date: Sat, 25 Nov 2006 22:10:57 +0100
+Message-ID: <200611252210.58203.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200611252210.58203.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,88 +21,42 @@ To: pm list <linux-pm@lists.osdl.org>
 Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Change the ordering of code in kernel/power/main.c so that device_suspend()
-is called before disable_nonboot_cpus() and pm_ops->finish() is called after
-enable_nonboot_cpus() and before device_resume().
+Hi,
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/main.c |   34 +++++++++++++++++++---------------
- 1 file changed, 19 insertions(+), 15 deletions(-)
+The discussion in a recent thread on Linux-PM has indicated that it's
+necessary to call pm_ops->finish() before devce_resume(),
+but enable_nonboot_cpus() has to be called before pm_ops->finish()
+(cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+For consistency, it seems reasonable to call disable_nonboot_cpus() after
+device_suspend().
 
-Index: linux-2.6.19-rc6-mm1/kernel/power/main.c
-===================================================================
---- linux-2.6.19-rc6-mm1.orig/kernel/power/main.c
-+++ linux-2.6.19-rc6-mm1/kernel/power/main.c
-@@ -43,6 +43,11 @@ void pm_set_ops(struct pm_ops * ops)
- 	mutex_unlock(&pm_mutex);
- }
- 
-+static inline void pm_finish(suspend_state_t state)
-+{
-+	if (pm_ops->finish)
-+		pm_ops->finish(state);
-+}
- 
- /**
-  *	suspend_prepare - Do prep work before entering low-power state.
-@@ -63,10 +68,6 @@ static int suspend_prepare(suspend_state
- 
- 	pm_prepare_console();
- 
--	error = disable_nonboot_cpus();
--	if (error)
--		goto Enable_cpu;
--
- 	if (freeze_processes()) {
- 		error = -EAGAIN;
- 		goto Thaw;
-@@ -88,18 +89,22 @@ static int suspend_prepare(suspend_state
- 	}
- 
- 	suspend_console();
--	if ((error = device_suspend(PMSG_SUSPEND))) {
-+	error = device_suspend(PMSG_SUSPEND);
-+	if (error) {
- 		printk(KERN_ERR "Some devices failed to suspend\n");
--		goto Finish;
-+		goto Resume_devices;
- 	}
--	return 0;
-- Finish:
--	if (pm_ops->finish)
--		pm_ops->finish(state);
-+	error = disable_nonboot_cpus();
-+	if (!error)
-+		return 0;
-+
-+	enable_nonboot_cpus();
-+ Resume_devices:
-+	pm_finish(state);
-+	device_resume();
-+	resume_console();
-  Thaw:
- 	thaw_processes();
-- Enable_cpu:
--	enable_nonboot_cpus();
- 	pm_restore_console();
- 	return error;
- }
-@@ -134,12 +139,11 @@ int suspend_enter(suspend_state_t state)
- 
- static void suspend_finish(suspend_state_t state)
- {
-+	enable_nonboot_cpus();
-+	pm_finish(state);
- 	device_resume();
- 	resume_console();
- 	thaw_processes();
--	enable_nonboot_cpus();
--	if (pm_ops && pm_ops->finish)
--		pm_ops->finish(state);
- 	pm_restore_console();
- }
- 
+This way the suspend code will remain symmetrical with respect to the resume
+code and it may allow us to speed up things in the future by suspending and
+resuming devices and/or saving the suspend image in many threads, but for this
+purpose we first need to make freeze_processes() SMP-safe.
+
+The following series of patches makes freeze_processes() SMP-safe and
+reorders the suspend and resume code so that nonboot CPUs are disabled
+after devices have been suspended and enabled before the devices are
+resumed.  It also causes pm_ops->finish() to be called after
+enable_nonboot_cpus() wherever necessary.
+
+The first four patches have been tested on two different x86-64 SMP boxes and
+they don't seem to break anything.  Still, if anyone can test them on some other
+SMP boxes (especially on i386 ones), please do so and tell me if there are
+any problems.
+
+The last patch is untested.
+
+All of the patches are against 2.6.19-rc6-mm1.
+
+Greetings,
+Rafael
+
+
+-- 
+You never change things by fighting the existing reality.
+		R. Buckminster Fuller
 
 
 -------------------------------------------------------------------------
