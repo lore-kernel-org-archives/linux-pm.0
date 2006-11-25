@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
-	SMP-safe
-Date: Sat, 25 Nov 2006 22:29:51 +0100
-Message-ID: <200611252229.52189.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 2/5] swsusp: Change code ordering
+	in disk.c
+Date: Sat, 25 Nov 2006 22:34:32 +0100
+Message-ID: <200611252234.32567.rjw@sisk.pl>
 References: <200611252210.58203.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,90 +23,225 @@ To: pm list <linux-pm@lists.osdl.org>
 Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Currently, the PF_FREEZE process flag is used to indicate that the process
-should enter the refrigerator as soon as possible.  Unfortunately it is set by
-the freezer while the process may be changing its flags for another reason
-and this may lead to a race between the freezer and the process itself.
+Change the ordering of code in kernel/power/disk.c so that
+device_suspend() is called before disable_nonboot_cpus() and
+platform_finish() is called after enable_nonboot_cpus() and before
+device_resume().
 
-This problem may be solved by introducing an additional member, called (for
-example) 'freezing', into task_struct which will only be used to indicate that
-the process should enter the refrigerator.  Then, if the 'freezing' member of
-task_struct is reset by the process itself only after it has entered the
-refrigerator, the modifications of it will be guaranteed to occur at different
-times, because the freezer can only set it before the process enters the
-refrigerator.  Thus the code will be SMP-safe even though no explicit locking
-is used.
+The changes here only affect the built-in swsusp.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/freezer.h |   10 +++++-----
- include/linux/sched.h   |    4 +++-
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ kernel/cpu.c        |    2 
+ kernel/power/disk.c |  110 ++++++++++++++++++++++++++--------------------------
+ 2 files changed, 58 insertions(+), 54 deletions(-)
 
-Index: linux-2.6.19-rc6-mm1/include/linux/freezer.h
+Index: linux-2.6.19-rc6-mm1/kernel/cpu.c
 ===================================================================
---- linux-2.6.19-rc6-mm1.orig/include/linux/freezer.h
-+++ linux-2.6.19-rc6-mm1/include/linux/freezer.h
-@@ -14,16 +14,15 @@ static inline int frozen(struct task_str
-  */
- static inline int freezing(struct task_struct *p)
- {
--	return p->flags & PF_FREEZE;
-+	return !!p->freezing;
- }
+--- linux-2.6.19-rc6-mm1.orig/kernel/cpu.c
++++ linux-2.6.19-rc6-mm1/kernel/cpu.c
+@@ -318,6 +318,8 @@ void enable_nonboot_cpus(void)
+ 	mutex_lock(&cpu_add_remove_lock);
+ 	cpu_hotplug_disabled = 0;
+ 	mutex_unlock(&cpu_add_remove_lock);
++	if (cpus_empty(frozen_cpus))
++		return;
  
- /*
-  * Request that a process be frozen
-- * FIXME: SMP problem. We may not modify other process' flags!
-  */
- static inline void freeze(struct task_struct *p)
- {
--	p->flags |= PF_FREEZE;
-+	p->freezing = 1;
- }
- 
- /*
-@@ -31,7 +30,7 @@ static inline void freeze(struct task_st
-  */
- static inline void do_not_freeze(struct task_struct *p)
- {
--	p->flags &= ~PF_FREEZE;
-+	p->freezing = 0;
- }
- 
- /*
-@@ -52,7 +51,8 @@ static inline int thaw_process(struct ta
-  */
- static inline void frozen_process(struct task_struct *p)
- {
--	p->flags = (p->flags & ~PF_FREEZE) | PF_FROZEN;
-+	p->flags |= PF_FROZEN;
-+	p->freezing = 0;
- }
- 
- extern void refrigerator(void);
-Index: linux-2.6.19-rc6-mm1/include/linux/sched.h
+ 	printk("Enabling non-boot CPUs ...\n");
+ 	for_each_cpu_mask(cpu, frozen_cpus) {
+Index: linux-2.6.19-rc6-mm1/kernel/power/disk.c
 ===================================================================
---- linux-2.6.19-rc6-mm1.orig/include/linux/sched.h
-+++ linux-2.6.19-rc6-mm1/include/linux/sched.h
-@@ -1065,6 +1065,9 @@ struct task_struct {
- #ifdef	CONFIG_TASK_DELAY_ACCT
- 	struct task_delay_info *delays;
- #endif
-+#ifdef CONFIG_PM
-+	int freezing;		/* if set, we should be freezing for suspend */
-+#endif
- #ifdef CONFIG_FAULT_INJECTION
- 	int make_it_fail;
- #endif
-@@ -1161,7 +1164,6 @@ static inline void put_task_struct(struc
- #define PF_MEMALLOC	0x00000800	/* Allocating memory */
- #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
- #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
--#define PF_FREEZE	0x00004000	/* this task is being frozen for suspend now */
- #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
- #define PF_FROZEN	0x00010000	/* frozen for system suspend */
- #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+--- linux-2.6.19-rc6-mm1.orig/kernel/power/disk.c
++++ linux-2.6.19-rc6-mm1/kernel/power/disk.c
+@@ -89,52 +89,26 @@ static inline void platform_finish(void)
+ 	}
+ }
+ 
++static void unprepare_processes(void)
++{
++	thaw_processes();
++	pm_restore_console();
++}
++
+ static int prepare_processes(void)
+ {
+ 	int error = 0;
+ 
+ 	pm_prepare_console();
+-
+-	error = disable_nonboot_cpus();
+-	if (error)
+-		goto enable_cpus;
+-
+ 	if (freeze_processes()) {
+ 		error = -EBUSY;
+-		goto thaw;
+-	}
+-
+-	if (pm_disk_mode == PM_DISK_TESTPROC) {
+-		printk("swsusp debug: Waiting for 5 seconds.\n");
+-		mdelay(5000);
+-		goto thaw;
+-	}
+-
+-	error = platform_prepare();
+-	if (error)
+-		goto thaw;
+-
+-	/* Free memory before shutting down devices. */
+-	if (!(error = swsusp_shrink_memory()))
++	} else if (pm_disk_mode != PM_DISK_TESTPROC) {
+ 		return 0;
+-
+-	platform_finish();
+- thaw:
+-	thaw_processes();
+- enable_cpus:
+-	enable_nonboot_cpus();
+-	pm_restore_console();
++	}
++	unprepare_processes();
+ 	return error;
+ }
+ 
+-static void unprepare_processes(void)
+-{
+-	platform_finish();
+-	thaw_processes();
+-	enable_nonboot_cpus();
+-	pm_restore_console();
+-}
+-
+ /**
+  *	pm_suspend_disk - The granpappy of hibernation power management.
+  *
+@@ -152,29 +126,45 @@ int pm_suspend_disk(void)
+ 	if (error)
+ 		return error;
+ 
+-	if (pm_disk_mode == PM_DISK_TESTPROC)
++	if (pm_disk_mode == PM_DISK_TESTPROC) {
++		printk("swsusp debug: Waiting for 5 seconds.\n");
++		mdelay(5000);
++		goto Thaw;
++	}
++	/* Free memory before shutting down devices. */
++	error = swsusp_shrink_memory();
++	if (error)
++		goto Thaw;
++
++	error = platform_prepare();
++	if (error)
+ 		goto Thaw;
+ 
+ 	suspend_console();
+ 	error = device_suspend(PMSG_FREEZE);
+ 	if (error) {
+-		resume_console();
+-		printk("Some devices failed to suspend\n");
+-		goto Thaw;
++		printk(KERN_ERR "PM: Some devices failed to suspend\n");
++		goto Resume_devices;
+ 	}
++	error = disable_nonboot_cpus();
++	if (error)
++		goto Enable_cpus;
+ 
+ 	if (pm_disk_mode == PM_DISK_TEST) {
+ 		printk("swsusp debug: Waiting for 5 seconds.\n");
+ 		mdelay(5000);
+-		goto Done;
++		goto Enable_cpus;
+ 	}
+ 
+ 	pr_debug("PM: snapshotting memory.\n");
+ 	in_suspend = 1;
+-	if ((error = swsusp_suspend()))
+-		goto Done;
++	error = swsusp_suspend();
++	if (error)
++		goto Enable_cpus;
+ 
+ 	if (in_suspend) {
++		enable_nonboot_cpus();
++		platform_finish();
+ 		device_resume();
+ 		resume_console();
+ 		pr_debug("PM: writing image.\n");
+@@ -190,7 +180,10 @@ int pm_suspend_disk(void)
+ 	}
+ 
+ 	swsusp_free();
+- Done:
++ Enable_cpus:
++	enable_nonboot_cpus();
++ Resume_devices:
++	platform_finish();
+ 	device_resume();
+ 	resume_console();
+  Thaw:
+@@ -239,41 +232,50 @@ static int software_resume(void)
+ 
+ 	pr_debug("PM: Checking swsusp image.\n");
+ 
+-	if ((error = swsusp_check()))
++	error = swsusp_check();
++	if (error)
+ 		goto Done;
+ 
+ 	pr_debug("PM: Preparing processes for restore.\n");
+ 
+-	if ((error = prepare_processes())) {
++	error = prepare_processes();
++	if (error) {
+ 		swsusp_close();
+ 		goto Done;
+ 	}
+ 
+ 	pr_debug("PM: Reading swsusp image.\n");
+ 
+-	if ((error = swsusp_read())) {
++	error = swsusp_read();
++	if (error) {
+ 		swsusp_free();
+ 		goto Thaw;
+ 	}
+ 
+ 	pr_debug("PM: Preparing devices for restore.\n");
+ 
+-	suspend_console();
+-	if ((error = device_suspend(PMSG_PRETHAW))) {
+-		resume_console();
+-		printk("Some devices failed to suspend\n");
++	error = platform_prepare();
++	if (error) {
+ 		swsusp_free();
+ 		goto Thaw;
+ 	}
++	suspend_console();
++	error = device_suspend(PMSG_PRETHAW);
++	if (error)
++		goto Free;
+ 
+-	mb();
++	error = disable_nonboot_cpus();
++	if (!error)
++		swsusp_resume();
+ 
+-	pr_debug("PM: Restoring saved image.\n");
+-	swsusp_resume();
+-	pr_debug("PM: Restore failed, recovering.n");
++	enable_nonboot_cpus();
++ Free:
++	swsusp_free();
++	platform_finish();
+ 	device_resume();
+ 	resume_console();
+  Thaw:
++	printk(KERN_ERR "PM: Restore failed, recovering.\n");
+ 	unprepare_processes();
+  Done:
+ 	/* For success case, the suspend path will release the lock */
 
 
 -------------------------------------------------------------------------
