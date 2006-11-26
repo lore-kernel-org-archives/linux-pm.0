@@ -1,15 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] PM: Change ordering of suspend
-	and resume code
-Date: Sun, 26 Nov 2006 08:44:00 +0100
-Message-ID: <20061126074400.GA12479@elf.ucw.cz>
-References: <200611252210.58203.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
+	SMP-safe
+Date: Sun, 26 Nov 2006 08:47:40 +0100
+Message-ID: <20061126074740.GB12479@elf.ucw.cz>
+References: <200611252210.58203.rjw@sisk.pl> <200611252229.52189.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <200611252210.58203.rjw@sisk.pl>
+In-Reply-To: <200611252229.52189.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -20,41 +20,72 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, seife@suse.de, pm list <linux-pm@lists.osdl.org>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> The discussion in a recent thread on Linux-PM has indicated that it's
-> necessary to call pm_ops->finish() before devce_resume(),
-> but enable_nonboot_cpus() has to be called before pm_ops->finish()
-> (cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
-> For consistency, it seems reasonable to call disable_nonboot_cpus() after
-> device_suspend().
+> Currently, the PF_FREEZE process flag is used to indicate that the process
+> should enter the refrigerator as soon as possible.  Unfortunately it is set by
+> the freezer while the process may be changing its flags for another reason
+> and this may lead to a race between the freezer and the process itself.
 > 
-> This way the suspend code will remain symmetrical with respect to the resume
-> code and it may allow us to speed up things in the future by suspending and
-> resuming devices and/or saving the suspend image in many threads, but for this
-> purpose we first need to make freeze_processes() SMP-safe.
+> This problem may be solved by introducing an additional member, called (for
+> example) 'freezing', into task_struct which will only be used to indicate that
+> the process should enter the refrigerator.  Then, if the 'freezing' member of
+> task_struct is reset by the process itself only after it has entered the
+> refrigerator, the modifications of it will be guaranteed to occur at different
+> times, because the freezer can only set it before the process enters the
+> refrigerator.  Thus the code will be SMP-safe even though no explicit locking
+> is used.
 
-I do not think first patch is enough to make it SMP-safe, sorry.
+I do not think we can go without locking here.
 
-> The following series of patches makes freeze_processes() SMP-safe and
-> reorders the suspend and resume code so that nonboot CPUs are disabled
-> after devices have been suspended and enabled before the devices are
-> resumed.  It also causes pm_ops->finish() to be called after
-> enable_nonboot_cpus() wherever necessary.
-> 
-> The first four patches have been tested on two different x86-64 SMP boxes and
-> they don't seem to break anything.  Still, if anyone can test them on some other
-> SMP boxes (especially on i386 ones), please do so and tell me if there are
-> any problems.
-> 
-> The last patch is untested.
+> @@ -31,7 +30,7 @@ static inline void freeze(struct task_st
+>   */
+>  static inline void do_not_freeze(struct task_struct *p)
+>  {
+> -	p->flags &= ~PF_FREEZE;
+> +	p->freezing = 0;
+>  }
+>  
+>  /*
+> @@ -52,7 +51,8 @@ static inline int thaw_process(struct ta
+>   */
+>  static inline void frozen_process(struct task_struct *p)
+>  {
+> -	p->flags = (p->flags & ~PF_FREEZE) | PF_FROZEN;
+> +	p->flags |= PF_FROZEN;
+> +	p->freezing = 0;
+>  }
 
-I guess I should fix s2ram enough that it works for you... What is the
-primary notebook you are using?
+Is mb() needed between |= and freezing = 0?
+
+>  extern void refrigerator(void);
+> Index: linux-2.6.19-rc6-mm1/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.19-rc6-mm1.orig/include/linux/sched.h
+> +++ linux-2.6.19-rc6-mm1/include/linux/sched.h
+> @@ -1065,6 +1065,9 @@ struct task_struct {
+>  #ifdef	CONFIG_TASK_DELAY_ACCT
+>  	struct task_delay_info *delays;
+>  #endif
+> +#ifdef CONFIG_PM
+> +	int freezing;		/* if set, we should be freezing for suspend */
+> +#endif
+>  #ifdef CONFIG_FAULT_INJECTION
+>  	int make_it_fail;
+>  #endif
+
+It is int, imagine machine that can't do 32-bit atomic access (only
+does 64 bits). On such beast (alpha? something stranger?) this will
+clobber make_it_fail field, sometimes.
+
+OTOH on i386 normal instructions can be used. But that's okay, we
+should just use atomic_t here. Should be as fast on i386/x86-64, and
+still safe.
 									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
