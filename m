@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
 	SMP-safe
-Date: Mon, 27 Nov 2006 00:09:55 +0100
-Message-ID: <200611270009.56736.rjw@sisk.pl>
+Date: Mon, 27 Nov 2006 00:28:58 +0100
+Message-ID: <20061126232858.GD13647@elf.ucw.cz>
 References: <200611252210.58203.rjw@sisk.pl> <200611261434.18427.rjw@sisk.pl>
 	<20061126194824.GD12535@elf.ucw.cz>
+	<200611270009.56736.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061126194824.GD12535@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200611270009.56736.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -20,111 +21,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi!
 
-On Sunday, 26 November 2006 20:48, Pavel Machek wrote:
-> Hi!
+> > If frozen is atomic_t, do we need memory barrier?
 > 
-> > Index: linux-2.6.19-rc6-mm1/kernel/power/process.c
-> > ===================================================================
-> > --- linux-2.6.19-rc6-mm1.orig/kernel/power/process.c	2006-11-25 21:26:52.000000000 +0100
-> > +++ linux-2.6.19-rc6-mm1/kernel/power/process.c	2006-11-26 14:17:11.000000000 +0100
-> > @@ -28,8 +28,7 @@ static inline int freezeable(struct task
-> >  	if ((p == current) || 
-> >  	    (p->flags & PF_NOFREEZE) ||
-> >  	    (p->exit_state == EXIT_ZOMBIE) ||
-> > -	    (p->exit_state == EXIT_DEAD) ||
-> > -	    (p->state == TASK_STOPPED))
-> > +	    (p->exit_state == EXIT_DEAD))
-> >  		return 0;
-> >  	return 1;
-> >  }
-> > @@ -61,10 +60,13 @@ static inline void freeze_process(struct
-> >  	unsigned long flags;
-> >  
-> >  	if (!freezing(p)) {
-> > -		freeze(p);
-> > -		spin_lock_irqsave(&p->sighand->siglock, flags);
-> > -		signal_wake_up(p, 0);
-> > -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> > +		rmb();
+> I think so.  For example on x86-64 atomic_read() is just a read.
+
+I'm not sure, but for x86-64 barriers are nops, anyway, IIRC.
+
+> > > @@ -128,6 +135,21 @@ static unsigned int try_to_freeze_tasks(
+> > >  		} while_each_thread(g, p);
+> > >  		read_unlock(&tasklist_lock);
+> > >  		yield();			/* Yield is okay here */
+> > > +		if (!todo) {
+> > > +			/* Make sure that none of the stopped processes has
+> > > +			 * received the continuation signal after we checked
+> > > +			 * last time.
+> > > +			 */
+> > 
+> > I do not like the counting idea; it should be simpler to just check if
+> > all the processes are still stopped.
 > 
-> If frozen is atomic_t, do we need memory barrier?
-
-I think so.  For example on x86-64 atomic_read() is just a read.
-
-> > +		if (!frozen(p)) {
-> > +			freeze(p);
-> > +			spin_lock_irqsave(&p->sighand->siglock, flags);
-> > +			signal_wake_up(p, 0);
-> > +			spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> > +		}
-> >  	}
-> >  }
-> >  
-> > @@ -90,11 +92,12 @@ static unsigned int try_to_freeze_tasks(
-> >  {
-> >  	struct task_struct *g, *p;
-> >  	unsigned long end_time;
-> > -	unsigned int todo;
-> > +	unsigned int todo, nr_stopped;
-> >  
-> >  	end_time = jiffies + TIMEOUT;
-> >  	do {
-> >  		todo = 0;
-> > +		nr_stopped = 0;
-> >  		read_lock(&tasklist_lock);
-> >  		do_each_thread(g, p) {
-> >  			if (!freezeable(p))
-> > @@ -103,6 +106,10 @@ static unsigned int try_to_freeze_tasks(
-> >  			if (frozen(p))
-> >  				continue;
-> >  
-> > +			if (p->state == TASK_STOPPED) {
-> > +				nr_stopped++;
-> > +				continue;
-> > +			}
-> >  			if (p->state == TASK_TRACED &&
-> >  			    (frozen(p->parent) ||
-> >  			     p->parent->state == TASK_STOPPED)) {
-> > @@ -128,6 +135,21 @@ static unsigned int try_to_freeze_tasks(
-> >  		} while_each_thread(g, p);
-> >  		read_unlock(&tasklist_lock);
-> >  		yield();			/* Yield is okay here */
-> > +		if (!todo) {
-> > +			/* Make sure that none of the stopped processes has
-> > +			 * received the continuation signal after we checked
-> > +			 * last time.
-> > +			 */
+> I thought about that but didn't invent anything reasonable enough.
 > 
-> I do not like the counting idea; it should be simpler to just check if
-> all the processes are still stopped.
+> > But I'm not sure if this is enough. What if signal is being delivered
+> > on another CPU while freezing, still being delivered while this second
+> > check runs, and then SIGCONT is delivered? 
+> 
+> Hm, is this possible in practice?  I mean, if todo is 0 and nr_stopped doesn't
+> change, then there are no processes that can send the SIGCONT (unless someone
+> creates a kernel thread with PF_NOFREEZE that will do just that).
 
-I thought about that but didn't invent anything reasonable enough.
+No, SIGCONT was sent before freezing even started, and for some reason
+takes long time on other CPU.
 
-> But I'm not sure if this is enough. What if signal is being delivered
-> on another CPU while freezing, still being delivered while this second
-> check runs, and then SIGCONT is delivered? 
+[Of course it is going to be quite hard to hit that race _in practice_
+and mdelay(1000) before check would solve it for practical
+purposes...?]
 
-Hm, is this possible in practice?  I mean, if todo is 0 and nr_stopped doesn't
-change, then there are no processes that can send the SIGCONT (unless someone
-creates a kernel thread with PF_NOFREEZE that will do just that).
-
-Anyway, for now I've no idea how to fix this properly.  Will think about it
-tomorrow.
-
-Greetings,
-Rafael
-
-
+> Anyway, for now I've no idea how to fix this properly.  Will think about it
+> tomorrow.
+								Pavel
 -- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
