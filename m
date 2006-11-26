@@ -1,15 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
 	SMP-safe
-Date: Sun, 26 Nov 2006 08:47:40 +0100
-Message-ID: <20061126074740.GB12479@elf.ucw.cz>
+Date: Sun, 26 Nov 2006 11:02:16 +0100
+Message-ID: <200611261102.17091.rjw@sisk.pl>
 References: <200611252210.58203.rjw@sisk.pl> <200611252229.52189.rjw@sisk.pl>
+	<20061126074740.GB12479@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20061126074740.GB12479@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200611252229.52189.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -19,76 +20,90 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
-> Currently, the PF_FREEZE process flag is used to indicate that the process
-> should enter the refrigerator as soon as possible.  Unfortunately it is set by
-> the freezer while the process may be changing its flags for another reason
-> and this may lead to a race between the freezer and the process itself.
+On Sunday, 26 November 2006 08:47, Pavel Machek wrote:
+> Hi!
 > 
-> This problem may be solved by introducing an additional member, called (for
-> example) 'freezing', into task_struct which will only be used to indicate that
-> the process should enter the refrigerator.  Then, if the 'freezing' member of
-> task_struct is reset by the process itself only after it has entered the
-> refrigerator, the modifications of it will be guaranteed to occur at different
-> times, because the freezer can only set it before the process enters the
-> refrigerator.  Thus the code will be SMP-safe even though no explicit locking
-> is used.
+> > Currently, the PF_FREEZE process flag is used to indicate that the process
+> > should enter the refrigerator as soon as possible.  Unfortunately it is set by
+> > the freezer while the process may be changing its flags for another reason
+> > and this may lead to a race between the freezer and the process itself.
+> > 
+> > This problem may be solved by introducing an additional member, called (for
+> > example) 'freezing', into task_struct which will only be used to indicate that
+> > the process should enter the refrigerator.  Then, if the 'freezing' member of
+> > task_struct is reset by the process itself only after it has entered the
+> > refrigerator, the modifications of it will be guaranteed to occur at different
+> > times, because the freezer can only set it before the process enters the
+> > refrigerator.  Thus the code will be SMP-safe even though no explicit locking
+> > is used.
+> 
+> I do not think we can go without locking here.
 
-I do not think we can go without locking here.
+Why exactly?
 
-> @@ -31,7 +30,7 @@ static inline void freeze(struct task_st
->   */
->  static inline void do_not_freeze(struct task_struct *p)
->  {
-> -	p->flags &= ~PF_FREEZE;
-> +	p->freezing = 0;
->  }
->  
->  /*
-> @@ -52,7 +51,8 @@ static inline int thaw_process(struct ta
->   */
->  static inline void frozen_process(struct task_struct *p)
->  {
-> -	p->flags = (p->flags & ~PF_FREEZE) | PF_FROZEN;
-> +	p->flags |= PF_FROZEN;
-> +	p->freezing = 0;
->  }
+> > @@ -31,7 +30,7 @@ static inline void freeze(struct task_st
+> >   */
+> >  static inline void do_not_freeze(struct task_struct *p)
+> >  {
+> > -	p->flags &= ~PF_FREEZE;
+> > +	p->freezing = 0;
+> >  }
+> >  
+> >  /*
+> > @@ -52,7 +51,8 @@ static inline int thaw_process(struct ta
+> >   */
+> >  static inline void frozen_process(struct task_struct *p)
+> >  {
+> > -	p->flags = (p->flags & ~PF_FREEZE) | PF_FROZEN;
+> > +	p->flags |= PF_FROZEN;
+> > +	p->freezing = 0;
+> >  }
+> 
+> Is mb() needed between |= and freezing = 0?
 
-Is mb() needed between |= and freezing = 0?
+Hm, I'm not sure.  Are there architectures on which memory writes can be
+reordered?
+ 
+> >  extern void refrigerator(void);
+> > Index: linux-2.6.19-rc6-mm1/include/linux/sched.h
+> > ===================================================================
+> > --- linux-2.6.19-rc6-mm1.orig/include/linux/sched.h
+> > +++ linux-2.6.19-rc6-mm1/include/linux/sched.h
+> > @@ -1065,6 +1065,9 @@ struct task_struct {
+> >  #ifdef	CONFIG_TASK_DELAY_ACCT
+> >  	struct task_delay_info *delays;
+> >  #endif
+> > +#ifdef CONFIG_PM
+> > +	int freezing;		/* if set, we should be freezing for suspend */
+> > +#endif
+> >  #ifdef CONFIG_FAULT_INJECTION
+> >  	int make_it_fail;
+> >  #endif
+> 
+> It is int, imagine machine that can't do 32-bit atomic access (only
+> does 64 bits). On such beast (alpha? something stranger?) this will
+> clobber make_it_fail field, sometimes.
+> 
+> OTOH on i386 normal instructions can be used. But that's okay, we
+> should just use atomic_t here. Should be as fast on i386/x86-64, and
+> still safe.
 
->  extern void refrigerator(void);
-> Index: linux-2.6.19-rc6-mm1/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.19-rc6-mm1.orig/include/linux/sched.h
-> +++ linux-2.6.19-rc6-mm1/include/linux/sched.h
-> @@ -1065,6 +1065,9 @@ struct task_struct {
->  #ifdef	CONFIG_TASK_DELAY_ACCT
->  	struct task_delay_info *delays;
->  #endif
-> +#ifdef CONFIG_PM
-> +	int freezing;		/* if set, we should be freezing for suspend */
-> +#endif
->  #ifdef CONFIG_FAULT_INJECTION
->  	int make_it_fail;
->  #endif
+Okay, I'll use atomic_t.
 
-It is int, imagine machine that can't do 32-bit atomic access (only
-does 64 bits). On such beast (alpha? something stranger?) this will
-clobber make_it_fail field, sometimes.
+Greetings,
+Rafael
 
-OTOH on i386 normal instructions can be used. But that's okay, we
-should just use atomic_t here. Should be as fast on i386/x86-64, and
-still safe.
-									Pavel
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+You never change things by fighting the existing reality.
+		R. Buckminster Fuller
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
