@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
-	SMP-safe
-Date: Sun, 26 Nov 2006 20:48:24 +0100
-Message-ID: <20061126194824.GD12535@elf.ucw.cz>
-References: <200611252210.58203.rjw@sisk.pl> <200611261102.17091.rjw@sisk.pl>
-	<200611261215.14326.rjw@sisk.pl> <200611261434.18427.rjw@sisk.pl>
+Subject: Re: [linux-pm] [RFC][PATCH -mm 4/5] swsusp: Add
+	PLATFORM_SNAPSHOT and PLATFORM_RESTORE ioctls
+Date: Sun, 26 Nov 2006 20:51:10 +0100
+Message-ID: <20061126195110.GE12535@elf.ucw.cz>
+References: <200611252210.58203.rjw@sisk.pl> <200611252245.28687.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <200611261434.18427.rjw@sisk.pl>
+In-Reply-To: <200611252245.28687.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -21,88 +20,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Index: linux-2.6.19-rc6-mm1/kernel/power/process.c
+> Since pm_ops->finish() has to be called after enable_nonboot_cpus() and before
+> device_resume(), from the userland interface perspective it should be treated
+> as a part of the atomic suspend and resume operations.  For this reason we
+> need two additional ioctls to be called instead of ATOMIC_SNAPSHOT and
+> ATOMIC_RESTORE, respectively, when the platform suspend mode is to be used.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/power.h |    4 ++
+>  kernel/power/user.c  |   71 +++++++++++++++++++++++++++++++++++++++++++--------
+>  2 files changed, 64 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6.19-rc6-mm1/kernel/power/power.h
 > ===================================================================
-> --- linux-2.6.19-rc6-mm1.orig/kernel/power/process.c	2006-11-25 21:26:52.000000000 +0100
-> +++ linux-2.6.19-rc6-mm1/kernel/power/process.c	2006-11-26 14:17:11.000000000 +0100
-> @@ -28,8 +28,7 @@ static inline int freezeable(struct task
->  	if ((p == current) || 
->  	    (p->flags & PF_NOFREEZE) ||
->  	    (p->exit_state == EXIT_ZOMBIE) ||
-> -	    (p->exit_state == EXIT_DEAD) ||
-> -	    (p->state == TASK_STOPPED))
-> +	    (p->exit_state == EXIT_DEAD))
->  		return 0;
->  	return 1;
->  }
-> @@ -61,10 +60,13 @@ static inline void freeze_process(struct
->  	unsigned long flags;
->  
->  	if (!freezing(p)) {
-> -		freeze(p);
-> -		spin_lock_irqsave(&p->sighand->siglock, flags);
-> -		signal_wake_up(p, 0);
-> -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> +		rmb();
+> --- linux-2.6.19-rc6-mm1.orig/kernel/power/power.h
+> +++ linux-2.6.19-rc6-mm1/kernel/power/power.h
+> @@ -133,7 +133,9 @@ struct resume_swap_area {
+>  #define SNAPSHOT_PMOPS			_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
+>  #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
+>  							struct resume_swap_area)
+> -#define SNAPSHOT_IOC_MAXNR	13
+> +#define SNAPSHOT_PLATFORM_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 14, unsigned int)
+> +#define SNAPSHOT_PLATFORM_RESTORE	_IO(SNAPSHOT_IOC_MAGIC, 15)
+> +#define SNAPSHOT_IOC_MAXNR	15
 
-If frozen is atomic_t, do we need memory barrier?
+Maybe we should add SNAPSHOT_WITH_FLAGS (uint)
+                    RESTORE_WITH_FLAGS (uint)
 
-> +		if (!frozen(p)) {
-> +			freeze(p);
-> +			spin_lock_irqsave(&p->sighand->siglock, flags);
-> +			signal_wake_up(p, 0);
-> +			spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> +		}
->  	}
->  }
->  
-> @@ -90,11 +92,12 @@ static unsigned int try_to_freeze_tasks(
->  {
->  	struct task_struct *g, *p;
->  	unsigned long end_time;
-> -	unsigned int todo;
-> +	unsigned int todo, nr_stopped;
->  
->  	end_time = jiffies + TIMEOUT;
->  	do {
->  		todo = 0;
-> +		nr_stopped = 0;
->  		read_lock(&tasklist_lock);
->  		do_each_thread(g, p) {
->  			if (!freezeable(p))
-> @@ -103,6 +106,10 @@ static unsigned int try_to_freeze_tasks(
->  			if (frozen(p))
->  				continue;
->  
-> +			if (p->state == TASK_STOPPED) {
-> +				nr_stopped++;
-> +				continue;
-> +			}
->  			if (p->state == TASK_TRACED &&
->  			    (frozen(p->parent) ||
->  			     p->parent->state == TASK_STOPPED)) {
-> @@ -128,6 +135,21 @@ static unsigned int try_to_freeze_tasks(
->  		} while_each_thread(g, p);
->  		read_unlock(&tasklist_lock);
->  		yield();			/* Yield is okay here */
-> +		if (!todo) {
-> +			/* Make sure that none of the stopped processes has
-> +			 * received the continuation signal after we checked
-> +			 * last time.
-> +			 */
+with one of those flags being USE_PLATFORM_MODE? We may need more
+flags in future...
 
-I do not like the counting idea; it should be simpler to just check if
-all the processes are still stopped.
-
-But I'm not sure if this is enough. What if signal is being delivered
-on another CPU while freezing, still being delivered while this second
-check runs, and then SIGCONT is delivered? 
+...or maybe have ioctl(fd, USE_PLATFORM_MODE)?
 									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
