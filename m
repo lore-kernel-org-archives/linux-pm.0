@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
 	SMP-safe
-Date: Sun, 26 Nov 2006 12:15:13 +0100
-Message-ID: <200611261215.14326.rjw@sisk.pl>
-References: <200611252210.58203.rjw@sisk.pl>
-	<20061126074740.GB12479@elf.ucw.cz>
-	<200611261102.17091.rjw@sisk.pl>
+Date: Sun, 26 Nov 2006 14:34:17 +0100
+Message-ID: <200611261434.18427.rjw@sisk.pl>
+References: <200611252210.58203.rjw@sisk.pl> <200611261102.17091.rjw@sisk.pl>
+	<200611261215.14326.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200611261102.17091.rjw@sisk.pl>
+In-Reply-To: <200611261215.14326.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -21,88 +20,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: suspend-devel@lists.sourceforge.net
-Cc: pm list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On Sunday, 26 November 2006 11:02, Rafael J. Wysocki wrote:
-> On Sunday, 26 November 2006 08:47, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Currently, the PF_FREEZE process flag is used to indicate that the process
-> > > should enter the refrigerator as soon as possible.  Unfortunately it is set by
-> > > the freezer while the process may be changing its flags for another reason
-> > > and this may lead to a race between the freezer and the process itself.
-> > > 
-> > > This problem may be solved by introducing an additional member, called (for
-> > > example) 'freezing', into task_struct which will only be used to indicate that
-> > > the process should enter the refrigerator.  Then, if the 'freezing' member of
-> > > task_struct is reset by the process itself only after it has entered the
-> > > refrigerator, the modifications of it will be guaranteed to occur at different
-> > > times, because the freezer can only set it before the process enters the
-> > > refrigerator.  Thus the code will be SMP-safe even though no explicit locking
-> > > is used.
-> > 
-> > I do not think we can go without locking here.
+On Sunday, 26 November 2006 12:15, Rafael J. Wysocki wrote:
+> On Sunday, 26 November 2006 11:02, Rafael J. Wysocki wrote:
+> > On Sunday, 26 November 2006 08:47, Pavel Machek wrote:
+<--snip--> 
+> > Okay, I'll use atomic_t.
 > 
-> Why exactly?
+> Patch with atomic_t follows.
 > 
-> > > @@ -31,7 +30,7 @@ static inline void freeze(struct task_st
-> > >   */
-> > >  static inline void do_not_freeze(struct task_struct *p)
-> > >  {
-> > > -	p->flags &= ~PF_FREEZE;
-> > > +	p->freezing = 0;
-> > >  }
-> > >  
-> > >  /*
-> > > @@ -52,7 +51,8 @@ static inline int thaw_process(struct ta
-> > >   */
-> > >  static inline void frozen_process(struct task_struct *p)
-> > >  {
-> > > -	p->flags = (p->flags & ~PF_FREEZE) | PF_FROZEN;
-> > > +	p->flags |= PF_FROZEN;
-> > > +	p->freezing = 0;
-> > >  }
-> > 
-> > Is mb() needed between |= and freezing = 0?
-> 
-> Hm, I'm not sure.  Are there architectures on which memory writes can be
-> reordered?
->  
-> > >  extern void refrigerator(void);
-> > > Index: linux-2.6.19-rc6-mm1/include/linux/sched.h
-> > > ===================================================================
-> > > --- linux-2.6.19-rc6-mm1.orig/include/linux/sched.h
-> > > +++ linux-2.6.19-rc6-mm1/include/linux/sched.h
-> > > @@ -1065,6 +1065,9 @@ struct task_struct {
-> > >  #ifdef	CONFIG_TASK_DELAY_ACCT
-> > >  	struct task_delay_info *delays;
-> > >  #endif
-> > > +#ifdef CONFIG_PM
-> > > +	int freezing;		/* if set, we should be freezing for suspend */
-> > > +#endif
-> > >  #ifdef CONFIG_FAULT_INJECTION
-> > >  	int make_it_fail;
-> > >  #endif
-> > 
-> > It is int, imagine machine that can't do 32-bit atomic access (only
-> > does 64 bits). On such beast (alpha? something stranger?) this will
-> > clobber make_it_fail field, sometimes.
-> > 
-> > OTOH on i386 normal instructions can be used. But that's okay, we
-> > should just use atomic_t here. Should be as fast on i386/x86-64, and
-> > still safe.
-> 
-> Okay, I'll use atomic_t.
+> The atomic_set(..., 0) are used to avoid the (theoretical) situation in which
+> freezing might be decreased twice in a row and I've decided to explicitly
+> initialize freezing in fork.c for clarity.
 
-Patch with atomic_t follows.
+I've just realized that there is a race in freeze_process() where we should
+check if the proces hasn't been frozen already (the process may have entered
+the refrigerator and reset 'freezing' after we checked its PF_FROZEN flag,
+so we have to check if PF_FROZEN is set for the process before we
+set 'freezing' for it).  Since an explicit memory barrier is needed here, it
+seems reasonable to add one in frozen_process() as well.
 
-The atomic_set(..., 0) are used to avoid the (theoretical) situation in which
-freezing might be decreased twice in a row and I've decided to explicitly
-initialize freezing in fork.c for clarity.
+Also, it seems to me that stopped processes require special treatment.
+Namely, one or more of them might receive the continuation signal after
+we check their states in try_to_freeze_tasks() so we should make sure this
+hasn't happened before we break the main loop in there.
+
+Revised patch follows.
 
 Greetings,
 Rafael
@@ -110,15 +58,16 @@ Rafael
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/freezer.h |   10 +++++-----
+ include/linux/freezer.h |   11 ++++++-----
  include/linux/sched.h   |    4 +++-
  kernel/fork.c           |    4 ++++
- 3 files changed, 12 insertions(+), 6 deletions(-)
+ kernel/power/process.c  |   36 +++++++++++++++++++++++++++++-------
+ 4 files changed, 42 insertions(+), 13 deletions(-)
 
 Index: linux-2.6.19-rc6-mm1/include/linux/freezer.h
 ===================================================================
 --- linux-2.6.19-rc6-mm1.orig/include/linux/freezer.h	2006-11-26 11:31:39.000000000 +0100
-+++ linux-2.6.19-rc6-mm1/include/linux/freezer.h	2006-11-26 11:52:29.000000000 +0100
++++ linux-2.6.19-rc6-mm1/include/linux/freezer.h	2006-11-26 14:07:03.000000000 +0100
 @@ -14,16 +14,15 @@ static inline int frozen(struct task_str
   */
  static inline int freezing(struct task_struct *p)
@@ -147,12 +96,13 @@ Index: linux-2.6.19-rc6-mm1/include/linux/freezer.h
  }
  
  /*
-@@ -52,7 +51,8 @@ static inline int thaw_process(struct ta
+@@ -52,7 +51,9 @@ static inline int thaw_process(struct ta
   */
  static inline void frozen_process(struct task_struct *p)
  {
 -	p->flags = (p->flags & ~PF_FREEZE) | PF_FROZEN;
 +	p->flags |= PF_FROZEN;
++	wmb();
 +	atomic_set(&p->freezing, 0);
  }
  
@@ -194,6 +144,85 @@ Index: linux-2.6.19-rc6-mm1/kernel/fork.c
  	p->tgid = p->pid;
  	if (clone_flags & CLONE_THREAD)
  		p->tgid = current->tgid;
+Index: linux-2.6.19-rc6-mm1/kernel/power/process.c
+===================================================================
+--- linux-2.6.19-rc6-mm1.orig/kernel/power/process.c	2006-11-25 21:26:52.000000000 +0100
++++ linux-2.6.19-rc6-mm1/kernel/power/process.c	2006-11-26 14:17:11.000000000 +0100
+@@ -28,8 +28,7 @@ static inline int freezeable(struct task
+ 	if ((p == current) || 
+ 	    (p->flags & PF_NOFREEZE) ||
+ 	    (p->exit_state == EXIT_ZOMBIE) ||
+-	    (p->exit_state == EXIT_DEAD) ||
+-	    (p->state == TASK_STOPPED))
++	    (p->exit_state == EXIT_DEAD))
+ 		return 0;
+ 	return 1;
+ }
+@@ -61,10 +60,13 @@ static inline void freeze_process(struct
+ 	unsigned long flags;
+ 
+ 	if (!freezing(p)) {
+-		freeze(p);
+-		spin_lock_irqsave(&p->sighand->siglock, flags);
+-		signal_wake_up(p, 0);
+-		spin_unlock_irqrestore(&p->sighand->siglock, flags);
++		rmb();
++		if (!frozen(p)) {
++			freeze(p);
++			spin_lock_irqsave(&p->sighand->siglock, flags);
++			signal_wake_up(p, 0);
++			spin_unlock_irqrestore(&p->sighand->siglock, flags);
++		}
+ 	}
+ }
+ 
+@@ -90,11 +92,12 @@ static unsigned int try_to_freeze_tasks(
+ {
+ 	struct task_struct *g, *p;
+ 	unsigned long end_time;
+-	unsigned int todo;
++	unsigned int todo, nr_stopped;
+ 
+ 	end_time = jiffies + TIMEOUT;
+ 	do {
+ 		todo = 0;
++		nr_stopped = 0;
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+ 			if (!freezeable(p))
+@@ -103,6 +106,10 @@ static unsigned int try_to_freeze_tasks(
+ 			if (frozen(p))
+ 				continue;
+ 
++			if (p->state == TASK_STOPPED) {
++				nr_stopped++;
++				continue;
++			}
+ 			if (p->state == TASK_TRACED &&
+ 			    (frozen(p->parent) ||
+ 			     p->parent->state == TASK_STOPPED)) {
+@@ -128,6 +135,21 @@ static unsigned int try_to_freeze_tasks(
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
+ 		yield();			/* Yield is okay here */
++		if (!todo) {
++			/* Make sure that none of the stopped processes has
++			 * received the continuation signal after we checked
++			 * last time.
++			 */
++			todo = nr_stopped;
++			nr_stopped = 0;
++			read_lock(&tasklist_lock);
++			do_each_thread(g, p) {
++				if (p->state == TASK_STOPPED)
++					nr_stopped++;
++			} while_each_thread(g, p);
++			read_unlock(&tasklist_lock);
++			todo -= nr_stopped;
++		}
+ 		if (todo && time_after(jiffies, end_time))
+ 			break;
+ 	} while (todo);
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
