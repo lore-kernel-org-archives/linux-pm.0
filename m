@@ -1,18 +1,17 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] [RFC][PATCH -mm 4/5] swsusp: Add
-	PLATFORM_SNAPSHOT and PLATFORM_RESTORE ioctls
-Date: Mon, 27 Nov 2006 11:37:20 +0100
-Message-ID: <20061127103720.GE13648@elf.ucw.cz>
-References: <200611252210.58203.rjw@sisk.pl> <200611252245.28687.rjw@sisk.pl>
-	<20061126195110.GE12535@elf.ucw.cz>
-	<200611270012.12019.rjw@sisk.pl>
-	<20061126232937.GE13647@elf.ucw.cz>
+Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
+	SMP-safe
+Date: Mon, 27 Nov 2006 11:50:51 +0100
+Message-ID: <20061127105051.GF13648@elf.ucw.cz>
+References: <200611252210.58203.rjw@sisk.pl> <200611261434.18427.rjw@sisk.pl>
+	<20061126194824.GD12535@elf.ucw.cz>
+	<200611270009.56736.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <20061126232937.GE13647@elf.ucw.cz>
+In-Reply-To: <200611270009.56736.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -23,31 +22,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2006-11-27 00:29:37, Pavel Machek wrote:
-> Hi!
-> 
-> > > Maybe we should add SNAPSHOT_WITH_FLAGS (uint)
-> > >                     RESTORE_WITH_FLAGS (uint)
-> > > 
-> > > with one of those flags being USE_PLATFORM_MODE? We may need more
-> > > flags in future...
-> > 
-> > Sure, we can do that.
-> 
-> Okay, that works for me ;-).
-> 
-> > > ...or maybe have ioctl(fd, USE_PLATFORM_MODE)?
-> > 
-> > No.  At least I'm not going to implement it. ;-)
-> 
-> -ELAZY.
+Hi!
 
-(Of course this meant "Pavel is too lazy, so he'll take interface
-Rafael _is_ willing to implement").
-									Pavel
+> > > @@ -61,10 +60,13 @@ static inline void freeze_process(struct
+> > >  	unsigned long flags;
+> > >  
+> > >  	if (!freezing(p)) {
+> > > -		freeze(p);
+> > > -		spin_lock_irqsave(&p->sighand->siglock, flags);
+> > > -		signal_wake_up(p, 0);
+> > > -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
+> > > +		rmb();
+> > 
+> > If frozen is atomic_t, do we need memory barrier?
+> 
+> I think so.  For example on x86-64 atomic_read() is just a read.
+
+Sorry for one more change, but
+
+
+/* set thread flags in other task's structures
+ * - see asm/thread_info.h for TIF_xxxx flags available
+ */
+static inline void set_tsk_thread_flag(struct task_struct *tsk, int
+flag)
+{
+        set_ti_thread_flag(task_thread_info(tsk), flag);
+}
+
+...could we use set_tsk_thread_flag and friends to avoid enlarging
+task struct?
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
