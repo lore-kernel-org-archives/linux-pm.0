@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
 	SMP-safe
-Date: Mon, 27 Nov 2006 11:50:51 +0100
-Message-ID: <20061127105051.GF13648@elf.ucw.cz>
-References: <200611252210.58203.rjw@sisk.pl> <200611261434.18427.rjw@sisk.pl>
-	<20061126194824.GD12535@elf.ucw.cz>
-	<200611270009.56736.rjw@sisk.pl>
+Date: Mon, 27 Nov 2006 21:04:12 +0100
+Message-ID: <200611272104.13267.rjw@sisk.pl>
+References: <200611252210.58203.rjw@sisk.pl> <200611270009.56736.rjw@sisk.pl>
+	<20061126232858.GD13647@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20061126232858.GD13647@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200611270009.56736.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -21,44 +20,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > @@ -61,10 +60,13 @@ static inline void freeze_process(struct
-> > >  	unsigned long flags;
-> > >  
-> > >  	if (!freezing(p)) {
-> > > -		freeze(p);
-> > > -		spin_lock_irqsave(&p->sighand->siglock, flags);
-> > > -		signal_wake_up(p, 0);
-> > > -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> > > +		rmb();
-> > 
-> > If frozen is atomic_t, do we need memory barrier?
+On Monday, 27 November 2006 00:28, Pavel Machek wrote:
+> Hi!
 > 
-> I think so.  For example on x86-64 atomic_read() is just a read.
+> > > If frozen is atomic_t, do we need memory barrier?
+> > 
+> > I think so.  For example on x86-64 atomic_read() is just a read.
+> 
+> I'm not sure, but for x86-64 barriers are nops, anyway, IIRC.
 
-Sorry for one more change, but
+Well, last time I checked they were "lfence" and "sfence", at least on SMP.
 
-
-/* set thread flags in other task's structures
- * - see asm/thread_info.h for TIF_xxxx flags available
- */
-static inline void set_tsk_thread_flag(struct task_struct *tsk, int
-flag)
-{
-        set_ti_thread_flag(task_thread_info(tsk), flag);
-}
-
-...could we use set_tsk_thread_flag and friends to avoid enlarging
-task struct?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings,
+Rafael
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
