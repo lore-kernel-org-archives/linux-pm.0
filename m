@@ -1,74 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
-	SMP-safe
-Date: Mon, 27 Nov 2006 21:02:38 +0100
-Message-ID: <200611272102.39281.rjw@sisk.pl>
-References: <200611252210.58203.rjw@sisk.pl> <200611270009.56736.rjw@sisk.pl>
-	<20061127105051.GF13648@elf.ucw.cz>
+From: Uk National Lottery <onlineukpromo@bellsouth.net>
+Subject: CONGRATULATION
+Date: Mon, 27 Nov 2006 21:15:19 -0500
+Message-ID: <20061128021519.SYUL24641.ibm65aec.bellsouth.net@mail.bellsouth.net>
+Reply-To: lotterofficerrex@aim.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061127105051.GF13648@elf.ucw.cz>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Pavel Machek <pavel@suse.cz>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: national@lotter-coordinator.co.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 27 November 2006 11:50, Pavel Machek wrote:
-> Hi!
-> 
-> > > > @@ -61,10 +60,13 @@ static inline void freeze_process(struct
-> > > >  	unsigned long flags;
-> > > >  
-> > > >  	if (!freezing(p)) {
-> > > > -		freeze(p);
-> > > > -		spin_lock_irqsave(&p->sighand->siglock, flags);
-> > > > -		signal_wake_up(p, 0);
-> > > > -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> > > > +		rmb();
-> > > 
-> > > If frozen is atomic_t, do we need memory barrier?
-> > 
-> > I think so.  For example on x86-64 atomic_read() is just a read.
-> 
-> Sorry for one more change, but
-> 
-> 
-> /* set thread flags in other task's structures
->  * - see asm/thread_info.h for TIF_xxxx flags available
->  */
-> static inline void set_tsk_thread_flag(struct task_struct *tsk, int
-> flag)
-> {
->         set_ti_thread_flag(task_thread_info(tsk), flag);
-> }
-> 
-> ...could we use set_tsk_thread_flag and friends to avoid enlarging
-> task struct?
 
-_Of_ _course_.  [Heh, I didn't even know something like this existed. ;-)]
-
-Greetings,
-Rafael
+UK National Lottery,
+41 Wigmore Street
+London W1U 1PJ,
+United Kingdom,                              =
 
 
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+Draw date:12/11/2006
+Ref  : UK/776090X2/23
+Batch: 013/06/8394369
+WINNING NOTIFICATION:
 
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+We happily announce to you the Draw (06/1096) of the UK NATIONAL LOTTERY, o=
+nline UK National Lottery program held on 12th November,2006.Your e-mail ad=
+dress attached to Ticket Number:8603775966738 with Serial number 5368/02 dr=
+ew the Winning Numbers:9,14,21,23,39,44,19 (bonus no.19), which subsequentl=
+y won you the lottery in the 2nd category i.e match 5 plus 1 bonus.
+
+
+You have therefore been approved to claim total sum of =A3 1,500,000(One Mi=
+llion Five Hundred Thousand Pounds Sterling ),payout in Us dollars;2,776,64=
+6.55 in cash credited to file ktu/9023118308/03.All participants for the on=
+line version were selected randomly from World Wide Web sites through compu=
+ter draw system and extracted from over 100,000 unions, associations, and c=
+orporate bodies that are listed online. This is an end of year promotional =
+draw in which there were no tickets sold.
+
+
+Your lucky winning number falls within our European booklet representative =
+office in Europe as indicated in your play coupon. In view of this, your (O=
+ne Million Five Hundred Thousand Pounds Sterling  ) will be released to you=
+ by any of our payment offices in Europe.Our European agent will immediatel=
+y commence the process to facilitate the release of your funds as soon as y=
+ou contact them.For security reasons, you are advised to keep your winning =
+information confidential till your claim is processed and your money remitt=
+ed to you in whatever manner you deem fit to claim your prize.
+
+
+This is part of our precautionary measure to avoid double claiming and =
+
+unwarranted abuse of this program. Please be warned.
+To file for your claim,Please contact our Fiduciary Agent for =
+
+VALIDATION.
+*******************************************************************
+Mr Daid Rex.
+Foreign Services Manager, Payment and Release order
+Department,CLAIMS PROCESSING LOTTERY AGENT.
+TRANS-ATLANTIC S.A LONDON, UNITED KINGDOM =
+
+Phone Number::+(44)702 409 3240 `
+Fax Number:  +(44)707 515 8047
+E-mail : lotterofficerrex@aim.com
+********************************************************************
+Endeavour to email him your full names,winning numbers,email =
+
+address,telephone and fax numbers immediately.
+Congratulations from me and members of staff of THE UK NATIONAL =
+
+LOTTERY.
+Yours faithfully,
+Amanda Collins.
+UK Lottery Online coordinator
