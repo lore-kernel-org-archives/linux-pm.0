@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 1/5] PM: Make freeze_processes
 	SMP-safe
-Date: Thu, 30 Nov 2006 00:56:26 +0100
-Message-ID: <20061129235626.GB1952@elf.ucw.cz>
-References: <200611252210.58203.rjw@sisk.pl> <200611270009.56736.rjw@sisk.pl>
-	<20061127105051.GF13648@elf.ucw.cz>
-	<200611272102.39281.rjw@sisk.pl>
+Date: Thu, 30 Nov 2006 01:21:53 +0100
+Message-ID: <200611300121.53975.rjw@sisk.pl>
+References: <200611252210.58203.rjw@sisk.pl> <200611290040.37965.rjw@sisk.pl>
+	<20061129235523.GA1952@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20061129235523.GA1952@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200611272102.39281.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -21,51 +20,72 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2006-11-27 21:02:38, Rafael J. Wysocki wrote:
-> On Monday, 27 November 2006 11:50, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > @@ -61,10 +60,13 @@ static inline void freeze_process(struct
-> > > > >  	unsigned long flags;
-> > > > >  
-> > > > >  	if (!freezing(p)) {
-> > > > > -		freeze(p);
-> > > > > -		spin_lock_irqsave(&p->sighand->siglock, flags);
-> > > > > -		signal_wake_up(p, 0);
-> > > > > -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> > > > > +		rmb();
-> > > > 
-> > > > If frozen is atomic_t, do we need memory barrier?
-> > > 
-> > > I think so.  For example on x86-64 atomic_read() is just a read.
-> > 
-> > Sorry for one more change, but
-> > 
-> > 
-> > /* set thread flags in other task's structures
-> >  * - see asm/thread_info.h for TIF_xxxx flags available
-> >  */
-> > static inline void set_tsk_thread_flag(struct task_struct *tsk, int
-> > flag)
-> > {
-> >         set_ti_thread_flag(task_thread_info(tsk), flag);
-> > }
-> > 
-> > ...could we use set_tsk_thread_flag and friends to avoid enlarging
-> > task struct?
+On Thursday, 30 November 2006 00:55, Pavel Machek wrote:
+> Hi!
 > 
-> _Of_ _course_.  [Heh, I didn't even know something like this existed. ;-)]
+> > > > I do not like the counting idea; it should be simpler to just check if
+> > > > all the processes are still stopped.
+> > > 
+> > > I thought about that but didn't invent anything reasonable enough.
+> > > 
+> > > > But I'm not sure if this is enough. What if signal is being delivered
+> > > > on another CPU while freezing, still being delivered while this second
+> > > > check runs, and then SIGCONT is delivered? 
+> > > 
+> > > Hm, is this possible in practice?  I mean, if todo is 0 and nr_stopped doesn't
+> > > change, then there are no processes that can send the SIGCONT (unless someone
+> > > creates a kernel thread with PF_NOFREEZE that will do just that).
+> > > 
+> > > Anyway, for now I've no idea how to fix this properly.  Will think about it
+> > > tomorrow.
+> > 
+> > As far as this particular problem is concerned, I think there are two possible
+> > solutions.
+> > 
+> > One of them would be do disable the delivery of continuation signals before
+> > we start freezing processes, but I don't know how to do this exactly so that
+> > it's not racy.  Also it would be quite intrusive.
+> > 
+> > The other one may be something along with the lines of the appended patch.
+> 
+> There has to be a better solution. Stopped tasks are suspended
+> somewhere in kernel, right? One try_to_freeze() and problem should be
+> solved, in regular way, and without tricks...?
 
-Well, of course I did not know, too.... I was just searching for
-atomic_t semantics when I hit this by accident ;-).
-								Pavel
+Why?  _This_ is a regular way, IMHO.
+
+The problem is that stopped tasks aren't actually running (obviously) so they
+_can't_ execute try_to_freeze() until someone sends them a signal.  However,
+once they actually have received the signal, we want them to freeze, so we
+must tell them to do so.  Still, if they don't receive the signal, we want them
+to stay stopped (IOW, the freezer by itself should not wake them up).
+
+Therefore, we need to call freeze_process() for the stopped tasks too, but
+this alone won't wake them up (which is good).  Now if someone wakes them
+up in the meantime, they will go to the refrigerator thanks to the
+try_to_freeze() in get_signal_to_deliver() (they will think they have a signal
+to handle, because we have called freeze_process() for them).  _But_ if
+anyone doesn't wake them up, we must cancel the freezing of them so they
+don't go freezing when they receive the continuation signal at some point
+in the future.
+
+Of course after we have called freeze_process() for a stopped tasks, we
+shouldn't count that task as freezeable, because it may not be woken up by
+anyone (which is _very_likely BTW).
+
+IMO there's no simpler way of doing this and anything else would be racy.
+
+Greetings,
+Rafael
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+You never change things by fighting the existing reality.
+		R. Buckminster Fuller
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
