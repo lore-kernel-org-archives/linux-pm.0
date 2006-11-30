@@ -1,18 +1,14 @@
-From: Peter Jones <pjones@redhat.com>
-Subject: Re: [linux-pm] Dangers of touching disk
-	between	suspend and resume
-Date: Thu, 30 Nov 2006 17:17:47 -0500
-Message-ID: <1164925067.6031.29.camel@localhost.localdomain>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
-	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
-	<20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFC][PATCH -mm 1/5] PM: Make
+ freeze_processes SMP-safe
+Date: Thu, 30 Nov 2006 17:34:05 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0611301723590.2686-100000@iolanthe.rowland.org>
+References: <200611302023.02763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061130201311.GK2227@suse.de>
+In-Reply-To: <200611302023.02763.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -22,52 +18,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Stefan Seyfried <seife@suse.de>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 30, 2006 at 03:00:43PM -0500, I wrote:
-> On Tue, 2006-11-28 at 17:37 +0100, Stefan Seyfried wrote:
+On Thu, 30 Nov 2006, Rafael J. Wysocki wrote:
+
+> > > On the other hand, a stopped process might be waiting for a signal that 
+> > > can be sent by an unfreezable process -- and the stopped process might be 
+> > > holding a lock which is needed by some other unfreezable process, so you 
+> > > need to allow it to run long enough to release the lock before freezing 
+> > > it.
+> > 
+> > Theoretically, yes.  But does it happen?  Moreover, even if it does, why can't
+> > we hold the unfreezeable process until the lock is released?
+> > 
+> > > Unless you can somehow rule out this scenario (unfreezable process waiting 
+> > > for resource held by unfrozen but stopped and freezable process), I don't 
+> > > see how this approach can be made to work.
 > 
-> > So it is a good idea to tell the engineer to do "mkswap" on the swap
-> > partition before putting the disk into the replacement hardware.
+> Hm, in fact I think that if it happens, then this is a bug.
 > 
-> Ugh, no it's not.  You really want the UUID on the swap area to remain
-> the same.
-
-In response, on Thu, 2006-11-30 at 21:13 +0100, Stefan Seyfried wrote:
-> Well, but the system won't care because it won't resume?
-> Or am i missing something?
-
-And On Thu, 2006-11-30 at 15:42 -0500, Daniel Drake wrote:
-> Why?
+> Namely, the freezeable task can only acquire the lock when it's running.  Thus
+> it would have to acquire the lock before it's stopped.  Consequently, it could
+> be preempted and subsequently frozen after it has acquired the lock and
+> _before_ it's stopped.
 > 
-> [not questioning your reasoning, this is coming from someone who knows
-> very little about swap structure and what the UUID is used for]
+> Now from the unfreezeable task's point of view it doesn't matter if the
+> freezeable task acquired the lock and has been frozen before being stopped
+> or if it acquired the lock and was stopped and then has been woken up and
+> frozen, since in both cases the final outcome is the same: the freezeable task
+> is frozen and holds the lock, so the unfreezeable task cannot continue
+> running.
+> 
+> Thus I think the question is if _any_ freezeable task, be it stopped or not,
+> can hold a lock that's needed by an unfreezeable task, and I think the answer
+> is, generally, 'no, it can't', because otherwise it might block the
+> unfreezeable task (if it's frozen while holding the lock).
 
-You want to get rid of the resume metadata from it, but you don't want
-to create a new swap structure.  Normally it's not a problem, but in
-some environments, such as with shared-storage like in a SAN[1], we need
-to be able to identify that a swap device is really the one we mean to
-be activating; the UUID is one of the best pieces of data we've got.  So
-you don't want to start over with a new swap partition, you want to
-clear the resume data only.
+Well, certainly the answer is "It shouldn't".  :-)
 
-Granted, I think most distros, if not all, and all the standard tools
-totally muck up swap on shared storage right now[0].  But that's no
-reason to advocate such a bad habit.  For FC/RHEL making this work right
-is at least on my TODO list for the relatively near future.
+I don't know any examples where an unfreezable task waits for a resource 
+which might be held by a frozen task, PROVIDED that tasks don't get frozen 
+at a bad spot.
 
-[0] "swapon -a" activates everything it finds, and that's what most
-distros do during boot.  If you can see other machines' swap devices,
-that's bad.
+Here's what I mean.  usb-storage's kernel thread is unfreezable, because
+it might be needed for reading or writing a memory image to a swap region.  
+If there's an I/O error then usb-storage will try to issue a USB port
+reset, for which it needs to acquire the USB device's lock.
 
-[1] If you hate that example, another with the same problem is when
-you're running a virtual machine which has its own physical disk
-partitions, i.e. vmware with /dev/sdb as its disk.
+Now various other tasks may acquire that lock, and they may even stop
+while holding it.  However they should never get frozen while holding the
+lock -- which means they shouldn't get frozen at arbitrary times merely
+because they are stopped.  They are careful to call try_to_freeze() only
+at times when they don't hold any locks.
 
--- 
-  Peter
+Alan Stern
 
 
 -------------------------------------------------------------------------
