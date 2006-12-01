@@ -1,101 +1,84 @@
-From: Stefan Seyfried <seife@suse.de>
-Subject: Re: [linux-pm] Dangers of touching disk between
-	suspend and resume
-Date: Fri, 1 Dec 2006 08:39:56 +0100
-Message-ID: <20061201073956.GB18690@suse.de>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
-	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
-	<20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
-	<1164925067.6031.29.camel@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [RFC] ACPI vs device ordering on resume
+Date: Fri, 1 Dec 2006 10:33:01 +0100
+Message-ID: <20061201093301.GA1842@elf.ucw.cz>
+References: <20061114153026.730deb94@freekitty> <200611150203.30965.len.brown@intel.com> <Pine.LNX.4.64.0611150839040.3349@woody.osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1164925067.6031.29.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Peter Jones <pjones@redhat.com>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <Pine.LNX.4.64.0611150839040.3349@woody.osdl.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Len Brown <lenb@kernel.org>, linux-pm@lists.osdl.org, Stephen Hemminger <shemminger@osdl.org>, Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 30, 2006 at 05:17:47PM -0500, Peter Jones wrote:
-> On Thu, Nov 30, 2006 at 03:00:43PM -0500, I wrote:
-> > On Tue, 2006-11-28 at 17:37 +0100, Stefan Seyfried wrote:
-> > =
+Hi!
 
-> > > So it is a good idea to tell the engineer to do "mkswap" on the swap
-> > > partition before putting the disk into the replacement hardware.
-> > =
+> > So it looks like we need this sequence:
+> > 
+> > enable_nonboot_cpus() /* INIT */
+> > finish()	/* _WAK */
+> > device_resume()
+> 
+> Can somebody remind me about this immediately after 2.6.19?
 
-> > Ugh, no it's not.  You really want the UUID on the swap area to remain
-> > the same.
-> =
+Remind. But note that freezer is not yet SMP safe... Rafael is working
+on that.
+								Pavel
 
-> In response, on Thu, 2006-11-30 at 21:13 +0100, Stefan Seyfried wrote:
-> > Well, but the system won't care because it won't resume?
-> > Or am i missing something?
-> =
+> No way am I going to make that kind of a major ordering change right now, 
+> especially as the thing isn't apparently even a real regression (just more 
+> fallout from enabling MSI).
+> 
+> It would be good if people who are affected (and people in general that 
+> are interested in power management) would test out the patch.
+> 
+> In particular, this is an even bigger change than the one suggested by 
+> Stephen. It means, for example, that we will have device resume (and 
+> process thawing) being called when we're in SMP mode - and that may or may 
+> not have issues. So this is a really scary patch to me, no way in hell 
+> will I apply it right now.
+> 
+> But if people try it out, it would be good..
+> 
+> Btw, this is a clear example of where it might be good to start actively 
+> using the "early_resume" thing, and do PCI bus resume there. We might want 
+> to do early_resume _before_ calling the bios (I'm not at all convinced 
+> that the firmware will do the right thing without the PCI buses set up, 
+> for example), and _before_ thawing processes. Then, we might let 
+> individual devices do their "device resume" in the normal late resume 
+> phase.
+> 
+> Greg already carries the patch around for that PCI bus early resume thing, 
+> I think. 
+> 
+> We need to test these things.
+> 
+> 		Linus
+> 
+> ----
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 873228c..2989609 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -132,12 +132,12 @@ int suspend_enter(suspend_state_t state)
+>  
+>  static void suspend_finish(suspend_state_t state)
+>  {
+> -	device_resume();
+> -	resume_console();
+> -	thaw_processes();
+>  	enable_nonboot_cpus();
+>  	if (pm_ops && pm_ops->finish)
+>  		pm_ops->finish(state);
+> +	device_resume();
+> +	resume_console();
+> +	thaw_processes();
+>  	pm_restore_console();
+>  }
+>  
 
-> And On Thu, 2006-11-30 at 15:42 -0500, Daniel Drake wrote:
-> > Why?
-> > =
-
-> > [not questioning your reasoning, this is coming from someone who knows
-> > very little about swap structure and what the UUID is used for]
-> =
-
-> You want to get rid of the resume metadata from it, but you don't want
-> to create a new swap structure.  Normally it's not a problem, but in
-> some environments, such as with shared-storage like in a SAN[1], we need
-> to be able to identify that a swap device is really the one we mean to
-> be activating; the UUID is one of the best pieces of data we've got.  So
-> you don't want to start over with a new swap partition, you want to
-> clear the resume data only.
-> =
-
-> Granted, I think most distros, if not all, and all the standard tools
-> totally muck up swap on shared storage right now[0].  But that's no
-> reason to advocate such a bad habit.  For FC/RHEL making this work right
-> is at least on my TODO list for the relatively near future.
-
-Ok. I think a patch to mkswap to "--reset-the-swap-signature-after-suspend"
-or just a "reset-swap-signature-after-failed-suspend" program is trivial to
-implement in this case. Right now, you cannot suspend to those devices
-anyway.
-Alternatively, you could provide the UUID you want for the device to mkswap
-(my mkswap does not have this option, but my swap partition does not seem to
-have an UUID anyway):
-  info.category =3D 'volume'  (string)
-  info.product =3D 'Volume (swap)'  (string)
-  block.device =3D '/dev/sda3'  (string)
-  volume.uuid =3D ''  (string)
-root@strolchi:/tmp# blkid /dev/sda2 /dev/sda3
-/dev/sda2: LABEL=3D"BOOT" UUID=3D"0dae6602-2299-47e8-88c8-c0fca0fc8f9e" TYP=
-E=3D"ext2"
-/dev/sda3: TYPE=3D"swap"
-
-So if somebody submits a patch that implements a "reset_signature" program,
-i'll include that in the suspend package.
--- =
-
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out." =
-
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
