@@ -1,91 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [RFC][PATCH -mm 1/5] PM: Make
-	freeze_processes SMP-safe
-Date: Thu, 30 Nov 2006 23:57:35 +0100
-Message-ID: <200611302357.36038.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0611301723590.2686-100000@iolanthe.rowland.org>
+From: Stephen Hemminger <shemminger@osdl.org>
+Subject: Re: [linux-pm] [RFC] ACPI vs device ordering on resume
+Date: Thu, 30 Nov 2006 17:48:25 -0800
+Message-ID: <20061130174825.7608c33b@localhost.localdomain>
+References: <20061114153026.730deb94@freekitty>
+	<200611150203.30965.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0611301723590.2686-100000@iolanthe.rowland.org>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200611150203.30965.len.brown@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: len.brown@intel.com, linux-pm@lists.osdl.org, Greg KH <greg@kroah.com>, Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 30 November 2006 23:34, Alan Stern wrote:
-> On Thu, 30 Nov 2006, Rafael J. Wysocki wrote:
-> 
-> > > > On the other hand, a stopped process might be waiting for a signal that 
-> > > > can be sent by an unfreezable process -- and the stopped process might be 
-> > > > holding a lock which is needed by some other unfreezable process, so you 
-> > > > need to allow it to run long enough to release the lock before freezing 
-> > > > it.
-> > > 
-> > > Theoretically, yes.  But does it happen?  Moreover, even if it does, why can't
-> > > we hold the unfreezeable process until the lock is released?
-> > > 
-> > > > Unless you can somehow rule out this scenario (unfreezable process waiting 
-> > > > for resource held by unfrozen but stopped and freezable process), I don't 
-> > > > see how this approach can be made to work.
-> > 
-> > Hm, in fact I think that if it happens, then this is a bug.
-> > 
-> > Namely, the freezeable task can only acquire the lock when it's running.  Thus
-> > it would have to acquire the lock before it's stopped.  Consequently, it could
-> > be preempted and subsequently frozen after it has acquired the lock and
-> > _before_ it's stopped.
-> > 
-> > Now from the unfreezeable task's point of view it doesn't matter if the
-> > freezeable task acquired the lock and has been frozen before being stopped
-> > or if it acquired the lock and was stopped and then has been woken up and
-> > frozen, since in both cases the final outcome is the same: the freezeable task
-> > is frozen and holds the lock, so the unfreezeable task cannot continue
-> > running.
-> > 
-> > Thus I think the question is if _any_ freezeable task, be it stopped or not,
-> > can hold a lock that's needed by an unfreezeable task, and I think the answer
-> > is, generally, 'no, it can't', because otherwise it might block the
-> > unfreezeable task (if it's frozen while holding the lock).
-> 
-> Well, certainly the answer is "It shouldn't".  :-)
-> 
-> I don't know any examples where an unfreezable task waits for a resource 
-> which might be held by a frozen task, PROVIDED that tasks don't get frozen 
-> at a bad spot.
-> 
-> Here's what I mean.  usb-storage's kernel thread is unfreezable, because
-> it might be needed for reading or writing a memory image to a swap region.  
-> If there's an I/O error then usb-storage will try to issue a USB port
-> reset, for which it needs to acquire the USB device's lock.
-> 
-> Now various other tasks may acquire that lock, and they may even stop
-> while holding it.  However they should never get frozen while holding the
-> lock -- which means they shouldn't get frozen at arbitrary times merely
-> because they are stopped.  They are careful to call try_to_freeze() only
-> at times when they don't hold any locks.
+On Wed, 15 Nov 2006 02:03:30 -0500
+Len Brown <len.brown@intel.com> wrote:
 
-This means they are kernel threads, so they won't be entering
-get_signal_to_deliver(), will they?
+> On Tuesday 14 November 2006 18:30, Stephen Hemminger wrote:
+> > If I do a suspend-to-ram then resume on a Sony Vaio laptop with sky2 driver,
+> > the first interrupt gets misrouted to the original shared IRQ, rather than
+> > to the MSI irq expected.
+> > 
+> > During the pci_restore process, the MSI information and the PCI command register 
+> > are restored properly. But later during resume, inside the ACPI evaluation of
+> > the WAK method, the PCI_COMMAND  INTX_DISABLE (0x400) flag is being cleared.
+> > My guess is that the BIOS ends up doing some resetting of devices.
+> > 
+> > I may be able to workaround the problem for this one device, but it brings up
+> > a more general issue about what the ordering should be during resume. If ACPI
+> > evaluation (which I assume talks to the BIOS), might change device state, it
+> > seems that ACPI code should execute before resuming devices not after. But changing
+> > the order here seems drastic.
+> > 
+> > An alternate solution would be to have two pm_ops, one for early_resume
+> > and another for late, and split the ACPI work.
+> > 
+> > --- 2.6.19-rc5.orig/kernel/power/main.c	2006-11-14 14:24:37.000000000 -0800
+> > +++ 2.6.19-rc5/kernel/power/main.c	2006-11-14 14:25:23.000000000 -0800
+> > @@ -132,12 +132,12 @@
+> >  
+> >  static void suspend_finish(suspend_state_t state)
+> >  {
+> > +	if (pm_ops && pm_ops->finish)
+> > +		pm_ops->finish(state);
+> >  	device_resume();
+> >  	resume_console();
+> >  	thaw_processes();
+> >  	enable_nonboot_cpus();
+> > -	if (pm_ops && pm_ops->finish)
+> > -		pm_ops->finish(state);
+> >  	pm_restore_console();
+> >  }
+> 
+> Yes, I agree that _WAK needs to come before device_resume().
+> Need to let any BIOS nasties happen and get over with before we restore device drivers.
+> This is consistent with the wording in ACPI 3.0b (section 7.4) that says
+> 11. _WAK is run
+> 12. OSPM notifies all native device drivefrs of the return from the sleep state transition
+> 
+> However, commit 1a38416cea8ac801ae8f261074721f35317613dc says that
+> _WAK must follow INIT -- ie finish() must come after enable_nonboot_cpus(),
+> and this patch as it stands would violate that.
+> 
+> So it looks like we need this sequence:
+> 
+> enable_nonboot_cpus() /* INIT */
+> finish()	/* _WAK */
+> device_resume()
+> 
 
-If they don't enter get_signal_to_deliver(), they can only be frozen where
-they explicitly call try_to_freeze().
-
-Greetings,
-Rafael
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Do you want to do this, or shall I? send off a patch.
+I can test on about 5 machines first.
