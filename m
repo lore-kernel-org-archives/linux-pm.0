@@ -1,84 +1,153 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [linux-pm] [RFC] ACPI vs device ordering on resume
-Date: Fri, 1 Dec 2006 10:33:01 +0100
-Message-ID: <20061201093301.GA1842@elf.ucw.cz>
-References: <20061114153026.730deb94@freekitty> <200611150203.30965.len.brown@intel.com> <Pine.LNX.4.64.0611150839040.3349@woody.osdl.org>
+Date: Fri, 1 Dec 2006 11:33:11 +0100
+Message-ID: <200612011133.12332.rjw@sisk.pl>
+References: <20061114153026.730deb94@freekitty> <Pine.LNX.4.64.0611150839040.3349@woody.osdl.org> <20061201093301.GA1842@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20061201093301.GA1842@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0611150839040.3349@woody.osdl.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Len Brown <lenb@kernel.org>, linux-pm@lists.osdl.org, Stephen Hemminger <shemminger@osdl.org>, Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@osdl.org>, Len Brown <lenb@kernel.org>, linux-pm@lists.osdl.org, Stephen Hemminger <shemminger@osdl.org>, Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
-> > So it looks like we need this sequence:
+On Friday, 1 December 2006 10:33, Pavel Machek wrote:
+> Hi!
+> 
+> > > So it looks like we need this sequence:
+> > > 
+> > > enable_nonboot_cpus() /* INIT */
+> > > finish()	/* _WAK */
+> > > device_resume()
 > > 
-> > enable_nonboot_cpus() /* INIT */
-> > finish()	/* _WAK */
-> > device_resume()
+> > Can somebody remind me about this immediately after 2.6.19?
 > 
-> Can somebody remind me about this immediately after 2.6.19?
+> Remind. But note that freezer is not yet SMP safe... Rafael is working
+> on that.
 
-Remind. But note that freezer is not yet SMP safe... Rafael is working
-on that.
-								Pavel
+Yup.
 
-> No way am I going to make that kind of a major ordering change right now, 
-> especially as the thing isn't apparently even a real regression (just more 
-> fallout from enabling MSI).
-> 
-> It would be good if people who are affected (and people in general that 
-> are interested in power management) would test out the patch.
-> 
-> In particular, this is an even bigger change than the one suggested by 
-> Stephen. It means, for example, that we will have device resume (and 
-> process thawing) being called when we're in SMP mode - and that may or may 
-> not have issues. So this is a really scary patch to me, no way in hell 
-> will I apply it right now.
-> 
-> But if people try it out, it would be good..
-> 
-> Btw, this is a clear example of where it might be good to start actively 
-> using the "early_resume" thing, and do PCI bus resume there. We might want 
-> to do early_resume _before_ calling the bios (I'm not at all convinced 
-> that the firmware will do the right thing without the PCI buses set up, 
-> for example), and _before_ thawing processes. Then, we might let 
-> individual devices do their "device resume" in the normal late resume 
-> phase.
-> 
-> Greg already carries the patch around for that PCI bus early resume thing, 
-> I think. 
-> 
-> We need to test these things.
-> 
-> 		Linus
-> 
-> ----
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 873228c..2989609 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -132,12 +132,12 @@ int suspend_enter(suspend_state_t state)
->  
->  static void suspend_finish(suspend_state_t state)
->  {
-> -	device_resume();
-> -	resume_console();
-> -	thaw_processes();
->  	enable_nonboot_cpus();
->  	if (pm_ops && pm_ops->finish)
->  		pm_ops->finish(state);
-> +	device_resume();
-> +	resume_console();
-> +	thaw_processes();
->  	pm_restore_console();
->  }
->  
+BTW, have you looked at the last version of the patch for the handling of
+stopped tasks (appended just in case, full discussion at:
+http://lists.osdl.org/pipermail/linux-pm/2006-November/004214.html)?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rafael
+
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/process.c |   36 ++++++++++++++++++++++++++++++------
+ kernel/signal.c        |    2 +-
+ 2 files changed, 31 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.19-rc6-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/kernel/power/process.c
++++ linux-2.6.19-rc6-mm2/kernel/power/process.c
+@@ -28,8 +28,7 @@ static inline int freezeable(struct task
+ 	if ((p == current) || 
+ 	    (p->flags & PF_NOFREEZE) ||
+ 	    (p->exit_state == EXIT_ZOMBIE) ||
+-	    (p->exit_state == EXIT_DEAD) ||
+-	    (p->state == TASK_STOPPED))
++	    (p->exit_state == EXIT_DEAD))
+ 		return 0;
+ 	return 1;
+ }
+@@ -81,6 +80,11 @@ static void cancel_freezing(struct task_
+ 	}
+ }
+ 
++static inline int stopped_and_freezing(struct task_struct *p)
++{
++	return p->state == TASK_STOPPED && freezing(p);
++}
++
+ static inline int is_user_space(struct task_struct *p)
+ {
+ 	return p->mm && !(p->flags & PF_BORROWED_MM);
+@@ -103,9 +107,11 @@ static unsigned int try_to_freeze_tasks(
+ 			if (frozen(p))
+ 				continue;
+ 
+-			if (p->state == TASK_TRACED &&
+-			    (frozen(p->parent) ||
+-			     p->parent->state == TASK_STOPPED)) {
++			if (stopped_and_freezing(p))
++				continue;
++
++			if (p->state == TASK_TRACED && (frozen(p->parent) ||
++			    stopped_and_freezing(p->parent))) {
+ 				cancel_freezing(p);
+ 				continue;
+ 			}
+@@ -149,7 +155,8 @@ static unsigned int try_to_freeze_tasks(
+ 			if (is_user_space(p) == !freeze_user_space)
+ 				continue;
+ 
+-			if (freezeable(p) && !frozen(p))
++			if (freezeable(p) && !frozen(p) &&
++			    p->state != TASK_STOPPED && p->state != TASK_TRACED)
+ 				printk(KERN_ERR " %s\n", p->comm);
+ 
+ 			cancel_freezing(p);
+@@ -185,6 +192,18 @@ int freeze_processes(void)
+ 	return 0;
+ }
+ 
++static void release_stopped_tasks(void)
++{
++	struct task_struct *g, *p;
++
++	read_lock(&tasklist_lock);
++	do_each_thread(g, p) {
++		if (stopped_and_freezing(p))
++			cancel_freezing(p);
++	} while_each_thread(g, p);
++	read_unlock(&tasklist_lock);
++}
++
+ static void thaw_tasks(int thaw_user_space)
+ {
+ 	struct task_struct *g, *p;
+@@ -197,6 +216,10 @@ static void thaw_tasks(int thaw_user_spa
+ 		if (is_user_space(p) == !thaw_user_space)
+ 			continue;
+ 
++		if (!frozen(p) &&
++		    (p->state == TASK_STOPPED || p->state == TASK_TRACED))
++			continue;
++
+ 		if (!thaw_process(p))
+ 			printk(KERN_WARNING " Strange, %s not stopped\n",
+ 				p->comm );
+@@ -207,6 +230,7 @@ static void thaw_tasks(int thaw_user_spa
+ void thaw_processes(void)
+ {
+ 	printk("Restarting tasks ... ");
++	release_stopped_tasks();
+ 	thaw_tasks(FREEZER_KERNEL_THREADS);
+ 	thaw_tasks(FREEZER_USER_SPACE);
+ 	schedule();
+Index: linux-2.6.19-rc6-mm2/kernel/signal.c
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/kernel/signal.c
++++ linux-2.6.19-rc6-mm2/kernel/signal.c
+@@ -1937,9 +1937,9 @@ int get_signal_to_deliver(siginfo_t *inf
+ 	sigset_t *mask = &current->blocked;
+ 	int signr = 0;
+ 
++relock:
+ 	try_to_freeze();
+ 
+-relock:
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	for (;;) {
+ 		struct k_sigaction *ka;
+
