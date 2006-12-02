@@ -1,15 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [RFC][PATCH -mm 1/5] PM: Make
-	freeze_processes SMP-safe
-Date: Sat, 2 Dec 2006 00:38:42 +0100
-Message-ID: <200612020038.43160.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0612011659530.3431-100000@iolanthe.rowland.org>
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: [linux-pm] Dangers of touching disk
+	between	suspend and resume
+Date: Sat, 02 Dec 2006 15:41:52 +1100
+Message-ID: <1165034513.3143.2.camel@nigel.suspend2.net>
+References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
+	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
+	<20061128163757.GM14640@suse.de>
+	<1164916843.6031.9.camel@localhost.localdomain>
+	<20061130201311.GK2227@suse.de>
+	<1164925067.6031.29.camel@localhost.localdomain>
+	<20061201073956.GB18690@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0612011659530.3431-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20061201073956.GB18690@suse.de>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -19,49 +24,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Stefan Seyfried <seife@suse.de>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Peter Jones <pjones@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 1 December 2006 23:07, Alan Stern wrote:
-> On Fri, 1 Dec 2006, Rafael J. Wysocki wrote:
-> 
-> > Well, the current code does exactly the same - it freezes userland tasks
-> > by sending them fake signals (and there's no way to check if such a process
-> > holds any locks at that time).  Moreover, it's been doing that from day one
-> > and my patch doesn't change that.
-> 
-> Obviously the scenario I described is very unlikely.  It would depend on 
-> a user program doing exactly the wrong thing at the wrong time, _and_ 
-> using a USB mass storage device for swapping, _and_ getting an I/O error 
-> while reading or writing the memory image.
-> 
-> > If you have an unfreezeable process that depends on locks that may be held
-> > by userland tasks, then _this_ is a bug, IMHO.
-> 
-> In this case it isn't absolute dependence.  If usb-storage isn't able to
-> obtain the lock it needs, then it times out after 1 second and simply
-> doesn't reset the device.
+Hi.
 
-Well, I think as long as the system can recover, it's all fine.
+On Fri, 2006-12-01 at 08:39 +0100, Stefan Seyfried wrote:
+> So if somebody submits a patch that implements a "reset_signature" program,
+> i'll include that in the suspend package.
 
-> Still, you would have your work cut out trying to find all the places in
-> the kernel where an unfreezable process takes a lock which might be held
-> by a user process.  For instance, I doubt that all the workqueue threads
-> could pass this test.
+I don't know if you care (you might not want to support Suspend2), but
+for Suspend2 enabled kernels, you can just do:
 
-Fortunately such problems have never been reported, so we can postpone the
-hunt for these places a little. ;-)  But seriously, they are potentially dangerous
-with the current code, so in fact we'll need to have a look at them at some
-point in the future.
+[ -f /sys/power/suspend2/image_exists ] && echo 0 > /sys/power/suspend2/image_exists
 
-Greetings,
-Rafael
+You can cat the file to find out if an image exists, if you prefer (eg
+from an initrd/ramfs). Return values are:
 
+-1: resume= doesn't point to a recognised signature
+0: No image, normal signature
+1: Image exists.
 
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+Regards,
+
+Nigel
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
