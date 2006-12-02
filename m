@@ -1,20 +1,16 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [linux-pm] Dangers of touching disk
-	between	suspend and resume
-Date: Sat, 02 Dec 2006 15:41:52 +1100
-Message-ID: <1165034513.3143.2.camel@nigel.suspend2.net>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
-	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
-	<20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
-	<1164925067.6031.29.camel@localhost.localdomain>
-	<20061201073956.GB18690@suse.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [RFC][PATCH -mm 1/5] PM: Make
+	freeze_processes SMP-safe
+Date: Sat, 2 Dec 2006 11:55:13 +0000
+Message-ID: <20061202115512.GB4030@ucw.cz>
+References: <200612012057.01658.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0612011615150.2629-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061201073956.GB18690@suse.de>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0612011615150.2629-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -24,32 +20,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Stefan Seyfried <seife@suse.de>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Peter Jones <pjones@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi!
 
-On Fri, 2006-12-01 at 08:39 +0100, Stefan Seyfried wrote:
-> So if somebody submits a patch that implements a "reset_signature" program,
-> i'll include that in the suspend package.
+> > We send fake signals to them, so they enter get_signal_to_deliver() and they
+> > call try_to_freeze() from there.
+> 
+> Well then, see, you're doing exactly what you said should never happen --
+> you are freezing a user thread while it might be holding a lock that the
+> unfreezable usb-storage thread needs.
 
-I don't know if you care (you might not want to support Suspend2), but
-for Suspend2 enabled kernels, you can just do:
 
-[ -f /sys/power/suspend2/image_exists ] && echo 0 > /sys/power/suspend2/image_exists
-
-You can cat the file to find out if an image exists, if you prefer (eg
-from an initrd/ramfs). Return values are:
-
--1: resume= doesn't point to a recognised signature
-0: No image, normal signature
-1: Image exists.
-
-Regards,
-
-Nigel
-
+I do not think it is okay to call get_signal_to_deliver with *any*
+lock held... Or do you have example when that is broken?
+							Pavel
+-- 
+Thanks for all the (sleeping) penguins.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
