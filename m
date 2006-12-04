@@ -1,22 +1,14 @@
-From: Stefan Seyfried <seife@suse.de>
-Subject: Re: [linux-pm] Dangers of touching disk
-	between	suspend and resume
-Date: Mon, 4 Dec 2006 09:10:49 +0100
-Message-ID: <20061204081049.GA12174@suse.de>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
-	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
-	<20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
-	<1164925067.6031.29.camel@localhost.localdomain>
-	<20061201073956.GB18690@suse.de>
-	<1165034513.3143.2.camel@nigel.suspend2.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 2/2]: PM: SMP-safe freezer
+Date: Mon, 4 Dec 2006 11:30:36 +0100
+Message-ID: <20061204103036.GA10862@elf.ucw.cz>
+References: <200612032318.29030.rjw@sisk.pl> <200612040010.46097.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <1165034513.3143.2.camel@nigel.suspend2.net>
+In-Reply-To: <200612040010.46097.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -26,60 +18,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Peter Jones <pjones@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Dec 02, 2006 at 03:41:52PM +1100, Nigel Cunningham wrote:
-> Hi.
-> =
+Hi!
 
-> On Fri, 2006-12-01 at 08:39 +0100, Stefan Seyfried wrote:
-> > So if somebody submits a patch that implements a "reset_signature" prog=
-ram,
-> > i'll include that in the suspend package.
-> =
+> To solve first of these problems we need to stop using PF_FROZEN to tell
+> tasks that they should go to the refrigerator.  Instead, we can introduce
+> a special TIF_*** flag and use it for this purpose, since it is allowed to
+> change the other tasks' TIF_*** flags and there are special calls for it.
+> 
+> To avoid the freeze_process()-refrigerator() race we can make freeze_process()
+> to always check the task's PF_FROZEN flag after it's read its "freeze" flag.
+> We should also make sure that refrigerator() will always reset the task's
+> "freeze" flag after it's set PF_FROZEN for it.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> I don't know if you care (you might not want to support Suspend2), but
+ACK.
+								Pavel
 
-Wrong, if i was to write such a "restore_signature" program, i'd want it
-to support all known ways of screwing up your SWAP partition :-)
-
-> for Suspend2 enabled kernels, you can just do:
-> =
-
-> [ -f /sys/power/suspend2/image_exists ] && echo 0 > /sys/power/suspend2/i=
-mage_exists
-> =
-
-> You can cat the file to find out if an image exists, if you prefer (eg
-> from an initrd/ramfs). Return values are:
-
-But you need a suspend2-enabled kernel.
-For rescue purposes ("engineer on-site to repair the hardware, diagnosing w=
-ith
-a rescue CD first" scenario), a standalone binary that resets the signature=
- is
-probably better.
-But this engineer should also know if he depends on the UUID of the swap =
-
-partition to find it. If he does not, he can simply do a "mkswap" to reset
-the signature.
-
-Best regards,
-
-    Stefan
-
--- =
-
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out." =
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
