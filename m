@@ -1,8 +1,8 @@
-From: "Mandy Kistler" <verni@caica.sardegna.it>
+From: "Gala Dahlgren" <faunay@falk.c2i.net>
 Subject: Re: dowe tars
 Date: Tue, 5 Dec 2006 00:23:22 +0900
-Message-ID: <01c717b8$22c70c80$08bb793a@PC1>
-Reply-To: Mandy Kistler <verni@caica.sardegna.it>
+Message-ID: <01c717b8$22ca19c0$08bb793a@PC1>
+Reply-To: Gala Dahlgren <faunay@falk.c2i.net>
 Mime-Version: 1.0
 Content-Type: multipart/mixed; boundary="----=_NextPart_000_0039_01C71803.003B4000"
 Return-path: <linux-pm-bounces@lists.osdl.org>
@@ -15,21 +15,21 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Vikram Wickline <linux-pm@osdl.org>
+To: Halvor Kinchen <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
 ------=_NextPart_000_0039_01C71803.003B4000
 Content-Type: multipart/alternative;
-    boundary="----------=_1165245836-12079-192"
+    boundary="----------=_1165245818-12079-188"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1165245836-12079-192
+------------=_1165245818-12079-188
 Content-Type: text/plain;
 	charset="ks_c_5601-1987"
 Content-Transfer-Encoding: quoted-printable
@@ -48,7 +48,7 @@ For now, I thought to myself, but did not speak that important little
 I wanted to say that I felt more confusion than comprehension. That I
 He placed a small recorder on the table, stepped back. The green
 
-------------=_1165245836-12079-192
+------------=_1165245818-12079-188
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -80,7 +80,7 @@ ortant little</FONT></DIV><DIV><FONT face=3DArial size=3D2> I wanted to say=
  that I felt more confusion than comprehension. That I</FONT></DIV><DIV><FO=
 NT face=3DArial size=3D2> He  placed  a small recorder on the table, steppe=
 d back.  The  green</FONT></DIV></FONT></DIV></BODY></HTML>
-------------=_1165245836-12079-192--
+------------=_1165245818-12079-188--
 
 ------=_NextPart_000_0039_01C71803.003B4000
 Content-Type: image/jpeg;
