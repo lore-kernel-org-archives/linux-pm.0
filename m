@@ -1,14 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 1/2]: PM: Fix handling of stopped tasks
-Date: Sun, 3 Dec 2006 23:50:22 +0100
-Message-ID: <200612032350.23067.rjw@sisk.pl>
-References: <200612032318.29030.rjw@sisk.pl>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [linux-pm] Dangers of touching disk
+	between	suspend and resume
+Date: Mon, 4 Dec 2006 09:10:49 +0100
+Message-ID: <20061204081049.GA12174@suse.de>
+References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
+	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
+	<20061128163757.GM14640@suse.de>
+	<1164916843.6031.9.camel@localhost.localdomain>
+	<20061130201311.GK2227@suse.de>
+	<1164925067.6031.29.camel@localhost.localdomain>
+	<20061201073956.GB18690@suse.de>
+	<1165034513.3143.2.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200612032318.29030.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <1165034513.3143.2.camel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -18,152 +26,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: pm list <linux-pm@lists.osdl.org>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, Stephen Hemminger <shemminger@osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Nigel Cunningham <ncunningham@linuxmail.org>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Peter Jones <pjones@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently, if a task is stopped (ie. it's in the TASK_STOPPED state), it is
-considered by the freezer as unfreezeable.  However, there may be a race
-between the freezer and the delivery of the continuation signal to the task
-resulting in the task running after we have finished freezing other tasks.
-This, in turn, may lead to undesirable effects up to and including a
-corruption of data.
+On Sat, Dec 02, 2006 at 03:41:52PM +1100, Nigel Cunningham wrote:
+> Hi.
+> =
 
-To prevent this from happening we first need to make the freezer consider
-stopped tasks as freezeable.  For this purpose we need to make freezeable()
-stop returning 0 for these tasks.  We must remember, however, that the
-stopped tasks need not receive the continuation signal before thaw_processes()
-is called, so as soon as PF_FREEZE is set for them try_to_freeze_tasks()
-should stop counting them as the ones to wait for.  Additionally, if there's a
-traced task (ie. a task in the TASK_TRACED state) the parent of which has
-PF_FREEZE set and is stopped, try_to_freeze_tasks() should not wait for it.
-Moreover, if there are some stopped tasks that haven't received the continuation
-signal before thaw_processes() is called, we must clear PF_FREEZE for them so
-that they don't go to the refrigerator when it's no longer desirable.
+> On Fri, 2006-12-01 at 08:39 +0100, Stefan Seyfried wrote:
+> > So if somebody submits a patch that implements a "reset_signature" prog=
+ram,
+> > i'll include that in the suspend package.
+> =
 
-Still if a stopped tasks receives the continuation signal after the freezer
-has returned, it should immediately go to the refrigerator.  For this reason
-we need to place the call to try_to_freeze() in get_signal_to_deliver() right
-after the relock label.
+> I don't know if you care (you might not want to support Suspend2), but
 
-It is also reasonable to change the error paths so that the names of stopped
-or traced tasks which have not frozen are not reported to the user, because in
-the majority of cases they would be false positives.
+Wrong, if i was to write such a "restore_signature" program, i'd want it
+to support all known ways of screwing up your SWAP partition :-)
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/process.c |   36 ++++++++++++++++++++++++++++++------
- kernel/signal.c        |    2 +-
- 2 files changed, 31 insertions(+), 7 deletions(-)
+> for Suspend2 enabled kernels, you can just do:
+> =
 
-Index: linux-2.6.19-rc6-mm2/kernel/power/process.c
-===================================================================
---- linux-2.6.19-rc6-mm2.orig/kernel/power/process.c
-+++ linux-2.6.19-rc6-mm2/kernel/power/process.c
-@@ -28,8 +28,7 @@ static inline int freezeable(struct task
- 	if ((p == current) || 
- 	    (p->flags & PF_NOFREEZE) ||
- 	    (p->exit_state == EXIT_ZOMBIE) ||
--	    (p->exit_state == EXIT_DEAD) ||
--	    (p->state == TASK_STOPPED))
-+	    (p->exit_state == EXIT_DEAD))
- 		return 0;
- 	return 1;
- }
-@@ -81,6 +80,11 @@ static void cancel_freezing(struct task_
- 	}
- }
- 
-+static inline int stopped_and_freezing(struct task_struct *p)
-+{
-+	return p->state == TASK_STOPPED && freezing(p);
-+}
-+
- static inline int is_user_space(struct task_struct *p)
- {
- 	return p->mm && !(p->flags & PF_BORROWED_MM);
-@@ -103,9 +107,11 @@ static unsigned int try_to_freeze_tasks(
- 			if (frozen(p))
- 				continue;
- 
--			if (p->state == TASK_TRACED &&
--			    (frozen(p->parent) ||
--			     p->parent->state == TASK_STOPPED)) {
-+			if (stopped_and_freezing(p))
-+				continue;
-+
-+			if (p->state == TASK_TRACED && (frozen(p->parent) ||
-+			    stopped_and_freezing(p->parent))) {
- 				cancel_freezing(p);
- 				continue;
- 			}
-@@ -149,7 +155,8 @@ static unsigned int try_to_freeze_tasks(
- 			if (is_user_space(p) == !freeze_user_space)
- 				continue;
- 
--			if (freezeable(p) && !frozen(p))
-+			if (freezeable(p) && !frozen(p) &&
-+			    p->state != TASK_STOPPED && p->state != TASK_TRACED)
- 				printk(KERN_ERR " %s\n", p->comm);
- 
- 			cancel_freezing(p);
-@@ -185,6 +192,18 @@ int freeze_processes(void)
- 	return 0;
- }
- 
-+static void release_stopped_tasks(void)
-+{
-+	struct task_struct *g, *p;
-+
-+	read_lock(&tasklist_lock);
-+	do_each_thread(g, p) {
-+		if (stopped_and_freezing(p))
-+			cancel_freezing(p);
-+	} while_each_thread(g, p);
-+	read_unlock(&tasklist_lock);
-+}
-+
- static void thaw_tasks(int thaw_user_space)
- {
- 	struct task_struct *g, *p;
-@@ -197,6 +216,10 @@ static void thaw_tasks(int thaw_user_spa
- 		if (is_user_space(p) == !thaw_user_space)
- 			continue;
- 
-+		if (!frozen(p) &&
-+		    (p->state == TASK_STOPPED || p->state == TASK_TRACED))
-+			continue;
-+
- 		if (!thaw_process(p))
- 			printk(KERN_WARNING " Strange, %s not stopped\n",
- 				p->comm );
-@@ -207,6 +230,7 @@ static void thaw_tasks(int thaw_user_spa
- void thaw_processes(void)
- {
- 	printk("Restarting tasks ... ");
-+	release_stopped_tasks();
- 	thaw_tasks(FREEZER_KERNEL_THREADS);
- 	thaw_tasks(FREEZER_USER_SPACE);
- 	schedule();
-Index: linux-2.6.19-rc6-mm2/kernel/signal.c
-===================================================================
---- linux-2.6.19-rc6-mm2.orig/kernel/signal.c
-+++ linux-2.6.19-rc6-mm2/kernel/signal.c
-@@ -1937,9 +1937,9 @@ int get_signal_to_deliver(siginfo_t *inf
- 	sigset_t *mask = &current->blocked;
- 	int signr = 0;
- 
-+relock:
- 	try_to_freeze();
- 
--relock:
- 	spin_lock_irq(&current->sighand->siglock);
- 	for (;;) {
- 		struct k_sigaction *ka;
+> [ -f /sys/power/suspend2/image_exists ] && echo 0 > /sys/power/suspend2/i=
+mage_exists
+> =
+
+> You can cat the file to find out if an image exists, if you prefer (eg
+> from an initrd/ramfs). Return values are:
+
+But you need a suspend2-enabled kernel.
+For rescue purposes ("engineer on-site to repair the hardware, diagnosing w=
+ith
+a rescue CD first" scenario), a standalone binary that resets the signature=
+ is
+probably better.
+But this engineer should also know if he depends on the UUID of the swap =
+
+partition to find it. If he does not, he can simply do a "mkswap" to reset
+the signature.
+
+Best regards,
+
+    Stefan
+
+-- =
+
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out." =
 
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV
