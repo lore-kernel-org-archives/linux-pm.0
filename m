@@ -1,16 +1,24 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
-	tasks
-Date: Tue, 5 Dec 2006 12:38:23 +0100
-Message-ID: <200612051238.23727.rjw@sisk.pl>
-References: <200612032318.29030.rjw@sisk.pl> <20061205103429.GB5306@elf.ucw.cz>
-	<20061205112429.GA7039@elf.ucw.cz>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [linux-pm] Dangers of touching disk
+	between	suspend and resume
+Date: Tue, 5 Dec 2006 12:44:56 +0100
+Message-ID: <20061205114456.GA12676@suse.de>
+References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
+	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
+	<20061128163757.GM14640@suse.de>
+	<1164916843.6031.9.camel@localhost.localdomain>
+	<20061130201311.GK2227@suse.de>
+	<1164925067.6031.29.camel@localhost.localdomain>
+	<20061201073956.GB18690@suse.de>
+	<1165034513.3143.2.camel@nigel.suspend2.net>
+	<20061204081049.GA12174@suse.de>
+	<1165318090.15384.15.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061205112429.GA7039@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <1165318090.15384.15.camel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -20,59 +28,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>
+To: Nigel Cunningham <ncunningham@linuxmail.org>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Dec 05, 2006 at 10:28:08PM +1100, Nigel Cunningham wrote:
 
-On Tuesday, 5 December 2006 12:24, Pavel Machek wrote:
-> Hi!
-> 
-> > > Currently, if a task is stopped (ie. it's in the TASK_STOPPED state), it is
-> > > considered by the freezer as unfreezeable.  However, there may be a race
-> > > between the freezer and the delivery of the continuation signal to the task
-> > > resulting in the task running after we have finished freezing other tasks.
-> > > This, in turn, may lead to undesirable effects up to and including a
-> > > corruption of data.
-> > > 
-> > > To prevent this from happening we first need to make the freezer consider
-> > > stopped tasks as freezeable.  For this purpose we need to make freezeable()
-> > > stop returning 0 for these tasks.  We must remember, however, that the
-> > > stopped tasks need not receive the continuation signal before thaw_processes()
-> > > is called, so as soon as PF_FREEZE is set for them try_to_freeze_tasks()
-> > > should stop counting them as the ones to wait for.  Additionally, if there's a
-> > > traced task (ie. a task in the TASK_TRACED state) the parent of which has
-> > > PF_FREEZE set and is stopped, try_to_freeze_tasks() should not wait for it.
-> > > Moreover, if there are some stopped tasks that haven't received the continuation
-> > > signal before thaw_processes() is called, we must clear PF_FREEZE for them so
-> > > that they don't go to the refrigerator when it's no longer desirable.
-> > 
-> > Actually, what do you think about this patch? It removes special
-> > handling of TASK_TRACED, and should do the trick, too...
-> 
-> I was surprised, but the patch seems to work okay. Can you replace
-> your 1/2 with this one, and see what breaks?
+> Since you mentioned it, what's they point to using these ugly, looong
+> uuids? /dev/hda2 is so much simpler and easier to read for mere humans.
 
-I don't think anything will _visibly_ break, because (1) even if the traced
-task has TIF_SIGPENDING set unnecessarily, it will just notice there is no
-real signal to handle and continue and (2) the race between the delivery of
-the continuation signal and the freezer is damn hard to trigger (still I think
-I can wirte some artificial code that would trigger this, although it would
-involve a kernel thread sending SIGCONT to a user space process - provided
-it's permissible ;-)).
+Try updating a system using, say, the piix driver for the harddisk to the
+new libata drivers (ata_piix). /dev/hda2 will (probably) become /dev/sda2,
+but it depends on many factors. The UUID or a label will stay the same,
+though.
 
-Greetings,
-Rafael
+Best regards,
 
+    Stefan
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+-- =
+
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out." =
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV
