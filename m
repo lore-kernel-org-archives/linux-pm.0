@@ -1,23 +1,14 @@
-From: Stefan Seyfried <seife@suse.de>
-Subject: Re: [linux-pm] Dangers of touching disk
-	between	suspend and resume
-Date: Tue, 5 Dec 2006 12:44:56 +0100
-Message-ID: <20061205114456.GA12676@suse.de>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
-	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
-	<20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
-	<1164925067.6031.29.camel@localhost.localdomain>
-	<20061201073956.GB18690@suse.de>
-	<1165034513.3143.2.camel@nigel.suspend2.net>
-	<20061204081049.GA12174@suse.de>
+From: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [linux-pm] Dangers of
+ touching	disk	between	suspend and resume
+Date: Tue, 05 Dec 2006 11:51:41 +0000
+Message-ID: <45755D4D.3090900@genesi-usa.com>
+References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>	<20061128163757.GM14640@suse.de>	<1164916843.6031.9.camel@localhost.localdomain>	<20061130201311.GK2227@suse.de>	<1164925067.6031.29.camel@localhost.localdomain>	<20061201073956.GB18690@suse.de>	<1165034513.3143.2.camel@nigel.suspend2.net>	<20061204081049.GA12174@suse.de>
 	<1165318090.15384.15.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-Content-Disposition: inline
 In-Reply-To: <1165318090.15384.15.camel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,33 +20,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
 To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 05, 2006 at 10:28:08PM +1100, Nigel Cunningham wrote:
-
+Nigel Cunningham wrote:
+> 
+>> But this engineer should also know if he depends on the UUID of the swap 
+>> partition to find it. If he does not, he can simply do a "mkswap" to reset
+>> the signature.
+> 
 > Since you mentioned it, what's they point to using these ugly, looong
 > uuids? /dev/hda2 is so much simpler and easier to read for mere humans.
+> I guess it might be useful for USB and so on with the hotplug messiness,
+> but when I look in /etc/fstab after some upgrade and stuff that's
+> irrelevant to hotplugging is changed into uuids,... why?
 
-Try updating a system using, say, the piix driver for the harddisk to the
-new libata drivers (ata_piix). /dev/hda2 will (probably) become /dev/sda2,
-but it depends on many factors. The UUID or a label will stay the same,
-though.
+/dev/hda2 may move if they move the disk.. I think the preferred way (since
+it seems fairly hard to 'fix' a disk in the /dev tree under Linux, not so
+easy as - say - FreeBSD or NetBSD) is to mount disks from disk labels these
+days (ext2 and xfs supports it at least) as then you can move the disk
+around. USB, Firewire, external SATA disks will fall under this trap, but
+perhaps not internal IDE.. however you can't have both ways :D
 
-Best regards,
-
-    Stefan
-
--- =
-
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out." =
-
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
