@@ -1,22 +1,16 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [linux-pm] Dangers of touching
-	disk	between	suspend and resume
-Date: Tue, 05 Dec 2006 22:28:08 +1100
-Message-ID: <1165318090.15384.15.camel@nigel.suspend2.net>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
-	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
-	<20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
-	<1164925067.6031.29.camel@localhost.localdomain>
-	<20061201073956.GB18690@suse.de>
-	<1165034513.3143.2.camel@nigel.suspend2.net>
-	<20061204081049.GA12174@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
+	tasks
+Date: Tue, 5 Dec 2006 12:38:23 +0100
+Message-ID: <200612051238.23727.rjw@sisk.pl>
+References: <200612032318.29030.rjw@sisk.pl> <20061205103429.GB5306@elf.ucw.cz>
+	<20061205112429.GA7039@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061204081049.GA12174@suse.de>
+In-Reply-To: <20061205112429.GA7039@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -26,56 +20,56 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Stefan Seyfried <seife@suse.de>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi,
 
-On Mon, 2006-12-04 at 09:10 +0100, Stefan Seyfried wrote:
-> On Sat, Dec 02, 2006 at 03:41:52PM +1100, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Fri, 2006-12-01 at 08:39 +0100, Stefan Seyfried wrote:
-> > > So if somebody submits a patch that implements a "reset_signature" program,
-> > > i'll include that in the suspend package.
-> > 
-> > I don't know if you care (you might not want to support Suspend2), but
+On Tuesday, 5 December 2006 12:24, Pavel Machek wrote:
+> Hi!
 > 
-> Wrong, if i was to write such a "restore_signature" program, i'd want it
-> to support all known ways of screwing up your SWAP partition :-)
-> 
-> > for Suspend2 enabled kernels, you can just do:
+> > > Currently, if a task is stopped (ie. it's in the TASK_STOPPED state), it is
+> > > considered by the freezer as unfreezeable.  However, there may be a race
+> > > between the freezer and the delivery of the continuation signal to the task
+> > > resulting in the task running after we have finished freezing other tasks.
+> > > This, in turn, may lead to undesirable effects up to and including a
+> > > corruption of data.
+> > > 
+> > > To prevent this from happening we first need to make the freezer consider
+> > > stopped tasks as freezeable.  For this purpose we need to make freezeable()
+> > > stop returning 0 for these tasks.  We must remember, however, that the
+> > > stopped tasks need not receive the continuation signal before thaw_processes()
+> > > is called, so as soon as PF_FREEZE is set for them try_to_freeze_tasks()
+> > > should stop counting them as the ones to wait for.  Additionally, if there's a
+> > > traced task (ie. a task in the TASK_TRACED state) the parent of which has
+> > > PF_FREEZE set and is stopped, try_to_freeze_tasks() should not wait for it.
+> > > Moreover, if there are some stopped tasks that haven't received the continuation
+> > > signal before thaw_processes() is called, we must clear PF_FREEZE for them so
+> > > that they don't go to the refrigerator when it's no longer desirable.
 > > 
-> > [ -f /sys/power/suspend2/image_exists ] && echo 0 > /sys/power/suspend2/image_exists
-> > 
-> > You can cat the file to find out if an image exists, if you prefer (eg
-> > from an initrd/ramfs). Return values are:
+> > Actually, what do you think about this patch? It removes special
+> > handling of TASK_TRACED, and should do the trick, too...
 > 
-> But you need a suspend2-enabled kernel.
+> I was surprised, but the patch seems to work okay. Can you replace
+> your 1/2 with this one, and see what breaks?
 
-Everyone should have one of those! :)
+I don't think anything will _visibly_ break, because (1) even if the traced
+task has TIF_SIGPENDING set unnecessarily, it will just notice there is no
+real signal to handle and continue and (2) the race between the delivery of
+the continuation signal and the freezer is damn hard to trigger (still I think
+I can wirte some artificial code that would trigger this, although it would
+involve a kernel thread sending SIGCONT to a user space process - provided
+it's permissible ;-)).
 
-> For rescue purposes ("engineer on-site to repair the hardware, diagnosing with
-> a rescue CD first" scenario), a standalone binary that resets the signature is
-> probably better.
+Greetings,
+Rafael
 
-Yeah, that makes sense.
 
-> But this engineer should also know if he depends on the UUID of the swap 
-> partition to find it. If he does not, he can simply do a "mkswap" to reset
-> the signature.
-
-Since you mentioned it, what's they point to using these ugly, looong
-uuids? /dev/hda2 is so much simpler and easier to read for mere humans.
-I guess it might be useful for USB and so on with the hotplug messiness,
-but when I look in /etc/fstab after some upgrade and stuff that's
-irrelevant to hotplugging is changed into uuids,... why?
-
-Regards,
-
-Nigel
-
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
