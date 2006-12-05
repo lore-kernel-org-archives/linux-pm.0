@@ -1,16 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
 	tasks
-Date: Tue, 5 Dec 2006 14:12:05 +0000
-Message-ID: <20061205141205.GA4637@ucw.cz>
-References: <200612032318.29030.rjw@sisk.pl> <20061205103429.GB5306@elf.ucw.cz>
-	<20061205112429.GA7039@elf.ucw.cz> <200612051238.23727.rjw@sisk.pl>
+Date: Tue, 5 Dec 2006 15:22:42 +0100
+Message-ID: <200612051522.43504.rjw@sisk.pl>
+References: <200612032318.29030.rjw@sisk.pl> <200612051206.40709.rjw@sisk.pl>
+	<20061205141331.GB4637@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20061205141331.GB4637@ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200612051238.23727.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -20,46 +20,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
+On Tuesday, 5 December 2006 15:13, Pavel Machek wrote:
+> Hi!
+> 
 > > > Actually, what do you think about this patch? It removes special
 > > > handling of TASK_TRACED, and should do the trick, too...
 > > 
-> > I was surprised, but the patch seems to work okay. Can you replace
-> > your 1/2 with this one, and see what breaks?
+> > Well, I don't think so, ....
 > 
-> I don't think anything will _visibly_ break, because (1) even if the traced
-> task has TIF_SIGPENDING set unnecessarily, it will just notice there is no
-> real signal to handle and continue and 
+> > > @@ -1702,7 +1702,9 @@ finish_stop(int stop_count)
+> > >  		read_unlock(&tasklist_lock);
+> > >  	}
+> > >  
+> > > -	schedule();
+> > > +	do {
+> > > +		schedule();
+> > > +	} while (try_to_freeze());
+> > >  	/*
+> > >  	 * Now we don't run again until continued.
+> > >  	 */
+> > 
+> > ... because if you want try_to_freeze() here to trigger, then the task in
+> > question should have PF_FREEZE set, but we don't set it anywhere.
+> 
+> ?? We set it to all the processes, so stopped processes get it,
+> too...??
 
-We are generating spurious wakeups, but as you noticed, that should be
-okay.
+No, we don't.  We only set it for the processes for which freezeable() returns 1.
 
->(2) the race between the delivery of
-> the continuation signal and the freezer is damn hard to trigger (still I think
-> I can wirte some artificial code that would trigger this, although it would
-> involve a kernel thread sending SIGCONT to a user space process - provided
-> it's permissible ;-)).
+Greetings,
+Rafael
 
-It is not really permissible, but I do not see how it would hurt...
 
-With that patch, we put TASK_STOPPED tasks into refrigerator, along
-with everyone else. SIGCONT is *not* going to help them out of
-refrigerator.
-
-We also ignore TASK_STOPPED now, so we'll not proceed until all
-stopped tasks are in refrigerator.
-
-Now... I'm not 100% sure I got the ptrace() cases right (and did not
-test that)... but TASK_STOPPED cases look pretty trivial to me now.
-
-							Pavel
 -- 
-Thanks for all the (sleeping) penguins.
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
