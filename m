@@ -1,15 +1,16 @@
-From: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: [linux-pm] Dangers of
- touching	disk	between	suspend and resume
-Date: Tue, 05 Dec 2006 11:51:41 +0000
-Message-ID: <45755D4D.3090900@genesi-usa.com>
-References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>	<20061128163757.GM14640@suse.de>	<1164916843.6031.9.camel@localhost.localdomain>	<20061130201311.GK2227@suse.de>	<1164925067.6031.29.camel@localhost.localdomain>	<20061201073956.GB18690@suse.de>	<1165034513.3143.2.camel@nigel.suspend2.net>	<20061204081049.GA12174@suse.de>
-	<1165318090.15384.15.camel@nigel.suspend2.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
+	tasks
+Date: Tue, 5 Dec 2006 14:13:31 +0000
+Message-ID: <20061205141331.GB4637@ucw.cz>
+References: <200612032318.29030.rjw@sisk.pl> <200612032350.23067.rjw@sisk.pl>
+	<20061205103429.GB5306@elf.ucw.cz> <200612051206.40709.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <1165318090.15384.15.camel@nigel.suspend2.net>
+Content-Disposition: inline
+In-Reply-To: <200612051206.40709.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -19,32 +20,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Stefan Seyfried <seife@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Nigel Cunningham wrote:
-> 
->> But this engineer should also know if he depends on the UUID of the swap 
->> partition to find it. If he does not, he can simply do a "mkswap" to reset
->> the signature.
-> 
-> Since you mentioned it, what's they point to using these ugly, looong
-> uuids? /dev/hda2 is so much simpler and easier to read for mere humans.
-> I guess it might be useful for USB and so on with the hotplug messiness,
-> but when I look in /etc/fstab after some upgrade and stuff that's
-> irrelevant to hotplugging is changed into uuids,... why?
+Hi!
 
-/dev/hda2 may move if they move the disk.. I think the preferred way (since
-it seems fairly hard to 'fix' a disk in the /dev tree under Linux, not so
-easy as - say - FreeBSD or NetBSD) is to mount disks from disk labels these
-days (ext2 and xfs supports it at least) as then you can move the disk
-around. USB, Firewire, external SATA disks will fall under this trap, but
-perhaps not internal IDE.. however you can't have both ways :D
+> > Actually, what do you think about this patch? It removes special
+> > handling of TASK_TRACED, and should do the trick, too...
+> 
+> Well, I don't think so, ....
+
+> > @@ -1702,7 +1702,9 @@ finish_stop(int stop_count)
+> >  		read_unlock(&tasklist_lock);
+> >  	}
+> >  
+> > -	schedule();
+> > +	do {
+> > +		schedule();
+> > +	} while (try_to_freeze());
+> >  	/*
+> >  	 * Now we don't run again until continued.
+> >  	 */
+> 
+> ... because if you want try_to_freeze() here to trigger, then the task in
+> question should have PF_FREEZE set, but we don't set it anywhere.
+
+?? We set it to all the processes, so stopped processes get it,
+too...??
+							Pavel
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Thanks for all the (sleeping) penguins.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
