@@ -1,8 +1,8 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
 	tasks
-Date: Tue, 5 Dec 2006 11:25:30 +0100
-Message-ID: <20061205102530.GA5306@elf.ucw.cz>
+Date: Tue, 5 Dec 2006 11:34:29 +0100
+Message-ID: <20061205103429.GB5306@elf.ucw.cz>
 References: <200612032318.29030.rjw@sisk.pl> <200612032350.23067.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -43,21 +43,41 @@ Hi!
 > Moreover, if there are some stopped tasks that haven't received the continuation
 > signal before thaw_processes() is called, we must clear PF_FREEZE for them so
 > that they don't go to the refrigerator when it's no longer desirable.
-> 
-> Still if a stopped tasks receives the continuation signal after the freezer
-> has returned, it should immediately go to the refrigerator.  For this reason
-> we need to place the call to try_to_freeze() in get_signal_to_deliver() right
-> after the relock label.
-> 
-> It is also reasonable to change the error paths so that the names of stopped
-> or traced tasks which have not frozen are not reported to the user, because in
-> the majority of cases they would be false positives.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Okay, lets go ahead with this one. (ACK) I still think we should be
-able to find some simpler solution, I'll take a look.
-									Pavel
+Actually, what do you think about this patch? It removes special
+handling of TASK_TRACED, and should do the trick, too...
+								Pavel
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 7bcc976..d56e494 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -26,8 +26,7 @@ static inline int freezeable(struct task
+ 	    (p->flags & PF_NOFREEZE) ||
+ 	    (p->exit_state == EXIT_ZOMBIE) ||
+ 	    (p->exit_state == EXIT_DEAD) ||
+-	    ((p->exit_state == TASK_TRACED) && frozen(p->parent)) ||
+-	    (p->state == TASK_STOPPED))
++	    ((p->exit_state == TASK_TRACED) && frozen(p->parent)))
+ 		return 0;
+ 	return 1;
+ }
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 9a61944..e305ad1 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1702,7 +1702,9 @@ finish_stop(int stop_count)
+ 		read_unlock(&tasklist_lock);
+ 	}
+ 
+-	schedule();
++	do {
++		schedule();
++	} while (try_to_freeze());
+ 	/*
+ 	 * Now we don't run again until continued.
+ 	 */
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
