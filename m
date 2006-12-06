@@ -1,11 +1,16 @@
-From: <captain_brianjames@alice.it>
-Subject: URGENT(very confidential)
-Date: Wed, 6 Dec 2006 11:44:21 +0100
-Message-ID: <058681026BB95645BAE7D47EF65B99AF9A49D5@FBCMST09V04.fbc.local>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Suspend-devel] [PATCH -mm 1/2]: PM: Fix handling of
+	stopped tasks
+Date: Thu, 7 Dec 2006 00:13:22 +0100
+Message-ID: <200612070013.23230.rjw@sisk.pl>
+References: <200612032318.29030.rjw@sisk.pl> <200612060008.51373.rjw@sisk.pl>
+	<20061205234550.GA10914@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1207883419=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
+In-Reply-To: <20061205234550.GA10914@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,197 +20,56 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Wednesday, 6 December 2006 00:45, Pavel Machek wrote:
+> Hi!
+> =
 
---===============1207883419==
-Content-Type: multipart/alternative;
-    boundary="----------=_1165401939-18752-376"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+> > > > ...after resume.
+> > > =
 
-This is a multi-part message in MIME format...
+> > > This is because of how signal_wake_up() works, I think..
+> > > =
 
-------------=_1165401939-18752-376
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > > > But I think it is right approach.
+> > =
 
+> > Okay, with the appended patch applied everything seems to work and I do=
+n't
+> > see any undesirable side-effects.
+> =
 
-Dear Friend,
+> I promise to try it... tommorow. Looks very good to me.
 
- I am Captain Brian James of the US Marine Force on
-Monitoring and Peace keeping mission in Baghdad-Iraq.
-  On the 7th day of June 2006, we were alerted on the
-sudden presence of some Terrorists camping in a suburb
-not too far from Karbala here in Iraq. After Immediate
-intervention, we captured three (3) of the Terrorists,
-twenty-six (26) were killed leaving seven (7) injured.
+Unfortunately there's one problem with it.
 
-In the process of torture they confessed being
-rebels for  late Ayman al-Zawahiri  and  took us to a
-cave in Karbala which served as their camp. Here we
-recovered several guns, bombs and other Ammunitions
-including some boxes among which two contains nuclear
-weapons, one filled  with hard drugs(cocaine) and the
-other four to my amazement contain some US Dollars
-amounting to $7.2M.
+To reproduce it I run "gdb /bin/cat", execute "run" in gdb and press ^Z twi=
+ce
+to stop both processes.  Next I suspend and resume and run "fg" to get the =
+gdb
+back.and press "Enter" to get the prompt.  Then, it turns out that the
+terminal echo doesn't work and "Enter" doesn't make it go to the next line.
+I can recover from this state by typing "fg+Enter" (with no echo) so that
+/bin/cat gets the continuation signal and it restores the terminal settings,
+apparently.
 
-  I am in need of a reliable and Trustworthy
-person like you who would receive,  secure and protect
-these boxes  containing $7.2M US Dollars for me up on
-till my assignment elapses in here in Iraq.
+This means, however, that with this patch the behavior of a process (gdb)
+after the resume may be different to its normal behavior, which is wrong.
 
-keep this topmost secret
-to protect my job with the US Monitoring and
-Peace-Keeping mission. Contact me through my personal
-email: captain_brianjames77@myway.com
+With my original [1/2] this problem doesn't appear (ie. after the resume gdb
+behaves normally).  Thus I think that, although this patch is much more
+elegant, my original [1/2] is a safer solution, because we can say exactly
+what it does.
 
-  Sincere regards,
-  Capt.Brian James=20
-
-**************
-Registrati ad Alice Basic e scarica Alice Messenger,=20
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!
-Per maggiori informazioni vai su:=20
-http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01
-
-**************
-Registrati ad Alice Basic e scarica Alice Messenger,=20
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!
-Per maggiori informazioni vai su:=20
-http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01
-
-**************
-Registrati ad Alice Basic e scarica Alice Messenger,=20
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!
-Per maggiori informazioni vai su:=20
-http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01
-
-**************
-Registrati ad Alice Basic e scarica Alice Messenger,=20
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!
-Per maggiori informazioni vai su:=20
-http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01
-
-**************
-Registrati ad Alice Basic e scarica Alice Messenger,=20
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!
-Per maggiori informazioni vai su:=20
-http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01
-
-**************
-Registrati ad Alice Basic e scarica Alice Messenger,=20
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!
-Per maggiori informazioni vai su:=20
-http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01
-
-------------=_1165401939-18752-376
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Diso-8859-=
-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version 6.5.7651.51">
-<TITLE>URGENT(very confidential)</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>Dear Friend,<BR>
-<BR>
-&nbsp;I am Captain Brian James of the US Marine Force on<BR>
-Monitoring and Peace keeping mission in Baghdad-Iraq.<BR>
-&nbsp; On the 7th day of June 2006, we were alerted on the<BR>
-sudden presence of some Terrorists camping in a suburb<BR>
-not too far from Karbala here in Iraq. After Immediate<BR>
-intervention, we captured three (3) of the Terrorists,<BR>
-twenty-six (26) were killed leaving seven (7) injured.<BR>
-<BR>
-In the process of torture they confessed being<BR>
-rebels for&nbsp; late Ayman al-Zawahiri&nbsp; and&nbsp; took us to a<BR>
-cave in Karbala which served as their camp. Here we<BR>
-recovered several guns, bombs and other Ammunitions<BR>
-including some boxes among which two contains nuclear<BR>
-weapons, one filled&nbsp; with hard drugs(cocaine) and the<BR>
-other four to my amazement contain some US Dollars<BR>
-amounting to $7.2M.<BR>
-<BR>
-&nbsp; I am in need of a reliable and Trustworthy<BR>
-person like you who would receive,&nbsp; secure and protect<BR>
-these boxes&nbsp; containing $7.2M US Dollars for me up on<BR>
-till my assignment elapses in here in Iraq.<BR>
-<BR>
-keep this topmost secret<BR>
-to protect my job with the US Monitoring and<BR>
-Peace-Keeping mission. Contact me through my personal<BR>
-email: captain_brianjames77@myway.com<BR>
-<BR>
-&nbsp; Sincere regards,<BR>
-&nbsp; Capt.Brian James<BR>
-<BR>
-**************<BR>
-Registrati ad Alice Basic e scarica Alice Messenger,<BR>
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!<BR>
-Per maggiori informazioni vai su:<BR>
-<A HREF=3D"http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01=
-">http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01</A><BR>
-<BR>
-**************<BR>
-Registrati ad Alice Basic e scarica Alice Messenger,<BR>
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!<BR>
-Per maggiori informazioni vai su:<BR>
-<A HREF=3D"http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01=
-">http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01</A><BR>
-<BR>
-**************<BR>
-Registrati ad Alice Basic e scarica Alice Messenger,<BR>
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!<BR>
-Per maggiori informazioni vai su:<BR>
-<A HREF=3D"http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01=
-">http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01</A><BR>
-<BR>
-**************<BR>
-Registrati ad Alice Basic e scarica Alice Messenger,<BR>
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!<BR>
-Per maggiori informazioni vai su:<BR>
-<A HREF=3D"http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01=
-">http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01</A><BR>
-<BR>
-**************<BR>
-Registrati ad Alice Basic e scarica Alice Messenger,<BR>
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!<BR>
-Per maggiori informazioni vai su:<BR>
-<A HREF=3D"http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01=
-">http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01</A><BR>
-<BR>
-**************<BR>
-Registrati ad Alice Basic e scarica Alice Messenger,<BR>
-il nuovo instant messenger che ti fa chattare GRATIS con i tuoi amici!<BR>
-Per maggiori informazioni vai su:<BR>
-<A HREF=3D"http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01=
-">http://adsl.alice.it/servizi/alicebasic.html?pmk=3Dpsmail_foot01</A></FON=
-T>
-</P>
-
-</BODY>
-</HTML>
-------------=_1165401939-18752-376--
-
---===============1207883419==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Greetings,
+Rafael
 
 
---===============1207883419==--
+-- =
+
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
