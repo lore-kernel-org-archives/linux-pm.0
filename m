@@ -1,16 +1,24 @@
 From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [linux-pm] [PATCH -mm 1/2]: PM: Fix handling	of
-	stopped tasks
-Date: Wed, 06 Dec 2006 11:07:28 +1100
-Message-ID: <1165363648.19284.5.camel@nigel.suspend2.net>
-References: <200612032318.29030.rjw@sisk.pl>
-	<200612052203.43977.rjw@sisk.pl> <20061205221948.GA1723@elf.ucw.cz>
-	<200612052318.18192.rjw@sisk.pl>
+Subject: Re: [linux-pm] Dangers
+	of	touching	disk	between	suspend and resume
+Date: Wed, 06 Dec 2006 11:10:06 +1100
+Message-ID: <1165363806.19284.8.camel@nigel.suspend2.net>
+References: <1164727307.26898.12.camel@systems03.lan.brontes3d.com>
+	<Pine.LNX.4.44L0.0611281034130.3064-100000@iolanthe.rowland.org>
+	<20061128163757.GM14640@suse.de>
+	<1164916843.6031.9.camel@localhost.localdomain>
+	<20061130201311.GK2227@suse.de>
+	<1164925067.6031.29.camel@localhost.localdomain>
+	<20061201073956.GB18690@suse.de>
+	<1165034513.3143.2.camel@nigel.suspend2.net>
+	<20061204081049.GA12174@suse.de>
+	<1165318090.15384.15.camel@nigel.suspend2.net>
+	<45755D4D.3090900@genesi-usa.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200612052318.18192.rjw@sisk.pl>
+In-Reply-To: <45755D4D.3090900@genesi-usa.com>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -20,29 +28,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@osdl.org, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi again.
 
-On Tue, 2006-12-05 at 23:18 +0100, Rafael J. Wysocki wrote:
-> > > It happens because we shouldn't count the stopped task as freezeable any
-> > > more after we've set PF_FREEZE for it and we can fix that by adding
-> > > 
-> > > 	if (p->state == TASK_STOPPED && freezing(p))
-> > > 		continue;
+On Tue, 2006-12-05 at 11:51 +0000, Matt Sealey wrote:
+> Nigel Cunningham wrote:
 > > 
-> > No, I'd actually like to force stopped task into refrigerator.
+> >> But this engineer should also know if he depends on the UUID of the swap 
+> >> partition to find it. If he does not, he can simply do a "mkswap" to reset
+> >> the signature.
+> > 
+> > Since you mentioned it, what's they point to using these ugly, looong
+> > uuids? /dev/hda2 is so much simpler and easier to read for mere humans.
+> > I guess it might be useful for USB and so on with the hotplug messiness,
+> > but when I look in /etc/fstab after some upgrade and stuff that's
+> > irrelevant to hotplugging is changed into uuids,... why?
 > 
-> Well, we'd have to send SIGCONT to them for this purpose and then stop them
-> back again during the resume.  Doesn't sound nice ...
+> /dev/hda2 may move if they move the disk.. I think the preferred way (since
+> it seems fairly hard to 'fix' a disk in the /dev tree under Linux, not so
+> easy as - say - FreeBSD or NetBSD) is to mount disks from disk labels these
+> days (ext2 and xfs supports it at least) as then you can move the disk
+> around. USB, Firewire, external SATA disks will fall under this trap, but
+> perhaps not internal IDE.. however you can't have both ways :D
 
-I agree with Rafael. Contingencies for handling them being restarted by
-other means is one thing, but restarting tasks that were stopped is
-wrong. Who knows what work they might do between the SIGCONT and
-freezing that (and this is the key point) the user doesn't want them to
-do?
+Thanks for the reply.
+
+Is all the converting of uuids to device nodes done in userspace? I
+haven't noticed anything in the kernel to handle uuids, but I don't look
+at filesystem code much.
 
 Regards,
 
