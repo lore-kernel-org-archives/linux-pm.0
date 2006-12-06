@@ -1,8 +1,8 @@
-From: "Kallisto Volz" <sieverswinnie@fabcon.com>
+From: "Ruth Hoekstra" <ciana@cabell.com>
 Subject: Re: aggravat =  choose
-Date: Wed, 6 Dec 2006 10:43:45 +0000
-Message-ID: <01c71923$673dc680$eacb6d58@Megs>
-Reply-To: Kallisto Volz <sieverswinnie@fabcon.com>
+Date: Wed, 6 Dec 2006 10:43:44 +0000
+Message-ID: <01c71923$673b5580$eacb6d58@Megs>
+Reply-To: Ruth Hoekstra <ciana@cabell.com>
 Mime-Version: 1.0
 Content-Type: multipart/mixed; boundary="----=_NextPart_000_0001_01C71923.19882110"
 Return-path: <linux-pm-bounces@lists.osdl.org>
@@ -15,21 +15,21 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Zulekha Huitt <linux-pm@osdl.org>
+To: Khayriyya Devillier <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
 ------=_NextPart_000_0001_01C71923.19882110
 Content-Type: multipart/alternative;
-    boundary="----------=_1165401846-18752-347"
+    boundary="----------=_1165401887-18752-352"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1165401846-18752-347
+------------=_1165401887-18752-352
 Content-Type: text/plain;
 	charset="Windows-1252"
 Content-Transfer-Encoding: quoted-printable
@@ -47,7 +47,7 @@ greeter of strangers to Paradise, and we are not your usual goaty
 survivors aside, tell them about me and the assignment. Ill meet them
 Steengo was gone.
 
-------------=_1165401846-18752-347
+------------=_1165401887-18752-352
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -78,7 +78,7 @@ nterrupted  meeting. I stripped away the interference  of  the  voice</FONT=
 e=3D2>survivors aside, tell them about me and the assignment. Ill meet them=
 </FONT></DIV><DIV><FONT face=3DArial size=3D2> Steengo was gone.</FONT></DI=
 V></FONT></DIV></BODY></HTML>
-------------=_1165401846-18752-347--
+------------=_1165401887-18752-352--
 
 ------=_NextPart_000_0001_01C71923.19882110
 Content-Type: image/jpeg;
