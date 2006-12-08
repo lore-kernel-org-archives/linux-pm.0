@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
 	tasks
-Date: Fri, 8 Dec 2006 14:05:16 +0100
-Message-ID: <200612081405.17380.rjw@sisk.pl>
+Date: Fri, 8 Dec 2006 23:07:05 +0100
+Message-ID: <200612082307.07305.rjw@sisk.pl>
 References: <200612032318.29030.rjw@sisk.pl> <20061208112123.GA4957@ucw.cz>
 	<200612081249.48218.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -61,33 +61,74 @@ On Friday, 8 December 2006 12:49, Rafael J. Wysocki wrote:
 > > > after the resume may be different to its normal behavior, which is wrong.
 > > 
 > > Yep.
-> > 
-> > > With my original [1/2] this problem doesn't appear (ie. after the resume gdb
-> > > behaves normally).  Thus I think that, although this patch is much more
-> > > elegant, my original [1/2] is a safer solution, because we can say exactly
-> > > what it does.
-> > 
-> > Original 1/2 indeed is 'safer'... but it is also too ugly to live.
-> 
-> Well, I don't agree with that. :-)
-> 
-> > Getting this to work should not be that hard,
-> 
-> But it would involve messing up with the scheduler, no?
-> 
-> > and I'd prefer not to add more tricky code to already-tricky process.c.
 
-BTW, I think the alternative is even more tricky than [1/2] itself, although
-the trickiness is not clearly visible in this case.
+Okay, I think I know what to do so that it works.  The above symptoms are not
+present with the appended patch.
 
 Greetings,
 Rafael
 
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/process.c |   12 ++++++------
+ kernel/signal.c        |    4 +++-
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.19-rc6-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/kernel/power/process.c	2006-12-08 21:15:18.000000000 +0100
++++ linux-2.6.19-rc6-mm2/kernel/power/process.c	2006-12-08 21:47:23.000000000 +0100
+@@ -28,8 +28,7 @@ static inline int freezeable(struct task
+ 	if ((p == current) || 
+ 	    (p->flags & PF_NOFREEZE) ||
+ 	    (p->exit_state == EXIT_ZOMBIE) ||
+-	    (p->exit_state == EXIT_DEAD) ||
+-	    (p->state == TASK_STOPPED))
++	    (p->exit_state == EXIT_DEAD))
+ 		return 0;
+ 	return 1;
+ }
+@@ -61,9 +60,12 @@ static inline void freeze_process(struct
+ 	unsigned long flags;
+ 
+ 	if (!freezing(p)) {
++		if (p->state == TASK_STOPPED)
++			force_sig_specific(SIGSTOP, p);
++
+ 		freeze(p);
+ 		spin_lock_irqsave(&p->sighand->siglock, flags);
+-		signal_wake_up(p, 0);
++		signal_wake_up(p, p->state == TASK_STOPPED);
+ 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
+ 	}
+ }
+@@ -103,9 +105,7 @@ static unsigned int try_to_freeze_tasks(
+ 			if (frozen(p))
+ 				continue;
+ 
+-			if (p->state == TASK_TRACED &&
+-			    (frozen(p->parent) ||
+-			     p->parent->state == TASK_STOPPED)) {
++			if (p->state == TASK_TRACED && frozen(p->parent)) {
+ 				cancel_freezing(p);
+ 				continue;
+ 			}
+Index: linux-2.6.19-rc6-mm2/kernel/signal.c
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/kernel/signal.c	2006-12-08 21:15:18.000000000 +0100
++++ linux-2.6.19-rc6-mm2/kernel/signal.c	2006-12-08 21:15:30.000000000 +0100
+@@ -1829,7 +1829,9 @@ finish_stop(int stop_count)
+ 		read_unlock(&tasklist_lock);
+ 	}
+ 
+-	schedule();
++	do {
++		schedule();
++	} while (try_to_freeze());
+ 	/*
+ 	 * Now we don't run again until continued.
+ 	 */
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
