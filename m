@@ -1,57 +1,79 @@
-From: info@usmpkm.orangehome.co.uk
-Subject: Hello
-Date: Thu,  7 Dec 2006 03:02:07 +0100 (CET)
-Message-ID: <1881717.280571165456927967.JavaMail.www__45381.2435539023$1165457018$gmane$org@wwinf3002>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
+	tasks
+Date: Fri, 8 Dec 2006 11:21:23 +0000
+Message-ID: <20061208112123.GA4957@ucw.cz>
+References: <200612032318.29030.rjw@sisk.pl> <200612060008.51373.rjw@sisk.pl>
+	<20061205234550.GA10914@elf.ucw.cz>
+	<200612070013.23230.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.osdl.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+Content-Disposition: inline
+In-Reply-To: <200612070013.23230.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
+List-Post: <mailto:suspend-devel@lists.sourceforge.net>
+List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: suspend-devel-bounces@lists.sourceforge.net
+Errors-To: suspend-devel-bounces@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-R3JlZXRpbmdzLAogCldpdGggZHVlIHJlc3BlY3QsIHBhcmRvbiBtZSBmb3IgdGhpcyBsZXR0ZXIu
-IFRoaXMgaXMgYSBnZW51aW5lIG1hdHRlciBvZiB1dG1vc3QgaW1wb3J0YW5jZSBhbmQgaW1tZW5z
-ZSBtdXR1YWwgYmVuZWZpdCB3aGljaCBtdXN0IGJlIGtlcHQgaGlnaGx5IGNvbmZpZGVudGlhbC4g
-SXQgaXMgd2l0aCBnZW51aW5lIGludGVyZXN0IGFuZCB0cnVzdCB0aGF0IEkgaGF2ZSBjb250YWN0
-ZWQgeW91LgogCkkgYW0gQ2FwdGFpbiAgU21pdGggU2NvdHQgb2YgdGhlIFVTIE1hcmluZSBGb3Jj
-ZSBvbiBNb25pdG9yaW5nIGFuZCBQZWFjZSDigJNrZWVwaW5nIG1pc3Npb24gaW4gQmFnaGRhZC1J
-cmFxLgogCk9uIHRoZSAyMHRoIGRheSBvZiBOb3ZlbWJlciAyMDA2LCB3ZSB3ZXJlIGFsZXJ0ZWQg
-b24gdGhlIHN1ZGRlbiBwcmVzZW5jZSBvZiBzb21lIFRlcnJvcmlzdHMgY2FtcGluZyBpbiBhIHN1
-YnVyYiBub3QgdG9vIGZhciBmcm9tIEthcmJhbGEgaGVyZSBpbiBJcmFxLiBBZnRlciBpbW1lZGlh
-dGUgaW50ZXJ2ZW50aW9uLCB3ZSBjYXB0dXJlZCB0aHJlZSAoMykgb2YgdGhlIFRlcnJvcmlzdHMs
-IHR3ZW50eS1zaXggKDI2KSB3ZXJlIGtpbGxlZCBsZWF2aW5nIHNldmVuICg3KSBpbmp1cmVkLgog
-CkluIHRoZSBwcm9jZXNzIG9mIHRvcnR1cmUgdGhleSBjb25mZXNzZWQgYmVpbmcgcmViZWxzIGZv
-ciBsYXRlIEF5bWFuIGFsLVphd2FoaXJpIGFuZCB0b29rIHVzIHRvIGEgY2F2ZSBpbiBLYXJiYWxh
-IHdoaWNoIHNlcnZlZCBhcyB0aGVpciBjYW1wLiBIZXJlIHdlIHJlY292ZXJlZCBzZXZlcmFsIGd1
-bnMsIGJvbWJzIGFuZCBvdGhlciBBbW11bml0aW9ucyBpbmNsdWRpbmcgc29tZSBib3hlcyBhbW9u
-ZyB3aGljaCB0d28gY29udGFpbnMgc3VzcGVjdGVkIG51Y2xlYXIgd2VhcG9ucywgb25lIGZpbGxl
-ZCB3aXRoIGhhcmQgZHJ1Z3MgKGNvY2FpbmUpIGFuZCB0aGUgb3RoZXIgZm91ciB0byBteSBhbWF6
-ZW1lbnQgY29udGFpbiBzb21lIFVTIERvbGxhcnMgYW1vdW50aW5nIHRvICQxMC4yTS4gQWZ0ZXIg
-SSBhbmQgdHdvIG9mIG15IGp1bmlvciBpbnRlbGxpZ2VudCBvZmZpY2VycyBjb3VudGVkIHRoZW0s
-IEkgaG93ZXZlciBpbnN0cnVjdGVkIHRoZW0gdG8ga2VlcCB0aGlzIGluIGhpZ2ggc2VjcmVjeS4K
-IApJIGFtIGluIGtlZW4gbmVlZCBvZiBhIOKAnFJlbGlhYmxlIGFuZCAiVHJ1c3R3b3J0aHnigJ0g
-cGVyc29uIHdobyB3b3VsZCByZWNlaXZlLCBzZWN1cmUgYW5kIHByb3RlY3QgdGhlc2UgYm94ZXMg
-Y29udGFpbmluZyB0aGUgVVMgRG9sbGFycyBmb3IgbWUgdW50aWwgbXkgYXNzaWdubWVudCBlbGFw
-c2VzIGhlcmUgaW4gSXJhcS4gSSBhc3N1cmUgYW5kIHByb21pc2UgeW91IHdpbGwgbm90IHJlZ3Jl
-dCB0aGlzIGRlYWwuIEhvd2V2ZXIgZmVlbCBmcmVlIHRvIG5lZ290aWF0ZSB3aGF0IHlvdSB3aXNo
-IHRvIGhhdmUgYXMgeW91ciBwZXJjZW50YWdlIGluIHRoaXMgYnVzaW5lc3MuIEFzc3VyZSBtZSBv
-ZiB5b3Uga2VlcGluZyB0aGlzIGluIHV0bW9zdCBzZWNyZWN5IHRvIHByb3RlY3QgbXkgam9iIHdp
-dGggdGhlIFVTIE1vbml0b3JpbmcgYW5kIFBlYWNlLUtlZXBpbmcgbWlzc2lvbi4gSSB3aWxsIGJl
-IHdhaXRpbmcgdG8gaGVhciBmcm9tIHlvdSBhcyBzb29uIGFzIHBvc3NpYmxlIHRvIHByb2NlZWQu
-IAogCkFsbCBjb3JyZXNwb25kZW5jZSBzaG91bGQgY29tZSB0aHJvdWdoIG15IHBlcnNvbmFsIC8g
-cHJpdmF0ZSBlbWFpbDpjLnNzOUBob3RtYWlsLmNvbSBmb3Igc2VjdXJpdHkgcmVhc29ucy4KIApJ
-ZiB5b3UgYXJlIGludGVyZXN0ZWQgdG8gd29yayB3aXRoIG1lIGluIGdvb2QgZmFpdGggYW5kIGhv
-bmVzdHksIGdldCBiYWNrIHRvIG1lLiBFbmRlYXZvciB0byBsZXQgbWUga25vdyB5b3VyIGRlY2lz
-aW9uIHJhdGhlciB0aGFuIGtlZXAgbWUgd2FpdGluZy4KIApUaGFua3MgaW4gYW50aWNpcGF0aW9u
-IG9mIGEgZmF2b3JhYmxlIHJlc3BvbnNlLiAKIApTaW5jZXJlIHJlZ2FyZHMsCkNhcHRhaW4gU21p
-dGggU2NvdHQKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMub3NkbC5vcmcKaHR0cHM6Ly9s
-aXN0cy5vc2RsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBtCg==
+Hi!
+
+> > > > > ...after resume.
+> > > > 
+> > > > This is because of how signal_wake_up() works, I think..
+> > > > 
+> > > > > But I think it is right approach.
+> > > 
+> > > Okay, with the appended patch applied everything seems to work and I don't
+> > > see any undesirable side-effects.
+> > 
+> > I promise to try it... tommorow. Looks very good to me.
+> 
+> Unfortunately there's one problem with it.
+
+Well, IIRC it still had the 'bash reports vi stopped twice' problem.
+
+> To reproduce it I run "gdb /bin/cat", execute "run" in gdb and press ^Z twice
+> to stop both processes.  Next I suspend and resume and run "fg" to get the gdb
+> back.and press "Enter" to get the prompt.  Then, it turns out that the
+> terminal echo doesn't work and "Enter" doesn't make it go to the next line.
+> I can recover from this state by typing "fg+Enter" (with no echo) so that
+> /bin/cat gets the continuation signal and it restores the terminal settings,
+> apparently.
+
+I wonder if we should start a test suite ;-).
+
+> This means, however, that with this patch the behavior of a process (gdb)
+> after the resume may be different to its normal behavior, which is wrong.
+
+Yep.
+
+> With my original [1/2] this problem doesn't appear (ie. after the resume gdb
+> behaves normally).  Thus I think that, although this patch is much more
+> elegant, my original [1/2] is a safer solution, because we can say exactly
+> what it does.
+
+Original 1/2 indeed is 'safer'... but it is also too ugly to live.
+Getting this to work should not be that hard, and I'd prefer not to
+add more tricky code to already-tricky process.c.
+
+In the meantime, perhaps we want 2/2 merged? That one was
+safe&obvious.
+							Pavel
+-- 
+Thanks for all the (sleeping) penguins.
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
