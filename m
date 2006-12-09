@@ -1,24 +1,16 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] Dangers
-	of	touching	disk	between	suspend and resume
-Date: Sat, 9 Dec 2006 15:25:18 +0000
-Message-ID: <20061209152517.GA20204@srcf.ucam.org>
-References: <20061128163757.GM14640@suse.de>
-	<1164916843.6031.9.camel@localhost.localdomain>
-	<20061130201311.GK2227@suse.de>
-	<1164925067.6031.29.camel@localhost.localdomain>
-	<20061201073956.GB18690@suse.de>
-	<1165034513.3143.2.camel@nigel.suspend2.net>
-	<20061204081049.GA12174@suse.de>
-	<1165318090.15384.15.camel@nigel.suspend2.net>
-	<45755D4D.3090900@genesi-usa.com>
-	<1165363806.19284.8.camel@nigel.suspend2.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
+	tasks
+Date: Sat, 9 Dec 2006 16:35:32 +0100
+Message-ID: <200612091635.33455.rjw@sisk.pl>
+References: <200612032318.29030.rjw@sisk.pl> <200612082307.07305.rjw@sisk.pl>
+	<20061208233619.GB25223@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20061208233619.GB25223@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <1165363806.19284.8.camel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
@@ -28,20 +20,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Nigel Cunningham <ncunningham@linuxmail.org>
-Cc: suspend-devel@lists.sourceforge.net, Matt Sealey <matt@genesi-usa.com>, Stefan Seyfried <seife@suse.de>, linux-pm@osdl.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 06, 2006 at 11:10:06AM +1100, Nigel Cunningham wrote:
+Hi,
 
-> Is all the converting of uuids to device nodes done in userspace? I
-> haven't noticed anything in the kernel to handle uuids, but I don't look
-> at filesystem code much.
+On Saturday, 9 December 2006 00:36, Pavel Machek wrote:
+> Hi!
+> 
+> > > > I wonder if we should start a test suite ;-).
+> > > > 
+> > > > > This means, however, that with this patch the behavior of a process (gdb)
+> > > > > after the resume may be different to its normal behavior, which is wrong.
+> > > > 
+> > > > Yep.
+> > 
+> > Okay, I think I know what to do so that it works.  The above symptoms are not
+> > present with the appended patch.
+> 
+> Looks good to me. Thanks for you work!
 
-Yes, this is all done by udev.
+Well, there's still a race possible in there, if SIGCONT comes after we have
+forced the SIGSTOP and before we call signal_wake_up().
+
+I think we should force the SIGSTOP and call signal_wake_up() without
+releasing the lock.  I'll try to do something along these lines later today.
+
+Greetings,
+Rafael
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
