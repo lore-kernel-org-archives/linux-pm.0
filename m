@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
 	tasks
-Date: Sat, 9 Dec 2006 16:35:32 +0100
-Message-ID: <200612091635.33455.rjw@sisk.pl>
-References: <200612032318.29030.rjw@sisk.pl> <200612082307.07305.rjw@sisk.pl>
+Date: Sun, 10 Dec 2006 01:27:36 +0100
+Message-ID: <200612100127.37288.rjw@sisk.pl>
+References: <200612032318.29030.rjw@sisk.pl>
 	<20061208233619.GB25223@elf.ucw.cz>
+	<200612091635.33455.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061208233619.GB25223@elf.ucw.cz>
+In-Reply-To: <200612091635.33455.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -20,41 +21,134 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: suspend-devel-bounces@lists.sourceforge.net
 Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Pavel Machek <pavel@suse.cz>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>
+To: suspend-devel@lists.sourceforge.net
+Cc: Pavel Machek <pavel@suse.cz>, pm list <linux-pm@lists.osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On Saturday, 9 December 2006 00:36, Pavel Machek wrote:
-> Hi!
-> 
-> > > > I wonder if we should start a test suite ;-).
-> > > > 
-> > > > > This means, however, that with this patch the behavior of a process (gdb)
-> > > > > after the resume may be different to its normal behavior, which is wrong.
-> > > > 
-> > > > Yep.
+On Saturday, 9 December 2006 16:35, Rafael J. Wysocki wrote:
+> On Saturday, 9 December 2006 00:36, Pavel Machek wrote:
+> > Hi!
 > > 
-> > Okay, I think I know what to do so that it works.  The above symptoms are not
-> > present with the appended patch.
+> > > > > I wonder if we should start a test suite ;-).
+> > > > > 
+> > > > > > This means, however, that with this patch the behavior of a process (gdb)
+> > > > > > after the resume may be different to its normal behavior, which is wrong.
+> > > > > 
+> > > > > Yep.
+> > > 
+> > > Okay, I think I know what to do so that it works.  The above symptoms are not
+> > > present with the appended patch.
+> > 
+> > Looks good to me. Thanks for you work!
 > 
-> Looks good to me. Thanks for you work!
+> Well, there's still a race possible in there, if SIGCONT comes after we have
+> forced the SIGSTOP and before we call signal_wake_up().
+> 
+> I think we should force the SIGSTOP and call signal_wake_up() without
+> releasing the lock.  I'll try to do something along these lines later today.
 
-Well, there's still a race possible in there, if SIGCONT comes after we have
-forced the SIGSTOP and before we call signal_wake_up().
-
-I think we should force the SIGSTOP and call signal_wake_up() without
-releasing the lock.  I'll try to do something along these lines later today.
+I think something like the appended patch will do.
 
 Greetings,
 Rafael
 
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/sched.h  |    1 +
+ kernel/power/process.c |   15 ++++++++-------
+ kernel/signal.c        |   16 +++++++++++++++-
+ 3 files changed, 24 insertions(+), 8 deletions(-)
+
+Index: linux-2.6.19-rc6-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/kernel/power/process.c	2006-12-08 23:20:35.000000000 +0100
++++ linux-2.6.19-rc6-mm2/kernel/power/process.c	2006-12-10 00:37:24.000000000 +0100
+@@ -28,8 +28,7 @@ static inline int freezeable(struct task
+ 	if ((p == current) || 
+ 	    (p->flags & PF_NOFREEZE) ||
+ 	    (p->exit_state == EXIT_ZOMBIE) ||
+-	    (p->exit_state == EXIT_DEAD) ||
+-	    (p->state == TASK_STOPPED))
++	    (p->exit_state == EXIT_DEAD))
+ 		return 0;
+ 	return 1;
+ }
+@@ -61,9 +60,13 @@ static inline void freeze_process(struct
+ 	unsigned long flags;
+ 
+ 	if (!freezing(p)) {
+-		freeze(p);
+ 		spin_lock_irqsave(&p->sighand->siglock, flags);
+-		signal_wake_up(p, 0);
++		freeze(p);
++		if (p->state == TASK_STOPPED) {
++			force_sigstop_and_wake_up(p);
++		} else {
++			signal_wake_up(p, 0);
++		}
+ 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
+ 	}
+ }
+@@ -103,9 +106,7 @@ static unsigned int try_to_freeze_tasks(
+ 			if (frozen(p))
+ 				continue;
+ 
+-			if (p->state == TASK_TRACED &&
+-			    (frozen(p->parent) ||
+-			     p->parent->state == TASK_STOPPED)) {
++			if (p->state == TASK_TRACED && frozen(p->parent)) {
+ 				cancel_freezing(p);
+ 				continue;
+ 			}
+Index: linux-2.6.19-rc6-mm2/kernel/signal.c
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/kernel/signal.c	2006-12-08 23:20:35.000000000 +0100
++++ linux-2.6.19-rc6-mm2/kernel/signal.c	2006-12-10 00:43:39.000000000 +0100
+@@ -962,6 +962,18 @@ force_sig_specific(int sig, struct task_
+ }
+ 
+ /*
++ * Force a SIGSTOP and make the task wake up.
++ *
++ * This is needed for the freezing of stopped tasks, because we want them to
++ * enter the refrigerator and be stopped again immediately after leaving it.
++ */
++void force_sigstop_and_wake_up(struct task_struct *t)
++{
++	specific_send_sig_info(SIGSTOP, SEND_SIG_FORCED, t);
++	signal_wake_up(t, 1);
++}
++
++/*
+  * Test if P wants to take SIG.  After we've checked all threads with this,
+  * it's equivalent to finding no threads not blocking SIG.  Any threads not
+  * blocking SIG were ruled out because they are not running and already
+@@ -1829,7 +1841,9 @@ finish_stop(int stop_count)
+ 		read_unlock(&tasklist_lock);
+ 	}
+ 
+-	schedule();
++	do {
++		schedule();
++	} while (try_to_freeze());
+ 	/*
+ 	 * Now we don't run again until continued.
+ 	 */
+Index: linux-2.6.19-rc6-mm2/include/linux/sched.h
+===================================================================
+--- linux-2.6.19-rc6-mm2.orig/include/linux/sched.h	2006-12-10 00:20:07.000000000 +0100
++++ linux-2.6.19-rc6-mm2/include/linux/sched.h	2006-12-10 00:42:44.000000000 +0100
+@@ -1350,6 +1350,7 @@ extern int kill_pg_info(int, struct sigi
+ extern void do_notify_parent(struct task_struct *, int);
+ extern void force_sig(int, struct task_struct *);
+ extern void force_sig_specific(int, struct task_struct *);
++extern void force_sigstop_and_wake_up(struct task_struct *t);
+ extern int send_sig(int, struct task_struct *, int);
+ extern void zap_other_threads(struct task_struct *p);
+ extern int kill_pg(pid_t, int, int);
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
