@@ -1,49 +1,63 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 1/2]: PM: Fix handling of stopped
-	tasks
-Date: Sun, 10 Dec 2006 21:00:02 +0100
-Message-ID: <20061210200002.GA32578@elf.ucw.cz>
-References: <200612032318.29030.rjw@sisk.pl> <200612091635.33455.rjw@sisk.pl>
-	<200612100127.37288.rjw@sisk.pl> <200612101145.37342.rjw@sisk.pl>
+From: "Bob YANG" <lostleuven04@gmail.com>
+Subject: question about process freezing
+Date: Mon, 11 Dec 2006 11:05:09 +0900
+Message-ID: <bac9789c0612101805t72dfe5ecyb4cc610955ef55da@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <200612101145.37342.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel@lists.sourceforge.net, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>, Nigel Cunningham <ncunningham@linuxmail.org>
+Content-Type: multipart/mixed; boundary="===============0158517075=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+This is a multi-part message in MIME format...
 
-> Ah, freeze(p) need not be under the lock.
-> 
-> Besides, I'm now thinking the previous version is also correct, because even
-> if SIGCONT comes after we have forced SIGSTOP, it will remove the SIGSTOP
-> from the queue and the task's state will change to TASK_RUNNING, so the
-> next signal_wake_up() will do what it should.
-> 
-> I prefer that one, because it's shorter and doesn't affect sched.h. ;-)
+--===============0158517075==
+Content-Type: multipart/alternative;
+    boundary="----------=_1165802724-28174-563"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-Okay... consider your latest patches ACKed. (But it would be nice to
-make them wait in -mm to 2.6.21, I believe this needs testing).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This is a multi-part message in MIME format...
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+------------=_1165802724-28174-563
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,
+
+Could anybody explain to me what process freezing is? I mean, what will
+happen to a frozen process? I tried to understand the codes in
+kernel/power/process.c and found one thing freeze_process() does is to set
+PF_FREEZE flag. What is that for?
+
+Thanks,
+Peng
+
+------------=_1165802724-28174-563
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br><br>Could anybody explain to me what process freezing is? I mean, what will happen to a frozen process? I tried to understand the codes in kernel/power/process.c and found one thing freeze_process() does is to set PF_FREEZE flag. What is that for?
+<br><br>Thanks,<br>Peng<br>
+
+------------=_1165802724-28174-563--
+
+--===============0158517075==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0158517075==--
