@@ -1,10 +1,14 @@
-From: "Bob YANG" <lostleuven04@gmail.com>
-Subject: question about process freezing
-Date: Mon, 11 Dec 2006 11:05:09 +0900
-Message-ID: <bac9789c0612101805t72dfe5ecyb4cc610955ef55da@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: question about process freezing
+Date: Mon, 11 Dec 2006 21:33:36 +0100
+Message-ID: <200612112133.36302.rjw@sisk.pl>
+References: <bac9789c0612101805t72dfe5ecyb4cc610955ef55da@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0158517075=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <bac9789c0612101805t72dfe5ecyb4cc610955ef55da@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,49 +19,39 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
+Cc: Bob YANG <lostleuven04@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-
-This is a multi-part message in MIME format...
-
---===============0158517075==
-Content-Type: multipart/alternative;
-    boundary="----------=_1165802724-28174-563"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-
-This is a multi-part message in MIME format...
-
-------------=_1165802724-28174-563
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 Hi,
 
-Could anybody explain to me what process freezing is? I mean, what will
-happen to a frozen process? I tried to understand the codes in
-kernel/power/process.c and found one thing freeze_process() does is to set
-PF_FREEZE flag. What is that for?
+On Monday, 11 December 2006 03:05, Bob YANG wrote:
+> Hi,
+> =
 
-Thanks,
-Peng
+> Could anybody explain to me what process freezing is? I mean, what will
+> happen to a frozen process? I tried to understand the codes in
+> kernel/power/process.c and found one thing freeze_process() does is to set
+> PF_FREEZE flag. What is that for?
 
-------------=_1165802724-28174-563
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is to tell the process to go to the refrigerator.
 
-Hi,<br><br>Could anybody explain to me what process freezing is? I mean, what will happen to a frozen process? I tried to understand the codes in kernel/power/process.c and found one thing freeze_process() does is to set PF_FREEZE flag. What is that for?
-<br><br>Thanks,<br>Peng<br>
+The function used by processes to check if we want them to go to the
+refrigerator is called try_to_freeze() and defined in either sched.h or
+freezer.h (in newer kernels).  User space processes call try_to_freeze()
+in get_signal_to_deliver() and kernel threads (that are freezeable) should
+call it explicitly wherever appropriate.
 
-------------=_1165802724-28174-563--
+The refrigerator itself is a function defined in process.c.  Processes that
+enter it set their PF_FROZEN flags and change their states to
+TASK_UNINTERRUPTIBLE.   They are in this state until we clear the PF_FROZEN
+flag for them, in thaw_processes().
 
---===============0158517075==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Greetings,
+Rafael
 
 
---===============0158517075==--
+-- =
+
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
