@@ -1,64 +1,60 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC 0/3] experimental G5 powermac suspend implementation
-Date: Tue, 12 Dec 2006 13:21:07 +0100
-Message-ID: <1165926068.22338.15.camel@johannes.berg>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [RFC 1/3] support powermac G5 CPU hotplug
+Date: Tue, 12 Dec 2006 13:09:16 +0000
+Message-ID: <20061212130916.GB5190@ucw.cz>
 References: <20061211230208.526233000@sipsolutions.net>>
+	<20061211230754.380263000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1421703441=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <20061211230208.526233000@sipsolutions.net>>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: linuxppc-dev@ozlabs.org
-Cc: linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>, Michael Buesch <mb@bu3sch.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <20061211230754.380263000@sipsolutions.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, Michael Hanselmann <linux-kernel@hansmi.ch>, Torrance <torrance123@gmail.com>, Michael Buesch <mb@bu3sch.de>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
---===============1421703441==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-pAgtPYD2UrDsob/q3e/K"
+> This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+> disabled are put into an idle loop with interrupts hard-disabled, to wake
+> them up again we kick them just like when bringing them up.
+> =
 
+> Maybe there's some way to actually turn off those CPUs even more?
+> =
 
---=-pAgtPYD2UrDsob/q3e/K
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Date/time is restored to wherever it was when suspending. Does anyone
-know how to fix that? Does the RTC somehow warp the time on resume or do
-we somehow mark the time/date __nosave?
-
-johannes
-
---=-pAgtPYD2UrDsob/q3e/K
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFfp6z/ETPhpq3jKURAkP3AJwJlvmerj96HokTLeU9aln+3eX3hQCfZq31
-kSuDVWiEudyiXOxDBq3a99g=
-=xUB7
------END PGP SIGNATURE-----
-
---=-pAgtPYD2UrDsob/q3e/K--
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> =
 
 
---===============1421703441==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============1421703441==--
+> --- linux-2.6-git.orig/arch/powerpc/kernel/smp.c	2006-12-11 23:34:47.6937=
+16759 +0100
+> +++ linux-2.6-git/arch/powerpc/kernel/smp.c	2006-12-11 23:37:55.017716759=
+ +0100
+> @@ -558,6 +558,9 @@ int __devinit start_secondary(void *unus
+>  =
+
+>  	local_irq_enable();
+>  =
+
+> +	/* who knows what context the processor might have died in... */
+> +	task_thread_info(paca[cpu].__current)->preempt_count =3D 0;
+> +
+
+?? Context for downing cpu should better be well-defined. Just do this
+in cpu_die if it is really required.
+							Pavel
+-- =
+
+Thanks for all the (sleeping) penguins.
