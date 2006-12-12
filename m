@@ -1,42 +1,59 @@
-From: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [linux-pm] [RFC 0/3] experimental G5 powermac suspend
-	implementation
-Date: Tue, 12 Dec 2006 18:34:21 +0100
-Message-ID: <20061212173421.GA31090@iram.es>
-References: <20061211230208.526233000@sipsolutions.net>
-	<1165926068.22338.15.camel@johannes.berg>
-	<20061212132240.GE5190@ucw.cz>
-	<1165930563.22338.32.camel@johannes.berg>
-	<1165932463.22338.37.camel@johannes.berg>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: /sys/devices/.../power/state broken?
+Date: Tue, 12 Dec 2006 10:15:39 -0800
+Message-ID: <200612121015.41365.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0612121038210.2834-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0612121038210.2834-100000@iolanthe.rowland.org>
 Content-Disposition: inline
-In-Reply-To: <1165932463.22338.37.camel@johannes.berg>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.osdl.org, Michael Buesch <mb@bu3sch.de>, Torrance <torrance123@gmail.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, linux-pm@lists.osdl.org, Brice Goglin <brice@myri.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 12, 2006 at 03:07:43PM +0100, Johannes Berg wrote:
-> On Tue, 2006-12-12 at 14:36 +0100, Johannes Berg wrote:
-> 
-> > Well the RTC of course ticks but the system clock obviously doesn't.
-> > Yes, I'll have to look at the time suspend/resume code. Do you know
-> > where to find it?
-> 
-> Never mind, found it easily enough: it's in arch/i386/kernel/time.c
+On Tuesday 12 December 2006 7:42 am, Alan Stern wrote:
+> On Tue, 12 Dec 2006, Brice Goglin wrote:
+> =
 
-Timer is also restored from RTC on wakeup on powerbooks, so 
-there is already something under arch/powerpc...
+> > Hi,
+> > =
 
-	Gabriel
+> > I know that .../power/state files are deprecated, but I like using them
+> > for basic testing of a driver's suspend/resume routines. Anyway, echoing
+> > something in the .../power/state in current -git does not seem to work
+> > anymore.
+> =
+
+> It does work, but the results depend on the device you want to suspend.  =
+
+> For instance, USB devices have no problem at all.  PCI devices will ignore
+> your writes because .../power/state can't handle the new multi-stage
+> suspend and resume mechanism.
+> =
+
+> I've been using the patch below to force my tests to work. =
+
+
+... relying on the fact that few drivers currently use the late_suspend()
+or early_resume() methods.  I know one such driver is in a 2.6.20 merge
+queue, but drivers using those methods are still a bit uncommon.
+
+
+Speaking of those new PM methods ... Greg, I tried refreshing my
+patch that uses class suspend() and resume() methods with RTCs to
+adjust the system clock properly on resume.  But neither method
+is getting called any more.  Did that break with the class device
+changes?
+
+- Dave
