@@ -1,13 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: /sys/devices/.../power/state broken?
-Date: Tue, 12 Dec 2006 10:15:39 -0800
-Message-ID: <200612121015.41365.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0612121038210.2834-100000@iolanthe.rowland.org>
+Subject: Re: nokia 770 [was Re: community PM requirements/issues
+	and PowerOP]
+Date: Tue, 12 Dec 2006 12:00:17 -0800
+Message-ID: <200612121200.18513.david-b@pacbell.net>
+References: <20060914101704.GA17820@elf.ucw.cz>
+	<1158583334.28629.19.camel@localhost>
+	<20060919182523.GE7099@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0612121038210.2834-100000@iolanthe.rowland.org>
+In-Reply-To: <20060919182523.GE7099@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,42 +21,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, linux-pm@lists.osdl.org, Brice Goglin <brice@myri.com>
+To: linux-pm@lists.osdl.org
+Cc: matthew.a.locke@comcast.net, scott.preece@motorola.com, Pavel Machek <pavel@ucw.cz>, Amit Kucheria <amit.kucheria@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 12 December 2006 7:42 am, Alan Stern wrote:
-> On Tue, 12 Dec 2006, Brice Goglin wrote:
+On Tuesday 19 September 2006 11:25 am, Pavel Machek wrote:
 > =
 
-> > Hi,
-> > =
+> Could you perhaps provide list of operating points for 770? It would
+> help understanding a bit, I'd say.
 
-> > I know that .../power/state files are deprecated, but I like using them
-> > for basic testing of a driver's suspend/resume routines. Anyway, echoing
-> > something in the .../power/state in current -git does not seem to work
-> > anymore.
-> =
+If there was a followup here, I missed it ...
 
-> It does work, but the results depend on the device you want to suspend.  =
+ISTR that it doesn't use (formal) operating points, and that a lot of the
+basic SOC power savings (vs powering off the display or wifi) come from a
+different kind of mechanism entirely.  Namely, a combination of dynamic
+tick with a modified system idle task, which enters one of the OMAP low
+power modes during those long periods between clock ticks or other irqs.
 
-> For instance, USB devices have no problem at all.  PCI devices will ignore
-> your writes because .../power/state can't handle the new multi-stage
-> suspend and resume mechanism.
-> =
-
-> I've been using the patch below to force my tests to work. =
-
-
-... relying on the fact that few drivers currently use the late_suspend()
-or early_resume() methods.  I know one such driver is in a 2.6.20 merge
-queue, but drivers using those methods are still a bit uncommon.
-
-
-Speaking of those new PM methods ... Greg, I tried refreshing my
-patch that uses class suspend() and resume() methods with RTCs to
-adjust the system clock properly on resume.  But neither method
-is getting called any more.  Did that break with the class device
-changes?
+That's one of the standard power saving schemes used on OMAP1 platforms
+with Linux.
 
 - Dave
