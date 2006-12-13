@@ -1,16 +1,20 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: nokia 770 [was Re: community PM requirements...]
-Date: Wed, 13 Dec 2006 14:55:59 -0800
-Message-ID: <20061213225559.E80BF1E56CF@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20060914101704.GA17820@elf.ucw.cz>
-	<457FEE17.8080806@gmail.com> <20061213210359.GC11843@elf.ucw.cz>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: nokia 770 [was Re: community PM requirements/issues
+	and PowerOP]
+Date: Wed, 13 Dec 2006 17:58:02 -0500
+Message-ID: <20061213225802.GN2418@redhat.com>
+References: <20060914101704.GA17820@elf.ucw.cz> <457FEE17.8080806@gmail.com>
+	<20061213210359.GC11843@elf.ucw.cz>
 	<200612131332.58606.david-b@pacbell.net>
 	<BBB6202A-4F06-4D2D-BD8E-DD34267D85E9@comcast.net>
+	<20061213215351.GE2418@redhat.com>
+	<5062AF8D-E97F-41D2-8602-59578F2B4655@comcast.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <BBB6202A-4F06-4D2D-BD8E-DD34267D85E9@comcast.net>
+Content-Disposition: inline
+In-Reply-To: <5062AF8D-E97F-41D2-8602-59578F2B4655@comcast.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,61 +24,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: matthew.a.locke@comcast.net
-Cc: linux-pm@lists.osdl.org, amit.kucheria@nokia.com, scott.preece@motorola.com, pavel@ucw.cz
+To: Matthew Locke <matthew.a.locke@comcast.net>
+Cc: linux-pm@lists.osdl.org, scott.preece@motorola.com, Pavel Machek <pavel@ucw.cz>, Amit Kucheria <amit.kucheria@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-> >>>> Could you perhaps provide list of operating points for 770? It  =
+On Wed, Dec 13, 2006 at 02:50:12PM -0800, Matthew Locke wrote:
+ > =
 
-> >>>> would help understanding a bit, I'd say.
-> >>>
-> >>> If there was a followup here, I missed it ...
-> >>>
-> >>> ISTR that it doesn't use (formal) operating points, and that ...
-> >>
-> >>  http://dynamicpower.sourceforge.net/dpm-omap.html
-> >
-> > That's the old DPM stuff not any of the newer proposals right?
->
-> Example operating points were requested.  Using the operating points  =
+ > >>> I'd find that it's used on N770, as a good way to kick in low  =
 
-> from DPM is fine for examples.
+ > >>> voltage
+ > >>> operation modes.
+ > >>
+ > >> Except that cpufreq doesn't really support voltage changes
+ > >
+ > > The majority of cpufreq drivers in the tree right now support
+ > > voltage scaling just fine.
+ > =
 
-I read the query to be specifically about operating points
-used in that product ... as giving better insight into the
-real PM requirements for Linux-based products.
+ > Ok, let's reword my sentence.  The cpufreq interface does not support  =
 
-Examples of how one solution _could_ be used address another
-purpose than highlighting requirements.
+ > voltage as a  parameter
 
+Please explain why this is useful at all.
+Under what circumstance is "Set the CPU voltage to 1.2V" a useful thing
+for a user, sysadmin, or application to do ?
 
-> > ... that's in addition to the reduced power idle, which didn't
-> > seem to fit into the DPM framework in any obvious way.
->
-> Actually, automatically reducing power at idle is what DPM is all  =
+The voltage something runs at is utterly irrelevant to all the above.
+Given it's inherently tied to the speed a chip runs at, which makes
+a lot more sense for all the above scenarios to change, we export that inst=
+ead.
 
-> about.  In DPM an operating point is mapped to the idle state so when  =
+AFAICS, exposing voltages to userspace would be completely pointless.
 
-> the idle task is entered an operating point change is triggered.  The  =
+		Dave
 
-> system can choose the best point for the idle task based on latency  =
+-- =
 
-> requirements, length of idle when using dynamic ticks, etc.
-
-Hmm, that's something that somehow never came out in previous
-discussions.  At least, not to me.  It's possible that the point
-did come out, but got buried in all the noise.
-
-So it would appear that an operating point (in DPM, anyway) is
-a combination of clock, voltage, and probably other settings,
-coupled with an implementation of the idle task and a policy
-implemented by idle task ... yes?
-
-Given that the clock API manages clock settings, and cpufreq
-(for better or worse) handles CPU-specific clock and voltage,
-you can still color me confused about how an "operating point"
-would be a programming construct rather than a side effect of
-those other APIs on an implementation.  (If anyone wants to
-enlighten me, that should go into a new thread!)
-
-- Dave
+http://www.codemonkey.org.uk
