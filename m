@@ -1,57 +1,73 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: nokia 770 [was Re: community PM requirements/issues
- and PowerOP]
-Date: Wed, 13 Dec 2006 15:12:07 +0300
-Message-ID: <457FEE17.8080806@gmail.com>
-References: <20060914101704.GA17820@elf.ucw.cz>	<1158583334.28629.19.camel@localhost>	<20060919182523.GE7099@elf.ucw.cz>
-	<200612121200.18513.david-b@pacbell.net>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [linux-pm] [RFC 0/3] experimental G5 powermac suspend
+	implementation
+Date: Wed, 13 Dec 2006 13:37:27 +0100
+Message-ID: <1166013447.7273.3.camel@johannes.berg>
+References: <20061211230208.526233000@sipsolutions.net>
+	<1165926068.22338.15.camel@johannes.berg>
+	<20061212132240.GE5190@ucw.cz>
+	<1165930563.22338.32.camel@johannes.berg>
+	<1165932463.22338.37.camel@johannes.berg>
+	<20061212173421.GA31090@iram.es>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200612121200.18513.david-b@pacbell.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: scott.preece@motorola.com, matthew.a.locke@comcast.net, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>, Amit Kucheria <amit.kucheria@nokia.com>
+Content-Type: multipart/mixed; boundary="===============1517451464=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <20061212173421.GA31090@iram.es>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@ozlabs.org, Pavel Machek <pavel@suse.cz>, linux-pm@lists.osdl.org, Michael Buesch <mb@bu3sch.de>, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-David Brownell wrote:
-> On Tuesday 19 September 2006 11:25 am, Pavel Machek wrote:
->> Could you perhaps provide list of operating points for 770? It would
->> help understanding a bit, I'd say.
-> =
 
-> If there was a followup here, I missed it ...
-> =
+--===============1517451464==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-an/5wNr5OlSu7oLhnO+V"
 
-> ISTR that it doesn't use (formal) operating points, and that a lot of the
-> basic SOC power savings (vs powering off the display or wifi) come from a
-> different kind of mechanism entirely.  Namely, a combination of dynamic
-> tick with a modified system idle task, which enters one of the OMAP low
-> power modes during those long periods between clock ticks or other irqs.
-> =
 
-> That's one of the standard power saving schemes used on OMAP1 platforms
-> with Linux.
-sample of reasonable operating points for OMAP1 platforms along with approp=
-riate =
+--=-an/5wNr5OlSu7oLhnO+V
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-patches may be found at http://dynamicpower.sourceforge.net/dpm-omap.html
+On Tue, 2006-12-12 at 18:34 +0100, Gabriel Paubert wrote:
 
-Eugeny
-> =
+> Timer is also restored from RTC on wakeup on powerbooks, so=20
+> there is already something under arch/powerpc...
 
-> - Dave
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
-> =
+Right :) Sending a patch in a minute.
+
+johannes
+
+--=-an/5wNr5OlSu7oLhnO+V
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFf/QG/ETPhpq3jKURAiMKAJ0ZoACDOrqNabpFVhxfWOI+LbPIzgCfXIGg
+IRyxbEHa/s6ehr1fe3Y1Q2c=
+=80dL
+-----END PGP SIGNATURE-----
+
+--=-an/5wNr5OlSu7oLhnO+V--
+
+
+--===============1517451464==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============1517451464==--
