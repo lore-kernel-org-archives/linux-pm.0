@@ -1,16 +1,18 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: nokia 770 [was Re: community PM requirements/issues
- and PowerOP]
-Date: Thu, 14 Dec 2006 00:56:24 +0300
-Message-ID: <45807708.3090607@gmail.com>
+	and PowerOP]
+Date: Wed, 13 Dec 2006 22:58:31 +0100
+Message-ID: <20061213215831.GG12253@elf.ucw.cz>
 References: <20060914101704.GA17820@elf.ucw.cz> <457FEE17.8080806@gmail.com>
 	<20061213210359.GC11843@elf.ucw.cz>
 	<200612131332.58606.david-b@pacbell.net>
+	<45807708.3090607@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200612131332.58606.david-b@pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <45807708.3090607@gmail.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,65 +22,73 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com, Pavel Machek <pavel@ucw.cz>, Amit Kucheria <amit.kucheria@nokia.com>
+To: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Cc: linux-pm@lists.osdl.org, matthew.a.locke@comcast.net, scott.preece@motorola.com, Amit Kucheria <amit.kucheria@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-David Brownell wrote:
-> On Wednesday 13 December 2006 1:03 pm, Pavel Machek wrote:
->> On Wed 2006-12-13 15:12:07, Eugeny S. Mints wrote:
->>> David Brownell wrote:
->>>> On Tuesday 19 September 2006 11:25 am, Pavel Machek wrote:
->>>>> Could you perhaps provide list of operating points for 770? It would
->>>>> help understanding a bit, I'd say.
->>>> If there was a followup here, I missed it ...
->>>>
->>>> ISTR that it doesn't use (formal) operating points, and that a lot of =
-the
->>>> basic SOC power savings (vs powering off the display or wifi) come fro=
-m a
->>>> different kind of mechanism entirely.  Namely, a combination of dynamic
->>>> tick with a modified system idle task, which enters one of the OMAP low
->>>> power modes during those long periods between clock ticks or other irq=
-s.
->>>>
->>>> That's one of the standard power saving schemes used on OMAP1 platforms
->>>> with Linux.
->>> sample of reasonable operating points for OMAP1 platforms along with ap=
-propriate =
+On Thu 2006-12-14 00:56:24, Eugeny S. Mints wrote:
+> David Brownell wrote:
+> >On Wednesday 13 December 2006 1:03 pm, Pavel Machek wrote:
+> >>On Wed 2006-12-13 15:12:07, Eugeny S. Mints wrote:
+> >>>David Brownell wrote:
+> >>>>On Tuesday 19 September 2006 11:25 am, Pavel Machek wrote:
+> >>>>>Could you perhaps provide list of operating points for 770? It would
+> >>>>>help understanding a bit, I'd say.
+> >>>>If there was a followup here, I missed it ...
+> >>>>
+> >>>>ISTR that it doesn't use (formal) operating points, and that a lot of =
 
->>> patches may be found at http://dynamicpower.sourceforge.net/dpm-omap.ht=
-ml
-> =
+> >>>>the
+> >>>>basic SOC power savings (vs powering off the display or wifi) come fr=
+om =
 
-> That's the old DPM stuff not any of the newer proposals right?
-> =
+> >>>>a
+> >>>>different kind of mechanism entirely.  Namely, a combination of dynam=
+ic
+> >>>>tick with a modified system idle task, which enters one of the OMAP l=
+ow
+> >>>>power modes during those long periods between clock ticks or other ir=
+qs.
+> >>>>
+> >>>>That's one of the standard power saving schemes used on OMAP1 platfor=
+ms
+> >>>>with Linux.
+> >>>sample of reasonable operating points for OMAP1 platforms along with =
 
-> I thought the question was specifically what N770 used.
-> =
+> >>>appropriate patches may be found at =
 
-> =
+> >>>http://dynamicpower.sourceforge.net/dpm-omap.html
+> >
+> >That's the old DPM stuff not any of the newer proposals right?
+> >
+> >I thought the question was specifically what N770 used.
+> >
+> >
+> >>Okay... so you have system with 4 different cpu speeds. That should be
+> >>simple enough to get running using cpufreq, no need for complex
+> >>operating points patches.
+> >
+> >And OMAP1 does have cpufreq support.  I believe that if I checked it out
+> >I'd find that it's used on N770, as a good way to kick in low voltage
+> >operation modes.
+> >
+> >... that's in addition to the reduced power idle, which didn't seem to
+> >fit into the DPM framework in any obvious way.
+> It fits. Omitting some details DPM allows to map/stick operating point to =
 
->> Okay... so you have system with 4 different cpu speeds. That should be
->> simple enough to get running using cpufreq, no need for complex
->> operating points patches.
-> =
+> tasks. Mapping one of OMAP low power mode operating point to idle task do=
+es =
 
-> And OMAP1 does have cpufreq support.  I believe that if I checked it out
-> I'd find that it's used on N770, as a good way to kick in low voltage
-> operation modes.
-> =
+> the job.
 
-> ... that's in addition to the reduced power idle, which didn't seem to
-> fit into the DPM framework in any obvious way.
-It fits. Omitting some details DPM allows to map/stick operating point to t=
-asks. =
+That's what I call a hack.
 
-Mapping one of OMAP low power mode operating point to idle task does the jo=
-b.
+Take a look at acpi C1..C3 state on i386. They provide same
+functionality ("reduced power idle"), but they are implemented in
+reasonable way and already merged.
+								Pavel
+-- =
 
-Eugeny
-> =
-
-> - Dave
-> =
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
