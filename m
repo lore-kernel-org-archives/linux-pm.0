@@ -1,9 +1,9 @@
 From: info@bbc37.orangehome.co.uk
 Subject: Captain Smith Scott From IRAQ.
-Date: Sat, 16 Dec 2006 01:45:09 +0100 (CET)
-Message-ID: <29639343.481321166229909673.JavaMail.www@wwinf3103>
+Date: Sat, 16 Dec 2006 02:22:46 +0100 (CET)
+Message-ID: <21029863.482371166232166735.JavaMail.www@wwinf3103>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1180385330=="
+Content-Type: multipart/mixed; boundary="===============0758195271=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,16 +18,16 @@ List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
---===============1180385330==
+--===============0758195271==
 Content-Type: multipart/alternative;
-    boundary="----------=_1166229933-11189-420"
+    boundary="----------=_1166232178-11189-618"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1166229933-11189-420
+------------=_1166232178-11189-618
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
@@ -44,7 +44,7 @@ capt.scotty@yahoo.com for security reasons.
 
 Sincere regards,
 Captain Smith Scott.
-------------=_1166229933-11189-420
+------------=_1166232178-11189-618
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
@@ -72,13 +72,13 @@ tect my job with the US Monitoring and Peace Keeping mission. I will be wai=
 ting to hear from you as soon as possible to proceed. Do not reply to this =
 email, reply me to: <BR>capt.scotty@yahoo.com for security reasons. <BR><BR=
 >Sincere regards,<BR>Captain Smith Scott.</STRONG></FONT></P>
-------------=_1166229933-11189-420--
+------------=_1166232178-11189-618--
 
---===============1180385330==
+--===============0758195271==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============1180385330==--
+--===============0758195271==--
