@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 4/4] swsusp: Change pm_ops handling by
-	userland interface
-Date: Sun, 17 Dec 2006 19:18:34 +0100
-Message-ID: <200612171918.35697.rjw@sisk.pl>
+Subject: [PATCH -mm 3/4] swsusp: Change code ordering in
+	user.c
+Date: Sun, 17 Dec 2006 19:09:01 +0100
+Message-ID: <200612171909.01832.rjw@sisk.pl>
 References: <200612171858.16380.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,182 +23,152 @@ To: pm list <linux-pm@lists.osdl.org>
 Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, linux-acpi@vger.kernel.org, Stefan Seyfried <seife@suse.de>, Stephen Hemminger <shemminger@osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Make the userland interface of swsusp call pm_ops->finish() after
-enable_nonboot_cpus() and before resume_device(),
+Change the ordering of code in kernel/power/user.c so that device_suspend()
+is called before disable_nonboot_cpus() and device_resume() is called after
+enable_nonboot_cpus().  This is needed to make the userland suspend call
+pm_ops->finish() after enable_nonboot_cpus() and before device_resume(),
 as indicated by the recent discussion on Linux-PM
 (cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
-
-This patch changes the SNAPSHOT_PMOPS ioctl so that its first function,
-PMOPS_PREPARE, only sets a switch turning the platform suspend mode on, and
-its last function, PMOPS_PREPARE, only checks if the platform mode is enabled.
-This should allow the older userland tools to work with new kernels without
-any modifications.
 
 The changes here only affect the userland interface of swsusp.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/user.c |   64 +++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 51 insertions(+), 13 deletions(-)
+ kernel/power/user.c |   92 ++++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 58 insertions(+), 34 deletions(-)
 
 Index: linux-2.6.20-rc1/kernel/power/user.c
 ===================================================================
---- linux-2.6.20-rc1.orig/kernel/power/user.c	2006-12-14 23:20:10.000000000 +0100
-+++ linux-2.6.20-rc1/kernel/power/user.c	2006-12-14 23:20:18.000000000 +0100
-@@ -37,6 +37,7 @@ static struct snapshot_data {
- 	int mode;
- 	char frozen;
- 	char ready;
-+	char platform_suspend;
- } snapshot_state;
- 
- static atomic_t device_available = ATOMIC_INIT(1);
-@@ -66,6 +67,7 @@ static int snapshot_open(struct inode *i
- 	data->bitmap = NULL;
- 	data->frozen = 0;
- 	data->ready = 0;
-+	data->platform_suspend = 0;
- 
- 	return 0;
- }
-@@ -122,7 +124,23 @@ static ssize_t snapshot_write(struct fil
+--- linux-2.6.20-rc1.orig/kernel/power/user.c	2006-12-14 22:35:52.000000000 +0100
++++ linux-2.6.20-rc1/kernel/power/user.c	2006-12-14 23:20:10.000000000 +0100
+@@ -122,6 +122,59 @@ static ssize_t snapshot_write(struct fil
  	return res;
  }
  
--static inline int snapshot_suspend(void)
-+static inline int platform_prepare(void)
++static inline int snapshot_suspend(void)
 +{
-+	int error = 0;
++	int error;
 +
-+	if (pm_ops && pm_ops->prepare)
-+		error = pm_ops->prepare(PM_SUSPEND_DISK);
++	mutex_lock(&pm_mutex);
++	/* Free memory before shutting down devices. */
++	error = swsusp_shrink_memory();
++	if (error)
++		goto Finish;
 +
++	suspend_console();
++	error = device_suspend(PMSG_FREEZE);
++	if (error)
++		goto Resume_devices;
++
++	error = disable_nonboot_cpus();
++	if (!error) {
++		in_suspend = 1;
++		error = swsusp_suspend();
++	}
++	enable_nonboot_cpus();
++ Resume_devices:
++	device_resume();
++	resume_console();
++ Finish:
++	mutex_unlock(&pm_mutex);
 +	return error;
 +}
 +
-+static inline void platform_finish(void)
++static inline int snapshot_restore(void)
 +{
-+	if (pm_ops && pm_ops->finish)
-+		pm_ops->finish(PM_SUSPEND_DISK);
++	int error;
++
++	mutex_lock(&pm_mutex);
++	pm_prepare_console();
++	suspend_console();
++	error = device_suspend(PMSG_PRETHAW);
++	if (error)
++		goto Resume_devices;
++
++	error = disable_nonboot_cpus();
++	if (!error)
++		error = swsusp_resume();
++
++	enable_nonboot_cpus();
++ Resume_devices:
++	device_resume();
++	resume_console();
++	pm_restore_console();
++	mutex_unlock(&pm_mutex);
++	return error;
 +}
 +
-+static inline int snapshot_suspend(int platform_suspend)
+ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+                           unsigned int cmd, unsigned long arg)
  {
- 	int error;
- 
-@@ -132,6 +150,11 @@ static inline int snapshot_suspend(void)
- 	if (error)
- 		goto Finish;
- 
-+	if (platform_suspend) {
-+		error = platform_prepare();
-+		if (error)
-+			goto Finish;
-+	}
- 	suspend_console();
- 	error = device_suspend(PMSG_FREEZE);
- 	if (error)
-@@ -144,6 +167,9 @@ static inline int snapshot_suspend(void)
- 	}
- 	enable_nonboot_cpus();
-  Resume_devices:
-+	if (platform_suspend)
-+		platform_finish();
-+
- 	device_resume();
- 	resume_console();
-  Finish:
-@@ -151,12 +177,17 @@ static inline int snapshot_suspend(void)
- 	return error;
- }
- 
--static inline int snapshot_restore(void)
-+static inline int snapshot_restore(int platform_suspend)
- {
- 	int error;
- 
- 	mutex_lock(&pm_mutex);
- 	pm_prepare_console();
-+	if (platform_suspend) {
-+		error = platform_prepare();
-+		if (error)
-+			goto Finish;
-+	}
- 	suspend_console();
- 	error = device_suspend(PMSG_PRETHAW);
- 	if (error)
-@@ -168,8 +199,12 @@ static inline int snapshot_restore(void)
- 
- 	enable_nonboot_cpus();
-  Resume_devices:
-+	if (platform_suspend)
-+		platform_finish();
-+
- 	device_resume();
- 	resume_console();
-+ Finish:
- 	pm_restore_console();
- 	mutex_unlock(&pm_mutex);
- 	return error;
-@@ -221,7 +256,7 @@ static int snapshot_ioctl(struct inode *
+@@ -145,14 +198,9 @@ static int snapshot_ioctl(struct inode *
+ 		if (data->frozen)
+ 			break;
+ 		mutex_lock(&pm_mutex);
+-		error = disable_nonboot_cpus();
+-		if (!error) {
+-			error = freeze_processes();
+-			if (error) {
+-				thaw_processes();
+-				enable_nonboot_cpus();
+-				error = -EBUSY;
+-			}
++		if (freeze_processes()) {
++			thaw_processes();
++			error = -EBUSY;
+ 		}
+ 		mutex_unlock(&pm_mutex);
+ 		if (!error)
+@@ -164,7 +212,6 @@ static int snapshot_ioctl(struct inode *
+ 			break;
+ 		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+-		enable_nonboot_cpus();
+ 		mutex_unlock(&pm_mutex);
+ 		data->frozen = 0;
+ 		break;
+@@ -174,20 +221,7 @@ static int snapshot_ioctl(struct inode *
  			error = -EPERM;
  			break;
  		}
--		error = snapshot_suspend();
-+		error = snapshot_suspend(data->platform_suspend);
+-		mutex_lock(&pm_mutex);
+-		/* Free memory before shutting down devices. */
+-		error = swsusp_shrink_memory();
+-		if (!error) {
+-			suspend_console();
+-			error = device_suspend(PMSG_FREEZE);
+-			if (!error) {
+-				in_suspend = 1;
+-				error = swsusp_suspend();
+-				device_resume();
+-			}
+-			resume_console();
+-		}
+-		mutex_unlock(&pm_mutex);
++		error = snapshot_suspend();
  		if (!error)
  			error = put_user(in_suspend, (unsigned int __user *)arg);
  		if (!error)
-@@ -235,7 +270,7 @@ static int snapshot_ioctl(struct inode *
+@@ -201,17 +235,7 @@ static int snapshot_ioctl(struct inode *
  			error = -EPERM;
  			break;
  		}
--		error = snapshot_restore();
-+		error = snapshot_restore(data->platform_suspend);
+-		mutex_lock(&pm_mutex);
+-		pm_prepare_console();
+-		suspend_console();
+-		error = device_suspend(PMSG_PRETHAW);
+-		if (!error) {
+-			error = swsusp_resume();
+-			device_resume();
+-		}
+-		resume_console();
+-		pm_restore_console();
+-		mutex_unlock(&pm_mutex);
++		error = snapshot_restore();
  		break;
  
  	case SNAPSHOT_FREE:
-@@ -342,28 +377,31 @@ static int snapshot_ioctl(struct inode *
- 		break;
- 
- 	case SNAPSHOT_PMOPS:
-+		error = -EINVAL;
-+
- 		switch (arg) {
- 
- 		case PMOPS_PREPARE:
--			if (pm_ops->prepare) {
--				error = pm_ops->prepare(PM_SUSPEND_DISK);
--			}
-+			data->platform_suspend = 1;
-+			error = 0;
- 			break;
- 
- 		case PMOPS_ENTER:
--			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
--			error = pm_ops->enter(PM_SUSPEND_DISK);
-+			if (data->platform_suspend) {
-+				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-+				error = pm_ops->enter(PM_SUSPEND_DISK);
-+				error = 0;
-+			}
- 			break;
- 
- 		case PMOPS_FINISH:
--			if (pm_ops && pm_ops->finish) {
--				pm_ops->finish(PM_SUSPEND_DISK);
--			}
-+			if (data->platform_suspend)
-+				error = 0;
-+
- 			break;
- 
- 		default:
- 			printk(KERN_ERR "SNAPSHOT_PMOPS: invalid argument %ld\n", arg);
--			error = -EINVAL;
- 
- 		}
- 		break;
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
