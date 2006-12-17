@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 3/4] swsusp: Change code ordering in
-	user.c
-Date: Sun, 17 Dec 2006 19:09:01 +0100
-Message-ID: <200612171909.01832.rjw@sisk.pl>
-References: <200612171858.16380.rjw@sisk.pl>
+Subject: [PATCH -mm] PM: Change ordering of suspend and
+	resume code
+Date: Sun, 17 Dec 2006 18:58:15 +0100
+Message-ID: <200612171858.16380.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200612171858.16380.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
 	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,155 +21,56 @@ To: pm list <linux-pm@lists.osdl.org>
 Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, linux-acpi@vger.kernel.org, Stefan Seyfried <seife@suse.de>, Stephen Hemminger <shemminger@osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Change the ordering of code in kernel/power/user.c so that device_suspend()
-is called before disable_nonboot_cpus() and device_resume() is called after
-enable_nonboot_cpus().  This is needed to make the userland suspend call
-pm_ops->finish() after enable_nonboot_cpus() and before device_resume(),
-as indicated by the recent discussion on Linux-PM
+Hi,
+
+As indicated in a recent thread on Linux-PM, it's necessary to call
+pm_ops->finish() before devce_resume(), but enable_nonboot_cpus() has to be
+called before pm_ops->finish()
 (cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+For consistency, it seems reasonable to call disable_nonboot_cpus() after
+device_suspend().
 
-The changes here only affect the userland interface of swsusp.
+This way the suspend code will remain symmetrical with respect to the resume
+code and it may allow us to speed up things in the future by suspending and
+resuming devices and/or saving the suspend image in many threads.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/user.c |   92 ++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 58 insertions(+), 34 deletions(-)
+The following series of patches reorders the suspend and resume code so that
+nonboot CPUs are disabled after devices have been suspended and enabled bef=
+ore
+the devices are resumed. =A0It also causes pm_ops->finish() to be called af=
+ter
+enable_nonboot_cpus() wherever necessary.
 
-Index: linux-2.6.20-rc1/kernel/power/user.c
-===================================================================
---- linux-2.6.20-rc1.orig/kernel/power/user.c	2006-12-14 22:35:52.000000000 +0100
-+++ linux-2.6.20-rc1/kernel/power/user.c	2006-12-14 23:20:10.000000000 +0100
-@@ -122,6 +122,59 @@ static ssize_t snapshot_write(struct fil
- 	return res;
- }
- 
-+static inline int snapshot_suspend(void)
-+{
-+	int error;
-+
-+	mutex_lock(&pm_mutex);
-+	/* Free memory before shutting down devices. */
-+	error = swsusp_shrink_memory();
-+	if (error)
-+		goto Finish;
-+
-+	suspend_console();
-+	error = device_suspend(PMSG_FREEZE);
-+	if (error)
-+		goto Resume_devices;
-+
-+	error = disable_nonboot_cpus();
-+	if (!error) {
-+		in_suspend = 1;
-+		error = swsusp_suspend();
-+	}
-+	enable_nonboot_cpus();
-+ Resume_devices:
-+	device_resume();
-+	resume_console();
-+ Finish:
-+	mutex_unlock(&pm_mutex);
-+	return error;
-+}
-+
-+static inline int snapshot_restore(void)
-+{
-+	int error;
-+
-+	mutex_lock(&pm_mutex);
-+	pm_prepare_console();
-+	suspend_console();
-+	error = device_suspend(PMSG_PRETHAW);
-+	if (error)
-+		goto Resume_devices;
-+
-+	error = disable_nonboot_cpus();
-+	if (!error)
-+		error = swsusp_resume();
-+
-+	enable_nonboot_cpus();
-+ Resume_devices:
-+	device_resume();
-+	resume_console();
-+	pm_restore_console();
-+	mutex_unlock(&pm_mutex);
-+	return error;
-+}
-+
- static int snapshot_ioctl(struct inode *inode, struct file *filp,
-                           unsigned int cmd, unsigned long arg)
- {
-@@ -145,14 +198,9 @@ static int snapshot_ioctl(struct inode *
- 		if (data->frozen)
- 			break;
- 		mutex_lock(&pm_mutex);
--		error = disable_nonboot_cpus();
--		if (!error) {
--			error = freeze_processes();
--			if (error) {
--				thaw_processes();
--				enable_nonboot_cpus();
--				error = -EBUSY;
--			}
-+		if (freeze_processes()) {
-+			thaw_processes();
-+			error = -EBUSY;
- 		}
- 		mutex_unlock(&pm_mutex);
- 		if (!error)
-@@ -164,7 +212,6 @@ static int snapshot_ioctl(struct inode *
- 			break;
- 		mutex_lock(&pm_mutex);
- 		thaw_processes();
--		enable_nonboot_cpus();
- 		mutex_unlock(&pm_mutex);
- 		data->frozen = 0;
- 		break;
-@@ -174,20 +221,7 @@ static int snapshot_ioctl(struct inode *
- 			error = -EPERM;
- 			break;
- 		}
--		mutex_lock(&pm_mutex);
--		/* Free memory before shutting down devices. */
--		error = swsusp_shrink_memory();
--		if (!error) {
--			suspend_console();
--			error = device_suspend(PMSG_FREEZE);
--			if (!error) {
--				in_suspend = 1;
--				error = swsusp_suspend();
--				device_resume();
--			}
--			resume_console();
--		}
--		mutex_unlock(&pm_mutex);
-+		error = snapshot_suspend();
- 		if (!error)
- 			error = put_user(in_suspend, (unsigned int __user *)arg);
- 		if (!error)
-@@ -201,17 +235,7 @@ static int snapshot_ioctl(struct inode *
- 			error = -EPERM;
- 			break;
- 		}
--		mutex_lock(&pm_mutex);
--		pm_prepare_console();
--		suspend_console();
--		error = device_suspend(PMSG_PRETHAW);
--		if (!error) {
--			error = swsusp_resume();
--			device_resume();
--		}
--		resume_console();
--		pm_restore_console();
--		mutex_unlock(&pm_mutex);
-+		error = snapshot_restore();
- 		break;
- 
- 	case SNAPSHOT_FREE:
+The first patch changes the ordering of the suspend-to-RAM code and is
+untested, because my boxes continue refusing to resume from RAM for other
+reasons.  If anyone can, please do me a favour and test it.
+
+The second patch changes the ordering of the built-in suspend-to-disk code,
+and the last two patches modify the swsusp userland interface code
+accordingly.  As far as the last patch is concerned, I've decided to change
+the existing ioctls, so that the patched kernel works with the "old" userla=
+nd.
+I don't think this change breaks anything of importance, but if it does, we
+can just add (yet) another ioctl to set the platform mode, although in that
+case the userland would have to be changed as well.
+
+All of the patches are against 2.6.20-rc1 and should not be used with any
+earlier kernel.
+
+Greetings,
+Rafael
+
+
+-- =
+
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
 
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV
