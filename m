@@ -1,77 +1,61 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm] PM: Change ordering of suspend and
-	resume code
-Date: Mon, 18 Dec 2006 16:10:30 +0100
-Message-ID: <200612181610.31039.rjw@sisk.pl>
-References: <200612171858.16380.rjw@sisk.pl> <20061218074226.GO26170@suse.de>
+Subject: Re: [linux-pm] OOPS: divide error while s2dsk (2.6.20-rc1-mm1)
+Date: Mon, 18 Dec 2006 23:38:23 +0100
+Message-ID: <200612182338.24843.rjw@sisk.pl>
+References: <4586797B.3080007@gmail.com> <200612181646.23292.rjw@sisk.pl> <4586C99C.9020606@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20061218074226.GO26170@suse.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754706AbWLRWgd@vger.kernel.org>
+In-Reply-To: <4586C99C.9020606@gmail.com>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Stefan Seyfried <seife@suse.de>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, linux-acpi@vger.kernel.org, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>, Pavel Machek <pavel@ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>, akpm@osdl.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Monday, 18 December 2006 08:42, Stefan Seyfried wrote:
-> Hi,
-> 
-> On Sun, Dec 17, 2006 at 06:58:15PM +0100, Rafael J. Wysocki wrote:
+On Monday, 18 December 2006 18:02, Jiri Slaby wrote:
+> Rafael J. Wysocki wrote:
 > > Hi,
 > > 
-> > As indicated in a recent thread on Linux-PM, it's necessary to call
-> > pm_ops->finish() before devce_resume(), but enable_nonboot_cpus() has to be
-> > called before pm_ops->finish()
-> > (cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
-> > For consistency, it seems reasonable to call disable_nonboot_cpus() after
-> > device_suspend().
+> > On Monday, 18 December 2006 12:20, Jiri Slaby wrote:
+> >> Hi.
+> >>
+> >> I got this oops while suspending:
+> >> [  309.366557] Disabling non-boot CPUs ...
+> >> [  309.386563] CPU 1 is now offline
+> >> [  309.387625] CPU1 is down
+> >> [  309.387704] Stopping tasks ... done.
+> >> [  310.030991] Shrinking memory... -<0>divide error: 0000 [#1]
+> >> [  310.456669] SMP
+> >> [  310.456814] last sysfs file:
+> >> /devices/pci0000:00/0000:00:1e.0/0000:02:08.0/eth0/statistics/collisions
+> >> [  310.456919] Modules linked in: eth1394 floppy ohci1394 ide_cd ieee1394 cdrom
+> >> [  310.457259] CPU:    0
+> >> [  310.457260] EIP:    0060:[<c0150c9a>]    Not tainted VLI
+> >> [  310.457261] EFLAGS: 00210246   (2.6.20-rc1-mm1 #207)
+> >> [  310.457478] EIP is at shrink_slab+0x9e/0x169
 > > 
-> > This way the suspend code will remain symmetrical with respect to the resume
-> > code and it may allow us to speed up things in the future by suspending and
-> > resuming devices and/or saving the suspend image in many threads.
+> > Looks like we have a problem with slab shrinking here.
+> > 
+> > Could you please use gdb to check what exactly is at shrink_slab+0x9e?
 > 
-> Good. A thread to do progress bars :-)
+> Sure, but not till Friday, sorry (I am away).
 
-I thought about something like multiple compression/encryption threads, but
-well ... ;-)
+I reproduced this on one box, but then it turned out that EIP was at line 195
+of mm/vmscan.c where there was
 
-> > The first patch changes the ordering of the suspend-to-RAM code and is
-> > untested, because my boxes continue refusing to resume from RAM for other
-> > reasons.  If anyone can, please do me a favour and test it.
-> > 
-> > The second patch changes the ordering of the built-in suspend-to-disk code,
-> > and the last two patches modify the swsusp userland interface code
-> > accordingly.  As far as the last patch is concerned, I've decided to change
-> > the existing ioctls, so that the patched kernel works with the "old" userland.
-> > I don't think this change breaks anything of importance, but if it does, we
-> > can just add (yet) another ioctl to set the platform mode, although in that
-> > case the userland would have to be changed as well.
-> > 
-> > All of the patches are against 2.6.20-rc1 and should not be used with any
-> > earlier kernel.
-> 
-> I'll test them,
+do_div(delta, lru_pages + 1);
 
-Thanks.
+Well, I have no idea how this can lead to a divide error (lru_pages is
+unsigned).
 
-> but probably not this year :-( 
-> I'll only get to it during the first week of January.
+I'm unable to reproduce this on another i386 box, so it seems to be somewhat
+configuration specific.
 
-That will be fine.
+Does 2.6.20-rc1 work for you?
 
-Greetings,
 Rafael
 
 
@@ -79,9 +63,3 @@ Rafael
 If you don't have the time to read,
 you don't have the time or the tools to write.
 		- Stephen King
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
