@@ -1,115 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 1/4] PM: Change code ordering in main.c
-Date: Sun, 17 Dec 2006 19:02:32 +0100
-Message-ID: <200612171902.32819.rjw@sisk.pl>
-References: <200612171858.16380.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: class suspend()/resume() broken
+Date: Sun, 17 Dec 2006 19:27:24 -0800
+Message-ID: <200612171927.25107.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0612121038210.2834-100000@iolanthe.rowland.org>
+	<200612121015.41365.david-b@pacbell.net>
+	<20061215190150.GA18185@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200612171858.16380.rjw@sisk.pl>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20061215190150.GA18185@kroah.com>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: pm list <linux-pm@lists.osdl.org>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, linux-acpi@vger.kernel.org, Stefan Seyfried <seife@suse.de>, Stephen Hemminger <shemminger@osdl.org>, Pavel Machek <pavel@ucw.cz>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.osdl.org, Greg KH <gregkh@suse.de>, Brice Goglin <brice@myri.com>
 List-Id: linux-pm@vger.kernel.org
 
-Change the ordering of code in kernel/power/main.c so that device_suspend()
-is called before disable_nonboot_cpus() and pm_ops->finish() is called after
-enable_nonboot_cpus() and before device_resume(), as indicated by recent
-discussion on Linux-PM
-(cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+On Friday 15 December 2006 11:01 am, Greg KH wrote:
+> On Tue, Dec 12, 2006 at 10:15:39AM -0800, David Brownell wrote:
+> > =
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/main.c |   34 +++++++++++++++++++---------------
- 1 file changed, 19 insertions(+), 15 deletions(-)
+> > Speaking of those new PM methods ... Greg, I tried refreshing my
+> > patch that uses class suspend() and resume() methods with RTCs to
+> > adjust the system clock properly on resume.  But neither method
+> > is getting called any more.  Did that break with the class device
+> > changes?
+> =
 
-Index: linux-2.6.20-rc1/kernel/power/main.c
-===================================================================
---- linux-2.6.20-rc1.orig/kernel/power/main.c	2006-12-14 22:35:52.000000000 +0100
-+++ linux-2.6.20-rc1/kernel/power/main.c	2006-12-14 23:19:32.000000000 +0100
-@@ -43,6 +43,11 @@ void pm_set_ops(struct pm_ops * ops)
- 	mutex_unlock(&pm_mutex);
- }
- 
-+static inline void pm_finish(suspend_state_t state)
-+{
-+	if (pm_ops->finish)
-+		pm_ops->finish(state);
-+}
- 
- /**
-  *	suspend_prepare - Do prep work before entering low-power state.
-@@ -63,10 +68,6 @@ static int suspend_prepare(suspend_state
- 
- 	pm_prepare_console();
- 
--	error = disable_nonboot_cpus();
--	if (error)
--		goto Enable_cpu;
--
- 	if (freeze_processes()) {
- 		error = -EAGAIN;
- 		goto Thaw;
-@@ -88,18 +89,22 @@ static int suspend_prepare(suspend_state
- 	}
- 
- 	suspend_console();
--	if ((error = device_suspend(PMSG_SUSPEND))) {
-+	error = device_suspend(PMSG_SUSPEND);
-+	if (error) {
- 		printk(KERN_ERR "Some devices failed to suspend\n");
--		goto Finish;
-+		goto Resume_devices;
- 	}
--	return 0;
-- Finish:
--	if (pm_ops->finish)
--		pm_ops->finish(state);
-+	error = disable_nonboot_cpus();
-+	if (!error)
-+		return 0;
-+
-+	enable_nonboot_cpus();
-+ Resume_devices:
-+	pm_finish(state);
-+	device_resume();
-+	resume_console();
-  Thaw:
- 	thaw_processes();
-- Enable_cpu:
--	enable_nonboot_cpus();
- 	pm_restore_console();
- 	return error;
- }
-@@ -134,12 +139,11 @@ int suspend_enter(suspend_state_t state)
- 
- static void suspend_finish(suspend_state_t state)
- {
-+	enable_nonboot_cpus();
-+	pm_finish(state);
- 	device_resume();
- 	resume_console();
- 	thaw_processes();
--	enable_nonboot_cpus();
--	if (pm_ops && pm_ops->finish)
--		pm_ops->finish(state);
- 	pm_restore_console();
- }
- 
+> It shouldn't have, but to be honest, I haven't paid attention to it.
 
+Well, it seems broken and, pending "git bisect", those patches are
+the obvious candidate.
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Maybe it's related to "dev->class" now being "optional"?  And, it
+seems, null ... I'm not clear on how devices associated with two
+or more classes would work, either.
+
+In general, _using_ those class suspend()/resume() calls was kind
+of painful since what's needed is the class_device, and there's no
+obvious way to get from a device back to that.  That RTC patch
+originally worked via some really ugly and not-generalizable code
+that relied on there being only one class_device used to restore
+the clock after resume, so it could just look at every device given
+to those calls, and ignore it if it wasn't the one associated with
+that class_device.
+
+I have a sneaking suspicion that we're missing back-links from
+devices to their associated classes, but to justify that I'd
+have to dive deep into the driver model again.  :(
+
+- Dave
