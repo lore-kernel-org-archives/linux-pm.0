@@ -1,160 +1,105 @@
-From: Andrew Morton <akpm@osdl.org>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: [linux-pm] OOPS: divide error while s2dsk (2.6.20-rc1-mm1)
-Date: Mon, 18 Dec 2006 15:17:10 -0800
-Message-ID: <20061218151710.32ceba0d.akpm@osdl.org>
-References: <4586797B.3080007@gmail.com>
-	<200612181646.23292.rjw@sisk.pl>
-	<4586C99C.9020606@gmail.com>
-	<200612182338.24843.rjw@sisk.pl>
+Date: Tue, 19 Dec 2006 10:16:34 +1100
+Message-ID: <1166483794.5044.18.camel@nigel.suspend2.net>
+References: <4586797B.3080007@gmail.com> <200612182338.24843.rjw@sisk.pl>
+	 <1166481878.5044.4.camel@nigel.suspend2.net>
+	 <200612190009.09560.rjw@sisk.pl>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754750AbWLRXR0@vger.kernel.org>
-In-Reply-To: <200612182338.24843.rjw@sisk.pl>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754748AbWLRXQi@vger.kernel.org>
+In-Reply-To: <200612190009.09560.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@osdl.org
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>, akpm@osdl.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 18 Dec 2006 23:38:23 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi.
 
-> > > Looks like we have a problem with slab shrinking here.
-> > > 
-> > > Could you please use gdb to check what exactly is at shrink_slab+0x9e?
+On Tue, 2006-12-19 at 00:09 +0100, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> On Monday, 18 December 2006 23:44, Nigel Cunningham wrote:
+> > Hi.
 > > 
-> > Sure, but not till Friday, sorry (I am away).
+> > On Mon, 2006-12-18 at 23:38 +0100, Rafael J. Wysocki wrote:
+> > > On Monday, 18 December 2006 18:02, Jiri Slaby wrote:
+> > > > Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > On Monday, 18 December 2006 12:20, Jiri Slaby wrote:
+> > > > >> Hi.
+> > > > >>
+> > > > >> I got this oops while suspending:
+> > > > >> [  309.366557] Disabling non-boot CPUs ...
+> > > > >> [  309.386563] CPU 1 is now offline
+> > > > >> [  309.387625] CPU1 is down
+> > > > >> [  309.387704] Stopping tasks ... done.
+> > > > >> [  310.030991] Shrinking memory... -<0>divide error: 0000 [#1]
+> > > > >> [  310.456669] SMP
+> > > > >> [  310.456814] last sysfs file:
+> > > > >> /devices/pci0000:00/0000:00:1e.0/0000:02:08.0/eth0/statistics/collisions
+> > > > >> [  310.456919] Modules linked in: eth1394 floppy ohci1394 ide_cd ieee1394 cdrom
+> > > > >> [  310.457259] CPU:    0
+> > > > >> [  310.457260] EIP:    0060:[<c0150c9a>]    Not tainted VLI
+> > > > >> [  310.457261] EFLAGS: 00210246   (2.6.20-rc1-mm1 #207)
+> > > > >> [  310.457478] EIP is at shrink_slab+0x9e/0x169
+> > > > > 
+> > > > > Looks like we have a problem with slab shrinking here.
+> > > > > 
+> > > > > Could you please use gdb to check what exactly is at shrink_slab+0x9e?
+> > > > 
+> > > > Sure, but not till Friday, sorry (I am away).
+> > > 
+> > > I reproduced this on one box, but then it turned out that EIP was at line 195
+> > > of mm/vmscan.c where there was
+> > > 
+> > > do_div(delta, lru_pages + 1);
+> > > 
+> > > Well, I have no idea how this can lead to a divide error (lru_pages is
+> > > unsigned).
+> > > 
+> > > I'm unable to reproduce this on another i386 box, so it seems to be somewhat
+> > > configuration specific.
+> > > 
+> > > Does 2.6.20-rc1 work for you?
+> > 
+> > I have a patch in -mm that reduces lru_pages by what shrink_all_zones
+> > returns. Could shrink_all_zones perhaps be returning incorrect values
+> > such that lru_pages ends up becoming -1?
 > 
-> I reproduced this on one box, but then it turned out that EIP was at line 195
-> of mm/vmscan.c where there was
+> I don't think so, but look at the appended patch. ;-)
 > 
-> do_div(delta, lru_pages + 1);
-
-That implies that we passed it lru_pages=-1.
-
-Presumably the logic in
-vmscanc-account-for-memory-already-freed-in-seeking-to.patch caused that.
-
-> Well, I have no idea how this can lead to a divide error (lru_pages is
-> unsigned).
+> Greetings,
+> Rafael
 > 
-> I'm unable to reproduce this on another i386 box, so it seems to be somewhat
-> configuration specific.
 > 
+> ---
+> Fix a (really bad) typo in shrink_all_memory().
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  mm/vmscan.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.20-rc1-mm1/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.20-rc1-mm1.orig/mm/vmscan.c
+> +++ linux-2.6.20-rc1-mm1/mm/vmscan.c
+> @@ -1569,7 +1569,7 @@ unsigned long shrink_all_memory(unsigned
+>  			sc.swap_cluster_max = nr_pages - ret;
+>  			freed = shrink_all_zones(nr_to_scan, prio, pass, &sc);
+>  			ret += freed;
+> -			lru_pages =- freed;
+> +			lru_pages -= freed;
+>  			nr_to_scan = nr_pages - ret;
+>  			if (ret >= nr_pages)
+>  				goto out;
 
-There is one wart in shrink_all_memory() and I think we should fix that in
-2.6.20.
+Heh, yeah.
 
-Please check the below.  I'll drop
-vmscanc-account-for-memory-already-freed-in-seeking-to.patch.  It has other
-stuff in it which we might still need.  But altering sc->swap_cluster_max
-in that manner looks odd.
+Definitely acked! :)
 
-
-
-From: Andrew Morton <akpm@osdl.org>
-
-At the end of shrink_all_memory() we forget to recalculate lru_pages: it can
-be zero.
-
-Fix that up, and add a helper function for this operation too.
-
-Also, recalculate lru_pages each time around the inner loop to get the
-balancing correct.
-
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
-
- mm/vmscan.c |   33 ++++++++++++++++-----------------
- 1 files changed, 16 insertions(+), 17 deletions(-)
-
-diff -puN mm/vmscan.c~shrink_all_memory-fix-lru_pages-handling mm/vmscan.c
---- a/mm/vmscan.c~shrink_all_memory-fix-lru_pages-handling
-+++ a/mm/vmscan.c
-@@ -1484,6 +1484,16 @@ static unsigned long shrink_all_zones(un
- 	return ret;
- }
- 
-+static unsigned long count_lru_pages(void)
-+{
-+	struct zone *zone;
-+	unsigned long ret = 0;
-+
-+	for_each_zone(zone);
-+		ret += zone->nr_active + zone->nr_inactive;
-+	return ret;
-+}
-+
- /*
-  * Try to free `nr_pages' of memory, system-wide, and return the number of
-  * freed pages.
-@@ -1498,7 +1508,6 @@ unsigned long shrink_all_memory(unsigned
- 	unsigned long ret = 0;
- 	int pass;
- 	struct reclaim_state reclaim_state;
--	struct zone *zone;
- 	struct scan_control sc = {
- 		.gfp_mask = GFP_KERNEL,
- 		.may_swap = 0,
-@@ -1509,10 +1518,7 @@ unsigned long shrink_all_memory(unsigned
- 
- 	current->reclaim_state = &reclaim_state;
- 
--	lru_pages = 0;
--	for_each_zone(zone)
--		lru_pages += zone->nr_active + zone->nr_inactive;
--
-+	lru_pages = count_lru_pages();
- 	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
- 	/* If slab caches are huge, it's better to hit them first */
- 	while (nr_slab >= lru_pages) {
-@@ -1539,13 +1545,6 @@ unsigned long shrink_all_memory(unsigned
- 	for (pass = 0; pass < 5; pass++) {
- 		int prio;
- 
--		/* Needed for shrinking slab caches later on */
--		if (!lru_pages)
--			for_each_zone(zone) {
--				lru_pages += zone->nr_active;
--				lru_pages += zone->nr_inactive;
--			}
--
- 		/* Force reclaiming mapped pages in the passes #3 and #4 */
- 		if (pass > 2) {
- 			sc.may_swap = 1;
-@@ -1561,7 +1560,8 @@ unsigned long shrink_all_memory(unsigned
- 				goto out;
- 
- 			reclaim_state.reclaimed_slab = 0;
--			shrink_slab(sc.nr_scanned, sc.gfp_mask, lru_pages);
-+			shrink_slab(sc.nr_scanned, sc.gfp_mask,
-+					count_lru_pages());
- 			ret += reclaim_state.reclaimed_slab;
- 			if (ret >= nr_pages)
- 				goto out;
-@@ -1569,20 +1569,19 @@ unsigned long shrink_all_memory(unsigned
- 			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
- 				congestion_wait(WRITE, HZ / 10);
- 		}
--
--		lru_pages = 0;
- 	}
- 
- 	/*
- 	 * If ret = 0, we could not shrink LRUs, but there may be something
- 	 * in slab caches
- 	 */
--	if (!ret)
-+	if (!ret) {
- 		do {
- 			reclaim_state.reclaimed_slab = 0;
--			shrink_slab(nr_pages, sc.gfp_mask, lru_pages);
-+			shrink_slab(nr_pages, sc.gfp_mask, count_lru_pages());
- 			ret += reclaim_state.reclaimed_slab;
- 		} while (ret < nr_pages && reclaim_state.reclaimed_slab > 0);
-+	}
- 
- out:
- 	current->reclaim_state = NULL;
-_
+Nigel
