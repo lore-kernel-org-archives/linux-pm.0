@@ -1,60 +1,74 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: class suspend()/resume() broken
-Date: Sun, 17 Dec 2006 19:27:24 -0800
-Message-ID: <200612171927.25107.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0612121038210.2834-100000@iolanthe.rowland.org>
-	<200612121015.41365.david-b@pacbell.net>
-	<20061215190150.GA18185@kroah.com>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [PATCH -mm] PM: Change ordering of suspend and resume code
+Date: Mon, 18 Dec 2006 08:42:26 +0100
+Message-ID: <20061218074226.GO26170@suse.de>
+References: <200612171858.16380.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20061215190150.GA18185@kroah.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <greg@kroah.com>
-Cc: linux-pm@lists.osdl.org, Greg KH <gregkh@suse.de>, Brice Goglin <brice@myri.com>
+In-Reply-To: <200612171858.16380.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>, suspend-devel List <suspend-devel@lists.sourceforge.net>, Stephen Hemminger <shemminger@osdl.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 15 December 2006 11:01 am, Greg KH wrote:
-> On Tue, Dec 12, 2006 at 10:15:39AM -0800, David Brownell wrote:
-> > =
+Hi,
 
-> > Speaking of those new PM methods ... Greg, I tried refreshing my
-> > patch that uses class suspend() and resume() methods with RTCs to
-> > adjust the system clock properly on resume.  But neither method
-> > is getting called any more.  Did that break with the class device
-> > changes?
-> =
+On Sun, Dec 17, 2006 at 06:58:15PM +0100, Rafael J. Wysocki wrote:
+> Hi,
+>=20
+> As indicated in a recent thread on Linux-PM, it's necessary to call
+> pm_ops->finish() before devce_resume(), but enable_nonboot_cpus() has=
+ to be
+> called before pm_ops->finish()
+> (cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.ht=
+ml).
+> For consistency, it seems reasonable to call disable_nonboot_cpus() a=
+fter
+> device_suspend().
+>=20
+> This way the suspend code will remain symmetrical with respect to the=
+ resume
+> code and it may allow us to speed up things in the future by suspendi=
+ng and
+> resuming devices and/or saving the suspend image in many threads.
 
-> It shouldn't have, but to be honest, I haven't paid attention to it.
+Good. A thread to do progress bars :-)
+=20
+> The first patch changes the ordering of the suspend-to-RAM code and i=
+s
+> untested, because my boxes continue refusing to resume from RAM for o=
+ther
+> reasons.  If anyone can, please do me a favour and test it.
+>=20
+> The second patch changes the ordering of the built-in suspend-to-disk=
+ code,
+> and the last two patches modify the swsusp userland interface code
+> accordingly.  As far as the last patch is concerned, I've decided to =
+change
+> the existing ioctls, so that the patched kernel works with the "old" =
+userland.
+> I don't think this change breaks anything of importance, but if it do=
+es, we
+> can just add (yet) another ioctl to set the platform mode, although i=
+n that
+> case the userland would have to be changed as well.
+>=20
+> All of the patches are against 2.6.20-rc1 and should not be used with=
+ any
+> earlier kernel.
 
-Well, it seems broken and, pending "git bisect", those patches are
-the obvious candidate.
-
-Maybe it's related to "dev->class" now being "optional"?  And, it
-seems, null ... I'm not clear on how devices associated with two
-or more classes would work, either.
-
-In general, _using_ those class suspend()/resume() calls was kind
-of painful since what's needed is the class_device, and there's no
-obvious way to get from a device back to that.  That RTC patch
-originally worked via some really ugly and not-generalizable code
-that relied on there being only one class_device used to restore
-the clock after resume, so it could just look at every device given
-to those calls, and ignore it if it wasn't the one associated with
-that class_device.
-
-I have a sneaking suspicion that we're missing back-links from
-devices to their associated classes, but to justify that I'd
-have to dive deep into the driver model again.  :(
-
-- Dave
+I'll test them, but probably not this year :-(
+I'll only get to it during the first week of January.
+--=20
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out."=
+=20
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
