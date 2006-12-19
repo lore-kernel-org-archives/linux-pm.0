@@ -1,55 +1,73 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [linux-pm] OOPS: divide error while s2dsk (2.6.20-rc1-mm1)
-Date: Mon, 18 Dec 2006 17:28:41 -0800
-Message-ID: <20061218172841.23ea708a.akpm@osdl.org>
-References: <4586797B.3080007@gmail.com>
-	<200612181646.23292.rjw@sisk.pl>
-	<4586C99C.9020606@gmail.com>
-	<200612182338.24843.rjw@sisk.pl>
-	<20061218151710.32ceba0d.akpm@osdl.org>
-	<Pine.LNX.4.64N.0612181716110.10074@attu4.cs.washington.edu>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm] PM: Change ordering of suspend and
+	resume code
+Date: Wed, 20 Dec 2006 00:30:02 +0100
+Message-ID: <20061219233002.GA2694@elf.ucw.cz>
+References: <200612171858.16380.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932628AbWLSB2w@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64N.0612181716110.10074@attu4.cs.washington.edu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Rientjes <rientjes@cs.washington.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jiri Slaby <jirislaby@gmail.com>, linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+Content-Disposition: inline
+In-Reply-To: <200612171858.16380.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
+List-Post: <mailto:suspend-devel@lists.sourceforge.net>
+List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: suspend-devel-bounces@lists.sourceforge.net
+Errors-To: suspend-devel-bounces@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, linux-acpi@vger.kernel.org, pm list <linux-pm@lists.osdl.org>, Stephen Hemminger <shemminger@osdl.org>, Stefan Seyfried <seife@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 18 Dec 2006 17:18:12 -0800 (PST)
-David Rientjes <rientjes@cs.washington.edu> wrote:
+Hi!
 
-> On Mon, 18 Dec 2006, Andrew Morton wrote:
-> 
-> > diff -puN mm/vmscan.c~shrink_all_memory-fix-lru_pages-handling mm/vmscan.c
-> > --- a/mm/vmscan.c~shrink_all_memory-fix-lru_pages-handling
-> > +++ a/mm/vmscan.c
-> > @@ -1484,6 +1484,16 @@ static unsigned long shrink_all_zones(un
-> >  	return ret;
-> >  }
-> >  
-> > +static unsigned long count_lru_pages(void)
-> > +{
-> > +	struct zone *zone;
-> > +	unsigned long ret = 0;
-> > +
-> > +	for_each_zone(zone);
-> > +		ret += zone->nr_active + zone->nr_inactive;
-> > +	return ret;
-> > +}
-> > +
-> >  /*
-> >   * Try to free `nr_pages' of memory, system-wide, and return the number of
-> >   * freed pages.
-> 
-> There's an extra semicolon there
+> As indicated in a recent thread on Linux-PM, it's necessary to call
+> pm_ops->finish() before devce_resume(), but enable_nonboot_cpus() has to =
+be
+> called before pm_ops->finish()
+> (cf. http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+> For consistency, it seems reasonable to call disable_nonboot_cpus() after
+> device_suspend().
+> =
 
-Sigh.  coding-while-diseased.
+> This way the suspend code will remain symmetrical with respect to the res=
+ume
+> code and it may allow us to speed up things in the future by suspending a=
+nd
+> resuming devices and/or saving the suspend image in many threads.
+...
+> The following series of patches reorders the suspend and resume code so t=
+hat
+> nonboot CPUs are disabled after devices have been suspended and enabled b=
+efore
+> the devices are resumed. =A0It also causes pm_ops->finish() to be called =
+after
+> enable_nonboot_cpus() wherever necessary.
 
-> that results in only the final zone being 
-> used.
-> 
+Series looks okay to me... but it will need _long_ testing in
+-mm. (Consider this ACK).
 
-Actually it'll go oops.  Fixed, thanks.
+> The first patch changes the ordering of the suspend-to-RAM code and is
+> untested, because my boxes continue refusing to resume from RAM for other
+> reasons.  If anyone can, please do me a favour and test it.
+
+I did a bit of testing, and it seems to still work, both s2ram and
+swsusp. (uswsusp untested).
+									Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV
