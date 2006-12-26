@@ -1,76 +1,55 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: USB power usage
-Date: Tue, 26 Dec 2006 15:40:08 +0100
-Message-ID: <20061226144008.GA2062@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0612252245310.29662-100000@netrider.rowland.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] USB power usage
+Date: Tue, 26 Dec 2006 15:46:44 -0800
+Message-ID: <200612261546.45800.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0612252245310.29662-100000@netrider.rowland.org> <20061226144008.GA2062@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932861AbWLZXqt@vger.kernel.org>
+In-Reply-To: <20061226144008.GA2062@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0612252245310.29662-100000@netrider.rowland.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>, kernel list <linux-kernel@vger.kernel.org>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@lists.osdl.org
+Cc: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> > > Couple of watts is not that bad, considering usb still eats 4W more
+> > > than it should.
+> > 
+> > The USB autosuspend mechanism has been present for a while in -mm and is
+> > included in 2.6.20-rc (although you have to turn on CONFIG_USB_SUSPEND,
+> > which is off by default -- it would be nice to change that).
 
-> > Couple of watts is not that bad, considering usb still eats 4W more
-> > than it should.
-> =
+Call me paranoid, but I'd like to leave it this way for for a while yet
+to shake out bugs.  There are some complicated interactions here, some
+of which are hardware-specific, and we've only just started to really
+shake out the associated problems.  (But yes, eventually we do want to
+see that option go away, and this behavior be standard with PM enabled.)
 
-> The USB autosuspend mechanism has been present for a while in -mm and is
-> included in 2.6.20-rc (although you have to turn on CONFIG_USB_SUSPEND,
-> which is off by default -- it would be nice to change that).  Has anybody
-> tried doing some real-world measurements to see if it actually makes a
-> significant improvement in power usage?
 
-I did measurements while in -mm, and yes it helped. And yes,
-it works in 2.6.20-rc2, too:
+> > Has anybody 
+> > tried doing some real-world measurements to see if it actually makes a
+> > significant improvement in power usage?
+> 
+> I did measurements while in -mm, and yes it helped. And yes,
+> it works in 2.6.20-rc2, too:
+> 
+> ...
+> 
+> As you can see, it saves ~3.5W, which is huge deal on machine that
+> eats 11W total.
 
-root@amd:~# cat /proc/acpi/battery/BAT0/state ; sleep 20; cat
-/proc/acpi/battery/BAT0/state ; sleep 20; cat
-/proc/acpi/battery/BAT0/state ; sleep 20
-present:                 yes
-capacity state:          ok
-charging state:          discharging
-present rate:            14245 mW
-remaining capacity:      50020 mWh
-present voltage:         15793 mV
+Hey, that's great to know.  Thanks for sharing the figures!
 
-(turned off bluetooth hanging off USB here).
+And special thanks to Alan, for reworking (and re-reworking) relevant
+parts of usbcore so that these power savings can (mostly) be automated.
+ISTR the first patches supporting USB suspend/resume/wakeup landed in
+about the 2.6.10 kernel, and things look a LOT better than back then.
 
-present:                 yes
-capacity state:          ok
-charging state:          discharging
-present rate:            11650 mW
-remaining capacity:      49940 mWh
-present voltage:         15830 mV
-present:                 yes
-capacity state:          ok
-charging state:          discharging
-present rate:            10935 mW
-remaining capacity:      49870 mWh
-present voltage:         15826 mV
-root@amd:~#
+- Dave
 
-As you can see, it saves ~3.5W, which is huge deal on machine that
-eats 11W total.
 
-(X60 owners, get 2.6.20, and _disable that bluetooth_ while not in use).
-									Pavel
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+> (X60 owners, get 2.6.20, and _disable that bluetooth_ while not in use).
+> 									Pavel
