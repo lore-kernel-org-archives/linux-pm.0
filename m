@@ -1,12 +1,11 @@
-From: "Stefanie Hartman" <foremastssparrer@abo.ch>
-Subject: Stefanie:Merry Christmas
-Date: Wed, 27 Dec 2006 13:18:17 +0000 (UTC)
-Message-ID: <01c729b9$45c1dd10$6c822ecf@foremastssparrer>
+From: "Eugenio Wilkerson" <covenantedobsoletes@abt.ch>
+Subject: Eugenio Present
+Date: Thu, 28 Dec 2006 09:04:40 +0420
+Message-ID: <01c72a5f$34f1ccb0$6c822ecf@covenantedobsoletes>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Wed, 27 Dec 2006 13:16:51 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,61 +18,47 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Red Hot Opportunity!	=
+Start the New Year out Right!	=
+
+	 =
+
+It is our mission to sift through hundreds of emerging companies in order 	=
+
+to bring our readers that micro-cap diamond that will put them on the road 	=
+
+of financial independence.	 	=
 
 	=
 
-	 =
+In AlgoDyne Methanol Energy we have found a clear winner.  Do not 	=
 
-BUSINESS WIRE (12/20/2006)--AlgoDyne Ethanol Energy Inc. is 	 	=
+miss this opportunity.  This one is going to start the year off with a bang=
+!!!	=
 
-pleased to announce that it has been contacted by a consortium of Asian 	=
-
-investors who have shown a strong interest in the Company's proprietary 	 =
-
-mico-algae-based (phytoplankton) process.	 =
-
-	 =
-
-Asian investors?  What's going to happen when this deal closes?  BOOM!	=
-
-		 =
-
-BUSINESS WIRE (12/26/2006)--AlgoDyne Ethanol Energy Inc. is 	=
-
-pleased to announce that it is currently negotiating partnerships in the 	=
-
-Direct-Alcohol-Fuel-Cell (DAFC) field to provide a cutting-edge system.  	 	=
-
-AlgoDyne's dedicated team of scientists have achieved significant 	=
-
-efficiency compared to existing DAFC designs and anticipate completing 	 	=
-
-a prototype very soon.	=
-
-	 	=
-
-Exciting results and negotiations?  Straight UP!!!	=
-
-	 	=
+	=
 
 Company:  ADYN	=
 
 	=
 
-Current Price:	 	=
+Current Price:           $1.32	 =
 
-Short Term Target:       $3.50	=
+Short Term Target:       $3.50	 	=
 
-Long Term Projected    $10.00	 =
+Long Term Projected    $10.00	=
 
-	 =
+	=
 
-This is an amazing opportunity.  This company is like a slingshot, pulled 	=
+Check the recent news from this company.  They are in negotiations with 	=
 
-back and ready for launch.  The exciting patents are there, the investors 	 =
+HUGE Asian investors.  They are forming partnerships with major players.  	=
 
-are there, deals are on the table!  Do yourself a favor and take a position=
- 	=
+They are developing some INCREDIBLE technology.  This is a company 	 =
 
-BEFORE the deals close.  This is the only way to enjoy the BIG returns!	 	=
+on the move.	=
+
+	=
+
+And this is just the start.  Very soon we expect to see an incredible 	 =
+
+revelation come out of this company.  The time is now.  Don't hesitate!	 	=
