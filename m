@@ -1,45 +1,53 @@
-From: "Nell Crowell" <factoriesfraudulence@abdurrahman.com>
-Subject: Happy NW Nell
-Date: Fri, 29 Dec 2006 17:12:28 +0000 (UTC)
-Message-ID: <01c72b6c$535fad30$6c822ecf@factoriesfraudulence>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Fri, 29 Dec 2006 17:11:05 -0060
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: 2.6.20 regression: suspend to disk no more works
+Date: Mon, 1 Jan 2007 22:44:42 +0300
+Message-ID: <200701012244.42781.arvidjaar@mail.ru>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753712AbXAATor@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-	An Alternative Energy Company ready to Blast off!!!
-	=
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Company:  AlgoDyne Ethonol Energy Inc.  (ADYN)
-	=
+In *the same* configuration STD now fails with "Cannot find swap device". The 
+reason is changes in kernel/power/swap.c. In 2.6.19 it did not require valid 
+swsusp_resume_device at all - it took first available swap device and saved 
+image. Later during resume swsusp_resume_device was set either by command 
+line or sysfs and everything worked nicely.
 
-Current Price:               $1.3
-Short Term Target:       $3.50
-Long Term Projected    $10.00
-	=
+Now swsusp_swap_check() unfortunately checks for swsusp_resume_device at 
+*suspend* time:
 
-	Alternative energy is a Red Hot sector right now and ADYN is a pioneer!  =
+        res = swap_type_of(swsusp_resume_device, swsusp_resume_block);
+        if (res < 0)
+                return res;
 
-Check the news and you will see that at this very moment they are in =
+        root_swap = res;
+        resume_bdev = open_by_devnum(swsusp_resume_device, FMODE_WRITE);
+        if (IS_ERR(resume_bdev))
+                return PTR_ERR(resume_bdev);
 
-negotiations with major Asian investors.  They are also in negotiations for =
+but in case of modular driver for swap device this is likely to be undefined. 
+This is as of 2.6.20-rc3.
 
-partnerships for development of their amazing technology.
-	=
+I already have seen these reports. While 'echo a:b > /sys/power/resume' before 
+suspend is a workaround, this still breaks perfectly valid setup that worked 
+before. Also 'echo a:b > /sys/power/resume' is actually wrong - we are not 
+going to resume at this point; but there is no way to just tell kernel "use 
+this device for next STD" ... also the error message is misleading, it should 
+complaint "no resume device found". Swap is there all right.
 
-	Get in now while most investors are taking time off for the holidays!  =
+- -andrey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-After the new year this one will be of the charts!
-	=
+iD8DBQFFmWSqR6LMutpd94wRAu61AJ9mdbF4W6RNQ848PU0e4n/3MKtNnwCgzwOh
+HkZ9e8lHPMH1tRNzCw/2O58=
+=HlW4
+-----END PGP SIGNATURE-----
