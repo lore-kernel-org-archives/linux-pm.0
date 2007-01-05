@@ -1,68 +1,63 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.20-rc3: known regressions with patches (v2)
-Date: Wed, 3 Jan 2007 22:04:00 +0100
-Message-ID: <20070103210400.GL20714@stusta.de>
-References: <Pine.LNX.4.64.0612311710430.4473@woody.osdl.org>
+From: "Moses Vickers" <tastercentralization's@aardvarkjuicers.com>
+Subject: Moses wrote:
+Date: Fri, 5 Jan 2007 17:53:53 +0000 (UTC)
+Message-ID: <01c730f2$43c19f10$6c822ecf@tastercentralization's>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0612311710430.4473@woody.osdl.org>
-Sender: netdev-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Robert Hancock <hancockr@shaw.ca>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@osdl.org, Laurent Riffard <laurent.riffard@free.fr>, Christoph Hellwig <hch@lst.de>, petero2@telia.com, Michael Reske <micha@gmx.com>, Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com, netdev@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, bluez-devel@lists.sf.net, Ben Castricum <mail0612@bencastricum.nl>, Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Fri, 5 Jan 2007 17:52:28 -0060
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This email lists some known regressions in 2.6.20-rc3 compared to 2.6.19
-with patches available.
+Get the New Year Rolling Right.
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+Company: PHYA	 =
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+Current Price: $1.70	 =
+
+Target Price: $4.00	=
 
 
-Subject    : suspend to disk no longer works
-References : http://lkml.org/lkml/2007/1/1/72
-             http://lkml.org/lkml/2006/12/31/13
-Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-             Robert Hancock <hancockr@shaw.ca>
-Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-Patch      : http://lkml.org/lkml/2007/1/1/117
-Status     : patch available
+
+	Physicians Adult Daycare (PHYA) is set up for huge returns.	=
+
+This news is hot off the press and going to have a huge impact over the com=
+ing days:	 =
+
+	 Physicians Adult Daycare, Inc. to Increase Revenue by 83%!
 
 
-Subject    : BUG at drivers/scsi/scsi_lib.c:1118 by "pktsetup dvd /dev/sr0"
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7667
-Submitter  : Laurent Riffard <laurent.riffard@free.fr>
-Caused-By  : Christoph Hellwig <hch@lst.de>
-             commit 3b00315799d78f76531b71435fbc2643cd71ae4c
-Handled-By : Christoph Hellwig <hch@lst.de>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7667
-Status     : patch available
+	HOUSTON, TX--(MARKET WIRE)--Jan 3, 2007 -- Physicians Adult	=
+
+Daycare, Inc. announced today that an agreement to purchase an	=
+
+additional adult daycare company has been executed!   =
 
 
-Subject    : forcedeth.c 0.59: problem with sideband managment
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7684
-Submitter  : Michael Reske <micha@gmx.com>
-Handled-By : Ayaz Abdulla <aabdulla@nvidia.com>
-Status     : patch available
 
 
-Subject    : bluetooth oopses because of multiple kobject_add()
-References : http://lkml.org/lkml/2007/1/2/101
-Submitter  : Pavel Machek <pavel@ucw.cz>
-Handled-By : Marcel Holtmann <marcel@holtmann.org>
-Patch      : http://lkml.org/lkml/2007/1/2/147
-Status     : patch available
+	Go to your favorite financial news source to read the details.	=
+
+While there also read about the big negotiations going on with major Asian =
+investors.	=
+
+Further acquisitions are in the works and we are expecting a huge	=
+
+revelation to come out of the company any day	=
 
 
-Subject    : PCI_MULTITHREAD_PROBE breakage
-References : http://lkml.org/lkml/2006/12/12/21
-Submitter  : Ben Castricum <mail0612@bencastricum.nl>
-Caused-By  : Greg Kroah-Hartman <gregkh@suse.de>
-             commit 009af1ff78bfc30b9a27807dd0207fc32848218a
-Handled-By : Greg Kroah-Hartman <gregkh@suse.de>
-Status     : patch available
+
+
+	All of these fortuitous events are coming together and sending this one =
+
+straight up!  Don't miss it.
