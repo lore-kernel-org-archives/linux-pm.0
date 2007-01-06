@@ -1,7 +1,8 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 2/6] [-mm]: ACPI: duplicate ACPI "debug" in sysfs
-Date: Sat, 06 Jan 2007 19:35:14 +0800
-Message-ID: <1168083314.5619.36.camel@localhost.localdomain>
+Subject: [PATCH 4/6] [-mm]: ACPI: duplicate ACPI sleep "wakeup" attribute
+	in sysfs
+Date: Sat, 06 Jan 2007 19:35:26 +0800
+Message-ID: <1168083326.5619.38.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
@@ -13,113 +14,170 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-Add ACPI debug attributes in sysfs.
-/proc/acpi/debug_layer && debug_level are deprecated by /sys/module/acpi/parameters/debug_layer && debug_level.
-
-NOTE: The operations to them are quite the same.
-E.g. if you want to enable ACPI_DB_INFO, ACPI_DB_WARN, ACPI_DB_ERROR and disable the others, #echo 0x13 >/sys/module/acpi/parameters/debug_level is OK, and add a boot option "acpi.debug_level = 0x13" also works.
+Add "sleep_state" and "wakeup" attributes for devices that can wakeup a sleep system.
+They are located under sysfs device tree, i.e. /sys/device/acpi_system/.../xxx/.
+"sleep_state" indicates the lowest power system sleeping state that can be entered while still providing wake functionality.
+#echo 1 or 0 >/sys/devices/acpi_system/.../xxx/wakeup can be used to enable/disable the device's ability to wake a sleeping system.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/acpi/Kconfig |    2 +
- drivers/acpi/debug.c |   60 ++++++++++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 57 insertions(+), 5 deletions(-)
+ drivers/acpi/scan.c         |   12 +++++
+ drivers/acpi/sleep/proc.c   |   90 ++++++++++++++++++++++++++++++++++++++++++--
+ include/acpi/acpi_drivers.h |    6 ++
+ 3 files changed, 105 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.20-rc2-mm1/drivers/acpi/debug.c
+Index: linux-2.6.20-rc2-mm1/drivers/acpi/sleep/proc.c
 ===================================================================
---- linux-2.6.20-rc2-mm1.orig/drivers/acpi/debug.c	2007-01-05 18:26:36.000000000 +0800
-+++ linux-2.6.20-rc2-mm1/drivers/acpi/debug.c	2007-01-06 13:52:06.000000000 +0800
-@@ -13,14 +13,11 @@
- 
- #define _COMPONENT		ACPI_SYSTEM_COMPONENT
- ACPI_MODULE_NAME("debug")
--#define ACPI_SYSTEM_FILE_DEBUG_LAYER	"debug_layer"
--#define ACPI_SYSTEM_FILE_DEBUG_LEVEL	"debug_level"
-+
- #ifdef MODULE_PARAM_PREFIX
- #undef MODULE_PARAM_PREFIX
- #endif
--#define MODULE_PARAM_PREFIX
--    module_param(acpi_dbg_layer, uint, 0400);
--module_param(acpi_dbg_level, uint, 0400);
-+#define MODULE_PARAM_PREFIX "acpi."
- 
- struct acpi_dlayer {
- 	const char *name;
-@@ -86,6 +83,58 @@ static const struct acpi_dlevel acpi_deb
- 	ACPI_DEBUG_INIT(ACPI_LV_EVENTS),
- };
- 
-+/* --------------------------------------------------------------------------
-+                              FS Interface (/sys)
-+   -------------------------------------------------------------------------- */
-+static int param_get_debug_layer(char *buffer, struct kernel_param *kp) {
-+	int result = 0;
-+	int i;
-+
-+	result = sprintf(buffer, "%-25s\tHex        SET\n", "Description");
-+
-+	for(i = 0; i <ARRAY_SIZE(acpi_debug_layers); i++) {
-+		result += sprintf(buffer+result, "%-25s\t0x%08lX [%c]\n",
-+					acpi_debug_layers[i].name,
-+					acpi_debug_layers[i].value,
-+					(acpi_dbg_layer & acpi_debug_layers[i].value) ? '*' : ' ');
-+	}
-+	result += sprintf(buffer+result, "%-25s\t0x%08X [%c]\n", "ACPI_ALL_DRIVERS",
-+					ACPI_ALL_DRIVERS,
-+					(acpi_dbg_layer & ACPI_ALL_DRIVERS) ==
-+					ACPI_ALL_DRIVERS ? '*' : (acpi_dbg_layer &
-+					ACPI_ALL_DRIVERS) == 0 ? ' ' : '-');
-+	result += sprintf(buffer+result, "--\ndebug_layer = 0x%08X ( * = enabled)\n", acpi_dbg_layer);
-+
-+	return result;
-+}
-+static int param_get_debug_level(char *buffer, struct kernel_param *kp) {
-+	int result = 0;
-+	int i;
-+
-+	result = sprintf(buffer, "%-25s\tHex        SET\n", "Description");
-+
-+	for (i = 0; i < ARRAY_SIZE(acpi_debug_levels); i++) {
-+		result += sprintf(buffer+result, "%-25s\t0x%08lX [%c]\n",
-+				     acpi_debug_levels[i].name,
-+				     acpi_debug_levels[i].value,
-+				     (acpi_dbg_level & acpi_debug_levels[i].
-+				      value) ? '*' : ' ');
-+	}
-+	result += sprintf(buffer+result, "--\ndebug_level = 0x%08X (* = enabled)\n",
-+			     acpi_dbg_level);
-+
-+	return result;
-+}
-+module_param_call(debug_layer, param_set_uint, param_get_debug_layer, &acpi_dbg_layer, 0644);
-+module_param_call(debug_level, param_set_uint, param_get_debug_level, &acpi_dbg_level, 0644);
-+
-+/* --------------------------------------------------------------------------
-+                              FS Interface (/proc)
-+   -------------------------------------------------------------------------- */
-+#ifdef CONFIG_ACPI_PROCFS
-+#define ACPI_SYSTEM_FILE_DEBUG_LAYER	"debug_layer"
-+#define ACPI_SYSTEM_FILE_DEBUG_LEVEL		"debug_level"
-+
- static int
- acpi_system_read_debug(char *page,
- 		       char **start, off_t off, int count, int *eof, void *data)
-@@ -221,3 +270,4 @@ static int __init acpi_debug_init(void)
+--- linux-2.6.20-rc2-mm1.orig/drivers/acpi/sleep/proc.c	2007-01-06 18:17:53.000000000 +0800
++++ linux-2.6.20-rc2-mm1/drivers/acpi/sleep/proc.c	2007-01-06 18:18:01.000000000 +0800
+@@ -296,6 +296,93 @@ static int alarm_add_sysfs(void)
+ 	return sysfs_create_file(&power_subsys.kset.kobj, &alarm_attr.attr);
  }
  
- subsys_initcall(acpi_debug_init);
-+#endif
-Index: linux-2.6.20-rc2-mm1/drivers/acpi/Kconfig
-===================================================================
---- linux-2.6.20-rc2-mm1.orig/drivers/acpi/Kconfig	2007-01-05 18:26:40.000000000 +0800
-+++ linux-2.6.20-rc2-mm1/drivers/acpi/Kconfig	2007-01-06 16:04:05.000000000 +0800
-@@ -86,6 +86,8 @@ config ACPI_PROCFS
- 	  As the same functions are duplicated in sysfs interface
- 	  and this proc interface will be removed some time later,
- 	  it's marked as deprecated.
-+	  ( /proc/acpi/debug_layer && debug_level are deprecated by
-+	    /sys/module/acpi/parameters/debug_layer && debug_level. )
++/*
++ * "sleep_state" and "wakeup" attributes are created when device is registered
++ */
++extern struct list_head acpi_wakeup_device_list;
++extern spinlock_t acpi_device_lock;
++
++static ssize_t
++acpi_sleep_state_show(struct device *dev, struct device_attribute *attr, char* buf){
++	struct acpi_device *acpi_dev = to_acpi_device(dev);
++
++	return sprintf(buf, "%2d\n", (u32) acpi_dev->wakeup.sleep_state);
++}
++static DEVICE_ATTR(sleep_state, 0444, acpi_sleep_state_show, NULL);
++
++static ssize_t
++acpi_wakeup_show(struct device *dev, struct device_attribute *attr, char* buf){
++	struct acpi_device *acpi_dev = to_acpi_device(dev);
++
++	return sprintf(buf, "%2d\n", (u32) acpi_dev->wakeup.state.enabled);
++}
++
++static ssize_t
++acpi_wakeup_store(struct device *dev, struct device_attribute *attr, const char* buf, size_t count){
++	struct acpi_device *acpi_dev = to_acpi_device(dev);
++	struct acpi_device *other_dev;
++	struct list_head *node, *next;
++	char *endp;
++	int state;
++
++	if (!acpi_dev)
++		return -EINVAL;
++
++	state = simple_strtol(buf, &endp, 0);
++	if (*endp == '\0')
++		return -EINVAL;
++
++	if(state != 0 && state != 1)
++		return -EINVAL;
++	acpi_dev->wakeup.state.enabled = state;
++
++	spin_lock(&acpi_device_lock);
++	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
++		other_dev = container_of(node, struct acpi_device, wakeup_list);
++		if ((other_dev != acpi_dev) &&
++		(other_dev->wakeup.gpe_number == acpi_dev->wakeup.gpe_number) &&
++		(other_dev->wakeup.gpe_device == acpi_dev->wakeup.gpe_device)) {
++			printk(KERN_WARNING "ACPI: '%s' and '%s' have the same GPE, "
++					"can't disable/enable one seperately\n",
++					other_dev->pnp.bus_id, acpi_dev->pnp.bus_id);
++			other_dev->wakeup.state.enabled = acpi_dev->wakeup.state.enabled;
++		}
++	}
++	spin_unlock(&acpi_device_lock);
++	return count;
++}
++
++#define DEVICE_ATTR_RO(_name, _mode, _show)	\
++struct device_attribute dev_attr_##_name##_ro = __ATTR(_name, _mode, _show, NULL)
++
++static DEVICE_ATTR(wakeup, 0644, acpi_wakeup_show, acpi_wakeup_store);
++static DEVICE_ATTR_RO(wakeup, 0444, acpi_wakeup_show);
++
++int acpi_add_wakeup_sysfs(struct acpi_device *dev) {
++	int result;
++
++	result = device_create_file(&dev->dev, &dev_attr_sleep_state);
++	if(result)
++		goto end;
++	if(dev->wakeup.flags.run_wake)
++		result = device_create_file(&dev->dev, &dev_attr_wakeup_ro);
++	else
++		result = device_create_file(&dev->dev, &dev_attr_wakeup);
++  end:
++  	return result;
++}
++EXPORT_SYMBOL(acpi_add_wakeup_sysfs);
++
++void acpi_remove_wakeup_sysfs(struct acpi_device *dev) {
++
++	if(dev->wakeup.flags.run_wake)
++		device_remove_file(&dev->dev, &dev_attr_wakeup_ro);
++	else
++		device_remove_file(&dev->dev, &dev_attr_wakeup);
++	device_remove_file(&dev->dev, &dev_attr_sleep_state);
++}
++EXPORT_SYMBOL(acpi_remove_wakeup_sysfs);
++
+ /* --------------------------------------------------------------------------
+                               FS Interface (/proc)
+    -------------------------------------------------------------------------- */
+@@ -598,9 +685,6 @@ acpi_system_write_alarm(struct file *fil
+ 	return_VALUE(result ? result : count);
+ }
  
- config ACPI_AC
- 	tristate "AC Adapter"
+-extern struct list_head acpi_wakeup_device_list;
+-extern spinlock_t acpi_device_lock;
+-
+ static int
+ acpi_system_wakeup_device_seq_show(struct seq_file *seq, void *offset)
+ {
+Index: linux-2.6.20-rc2-mm1/drivers/acpi/scan.c
+===================================================================
+--- linux-2.6.20-rc2-mm1.orig/drivers/acpi/scan.c	2007-01-06 17:54:31.000000000 +0800
++++ linux-2.6.20-rc2-mm1/drivers/acpi/scan.c	2007-01-06 18:18:01.000000000 +0800
+@@ -155,6 +155,15 @@ static int acpi_device_setup_files(struc
+ 			goto end;
+ 	}
+ 
++	/*
++	 * add "wakeup" and "sleep_state" attributes for ACPI devices
++	 */
++	if(dev->wakeup.flags.valid) {
++		result = acpi_add_wakeup_sysfs(dev);
++		if(result)
++			goto end;
++	}
++
+         /*
+          * If device has _EJ0, 'eject' file is created that is used to trigger
+          * hot-removal function from userland.
+@@ -179,6 +188,9 @@ static void acpi_device_remove_files(str
+ 	if (ACPI_SUCCESS(status))
+ 		device_remove_file(&dev->dev, &dev_attr_eject);
+ 
++	if(dev->wakeup.flags.valid)
++		acpi_remove_wakeup_sysfs(dev);
++
+ 	if(dev->flags.hardware_id)
+ 		device_remove_file(&dev->dev, &dev_attr_hid);
+ 	if(dev->handle)
+Index: linux-2.6.20-rc2-mm1/include/acpi/acpi_drivers.h
+===================================================================
+--- linux-2.6.20-rc2-mm1.orig/include/acpi/acpi_drivers.h	2007-01-06 17:54:31.000000000 +0800
++++ linux-2.6.20-rc2-mm1/include/acpi/acpi_drivers.h	2007-01-06 18:18:01.000000000 +0800
+@@ -45,6 +45,12 @@
+ 
+ #define ACPI_VIDEO_HID			"video"
+ #define ACPI_BAY_HID			"bay"
++
++ /* --------------------------------------------------------------------------
++                                       Wakeup
++   -------------------------------------------------------------------------- */
++int acpi_add_wakeup_sysfs(struct acpi_device *dev);
++void acpi_remove_wakeup_sysfs(struct acpi_device *dev);
+ /* --------------------------------------------------------------------------
+                                        PCI
+    -------------------------------------------------------------------------- */
