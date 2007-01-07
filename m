@@ -1,31 +1,32 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] [PATCH 3/6] [-mm]: ACPI: duplicate ACPI sleep "alarm" attribute in	sysfs
-Date: Sun, 7 Jan 2007 05:57:57 +0000
-Message-ID: <20070107055757.GB24853@srcf.ucam.org>
-References: <1168083318.5619.37.camel@localhost.localdomain> <200701061442.22340.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs functions in sysfs
+Date: Sun, 7 Jan 2007 11:15:09 +0000
+Message-ID: <20070107111509.GA4792@ucw.cz>
+References: <1168083306.5619.34.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200701061442.22340.david-b@pacbell.net>
+In-Reply-To: <1168083306.5619.34.camel@localhost.localdomain>
 Sender: linux-acpi-owner@vger.kernel.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.osdl.org, Zhang Rui <rui.zhang@intel.com>, lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 06, 2007 at 02:42:22PM -0800, David Brownell wrote:
-> On Saturday 06 January 2007 3:35 am, Zhang Rui wrote:
-> > 
-> > Create /sys/power/alarm.
-> 
-> Urg.  This doesn't work with the RTC framework, which accepts the reality
-> that some systems have multiple RTCs ... /sys/class/rtc/rtcN/alarm is a
-> much more appropriate location for that RTC's alarm.
+Hi!
 
-Especially since /proc/acpi/alarm is just banging on the RTC registers 
-- the only ACPI thing about it is that the FADT can expose whether or 
-not the extended registers exist, and then making sure that the GPE is 
-enabled.
+> This patch set is against acpi-test sysfs branch, and will duplicate several ACPI procfs functions in sysfs.
+> As struct subsystem power_subsys is referred and the interface under /sys/power/ is changed by this patch series,
+> I wish to receive some comments from linux-pm too.
 
+Thanks for doing the work.
+
+> Patch 03-05:
+> 	add ACPI sleep attributes in sysfs.
+> 	/proc/acpi/sleep is already deprecated by /sys/power/state.
+
+Does that mean we drop standby (S1) capability on PCs?
+
+						Pavel
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks for all the (sleeping) penguins.
