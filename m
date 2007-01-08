@@ -1,197 +1,40 @@
-From: David Brownell <david-b@pacbell.net>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [linux-pm] [PATCH 3/6] [-mm]: ACPI: duplicate ACPI sleep "alarm" attribute in	sysfs
-Date: Sun, 7 Jan 2007 19:44:58 -0800
-Message-ID: <200701071944.59470.david-b@pacbell.net>
-References: <1168083318.5619.37.camel@localhost.localdomain> <20070107111859.GB4792@ucw.cz>
+Date: Mon, 8 Jan 2007 10:10:26 +0000
+Message-ID: <20070108101026.GA14485@srcf.ucam.org>
+References: <1168083318.5619.37.camel@localhost.localdomain> <200701061442.22340.david-b@pacbell.net> <20070107055757.GB24853@srcf.ucam.org> <200701071831.18186.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070107111859.GB4792@ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200701071831.18186.david-b@pacbell.net>
 Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.osdl.org
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>, Paul Sokolovsky <pmiscml@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 07 January 2007 3:19 am, Pavel Machek wrote:
+On Sun, Jan 07, 2007 at 06:31:17PM -0800, David Brownell wrote:
+> On Saturday 06 January 2007 9:57 pm, Matthew Garrett wrote:
+> > Especially since /proc/acpi/alarm is just banging on the RTC registers 
+> > - the only ACPI thing about it is that the FADT can expose whether or 
+> > not the extended registers exist, and then making sure that the GPE is 
+> > enabled.
 > 
-> > Create /sys/power/alarm.
-> > The way it works is exactly the same as /proc/acpi/alarm.
-> > I.e. "#echo yyyy-mm-dd hh-mm-ss >/sys/power/alarm" supports existing absolute time.
-> > And "#echo +yyyy-mm-dd hh-mm-ss >/sys/power/alarm" supports a duration.
-> 
-> NAK. /proc/acpi/alarm is a mess, and this just moves it to /sysfs.
-> 'One value per file', please.
+> The FADT also exposes whether the RTC can wake from S4.  You may have
+> noticed that my rtc-cmos patch #3 exported the relevant FADT info
+> to the RTC device using platform_data, but the S4 wake capability flag
+> isn't useful for anything on today's Linux.
 
-Sort of like the appended patch, instead ... which doesn't need to know a
-thing about ACPI.  This is what I suggested in response to an earlier patch
-from Paul Sokolovsky.
+Isn't useful in what way? It'd be helpful for userspace to know that now 
+that we're actually using S4 for swsusp, but I understand that it might 
+not fit into the current API terribly well.
 
-- Dave
+> Not speaking as an ACPI expert, I do see the ACPI spec says (right
+> under fig 4-11 in my version) that RTC events don't require GPEs.
 
+Hmm. My interpretation of that section had been that RTC_EN and RTC_STS 
+were optional, and that a GPE would be required if they weren't 
+implemented. On re-reading it, I think you're right.
 
-================	CUT HERE
-This adds a new "wakealarm" sysfs attribute to RTC class devices which
-support alarm operations and are wakeup-capable:
-
- - It reads as either empty, or the scheduled alarm time as seconds
-   since the POSIX epoch.  (That time may already have passed, since
-   nothing currently enforces one-shot alarm semantics...)
-
- - It can be written with an alarm time in the future, again seconds
-   since the POSIX epoch, which enables the alarm.
-
- - It can be written with an alarm time not in the future (such as 0,
-   the start of the POSIX epoch) to disable the alarm.
-
-Usage examples, after "cd /sys/class/rtc/rtcN":
-
-    alarm after 45 minutes:
-	# echo $(( $(cat since_epoch) + 45 * 60 )) > wakealarm
-    alarm next tuesday evening (using GNU date):
-	# date -d '10pm tuesday' "+%s" > wakealarm
-    disable alarm:
-    	# echo 0 > wakealarm
-
-This resembles the /proc/acpi/alarm file in that nothing happens when
-the alarm triggers ... except possibly waking the system from sleep.
-It's also like that in a nasty way:  not much can be done to prevent
-one task from clobbering another task's alarm settings.
-
-It differs from that file in that there's no in-kernel date parser.
-
-Note that a few RTCs ignore rtc_wkalrm.enabled when setting alarms, or
-aren't set up correctly, so they won't yet behave with this attribute.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-
-Index: g26/drivers/rtc/rtc-sysfs.c
-===================================================================
---- g26.orig/drivers/rtc/rtc-sysfs.c	2007-01-07 19:34:50.000000000 -0800
-+++ g26/drivers/rtc/rtc-sysfs.c	2007-01-07 19:34:52.000000000 -0800
-@@ -78,6 +78,92 @@ static struct attribute_group rtc_attr_g
- 	.attrs = rtc_attrs,
- };
- 
-+
-+static ssize_t
-+rtc_sysfs_show_wakealarm(struct class_device *dev, char *buf)
-+{
-+	ssize_t retval;
-+	unsigned long alarm;
-+	struct rtc_wkalrm alm;
-+
-+	/* Don't show disabled alarms; but the RTC could leave the
-+	 * alarm enabled after it's already triggered.  Alarms are
-+	 * conceptually one-shot, even though some common hardware
-+	 * (PCs) doesn't actually work that way.
-+	 *
-+	 * REVISIT maybe we should require RTC implementations to
-+	 * disable the RTC alarm after it triggers, for uniformity.
-+	 */
-+	retval = rtc_read_alarm(dev, &alm);
-+	if (retval == 0 && alm.enabled) {
-+		rtc_tm_to_time(&alm.time, &alarm);
-+		retval = sprintf(buf, "%lu\n", alarm);
-+	}
-+
-+	return retval;
-+}
-+
-+static ssize_t
-+rtc_sysfs_set_wakealarm(struct class_device *dev, const char *buf, size_t n)
-+{
-+	ssize_t retval;
-+	unsigned long now, alarm;
-+	struct rtc_wkalrm alm;
-+
-+	/* Only request alarms that trigger in the future.  Disable them
-+	 * by writing another time, e.g. 0 meaning Jan 1 1970 UTC.
-+	 */
-+	retval = rtc_read_time(dev, &alm.time);
-+	if (retval < 0)
-+		return retval;
-+	rtc_tm_to_time(&alm.time, &now);
-+
-+	alarm = simple_strtoul(buf, NULL, 0);
-+	if (alarm > now) {
-+		/* Avoid accidentally clobbering active alarms; we can't
-+		 * entirely prevent that here, without even the minimal
-+		 * locking from the /dev/rtcN api.
-+		 */
-+		retval = rtc_read_alarm(dev, &alm);
-+		if (retval < 0)
-+			return retval;
-+		if (alm.enabled)
-+			return -EBUSY;
-+
-+		alm.enabled = 1;
-+	} else {
-+		alm.enabled = 0;
-+
-+		/* Provide a valid future alarm time.  Linux isn't EFI,
-+		 * this time won't be ignored when disabling the alarm.
-+		 */
-+		alarm = now + 300;
-+	}
-+	rtc_time_to_tm(alarm, &alm.time);
-+
-+	retval = rtc_set_alarm(dev, &alm);
-+	return (retval < 0) ? retval : n;
-+}
-+static const CLASS_DEVICE_ATTR(wakealarm, S_IRUGO | S_IWUSR,
-+		rtc_sysfs_show_wakealarm, rtc_sysfs_set_wakealarm);
-+
-+
-+/* The reason to trigger an alarm with no process watching it (via sysfs)
-+ * is its side effect:  waking from a system state like suspend-to-RAM or
-+ * suspend-to-disk.  So: no attribute unless that side effect is possible.
-+ * (Userspace may disable that mechanism later.)
-+ */
-+static inline int rtc_does_wakealarm(struct class_device *class_dev)
-+{
-+	struct rtc_device *rtc;
-+
-+	if (!device_can_wakeup(class_dev->dev))
-+		return 0;
-+	rtc = to_rtc_device(class_dev);
-+	return rtc->ops->set_alarm != NULL;
-+}
-+
-+
- static int __devinit rtc_sysfs_add_device(struct class_device *class_dev,
- 					struct class_interface *class_intf)
- {
-@@ -87,8 +173,18 @@ static int __devinit rtc_sysfs_add_devic
- 
- 	err = sysfs_create_group(&class_dev->kobj, &rtc_attr_group);
- 	if (err)
--		dev_err(class_dev->dev,
--			"failed to create sysfs attributes\n");
-+		dev_err(class_dev->dev, "failed to create %s\n",
-+				"sysfs attributes");
-+	else if (rtc_does_wakealarm(class_dev)) {
-+		/* not all RTCs support both alarms and wakeup */
-+		err = class_device_create_file(class_dev,
-+					&class_device_attr_wakealarm);
-+		if (err) {
-+			dev_err(class_dev->dev, "failed to create %s\n",
-+					"alarm attribute");
-+			sysfs_remove_group(&class_dev->kobj, &rtc_attr_group);
-+		}
-+	}
- 
- 	return err;
- }
-@@ -96,6 +192,9 @@ static int __devinit rtc_sysfs_add_devic
- static void rtc_sysfs_remove_device(struct class_device *class_dev,
- 				struct class_interface *class_intf)
- {
-+	if (rtc_does_wakealarm(class_dev))
-+		class_device_remove_file(class_dev,
-+				&class_device_attr_wakealarm);
- 	sysfs_remove_group(&class_dev->kobj, &rtc_attr_group);
- }
- 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
