@@ -1,47 +1,54 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] [PATCH 3/6] [-mm]: ACPI: duplicate ACPI sleep "alarm" attribute in	sysfs
-Date: Mon, 8 Jan 2007 13:15:20 -0800
-Message-ID: <200701081315.21443.david-b@pacbell.net>
-References: <1168083318.5619.37.camel@localhost.localdomain> <200701081239.08687.david-b@pacbell.net> <20070108204317.GA24181@srcf.ucam.org>
+From: Rob Walker <rob@tenfoot.org.uk>
+Subject: Suspend and wake on lan
+Date: Wed, 10 Jan 2007 20:50:25 +0000
+Message-ID: <200701102050.25410.rob@tenfoot.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070108204317.GA24181@srcf.ucam.org>
+Return-path: <suspend-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org, Zhang Rui <rui.zhang@intel.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
+List-Post: <mailto:suspend-devel@lists.sourceforge.net>
+List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: suspend-devel-bounces@lists.sourceforge.net
+Errors-To: suspend-devel-bounces@lists.sourceforge.net
+To: linux-pm@lists.osdl.org, suspend-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 January 2007 12:43 pm, Matthew Garrett wrote:
-> On Mon, Jan 08, 2007 at 12:39:08PM -0800, David Brownell wrote:
-> 
-> > In that current API there's no way to tell anything at all about the
-> > target system state inside a driver's suspend() method.  So if there
-> > were some characteristic of S4 (or S3 etc) that mattered to the driver
-> > (it should test for the attribute, not S4/etc since S4 is ACPI-specific)
-> > the driver couldn't do anything about it ... so as I said, not useful.
-> 
-> Well, it's not just a matter for the driver - in terms of userspace UI, 
-> we 
+Hi,
 
-... may potentially ...
+I'm having some trouble getting wake on lan to work after the computer is 
+suspended.  Wake on Lan works if I shut down the computer normally (i.e. it 
+powers up again when I send the magic packet), but doesn't wake up when I 
+suspend the computer to disk and then send the magic packet.  I ensure that 
+wake on lan is enabled before suspending by running `ethtool -s eth0 wol g`.
 
-> want to be able to expose which wakeup events will work in suspend to  
-> disk. If the API can't currently expose that, then we probably want to 
-> look into ways of fixing that.
+The computer is an AMD Athlon, using a Gigabyte GA-71X motherboard with VIA 
+KT400 chipset.
+The on board network chip is a RealTek RTL8139, using the 8139too driver.
 
-Considering that I've never seen ACPI wakeup GPEs work at all, having
-them work in the first place -- e.g. from STR -- would need to be a first
-step.  It seems premature to discuss the UI of a tool that can't yet be
-written on Linux...
+I've tried the kernel from debian testing (2.6.18) and a hand built 2.6.19.1 
+kernel, both with the same results.  
 
-Agreed, by the way, that drivers need to be able to tell things about the
-target system sleep state.  My original examples come from USB:  drivers
-need to know whether the target state requires disabling specific clocks,
-which must be active for remote wakeup to work.
+I've tried uswsusp and the in-kernel suspend, again both with the same 
+results.
 
-- Dave
- 
+Can you help?
+
+Regards
+
+Rob
+
+-- 
+Rob Walker <rob@tenfoot.org.uk>
+http://www.tenfoot.org.uk
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
