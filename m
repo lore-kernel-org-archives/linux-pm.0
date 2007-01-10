@@ -1,54 +1,37 @@
-From: Rob Walker <rob@tenfoot.org.uk>
-Subject: Suspend and wake on lan
-Date: Wed, 10 Jan 2007 20:50:25 +0000
-Message-ID: <200701102050.25410.rob@tenfoot.org.uk>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs functions in sysfs
+Date: Wed, 10 Jan 2007 12:53:27 -0800
+Message-ID: <200701101253.28151.david-b@pacbell.net>
+References: <1168083306.5619.34.camel@localhost.localdomain> <20070107055424.GA24853@srcf.ucam.org> <1168256428.5754.98.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1168256428.5754.98.camel@localhost.localdomain>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: linux-pm@lists.osdl.org, suspend-devel@lists.sourceforge.net
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.osdl.org, lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Monday 08 January 2007 3:40 am, Zhang Rui wrote:
+>
+> if /sys/class/rtc/rtcN/alarm can provide the same function, it's great
+> and I'll drop patch#03. I'll also mark /proc/acpi/alarm as deprecated if
+> David's patches are merged. :)
 
-I'm having some trouble getting wake on lan to work after the computer is 
-suspended.  Wake on Lan works if I shut down the computer normally (i.e. it 
-powers up again when I send the magic packet), but doesn't wake up when I 
-suspend the computer to disk and then send the magic packet.  I ensure that 
-wake on lan is enabled before suspending by running `ethtool -s eth0 wol g`.
+One help there would be someone from the ACPI team signing off on
+patch #3 of the series I sent, which teaches ACPI how to export the
+extra registers to the rtc-cmos driver.
 
-The computer is an AMD Athlon, using a Gigabyte GA-71X motherboard with VIA 
-KT400 chipset.
-The on board network chip is a RealTek RTL8139, using the 8139too driver.
+There will be another ACPI patch at some point, actually kicking
+in hooks needed to handle system wakeup, but getting the PC into
+the RTC class framework is an important first step.
 
-I've tried the kernel from debian testing (2.6.18) and a hand built 2.6.19.1 
-kernel, both with the same results.  
+Once there's a proper replacement for /proc/acpi/alarm it becomes
+a candidate for removal.  Maybe sooner rather than later, unless
+some users for that old file turn up...
 
-I've tried uswsusp and the in-kernel suspend, again both with the same 
-results.
+- Dave
 
-Can you help?
-
-Regards
-
-Rob
-
--- 
-Rob Walker <rob@tenfoot.org.uk>
-http://www.tenfoot.org.uk
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
