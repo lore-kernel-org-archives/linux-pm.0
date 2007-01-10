@@ -1,37 +1,79 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs functions in sysfs
-Date: Wed, 10 Jan 2007 12:53:27 -0800
-Message-ID: <200701101253.28151.david-b@pacbell.net>
-References: <1168083306.5619.34.camel@localhost.localdomain> <20070107055424.GA24853@srcf.ucam.org> <1168256428.5754.98.camel@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Suspend-devel] Suspend and wake on lan
+Date: Wed, 10 Jan 2007 21:59:41 +0100
+Message-ID: <200701102159.42126.rjw@sisk.pl>
+References: <200701102050.25410.rob@tenfoot.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1168256428.5754.98.camel@localhost.localdomain>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200701102050.25410.rob@tenfoot.org.uk>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.osdl.org, lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Rob Walker <rob@tenfoot.org.uk>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 January 2007 3:40 am, Zhang Rui wrote:
->
-> if /sys/class/rtc/rtcN/alarm can provide the same function, it's great
-> and I'll drop patch#03. I'll also mark /proc/acpi/alarm as deprecated if
-> David's patches are merged. :)
+Hi,
 
-One help there would be someone from the ACPI team signing off on
-patch #3 of the series I sent, which teaches ACPI how to export the
-extra registers to the rtc-cmos driver.
+On Wednesday, 10 January 2007 21:50, Rob Walker wrote:
+> Hi,
+> =
 
-There will be another ACPI patch at some point, actually kicking
-in hooks needed to handle system wakeup, but getting the PC into
-the RTC class framework is an important first step.
+> I'm having some trouble getting wake on lan to work after the computer is =
 
-Once there's a proper replacement for /proc/acpi/alarm it becomes
-a candidate for removal.  Maybe sooner rather than later, unless
-some users for that old file turn up...
+> suspended.  Wake on Lan works if I shut down the computer normally (i.e. =
+it =
 
-- Dave
+> powers up again when I send the magic packet), but doesn't wake up when I =
 
+> suspend the computer to disk and then send the magic packet.  I ensure th=
+at =
+
+> wake on lan is enabled before suspending by running `ethtool -s eth0 wol =
+g`.
+> =
+
+> The computer is an AMD Athlon, using a Gigabyte GA-71X motherboard with V=
+IA =
+
+> KT400 chipset.
+> The on board network chip is a RealTek RTL8139, using the 8139too driver.
+> =
+
+> I've tried the kernel from debian testing (2.6.18) and a hand built 2.6.1=
+9.1 =
+
+> kernel, both with the same results.  =
+
+> =
+
+> I've tried uswsusp and the in-kernel suspend, again both with the same =
+
+> results.
+> =
+
+> Can you help?
+
+Hm, not really, but I think the 8139too's suspend routine does something
+that disables WOL.
+
+Please try to contact the author/maintianer of the driver.
+
+Greetings,
+Rafael
+
+
+-- =
+
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
