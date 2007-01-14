@@ -1,12 +1,11 @@
-From: "Winston Collier" <Wezen'scomprises@abelnvloeren.nl>
-Subject: Rice 'loves' Fox News; CBS anchor 'decent guy'
-Date: Fri, 12 Jan 2007 12:25:56 +0000 (UTC)
-Message-ID: <01c73644$9e6b80f0$6c822ecf@Wezen'scomprises>
+From: "Teddy Finn" <inextinguishableequitably@abingdon.sun.com>
+Subject: Stem-cell funding passes House, faces veto threat
+Date: Sun, 14 Jan 2007 09:25:51 +0420
+Message-ID: <01c737bd$fbb358d0$6c822ecf@inextinguishableequitably>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Fri, 12 Jan 2007 12:24:34 +0180
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,22 +18,16 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-OPEN UP FRIDAY WITH A BANG!
+WATCH FCCN LIKE A HAWK THURSDAY! THE ALERT IS ON!
 
 
-Sy mbol: HWYI
+Sy mbol: FCCN
 On: PinkSheets
-5-Days Target: $2.50
-Long Term Target: $9.50
+5-Days Target: $2.60
+Long Term Target: $5.50
 
-Exposure of there technology to the market has generated a great deal of in=
-terest
-and word on the street is that they are preparing a announcment concerning =
-several
-large contracts with major providers, giving them a =
-
-huge competative jump in the market.
+Take a look at the annoucement and reveiw the technology, but grab some FCCN
+before they drop the release to push this stock to the dollar marker.
 
 
-DO YOUR DUE DILIGENCE ON THIS STOCK!!
-RADAR IT FOR FRIDAY NOW!
+ADD FCCN TO YOUR WATCHLIST NOW! WATCH IT TRADE ON FIRDAY 12 JAN!
