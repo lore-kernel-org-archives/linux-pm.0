@@ -1,9 +1,9 @@
-From: "Shelby Kent" <urinalysesFortaleza's@accessdc.com>
-Subject: {xstas-pills-sbj}
-Date: Fri, 11 Feb 2000 05:30:03 +0000
-Message-ID: <01bf7451$0c3a65f0$6c822ecf@urinalysesFortaleza's>
+From: "Mona Beach" <dangeringminiseries@aafgb.com>
+Subject: So, who is NOT running for president?
+Date: Tue, 23 Jan 2007 15:11:33 -0120
+Message-ID: <01c73f00$c49d1fd0$6c822ecf@dangeringminiseries>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1833982915=="
+Content-Type: multipart/mixed; boundary="===============1893029672=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -14,74 +14,48 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
-
---===============1833982915==
-Content-Type: multipart/alternative;
-    boundary="----------=_1169506974-9547-410"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-
-This is a multi-part message in MIME format...
-
-------------=_1169506974-9547-410
+--===============1893029672==
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="windows-1250"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-http://www.vonage-forum.com/outgoing/out.php?url=~aHR0cDovL3c0azkyM2o3MTQxNW5ld3pqaGVwMWV3dy5raXNzeW5lLmNvbQ==~
-Special offer on top-class generic drugs from major USA manufacturers - only for you! Don't miss the huge holiday sale at our online drugstore!Fed up with endless junk mail offering you to purchase medication of mysterious origin at "unprecedented low prices"? Looks like it's high time to choose the best online drugstore now! We've got something special to give you - generic drugs straight from the most popular USA manufacturers.Visit Us for more details and best purchases right now!
-http://www.vonage-forum.com/outgoing/out.php?url=~aHR0cDovL3c0azkyM2o3MTQxNW5ld3pqaGVwMWV3dy5raXNzeW5lLmNvbQ==~
+     
 
 
-------------=_1169506974-9547-410
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-<html DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office" DEFANGED=
-_xmlns:w=3D"urn:schemas-microsoft-com:office:word" DEFANGED_xmlns=3D"http:/=
-/www.w3.org/TR/REC-html40">
+Grab PETROLEUM CONSOLIDAT (PCAI.PK) stock today morning.     
+THE ALERT IS STRATED! AND IT IS GOING TO EXPLODE.    
+  
+Tuesday will be the day when your gains will be really SOAR.   
+It's getting growth almost every hour! So you can triple your balance any time.    
+We are sure thet you had not chance like that before.   
+    
+Monday price: JAN 22 - $0.57  
+On tuesday 23 January it will - 0.73$ at least and 0.90$ at most (not bad for a day)  
+    
+Call your brokers in order they buy it immediately.    
+     
+Do not miss your moment.MORE THAN 35% EVERY DAY! 
+PCAI.PK just released this news.
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Diso-8859-=
-1">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-</head>
-<body>
-<table align=3D"center" cellspacing=3D"1" cellpadding=3D"2" border=3D"0" wi=
-dth=3D"518" height=3D"117"><tr><td><p><font face=3D"Verdana" size=3D"2"><a =
-href=3D"http://www.vonage-forum.com/outgoing/out.php?url=3D~aHR0cDovL3c0azk=
-yM2o3MTQxNW5ld3pqaGVwMWV3dy5raXNzeW5lLmNvbQ=3D=3D~">Special offer on top-cl=
-ass generic drugs</a> from major USA manufacturers - only for you! Don't mi=
-ss the huge holiday sale at our online drugstore!</font></p><p><font face=
-=3D"Verdana" size=3D"2">Fed up with endless junk mail offering you to purch=
-ase medication of mysterious origin at "unprecedented low prices"? Looks li=
-ke it's high time to choose <a href=3D"http://www.vonage-forum.com/outgoing=
-/out.php?url=3D~aHR0cDovL3c0azkyM2o3MTQxNW5ld3pqaGVwMWV3dy5raXNzeW5lLmNvbQ=
-=3D=3D~">the best online drugstore now</a>! <br><br>We've got something spe=
-cial to give you - generic drugs straight from the most popular USA manufac=
-turers.</font></p><p><font face=3D"Verdana" size=3D"2"><a href=3D"http://ww=
-w.vonage-forum.com/outgoing/out.php?url=3D~aHR0cDovL3c0azkyM2o3MTQxNW5ld3pq=
-aGVwMWV3dy5raXNzeW5lLmNvbQ=3D=3D~">Visit Us for more details and best purch=
-ases right now!</a></font></p><p></p></td></tr><tr><td></td></tr></table><p=
-></p><br><p></p>
-</body>
-</html>
+GRAB THIS UNBELIEVABLE PCAI.PK now. 
 
-------------=_1169506974-9547-410--
 
---===============1833982915==
+
+71737D75457871746C6E7A327274693377
+ptolemai
+environment. In other 
+
+
+
+--===============1893029672==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============1833982915==--
+--===============1893029672==--
