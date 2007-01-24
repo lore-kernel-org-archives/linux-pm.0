@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] [PATCH]switching off autosuspend
-	through sysfs
-Date: Wed, 24 Jan 2007 11:51:17 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0701241145140.4368-100000@iolanthe.rowland.org>
-References: <20070124003221.GA3755@suse.de>
+From: "Gwen Gilmore" <gluttonrundown's@abgam.es>
+Subject: fw:Gwen AUNI anyone ?
+Date: Wed, 24 Jan 2007 17:13:21 +0000 (UTC)
+Message-ID: <01c73fda$d9e4f630$6c822ecf@gluttonrundown's>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1223185068=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070124003221.GA3755@suse.de>
+Date: Wed, 24 Jan 2007 17:12:39 +0480
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,62 +15,45 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Greg KH <gregkh@suse.de>
-Cc: oneukum@suse.de, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Jan 2007, Greg KH wrote:
+--===============1223185068==
+Content-Type: text/plain;
+	charset="windows-1250"
+Content-Transfer-Encoding: 7bit
 
-> On Tue, Jan 23, 2007 at 04:22:43PM -0800, David Brownell wrote:
-> > > > >  static struct attribute *dev_attrs[] =3D {
-> > > > > +	/* power management attributes */
-> > > > > +	&dev_attr_autosuspend.attr,
-> > > > =
+The Beauty of the peenny stoock arena is that shares appreciate so rapidly!  
+A bit of inside info and returns of 1000% are not unheard of.  We are 
+bringing you what is HOT right now.
+Weekly blitz has started. Millions of mans will read
+this letter today.Guess what will be next couple days.
 
-> > > > Belongs in /sys/devices/.../power/... then, right?
-> > >
-> > > No, I thought we want to drop that power/ directory.
-> > =
+Look at level II it start to move...
 
-> > Dropping that directory hasn't AFAIK ever been discussed.
-> > If it were to be dropped, where would the per-device wakeup
-> > flags live?
-> =
 
-> I don't know, it just really annoys me to see that power directory there
-> with no use for it for a lot of devices :)
+With lucrative deals in China, American Unity 
+Investments (AUNI-OTC-BB) is exactly where you want to be.
 
-Would it help to add a flag somewhere in struct device (or struct
-dev_pm_info) for indicating that the device is not cognizant of PM?  For
-instance, all those USB endpoint pseudo-devices we create -- it's a waste
-of time to try doing power management on them and it generates a bunch of
-useless and distracting warning messages in the system log.
+Currently trading at around 16 cents, AUNI^OB is firing up a massive 
+publicity blitz to showcase their successful dealings in China.
 
-> > >	I have no
-> > > objection to it going into the USB device directory, as that is the
-> > > proper place for it.
-> > =
+We are looking at this one shooting up to the $1.00 mark once results are 
+announced and the advancement officially begins (several days)!
+Wednesday expectations around + 43% +0.07(0.23) at least and  +75% +0.12(0.28)  at most (not bad).
+You know thet we know some things new. Look at monday result - it rise already - was 0.08 now 0.168.
 
-> > It'd be OK for a USB-specific mechanism, but there was at
-> > one point some discussion about this mechanism being more
-> > generally appropriate.
-> =
+Jump in. fast.
 
-> Hm, I missed that.  This seems to be a very usb-specific thing at the
-> moment.
+717378746933776E7A457871746C
+giparh
 
-It is USB-specific because I wanted to start out in a well-defined =
 
-environment where the mechanisms could get tested and shaken out.  When =
+--===============1223185068==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-the problems are gone, it will make sense to think about moving the whole =
 
-autosuspend infrastructure into the PM core.
-
->  And an annoying one too for some of my devices...powering off
-> the bus for USB devices with no drivers might start causing devices that
-> use usbfs to do wierd things.  Still trying to work it all out though...
-
-If it does then we need to know and find a way to deal with it.
-
-Alan Stern
+--===============1223185068==--
