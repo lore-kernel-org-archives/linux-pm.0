@@ -1,46 +1,31 @@
-From: "Judson Lynn" <Pontiactraditionalists@aampm.com>
-Subject: fw:Judson AUNI - day2
-Date: Thu, 25 Jan 2007 19:28:55 +0000 (UTC)
-Message-ID: <01c740b6$f6b26360$6c822ecf@Pontiactraditionalists>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs functions in sysfs
+Date: Thu, 25 Jan 2007 20:37:42 +0100
+Message-ID: <20070125193742.GA23774@elf.ucw.cz>
+References: <1168083306.5619.34.camel@localhost.localdomain> <200701061421.41342.david-b@pacbell.net> <200701242228.17836.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Thu, 25 Jan 2007 19:28:17 -0060
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200701242228.17836.lenb@kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: David Brownell <david-b@pacbell.net>, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Day two
+Hi!
 
-Nice jump. The Beauty of the ppenny sttock arena is that issues appreciate =
-so quickly!  =
+> > (Yes, there are huge gaps in Linux-PM wakeup support.  Weak ACPI suppport
+> > for it, especially from STR -- without swsusp -- is a big factor.  I
+> > was pleased to see RTC wakeup from ACPI S4 actually work ... first time
+> > I've ever seen ACPI wakeup ever work correctly.)
+> 
+> Try your power button, sleep button, or lid switch.
 
-A bit of inner info and returns of 1000% are not unheard of. =
-
-With profitable settlement in China American Unity Investments (AUNI) is en=
-tirely where you want to be.
-
-I am buying now. Are you ? =
-
-
-What will happen next ? Today it will show us ... what it can do on third d=
-ay.
-It has more growth potential then i even intended .
-And next will be very HOT! times.
-Todays prognosis:+31% +0.9(0.38) at least
-and +51.7% +0.15(0.44) at most
-
-AUNI will easily reach $1.00 mark once results are announced!
-
-
-71737D75457871746C6E7A327274693377
-albatani
+Actually, in 2.6.18-or-so, I could wake my x60 from s2ram by simply
+opening the lid. New kernels do not support that. Do I need to
+configure it somewhere?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
