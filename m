@@ -1,14 +1,10 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] [PATCH]switching off autosuspend
-	through sysfs
-Date: Thu, 25 Jan 2007 11:09:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0701251103290.3958-100000@iolanthe.rowland.org>
-References: <200701241815.22007.david-b@pacbell.net>
+From: "Vito Monroe" <movesbulbing@academyjapan.co.jp>
+Subject: Business 2.0: 101 dumbest moments in business  day 2
+Date: Thu, 25 Jan 2007 17:02:31 +0000
+Message-ID: <01c740a2$99f8fda0$6c822ecf@movesbulbing>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0466401580=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200701241815.22007.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,54 +14,42 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: David Brownell <david-b@pacbell.net>
-Cc: oneukum@suse.de, Greg KH <gregkh@suse.de>, Linux-pm mailing list <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 Jan 2007, David Brownell wrote:
+--===============0466401580==
+Content-Type: text/plain;
+	charset="windows-1250"
+Content-Transfer-Encoding: 7bit
 
-> =
+Second Day
 
-> > > > I don't know, it just really annoys me to see that power directory =
-there
-> > > > with no use for it for a lot of devices :)
-> > > =
+Nice rise. The Beauty of the penny stoock arena is that shares appreciate so quickly!  
+A bit of inner information and returns of 1000% are not unheard of. 
+With profitable settlement in China American Unity Investments (AUNI) is exactly where you want to be.
 
-> > > Would it help to add a flag somewhere in struct device (or struct
-> > > dev_pm_info) for indicating that the device is not cognizant of PM? =
+Look like a discount.
+Take your paper and count. Or jump in.
 
-> =
+What will be next ? Today it will show us ... what it can do on friday.
+It has more growth implicit then i even planned .
+And next will be very HOT! times.
+Todays prognosis:+24% +0.7 (0.36) at least
+and +51.7% +0.15(0.44) at most
 
-> If it would, the semantics would need to be clarified.  Is the problem
-> that they can't suspend/resume at all?  Or is the problem instead that
-> they (or their drivers) don't know how to do that without any loss of
-> functionality ... without a complete reset or whatever?
+AUNI will easily reach $1.00 mark once results are announced!
 
-The semantics I intended was that the flag should indicate the driver was =
 
-completely ignorant of PM.  It has no suspend or resume methods and no way =
+717378746933776E7A457871746C
+albatani
 
-of enabling or disabling remote wakeup.  As is true, for example, of those =
 
-USB endpoint pseudo-devices.
 
-Maybe this means the flag belongs in the driver's structure instead of the
-device's.  But the PM core tries to avoid looking at drivers...
+--===============0466401580==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Most devices can -- if poked and prodded appropriately, and if no
-> BIOS or uploaded firmware interferes badly enough -- make it through
-> some kind of system suspend state.  Whether that's the one the user
-> has chosen ... different issue!  And whether the driver knows how to
-> do that ... also a different issue!
-> =
 
-> But the specific problems we're seeing right now with the USB autosuspend
-> stuff relate to _runtime_ suspend.  I believe some of them are just bugs
-> in the stack; where better coddling of the devices would let them make it
-> through unscathed.  But some of them, likewise, probably _do_ have real
-> problems with real runtime suspend states (that don't map to "off").
-
-That would be a separate issue.  For now there's a (large?) set of devices
-whose drivers don't know Power Management from a hole in the wall.
-
-Alan Stern
+--===============0466401580==--
