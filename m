@@ -1,34 +1,51 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI =?iso-8859-1?q?procfs=09functions_in?= sysfs
-Date: Wed, 24 Jan 2007 21:28:13 -0500
-Message-ID: <200701242128.14047.lenb@kernel.org>
-References: <1168083306.5619.34.camel@localhost.localdomain> <1168256428.5754.98.camel@localhost.localdomain> <20070108131318.GC25933@elf.ucw.cz>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs
+	functions in sysfs
+Date: Thu, 25 Jan 2007 13:52:28 +1100
+Message-ID: <1169693548.9381.1.camel@nigel.suspend2.net>
+References: <1168083306.5619.34.camel@localhost.localdomain>
+	 <20070107111509.GA4792@ucw.cz>  <200701242103.57153.lenb@kernel.org>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070108131318.GC25933@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200701242103.57153.lenb@kernel.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.osdl.org
-Cc: Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@osdl.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 08 January 2007 08:13, Pavel Machek wrote:
-> Hi!
-> 
-> > This patch set is against acpi-test sysfs branch which already converts
-> > ACPI to follow driver model. Now the ACPI procfs functions are
-> > duplicated in sysfs step by step. And I want the ACPI interface in sysfs
-> > works exactly the same way as in procfs.
-> 
-> No, you can't port same broken interface into sysfs. Some /proc
-> interfaces are horrible, and we do not want to create _exactly same_
-> horrible interfaces in /sys.
+Hi.
 
-Please be specific.
+On Wed, 2007-01-24 at 21:03 -0500, Len Brown wrote:
+> > > Patch 03-05:
+> > > 	add ACPI sleep attributes in sysfs.
+> > > 	/proc/acpi/sleep is already deprecated by /sys/power/state.
+> > 
+> > Does that mean we drop standby (S1) capability on PCs?
+> 
+> I think we need to make /sys/power/state handle S1.
+> 
+> There are two cases
+> 
+> 1. Platform supports S1, but does not support S3.
+> 
+> This is more common.  You see this a lot on server-class machines.
+> 
+> We could make "mem" simply mean S1 here b/c it is effectively
+> the closest thing to S3.
+> 
+> 2. Platform supports both S1 and S3.
+> 
+> This is pretty rare -- at least on the systems I've got.
+> I'd  like the generic interface be able to describe and handle this case.
+> 
+> I'm open to suggestions on what to call S1 if it isn't called "mem".
 
-thanks,
--Len
+'standby'? That's what occurs to me from previous M$ usage.
+
+Regards,
+
+Nigel
 
