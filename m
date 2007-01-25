@@ -1,75 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs
-	functions in sysfs
-Date: Thu, 25 Jan 2007 09:17:48 +0100
-Message-ID: <200701250917.48689.rjw@sisk.pl>
-References: <1168083306.5619.34.camel@localhost.localdomain>
-	<200701242103.57153.lenb@kernel.org>
-	<1169693548.9381.1.camel@nigel.suspend2.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [PATCH 3/6] [-mm]: ACPI: duplicate ACPI sleep "alarm" attribute in	sysfs
+Date: Thu, 25 Jan 2007 01:39:31 -0800
+Message-ID: <200701250139.32101.david-b@pacbell.net>
+References: <1168083318.5619.37.camel@localhost.localdomain> <200701071944.59470.david-b@pacbell.net> <200701242321.09850.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1169693548.9381.1.camel@nigel.suspend2.net>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200701242321.09850.lenb@kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: nigel@nigel.suspend2.net
-Cc: "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org, Pavel Machek <pavel@ucw.cz>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.osdl.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Alessandro Zummo <alessandro.zummo@towertech.it>, Paul Sokolovsky <pmiscml@gmail.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+> > This adds a new "wakealarm" sysfs attribute to RTC class devices which
+> > support alarm operations and are wakeup-capable:
+> > 
+> >  - It reads as either empty, or the scheduled alarm time as seconds
+> >    since the POSIX epoch.  (That time may already have passed, since
+> >    nothing currently enforces one-shot alarm semantics...)
+> > 
+> >  - It can be written with an alarm time in the future, again seconds
+> >    since the POSIX epoch, which enables the alarm.
+> > 
+> >  - It can be written with an alarm time not in the future (such as 0,
+> >    the start of the POSIX epoch) to disable the alarm.
+> > 
+> > ...
+> 
+> How do I ask to wake up "as soon as possible"?
 
-On Thursday, 25 January 2007 03:52, Nigel Cunningham wrote:
-> Hi.
-> =
+That doesn't exactly correspond to a hardware mechanism.  The hardware
+supports only "wake up at <this> specific time".
 
-> On Wed, 2007-01-24 at 21:03 -0500, Len Brown wrote:
-> > > > Patch 03-05:
-> > > > 	add ACPI sleep attributes in sysfs.
-> > > > 	/proc/acpi/sleep is already deprecated by /sys/power/state.
-> > > =
+ 
+> This is what a box that is testing suspend-resume would want to do.
 
-> > > Does that mean we drop standby (S1) capability on PCs?
-> > =
+What I've done in that case is notice how long the suspend cycle takes,
+add a bit of fuzz (I use 10 seconds), and specify that for the relative
+"when to wake" time.
 
-> > I think we need to make /sys/power/state handle S1.
-> > =
+Of course, "how long suspend takes" is variable.  If you disable IDE DMA
+(maybe the native driver doesn't suspend right yet?), suspend-to-disk
+seems to take forever on a PC.
 
-> > There are two cases
-> > =
+And even without suspend-to-disk, it often doesn't seem to be as quick
+as you'd think it should be.  Traversing the list of devices, and then
+suspending them, seems to take surprisingly long even on slim systems
+without ACPI in the way.
 
-> > 1. Platform supports S1, but does not support S3.
-> > =
+On the plus side, at least most systems seem to be able to handle RTCs
+as wakeup devices, so at least you _can_ automate that testing!
 
-> > This is more common.  You see this a lot on server-class machines.
-> > =
+- Dave
 
-> > We could make "mem" simply mean S1 here b/c it is effectively
-> > the closest thing to S3.
-> > =
-
-> > 2. Platform supports both S1 and S3.
-> > =
-
-> > This is pretty rare -- at least on the systems I've got.
-> > I'd  like the generic interface be able to describe and handle this cas=
-e.
-> > =
-
-> > I'm open to suggestions on what to call S1 if it isn't called "mem".
-> =
-
-> 'standby'? That's what occurs to me from previous M$ usage.
-
-Yes, something like that, I think..
-
-Greetings,
-Rafael
