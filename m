@@ -1,58 +1,82 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] [PATCH 0/6] [-mm]: ACPI: duplicate ACPI procfs functions in sysfs
-Date: Thu, 25 Jan 2007 02:00:25 -0800
-Message-ID: <200701250200.26338.david-b@pacbell.net>
-References: <1168083306.5619.34.camel@localhost.localdomain> <1169693548.9381.1.camel@nigel.suspend2.net> <200701250917.48689.rjw@sisk.pl>
+From: "John Sanko" <johnsanko555@atlas.sk>
+Subject: A Call For Business Partnership
+Date: Thu, 25 Jan 2007 11:05:46 +0100
+Message-ID: <a4e73c39a93b43f8ae1bc5d5d5dc0f5d@atlas.sk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200701250917.48689.rjw@sisk.pl>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.osdl.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@nigel.suspend2.net, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@osdl.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: multipart/mixed; boundary="===============0082104313=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-> > > I think we need to make /sys/power/state handle S1.
-> > > 
-> > > There are two cases
-> > > 
-> > > 1. Platform supports S1, but does not support S3.
-> > > 
-> > > This is more common.  You see this a lot on server-class machines.
-> > > 
-> > > We could make "mem" simply mean S1 here b/c it is effectively
-> > > the closest thing to S3.
+This is a multi-part message in MIME format...
 
-Today, this system would list "standby" in /sys/power/state,
-but not "mem".  I have a system like that here ...
+--===============0082104313==
+Content-Type: multipart/alternative;
+    boundary="----------=_1169719937-32205-532"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1169719937-32205-532
+Content-type: text/plain; charset=windows-1250
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Dear Sincerely,
+(A Call For Business Partnership)=20
+I am Mr.John Sanko I got your e-mail contact through my search as a reliabl=
+e person and I decided to contact you for a business proposal that  will be=
+ of great benefit to you and my family.
+=20
+To lighten you on this, My Sister and I will like to invest in your  Countr=
+y/Firm a huge amount of $11Million dollars which is an inheritance  from ou=
+r late Father, if you are interested in this project please  kindly reply s=
+oonest to enable us give you the details.
+I will need from you a mutual understanding and then we shall make  plans o=
+f how the funds would be secured into an account in your name for our inves=
+tment.=20
+We look forward to your response.=20
+Best Regards=20
+Mr.John Sanko.
+------------=_1169719937-32205-532
+Content-type: text/html; charset=windows-1250
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<html><div DEFANGED_style=3D"font-family: tahoma, arial; font-size: 12px;">=
+<DIV DEFANGED_style=3D"FONT-SIZE: 12px; FONT-FAMILY: tahoma, arial">
+<P>Dear Sincerely,</P>
+<P>(A Call For Business Partnership) </P>
+<P>I am Mr.John Sanko I got your e-mail contact through my search as a reli=
+able person and I decided to contact you for a business proposal that&nbsp;=
+ will be of great benefit to you and my family.<BR>&nbsp;<BR>To lighten you=
+ on this, My Sister and I will like to invest in your&nbsp; Country/Firm a =
+huge amount of $11Million dollars which is an inheritance&nbsp; from our la=
+te Father, if you are interested in this project please&nbsp; kindly reply =
+soonest to enable us give you the details.</P>
+<P>I will need from you a mutual understanding and then we shall make&nbsp;=
+ plans of how the funds would be secured into an account in your name for o=
+ur investment. </P>
+<P>We look forward to your response. </P>
+<P>Best Regards </P>
+<P>Mr.John Sanko.<BR></P></DIV></div></html>
+------------=_1169719937-32205-532--
+
+--===============0082104313==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
-> > > 2. Platform supports both S1 and S3.
-> > > 
-> > > This is pretty rare -- at least on the systems I've got.
-> > > I'd  like the generic interface be able to describe and handle this case.
-
-Today, this system would list both "standby" and "mem"
-in /sys/power/state.  I have a system like that here ...
-
-
-      3. (ACPI) platform supports S3 but not S1
-
-Today, this system would list "mem" in /sys/power/state,
-but not "standby".  I have a system like that here ...
-
-
-
-> > > I'm open to suggestions on what to call S1 if it isn't called "mem".
-> > 
-> > 'standby'? That's what occurs to me from previous M$ usage.
-> 
-> Yes, something like that, I think..
-
-Good news ... it already works that way!!!  :)
-
-- Dave
-
+--===============0082104313==--
