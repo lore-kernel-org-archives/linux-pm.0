@@ -1,81 +1,48 @@
-From: "Olen Stephens" <KresgeAlsace's@abec.com>
-Subject: fw: Damien Blanton wrote:
-Date: Fri, 26 Jan 2007 16:29:21 +0000 (UTC)
-Message-ID: <01c74233$7b08ad40$6c822ecf@KresgeAlsace's>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH 3/6] [-mm]: ACPI: duplicate ACPI sleep "alarm" attribute in	sysfs
+Date: Fri, 26 Jan 2007 18:07:54 +0100
+Message-ID: <20070126170754.GA964@elf.ucw.cz>
+References: <1168083318.5619.37.camel@localhost.localdomain> <200701242321.09850.lenb@kernel.org> <20070125194710.GC23774@elf.ucw.cz> <200701251812.21180.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1169828922-9238-59"
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Sat, 27 Jan 2007 16:52:07 -0060
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200701251812.21180.lenb@kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.osdl.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Alessandro Zummo <alessandro.zummo@towertech.it>, Paul Sokolovsky <pmiscml@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Thu 2007-01-25 18:12:20, Len Brown wrote:
+> On Thursday 25 January 2007 14:47, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Note that a few RTCs ignore rtc_wkalrm.enabled when setting alarms, or
+> > > > aren't set up correctly, so they won't yet behave with this attribute.
+> > > > 
+> > > > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > > 
+> > > How do I ask to wake up "as soon as possible"?
+> > 
+> > If you want to wake up ASAP, don't go to sleep :-).
+> > 
+> > I see it might be handy for debugging... but I guess we should not
+> > mess rtc design because of that. Just set alarm 10 seconds into
+> > future.
+> 
+> That's my point.
+> What is the syntax to request "10-seconds into the future"?
 
-------------=_1169828922-9238-59
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l0QGSogP008068
+echo $(( $(cat since_epoch) + 10 )) > wakealarm
 
-I have heard something big will happen on friday with thet one.
-It has rise already on +21.8 %
-Look at lvl2. Pretty nice ye ?
+...which is what you should expect. Yep, for users, nice utility would
+be nice... but absence of nice utility does not mean that it belongs
+in kernel.
 
-Check NMXC(New Mexico Software, Inc) and think how easily this issue will=
- move! For this moment at this time it=92s cost is x.06
-
-Also news are comming!They will make this issue very HOT.=20
-And it will fly like others.
-
-717378746933776E7A457871746C
-Atheneus
-
-
-------------=_1169828922-9238-59
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-Content-Transfer-Encoding: quoted-printable
-
-Spam detection software, running on the system "murdock.osdl.org", has=0A=
-identified this incoming email as possible spam.  The original message=0A=
-has been attached to this so you can view it (if it isn't spam) or label=0A=
-similar future email.  If you have any questions, see=0A=
-the administrator of that system for details.=0A=
-=0A=
-Content preview:  I have heard something big will happen on friday with=0A=
-  thet one. It has rise already on +21.8 % Look at lvl2. Pretty nice ye ?=
-=0A=
-  Check NMXC(New Mexico Software, Inc) and think how easily this issue=0A=
-  will move! For this moment at this time it=92s cost is x.06 [...]=20=0A=
-=0A=
-Content analysis details:   (5.4 points, 5.0 required)=0A=
-=0A=
- pts rule name              description=0A=
----- ---------------------- -----------------------------------------------=
----=0A=
- 3.3 HELO_DYNAMIC_DHCP      Relay HELO'd using suspicious hostname (DHCP)=
-=0A=
- 2.1 DATE_IN_FUTURE_24_48   Date: is 24 to 48 hours after Received: date=0A=
-=0A=
-=0A=
-
-------------=_1169828922-9238-59
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
-------------=_1169828922-9238-59--
+Plus, old alarm file was such a mess that I were not figure out how to
+use it within two hours... or maybe it just did not work on my
+machine? ... so utility will be needed, anyway.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
