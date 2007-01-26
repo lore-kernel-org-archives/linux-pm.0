@@ -1,11 +1,11 @@
-From: "Mrs Skoromnik M. Nikolaevna" <nikola@e-anima.de>
-Subject: IMPORTANT BUSINESS PROPOSAL!!
-Date: Fri, 26 Jan 2007 17:11:01 +0100 (CET)
-Message-ID: <20070126161101.8F0DC41FF78@exxa.biz>
+From: "Olen Stephens" <KresgeAlsace's@abec.com>
+Subject: fw: Damien Blanton wrote:
+Date: Fri, 26 Jan 2007 16:29:21 +0000 (UTC)
+Message-ID: <01c74233$7b08ad40$6c822ecf@KresgeAlsace's>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="--Boundary-=_918c2a8a497ff5380bbbb5c1d8594182"
+Content-Type: multipart/mixed; boundary="----------=_1169828922-9238-59"
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Sat, 27 Jan 2007 16:52:07 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,47 +15,67 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-----Boundary-=_918c2a8a497ff5380bbbb5c1d8594182
-Content-Type: text/plain ; CHARSET=iso-8859-1
+This is a multi-part message in MIME format...
+
+------------=_1169828922-9238-59
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l0QGSogP008068
+
+I have heard something big will happen on friday with thet one.
+It has rise already on +21.8 %
+Look at lvl2. Pretty nice ye ?
+
+Check NMXC(New Mexico Software, Inc) and think how easily this issue will=
+ move! For this moment at this time it=92s cost is x.06
+
+Also news are comming!They will make this issue very HOT.=20
+And it will fly like others.
+
+717378746933776E7A457871746C
+Atheneus
+
+
+------------=_1169828922-9238-59
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
 Content-Transfer-Encoding: quoted-printable
 
-Dear intending partner, 
- 
-My name is Mrs.Skoromnik Marina Nikolaevna, personal treasurer to Mr.Platon Lebedev,the arrested chairman bank menatep spb,and highest share holder yukos oil in Russia. Who is presently in jail.
- 
-I have a concealed business suggestion for you,I have documents of a large amount of funds which he (Mr.Platon Lebedev my boss) handed over to me before he was detained and now been tried in Russia for Tax Invasion, thereby leading to the freezing of his finances and assets.
- 
-I was once arrested as a close associates to Mr.Platon Lebedev,But now, I have been released and placed under immigration security watchlist. I cannot tavel out of the country, make or answer telephone calls, my only means of communication for now is through email as I am seriously monitored.
- 
-After searching through the books of your country's chambers of commerce and industries here in Russia I am contacting you to assist me to re-profile the funds and equally invest same. The total amount of funds to be re-profiled is forty six million dollars ($46,000,000.00) and you will be paid 20% for your management services.
- 
-As soon as I receive your acceptance, I will send you all necessary details and my identification. 
- 
-IMPORTANT NOTICE: All response should be directed to my private email box as any response outside it would not be acknowledge.
- 
-Email: mrsnikolaevna@yahoo.com
- 
-Yours sincerely, 
-Mrs.Skoromnik Marina Nikolaevna.
- 
-N/B: YOU CAN GET MORE INSIGHT FROM THE LINKS BELOW:
-http://www.lebedevtrial.com/
-http://www.mosnews.com/images/p/2128.shtml
-http://platon-lebedev-news.newslib.com/story/4539-2632343/
-http://www.eng.yabloko.ru/Publ/2003/PAPERS/7/nyt_040703.html
- 
+Spam detection software, running on the system "murdock.osdl.org", has=0A=
+identified this incoming email as possible spam.  The original message=0A=
+has been attached to this so you can view it (if it isn't spam) or label=0A=
+similar future email.  If you have any questions, see=0A=
+the administrator of that system for details.=0A=
+=0A=
+Content preview:  I have heard something big will happen on friday with=0A=
+  thet one. It has rise already on +21.8 % Look at lvl2. Pretty nice ye ?=
+=0A=
+  Check NMXC(New Mexico Software, Inc) and think how easily this issue=0A=
+  will move! For this moment at this time it=92s cost is x.06 [...]=20=0A=
+=0A=
+Content analysis details:   (5.4 points, 5.0 required)=0A=
+=0A=
+ pts rule name              description=0A=
+---- ---------------------- -----------------------------------------------=
+---=0A=
+ 3.3 HELO_DYNAMIC_DHCP      Relay HELO'd using suspicious hostname (DHCP)=
+=0A=
+ 2.1 DATE_IN_FUTURE_24_48   Date: is 24 to 48 hours after Received: date=0A=
+=0A=
+=0A=
 
-
-_________________________________________________________________
-Gesendet mit E-Anima FreeMail - www.E-Anima.de
-
-----Boundary-=_918c2a8a497ff5380bbbb5c1d8594182
+------------=_1169828922-9238-59
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
-----Boundary-=_918c2a8a497ff5380bbbb5c1d8594182--
+------------=_1169828922-9238-59--
