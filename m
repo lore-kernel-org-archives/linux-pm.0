@@ -1,10 +1,13 @@
-From: akuster <akuster@mvista.com>
-Subject: [PATCH 2/2] PM: fast power off - driver
-Date: Sat, 27 Jan 2007 09:36:57 -1000
-Message-ID: <45BBA9D9.5060307@mvista.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 1/2] PM: fast power off - core
+Date: Sat, 27 Jan 2007 12:08:21 -0800
+Message-ID: <20070127120821.a631acd6.akpm@osdl.org>
+References: <45BBA9D5.8020004@mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------070501070007000305060701"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <45BBA9D5.8020004@mvista.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,140 +17,15 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Andrew Morton <akpm@osdl.org>
+To: akuster <akuster@mvista.com>
 Cc: linux-kernel-owner@vger.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070501070007000305060701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sat, 27 Jan 2007 09:36:53 -1000
+akuster <akuster@mvista.com> wrote:
+
+> Fastpoweroff  allows a user to power down the system without using rc kill
+> scripts. =
 
 
---------------070501070007000305060701
-Content-Type: text/x-patch;
- name="fastpoweroff-1.0_driver.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fastpoweroff-1.0_driver.patch"
-
-
-Fastpoweroff default profile driver
-
-signed-off-by: Armin Kuster <AKuster@mvista.com>
----
- kernel/power/fastoff/Kconfig      |    8 ++++
- kernel/power/fastoff/Makefile     |    2 -
- kernel/power/fastoff/fastoffdrv.c |   69 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 78 insertions(+), 1 deletion(-)
-
-Index: linux-2.6_dev/kernel/power/fastoff/fastoffdrv.c
-===================================================================
---- /dev/null
-+++ linux-2.6_dev/kernel/power/fastoff/fastoffdrv.c
-@@ -0,0 +1,69 @@
-+/*
-+ * kernel/power/fastoff/fastoffdrv.c
-+ *
-+ * This provides a sysfs interface that allows the user to
-+ * bypass running rc kill scripts in the advent the user
-+ * needed to power down as fast as possible. This could be
-+ * in a low battery conditon and you want to try to keep
-+ * data from being corrupted.
-+ *
-+ * Author: Armin Kuster <AKuster@mvista.com, or source@mvista.com>
-+ *
-+ * 2006, 2007  (c) MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/errno.h>
-+
-+#include "../power.h"
-+#include "fpo.h"
-+
-+static int fsd_default_off(void)
-+{
-+	/*
-+	 * Actions taken:
-+	 *
-+	 *    1. Freeze all user processes.
-+	 *
-+	 *    2. Power off
-+	 *
-+	 *    3. Power off devices
-+	 */
-+
-+	printk(KERN_EMERG "Fast Power Off initiated.\n");
-+	fastpoweroff_prepare();
-+	fastpoweroff();
-+	fastpoweroff_standby();
-+	return 1;
-+}
-+
-+static struct fpo_driver fpo_default = {
-+	.name = "default",
-+	.policy = fsd_default_off,
-+};
-+
-+static int __init fsd_default_init(void)
-+{
-+	int ret = 0;
-+
-+	if(( ret = fastpoweroff_register(&fpo_default)) < 0) {
-+		printk(KERN_ERR "PM: Fastpoweroff: %s profile registation failed %d.\n",
-+			fpo_default.name,ret);
-+		goto errout;
-+	}
-+
-+	printk(KERN_INFO "PM: Fastpoweroff, %s profile added\n",fpo_default.name);
-+errout:
-+	return ret;
-+}
-+
-+module_init(fsd_default_init);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Armin Kuster <akuster@mvista.com>");
-+
-Index: linux-2.6_dev/kernel/power/fastoff/Kconfig
-===================================================================
---- linux-2.6_dev.orig/kernel/power/fastoff/Kconfig
-+++ linux-2.6_dev/kernel/power/fastoff/Kconfig
-@@ -10,4 +10,12 @@ config FAST_POWER_OFF
- 	---help---
- 	  Say yes if you want core support for sysfs/power/fastoff
- 
-+config FAST_POWER_DOWN
-+	tristate "Fast power of profile"
-+	depends on FAST_POWER_OFF
-+	default n
-+	---help---
-+	  Say yes if want to bypass the rc kill scripts
-+	  and shut the machine down
-+
- endmenu
-Index: linux-2.6_dev/kernel/power/fastoff/Makefile
-===================================================================
---- linux-2.6_dev.orig/kernel/power/fastoff/Makefile
-+++ linux-2.6_dev/kernel/power/fastoff/Makefile
-@@ -5,4 +5,4 @@
- #
- 
- obj-$(CONFIG_FAST_POWER_OFF)	:= fpo.o
--
-+obj-$(CONFIG_FAST_POWER_DOWN)	+= fastoffdrv.o
-
---------------070501070007000305060701
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---------------070501070007000305060701--
+Confused.  I just type `halt -pfn'.  Why is this patch better?
