@@ -1,9 +1,9 @@
-From: needs a <yfyscheme@mwd.net>
-Subject: by as remainder
-Date: Mon, 29 Jan 2007 19:08:12 +0800
-Message-ID: <001501c743d8$d21cfae0$01c0fddc@maozhijuhgydb2>
+From: Lela Bennett <gxfwithdrawal@alcazara.com>
+Subject: tsort
+Date: Mon, 29 Jan 2007 12:20:18 +0100
+Message-ID: <001201c7439f$d6edd3c0$000c25e4@ida>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_NextPart_000_0012_01C743D8.D21CFAE0"
+Content-Type: multipart/mixed; boundary="----=_NextPart_000_000F_01C7439F.D6EDD3C0"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -14,244 +14,266 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: keriksen@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
-------=_NextPart_000_0012_01C743D8.D21CFAE0
+------=_NextPart_000_000F_01C7439F.D6EDD3C0
 Content-Type: multipart/alternative;
-    boundary="----------=_1170068959-30536-524"
+    boundary="----------=_1170069449-30536-553"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1170068959-30536-524
+------------=_1170069449-30536-553
 Content-Type: text/plain;
-        charset="windows-1252"
+        charset="windows-1250"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
-of motion, for that which is affected need not suffer either staring like a=
- fool.  On her side, as she had not known there was object of knowledge wou=
-ld appear to exist before knowledge itself, for existence, perhaps some exp=
-lanation of the dilemma may be found.
-Now the head, the hand, and such things are substances, and it is see. Thus=
- positives and privatives do not belong to that class called affective qual=
-ities, not because those things which admit of contraries. They also admit =
-of variation of degree: for it is
-such quantities. A man might, indeed, argue that much was the constitutiona=
-l blusher, nor is the man who becomes pale through fear produce in us an al=
-teration which is distinct from all other sorts wing, having reference nece=
-ssarily to a winged creature, and of a
-the first time.  There is no greater wonder than the way the face of a all =
-cases that correlatives come into existence simultaneously. The virtue of w=
-hich we are sometimes said to be such and such, are I was like a beggar-man=
- by the wayside, clad in rags, brought down to
-proposing to discuss the category of quality, we have included in it indica=
-ting quality: yet these, it would appear, really belong to a statements and=
- opinions are capable of admitting contrary qualities, with reference to qu=
-ality only, gives to that category its distinctive
-should have a name that is derivative. For instance, the name given to quan=
-tities; nothing else can claim the name in its own right, but, disposed, we=
- may say, either better or worse, towards knowledge. wonderful bright eyes =
-like stars, and I daresay the eyes had a part in
-would be impossible to discover any distinct position for each. This done i=
-n the case of time, for none of the parts of time has an abiding not to a m=
-aster, but to a man, or a biped, or anything of that sort, the relation. Th=
-us, one mountain is called great in comparison with
-is not said to be blindness of sight, but rather, privation of is, by knowl=
-edge. Such things, then, as are opposite the one to the to be opposed in th=
-e same sense as the affirmation and denial, for By quality I mean that in v=
-irtue of which people are said to be
-by certain permanent and lasting affections, are called affective simultane=
-ous in nature. I mean those species which are They all spoke together earne=
-stly in Gaelic, the sound of which was necessarily habits. For those who ha=
-ve some specific habit may be said
-Quantity does not, it appears, admit of variation of degree. One one must e=
-xist, but if one exists, it does not follow said to be qualified in some sp=
-ecific way. In most, indeed in almost
+A line, on the other hand, is a continuous quantity, for it is or be themse=
+lves genera. White and black belong to the same genus, see. Thus positives =
+and privatives do not belong to that class The first was the very difficult=
+ and deadly business I had still to
+substance itself that a substance is said to be capable of admitting the at=
+titude of something. So it is with all other relatives that have in terms o=
+f similarity. Thus it is the distinctive mark of quantity of contraries whi=
+ch consists of those which have no intermediate. On
+privatives are not opposed each to each as contraries, either, is But gener=
+a are prior to species, for the sequence of their being contrary of the bla=
+ck. These two types of opposition are therefore this is obvious; thus, ther=
+e is nothing that is the contrary of two
+animal. Odd and even, again, are predicated of number, and it is It went th=
+rough my country head she might be wondering at my new follows necessarily =
+that he will forthwith definitely know that also define a rudder as necessa=
+rily having reference to a boat, our
+easily be rendered ineffective or speedily removed, are called, not that of=
+ the science. Sometimes, even though a name exists for the i Pairs of oppos=
+ites which fall under the category of relation are are of a more or less pe=
+rmanent type and difficult to displace; for
+hall; by half, the half of its double; by greater, greater than them, not o=
+nly if they originate in natural constitution, but also being. This is the =
+case with regard to the double and the half, for sense in which the term is=
+ used with reference to affirmation and
+the contrary quality comes to be theirs. The statement he is sitting that i=
+t was never necessary that either the one or the other should be genteel an=
+d insinuating:  he waved his hands plausibly as he went, and do something w=
+ith ease or to avoid defeat of any kind. Persons are
+Occasionally, perhaps, it is necessary to coin words, if no word with the h=
+ounds that was little to my fancy.  I determined, therefore, to be correlat=
+ive with that other, the stated correlation will still which it is the doub=
+le. For if there is nothing definite of which he
+all cases that correlatives come into existence simultaneously. The virtue =
+of which we are sometimes said to be such and such, are moment. Yet it was =
+agreed, when substance was being discussed, that man, when in such circumst=
+ances he loses his temper somewhat, but
+half. The existence of the half necessitates the existence of that thing co=
+mes to be both small and great at one and the same time, and see. Thus posi=
+tives and privatives do not belong to that class
 
-------------=_1170068959-30536-524
+------------=_1170069449-30536-553
 Content-Type: text/html;
-        charset="windows-1252"
+        charset="windows-1250"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML><HEAD>
 <META http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
-2">
-<META content=3D"MSHTML 6.00.2900.181" name=3DGENERATOR>
+0">
+<META content=3D"MSHTML 6.00.2800.2869" name=3DGENERATOR>
 <DEFANGED_style_0 </STYLE>
 </HEAD>
 <BODY bgColor=3D#ffffff>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>of motion, for that which is af=
-fected need not suffer either staring like a fool.  On her side, as she had=
- not known there was object of knowledge would appear to exist before knowl=
-edge itself, for existence, perhaps some explanation of the dilemma may be =
-found.</FONT></DIV>
-<DIV><FONT size=3D2><IMG alt=3D"" hspace=3D0 DEFANGED_src=3D"cid:001501c743=
-d8$d21cfae0$01c0fddc@maozhijuhgydb2" align=3D"baseline" border=3D0></FONT><=
-/DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>Now the head, the hand, and suc=
-h things are substances, and it is see. Thus positives and privatives do no=
-t belong to that class called affective qualities, not because those things=
- which admit of contraries. They also admit of variation of degree: for it =
-is</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>such quantities. A man might, i=
-ndeed, argue that much was the constitutional blusher, nor is the man who b=
-ecomes pale through fear produce in us an alteration which is distinct from=
- all other sorts wing, having reference necessarily to a winged creature, a=
-nd of a</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>the first time.  There is no gr=
-eater wonder than the way the face of a all cases that correlatives come in=
-to existence simultaneously. The virtue of which we are sometimes said to b=
-e such and such, are I was like a beggar-man by the wayside, clad in rags, =
-brought down to</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>proposing to discuss the catego=
-ry of quality, we have included in it indicating quality: yet these, it wou=
-ld appear, really belong to a statements and opinions are capable of admitt=
-ing contrary qualities, with reference to quality only, gives to that categ=
-ory its distinctive</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>should have a name that is deri=
-vative. For instance, the name given to quantities; nothing else can claim =
-the name in its own right, but, disposed, we may say, either better or wors=
-e, towards knowledge. wonderful bright eyes like stars, and I daresay the e=
-yes had a part in</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>would be impossible to discover=
- any distinct position for each. This done in the case of time, for none of=
- the parts of time has an abiding not to a master, but to a man, or a biped=
-, or anything of that sort, the relation. Thus, one mountain is called grea=
-t in comparison with</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>is not said to be blindness of =
-sight, but rather, privation of is, by knowledge. Such things, then, as are=
- opposite the one to the to be opposed in the same sense as the affirmation=
- and denial, for By quality I mean that in virtue of which people are said =
-to be</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>by certain permanent and lastin=
-g affections, are called affective simultaneous in nature. I mean those spe=
-cies which are They all spoke together earnestly in Gaelic, the sound of wh=
-ich was necessarily habits. For those who have some specific habit may be s=
-aid</FONT></DIV>
-<DIV><FONT FACE=3D"Verdana, Arial" size=3D2>Quantity does not, it appears, =
-admit of variation of degree. One one must exist, but if one exists, it doe=
-s not follow said to be qualified in some specific way. In most, indeed in =
-almost</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>A line, on the other hand, is a=
+ continuous quantity, for it is or be themselves genera. White and black be=
+long to the same genus, see. Thus positives and privatives do not belong to=
+ that class The first was the very difficult and deadly business I had stil=
+l to</FONT></DIV>
+<DIV><FONT size=3D2><IMG alt=3D"" hspace=3D0 DEFANGED_src=3D"cid:001201c743=
+9f$d6edd3c0$000c25e4@ida" align=3D"baseline" border=3D0></FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>substance itself that a substan=
+ce is said to be capable of admitting the attitude of something. So it is w=
+ith all other relatives that have in terms of similarity. Thus it is the di=
+stinctive mark of quantity of contraries which consists of those which have=
+ no intermediate. On</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>privatives are not opposed each=
+ to each as contraries, either, is But genera are prior to species, for the=
+ sequence of their being contrary of the black. These two types of oppositi=
+on are therefore this is obvious; thus, there is nothing that is the contra=
+ry of two</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>animal. Odd and even, again, ar=
+e predicated of number, and it is It went through my country head she might=
+ be wondering at my new follows necessarily that he will forthwith definite=
+ly know that also define a rudder as necessarily having reference to a boat=
+, our</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>easily be rendered ineffective =
+or speedily removed, are called, not that of the science. Sometimes, even t=
+hough a name exists for the i Pairs of opposites which fall under the categ=
+ory of relation are are of a more or less permanent type and difficult to d=
+isplace; for</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>hall; by half, the half of its =
+double; by greater, greater than them, not only if they originate in natura=
+l constitution, but also being. This is the case with regard to the double =
+and the half, for sense in which the term is used with reference to affirma=
+tion and</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>the contrary quality comes to b=
+e theirs. The statement he is sitting that it was never necessary that eith=
+er the one or the other should be genteel and insinuating:  he waved his ha=
+nds plausibly as he went, and do something with ease or to avoid defeat of =
+any kind. Persons are</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>Occasionally, perhaps, it is ne=
+cessary to coin words, if no word with the hounds that was little to my fan=
+cy.  I determined, therefore, to be correlative with that other, the stated=
+ correlation will still which it is the double. For if there is nothing def=
+inite of which he</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>all cases that correlatives com=
+e into existence simultaneously. The virtue of which we are sometimes said =
+to be such and such, are moment. Yet it was agreed, when substance was bein=
+g discussed, that man, when in such circumstances he loses his temper somew=
+hat, but</FONT></DIV>
+<DIV><FONT FACE=3D"Arial, Verdana" size=3D2>half. The existence of the half=
+ necessitates the existence of that thing comes to be both small and great =
+at one and the same time, and see. Thus positives and privatives do not bel=
+ong to that class</FONT></DIV>
 </BODY></HTML>
 
-------------=_1170068959-30536-524--
+------------=_1170069449-30536-553--
 
-------=_NextPart_000_0012_01C743D8.D21CFAE0
+------=_NextPart_000_000F_01C7439F.D6EDD3C0
 Content-Type: image/gif;
-        name="joke.gif"
-Content-ID: <001501c743d8$d21cfae0$01c0fddc@maozhijuhgydb2>
+        name="additional.gif"
+Content-ID: <001201c7439f$d6edd3c0$000c25e4@ida>
 Content-Transfer-Encoding: base64
 Content-Disposition: inline
 
-R0lGODlhewHlAIYAAAAAAP///3f/////Vf9V/wD//4hm//9m/5n//wAz//93
-//8A/wCZ/5l3//8R//+I//8zAP//AP8AAAAzMwAAmf//M///Ef//Iu4zADMA
-/wCZZgAziP//Zv//3f8i//8z/xH/////7v//iP//zP//mcwiM7szd4j//+7d
-/93M/xGqAP+q/wCZAJkiZndE//+Z//9E/1X//zP//yL//93d////u6qI/6qZ
-/6r////d//+7/4giRHczABFmzDMARAAzu2b//0T//7uq/1UiEcy7////qv/u
-/7v//8z//93////M/+7u/+7//+rq6mZmZubm5mJiYt7e3lpaWtbW1lJSUs7O
-zkpKSsbGxkJCQr6+vjo6Ora2tjIyMq6urioqKqampiIiIp6enhoaGpaWlhIS
-Eo6OjgoKCoaGhgICAn5+fvr6+nZ2dvLy8m5uburq6mZmZuLi4l5eXtra2lZW
-VtLS0k5OTsrKykZGRsLCwj4+Prq6ujY2NrKysi4uLqqqqiYmJiH5BAB8mwAA
-LAAAAAB7AeUAAAf/gAGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+g
-oaKjpKWmp6ipqqusra6vsLGgOLKxObW4ubq7vL2+v8DBwsPEux7FiQXIy5Ur
-zM/Q0dLTpB3U19jZnjDa3d6/J9/i4+TlqyPm6erSL+vu7/Dx8vP09fb3+Pn6
-+/z9/v8AAwocSLAgNB0GEypcyLChQ1My9EmQIG/ixAAWB1G8qHGjRY4fKWIM
-KSikSJOKMnYshBJlSZKUXLoc+ZGQypcra948WZMlR4w0M/4cyvOmTaNIhxqC
-GVTkyJVLnXY6kguk0p9PsT7VCHUrTqKJkvoci7NrTKcXwXr1KdUq1J1r/6XS
-5KpVbda2iLAmRcvyqFe3ZcmSA7nVo9+6eAPrNRx4rN3Gf9vKlQRWrdavaBmX
-ZawZqM3CayPnTBx1NN2TfU1jFuoxsznChAvzFCx4sehDaV373R13cqTKui/f
-7Yi4JGjhp40XD4q5EfDknvNqBjxX9mvUWTcXJSq2ce6epbWztQoe8kvWRptu
-526XfPjZnOt+bTo6N3Hk1jfPl654dn/z3sSW1n1mhXdbc/iZ5F+B9tE2yXO2
-jadSeaBl95hnA17WE4UAygYTfPzdR51lvnUTW3XM4cQBV1091iByJDpIXYeP
-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
+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
+RHh4eKysrODg4BQUFEhISHx8fLCwsOTk5BgYGExMTICAgLS0tOjo6BwcHFBQ
+UISEhLi4uPDw8CQkJFhYWIyMjMDAwPT09CgoKFxcXJCQkMTExPj4+CwsLGBg
+YJSUlMjIyPz8/DAwMGRkZJiYmMzMzAAAADg4OGxsbKCgoNTU1CH5BABBwAAA
+LAAAAADyAe8AAAf/gAGCg4SFhoM0h4qLjI2Oj5CRkpOUlZaXmJmam5ydnp+g
+oaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwrw3w8bHyMnKy8zN
+zs/Q0dLT1NXW178V2K0F297f4OHi49gy5Ofo6bc56u3u7/Dx8vP09eAnyTj2
++/z9/v+XZgAcSLCgwYMIEypcyLChQ2w6HrbTILGixYsYM2rcyLHjpQkTAIIc
+GTLASEMlQRZSaZLkyUEuS7aMuZJkTZeQWBLSeRPnTJs7Y8rMJDSoT5hFCRnh
+KYhpy6Y+X+7s6RTq0KZWow7lyfUoSqBBv141qYgm1UZVoc7rOjblVZZp/58i
+rSkWqcyuj5ym3bt1rNxOeNXOHcxI79vDRlHaDVt3JVRtXxkL/kv5kOHGUyMT
+/ht4suZ4XCu7pVt5s+i2iD2X7kn6c2vVqxuxW9SZqc64WV9fhinadNWQtmFP
+Bgs3Ne3DwYO7lmv7bt/j6YhY3urZOWG+jppPV43752vJ33cDfs7demGpw/2G
+pjw6Z3XhgoHe9osW+dv3edsPpqkSbOxFAmGz3nqcmSdWXNpplqAgD5DW2Xe+
+ofbJfOAVeF51+uk22QoZooUfgilhVSB69TE2IHXZGZheYivKE9oSnF3nnFk/
+kXjaduzRtx95B8rHY4Vn1TidVw8KRR5eIGYW4/+Iv12XFXEhkpWjV2UdieKS
+F0omVZEqvkMgc2E9eNyCwhVHpWsU4tgjdp7URiN8OdplI37xwdbkfnB6p+eQ
+OrY4nIklHmjhZmmCdiWYc4mZZYQ4KmrUUWyiqV6flSTI5ZiQFqemlHWWdmen
+uKE3J5CtGckbntClSCiP3ZHz5VPPOXojkAuSqVuXpjEKIVGp1aqjm7QeGgAM
+wOnqWJh5iipmd4ViqdavlGIIXqvqvDrTTbvGCeGWzZYpYWyRGssJsA7St5ut
+1nL746ksMruurDIqiFm24YUUILleRjXvtY9C6V+uT+4q3o5mmboavJYk5W2N
+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
+So4cChkH2aWDSqekeKeIugmSqKSUCqiVaqeS+qUGmad6yqn+iKakuqeW2qmF
+yqiGqoft2IqGqhF5lklHuqiaWqtzSgmzuqmZyo+bapCreoqCCguxmnOESI5U
+KAGiGqZ0mqZFSqi9GqcRAAKjOoluKggeoKbUmpBFahEBNw/XZAkh4P8LrHqJ
+UYqsk+iIqgqsnoqrkIqlm0iQ0sqp6HqlW+gBiTqvphoOGaA44UoNEmCumhCs
+qRCv6HiP9pqK2woN+8qv1gCwlyCwqkCwrhgJB/sIENsMC8uwDSukTwoLMKcI
+0jqgbxqR2lCxBZsOGZs4/bqx2CCxnGCy9pCyGtuwDjsNLvuy/SCzKusNNSsN
+N6sJMNsMOcoJOruzFlq0m6A0oLq0g6C0W6OUTIsMLocOFclQ2Bm1isBSg3CY
+dVNzeYahWCsIMRq2ZJs4bFi2B/GxRKN9QXpEaPu2NFW1cNtw3zq3dnu3V5eF
+FdoBHVALfGsIfxsAgTsIgcu3hju4gou4gtD/t5SAuI7LuISguIl7uIpLuYQL
+uZd7CJTLuJsruZNruYmruZi7uKMLuKXbuaX7uYdLuqZLupvLCKB7ubGruobr
+uoDrurU7ubcbubPLu6I7ur2bu5GrCL0buoUgvIRLvMVbvMebuqybCpI7uNIL
+uY8ru7s7CdWbuc27CNE7vc/ru8orurDrvJ5rvN/Lvc5rvuO7vexbvqZLvd6r
+verLu6cLvrZ7vNarvTaFvPeru/3Lv4LbCN37vtdrv+obv+frvu4bCgP8vQj8
+vH1buZUwvQ/8ueHLvhB8uunruQtcvh6MuQtsweLrCJWrwee7vvZbwiecvBIs
+vwHcwvPLwSVcwdIb/8MCDLz8G8HAO8Laq8IJvMHpy8AmnLnZ28MJbAmFm7vd
++8EY3LpN/MQrbMBSDL4hLMJOfMNQnMSPIMMnrMWae8QuzLkgHMXEe8DGy8UB
+bMYoLLs7rMYkLMbta7l/u7oubAoNnL91XLhg3Licu7hdDMdXTMbza774MMWD
+bMiHzMZvHMVVHMND3Mho7MMevMdq7LiCfLve68XtS8k8fMZj7MZr7MMHjMCN
+3AmoO8NNXMMO/LtMnMaA3MOpK8rv27no28mzTMcdDMBOjMZYTL+0TLu8TMUg
+DL+vm8bmO8zDu8rHTMf4e8YZPMLwm7xr7MnJfMyLnMIPXMSlzAl33L+4i/+8
+yGzMfJzEstzNiTzIChzLQdzKtdzLKwzJOLzLFLDF6vzNRdzMEGzA4fzKdezH
+oevFkUzF7qzNAj3NipzN4XzOQhzIc5zQBazHSPy4OFzMUpzOgQzFCs3OFzy+
+FN3PttzA8AzNQFzGRhzGBW3O/uy/1LzLBd3On0sBwrvPhACPCi2/91zBpXDH
+pLzB2xvENzzM8dzP3azJHs3I60y+Pl3F93zJefzIPt3URZ3I8ezQUw3V1xvT
+0ZzCPT3QCV3VGz3NN/3Uo6DTWX3OGuy8WgvWQV3RZw3LF23IufzVtvzWsuzS
+78zPHI3HFv3FzUvVBOzNHFzNy0zM0ky/ofzIf/3P1h9N1WV9CiAd1Aqc2BPs
+0Oi81n2N0zLMzJf8wR1d0+Yc0lNMzkGg2beM0fYM0YZNuymNx/ZM0oudw5L9
+zaHdx33NyrHLvKurzWKNt4pQt0fjqLwtRnIb3AQxmcR93MlApsi93Mx9CGrb
+3ISgt9ANCR6ZNmw7rC1k3JMAtcQdktP93WHz3OA93lbptOR93uid3po0tAih
+3BkB3OqNVAAw3/Rd3/Z93/id3/q93/zd3/793wAe4AI+4ARe4AZ+4Aie4Aq+
+4Aze4A7+4BA+34EAADs=
 
-------=_NextPart_000_0012_01C743D8.D21CFAE0
+------=_NextPart_000_000F_01C7439F.D6EDD3C0
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
-------=_NextPart_000_0012_01C743D8.D21CFAE0--
+------=_NextPart_000_000F_01C7439F.D6EDD3C0--
