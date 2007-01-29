@@ -1,8 +1,8 @@
-From: "Valeria Ghent" <nadejdaaalfonso@ranlog.com>
+From: "Ilean Yoakum" <freaygross@resalehost.networksolutions.com>
 Subject: Re: nif drizzl
-Date: Mon, 29 Jan 2007 21:36:51 +0100
-Message-ID: <01c743e5$34b7eff0$2201a8c0@casajr>
-Reply-To: Valeria Ghent <nadejdaaalfonso@ranlog.com>
+Date: Mon, 29 Jan 2007 21:36:52 +0100
+Message-ID: <01c743e5$356f5910$2201a8c0@casajr>
+Reply-To: Ilean Yoakum <freaygross@resalehost.networksolutions.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -16,7 +16,7 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Coleen Dustin <linux-pm@lists.osdl.org>
+To: Joseph Zwart <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
