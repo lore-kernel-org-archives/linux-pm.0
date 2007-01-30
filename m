@@ -1,11 +1,16 @@
-From: "Ashlee Garrison" <deafestRabin@abcfield.force9.co.uk>
-Subject: WEXE.PK you must know and use all of it's suggestions.
-Date: Tue, 30 Jan 2007 20:45:39 -0120
-Message-ID: <01c744af$9a28d000$6c822ecf@deafestRabin>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: question on resume()
+Date: Tue, 30 Jan 2007 23:32:25 +0100
+Message-ID: <200701302332.26063.rjw@sisk.pl>
+References: <200701291206.39637.oneukum@suse.de>
+	<200701301732.56444.rjw@sisk.pl>
+	<200701301750.48196.oliver@neukum.name>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200701301750.48196.oliver@neukum.name>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,47 +20,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: Oliver Neukum <oliver@neukum.name>
+Cc: pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-TUESDAY - JAN 30, 2006 =
+[Added linux-pm to the Cc list, because I'm going to talk about things that
+I know only from reading the code.]
+
+On Tuesday, 30 January 2007 17:50, Oliver Neukum wrote:
+> Am Dienstag, 30. Januar 2007 17:32 schrieb Rafael J. Wysocki:
+> > However, you can always inspect the PF_FROZEN flag of the tasks in ques=
+tion
+> > if that's practicable.
+> =
+
+> What would I do with that information? Ignore completion of IO?
+
+I probably should say "that depends", but that wouldn't be very helpful.
+
+Getting back to your initial question, which is if wake_up() may be called
+from a driver's .resume() routine, I think the answer is no, it may not,
+because in that case the "notified" tasks would be removed from the wait
+queue, but the refrigerator() would (wrongly) restore their states as
+TASK_UNINTERRUPTIBLE (or TASK_INTERRUPTIBLE for wake_up_interruptible()).
+
+Generally, you are safe if your driver only calls wake_up() from a process
+context, but not from .resume() or .suspend() routines (or from an
+unfreezeable kernel thread).
+
+Greetings,
+Rafael
 
 
-HOT (STO)CK TIP - (PINKSHEETS: WEXE)  =
+-- =
 
-WEST EXCELSIOR ENTERPRICES, INC. =
-
-200% up are expected in the next 5 trading sessions - grab some now! =
-
-
-MAJOR NEWS IS EXPECTED. OUR LAST PICK SHOWED YOU GROW OF 1200% IN 14 DAYS.
-
-WEXE is showing signs of making a huge leap in the coming days. It appears =
-that a major announcement would catapolt the companies stocck to over 2.00 =
-per share. This undervalued symbool is currently trading at approximately 0=
-.55 and we predict that it will break 1.30 by next monday. We are recommend=
-ing a buy and hold on this one - =
-
-Call your stock broker now to get more information on WEXE. =
-
-
-
-About West Excelsior:
-West Excelsior Enterprises, Inc. engages in the acquisition, development, a=
-nd exploration of mineral properties. The company primarily explores for go=
-ld-silver, copper, lead, zinc, and molybdenum. It holds interests primarily=
- in the Santa Maria del Oro mineral properties comprising six claims totali=
-ng 1,550 hectares located in the Sierra Madre del Sur Province, Mexico. The=
- company was founded in 1999 and is based in Las Vegas, Nevada. The Company=
- is currently focusing on projects in Mexico and East Africa. =
-
-
-Without just words: =
-
-Company need additional investments to start project on new region =
-
-Market Cap: 55.00M
-Delta dayly (open 0.370 on 01/25/2007 - close 0.600 on 01/25/2007)
-
-Did you saw it up on November ?
-Time has come to another one.
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
