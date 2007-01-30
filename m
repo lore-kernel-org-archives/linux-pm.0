@@ -1,13 +1,11 @@
-From: "Augusta Whitfield" <devoutlyglassing@abbleconsumer.com>
-Subject: Do not miss this unique chance to get a great benefit
-	with us
-Date: Tue, 30 Jan 2007 20:22:16 +0000 (UTC)
-Message-ID: <01c744ac$65949b10$6c822ecf@devoutlyglassing>
+From: "Ashlee Garrison" <deafestRabin@abcfield.force9.co.uk>
+Subject: WEXE.PK you must know and use all of it's suggestions.
+Date: Tue, 30 Jan 2007 20:45:39 -0120
+Message-ID: <01c744af$9a28d000$6c822ecf@deafestRabin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Tue, 30 Jan 2007 20:22:43 +0180
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,23 +15,23 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 TUESDAY - JAN 30, 2006 =
 
 
-HOT ST(O)CK TIP - (PINKSHEETS: WEXE)  =
+HOT (STO)CK TIP - (PINKSHEETS: WEXE)  =
 
 WEST EXCELSIOR ENTERPRICES, INC. =
 
 200% up are expected in the next 5 trading sessions - grab some now! =
 
 
-MAJOR NEWS IS EXPECTED. OUR LAST PICK SHOWED YOU GAINS OF 1200% IN 14 DAYS.
+MAJOR NEWS IS EXPECTED. OUR LAST PICK SHOWED YOU GROW OF 1200% IN 14 DAYS.
 
 WEXE is showing signs of making a huge leap in the coming days. It appears =
-that a major announcement would catapolt the companies st-ock to over 2.00 =
+that a major announcement would catapolt the companies stocck to over 2.00 =
 per share. This undervalued symbool is currently trading at approximately 0=
 .55 and we predict that it will break 1.30 by next monday. We are recommend=
 ing a buy and hold on this one - =
