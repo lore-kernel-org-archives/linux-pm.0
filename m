@@ -1,38 +1,25 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [linux-pm] [RFC] Runtime power management on	ipw2100
-Date: Wed, 31 Jan 2007 14:44:16 +0100
-Message-ID: <20070131134416.GG19643@elf.ucw.cz>
-References: <20070131075249.GA22115@srcf.ucam.org> <p731wlbphz3.fsf@bingen.suse.de> <20070131102744.GA24424@srcf.ucam.org> <200701311148.20777.ak@suse.de> <1170244400.6746.31.camel@amit-laptop> <20070131130447.GF19643@elf.ucw.cz> <1170249876.6746.43.camel@amit-laptop>
+Date: Wed, 31 Jan 2007 14:11:20 +0000
+Message-ID: <20070131141119.GA28903@srcf.ucam.org>
+References: <20070131075249.GA22115@srcf.ucam.org> <p731wlbphz3.fsf@bingen.suse.de> <20070131102744.GA24424@srcf.ucam.org> <200701311148.20777.ak@suse.de> <1170244400.6746.31.camel@amit-laptop> <20070131130447.GF19643@elf.ucw.cz> <1170249876.6746.43.camel@amit-laptop> <20070131134416.GG19643@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <netdev-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1170249876.6746.43.camel@amit-laptop>
+In-Reply-To: <20070131134416.GG19643@elf.ucw.cz>
 Sender: netdev-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@nokia.com>
-Cc: ext Andi Kleen <ak@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>, netdev@vger.kernel.org, linux-pm@lists.osdl.org, ipw2100-devel@lists.sourceforge.net
+To: Pavel Machek <pavel@suse.cz>
+Cc: Amit Kucheria <amit.kucheria@nokia.com>, ext Andi Kleen <ak@suse.de>, netdev@vger.kernel.org, linux-pm@lists.osdl.org, ipw2100-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed, Jan 31, 2007 at 02:44:16PM +0100, Pavel Machek wrote:
 
-> > > Yes. Low power states without ability to respond to wakeup interrupts
-> > > would be broken behaviour generally.
-> > 
-> > Do you realy expect wifi to save significant ammount of power, while
-> > still listening for packets on wireless network?
-> 
-> >From N800 specs (not meant as a shameless plug):
-> 
-> Continuous WLAN browsing:  upto 3.5 hrs
-> Always Online WLAN (idle but respond to VoIP calls): upto 2 days
-> Standby time(no WLAN):  upto 12 days
-> 
-> So with the right hardware, yes, you can listen and still save power.
+> Okay, but I'm somehow not sure if ipw2100 can do this kind of
+> tricks. Yes, n800 is likely very nice toy :-).
 
-Okay, but I'm somehow not sure if ipw2100 can do this kind of
-tricks. Yes, n800 is likely very nice toy :-).
-									Pavel
-
+Well, to an extent - if you use the wext power features, you can get it 
+into a relatively low-power state at the cost of some performance. It's 
+not as good as powering down the hardware completely, though.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Matthew Garrett | mjg59@srcf.ucam.org
