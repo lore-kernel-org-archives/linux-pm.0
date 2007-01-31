@@ -1,25 +1,64 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] [RFC] Runtime power management on	ipw2100
-Date: Wed, 31 Jan 2007 14:11:20 +0000
-Message-ID: <20070131141119.GA28903@srcf.ucam.org>
-References: <20070131075249.GA22115@srcf.ucam.org> <p731wlbphz3.fsf@bingen.suse.de> <20070131102744.GA24424@srcf.ucam.org> <200701311148.20777.ak@suse.de> <1170244400.6746.31.camel@amit-laptop> <20070131130447.GF19643@elf.ucw.cz> <1170249876.6746.43.camel@amit-laptop> <20070131134416.GG19643@elf.ucw.cz>
+From: "Millie Craig" <nighprimacy@abratech.com>
+Subject: Today morning: Former NY Times reporter contradicts Libby
+Date: Wed, 31 Jan 2007 14:33:48 +0000 (UTC)
+Message-ID: <01c74544$a8a4be10$6c822ecf@nighprimacy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070131134416.GG19643@elf.ucw.cz>
-Sender: netdev-owner@vger.kernel.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Amit Kucheria <amit.kucheria@nokia.com>, ext Andi Kleen <ak@suse.de>, netdev@vger.kernel.org, linux-pm@lists.osdl.org, ipw2100-devel@lists.sourceforge.net
+Content-Type: multipart/mixed; boundary="===============1862881348=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Wed, 31 Jan 2007 14:32:39 +0180
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 02:44:16PM +0100, Pavel Machek wrote:
+--===============1862881348==
+Content-Type: text/plain;
+	charset="windows-1250"
+Content-Transfer-Encoding: 7bit
 
-> Okay, but I'm somehow not sure if ipw2100 can do this kind of
-> tricks. Yes, n800 is likely very nice toy :-).
+WEXE are producing the real GOLD!
 
-Well, to an extent - if you use the wext power features, you can get it 
-into a relatively low-power state at the cost of some performance. It's 
-not as good as powering down the hardware completely, though.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Take a look at mining sector for present time - almost everywhere strong gains.
+We are just started it yesterday and it came up. Today it will rise even more.
+
+News came from the company.
+
+West Excelsior Enterprises Inc. Completes Second Round Private Placement Financing
+Tuesday January 30, 7:16 pm ET
+
+LAS VEGAS, NEVADA--(MARKET WIRE)--Jan 30, 2007 -- West Excelsior Enterprises Inc. (Other OTC:WEXE.PK - News) is pleased to announce that it has completed a non-brokered private placement for 333,333 restricted common shares at a price of $.45 per share for total proceeds of $150,000.
+
+The Company is pleased to see the conclusion of this non-brokered private placement, which allows the Company to continue to complete its exploration program of the Santa Maria property in the Sierra Madre del Sur Province, Mexico.
+
+About West Excelsior:
+West Excelsior Enterprises, Inc. engages in the acquisition, development, and exploration of mineral properties. The company primarily explores for gold-silver, copper, lead, zinc, and molybdenum. It holds interests primarily in the Santa Maria del Oro mineral properties comprising six claims totaling 1,550 hectares located in the Sierra Madre del Sur Province, Mexico. The company was founded in 1999 and is based in Las Vegas, Nevada. The Company is currently focusing on projects in Mexico and East Africa. 
+
+Without just words:
+Pricce: $0.55 -> $0.63
+Marrket: Bullish
+
+Company need additional investments to start project on new region.
+Market Cap: 58.00M -> 63.00M
+Delta dayly (open 0.550 on 01/30/2007 - close 0.630 on 01/30/2007)
+
+More news will come from company about they new success shortly.
+I hope it will get enough investment to launch surveyed regions for give us increase.
+Time has come to another one. Rise to stars...
+
+
+
+--===============1862881348==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1862881348==--
