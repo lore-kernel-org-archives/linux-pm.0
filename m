@@ -1,47 +1,54 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-pm] [RFC] Runtime power management
-	on	ipw2100
-Date: Wed, 31 Jan 2007 10:27:45 +0000
-Message-ID: <20070131102744.GA24424@srcf.ucam.org>
-References: <20070131075249.GA22115@srcf.ucam.org>
-	<1170234787.6746.22.camel@amit-laptop>
-	<20070131094858.GA23842@srcf.ucam.org>
-	<p731wlbphz3.fsf@bingen.suse.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] question on resume()
+Date: Wed, 31 Jan 2007 11:30:45 +0100
+Message-ID: <20070131103045.GA19640@elf.ucw.cz>
+References: <200701291206.39637.oneukum@suse.de> <200701311004.19477.oneukum@suse.de> <20070131093653.GA19643@elf.ucw.cz> <200701311114.55685.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <ipw2100-devel-bounces@lists.sourceforge.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932948AbXAaKa5@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <p731wlbphz3.fsf@bingen.suse.de>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/ipw2100-devel>,
-	<mailto:ipw2100-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=ipw2100-devel>
-List-Post: <mailto:ipw2100-devel@lists.sourceforge.net>
-List-Help: <mailto:ipw2100-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ipw2100-devel>,
-	<mailto:ipw2100-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: ipw2100-devel-bounces@lists.sourceforge.net
-Errors-To: ipw2100-devel-bounces@lists.sourceforge.net
-To: Andi Kleen <ak@suse.de>
-Cc: ipw2100-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-pm@lists.osdl.org, Amit Kucheria <amit.kucheria@nokia.com>
+In-Reply-To: <200701311114.55685.oliver@neukum.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 12:13:04PM +0100, Andi Kleen wrote:
-> Matthew Garrett <mjg59@srcf.ucam.org> writes:
+Hi!
+
+> > > So, this means, on suspend():
+> > > 
+> > > 1. Don't worry about TASK_UNINTERRUPTIBLE
+> > > 2. Do worry about TASK_INTERRUPTIBLE
+> > > We have to cease IO and must not call wake_up_interruptible()
 > > 
-> > PCI seems to require a delay of 10ms when sequencing from D3 to D0, 
-> > which probably isn't acceptable latency for an "up" state.
+> > "cease IO"? No, I believe it is enough not to start new I/O. Userspace
+> > is frozen at that point, it can't ask you to do I/O.
+> >
+> > > Isn't that a race until suspend() is called?
+> > 
+> > I do not think so.
 > 
-> It might be if the interface has been idle for some time
-> (and the delay is not busy looping of course)
+> What about URBs in flight which are waited for with TASK_INTERRUPTIBLE?
 
-Hm. How would this interact with receiving packets?
+Same thing as if someone sent a signal to that process. (We are
+talking about user processes here, right? Kernel threads have to take
+care themselves).
 
+> > > On resume():
+> > > 
+> > > 1. Don't worry about TASK_UNINTERRUPTIBLE
+> > > 2. Do not restart IO that may call wake_up_interruptible()
+> > > 
+> > > When do we restart such IO?
+> > 
+> > We reuse signal handling code to do that for us. It is same situation
+> > as when someone signals task doing I/O.
+> 
+> What happens to tasks in TASK_INTERRUPTIBLE which are frozen?
+> Are they interrupted and frozen?
+
+Interrupted with fake signal, then frozen, yes.
+									Pavel
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
