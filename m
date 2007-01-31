@@ -1,12 +1,12 @@
-From: "Keith Chandler" <frankercurries@aaf-lufttechnik.de>
-Subject: fw: Michele - did you saw WEXE yesterday
-Date: Wed, 31 Jan 2007 19:55:20 +0000 (UTC)
-Message-ID: <01c74582$58ffe9a0$6c822ecf@frankercurries>
+From: "Gina Mccracken" <hindsrovers@access-stor.com>
+Subject: fw: Adrienne - did you saw WEXE yesterday
+Date: Wed, 31 Jan 2007 20:39:32 +0000 (UTC)
+Message-ID: <01c74577$d0172130$6c822ecf@hindsrovers>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Wed, 31 Jan 2007 21:54:14 +0480
+Date: Wed, 31 Jan 2007 20:38:49 +0180
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,16 +16,16 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-WHAT IS WALL ST THINKING ABOUT? =
+WHAT IS WALL ST TALKING ABOUT? =
 
-ONE THING - West Excelsior Enterprises, Inc. (Pinksh-e-ets: WEXE) =
+ONLY - West Excelsior Enterprises, Inc. (Pinksssheets: WEXE) =
 
  =
 
-WEXE ALMOST ABOUT TO PUSH OFF CHARTS
+WEXE ALREADY ABOUT TO EXPLOODE
 It is currently trading at a low and major news expected in the coming days=
 . This sttock could triple in the next 5-7 trading sessions. =
 
@@ -38,7 +38,7 @@ BY. Call your broker for more information. =
 
 Comppany name: West Excelsior Enterprises, Inc. =
 
-symb: WEXE =
+symmbol: WEXE =
 
 Mar.ket cap: 60,000,000.00 (approx) =
 
@@ -49,5 +49,5 @@ Todayss last: 0.60 =
 
 MASSIVE NEWS IS EXPECTED ON THIS ONE - GET IN NOW!
 
-717378746933776E7A457871746C
+71737D75457871746C6E7A327274693377
 Terrax
