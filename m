@@ -1,54 +1,34 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] question on resume()
-Date: Wed, 31 Jan 2007 11:30:45 +0100
-Message-ID: <20070131103045.GA19640@elf.ucw.cz>
-References: <200701291206.39637.oneukum@suse.de> <200701311004.19477.oneukum@suse.de> <20070131093653.GA19643@elf.ucw.cz> <200701311114.55685.oliver@neukum.org>
+Subject: Re: [linux-pm] [RFC] Runtime power management on ipw2100
+Date: Wed, 31 Jan 2007 11:39:01 +0100
+Message-ID: <20070131103901.GB19643@elf.ucw.cz>
+References: <20070131075249.GA22115@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932948AbXAaKa5@vger.kernel.org>
+Return-path: <netdev-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200701311114.55685.oliver@neukum.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070131075249.GA22115@srcf.ucam.org>
+Sender: netdev-owner@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: ipw2100-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > So, this means, on suspend():
-> > > 
-> > > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > > 2. Do worry about TASK_INTERRUPTIBLE
-> > > We have to cease IO and must not call wake_up_interruptible()
-> > 
-> > "cease IO"? No, I believe it is enough not to start new I/O. Userspace
-> > is frozen at that point, it can't ask you to do I/O.
-> >
-> > > Isn't that a race until suspend() is called?
-> > 
-> > I do not think so.
+> Based on previous discussions, I've implemented a rough attempt at 
+> providing some level of basic runtime power management on the ipw2100 
+> chipset. This patch does the following:
 > 
-> What about URBs in flight which are waited for with TASK_INTERRUPTIBLE?
+> 1) On load, it initialises the hardware and then quiesces it again
+> 2) On interface up, it powers the hardware back up
+> 3) On interface down, it powers the hardware down and puts the chip in 
+> D3
+> 4) It attempts to behave correctly over suspend/resume - ie, if the 
+> interface was down beforehand, it will ensure that the chip is powered 
+> down
 
-Same thing as if someone sent a signal to that process. (We are
-talking about user processes here, right? Kernel threads have to take
-care themselves).
-
-> > > On resume():
-> > > 
-> > > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > > 2. Do not restart IO that may call wake_up_interruptible()
-> > > 
-> > > When do we restart such IO?
-> > 
-> > We reuse signal handling code to do that for us. It is same situation
-> > as when someone signals task doing I/O.
-> 
-> What happens to tasks in TASK_INTERRUPTIBLE which are frozen?
-> Are they interrupted and frozen?
-
-Interrupted with fake signal, then frozen, yes.
-									Pavel
+I'm not a wireless guru, but patch certainly looks okay to me.
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
