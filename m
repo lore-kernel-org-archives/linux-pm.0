@@ -1,34 +1,33 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [RFC] Runtime power management on ipw2100
-Date: Wed, 31 Jan 2007 11:39:01 +0100
-Message-ID: <20070131103901.GB19643@elf.ucw.cz>
-References: <20070131075249.GA22115@srcf.ucam.org>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: [linux-pm] [RFC] Runtime power management =?iso-8859-1?q?on=09ipw2100?=
+Date: Wed, 31 Jan 2007 11:48:20 +0100
+Message-ID: <200701311148.20777.ak@suse.de>
+References: <20070131075249.GA22115@srcf.ucam.org> <p731wlbphz3.fsf@bingen.suse.de> <20070131102744.GA24424@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20070131102744.GA24424@srcf.ucam.org>
 Content-Disposition: inline
-In-Reply-To: <20070131075249.GA22115@srcf.ucam.org>
 Sender: netdev-owner@vger.kernel.org
 To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: ipw2100-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-pm@lists.osdl.org
+Cc: Amit Kucheria <amit.kucheria@nokia.com>, ipw2100-devel@lists.sourceforge.net, linux-pm@lists.osdl.org, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Based on previous discussions, I've implemented a rough attempt at 
-> providing some level of basic runtime power management on the ipw2100 
-> chipset. This patch does the following:
+On Wednesday 31 January 2007 11:27, Matthew Garrett wrote:
+> On Wed, Jan 31, 2007 at 12:13:04PM +0100, Andi Kleen wrote:
+> > Matthew Garrett <mjg59@srcf.ucam.org> writes:
+> > > 
+> > > PCI seems to require a delay of 10ms when sequencing from D3 to D0, 
+> > > which probably isn't acceptable latency for an "up" state.
+> > 
+> > It might be if the interface has been idle for some time
+> > (and the delay is not busy looping of course)
 > 
-> 1) On load, it initialises the hardware and then quiesces it again
-> 2) On interface up, it powers the hardware back up
-> 3) On interface down, it powers the hardware down and puts the chip in 
-> D3
-> 4) It attempts to behave correctly over suspend/resume - ie, if the 
-> interface was down beforehand, it will ensure that the chip is powered 
-> down
+> Hm. How would this interact with receiving packets?
 
-I'm not a wireless guru, but patch certainly looks okay to me.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The hardware will hopefully have support to wake itself up when that 
+happens.
+
+-Andi
