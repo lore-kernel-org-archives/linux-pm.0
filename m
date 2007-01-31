@@ -1,12 +1,11 @@
-From: "Gina Mccracken" <hindsrovers@access-stor.com>
-Subject: fw: Adrienne - did you saw WEXE yesterday
-Date: Wed, 31 Jan 2007 20:39:32 +0000 (UTC)
-Message-ID: <01c74577$d0172130$6c822ecf@hindsrovers>
+From: "Maureen Enriquez" <gorse'scombo's@abti.net>
+Subject: fw: Susanna - did you saw WEXE yesterday
+Date: Wed, 31 Jan 2007 20:48:34 -0120
+Message-ID: <01c74579$2ca10d20$6c822ecf@gorse'scombo's>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Wed, 31 Jan 2007 20:38:49 +0180
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,11 +20,11 @@ List-Id: linux-pm@vger.kernel.org
 
 WHAT IS WALL ST TALKING ABOUT? =
 
-ONLY - West Excelsior Enterprises, Inc. (Pinksssheets: WEXE) =
+ONLY - West Excelsior Enterprises, Inc. (Pinksh-e-ets: WEXE) =
 
  =
 
-WEXE ALREADY ABOUT TO EXPLOODE
+WEXE ALMOST ABOUT TO EXPLOODE
 It is currently trading at a low and major news expected in the coming days=
 . This sttock could triple in the next 5-7 trading sessions. =
 
@@ -38,7 +37,7 @@ BY. Call your broker for more information. =
 
 Comppany name: West Excelsior Enterprises, Inc. =
 
-symmbol: WEXE =
+symb: WEXE =
 
 Mar.ket cap: 60,000,000.00 (approx) =
 
