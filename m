@@ -1,71 +1,47 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: question on resume()
-Date: Wed, 31 Jan 2007 11:14:44 +0100 (MET)
-Message-ID: <200701311114.55685.oliver@neukum.org>
-References: <200701291206.39637.oneukum@suse.de>
-	<200701311004.19477.oneukum@suse.de>
-	<20070131093653.GA19643@elf.ucw.cz>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] [RFC] Runtime power management
+	on	ipw2100
+Date: Wed, 31 Jan 2007 10:27:45 +0000
+Message-ID: <20070131102744.GA24424@srcf.ucam.org>
+References: <20070131075249.GA22115@srcf.ucam.org>
+	<1170234787.6746.22.camel@amit-laptop>
+	<20070131094858.GA23842@srcf.ucam.org>
+	<p731wlbphz3.fsf@bingen.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070131093653.GA19643@elf.ucw.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <ipw2100-devel-bounces@lists.sourceforge.net>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.osdl.org>, Oliver Neukum <oliver@neukum.name>, linux-kernel@vger.kernel.org
+In-Reply-To: <p731wlbphz3.fsf@bingen.suse.de>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/ipw2100-devel>,
+	<mailto:ipw2100-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=ipw2100-devel>
+List-Post: <mailto:ipw2100-devel@lists.sourceforge.net>
+List-Help: <mailto:ipw2100-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ipw2100-devel>,
+	<mailto:ipw2100-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: ipw2100-devel-bounces@lists.sourceforge.net
+Errors-To: ipw2100-devel-bounces@lists.sourceforge.net
+To: Andi Kleen <ak@suse.de>
+Cc: ipw2100-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-pm@lists.osdl.org, Amit Kucheria <amit.kucheria@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 31. Januar 2007 10:36 schrieb Pavel Machek:
-> Hi!
-> =
+On Wed, Jan 31, 2007 at 12:13:04PM +0100, Andi Kleen wrote:
+> Matthew Garrett <mjg59@srcf.ucam.org> writes:
+> > 
+> > PCI seems to require a delay of 10ms when sequencing from D3 to D0, 
+> > which probably isn't acceptable latency for an "up" state.
+> 
+> It might be if the interface has been idle for some time
+> (and the delay is not busy looping of course)
 
-> > > Yes, it will.  The process freezer can only return success if there a=
-re no more
-> > > TASK_UNINTERRUPTIBLE tasks.  Otherwise it fails (after a timeout).
-> > =
+Hm. How would this interact with receiving packets?
 
-> > So, this means, on suspend():
-> > =
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
 
-> > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > 2. Do worry about TASK_INTERRUPTIBLE
-> > We have to cease IO and must not call wake_up_interruptible()
-> =
-
-> "cease IO"? No, I believe it is enough not to start new I/O. Userspace
-> is frozen at that point, it can't ask you to do I/O.
->
-> > Isn't that a race until suspend() is called?
-> =
-
-> I do not think so.
-
-What about URBs in flight which are waited for with TASK_INTERRUPTIBLE?
-
-> > On resume():
-> > =
-
-> > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > 2. Do not restart IO that may call wake_up_interruptible()
-> > =
-
-> > When do we restart such IO?
-> =
-
-> We reuse signal handling code to do that for us. It is same situation
-> as when someone signals task doing I/O.
-
-What happens to tasks in TASK_INTERRUPTIBLE which are frozen?
-Are they interrupted and frozen?
-
-	Regards
-		Oliver
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
