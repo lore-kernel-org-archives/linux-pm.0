@@ -1,13 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: question on resume()
-Date: Wed, 31 Jan 2007 11:27:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0701311124200.3803-100000@iolanthe.rowland.org>
-References: <200701311713.04104.oliver@neukum.org>
+From: "Carmen Atwood" <revivespitfalls@acado.ch>
+Subject: Today morning: Shootout at sheriff's home
+Date: Wed, 31 Jan 2007 16:58:40 +0000 (UTC)
+Message-ID: <01c74558$e0dbd390$6c822ecf@revivespitfalls>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200701311713.04104.oliver@neukum.org>
+Date: Wed, 31 Jan 2007 16:57:23 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,59 +16,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 31 Jan 2007, Oliver Neukum wrote:
+WEXE are producing the real GOLD!
 
-> Am Mittwoch, 31. Januar 2007 16:54 schrieb Alan Stern:
-> > On Wed, 31 Jan 2007, Pavel Machek wrote:
-> =
+Take a look at mining sector for today - almost everywhere strong growth.
+We are just started it yesterday and it rised. Today it will rise even more.
 
-> > > "cease IO"? No, I believe it is enough not to start new I/O. Userspace
-> > > is frozen at that point, it can't ask you to do I/O.
-> > =
+News came from the company.
 
-> > There may be I/O requests sitting in a queue, already submitted by
-> > userspace.  The suspend method should wait for existing I/O to complete
-> > and stop processing new entries from the queue.
-> =
+West Excelsior Enterprises Inc. Completes Second Round Private Placement Fi=
+nancing
+Tuesday January 30, 7:16 pm ET
 
-> As far as I understand it now, a frozen process will be in the refrigerat=
-or.
-> Thus it cannot be blocking somewhere else in kernel space. Yet we cannot
-> be sure there's no queued IO, as theres aio.
+LAS VEGAS, NEVADA--(MARKET WIRE)--Jan 30, 2007 -- West Excelsior Enterprise=
+s Inc. (Other OTC:WEXE.PK - News) is pleased to announce that it has comple=
+ted a non-brokered private placement for 333,333 restricted common shares a=
+t a price of $.45 per share for total proceeds of $150,000.
 
-Or the driver may maintain its own I/O queue, like the HID driver does.
+The Company is pleased to see the conclusion of this non-brokered private p=
+lacement, which allows the Company to continue to complete its exploration =
+program of the Santa Maria property in the Sierra Madre del Sur Province, M=
+exico.
 
-> > > > On resume():
-> > > > =
+About West Excelsior:
+West Excelsior Enterprises, Inc. engages in the acquisition, development, a=
+nd exploration of mineral properties. The company primarily explores for go=
+ld-silver, copper, lead, zinc, and molybdenum. It holds interests primarily=
+ in the Santa Maria del Oro mineral properties comprising six claims totali=
+ng 1,550 hectares located in the Sierra Madre del Sur Province, Mexico. The=
+ company was founded in 1999 and is based in Las Vegas, Nevada. The Company=
+ is currently focusing on projects in Mexico and East Africa. =
 
-> > > > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > > > 2. Do not restart IO that may call wake_up_interruptible()
-> > > > =
 
-> > > > When do we restart such IO?
-> > > =
+Without just words:
+Pricce: $0.55 -> $0.63
+Marrket: Bullish
 
-> > > We reuse signal handling code to do that for us. It is same situation
-> > > as when someone signals task doing I/O.
-> > =
+Company need additional investments to start mining new region.
+Market Cap: 58.00M -> 63.00M
+Delta dayly (open 0.550 on 01/30/2007 - close 0.630 on 01/30/2007)
 
-> > Again you misunderstood the question.  The driver must start queued I/O
-> > when its resume() method is called.  It should then be okay for the dri=
-ver
-> > to call wake_up_interruptible(), even before tasks are unfrozen.
-> =
-
-> Isn't there some code in usbfs that'll do homegrown aio and deliver a
-> signal to a process if io is completed?
-
-That's right.  There's also code in the hub driver to call wake_up() on =
-
-the khubd thread when certain I/O operations complete; nevertheless khubd =
-
-_should_ remain frozen along with all the other tasks.
-
-Alan Stern
+More news will come from company about they new success shortly.
+I hope it will get enough investment to launch surveyed regions for give us=
+ increase.
+Time has come to another one. Rise to stars...
