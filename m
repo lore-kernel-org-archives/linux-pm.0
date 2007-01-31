@@ -1,10 +1,15 @@
-From: "operators country" <ocaiustah@iol.cz>
-Subject: =?iso-8859-1?q?=28no_subject=29?=
-Date: Wed, 31 Jan 2007 18:06:22 -0100
-Message-ID: <887826890439DED.ABA82FBEFD@iol.cz>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: Re: question on resume()
+Date: Wed, 31 Jan 2007 12:04:40 -0600
+Message-ID: <3B6D69C3A9EBCA4BA5DA60D9130274293DCC43@dlee13.ent.ti.com>
+References: <20070131093653.GA19643@elf.ucw.cz>
+	<Pine.LNX.4.44L0.0701311048560.3803-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_NextPart_000_0005_01C74562.842A8880"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.44L0.0701311048560.3803-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,57 +19,31 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>
+Cc: Oliver Neukum <oneukum@suse.de>, Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
 
-------=_NextPart_000_0005_01C74562.842A8880
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Again you misunderstood the question.  The driver must start queued
+I/O
+> when its resume() method is called.  It should then be okay for the
+driver
+> to call wake_up_interruptible(), even before tasks are unfrozen.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2912" name=3D"GENERATOR">
-</HEAD>
-<BODY>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>HOT ALERT - THIS ONE IS ST=
-ILL CLIMBING CHARTS</B></FONT></DIV><BR>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><I>WATCH THIS ONE GO HIGHER A=
-ND HIGHER!</I></FONT></DIV><BR>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Company Name: <B>PetroSun</B>=
- </FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Lookup: <B>PSUD</B> </FONT></=
-DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Price Currently: <B>$0.81 (+0=
-.01 Close) 1.3%</B></FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>3 Day Target: <B>$2.00</B></F=
-ONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Expected Target: <B>$1.50</B>=
-</FONT></DIV><BR>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>01/11/07</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>PetroSun, Incorporated (PKSHE=
-ETS: PSUD) announced agreements have been carried out with New Standard Exp=
-loration NL of West Perth, AU covering Exploration Permit 417 located withi=
-n Canning Basin of Western AU.</FONT></DIV><BR>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>01/08/07</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>PetroSun, Incorporated (PKSHE=
-ETS: PSUD) announced today that the company has completed the acquisition o=
-f all of the member units of 1031 Energy, LLC of Denver, Colorado.</FONT></=
-DIV><BR>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><I><b>**Go read *all* the New=
-s Releases now and keep an eye out daily**</b></I></FONT></DIV><BR>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B><U>WATCH IT WEDNESDAY AT T=
-HE OPEN!<U></B></FONT></DIV><BR></BODY></HTML>
+I kind of like the way MontaVista worked around this in some 2.4 drivers
+where no freezer is present.  A tiny amount of state is kept at the
+driver and suspend lock outs are added at service entry points and at
+thread wake up points inside of the driver.
 
-------=_NextPart_000_0005_01C74562.842A8880
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This way if some process makes a request in or wakes up when the driver
+is not ready for the action, that context will get re-slept.
 
+With 2.6 on some of our variants for TI boards we still kept our suspend
+lock outs even though the freezer was there.  It allows some interesting
+run time idling.  You potentially can turn ON and OFF a driver
+individually for something like a high latency operational mode.  I
+suppose based on your comments it also works around issues in the
+freezer.  It doesn't take all that many lock outs to shore up a driver.
 
-------=_NextPart_000_0005_01C74562.842A8880--
+Regards,
+Richard W.
