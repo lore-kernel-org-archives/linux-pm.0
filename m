@@ -1,16 +1,14 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: question on resume()
-Date: Wed, 31 Jan 2007 10:04:08 +0100 (MET)
-Message-ID: <200701311004.19477.oneukum@suse.de>
-References: <200701291206.39637.oneukum@suse.de>
-	<200701310940.26040.oliver@neukum.name>
-	<200701310949.04110.rjw@sisk.pl>
+From: Amit Kucheria <amit.kucheria@nokia.com>
+Subject: Re: [RFC] Runtime power management on ipw2100
+Date: Wed, 31 Jan 2007 11:13:07 +0200
+Message-ID: <1170234787.6746.22.camel@amit-laptop>
+References: <20070131075249.GA22115@srcf.ucam.org>
+Reply-To: amit.kucheria@nokia.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200701310949.04110.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <20070131075249.GA22115@srcf.ucam.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,50 +18,56 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
+To: ext Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: ipw2100-devel@lists.sourceforge.net, linux-pm@lists.osdl.org, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 31. Januar 2007 09:49 schrieb Rafael J. Wysocki:
-> On Wednesday, 31 January 2007 09:40, Oliver Neukum wrote:
-> > Am Mittwoch, 31. Januar 2007 09:33 schrieb Rafael J. Wysocki:
-> > > On Tuesday, 30 January 2007 23:32, Rafael J. Wysocki wrote:
-> > =
+On Wed, 2007-01-31 at 07:52 +0000, ext Matthew Garrett wrote:
+> Based on previous discussions, I've implemented a rough attempt at =
 
-> > > > Generally, you are safe if your driver only calls wake_up() from a =
-process
-> > > > context, but not from .resume() or .suspend() routines (or from an
-> > > > unfreezeable kernel thread).
-> > > =
+> providing some level of basic runtime power management on the ipw2100 =
 
-> > > Ah, sorry, I've just realized I was wrong.  Processes in TASK_UNINTER=
-RUPTIBLE
-> > > cannot be frozen!  So, the above only applies to wake_up_interruptibl=
-e().
-> > =
-
-> > So the kernel will wait for tasks in TASK_UNINTERRUPTIBLE to finish IO
-> > before it calls suspend()? I am confused.
+> chipset. This patch does the following:
 > =
 
-> Yes, it will.  The process freezer can only return success if there are n=
-o more
-> TASK_UNINTERRUPTIBLE tasks.  Otherwise it fails (after a timeout).
+> 1) On load, it initialises the hardware and then quiesces it again
+> 2) On interface up, it powers the hardware back up
+> 3) On interface down, it powers the hardware down and puts the chip in =
 
-So, this means, on suspend():
+> D3
+> 4) It attempts to behave correctly over suspend/resume - ie, if the =
 
-1. Don't worry about TASK_UNINTERRUPTIBLE
-2. Do worry about TASK_INTERRUPTIBLE
-We have to cease IO and must not call wake_up_interruptible()
+> interface was down beforehand, it will ensure that the chip is powered =
 
-Isn't that a race until suspend() is called?
+> down
 
-On resume():
+This isn't quite runtime power management in my way of thinking. I sort
+of expected this to be a fundamental characteristic of well-behaved
+drivers, but then I don't have too much experience with PCI on x86
+platforms.
 
-1. Don't worry about TASK_UNINTERRUPTIBLE
-2. Do not restart IO that may call wake_up_interruptible()
+With runtime power management, I would try to put the device into low
+power states when it is UP. That's what drivers on the OMAP platform
+(N800, 770) do.
 
-When do we restart such IO?
+What is the latency in changing between different PCI power states for
+peripherals?
 
-	Regards
-		Oliver
+Would it be possible e.g. to put the peripheral into a low power state
+after each Tx/Rx (with reasonable hyteresis)?
+
+<snip>
+
+> The situation is slightly more complicated for wired interfaces. As =
+
+> previously discussed, we potentially want three interface states (on, =
+
+> low power, off) with the intermediate one powering down as much of the =
+
+> hardware as possible while still implementing link detection.
+
+And this low power state is what the HW should be in all the time,
+except when it has work to do.
+
+Regards,
+Amit
