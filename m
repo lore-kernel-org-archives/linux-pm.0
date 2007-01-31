@@ -1,12 +1,11 @@
-From: "Denver Morales" <renovatingmentally@abi.de>
-Subject: Author Sidney Sheldon dies at 89
-Date: Wed, 31 Jan 2007 14:45:00 +0000 (UTC)
-Message-ID: <01c74546$31d6b390$6c822ecf@renovatingmentally>
+From: "Willa Erickson" <queerlybrontosaurus@abc.spb.ru>
+Subject: US Airways told to cut out some alcohol sales
+Date: Wed, 31 Jan 2007 15:40:49 +0300
+Message-ID: <01c7454e$2ec7f350$6c822ecf@queerlybrontosaurus>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Wed, 31 Jan 2007 14:43:38 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,13 +15,13 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-WEXE are manufacturing the real GOLD!
+WEXE are producing the real GOLD!
 
-Take a look at mining sector for present time - almost all companies have a=
- strong growth.
+Take a look at mining sector for present time - almost everywhere strong gr=
+owth.
 We are just started it yesterday and it rised. Today it will rise even more.
 
 News came from the company.
@@ -55,11 +54,11 @@ Without just words:
 Pricce: $0.55 -> $0.63
 Marrket: Bullish
 
-Company need additional investments to start mining new region.
+Company need additional investments to start project on new region.
 Market Cap: 58.00M -> 63.00M
 Delta dayly (open 0.550 on 01/30/2007 - close 0.630 on 01/30/2007)
 
-More news will come from company about they new success shortly.
+More news will come from company about they new results shortly.
 I hope it will get enough investment to launch surveyed regions for give us=
  increase.
 Time has come to another one. Rise to stars...
