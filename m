@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: question on resume()
-Date: Wed, 31 Jan 2007 10:48:38 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0701311042340.3803-100000@iolanthe.rowland.org>
-References: <200701310933.29443.rjw@sisk.pl>
+Date: Wed, 31 Jan 2007 10:54:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0701311048560.3803-100000@iolanthe.rowland.org>
+References: <20070131093653.GA19643@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200701310933.29443.rjw@sisk.pl>
+In-Reply-To: <20070131093653.GA19643@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,78 +17,69 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Oliver Neukum <oneukum@suse.de>, Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 31 Jan 2007, Rafael J. Wysocki wrote:
+On Wed, 31 Jan 2007, Pavel Machek wrote:
 
-> On Tuesday, 30 January 2007 23:32, Rafael J. Wysocki wrote:
-> > [Added linux-pm to the Cc list, because I'm going to talk about things =
-that
-> > I know only from reading the code.]
-> > =
-
-> > On Tuesday, 30 January 2007 17:50, Oliver Neukum wrote:
-> > > Am Dienstag, 30. Januar 2007 17:32 schrieb Rafael J. Wysocki:
-> > > > However, you can always inspect the PF_FROZEN flag of the tasks in =
-question
-> > > > if that's practicable.
-> > > =
-
-> > > What would I do with that information? Ignore completion of IO?
-> > =
-
-> > I probably should say "that depends", but that wouldn't be very helpful.
-> > =
-
-> > Getting back to your initial question, which is if wake_up() may be cal=
-led
-> > from a driver's .resume() routine, I think the answer is no, it may not,
-> > because in that case the "notified" tasks would be removed from the wait
-> > queue, but the refrigerator() would (wrongly) restore their states as
-> > TASK_UNINTERRUPTIBLE (or TASK_INTERRUPTIBLE for wake_up_interruptible()=
-).
-
-Even though I'm late to this thread, here are some additional thoughts...
-
-Rafael is wrong; wake_up() doesn't remove a task from a wait queue.  It =
-
-makes the task runnable, and then the task removes itself from the wait =
-
-queue after verifying that the necessary condition has been satisfied.
-
-Thus calling wake_up() on a task in the refrigerator will accomplish =
-
-nothing -- no good and no harm.  The task will remain frozen, and when it =
-
-is unfrozen it will realize that the condition has been satisfied and will =
-
-remove itself from the wait queue.
-
-> > Generally, you are safe if your driver only calls wake_up() from a proc=
-ess
-> > context, but not from .resume() or .suspend() routines (or from an
-> > unfreezeable kernel thread).
+> Hi!
 > =
 
-> Ah, sorry, I've just realized I was wrong.  Processes in TASK_UNINTERRUPT=
-IBLE
-> cannot be frozen!  So, the above only applies to wake_up_interruptible().
+> > > Yes, it will.  The process freezer can only return success if there a=
+re no more
+> > > TASK_UNINTERRUPTIBLE tasks.  Otherwise it fails (after a timeout).
+> > =
+
+> > So, this means, on suspend():
+> > =
+
+> > 1. Don't worry about TASK_UNINTERRUPTIBLE
+> > 2. Do worry about TASK_INTERRUPTIBLE
+> > We have to cease IO and must not call wake_up_interruptible()
 > =
 
-> You don't need to call wake_up() from .resume(), because there are no tas=
-ks
-> to be notified this way and you shouldn't call wake_up_interruptible() fr=
-om
-> there.
+> "cease IO"? No, I believe it is enough not to start new I/O. Userspace
+> is frozen at that point, it can't ask you to do I/O.
 
-While it's true that one doesn't need to call wake_up() from .resume(),
-you are overlooking the point of Oliver's question.  .resume() can start
-up an I/O operation which can then complete before the tasks are
-defrosted.  The I/O's completion routine generally _will_ end up calling
-wake_up() on some still-frozen task.  That's just as bad as calling it =
+There may be I/O requests sitting in a queue, already submitted by
+userspace.  The suspend method should wait for existing I/O to complete
+and stop processing new entries from the queue.
 
-yourself from within the resume routine.
+> > Isn't that a race until suspend() is called?
+> =
+
+> I do not think so.
+
+The part about not calling wake_up_interruptible() is indeed a race.  We =
+
+have:
+
+	1. Task is frozen.
+	2. Driver must not call wake_up_interruptible().
+	3. Driver's suspend() method is called.
+
+How is the driver supposed to satisfy (2) before (3) has occurred?
+
+In fact this shouldn't matter.  There shouldn't be anything wrong with =
+
+calling wake_up_interruptible() on a frozen task.
+
+> > On resume():
+> > =
+
+> > 1. Don't worry about TASK_UNINTERRUPTIBLE
+> > 2. Do not restart IO that may call wake_up_interruptible()
+> > =
+
+> > When do we restart such IO?
+> =
+
+> We reuse signal handling code to do that for us. It is same situation
+> as when someone signals task doing I/O.
+
+Again you misunderstood the question.  The driver must start queued I/O
+when its resume() method is called.  It should then be okay for the driver
+to call wake_up_interruptible(), even before tasks are unfrozen.
 
 Alan Stern
