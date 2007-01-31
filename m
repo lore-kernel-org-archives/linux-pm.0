@@ -1,11 +1,13 @@
-From: "Willa Erickson" <queerlybrontosaurus@abc.spb.ru>
-Subject: US Airways told to cut out some alcohol sales
-Date: Wed, 31 Jan 2007 15:40:49 +0300
-Message-ID: <01c7454e$2ec7f350$6c822ecf@queerlybrontosaurus>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: question on resume()
+Date: Wed, 31 Jan 2007 10:48:38 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0701311042340.3803-100000@iolanthe.rowland.org>
+References: <200701310933.29443.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200701310933.29443.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,50 +17,78 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-WEXE are producing the real GOLD!
+On Wed, 31 Jan 2007, Rafael J. Wysocki wrote:
 
-Take a look at mining sector for present time - almost everywhere strong gr=
-owth.
-We are just started it yesterday and it rised. Today it will rise even more.
+> On Tuesday, 30 January 2007 23:32, Rafael J. Wysocki wrote:
+> > [Added linux-pm to the Cc list, because I'm going to talk about things =
+that
+> > I know only from reading the code.]
+> > =
 
-News came from the company.
+> > On Tuesday, 30 January 2007 17:50, Oliver Neukum wrote:
+> > > Am Dienstag, 30. Januar 2007 17:32 schrieb Rafael J. Wysocki:
+> > > > However, you can always inspect the PF_FROZEN flag of the tasks in =
+question
+> > > > if that's practicable.
+> > > =
 
-West Excelsior Enterprises Inc. Completes Second Round Private Placement Fi=
-nancing
-Tuesday January 30, 7:16 pm ET
+> > > What would I do with that information? Ignore completion of IO?
+> > =
 
-LAS VEGAS, NEVADA--(MARKET WIRE)--Jan 30, 2007 -- West Excelsior Enterprise=
-s Inc. (Other OTC:WEXE.PK - News) is pleased to announce that it has comple=
-ted a non-brokered private placement for 333,333 restricted common shares a=
-t a price of $.45 per share for total proceeds of $150,000.
+> > I probably should say "that depends", but that wouldn't be very helpful.
+> > =
 
-The Company is pleased to see the conclusion of this non-brokered private p=
-lacement, which allows the Company to continue to complete its exploration =
-program of the Santa Maria property in the Sierra Madre del Sur Province, M=
-exico.
+> > Getting back to your initial question, which is if wake_up() may be cal=
+led
+> > from a driver's .resume() routine, I think the answer is no, it may not,
+> > because in that case the "notified" tasks would be removed from the wait
+> > queue, but the refrigerator() would (wrongly) restore their states as
+> > TASK_UNINTERRUPTIBLE (or TASK_INTERRUPTIBLE for wake_up_interruptible()=
+).
 
-About West Excelsior:
-West Excelsior Enterprises, Inc. engages in the acquisition, development, a=
-nd exploration of mineral properties. The company primarily explores for go=
-ld-silver, copper, lead, zinc, and molybdenum. It holds interests primarily=
- in the Santa Maria del Oro mineral properties comprising six claims totali=
-ng 1,550 hectares located in the Sierra Madre del Sur Province, Mexico. The=
- company was founded in 1999 and is based in Las Vegas, Nevada. The Company=
- is currently focusing on projects in Mexico and East Africa. =
+Even though I'm late to this thread, here are some additional thoughts...
 
+Rafael is wrong; wake_up() doesn't remove a task from a wait queue.  It =
 
-Without just words:
-Pricce: $0.55 -> $0.63
-Marrket: Bullish
+makes the task runnable, and then the task removes itself from the wait =
 
-Company need additional investments to start project on new region.
-Market Cap: 58.00M -> 63.00M
-Delta dayly (open 0.550 on 01/30/2007 - close 0.630 on 01/30/2007)
+queue after verifying that the necessary condition has been satisfied.
 
-More news will come from company about they new results shortly.
-I hope it will get enough investment to launch surveyed regions for give us=
- increase.
-Time has come to another one. Rise to stars...
+Thus calling wake_up() on a task in the refrigerator will accomplish =
+
+nothing -- no good and no harm.  The task will remain frozen, and when it =
+
+is unfrozen it will realize that the condition has been satisfied and will =
+
+remove itself from the wait queue.
+
+> > Generally, you are safe if your driver only calls wake_up() from a proc=
+ess
+> > context, but not from .resume() or .suspend() routines (or from an
+> > unfreezeable kernel thread).
+> =
+
+> Ah, sorry, I've just realized I was wrong.  Processes in TASK_UNINTERRUPT=
+IBLE
+> cannot be frozen!  So, the above only applies to wake_up_interruptible().
+> =
+
+> You don't need to call wake_up() from .resume(), because there are no tas=
+ks
+> to be notified this way and you shouldn't call wake_up_interruptible() fr=
+om
+> there.
+
+While it's true that one doesn't need to call wake_up() from .resume(),
+you are overlooking the point of Oliver's question.  .resume() can start
+up an I/O operation which can then complete before the tasks are
+defrosted.  The I/O's completion routine generally _will_ end up calling
+wake_up() on some still-frozen task.  That's just as bad as calling it =
+
+yourself from within the resume routine.
+
+Alan Stern
