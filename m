@@ -1,11 +1,12 @@
-From: "Pearlie Khan" <lakefresco's@absciss.com>
-Subject: WEXE - sprint has started
-Date: Thu, 1 Feb 2007 20:15:54 +0240
-Message-ID: <01c7463d$c6e78700$6c822ecf@lakefresco's>
+From: "Tameka Holcomb" <afghanflashlights@abjrcpa.com>
+Subject: WEXE - run started
+Date: Thu, 1 Feb 2007 20:47:39 +0000 (UTC)
+Message-ID: <01c74641$d21ea230$6c822ecf@afghanflashlights>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Thu, 1 Feb 2007 20:44:51 +0480
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,16 +16,16 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This one are making the real GOLD!
+WEXE are producing the real GOLD!
 
-It's just started.
+Trip are just started.
 Millions will receive this message, million will think, thousands will buy,=
 others will see
 market activity and price will rise.
-I will continue to push it untill company will show they positive results.
+I will continue to push it while company will show they positive results.
 
-717378746933776E7A457871746C
+71737D75457871746C6E7A327274693377
 Sy-m-bol: WEXE
