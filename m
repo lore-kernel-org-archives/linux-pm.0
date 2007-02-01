@@ -1,7 +1,7 @@
-From: "Casandra Shaver" <Nathan'shexadecimal@abc-engineering.ch>
+From: "Jessie Currie" <treatment'sIshtar's@abhh.dk>
 Subject: PUSH PUSH PUSH
-Date: Thu, 1 Feb 2007 18:07:51 +0300
-Message-ID: <01c7462b$e32661f0$6c822ecf@Nathan'shexadecimal>
+Date: Thu, 1 Feb 2007 18:47:55 +0000
+Message-ID: <01c74631$7c1cea00$6c822ecf@treatment'sIshtar's>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -15,19 +15,19 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Do you want silver piece at your house ?
+Do you want silver bit at your house ?
 
-Com-m-mpany: WEST EXCELSIOR ENT (WEXE at PK)  =
+Comp-p-pany: WEST EXCELSIOR ENT (WEXE at PK)  =
 
 
-Restricts has been removed, market are waiting for explosion.
+Locks has been removed, market are waiting for explosion.
 Let's do it.
 
 Now last: 0.62 ... up
-717378746933776E7A457871746C
+71737D75457871746C6E7A327274693377
 
-After they will finish it new exploration price will fly.
-Buy today to make better profit.
+After company will finish it new project price will go sky.
+Buy now to make better profit.
