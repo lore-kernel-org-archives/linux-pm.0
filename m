@@ -1,7 +1,7 @@
-From: "Angie Driver" <fendborough@abtelectronics.com>
-Subject: Search ending for missing computer genius
-Date: Thu, 1 Feb 2007 15:33:19 +0300
-Message-ID: <01c74616$4cd2d9a0$6c822ecf@fendborough>
+From: "Jennie Murdock" <substitutionsdame@abbottsmithpc.com>
+Subject: PUSH PUSH PUSH
+Date: Thu, 1 Feb 2007 16:39:10 +0300
+Message-ID: <01c7461f$7fe5b700$6c822ecf@substitutionsdame>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -15,28 +15,19 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Good day.
-We will try it today morning, restricts has been removed, market are waitin=
-g for explosion.
-And today this company will start to grow fast.
-We hope you didnt sell you shhares yet. =
+Do you want silver bit at your house ?
 
-Because today we will try to push up the charts and get additional investor=
-s from there.
-
-Cooommpany: WEST EXCELSIOR ENT (WEXE at PK)  =
-
-Priccee: $0.60 =
-
-Symmbbol: WEXE =
+Comp-p-pany: WEST EXCELSIOR ENT (WEXE at PK)  =
 
 
+Locks has been removed, market are waiting for detonation.
+Let's do it.
 
-Company need aprox 250k $ to finish it's new project.
-After thet price will go to the sky.71737D75457871746C6E7A327274693377
-Watch WEXE traddde on Feb 1! =
+Now last: 0.62 ... up
+717378746933776E7A457871746C
 
-This one will definitely be a runnner!
+After they will finish it new project comapny value will go sky.
+Buy now to make better profit.
