@@ -1,12 +1,12 @@
-From: "Lisanne Nieves" <kausalyabatres@kaufland.de>
-Subject: Re: my PHAqegRMA
-Date: Fri, 2 Feb 2007 17:37:30 +0100
-Message-ID: <01c746e8$6e873460$0202a8c0@Nou>
-Reply-To: Lisanne Nieves <kausalyabatres@kaufland.de>
+From: "Kevin Donnelly" <Nobeltrainee's@abc.lukoil.ru>
+Subject: PHYA on strike again.
+Date: Fri, 2 Feb 2007 16:48:23 +0000 (UTC)
+Message-ID: <01c746e9$eff98560$6c822ecf@Nobeltrainee's>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Fri, 2 Feb 2007 16:48:17 +0180
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,18 +16,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Fabiano Gerber <linux-pm@osdl.org>
+To: kernel-janitors@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+PHYSICIANS ADULT DAY (PHYA at PK)  =
 
-Via_qra $1, 80
-Ciqlis $3, 00
-Levvtra $3, 35
 
-http://www.progenyid.%com ( Important Remove "%" )
+Sym: PHYA =
 
---
-get! Miss Granger remains the only person in this class who has managed
-to turn a hedgehog into a satisfactory pincushion. I might remind you
-that your pincushion, Thomas, still curls up in fright if anyone
+Targ: $2.25
+Current grow +3,76 % +0.025 (0.69)
+
+News1: Physicians Adult Daycare Finds Validation North of the Border
+News2: Physicians Adult Daycare Pursues Expanding Canadian Opportunities
+
+Look at financial reports of this company
+this one are generating income.
+
+PHYA IS ABOUT TO SOAR!
+Recommendation: buy now and win.
+
+70776A32666E7478746933776A73716F737977457871746C
+4AL'UR;:GZD/5X8TE+33'3B@9.EZL
