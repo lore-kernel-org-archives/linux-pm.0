@@ -1,11 +1,12 @@
-From: "Vickie Rowland" <coupeanimal@ablink.demon.co.uk>
-Subject: Vickie wrote:
-Date: Fri, 2 Feb 2007 15:11:02 +0000 (UTC)
-Message-ID: <01c746dc$385bfad0$6c822ecf@coupeanimal>
+From: "Lottie Holman" <dinnereddefaces@abodeasia.com>
+Subject: Lottie wrote:
+Date: Fri, 2 Feb 2007 15:16:34 +0000 (UTC)
+Message-ID: <01c746dc$bd6a7ad0$6c822ecf@dinnereddefaces>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1555814809=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Fri, 2 Feb 2007 15:10:05 -0060
+Date: Fri, 2 Feb 2007 15:13:48 -0480
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,16 +19,14 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============1555814809==
-Content-Type: text/plain;
-	charset="windows-1250"
-Content-Transfer-Encoding: 7bit
+PHYSICIANS ADULT DAY (PHYA at PK)  =
 
-PHYSICIANS ADULT DAY (PHYA at PK)  
 This one on strike again.
 
-Sym: PHYA 
-Priccce: $0.66 
+Sym: PHYA =
+
+Priccce: $0.66 =
+
 Target: $2.25
 Market: Slightly Bullish
 
@@ -42,16 +41,4 @@ PHYA IS ABOUT TO SOAR!
 ADD PHYA TO YOUR WATCHLIST.
 
 71737D75457871746C6E7A327274693377
-AM7(7**5(0,UI9
-
-
-
-
---===============1555814809==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1555814809==--
+S,61(0@8.97//X9M3,26EQ7.VL2.V4
