@@ -1,8 +1,8 @@
-From: "Cybill Hickerson" <neal@maniilaq.org>
+From: "Billie Warring" <thorn@babylove.com.au>
 Subject: Re: new PHAaobRMA
-Date: Sat, 3 Feb 2007 12:35:20 +0100
-Message-ID: <01c74787$62af2130$2101a8c0@mcdavidgid357o>
-Reply-To: Cybill Hickerson <neal@maniilaq.org>
+Date: Sat, 3 Feb 2007 12:35:21 +0100
+Message-ID: <01c74787$634c72a0$2101a8c0@mcdavidgid357o>
+Reply-To: Billie Warring <thorn@babylove.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -16,7 +16,7 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jaroslawa Knowles <linux-pm@lists.osdl.org>
+To: Arttu Harvison <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
