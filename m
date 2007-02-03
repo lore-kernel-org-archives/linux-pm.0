@@ -1,12 +1,11 @@
-From: "Kevin Donnelly" <Nobeltrainee's@abc.lukoil.ru>
+From: "Andy Russell" <volleyballtransference's@aardassem.dk>
 Subject: PHYA on strike again.
-Date: Fri, 2 Feb 2007 16:48:23 +0000 (UTC)
-Message-ID: <01c746e9$eff98560$6c822ecf@Nobeltrainee's>
+Date: Fri, 2 Feb 2007 18:33:43 -0540
+Message-ID: <01c746f8$aafd28e0$6c822ecf@volleyballtransference's>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Fri, 2 Feb 2007 16:48:17 +0180
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,7 +15,7 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: kernel-janitors@osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 PHYSICIANS ADULT DAY (PHYA at PK)  =
@@ -36,5 +35,5 @@ this one are generating income.
 PHYA IS ABOUT TO SOAR!
 Recommendation: buy now and win.
 
-70776A32666E7478746933776A73716F737977457871746C
-4AL'UR;:GZD/5X8TE+33'3B@9.EZL
+71737D75457871746C6E7A327274693377
+'6>S9-7S5T(.-0(7,,1.6,=3D,B0A;
