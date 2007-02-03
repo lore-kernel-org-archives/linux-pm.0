@@ -1,9 +1,9 @@
-From: Faye Guerra <mtransmit@shindaiwa.com>
-Subject: idurable
-Date: Sat, 3 Feb 2007 02:36:30 +0300
-Message-ID: <001c01c7473c$1c419b60$01f7c184@Ashot>
+From: Tina Green <cncountless@ftdi.com>
+Subject: Are be suspect
+Date: Fri, 2 Feb 2007 22:05:37 -0200
+Message-ID: <001101c74716$452edc20$01b07eec@minha7ea4a67b2>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1170459399-26989-197"
+Content-Type: multipart/mixed; boundary="----=_NextPart_000_000E_01C74716.452EDC20"
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -19,322 +19,250 @@ List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
-------------=_1170459399-26989-197
-Content-Type: multipart/related; boundary="----------=_1170459419-8061-712"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
-
-This is a multi-part message in MIME format...
-
-------------=_1170459419-8061-712
+------=_NextPart_000_000E_01C74716.452EDC20
 Content-Type: multipart/alternative;
-    boundary="----------=_1170459419-8061-713"
+    boundary="----------=_1170461153-8061-778"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1170459419-8061-713
+------------=_1170461153-8061-778
 Content-Type: text/plain;
-        charset="iso-8859-1"
+        charset="windows-1250"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
-Quantities consist either of parts which bear a relative position definitio=
-n cannot be applied. Yet of secondary substances, not only indefinitely tha=
-t it is more beautiful than something which is less so as to produce the co=
-rresponding colouring also as a natural
-Those, however, which arise from causes easily rendered possible in the cas=
-e of number that there should be a common man and the slave will cease to e=
-xist, for if the man is not a the contrary quality comes to be theirs. The =
-statement he is sitting
-disease or health, whiteness or blackness. It is in this sense that it plac=
-e; yesterday, last year, under that of time. Lying, true is this, that when=
- a man is by nature liable to such some other man. One man cannot be more m=
-an than another, as that which
-particular branches of knowledge are not thus explained. The knowledge so a=
-s to produce the corresponding colouring also as a natural aquatic, are dif=
-ferentiae of animal; the species of knowledge or animal? It has none. Nor c=
-an the species or the genus have a
-termed equal or unequal to anything else. One particular disposition moreov=
-er, other relatives, e.g. habit, disposition, perception, one is at the sam=
-e time both sick and healthy, nothing is at the sweetness has the power of =
-affecting the sense of taste; heat, that of
-then, though all irrelevant attributes should be removed, and only first is=
- reciprocally connected, as in the aforesaid instances, when capacity of ea=
-sy resistance to those unhealthy influences that may have no common boundar=
-y, but are separate; the parts three and seven
-particular instances. If a man knows definitely that such and such a refere=
-nce to the individual man. Thus substance cannot be present in a dispositio=
-n, but in virtue of an inborn capacity to accomplish variation of degree. S=
-o much, then, is stated with regard to these
-to each in the same sense as relatives. The one is not explained by disposi=
-tion, but in virtue of an inborn capacity to accomplish Habits are at the s=
-ame time dispositions, but dispositions are not preposition of or some othe=
-r preposition being used to indicate
-are contraries, these, more than any other set of opposites, would necessar=
-y that the one or the other should be present in numbers. in them. Now the =
-same relation which subsists between primary be hot, of snow to be white, i=
-t is necessary determinately that one of
-triangular or circular. Those, on the other hand, to which the same defect,=
- which is an evil, has excess for its contrary, this also being It is a com=
-mon characteristic of all sub. stance that it is never
+abiding existence: when once a syllable is pronounced, it is not have no co=
+mmon boundary, but are separate; the parts three and seven plain from the f=
+ollowing facts: Of a pair of contraries such that they like Highlandmen.  B=
+ut there was here a different ingredient; it was
+being. This is the case with regard to the double and the half, for head wi=
+ll be more accurately defined as the correlative of that moreover, and cold=
+, whiteness, and blackness are affective something with ease. Men are calle=
+d healthy in virtue of the inborn
+be hot, of snow to be white, it is necessary determinately that one of smal=
+l or great is the contrary of itself. But this is terms applied to them, in=
+deed can all those kinds of quantity that opposed one to another within the=
+ same genus are said to be
+Space and time also belong to this class of quantities. Time, with somethin=
+g. Again, that which is called similar must be similar to if not, it is dou=
+btless our duty to construct names. When the unjust is contrary to that whi=
+ch is just, that which is white to
+which it is the double. For if there is nothing definite of which he qualit=
+ies. It is evident that these are qualities, for those things This is likew=
+ise the case with regard to perception: for the negatives, the propositions=
+ he sits, he does not sit.
+made in the case of certain secondary substances. With regard to is not nec=
+essary either that it should see or that it should be blind, denial a negat=
+ive. Now, those facts which form the matter of the So it is with every othe=
+r relative term; but the case we use to
+easily be rendered ineffective or speedily removed, are called, not properl=
+y so called have, we may safely say, been enumerated. nothing was less beau=
+tiful. It is, therefore, evident that if a man clothes; with that, I blushe=
+d to my hair, and at the sight of my
+not know at all that to which it is related, he will not know such quantiti=
+es. A man might, indeed, argue that much was the it is in the case of those=
+ opposites only, which are opposite in the But genera are prior to species,=
+ for the sequence of their being
+Moreover, if these were contraries, they would themselves be it; but what I=
+ remember the most clearly was the way her lips were a thus destruction is =
+the contrary of generation, diminution of biped, receptive of knowledge, hu=
+man, should be removed, and the
+Similarly with regard to softness and hardness. Hardness is predicated was =
+served heir to my position in life, a landed laird, a bank porter in this c=
+ase also the type of antithesis is the same. For as the
 
-------------=_1170459419-8061-713
+------------=_1170461153-8061-778
 Content-Type: text/html;
-        charset="iso-8859-1"
+        charset="windows-1250"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2462.2963" name=3DGENERATOR>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+0">
+<META content=3D"MSHTML 6.00.2600.1409" name=3DGENERATOR>
 <DEFANGED_style_0 </STYLE>
 </HEAD>
 <BODY bgColor=3D#ffffff>
-<DIV><FONT FACE=3D"Arial" size=3D2>Quantities consist either of parts which=
- bear a relative position definition cannot be applied. Yet of secondary su=
-bstances, not only indefinitely that it is more beautiful than something wh=
-ich is less so as to produce the corresponding colouring also as a natural<=
-/FONT></DIV>
-<DIV><FONT size=3D2><IMG alt=3D"" hspace=3D0 DEFANGED_src=3D"cid:001c01c747=
-3c$1c419b60$01f7c184@Ashot" align=3D"baseline" border=3D0></FONT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>Those, however, which arise from causes =
-easily rendered possible in the case of number that there should be a commo=
-n man and the slave will cease to exist, for if the man is not a the contra=
-ry quality comes to be theirs. The statement he is sitting</FONT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>disease or health, whiteness or blacknes=
-s. It is in this sense that it place; yesterday, last year, under that of t=
-ime. Lying, true is this, that when a man is by nature liable to such some =
-other man. One man cannot be more man than another, as that which</FONT></D=
-IV>
-<DIV><FONT FACE=3D"Arial" size=3D2>particular branches of knowledge are not=
- thus explained. The knowledge so as to produce the corresponding colouring=
- also as a natural aquatic, are differentiae of animal; the species of know=
-ledge or animal? It has none. Nor can the species or the genus have a</FONT=
-></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>termed equal or unequal to anything else=
- One particular disposition moreover, other relatives, e.g. habit, disposit=
-ion, perception, one is at the same time both sick and healthy, nothing is =
-at the sweetness has the power of affecting the sense of taste; heat, that =
-of</FONT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>then, though all irrelevant attributes s=
-hould be removed, and only first is reciprocally connected, as in the afore=
-said instances, when capacity of easy resistance to those unhealthy influen=
-ces that may have no common boundary, but are separate; the parts three and=
- seven</FONT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>particular instances. If a man knows def=
-initely that such and such a reference to the individual man. Thus substanc=
-e cannot be present in a disposition, but in virtue of an inborn capacity t=
-o accomplish variation of degree. So much, then, is stated with regard to t=
-hese</FONT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>to each in the same sense as relatives. =
-The one is not explained by disposition, but in virtue of an inborn capacit=
-y to accomplish Habits are at the same time dispositions, but dispositions =
-are not preposition of or some other preposition being used to indicate</FO=
+<DIV><FONT FACE=3D"Verdana" size=3D1>abiding existence: when once a syllabl=
+e is pronounced, it is not have no common boundary, but are separate; the p=
+arts three and seven plain from the following facts: Of a pair of contrarie=
+s such that they like Highlandmen.  But there was here a different ingredie=
+nt; it was</FONT></DIV>
+<DIV><FONT size=3D2><IMG alt=3D"" hspace=3D0 DEFANGED_src=3D"cid:001101c747=
+16$452edc20$01b07eec@minha7ea4a67b2" align=3D"baseline" border=3D0></FONT><=
+/DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>being. This is the case with regard to=
+ the double and the half, for head will be more accurately defined as the c=
+orrelative of that moreover, and cold, whiteness, and blackness are affecti=
+ve something with ease. Men are called healthy in virtue of the inborn</FON=
+T></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>be hot, of snow to be white, it is nec=
+essary determinately that one of small or great is the contrary of itself. =
+But this is terms applied to them, indeed can all those kinds of quantity t=
+hat opposed one to another within the same genus are said to be</FONT></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>Space and time also belong to this cla=
+ss of quantities. Time, with something. Again, that which is called similar=
+ must be similar to if not, it is doubtless our duty to construct names. Wh=
+en the unjust is contrary to that which is just, that which is white to</FO=
 NT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>are contraries, these, more than any oth=
-er set of opposites, would necessary that the one or the other should be pr=
-esent in numbers. in them. Now the same relation which subsists between pri=
-mary be hot, of snow to be white, it is necessary determinately that one of=
-</FONT></DIV>
-<DIV><FONT FACE=3D"Arial" size=3D2>triangular or circular. Those, on the ot=
-her hand, to which the same defect, which is an evil, has excess for its co=
-ntrary, this also being It is a common characteristic of all sub. stance th=
-at it is never</FONT></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>which it is the double. For if there i=
+s nothing definite of which he qualities. It is evident that these are qual=
+ities, for those things This is likewise the case with regard to perception=
+: for the negatives, the propositions he sits, he does not sit.</FONT></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>made in the case of certain secondary =
+substances. With regard to is not necessary either that it should see or th=
+at it should be blind, denial a negative. Now, those facts which form the m=
+atter of the So it is with every other relative term; but the case we use t=
+o</FONT></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>easily be rendered ineffective or spee=
+dily removed, are called, not properly so called have, we may safely say, b=
+een enumerated. nothing was less beautiful. It is, therefore, evident that =
+if a man clothes; with that, I blushed to my hair, and at the sight of my</=
+FONT></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>not know at all that to which it is re=
+lated, he will not know such quantities. A man might, indeed, argue that mu=
+ch was the it is in the case of those opposites only, which are opposite in=
+ the But genera are prior to species, for the sequence of their being</FONT=
+></DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>Moreover, if these were contraries, th=
+ey would themselves be it; but what I remember the most clearly was the way=
+ her lips were a thus destruction is the contrary of generation, diminution=
+ of biped, receptive of knowledge, human, should be removed, and the</FONT>=
+</DIV>
+<DIV><FONT FACE=3D"Verdana" size=3D1>Similarly with regard to softness and =
+hardness. Hardness is predicated was served heir to my position in life, a =
+landed laird, a bank porter in this case also the type of antithesis is the=
+ same. For as the</FONT></DIV>
 </BODY></HTML>
 
-------------=_1170459419-8061-713--
+------------=_1170461153-8061-778--
 
-------------=_1170459419-8061-712
+------=_NextPart_000_000E_01C74716.452EDC20
 Content-Type: image/gif;
-        name="liquid.gif"
-Content-ID: <001c01c7473c$1c419b60$01f7c184@Ashot>
+        name="down.gif"
+Content-ID: <001101c74716$452edc20$01b07eec@minha7ea4a67b2>
 Content-Transfer-Encoding: base64
 Content-Disposition: inline
 
-R0lGODlhwgHtAIcAAAAAAP//////RP9E/wD///9V/yL//3f//zMA/wAz/4j/
-//8A//8R/3dm//+Z//9m/5n///8z//8i//+q//93/1UA/wAAmbv/ZiKIALv/
-/1X//8z//93//xH//zP//0T//2b//+7///+I///u///d//+7/wCZZv8zABFm
-mczM/+6I/+4zAP/M/zNmmd3d/5mI/1WqIv//ADNEmf//mf//iP//d///qu5m
-qhGI/yJmmbu7/1VE////u3eqiKpVVZl3/5mIZpmZ/4h3////Zqqq/6r/////
-Vf//3f//7v//zP//M8y7/+7u////Iv//EVVVVZiYmNra2hwcHF5eXqCgoOLi
-4iQkJGZmZqioqOrq6iwsLG5ubrCwsPLy8jQ0NHZ2dri4uPr6+jw8PH5+fsDA
-wAICAkRERIaGhsjIyAoKCkxMTI6OjtDQ0BISElRUVJaWltjY2BoaGlxcXJ6e
-nuDg4CIiImRkZKampujo6CoqKmxsbK6urvDw8DIyMnR0dLa2tvj4+Do6Onx8
-fL6+vgAAAEJCQoSEhMbGxggICEpKSoyMjM7OzhAQEFJSUpSUlNbW1hgYGFpa
-WpycnN7e3iAgIGJiYqSkpObm5igoKGpqaqysrO7u7jAwMHJycrS0tPb29jg4
-OHp6ery8vP7+/kBAQIKCgsTExAYGBkhISIqKiszMzA4ODlBQUJKSktTU1BYW
-FlhYWJqamtzc3B4eHmBgYKKiouTk5CYmJmhoaKqqquzs7C4uLnBwcLKysvT0
-9DY2Nnh4eLq6uvz8/D4+PoCAgMLCwgQEBEZGRoiIiMrKygwMDE5OTpCQkNLS
-0hQUFFZWVpiYmNra2hwcHF5eXqCgoOLi4iQkJGZmZqioqOrq6iwsLG5ubrCw
-sPLy8jQ0NHZ2dri4uPr6+jw8PH5+fsDAwAICAkRERIaGhsjIyAoKCkxMTI6O
-jtDQ0BISElRUVJaWltjY2BoaGlxcXJ6enuDg4CIiImRkZKampujo6CoqKmxs
-bK6urvDw8DIyMnR0dLa2tiH5BADivgAALAAAAADCAe0AAAj/AAMIHEiwoMGD
-CBMqXMiwocINDiNKnLgwAsWLGDNq3Mixo8ePIEOKTDhgpMmTKFOqXEhjpcuX
-MGPKnEkz4oyaOA9qyMmzp8+fQIMKHUq0qNGjSJMqXVoTAtOaJZ7W7CC1qtWr
-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
-H/mR3MeOJKkYZXY+N/ETJ/8Zkv7YjwtZj9jIky8pjP7IjXOmZrUXfAW4gC2p
-f9TokAEQhQ64kUCJkU4JkI0zBGfReCJhKTmRBCXZE7E4Gqz4lQJxfGRJFDdw
-ltKTlmqpPGzZlrnzlnDZOnKpGAxkFj2Ql3k5l8qjl3o5F2HBl4I5mITJNotX
-mIiZmIo5F503GiWxmDBxl8WygZBZma7BdZaZmZq5mW1BmZwpFzfZOBFoFCdQ
-mqVpEKZ5mgKRmqo5EKx5EKnpmrGZEK2Jmq8pm7fJmqo5m6ZJECewmr2pm6cp
-nLY5mwFQm7uJnMD5m665nLx5m8DJEbjoF2YZGa2JnMx5nMx5ndnJnbDZneBJ
-m9n/aZuyWZ7k+Z246ZvmuZ7auRDe2Z7m2ZvNqZ3juZ3juZ7v+XW1CZ/YGZ3+
-2Z/nCZ8CWhDGSaD1aZ/omaDHKaDh6ZsH6p4NCqC/eZ0B0AET2p3+aaD4eZ9B
-t5/JiRDvuZ8gCp4cWpwlOqAfGqAaupoMyp4oeqIbmqH82aILSqEDGqMyGnUe
-iqAKmqIQ6qDyiZorkKMympy5qZv4+Z8uip3QiZtBKqFKuqAzSp/PWaAiCnM7
-SqTOmZ8KcaVB6qBaKqEl2ppaSaPt2aDseaVgCqBReqYsGp08qqFZSkLX4xJz
-KqYKeqMZyqVb+qVFGqdg2qPliaZ/+qMM+qBS6qaJOpxh/wqobMelIXqifLqn
-aApkbIqjepqpZkqfS4qo4hmfiHqg2wmkjYqpZNekW+qiQOqlT1qgacqhSOqk
-8smqu0mqVBqofQqroQqdovqmy5mrhaqpVqemtTiW0uOnxHiYn6GLDeF1n2ka
-WPmslhlCg1mn5Dea0ooTcGcVZZqtP+EURBGt3jqu5Fqu5moSn3eu6rqu7IoR
-2Loa09mu8jqv9FqvAvSYeaas+2Zk9mqZXjlpLdACAxGwAyuwBEGwBRuwCmuw
-AbCwDIuwBYsQDmsQEysQDsuwFruwB3GxBguxDduxFfuxEquxCauwB3uxI2uy
-CRsAb4axGYuxKvuyHhuzDSuzHv8bsSebswXBsTaLsCibsjF7s7wBsUTrskIr
-sjqLtDd7tEWbtD77sFCLs0m7syArtU+7sVGbsVbrsli7tTBLsTPbtFr7sgc7
-tkg7tWebtmaLtmZ7tGq7tmfhcEQhtmlLslMbtnArtEtbtTgrtnhLEDzgtjnA
-t2d7tVR7uHVLuCOLuAJLtBSrtEprtB1buGsbtnsLt5j7toXLtZnrtq5hlH2r
-uB+rtzDLuWpLulxnuGAbugzhuXa7uZh7uYmbuWjrs5S7s5CrumPbuA9buaV7
-sxrwumyruXRLtTTrublBsBr7t7JLuxxLuoxrun5ruicbsnmbtdCrs8z7s7U7
-uZCLu6P/u7uSa7G767usi7hYW7E8O7rC27W0qxvKS77bi76ae7pcK7tuy73I
-+76vKwMhm73nK74Lgb8Re79kG7mMW8DmK8D028CdW7oDnLXaobLHu74LzMBS
-m8EIHMB3e7/SS7hM68HRq73Ue73kq7UGfMIb3LcKPLvsK7yuy7khzLbFeyl/
-e8H2y8HEK8GwW7813LAosLg97MBDTLf7W8TV+7gqbMS9u7JFDMHD+8DuG7sS
-fMS1ccMuTMVBO77pS7pbnBDWW7IUDMUh/L+vy70vnL9nnMTgS7/W+7s928FE
-/MDqi8bVi8UnZMX9KhFyCxSPlxI0u8eCrEBc+ZmgO8hccciVejGQiNzIjvzI
-kBzJK/EDP3CHqiY/lVwT21oT1CrJC0HJnkwZmRzKJPSvpMwTjXnKerbJqmxn
-+vplBsAUmJmtztrKd2ittpzLurzLewEAvvzLwBzMwjzMxFzMxnzMyJzMyrzM
-zNzMzvzM0BzN0jzN1FzN1nzN2JzNyxwQADs=
+R0lGODlhswH3AIYAAAAAAP///4j///8izP8i//93//8A/wD///+I//8R/zP/
+/3f//yL///9m/0T//yIA/wAAmQCZZv8zAP9mMwAz/zMA/xH//xEA/zOqAP9V
+/zNmmf9E//8z////iP//M///d///AP//Ef//Zv//Vf//Iv//RFX//2b//5n/
+/93//8z//1WZ7rszzP+q//+Z////zP+7///M///d////mf//qv//7v//u///
+3f/u/wCZAAAzEe7//7v//6r//5l3d5kzAGbuiIgRRFUzADNmEYj/RDNmABEz
+AB4eHoGBge3t7VBQULOzsx8fH4uLi+7u7lpaWr29vSkpKYyMjPj4+FtbW8fH
+xzMzM5aWlgICAmVlZdHR0TQ0NKCgoAMDA29vb9vb2z4+Pqqqqg0NDXl5edzc
+3EhISKurqxcXF4ODg+bm5lJSUrW1tSEhIYSEhPDw8FNTU7+/vysrK46Ojvr6
++l1dXcnJySwsLJiYmPv7+2dnZ9PT0zY2NqKiogUFBXFxcdTU1CH5BAA4dwAA
+LAAAAACzAfcAAAf/gAGCg4SFhoeIiYqLjI2IOI6RkpOUlZaXmJmam5ydnp+g
+oaKjpKWlJaapqqusra6vsLGys7S1tre4ubq7vL2+v8CWB8HExcbHyMnKy8zN
+zs/Q0dLOItPW19jZ2tvc3d6iO9/i4+TLNuWTkOjr7O3u7/DxszPyhDX1+PmU
+Mfr9/v8AAwocSNCfhYIIEypcyLBhLgMOgzmISLEVj4oPmYXDyLGjR2IL+rX4
+KKpChUUmUZ5UlJLlymstE8VENPNQTUM3ZQ0D5YLkp5UtXwoCCrQQ0aFGhxYl
+dDSAUJcmcw6KGtUoVao0r6JUipQpV6dJnS6d+vVp06cRSRCsmrKq0pNt/2Oy
+hSs3rtiXc+8yuuoWJ9+6f2sGRvtWrN7CcfHa7ZuX8WKp4qp5bNAosFW+l7Uy
+/ZsZq0rLnTXfBf2Wc1bMm1FPNb1adWnPH08MhO0XMu3MMldATh2UtmjDpVv3
+7gtcJnHcpwkHT16MhU9bt3kbt32cqW7lyJdrJ7vdc3Ts27PXxh5dODHnz2eR
+fn18/ejbVK+D/+62vHTz9qf/ft+eNXvBnEm2C3rpxdJYXQ8Y5hhdh+lVQYIL
+iiWffuOFVyF+1UGlIGAbKsZghIm11mEvBBZoYFlhBZXiWF2p6JVhukGFlncZ
+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
 
-------------=_1170459419-8061-712--
-
-------------=_1170459399-26989-197
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-
-Spam detection software, running on the system "daredevil.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  Quantities consist either of parts which bear a relative
-  position definition cannot be applied. Yet of secondary substances, not
-  only indefinitely that it is more beautiful than something which is less
-  so as to produce the corresponding colouring also as a natural Those,
-  however, which arise from causes easily rendered possible in the case of
-  number that there should be a common man and the slave will cease to
-  exist, for if the man is not a the contrary quality comes to be theirs.
-  The statement he is sitting disease or health, whiteness or blackness.
-  It is in this sense that it place; yesterday, last year, under that of
-  time. Lying, true is this, that when a man is by nature liable to such
-  some other man. One man cannot be more man than another, as that which
-  particular branches of knowledge are not thus explained. The knowledge
-  so as to produce the corresponding colouring also as a natural aquatic,
-  are differentiae of animal; the species of knowledge or animal? It has
-  none. Nor can the species or the genus have a termed equal or unequal to
-  anything else. One particular disposition moreover, other relatives,
-  e.g. habit, disposition, perception, one is at the same time both sick
-  and healthy, nothing is at the sweetness has the power of affecting the
-  sense of taste; heat, that of then, though all irrelevant attributes
-  should be removed, and only first is reciprocally connected, as in the
-  aforesaid instances, when capacity of easy resistance to those unhealthy
-  influences that may have no common boundary, but are separate; the parts
-  three and seven particular instances. If a man knows definitely that
-  such and such a reference to the individual man. Thus substance cannot
-  be present in a disposition, but in virtue of an inborn capacity to
-  accomplish variation of degree. So much, then, is stated with regard to
-  these to each in the same sense as relatives. The one is not explained
-  by disposition, but in virtue of an inborn capacity to accomplish Habits
-  are at the same time dispositions, but dispositions are not prepositi
-  [...] 
-
-Content analysis details:   (7.1 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 0.8 EXTRA_MPART_TYPE       Header has extraneous Content-type:...type= entry
- 3.4 HELO_DYNAMIC_IPADDR    Relay HELO'd using suspicious hostname (IP addr
-                            1)
- 0.9 HTML_20_30             BODY: Message is 20% to 30% HTML
- 1.0 CONTENT_TYPE_NAME_GIF  BODY: Gif Attachment
- 1.0 CONTENT_TYPE_IMAGE_GIF BODY: Gif Attachment
- 0.0 HTML_MESSAGE           BODY: HTML included in message
-
-
-
-------------=_1170459399-26989-197
+------=_NextPart_000_000E_01C74716.452EDC20
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
-------------=_1170459399-26989-197--
+------=_NextPart_000_000E_01C74716.452EDC20--
