@@ -1,12 +1,13 @@
-From: "E. Coon" <Janus'stantrum@accord.rgs.ru>
-Subject: Important trading news - shot down
-Date: Mon, 5 Feb 2007 19:10:40 +0000 (UTC)
-Message-ID: <01c74959$0b165b40$6c822ecf@Janus'stantrum>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH 01/10] dont copy pages that arent RAM
+Date: Mon, 05 Feb 2007 19:30:28 +0100
+Message-ID: <20070205185835.337746000@sipsolutions.net>
+References: <20070205183026.989209000@sipsolutions.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Mon, 5 Feb 2007 19:08:39 +0480
+Content-Disposition: inline; filename=dont-copy-non-ram-pages.patch
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,30 +17,34 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linuxppc-dev@ozlabs.org
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-We called it and UP it goes! HPGI on raise again today.
+Pages that aren't RAM obviously cannot be saved during suspend-to-disk
+so skip them.
 
-HPGI up 22% in its first extensive day of trading. Look for more gains from
-this high-flier tomorrow and during the next few weeks!
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@osdl.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Hemisphere Gold Discovers a Series of Gold Anomalies Trending North-South f=
-or Over 20 km
-Monday February 5, 6:30 am ET
-Company Reports on Initial Stream Sediment Sampling Program
+---
+Pavel Machek requested this be put into -mm for some more
+testing although he says it seems fine.
 
-Symm: HPGI
-Prev. close:1.50
+--- mb-wireless.orig/kernel/power/snapshot.c	2007-02-05 14:24:06.894526864 =
++0100
++++ mb-wireless/kernel/power/snapshot.c	2007-02-05 14:24:36.544526864 +0100
+@@ -686,6 +686,8 @@ static struct page *saveable_page(unsign
+ =
 
-Read up on why these junior gold industry companies are THE place to be.
-Type in Google : "zealllc com 2006 jnrgold" and read all about it.
+ 	if (PageReserved(page) && pfn_is_nosave(pfn))
+ 		return NULL;
++	if (!page_is_ram(pfn))
++		return NULL;
+ =
 
-HPGI is as hot as they come with major surveys underway and a blazing
-hot publicity campaign is ready to announce the BIG Find!
+ 	return page;
+ }
 
-Catch the luck and win with HPGI.
-
-This newsletter includes far-sighted statements. This is not an offer to bu=
-y or sell any issues. The publisher of this message paid out ten thousand d=
-ollars for distribution of this publication.
+--
