@@ -1,12 +1,12 @@
-From: "Preston Katz" <jellyfish'sspareness's@abacnet.com>
-Subject: Maryann  did you got HPGI ?
-Date: Mon, 5 Feb 2007 15:28:15 +0000 (UTC)
-Message-ID: <01c7493a$32674cf0$6c822ecf@jellyfish'sspareness's>
+From: "Sadie Jean" <pokessensitize@abcofurniture.com>
+Subject: Wilburn  did you got HPGI ?
+Date: Mon, 5 Feb 2007 15:30:31 +0000 (UTC)
+Message-ID: <01c78cce$c0294430$6c822ecf@pokessensitize>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Mon, 5 Feb 2007 15:27:50 -0060
+Date: Wed, 2 May 2007 15:30:01 +0300
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
