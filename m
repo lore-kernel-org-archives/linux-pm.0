@@ -1,57 +1,45 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH 02/10] windfarm: dont die on suspend thread signal
-Date: Mon, 05 Feb 2007 19:30:29 +0100
-Message-ID: <20070205185835.700233000@sipsolutions.net>
-References: <20070205183026.989209000@sipsolutions.net>
+From: "E. Coon" <Janus'stantrum@accord.rgs.ru>
+Subject: Important trading news - shot down
+Date: Mon, 5 Feb 2007 19:10:40 +0000 (UTC)
+Message-ID: <01c74959$0b165b40$6c822ecf@Janus'stantrum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-Content-Disposition: inline; filename=windfarm-dont-die-on-signals.patch
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: linuxppc-dev@ozlabs.org
-Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Mon, 5 Feb 2007 19:08:39 +0480
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-When the windfarm thread gets a suspend signal it will die instead of
-freezing. This fixes it.
+We called it and UP it goes! HPGI on raise again today.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andrew Morton <akpm@osdl.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+HPGI up 22% in its first extensive day of trading. Look for more gains from
+this high-flier tomorrow and during the next few weeks!
 
----
-Please apply to -mm.
+Hemisphere Gold Discovers a Series of Gold Anomalies Trending North-South f=
+or Over 20 km
+Monday February 5, 6:30 am ET
+Company Reports on Initial Stream Sediment Sampling Program
 
---- mb-wireless.orig/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:06.344526864 +0100
-+++ mb-wireless/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:38.264526864 +0100
-@@ -94,8 +94,6 @@ static int wf_thread_func(void *data)
- 	DBG("wf: thread started\n");
- 
- 	while(!kthread_should_stop()) {
--		try_to_freeze();
--
- 		if (time_after_eq(jiffies, next)) {
- 			wf_notify(WF_EVENT_TICK, NULL);
- 			if (wf_overtemp) {
-@@ -118,8 +116,8 @@ static int wf_thread_func(void *data)
- 		if (delay <= HZ)
- 			schedule_timeout_interruptible(delay);
- 
--		/* there should be no signal, but oh well */
--		if (signal_pending(current)) {
-+		/* there should be no non-suspend signal, but oh well */
-+		if (signal_pending(current) && !try_to_freeze()) {
- 			printk(KERN_WARNING "windfarm: thread got sigl !\n");
- 			break;
- 		}
+Symm: HPGI
+Prev. close:1.50
 
---
+Read up on why these junior gold industry companies are THE place to be.
+Type in Google : "zealllc com 2006 jnrgold" and read all about it.
+
+HPGI is as hot as they come with major surveys underway and a blazing
+hot publicity campaign is ready to announce the BIG Find!
+
+Catch the luck and win with HPGI.
+
+This newsletter includes far-sighted statements. This is not an offer to bu=
+y or sell any issues. The publisher of this message paid out ten thousand d=
+ollars for distribution of this publication.
