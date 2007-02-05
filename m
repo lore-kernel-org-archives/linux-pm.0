@@ -1,12 +1,16 @@
-From: "A. Hunter" <hexadecimalgluiest@aacpl.net>
-Subject: Important trading news - Mummified baby
-Date: Mon, 5 Feb 2007 19:21:35 +0000 (UTC)
-Message-ID: <01c7495a$ddb59e20$6c822ecf@hexadecimalgluiest>
+From: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 02/10] windfarm: dont die on suspend thread
+	signal
+Date: Mon, 5 Feb 2007 23:43:25 +0100
+Message-ID: <20070205224325.GA8453@lst.de>
+References: <20070205183026.989209000@sipsolutions.net>
+	<20070205185835.700233000@sipsolutions.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Mon, 5 Feb 2007 19:21:41 -0060
+Content-Disposition: inline
+In-Reply-To: <20070205185835.700233000@sipsolutions.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,30 +20,16 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-We called it and UP it goes! HPGI on raise again today.
+On Mon, Feb 05, 2007 at 07:30:29PM +0100, Johannes Berg wrote:
+> -		/* there should be no signal, but oh well */
+> -		if (signal_pending(current)) {
+> +		/* there should be no non-suspend signal, but oh well */
+> +		if (signal_pending(current) && !try_to_freeze()) {
 
-HPGI up 22% in its first great day of trading. Look for more gains from
-this high-flier tomorrow and over the next few weeks!
-
-Hemisphere Gold Discovers a Series of Gold Anomalies Trending North-South f=
-or Over 20 km
-Monday February 5, 6:30 am ET
-Company Reports on Initial Stream Sediment Sampling Program
-
-Symm: HPGI
-Prev. close:1.50
-
-Read up on why these junior gold industry companies are THE place to be.
-Type in Google : "zealllc com 2006 jnrgold" and read all about it.
-
-HPGI is as hot as they come with major surveys underway and a blazing
-hot publicity campaign is ready to announce the BIG Find!
-
-Catch the luck and win with HPGI.
-
-This message contains long-sighted statements. This is not an offer to buy =
-or sell any shares. The publisher of this message paid out ten thousand dol=
-lars for distribution of this publication.
+Given that the driver uses the kthread infrastructure and doesn't
+explicitly re-enable signals there can't be any other signal.
+So just remove the signal_pending check.
