@@ -1,18 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH revision 2] windfarm: dont die on suspend
-	thread signal
-Date: Tue, 06 Feb 2007 10:04:34 +1100
-Message-ID: <1170716674.2620.147.camel@localhost.localdomain>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 03/10] powerpc: fix comment in kernel/irq.c
+Date: Mon, 5 Feb 2007 15:18:16 -0800
+Message-ID: <20070205151816.d841633b.akpm@linux-foundation.org>
 References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185835.700233000@sipsolutions.net>
-	<20070205224325.GA8453@lst.de>
-	<1170716074.30959.13.camel@johannes.berg>
-	<1170716641.2620.145.camel@localhost.localdomain>
+	<20070205185836.099816000@sipsolutions.net>
+	<1170716376.2620.141.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1170716641.2620.145.camel@localhost.localdomain>
+In-Reply-To: <1170716376.2620.141.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,18 +19,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Christoph Hellwig <hch@lst.de>, Torrance <torrance123@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-02-06 at 10:04 +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-02-05 at 23:54 +0100, Johannes Berg wrote:
-> > When the windfarm thread gets a suspend signal it will die instead of
-> > freezing. This fixes it.
+On Tue, 06 Feb 2007 09:59:36 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Mon, 2007-02-05 at 19:30 +0100, Johannes Berg wrote:
+> > plain text document attachment (irq-comment.patch)
+> > kernel/irq.c contains a comment that speaks of -1 and -2 as interrupt
+> > numbers. Replace by NO_IRQ and NO_IRQ_IGNORE.
+> > =
+
+> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> > Cc: Andrew Morton <akpm@osdl.org>
 > =
 
-> Don't we still need to call try_to_freeze() ?
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Forget it... of course we do.
-
-Ben.
+I hope that wasn't acked at me.  I was only copied on half this patch
+series and I only picked up swsusp-dont-copy-pages-that-arent-ram.patch and
+windfarm-dont-die-on-suspend-thread-signal.patch.
