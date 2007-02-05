@@ -1,15 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 02/10] windfarm: dont die on suspend thread
-	signal
-Date: Mon, 05 Feb 2007 23:55:34 +0100
-Message-ID: <1170716134.30959.15.camel@johannes.berg>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/10] powerpc: fix comment in kernel/irq.c
+Date: Tue, 06 Feb 2007 09:59:36 +1100
+Message-ID: <1170716376.2620.141.camel@localhost.localdomain>
 References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185835.700233000@sipsolutions.net>
-	<20070205145425.5f6ecbb0.akpm@linux-foundation.org>
+	<20070205185836.099816000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1159011150=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070205145425.5f6ecbb0.akpm@linux-foundation.org>
+In-Reply-To: <20070205185836.099816000@sipsolutions.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,51 +18,47 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>, linux-pm@lists.osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 2007-02-05 at 19:30 +0100, Johannes Berg wrote:
+> plain text document attachment (irq-comment.patch)
+> kernel/irq.c contains a comment that speaks of -1 and -2 as interrupt
+> numbers. Replace by NO_IRQ and NO_IRQ_IGNORE.
+> =
 
---===============1159011150==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-74l907ZxJkcCj5mB0+/n"
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Andrew Morton <akpm@osdl.org>
 
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
---=-74l907ZxJkcCj5mB0+/n
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> --- mb-wireless.orig/arch/powerpc/kernel/irq.c	2007-02-05 14:24:06.694526=
+864 +0100
+> +++ mb-wireless/arch/powerpc/kernel/irq.c	2007-02-05 14:24:37.084526864 +=
+0100
+> @@ -281,10 +281,10 @@ void do_IRQ(struct pt_regs *regs)
+>  =
 
-On Mon, 2007-02-05 at 14:54 -0800, Andrew Morton wrote:
+>  	/*
+>  	 * Every platform is required to implement ppc_md.get_irq.
+> -	 * This function will either return an irq number or -1 to
+> +	 * This function will either return an irq number or NO_IRQ to
+>  	 * indicate there are no more pending.
+> -	 * The value -2 is for buggy hardware and means that this IRQ
+> -	 * has already been handled. -- Tom
+> +	 * The value NO_IRQ_IGNORE is for buggy hardware and means that this
+> +	 * IRQ has already been handled. -- Tom
+>  	 */
+>  	irq =3D ppc_md.get_irq();
+>  =
 
-> That sounds like a fairly irritating feature.  Should we backport this in=
-to 2.6.20?
+> =
 
-It'll apply just fine, but don't bother. No machine that actually uses
-this windfarm infrastructure can suspend right now.
+> --
+> =
 
-johannes
-
---=-74l907ZxJkcCj5mB0+/n
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFx7Xm/ETPhpq3jKURAnddAJ4/EF3dXyMonTuo6eNrdt8JjTgSswCfe5jI
-GRpjdHxk+YB7GjXOVOJ++J8=
-=hOoM
------END PGP SIGNATURE-----
-
---=-74l907ZxJkcCj5mB0+/n--
-
-
---===============1159011150==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1159011150==--
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
