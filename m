@@ -1,13 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [RFC 06/10] powerpc: MPIC sys_device & suspend/resume
-Date: Mon, 05 Feb 2007 19:30:33 +0100
-Message-ID: <20070205185837.244398000@sipsolutions.net>
+Subject: [RFC 07/10] powermac: support G5 CPU hotplug
+Date: Mon, 05 Feb 2007 19:30:34 +0100
+Message-ID: <20070205185837.640324000@sipsolutions.net>
 References: <20070205183026.989209000@sipsolutions.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline; filename=mpic-suspend.patch
+Content-Disposition: inline; filename=powermac-g5-cpu-offline.patch
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,155 +21,122 @@ To: linuxppc-dev@ozlabs.org
 Cc: linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This adds mpic to the system devices and implements suspend
-and resume for them. This is necessary to get interrupts for
-modules back to where they were before a suspend to disk.
+This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+disabled are put into an idle loop with interrupts hard-disabled, to wake
+them up again we kick them just like when bringing them up.
+
+Maybe there's some way to actually turn off those CPUs even more?
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
----
-The first hunk is just a tiny whitespace cleanup.
-
-Without this patch, i2sbus (built as a module) for example
-doesn't work properly across a suspend-to-disk/resume cycle,
-with this patch it works fine.
-
-I'm not entirely sure if there should be some wait logic
-after I restore the MPIC registers, it works as-is for me.
-
---- mb-wireless.orig/arch/powerpc/sysdev/mpic.c	2007-02-05 14:24:05.7345268=
-64 +0100
-+++ mb-wireless/arch/powerpc/sysdev/mpic.c	2007-02-05 14:24:39.464526864 +0=
-100
-@@ -1123,7 +1123,7 @@ void __init mpic_init(struct mpic *mpic)
- 	/* Do the HT PIC fixups on U3 broken mpic */
- 	DBG("MPIC flags: %x\n", mpic->flags);
- 	if ((mpic->flags & MPIC_BROKEN_U3) && (mpic->flags & MPIC_PRIMARY))
-- 		mpic_scan_ht_pics(mpic);
-+		mpic_scan_ht_pics(mpic);
- =
-
- 	for (i =3D 0; i < mpic->num_sources; i++) {
- 		/* start with vector =3D source number, and masked */
-@@ -1147,6 +1147,12 @@ void __init mpic_init(struct mpic *mpic)
- =
-
- 	/* Set current processor priority to 0 */
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0);
-+
-+#ifdef CONFIG_PM
-+	/* allocate memory to save mpic state */
-+	mpic->save_data =3D alloc_bootmem(mpic->num_sources * sizeof(struct mpic_=
-irq_save));
-+	BUG_ON(mpic->save_data =3D=3D NULL);
-+#endif
+--- mb-wireless.orig/arch/powerpc/platforms/powermac/smp.c	2007-02-05 16:07=
+:09.164524763 +0100
++++ mb-wireless/arch/powerpc/platforms/powermac/smp.c	2007-02-05 16:07:50.7=
+74524763 +0100
+@@ -898,7 +898,7 @@ void smp_core99_cpu_die(unsigned int cpu
+ 	cpu_dead[cpu] =3D 0;
  }
  =
 
- void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
-@@ -1376,3 +1382,61 @@ void smp_mpic_message_pass(int target, i
- 	}
+-#endif
++#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
+ =
+
+ /* Core99 Macs (dual G4s and G5s) */
+ struct smp_ops_t core99_smp_ops =3D {
+@@ -908,8 +908,16 @@ struct smp_ops_t core99_smp_ops =3D {
+ 	.setup_cpu	=3D smp_core99_setup_cpu,
+ 	.give_timebase	=3D smp_core99_give_timebase,
+ 	.take_timebase	=3D smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	=3D smp_core99_cpu_disable,
+ 	.cpu_die	=3D smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	=3D generic_cpu_disable,
++	.cpu_die	=3D generic_cpu_die,
++	/* intentionally do *NOT* assign cpu_enable,
++	 * the generic code will use kick_cpu then! */
++# endif
+ #endif
+ };
+--- mb-wireless.orig/arch/powerpc/platforms/powermac/setup.c	2007-02-05 16:=
+07:22.024524763 +0100
++++ mb-wireless/arch/powerpc/platforms/powermac/setup.c	2007-02-05 16:07:50=
+.784524763 +0100
+@@ -490,6 +490,9 @@ static int pmac_late_init(void)
+ #ifdef CONFIG_SOFTWARE_SUSPEND
+ 	pm_set_ops(&pmac_pm_ops);
+ #endif /* CONFIG_SOFTWARE_SUSPEND */
++	/* this is udbg (which is __init) and we can later use it during
++	 * cpu hotplug (in smp_core99_kick_cpu) */
++	ppc_md.progress =3D NULL;
+ 	return 0;
  }
- #endif /* CONFIG_SMP */
+ =
+
+@@ -716,6 +719,33 @@ static int pmac_pci_probe_mode(struct pc
+ 		return PCI_PROBE_NORMAL;
+ 	return PCI_PROBE_DEVTREE;
+ }
 +
-+#ifdef CONFIG_PM
-+static int mpic_suspend(struct sys_device *dev, pm_message_t state)
++#ifdef CONFIG_HOTPLUG_CPU
++/* access per cpu vars from generic smp.c */
++DECLARE_PER_CPU(int, cpu_state);
++
++static void pmac_cpu_die(void)
 +{
-+	struct mpic *mpic =3D container_of(dev, struct mpic, sysdev);
-+	int i;
++	/* turn off as much as possible, we'll be
++	 * kicked out as this will only be invoked
++	 * on core99 platforms for now ... */
++	hard_irq_disable();
 +
-+	for (i =3D 0; i < mpic->num_sources; i++) {
-+		mpic->save_data[i].vecprio =3D
-+			mpic_irq_read(i, MPIC_INFO(IRQ_VECTOR_PRI));
-+		mpic->save_data[i].dest =3D
-+			mpic_irq_read(i, MPIC_INFO(IRQ_DESTINATION));
++	printk(KERN_DEBUG "CPU#%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) =3D CPU_DEAD;
++	smp_wmb();
++	while (1) {
++		ppc64_runlatch_off();
++		if (ppc_md.power_save) {
++			ppc_md.power_save();
++		} else {
++			HMT_low();
++			HMT_very_low();
++		}
 +	}
-+
-+	return 0;
-+}
-+
-+static int mpic_resume(struct sys_device *dev)
-+{
-+	struct mpic *mpic =3D container_of(dev, struct mpic, sysdev);
-+	int i;
-+
-+	for (i =3D 0; i < mpic->num_sources; i++) {
-+		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI),
-+			       mpic->save_data[i].vecprio);
-+		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
-+			       mpic->save_data[i].dest);
-+	}
-+
-+	return 0;
 +}
 +#endif
 +
-+static struct sysdev_class mpic_sysclass =3D {
-+#ifdef CONFIG_PM
-+	.resume =3D mpic_resume,
-+	.suspend =3D mpic_suspend,
-+#endif
-+	set_kset_name("mpic"),
-+};
-+
-+static int mpic_init_sys(void)
-+{
-+	struct mpic *mpic =3D mpics;
-+	int error, id =3D 0;
-+
-+	error =3D sysdev_class_register(&mpic_sysclass);
-+
-+	while (mpic && !error) {
-+		mpic->sysdev.cls =3D &mpic_sysclass;
-+		mpic->sysdev.id =3D id++;
-+		error =3D sysdev_register(&mpic->sysdev);
-+		mpic =3D mpic->next;
-+	}
-+	return error;
-+}
-+
-+device_initcall(mpic_init_sys);
---- mb-wireless.orig/include/asm-powerpc/mpic.h	2007-02-05 14:24:05.7845268=
-64 +0100
-+++ mb-wireless/include/asm-powerpc/mpic.h	2007-02-05 14:24:39.464526864 +0=
-100
-@@ -3,6 +3,7 @@
- #ifdef __KERNEL__
+ #endif
  =
 
- #include <linux/irq.h>
-+#include <linux/sysdev.h>
- #include <asm/dcr.h>
- =
-
- /*
-@@ -243,6 +244,11 @@ struct mpic_reg_bank {
- #endif /* CONFIG_PPC_DCR */
+ static void __init pmac_init_irq(void)
+@@ -769,6 +799,6 @@ define_machine(powermac) {
+ 	.phys_mem_access_prot	=3D pci_phys_mem_access_prot,
+ #endif
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
+-	.cpu_die		=3D generic_mach_cpu_die,
++	.cpu_die		=3D pmac_cpu_die,
+ #endif
  };
+--- mb-wireless.orig/arch/powerpc/kernel/smp.c	2007-02-05 16:07:09.27452476=
+3 +0100
++++ mb-wireless/arch/powerpc/kernel/smp.c	2007-02-05 18:15:51.114524763 +01=
+00
+@@ -558,6 +558,11 @@ int __devinit start_secondary(void *unus
  =
 
-+struct mpic_irq_save {
-+	u32		vecprio,
-+			dest;
-+};
-+
- /* The instance data of a given MPIC */
- struct mpic
- {
-@@ -302,6 +308,12 @@ struct mpic
+ 	local_irq_enable();
  =
 
- 	/* link */
- 	struct mpic		*next;
++	/* it seems to be possible that we died from within
++	 * an interrupt ... reset the in-irq counts */
++	task_thread_info(paca[cpu].__current)->preempt_count &=3D
++		~(SOFTIRQ_MASK|HARDIRQ_MASK);
 +
-+	struct sys_device	sysdev;
-+
-+#ifdef CONFIG_PM
-+	struct mpic_irq_save	*save_data;
-+#endif
- };
- =
-
- /*
+ 	cpu_idle();
+ 	return 0;
+ }
 
 --
