@@ -1,15 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH 02/10] windfarm: dont die on suspend thread
 	signal
-Date: Tue, 06 Feb 2007 09:58:36 +1100
-Message-ID: <1170716316.2620.139.camel@localhost.localdomain>
+Date: Mon, 05 Feb 2007 23:55:34 +0100
+Message-ID: <1170716134.30959.15.camel@johannes.berg>
 References: <20070205183026.989209000@sipsolutions.net>
 	<20070205185835.700233000@sipsolutions.net>
+	<20070205145425.5f6ecbb0.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1159011150=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070205185835.700233000@sipsolutions.net>
+In-Reply-To: <20070205145425.5f6ecbb0.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,52 +19,51 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>, linux-pm@lists.osdl.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2007-02-05 at 19:30 +0100, Johannes Berg wrote:
-> plain text document attachment (windfarm-dont-die-on-signals.patch)
-> When the windfarm thread gets a suspend signal it will die instead of
-> freezing. This fixes it.
-> =
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Andrew Morton <akpm@osdl.org>
+--===============1159011150==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-74l907ZxJkcCj5mB0+/n"
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> =
 
-> ---
-> Please apply to -mm.
-> =
+--=-74l907ZxJkcCj5mB0+/n
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> --- mb-wireless.orig/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:0=
-6.344526864 +0100
-> +++ mb-wireless/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:38.264=
-526864 +0100
-> @@ -94,8 +94,6 @@ static int wf_thread_func(void *data)
->  	DBG("wf: thread started\n");
->  =
+On Mon, 2007-02-05 at 14:54 -0800, Andrew Morton wrote:
 
->  	while(!kthread_should_stop()) {
-> -		try_to_freeze();
-> -
->  		if (time_after_eq(jiffies, next)) {
->  			wf_notify(WF_EVENT_TICK, NULL);
->  			if (wf_overtemp) {
-> @@ -118,8 +116,8 @@ static int wf_thread_func(void *data)
->  		if (delay <=3D HZ)
->  			schedule_timeout_interruptible(delay);
->  =
+> That sounds like a fairly irritating feature.  Should we backport this in=
+to 2.6.20?
 
-> -		/* there should be no signal, but oh well */
-> -		if (signal_pending(current)) {
-> +		/* there should be no non-suspend signal, but oh well */
-> +		if (signal_pending(current) && !try_to_freeze()) {
->  			printk(KERN_WARNING "windfarm: thread got sigl !\n");
->  			break;
->  		}
-> =
+It'll apply just fine, but don't bother. No machine that actually uses
+this windfarm infrastructure can suspend right now.
 
-> --
+johannes
+
+--=-74l907ZxJkcCj5mB0+/n
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFx7Xm/ETPhpq3jKURAnddAJ4/EF3dXyMonTuo6eNrdt8JjTgSswCfe5jI
+GRpjdHxk+YB7GjXOVOJ++J8=
+=hOoM
+-----END PGP SIGNATURE-----
+
+--=-74l907ZxJkcCj5mB0+/n--
+
+
+--===============1159011150==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1159011150==--
