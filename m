@@ -1,12 +1,10 @@
-From: "Carol Marquez" <recommencesmonarch's@abclinuxu.cz>
-Subject: Very Important trading notice
-Date: Tue, 6 Feb 2007 18:03:03 +0000 (UTC)
-Message-ID: <01c74a18$e9acb970$6c822ecf@recommencesmonarch's>
+From: "Julio Cook" <flatbedclimax's@abs.pinoycentral.com>
+Subject: Very Important investing news
+Date: Tue, 6 Feb 2007 18:11:51 -0120
+Message-ID: <01c74a1a$469abe60$6c822ecf@flatbedclimax's>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============2014464853=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Tue, 6 Feb 2007 18:02:06 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,11 +17,15 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-LOM Logistics is about to release New Ground Breeaking Software !!!
+--===============2014464853==
+Content-Type: text/plain;
+	charset="windows-1250"
+Content-Transfer-Encoding: 7bit
 
-Go to your Favorite financial News source and Read the News! What will be n=
-ext eBay? We think they have the makings of it. It's just this kind
-of small company with an Amazzing Product that either gets bought up by
+LOM Logistics is going to release New Ground Breeaking Software !!!
+
+Go to your Favorite financial News source and Look at the News! What will happen next eBay? We think they have the makings of it. It's just this kind
+of small firm with an High-grade Product that either gets bought up by
 the big boys or shoots to Super Stardom!
 Company: LOMJ
 Currennt Prrice: 1.75
@@ -31,3 +33,14 @@ Expected Prrice: 3.80
 
 Don't miss this one. Word of this company will hit the streets hard
 any time and take it Way Up! Get in Early and Ride it!
+
+
+
+--===============2014464853==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============2014464853==--
