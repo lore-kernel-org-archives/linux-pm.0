@@ -1,62 +1,87 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: hwsusp defunct
-Date: Tue, 06 Feb 2007 12:26:14 +0100
-Message-ID: <45C865D6.50501@gmail.com>
-References: <45C5DBBA.20502@gmail.com> <200702041452.28874.rjw@sisk.pl> <45C86405.1070902@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC 08/10] powerpc: dart iommu suspend
+Date: Tue, 6 Feb 2007 13:40:47 +0100
+Message-ID: <20070206124047.GC8662@elf.ucw.cz>
+References: <20070205183026.989209000@sipsolutions.net>
+	<20070205185838.029827000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750984AbXBFLZy@vger.kernel.org>
-In-Reply-To: <45C86405.1070902@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, linux-pm@osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <20070205185838.029827000@sipsolutions.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Jiri Slaby napsal(a):
-> monitor doesn't wake (actually I've this problem on another machine when 
+Hi!
 
-Ah, oh. Monitor over DVI on
-01:00.0 VGA compatible controller: nVidia Corporation NV28 [GeForce4 Ti 4200 AGP 
-8x] (rev a1) (prog-if 00 [VGA])
-         Subsystem: ASUSTeK Computer Inc. Unknown device 807b
-         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B-
-         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 248 (1250ns min, 250ns max)
-         Interrupt: pin A routed to IRQ 11
-         Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
-         Region 1: Memory at e8000000 (32-bit, prefetchable) [size=128M]
-         [virtual] Expansion ROM at fe9e0000 [disabled] [size=128K]
-         Capabilities: [60] Power Management version 2
-                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-         Capabilities: [44] AGP version 3.0
-                 Status: RQ=32 Iso- ArqSz=0 Cal=3 SBA+ ITACoh- GART64- HTrans- 
-64bit- FW+ AGP3+ Rate=x4,x8
-                 Command: RQ=32 ArqSz=2 Cal=0 SBA+ AGP+ GART64- 64bit- FW- Rate=x8
-00: de 10 81 02 07 00 b0 02 a1 00 00 03 00 f8 00 00
-10: 00 00 00 fd 08 00 00 e8 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 7b 80
-30: 00 00 00 00 60 00 00 00 00 00 00 00 0b 01 05 01
-40: 43 10 7b 80 02 00 30 00 1b 0e 00 1f 02 43 00 1f
-50: 01 00 00 00 01 00 00 00 ce d6 23 00 0f 00 00 00
-60: 01 44 02 00 00 00 00 00 00 00 00 00 00 00 00 00
-70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> This implements suspend and resume code for the dart iommu.
+> =
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> @@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
+>  =
+
+>  /* Virtual base address of the DART table */
+>  static u32 *dart_vbase;
+> +#ifdef CONFIG_SOFTWARE_SUSPEND
+> +static u32 *dart_copy;
+> +#endif
+>  =
+
+>  /* Mapped base address for the dart */
+>  static unsigned int __iomem *dart;
+> @@ -346,6 +349,52 @@ void iommu_init_early_dart(void)
+>  	pci_dma_ops =3D &dma_direct_ops;
+>  }
+>  =
+
+> +#ifdef CONFIG_SOFTWARE_SUSPEND
+> +static int iommu_init_late_dart(void)
+> +{
+> +	unsigned long i;
+> +	struct page *p;
+> +
+> +	/* this 16MB area is left unmapped because of caching
+> +	 * considerations. that happens early so we can't mark
+> +	 * it there, do it now instead */
+> +	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
+> +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i))=
+);
+> +
+
+80 columns rule?
+
+> --- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-05 14:24:05.0145=
+26864 +0100
+> +++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-05 14:24:40.684526864=
+ +0100
+> @@ -108,6 +108,10 @@ static inline void pci_iommu_init(void) =
+
+>  #endif
+>  =
+
+>  extern void alloc_dart_table(void);
+> +#if defined(CONFIG_SOFTWARE_SUSPEND) && defined(CONFIG_U3_DART)
+> +extern void iommu_dart_save(void);
+> +extern void iommu_dart_restore(void);
+> +#endif
+
+You can go without the ifdef; extra prototype does not do any harm.
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
