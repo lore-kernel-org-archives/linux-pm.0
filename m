@@ -1,15 +1,14 @@
-From: olof@lixom.net (Olof Johansson)
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [RFC 08/10] powerpc: dart iommu suspend
-Date: Mon, 5 Feb 2007 19:19:49 -0600
-Message-ID: <20070206011949.GA15434@lixom.net>
+Date: Tue, 06 Feb 2007 02:26:02 +0100
+Message-ID: <1170725162.30959.26.camel@johannes.berg>
 References: <20070205183026.989209000@sipsolutions.net>
 	<20070205185838.029827000@sipsolutions.net>
+	<20070206011949.GA15434@lixom.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1190730229=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20070205185838.029827000@sipsolutions.net>
+In-Reply-To: <20070206011949.GA15434@lixom.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,119 +18,68 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: Olof Johansson <olof@lixom.net>
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 07:30:35PM +0100, Johannes Berg wrote:
-> This implements suspend and resume code for the dart iommu.
 
-It's a good start, but it would be even nicer to have more generic iommu
-suspend/resume hooks instead, and do the alloc/copy there. Add the hooks
-to ppc_md together with the rest of the iommu/tce ops.
+--===============1190730229==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-pJdcLs1UbcJP2xyLypxd"
 
-Minor code comment below.
 
-> --- mb-wireless.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:04=
-.834526864 +0100
-> +++ mb-wireless/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:40.6845=
-26864 +0100
-> @@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
->  =
+--=-pJdcLs1UbcJP2xyLypxd
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->  /* Virtual base address of the DART table */
->  static u32 *dart_vbase;
-> +#ifdef CONFIG_SOFTWARE_SUSPEND
-> +static u32 *dart_copy;
-> +#endif
->  =
+On Mon, 2007-02-05 at 19:19 -0600, Olof Johansson wrote:
+> On Mon, Feb 05, 2007 at 07:30:35PM +0100, Johannes Berg wrote:
+> > This implements suspend and resume code for the dart iommu.
+>=20
+> It's a good start, but it would be even nicer to have more generic iommu
+> suspend/resume hooks instead, and do the alloc/copy there. Add the hooks
+> to ppc_md together with the rest of the iommu/tce ops.
 
->  /* Mapped base address for the dart */
->  static unsigned int __iomem *dart;
-> @@ -346,6 +349,52 @@ void iommu_init_early_dart(void)
->  	pci_dma_ops =3D &dma_direct_ops;
->  }
->  =
+Ok, I'll take a look. I think we should leave the alloc up to the code
+and just have generic calls for what now is iommu_dart_{save,restore}, I
+see no point in adding a callback for iommu_init_late_dart since any
+other iommu can do it as a late_initcall as well.
 
-> +#ifdef CONFIG_SOFTWARE_SUSPEND
-> +static int iommu_init_late_dart(void)
-> +{
-> +	unsigned long i;
-> +	struct page *p;
-> +
-> +	/* this 16MB area is left unmapped because of caching
-> +	 * considerations. that happens early so we can't mark
-> +	 * it there, do it now instead */
-> +	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
-> +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i))=
-);
+> > +	/* this 16MB area is left unmapped because of caching
+> > +	 * considerations. that happens early so we can't mark
+> > +	 * it there, do it now instead */
+> > +	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
+> > +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i=
+)));
+>=20
+> Please do a local void * instead, makes for much less casting in the loop=
+. :)
 
-Please do a local void * instead, makes for much less casting in the loop. =
 :)
 
-> +
-> +	/* if no dart table exists then we don't need to save it */
-> +	if (!dart_tablebase)
-> +		return 0;
-> +
-> +	/* For suspend we need to copy the dart contents because
-> +	 * it is not part of the regular mapping (see above) and
-> +	 * thus not saved automatically. The memory for this copy
-> +	 * must be allocated early because we need 2 MB. */
-> +	p =3D alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
-> +	BUG_ON(!p);
-> +	dart_copy =3D page_address(p);
-> +
-> +	return 0;
-> +}
-> +
-> +late_initcall(iommu_init_late_dart);
-> +
-> +void iommu_dart_save(void)
-> +{
-> +	if (!dart_tablebase)
-> +		return;
-> +
-> +	memcpy(dart_copy, dart_vbase, 2*1024*1024);
-> +}
-> +
-> +void iommu_dart_restore(void)
-> +{
-> +	if (!dart_tablebase)
-> +		return;
-> +
-> +	memcpy(dart_vbase, dart_copy, 2*1024*1024);
-> +	dart_tlb_invalidate_all();
-> +}
-> +#endif
->  =
+johannes
 
->  void __init alloc_dart_table(void)
->  {
-> --- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-05 14:24:05.0145=
-26864 +0100
-> +++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-05 14:24:40.684526864=
- +0100
-> @@ -108,6 +108,10 @@ static inline void pci_iommu_init(void) =
+--=-pJdcLs1UbcJP2xyLypxd
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
->  #endif
->  =
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
->  extern void alloc_dart_table(void);
-> +#if defined(CONFIG_SOFTWARE_SUSPEND) && defined(CONFIG_U3_DART)
-> +extern void iommu_dart_save(void);
-> +extern void iommu_dart_restore(void);
-> +#endif
->  =
+iD8DBQBFx9kq/ETPhpq3jKURAsJHAKCvlD8M+JKwKRAO5OYT8/Ze/oY8LQCeJEuJ
+vx2tNurpdNnn6CqN/DyCJcY=
+=MzUB
+-----END PGP SIGNATURE-----
 
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_IOMMU_H */
-> =
+--=-pJdcLs1UbcJP2xyLypxd--
 
-> --
-> =
 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============1190730229==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1190730229==--
