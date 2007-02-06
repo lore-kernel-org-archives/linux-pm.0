@@ -1,12 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [RFC 08/10] powerpc: dart iommu suspend
-Date: Tue, 06 Feb 2007 02:26:02 +0100
-Message-ID: <1170725162.30959.26.camel@johannes.berg>
+Date: Tue, 06 Feb 2007 02:52:47 +0100
+Message-ID: <1170726767.30959.30.camel@johannes.berg>
 References: <20070205183026.989209000@sipsolutions.net>
 	<20070205185838.029827000@sipsolutions.net>
 	<20070206011949.GA15434@lixom.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1190730229=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <20070206011949.GA15434@lixom.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -22,64 +23,134 @@ To: Olof Johansson <olof@lixom.net>
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+How's this? Needs to go along with the correct changes in the code that
+uses it, of course.
 
---===============1190730229==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pJdcLs1UbcJP2xyLypxd"
+I can't use a local void * as you suggested because it needs to be added
+to as an unsigned long, but I can use a local unsigned long.
 
+Not even compiled yet.
 
---=-pJdcLs1UbcJP2xyLypxd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Btw. What does TCE stand for?
 
-On Mon, 2007-02-05 at 19:19 -0600, Olof Johansson wrote:
-> On Mon, Feb 05, 2007 at 07:30:35PM +0100, Johannes Berg wrote:
-> > This implements suspend and resume code for the dart iommu.
->=20
-> It's a good start, but it would be even nicer to have more generic iommu
-> suspend/resume hooks instead, and do the alloc/copy there. Add the hooks
-> to ppc_md together with the rest of the iommu/tce ops.
+--- mb-wireless.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-06 02:45:34.4=
+64524763 +0100
++++ mb-wireless/arch/powerpc/sysdev/dart_iommu.c	2007-02-06 02:48:40.784524=
+763 +0100
+@@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
+ =
 
-Ok, I'll take a look. I think we should leave the alloc up to the code
-and just have generic calls for what now is iommu_dart_{save,restore}, I
-see no point in adding a callback for iommu_init_late_dart since any
-other iommu can do it as a late_initcall as well.
+ /* Virtual base address of the DART table */
+ static u32 *dart_vbase;
++#ifdef CONFIG_PM
++static u32 *dart_copy;
++#endif
+ =
 
-> > +	/* this 16MB area is left unmapped because of caching
-> > +	 * considerations. that happens early so we can't mark
-> > +	 * it there, do it now instead */
-> > +	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
-> > +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i=
-)));
->=20
-> Please do a local void * instead, makes for much less casting in the loop=
-. :)
+ /* Mapped base address for the dart */
+ static unsigned int __iomem *dart;
+@@ -346,6 +349,49 @@ void iommu_init_early_dart(void)
+ 	pci_dma_ops =3D &dma_direct_ops;
+ }
+ =
 
-:)
++#ifdef CONFIG_PM
++static void iommu_dart_suspend(void)
++{
++	memcpy(dart_copy, dart_vbase, 2*1024*1024);
++}
++
++static void iommu_dart_restore(void)
++{
++	memcpy(dart_vbase, dart_copy, 2*1024*1024);
++	dart_tlb_invalidate_all();
++}
++
++static int iommu_init_late_dart(void)
++{
++	unsigned long i, tbase =3D (unsigned long) dart_tablebase;
++	struct page *p;
++
++	/* this 16MB area is left unmapped because of caching
++	 * considerations. that happens early so we can't mark
++	 * it there, do it now instead */
++	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
++		SetPageNosave(virt_to_page((void*)(tbase + i)));
++
++	/* if no dart table exists then we don't need to save it */
++	if (!dart_tablebase)
++		return 0;
++
++	/* For suspend we need to copy the dart contents because
++	 * it is not part of the regular mapping (see above) and
++	 * thus not saved automatically. The memory for this copy
++	 * must be allocated early because we need 2 MB. */
++	p =3D alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
++	BUG_ON(!p);
++	dart_copy =3D page_address(p);
++
++	ppc_md.iommu_suspend =3D iommu_dart_suspend;
++	ppc_md.iommu_resume =3D iommu_dart_resume;
++
++	return 0;
++}
++
++late_initcall(iommu_init_late_dart);
++#endif
+ =
 
-johannes
+ void __init alloc_dart_table(void)
+ {
+--- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-06 02:45:34.524524=
+763 +0100
++++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-06 02:46:28.964524763 +=
+0100
+@@ -26,6 +26,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/device.h>
+ #include <linux/dma-mapping.h>
++#include <asm/machdep.h>
+ #include <asm/types.h>
+ #include <asm/bitops.h>
+ =
 
---=-pJdcLs1UbcJP2xyLypxd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+@@ -108,6 +109,19 @@ static inline void pci_iommu_init(void) =
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+ #endif
+ =
 
-iD8DBQBFx9kq/ETPhpq3jKURAsJHAKCvlD8M+JKwKRAO5OYT8/Ze/oY8LQCeJEuJ
-vx2tNurpdNnn6CqN/DyCJcY=
-=MzUB
------END PGP SIGNATURE-----
+ extern void alloc_dart_table(void);
++#ifdef CONFIG_PM
++static inline void iommu_suspend(void)
++{
++	if (ppc_md.iommu_suspend)
++		ppc_md.iommu_suspend();
++}
++
++static inline void iommu_restore(void)
++{
++	if (ppc_md.iommu_resume)
++		ppc_md.iommu_resume();
++}
++#endif
+ =
 
---=-pJdcLs1UbcJP2xyLypxd--
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_IOMMU_H */
+--- mb-wireless.orig/include/asm-powerpc/machdep.h	2007-02-06 02:45:34.5845=
+24763 +0100
++++ mb-wireless/include/asm-powerpc/machdep.h	2007-02-06 02:46:10.834524763=
+ +0100
+@@ -91,6 +91,11 @@ struct machdep_calls {
+ 	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
+ 				   unsigned long flags);
+ 	void		(*iounmap)(volatile void __iomem *token);
++
++#ifdef CONFIG_PM
++	void		(*iommu_suspend)(void);
++	void		(*iommu_resume)(void);
++#endif
+ #endif /* CONFIG_PPC64 */
+ =
 
-
---===============1190730229==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1190730229==--
+ 	int		(*probe)(void);
