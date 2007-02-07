@@ -1,157 +1,60 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH 03/12] powerpc: dart iommu suspend
-Date: Wed, 07 Feb 2007 13:45:39 +0100
-Message-ID: <20070207124610.972565000@sipsolutions.net>
+Subject: [PATCH 08/12] powermac: fix G5-cpufreq for cpu on/offline
+Date: Wed, 07 Feb 2007 13:45:44 +0100
+Message-ID: <20070207124613.702615000@sipsolutions.net>
 References: <20070207124536.963531000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline; filename=dart-suspend.patch
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline; filename=powermac-fix-cpufreq.patch
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: linuxppc-dev@ozlabs.org
-Cc: linux-pm@lists.osdl.org
+Cc: Paul Mackeras <paulus@samba.org>, cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 List-Id: linux-pm@vger.kernel.org
 
-This implements save and restore hooks for IOMMUs and implements
-it the dart iommu.
+The original code here is wrong, it applies "previous" knowledge.
+The way the cpufreq core is designed is that the policy for the
+secondary CPU that comes online says that it must in fact not
+use this policy but use the same as the other CPUs that are
+listed, which in fact is CPU#0.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Cc: Paul Mackeras <paulus@samba.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Olof Johansson <olof@lixom.net>
+Cc: cpufreq@lists.linux.org.uk
+Cc: Jacob Shin <jacob.shin@amd.com>
 
 ---
-The quick patch I posted w/o testing of course didn't work. This one does.
+Tested on my powermac with suspend-to-disk.
+Paul, please apply to powerpc.
 
---- linux-2.6-git.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-07 02:55:03=
-.607884289 +0100
-+++ linux-2.6-git/arch/powerpc/sysdev/dart_iommu.c	2007-02-07 02:55:29.0738=
-84289 +0100
-@@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
- =
-
- /* Virtual base address of the DART table */
- static u32 *dart_vbase;
-+#ifdef CONFIG_PM
-+static u32 *dart_copy;
-+#endif
- =
-
- /* Mapped base address for the dart */
- static unsigned int __iomem *dart;
-@@ -346,6 +349,49 @@ void iommu_init_early_dart(void)
- 	pci_dma_ops =3D &dma_direct_ops;
- }
- =
-
-+#ifdef CONFIG_PM
-+static void iommu_dart_save(void)
-+{
-+	memcpy(dart_copy, dart_vbase, 2*1024*1024);
-+}
-+
-+static void iommu_dart_restore(void)
-+{
-+	memcpy(dart_vbase, dart_copy, 2*1024*1024);
-+	dart_tlb_invalidate_all();
-+}
-+
-+static int iommu_init_late_dart(void)
-+{
-+	unsigned long i, tbase =3D (unsigned long) dart_tablebase;
-+	struct page *p;
-+
-+	/* this 16MB area is left unmapped because of caching
-+	 * considerations. that happens early so we can't mark
-+	 * it there, do it now instead */
-+	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
-+		SetPageNosave(virt_to_page((void*)(tbase + i)));
-+
-+	/* if no dart table exists then we don't need to save it */
-+	if (!dart_tablebase)
-+		return 0;
-+
-+	/* For suspend we need to copy the dart contents because
-+	 * it is not part of the regular mapping (see above) and
-+	 * thus not saved automatically. The memory for this copy
-+	 * must be allocated early because we need 2 MB. */
-+	p =3D alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
-+	BUG_ON(!p);
-+	dart_copy =3D page_address(p);
-+
-+	ppc_md.iommu_save =3D iommu_dart_save;
-+	ppc_md.iommu_restore =3D iommu_dart_restore;
-+
-+	return 0;
-+}
-+
-+late_initcall(iommu_init_late_dart);
-+#endif
- =
-
- void __init alloc_dart_table(void)
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2007-02-07 02:54:58.341884289 +0100
++++ linux-2.6-git/arch/powerpc/platforms/powermac/cpufreq_64.c	2007-02-07 02:55:34.023884289 +0100
+@@ -357,13 +357,13 @@ static unsigned int g5_cpufreq_get_speed
+ 
+ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
---- linux-2.6-git.orig/include/asm-powerpc/iommu.h	2007-02-07 02:55:03.6358=
-84289 +0100
-+++ linux-2.6-git/include/asm-powerpc/iommu.h	2007-02-07 02:55:29.099884289=
- +0100
-@@ -26,6 +26,7 @@
- #include <linux/spinlock.h>
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
-+#include <asm/machdep.h>
- #include <asm/types.h>
- #include <asm/bitops.h>
- =
-
-@@ -108,6 +109,19 @@ static inline void pci_iommu_init(void) =
-
- #endif
- =
-
- extern void alloc_dart_table(void);
-+#if defined(CONFIG_PPC64) && defined(CONFIG_PM)
-+static inline void iommu_save(void)
-+{
-+	if (ppc_md.iommu_save)
-+		ppc_md.iommu_save();
-+}
-+
-+static inline void iommu_restore(void)
-+{
-+	if (ppc_md.iommu_restore)
-+		ppc_md.iommu_restore();
-+}
-+#endif
- =
-
- #endif /* __KERNEL__ */
- #endif /* _ASM_IOMMU_H */
---- linux-2.6-git.orig/include/asm-powerpc/machdep.h	2007-02-07 02:55:03.69=
-8884289 +0100
-+++ linux-2.6-git/include/asm-powerpc/machdep.h	2007-02-07 02:55:29.1088842=
-89 +0100
-@@ -91,6 +91,11 @@ struct machdep_calls {
- 	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
- 				   unsigned long flags);
- 	void		(*iounmap)(volatile void __iomem *token);
-+
-+#ifdef CONFIG_PM
-+	void		(*iommu_save)(void);
-+	void		(*iommu_restore)(void);
-+#endif
- #endif /* CONFIG_PPC64 */
- =
-
- 	int		(*probe)(void);
+-	if (policy->cpu != 0)
+-		return -ENODEV;
+-
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
+-	policy->cpus = cpu_possible_map;
++	/* secondary CPUs are tied to the primary one by the
++	 * cpufreq core if in the secondary policy we tell it that
++	 * it actually must be one policy together with all others. */
++	policy->cpus = cpu_online_map;
+ 	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
+ 
+ 	return cpufreq_frequency_table_cpuinfo(policy,
 
 --
