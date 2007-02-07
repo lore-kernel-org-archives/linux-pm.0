@@ -1,10 +1,16 @@
-From: "Rozalia Vick" <Pinkertonwastebasket@oriolepark.com>
-Subject: Pinkertonwastebasket wrote: Would you ...
-Date: Wed, 7 Feb 2007 22:32:15 +0420
-Message-ID: <ZLEO9QV8T8T_VKNTG_9EEG3R@oriolepark.com>
+From: Andreas Schwab <schwab@suse.de>
+Subject: Re: [PATCH 11/12] powermac: disallow pmu sleep notifiers
+	from aborting sleep
+Date: Wed, 07 Feb 2007 23:52:50 +0100
+Message-ID: <jetzxxk2bh.fsf@sykes.suse.de>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124615.015873000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0159158530=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20070207124615.015873000@sipsolutions.net> (Johannes Berg's
+	message of "Wed, 07 Feb 2007 13:45:47 +0100")
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -14,58 +20,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@msn.com
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============0159158530==
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l17MWHdD022284
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-Now HPGI is preparing for the gold extraction.=20
-Many experts are working on the field and are making preparations for
-operative and active working.=20
+> Tracing through the code, no current PMU sleep notifier can abort sleep.
+> Since no new PMU sleep notifiers should be added, this patch simplifies t=
+he
+> code and removes the ability to abort sleep.
 
-=93We are delighted with the acquisition of Orion and we feel the propert=
-y has=20
-excellent potential to produce results that will exceed our expectations,=
-=94=20
-commented Ted Pomerleau, President and Chairman of Hemisphere Gold.
+There is a use of PBOOK_SLEEP_OK left in
+arch/powerpc/platforms/powermac/time.c.
 
-As you know the State Department also noted that Suriname's efforts
-in recent years to liberalize economic policy created new possibilities=20
-for U.S. exports and investments.=20
-More over in the situation of changeable global economy more countries
-start to buy gold for their reserves.But what is important is that a star=
-t has been
-made in buying in the market.
-New information from HPGI will be in the near future.
-Also company are starting to hire staff for mine gold region.
-Underplay is our style (HPGI)
+Andreas.
 
+-- =
 
-
-
-
-
-
-
-
-
-
-4pjuh3j5t51y6z7voqpu89elbwrj8na5dgwzh3ggk3sugp
-717378746933776E7A457871746C
-2ES1MOFXG33FDVWTEGBPIEVQI4ZL4LS3FBLG18JX4
-
-
-
-
-
---===============0159158530==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
---===============0159158530==--
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstra=DFe 5, 90409 N=FCrnberg, Germany
+PGP key fingerprint =3D 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
