@@ -1,57 +1,212 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH 10/12] powerpc: remove unneeded exports in mem.c
-Date: Wed, 07 Feb 2007 13:45:46 +0100
-Message-ID: <20070207124614.830282000@sipsolutions.net>
+Subject: [PATCH 01/12] powerpc: MPIC sys_device & suspend/resume
+Date: Wed, 07 Feb 2007 13:45:37 +0100
+Message-ID: <20070207124609.224207000@sipsolutions.net>
 References: <20070207124536.963531000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline; filename=remove-unneeded-exports.patch
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+Content-Disposition: inline; filename=mpic-suspend.patch
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 To: linuxppc-dev@ozlabs.org
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-arch/powerpc/mm/mem.c exports page_is_ram and phys_mem_access_prot which
-both are not used anywhere that could be modular.
+This adds mpic to the system devices and implements suspend
+and resume for them. This is necessary to get interrupts for
+modules back to where they were before a suspend to disk.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
-I don't see any possible way these could be used by external modules either,
-especially since they are not portable across arches.
+Without this patch, i2sbus (built as a module) for example
+doesn't work properly across a suspend-to-disk/resume cycle,
+with this patch it works fine.
 
---- linux-2.6-git.orig/arch/powerpc/mm/mem.c	2007-02-07 02:55:34.636884289 =
-+0100
-+++ linux-2.6-git/arch/powerpc/mm/mem.c	2007-02-07 02:55:35.252884289 +0100
-@@ -83,7 +83,6 @@ int page_is_ram(unsigned long pfn)
- 	return 0;
- #endif
+I'm not entirely sure if there should be some wait logic
+after I restore the MPIC registers, it works as-is for me.
+
+Over the previous version of this patch this changes that
+it also restores the HT interrupts if necessary, making my
+quad G5 actually work.
+
+--- linux-2.6-git.orig/arch/powerpc/sysdev/mpic.c	2007-02-07 02:55:06.708884289 +0100
++++ linux-2.6-git/arch/powerpc/sysdev/mpic.c	2007-02-07 04:40:38.190855996 +0100
+@@ -354,6 +354,12 @@ static void mpic_startup_ht_interrupt(st
+ 		tmp |= 0x22;
+ 	writel(tmp, fixup->base + 4);
+ 	spin_unlock_irqrestore(&mpic->fixup_lock, flags);
++
++#ifdef CONFIG_PM
++	/* use the lowest bit inverted to the actual HW,
++	 * set if this fixup was enabled, clear otherwise */
++	mpic->save_data[source].fixup_data = tmp | 1;
++#endif
  }
--EXPORT_SYMBOL(page_is_ram);
- =
-
- pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
- 			      unsigned long size, pgprot_t vma_prot)
-@@ -96,7 +95,6 @@ pgprot_t phys_mem_access_prot(struct fil
- 				    | _PAGE_GUARDED | _PAGE_NO_CACHE);
- 	return vma_prot;
+ 
+ static void mpic_shutdown_ht_interrupt(struct mpic *mpic, unsigned int source,
+@@ -375,6 +381,12 @@ static void mpic_shutdown_ht_interrupt(s
+ 	tmp |= 1;
+ 	writel(tmp, fixup->base + 4);
+ 	spin_unlock_irqrestore(&mpic->fixup_lock, flags);
++
++#ifdef CONFIG_PM
++	/* use the lowest bit inverted to the actual HW,
++	 * set if this fixup was enabled, clear otherwise */
++	mpic->save_data[source].fixup_data = tmp & ~1;
++#endif
  }
--EXPORT_SYMBOL(phys_mem_access_prot);
- =
-
- #ifdef CONFIG_MEMORY_HOTPLUG
- =
-
+ 
+ static void __init mpic_scan_ht_pic(struct mpic *mpic, u8 __iomem *devbase,
+@@ -1123,7 +1135,7 @@ void __init mpic_init(struct mpic *mpic)
+ 	/* Do the HT PIC fixups on U3 broken mpic */
+ 	DBG("MPIC flags: %x\n", mpic->flags);
+ 	if ((mpic->flags & MPIC_BROKEN_U3) && (mpic->flags & MPIC_PRIMARY))
+- 		mpic_scan_ht_pics(mpic);
++		mpic_scan_ht_pics(mpic);
+ 
+ 	for (i = 0; i < mpic->num_sources; i++) {
+ 		/* start with vector = source number, and masked */
+@@ -1147,6 +1159,12 @@ void __init mpic_init(struct mpic *mpic)
+ 
+ 	/* Set current processor priority to 0 */
+ 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0);
++
++#ifdef CONFIG_PM
++	/* allocate memory to save mpic state */
++	mpic->save_data = alloc_bootmem(mpic->num_sources * sizeof(struct mpic_irq_save));
++	BUG_ON(mpic->save_data == NULL);
++#endif
+ }
+ 
+ void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
+@@ -1376,3 +1394,79 @@ void smp_mpic_message_pass(int target, i
+ 	}
+ }
+ #endif /* CONFIG_SMP */
++
++#ifdef CONFIG_PM
++static int mpic_suspend(struct sys_device *dev, pm_message_t state)
++{
++	struct mpic *mpic = container_of(dev, struct mpic, sysdev);
++	int i;
++
++	for (i = 0; i < mpic->num_sources; i++) {
++		mpic->save_data[i].vecprio =
++			mpic_irq_read(i, MPIC_INFO(IRQ_VECTOR_PRI));
++		mpic->save_data[i].dest =
++			mpic_irq_read(i, MPIC_INFO(IRQ_DESTINATION));
++	}
++
++	return 0;
++}
++
++static int mpic_resume(struct sys_device *dev)
++{
++	struct mpic *mpic = container_of(dev, struct mpic, sysdev);
++	int i;
++
++	for (i = 0; i < mpic->num_sources; i++) {
++		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI),
++			       mpic->save_data[i].vecprio);
++		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
++			       mpic->save_data[i].dest);
++
++#ifdef CONFIG_MPIC_BROKEN_U3
++	{
++		struct mpic_irq_fixup *fixup = &mpic->fixups[i];
++
++		if (fixup->base) {
++			/* we use the lowest bit in an inverted meaning */
++			if ((mpic->save_data[i].fixup_data & 1) == 0)
++				continue;
++
++			/* Enable and configure */
++			writeb(0x10 + 2 * fixup->index, fixup->base + 2);
++
++			writel(mpic->save_data[i].fixup_data & ~1,
++			       fixup->base + 4);
++		}
++	}
++#endif
++	} /* end for loop */
++
++	return 0;
++}
++#endif
++
++static struct sysdev_class mpic_sysclass = {
++#ifdef CONFIG_PM
++	.resume = mpic_resume,
++	.suspend = mpic_suspend,
++#endif
++	set_kset_name("mpic"),
++};
++
++static int mpic_init_sys(void)
++{
++	struct mpic *mpic = mpics;
++	int error, id = 0;
++
++	error = sysdev_class_register(&mpic_sysclass);
++
++	while (mpic && !error) {
++		mpic->sysdev.cls = &mpic_sysclass;
++		mpic->sysdev.id = id++;
++		error = sysdev_register(&mpic->sysdev);
++		mpic = mpic->next;
++	}
++	return error;
++}
++
++device_initcall(mpic_init_sys);
+--- linux-2.6-git.orig/include/asm-powerpc/mpic.h	2007-02-07 02:55:06.868884289 +0100
++++ linux-2.6-git/include/asm-powerpc/mpic.h	2007-02-07 04:31:41.937855996 +0100
+@@ -3,6 +3,7 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/irq.h>
++#include <linux/sysdev.h>
+ #include <asm/dcr.h>
+ 
+ /*
+@@ -243,6 +244,14 @@ struct mpic_reg_bank {
+ #endif /* CONFIG_PPC_DCR */
+ };
+ 
++struct mpic_irq_save {
++	u32		vecprio,
++			dest;
++#ifdef CONFIG_MPIC_BROKEN_U3
++	u32		fixup_data;
++#endif
++};
++
+ /* The instance data of a given MPIC */
+ struct mpic
+ {
+@@ -302,6 +311,12 @@ struct mpic
+ 
+ 	/* link */
+ 	struct mpic		*next;
++
++	struct sys_device	sysdev;
++
++#ifdef CONFIG_PM
++	struct mpic_irq_save	*save_data;
++#endif
+ };
+ 
+ /*
 
 --
