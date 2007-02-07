@@ -1,12 +1,11 @@
-From: "Pimhathai Pieczonka" <prettifyingprefixing@orbit.net.mt>
-Subject: today's birthday! you are invited.
-Date: Wed, 7 Feb 2007 17:11:59 +0000 (UTC)
-Message-ID: <01c74ad9$f9179760$6c822ecf@prettifyingprefixing>
+From: "Pyari Nemchock" <eggshell'sgyroscope@rotonics.com>
+Subject: eggshell'sgyroscope wrote: Would you ...
+Date: Wed, 7 Feb 2007 21:25:34 +0000 (UTC)
+Message-ID: <E7TENL254OA_5WIJ7_39OMV3@rotonics.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1804376399=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Wed, 7 Feb 2007 17:04:05 -0060
+Date: Wed, 7 Feb 2007 21:22:24 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,67 +15,58 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linux-pm@aol.com
 List-Id: linux-pm@vger.kernel.org
 
+--===============1804376399==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l17LMedD019956
 
-Salute!    =
+Now HPGI is preparing for the gold extraction.=20
+Many experts are working on the field and are making preparations for
+efficient and active working.=20
 
-  =
+=93We are delighted with the acquisition of Orion and we feel the propert=
+y has=20
+excellent potential to produce results that will exceed our expectations,=
+=94=20
+commented Ted Pomerleau, President and Chairman of Hemisphere Gold.
 
-Come on, come on, great discounts on the market.    =
-
-Hot prices only today.Make your move.   =
-
-No matter what were yeterday, today is today and today is tommorow   =
-
-but know you have the 99.99% chance to change the situation and relize your=
- strategy!     =
-
-Everything in your hands.  =
-
-    =
-
-     =
-
-No news is good news! But not in this case!   =
-
-HPGI hit on new gold field with the length of 20 km. It will make      =
-
-unthinkable profit not only for the company.  =
-
-This time we are expecting financial results to be announced by the company=
- officials.  =
-
-   =
-
-We have just had good trading days before and now we are waiting for the ne=
-w contracts.  =
-
-We are expecting record profit! I should say that you still have a little t=
-ime to play in...but the time is limitted. Today is the best moment to act =
-and to win! =
-
-   =
-
-Look at the charts and play it by ear! HPGI is a company of   =
-
-great  resources and capabilities. Remember it!    =
-
-Get in on this breakout winner early!    =
-
-The facts are confidentia     =
-
-and intended only for traders and investors!     =
-
-   =
-
- =
-
-Look at price it very big discount on such GOLD piece.    =
+As you know the State Department also noted that Suriname's efforts
+in recent years to liberalize economic policy created new possibilities=20
+for U.S. exports and investments.=20
+More over in the situation of changeable global economy more countries
+start to buy gold for their reserves.But what is important is that a star=
+t has been
+made in buying in the market.
+New information from HPGI will be at an early date.
+Also company are starting to hire staff for mine gold region.
+Underplay is our style (HPGI)
 
 
--
-If you will receive this notice before HPGI will come back to todays open =
 
-again then you had luck.
+
+
+
+
+
+
+
+
+cv7ht2kybzk02elw8qptx7i2ncygpcjds3ckf38xi72t4i3
+71737D75457871746C6E7A327274693377
+1ULMLGUDURFDQPCMPQB96PCSMLC8QVT8CQXGOKI3B7JBTMLM
+
+
+
+
+
+--===============1804376399==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+--===============1804376399==--
