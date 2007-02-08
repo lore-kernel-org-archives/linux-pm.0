@@ -1,14 +1,15 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 04/10] powermac: clean up PIC initialisation code
-Date: Thu, 08 Feb 2007 14:03:18 +0100
-Message-ID: <1170939798.4385.38.camel@johannes.berg>
-References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185836.479588000@sipsolutions.net>
-	<17866.43496.243710.13852@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH 11/12] powermac: disallow pmu sleep notifiers from
+	aborting sleep
+Date: Thu, 08 Feb 2007 14:08:13 +0100
+Message-ID: <1170940093.4385.40.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124615.015873000@sipsolutions.net>
+	<jetzxxk2bh.fsf@sykes.suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0680841561=="
+Content-Type: multipart/mixed; boundary="===============0910747126=="
 Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <17866.43496.243710.13852@cargo.ozlabs.ibm.com>
+In-Reply-To: <jetzxxk2bh.fsf@sykes.suse.de>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
 List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
@@ -19,60 +20,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Mime-version: 1.0
 Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
+To: Andreas Schwab <schwab@suse.de>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0680841561==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-h2XYojNWxR48nSL4beV/"
+--===============0910747126==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kh4fsVQc73uA6iUXXnaL"
 
 
---=-h2XYojNWxR48nSL4beV/
-Content-Type: text/plain; charset=utf-8
+--=-kh4fsVQc73uA6iUXXnaL
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-02-08 at 15:41 +1100, Paul Mackerras wrote:
-> Johannes Berg writes:
-> > This patch cleans up the powermac PIC initialisation code so that for G=
-5
-> > powermacs we don't even compile the old pmac pic file.
+On Wed, 2007-02-07 at 23:52 +0100, Andreas Schwab wrote:
+> Johannes Berg <johannes@sipsolutions.net> writes:
 >=20
-> On a 32-bit powermac config, with this patch I get:
+> > Tracing through the code, no current PMU sleep notifier can abort sleep=
+.
+> > Since no new PMU sleep notifiers should be added, this patch simplifies=
+ the
+> > code and removes the ability to abort sleep.
 >=20
->   CC      arch/powerpc/platforms/powermac/mpic.o
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c: In fu=
-nction =E2=80=98pmac_pic_setup_mpic_nmi=E2=80=99:
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
-ror: =E2=80=98xmon_action=E2=80=99 undeclared (first use in this function)
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
-ror: (Each undeclared identifier is reported only once
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
-ror: for each function it appears in.)
-> make[3]: *** [arch/powerpc/platforms/powermac/mpic.o] Error 1
+> There is a use of PBOOK_SLEEP_OK left in
+> arch/powerpc/platforms/powermac/time.c.
 
-Yeah. I noticed that yesterday as well, but too late. Sorry about that.
-I could fix but it isn't nice, let's just drop this patch instead.
-Sorry.
+Ouch. Yeah, the patch was done assuming my time resume patch is applied.
+
+I found another one though, in dmasound.
 
 johannes
 
---=-h2XYojNWxR48nSL4beV/
+--=-kh4fsVQc73uA6iUXXnaL
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFyx+W/ETPhpq3jKURAr5EAJwIXjCSzgqKMFebp6JZgbabiHDWLwCbBlMb
-Fs0iC5TE8uf0pWghHYx5mrg=
-=FPPj
+iD8DBQBFyyC9/ETPhpq3jKURAnGRAJ0S/3NOcKKrrWPqVtTaKp3PzFU4XwCcD6cu
+e4Owi7xYOVz2EsJ7KGTmIAQ=
+=cS92
 -----END PGP SIGNATURE-----
 
---=-h2XYojNWxR48nSL4beV/--
+--=-kh4fsVQc73uA6iUXXnaL--
 
 
---===============0680841561==
+--===============0910747126==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -82,4 +76,4 @@ _______________________________________________
 Linuxppc-dev mailing list
 Linuxppc-dev@ozlabs.org
 https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============0680841561==--
+--===============0910747126==--
