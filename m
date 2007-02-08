@@ -1,15 +1,11 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 13/12] mpic: add affinity callback for IPI
-	"chip"
-Date: Fri, 09 Feb 2007 08:14:12 +1100
-Message-ID: <1170969252.2620.335.camel@localhost.localdomain>
-References: <20070207124536.963531000@sipsolutions.net>
-	<1170940611.4385.56.camel@johannes.berg>
+From: "Shenaz SixtyNine" <harvest'sultraconservatives@portoseguro.com>
+Subject: Simpson ordered to stop spending
+Date: Thu, 8 Feb 2007 21:30:46 +0000 (UTC)
+Message-ID: <HQE2UUVQ6E2_45AAA_QWLE07@portoseguro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1766753863=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1170940611.4385.56.camel@johannes.berg>
+Date: Thu, 8 Feb 2007 21:29:35 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,49 +15,68 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-02-08 at 14:16 +0100, Johannes Berg wrote:
-> This patch adds a dummy affinity callback for the IPI "chip" to avoid
-> getting a warning ("Cannot set affinity for irq 251") when taking a
-> CPU offline via sysfs or during suspend.
+--===============1766753863==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l18LUE3O001826
 
-Wouldn't be a better option to make sure they have IRQF_PERCPU set and
-that we don't do the affinity thing on interrupts with that flag when =
+Good news from QCPC give you the real alternative to hit the jackpot.=20
+QCPC is a company with far-sighted aims.
 
-offlining a CPU ?
+QCPC strategy is to diversify within the power supply marketplace=20
+and build strong, niche oriented operations around the globe.=20
+QCPC take a long-term view of business, focusing on growth and overall=20
+development of our subsidiaries over a number of years.
 
-Ben.
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> =
+Company has chosen one of solar power producer.=20
 
-> --- linux-2.6-git.orig/arch/powerpc/sysdev/mpic.c	2007-02-08 00:19:46.105=
-926568 +0100
-> +++ linux-2.6-git/arch/powerpc/sysdev/mpic.c	2007-02-08 00:22:31.81092656=
-8 +0100
-> @@ -700,6 +700,12 @@ static void mpic_end_ipi(unsigned int ir
->  	mpic_eoi(mpic);
->  }
->  =
+As you know oil prices are growing up higer and higer!
+A great amount of electricity generating plants uses oil-products.
+May be your domestic electrical power supplier or heat register works by =
+using oil-products.
+High technologies of solar extraction  also are very effective in bad lig=
+ht or sun and the accumulating
+energy can be saved inside special batteries. That is why we can talk abo=
+ut full energy-independent house.
 
-> +static void mpic_set_ipi_affinity(unsigned int irq, cpumask_t cpumask)
-> +{
-> +	/* we can't set affinity but also don't need to since we only
-> +	 * send IPIs to online CPUs */
-> +}
-> +
->  #endif /* CONFIG_SMP */
->  =
+In century of high technologies we can't imagine urban life without energ=
+y. =20
+A lot of states in the USA has enough reserve of solar power to generate =
+needed=20
+electric energy. Furthermore the President realizes the important role of=
+ this policy and=20
+allocated $1 Billion to Renewable Energy.
 
->  static void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
-> @@ -788,6 +794,7 @@ static struct irq_chip mpic_ipi_chip =3D {
->  	.mask		=3D mpic_mask_ipi,
->  	.unmask		=3D mpic_unmask_ipi,
->  	.eoi		=3D mpic_end_ipi,
-> +	.set_affinity	=3D mpic_set_ipi_affinity,
->  };
->  #endif /* CONFIG_SMP */
->  =
+U.S. Department of Energy FY 08 budget includes $179 million for the Pres=
+ident's Initiative.
+Particularly Solar America Initiative - $148 million;
+
+QCPC is at the right time and place now. They have chosen promising line =
+of activity for your=20
+share investments and we negotiated a contract with Samlex America, which=
+ has manufactured and distributed power supply products to more than 90 c=
+ountries worldwide since 1991.
+Pathfinding product designs, strict quality control, and responsible afte=
+r sales service provide customers with high quality power conversion prod=
+ucts at extremely competitive prices.
+
+Because of this news the prices of the QCPC stocks are about to grow up.=20
+Companies=92 financial condition is stable now. An overall market and eco=
+nomic situation are also can better affect the performance of  the QCPC's=
+ shares.
+
+
+
+
+--===============1766753863==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+--===============1766753863==--
