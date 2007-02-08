@@ -1,21 +1,85 @@
-From: "nikita phillips" <caldtujlb@communes-de-france.com>
-Subject: i need ur help
-Date: Thu, 8 Feb 2007 12:32:02 +0000 (UTC)
-Message-ID: <14830.0122040839$1170937922@news.gmane.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 04/10] powermac: clean up PIC initialisation code
+Date: Thu, 08 Feb 2007 14:03:18 +0100
+Message-ID: <1170939798.4385.38.camel@johannes.berg>
+References: <20070205183026.989209000@sipsolutions.net>
+	<20070205185836.479588000@sipsolutions.net>
+	<17866.43496.243710.13852@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Thu, 8 Feb 2007 12:31:11 -0060
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Sue Bliss <linux-pm@lists.osdl.org>
+Content-Type: multipart/mixed; boundary="===============0680841561=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <17866.43496.243710.13852@cargo.ozlabs.ibm.com>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+
+--===============0680841561==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-h2XYojNWxR48nSL4beV/"
+
+
+--=-h2XYojNWxR48nSL4beV/
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2007-02-08 at 15:41 +1100, Paul Mackerras wrote:
+> Johannes Berg writes:
+> > This patch cleans up the powermac PIC initialisation code so that for G=
+5
+> > powermacs we don't even compile the old pmac pic file.
+>=20
+> On a 32-bit powermac config, with this patch I get:
+>=20
+>   CC      arch/powerpc/platforms/powermac/mpic.o
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c: In fu=
+nction =E2=80=98pmac_pic_setup_mpic_nmi=E2=80=99:
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
+ror: =E2=80=98xmon_action=E2=80=99 undeclared (first use in this function)
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
+ror: (Each undeclared identifier is reported only once
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
+ror: for each function it appears in.)
+> make[3]: *** [arch/powerpc/platforms/powermac/mpic.o] Error 1
+
+Yeah. I noticed that yesterday as well, but too late. Sorry about that.
+I could fix but it isn't nice, let's just drop this patch instead.
+Sorry.
+
+johannes
+
+--=-h2XYojNWxR48nSL4beV/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFyx+W/ETPhpq3jKURAr5EAJwIXjCSzgqKMFebp6JZgbabiHDWLwCbBlMb
+Fs0iC5TE8uf0pWghHYx5mrg=
+=FPPj
+-----END PGP SIGNATURE-----
+
+--=-h2XYojNWxR48nSL4beV/--
+
+
+--===============0680841561==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============0680841561==--
