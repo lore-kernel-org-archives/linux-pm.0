@@ -1,13 +1,15 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-Date: Thu, 08 Feb 2007 14:14:54 +0100
-Message-ID: <1170940494.4385.51.camel@johannes.berg>
+Subject: Re: [PATCH 11/12] powermac: disallow pmu sleep notifiers
+	from	aborting sleep
+Date: Thu, 08 Feb 2007 14:16:26 +0100
+Message-ID: <1170940587.4385.54.camel@johannes.berg>
 References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
+	<20070207124615.015873000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0536663159=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070207124610.392302000@sipsolutions.net>
+In-Reply-To: <20070207124615.015873000@sipsolutions.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,63 +23,363 @@ To: linuxppc-dev@ozlabs.org
 Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Tracing through the code, no current PMU sleep notifier can abort sleep.
+Since no new PMU sleep notifiers should be added, this patch simplifies the
+code and removes the ability to abort sleep.
 
---===============0536663159==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-j8baZh/sR370sU53uJcs"
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+---
+This is just something I did before I understood how to do the next patch
+in this series. If you want, I can drop this one and rework the next, it's
+very well possible to abort suspend from these callbacks even with the
+next patch.
 
---=-j8baZh/sR370sU53uJcs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Previous version missed dmasound. I'd completely forgotten that still
+exists. Maybe we should just remove it?
 
-On Wed, 2007-02-07 at 13:45 +0100, Johannes Berg wrote:
+As Andreas pointed out, it doesn't change the one in
+arch/powerpc/kernel/time.c, but that has been removed by the previous
+time suspend patch so this patch depends on that.
 
-> Except for the in-irq count hack I'm happy with this. I still haven't fou=
-nd
-> where the in-hard-irq count is set to 1 in the down path during suspend o=
-r
-> resume and other platforms do similar things so I'm inclined to leave thi=
-s.
+--- linux-2.6-git.orig/drivers/macintosh/adb.c	2007-02-07 22:33:32.67692269=
+0 +0100
++++ linux-2.6-git/drivers/macintosh/adb.c	2007-02-07 22:34:39.678922690 +01=
+00
+@@ -90,7 +90,7 @@ static int autopoll_devs;
+ int __adb_probe_sync;
+ =
 
-Um, ok, so the hack breaks platforms that don't have paca, e.g. chrp32.
+ #ifdef CONFIG_PM
+-static int adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
++static void adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
+ static struct pmu_sleep_notifier adb_sleep_notifier =3D {
+ 	adb_notify_sleep,
+ 	SLEEP_LEVEL_ADB,
+@@ -340,11 +340,9 @@ __initcall(adb_init);
+ /*
+  * notify clients before sleep and reset bus afterwards
+  */
+-int
++void
+ adb_notify_sleep(struct pmu_sleep_notifier *self, int when)
+ {
+-	int ret;
+-	=
 
-Also, I finally figured out how the in-hard-irq count happens. The thing
-is that when I try to turn off the CPU it actually doesn't really turn
-off of course, so it ends up doing NAP and taking timer interrupts...
-which goes irq_enter() and we happen to kill it afterwards.
+ 	switch (when) {
+ 	case PBOOK_SLEEP_REQUEST:
+ 		adb_got_sleep =3D 1;
+@@ -353,22 +351,8 @@ adb_notify_sleep(struct pmu_sleep_notifi
+ 		/* Stop autopoll */
+ 		if (adb_controller->autopoll)
+ 			adb_controller->autopoll(0);
+-		ret =3D blocking_notifier_call_chain(&adb_client_list,
+-				ADB_MSG_POWERDOWN, NULL);
+-		if (ret & NOTIFY_STOP_MASK) {
+-			up(&adb_probe_mutex);
+-			return PBOOK_SLEEP_REFUSE;
+-		}
+-		break;
+-	case PBOOK_SLEEP_REJECT:
+-		if (adb_got_sleep) {
+-			adb_got_sleep =3D 0;
+-			up(&adb_probe_mutex);
+-			adb_reset_bus();
+-		}
+-		break;
+-		=
 
-I have two ways of fixing this:
- - just ignore it as we do now
- - insert a "if (cpu_dead) return" into the timer interrupt function
+-	case PBOOK_SLEEP_NOW:
++		blocking_notifier_call_chain(&adb_client_list,
++			ADB_MSG_POWERDOWN, NULL);
+ 		break;
+ 	case PBOOK_WAKE:
+ 		adb_got_sleep =3D 0;
+@@ -376,14 +360,13 @@ adb_notify_sleep(struct pmu_sleep_notifi
+ 		adb_reset_bus();
+ 		break;
+ 	}
+-	return PBOOK_SLEEP_OK;
+ }
+ #endif /* CONFIG_PM */
+ =
 
-I prefer the latter because then we're guaranteed that whatever the
-timer interrupt does we don't modify any state for/by the CPU that isn't
-supposed to exist.
+ static int
+ do_adb_reset_bus(void)
+ {
+-	int ret, nret;
++	int ret;
+ 	=
 
-johannes
+ 	if (adb_controller =3D=3D NULL)
+ 		return -ENXIO;
+@@ -391,13 +374,8 @@ do_adb_reset_bus(void)
+ 	if (adb_controller->autopoll)
+ 		adb_controller->autopoll(0);
+ =
 
---=-j8baZh/sR370sU53uJcs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+-	nret =3D blocking_notifier_call_chain(&adb_client_list,
+-			ADB_MSG_PRE_RESET, NULL);
+-	if (nret & NOTIFY_STOP_MASK) {
+-		if (adb_controller->autopoll)
+-			adb_controller->autopoll(autopoll_devs);
+-		return -EBUSY;
+-	}
++	blocking_notifier_call_chain(&adb_client_list,
++		ADB_MSG_PRE_RESET, NULL);
+ =
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+ 	if (sleepy_trackpad) {
+ 		/* Let the trackpad settle down */
+@@ -427,10 +405,8 @@ do_adb_reset_bus(void)
+ 	}
+ 	up(&adb_handler_sem);
+ =
 
-iD8DBQBFyyJO/ETPhpq3jKURAtIvAKC3peiqx1+DS509RvNWdyMpsl3+CwCeIRfe
-HEyGnG+EZDfamXCylK881mQ=
-=EICJ
------END PGP SIGNATURE-----
+-	nret =3D blocking_notifier_call_chain(&adb_client_list,
+-			ADB_MSG_POST_RESET, NULL);
+-	if (nret & NOTIFY_STOP_MASK)
+-		return -EBUSY;
++	blocking_notifier_call_chain(&adb_client_list,
++		ADB_MSG_POST_RESET, NULL);
+ 	=
 
---=-j8baZh/sR370sU53uJcs--
+ 	return ret;
+ }
+--- linux-2.6-git.orig/drivers/macintosh/via-pmu.c	2007-02-07 22:33:32.7059=
+22690 +0100
++++ linux-2.6-git/drivers/macintosh/via-pmu.c	2007-02-07 22:38:03.023922690=
+ +0100
+@@ -1770,35 +1770,21 @@ EXPORT_SYMBOL(pmu_unregister_sleep_notif
+ #if defined(CONFIG_PM) && defined(CONFIG_PPC32)
+ =
 
+ /* Sleep is broadcast last-to-first */
+-static int
+-broadcast_sleep(int when, int fallback)
++static void broadcast_sleep(int when)
+ {
+-	int ret =3D PBOOK_SLEEP_OK;
+ 	struct list_head *list;
+ 	struct pmu_sleep_notifier *notifier;
+ =
 
---===============0536663159==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+ 	for (list =3D sleep_notifiers.prev; list !=3D &sleep_notifiers;
+ 	     list =3D list->prev) {
+ 		notifier =3D list_entry(list, struct pmu_sleep_notifier, list);
+-		ret =3D notifier->notifier_call(notifier, when);
+-		if (ret !=3D PBOOK_SLEEP_OK) {
+-			printk(KERN_DEBUG "sleep %d rejected by %p (%p)\n",
+-			       when, notifier, notifier->notifier_call);
+-			for (; list !=3D &sleep_notifiers; list =3D list->next) {
+-				notifier =3D list_entry(list, struct pmu_sleep_notifier, list);
+-				notifier->notifier_call(notifier, fallback);
+-			}
+-			return ret;
+-		}
++		notifier->notifier_call(notifier, when);
+ 	}
+-	return ret;
+ }
+ =
 
+ /* Wake is broadcast first-to-last */
+-static int
+-broadcast_wake(void)
++static void broadcast_wake(void)
+ {
+-	int ret =3D PBOOK_SLEEP_OK;
+ 	struct list_head *list;
+ 	struct pmu_sleep_notifier *notifier;
+ =
 
---===============0536663159==--
+@@ -1807,7 +1793,6 @@ broadcast_wake(void)
+ 		notifier =3D list_entry(list, struct pmu_sleep_notifier, list);
+ 		notifier->notifier_call(notifier, PBOOK_WAKE);
+ 	}
+-	return ret;
+ }
+ =
+
+ /*
+@@ -2014,12 +1999,8 @@ pmac_suspend_devices(void)
+ =
+
+ 	pm_prepare_console();
+ 	=
+
+-	/* Notify old-style device drivers & userland */
+-	ret =3D broadcast_sleep(PBOOK_SLEEP_REQUEST, PBOOK_SLEEP_REJECT);
+-	if (ret !=3D PBOOK_SLEEP_OK) {
+-		printk(KERN_ERR "Sleep rejected by drivers\n");
+-		return -EBUSY;
+-	}
++	/* Notify old-style device drivers */
++	broadcast_sleep(PBOOK_SLEEP_REQUEST);
+ =
+
+ 	/* Sync the disks. */
+ 	/* XXX It would be nice to have some way to ensure that
+@@ -2029,12 +2010,7 @@ pmac_suspend_devices(void)
+ 	 */
+ 	sys_sync();
+ =
+
+-	/* Sleep can fail now. May not be very robust but useful for debugging */
+-	ret =3D broadcast_sleep(PBOOK_SLEEP_NOW, PBOOK_WAKE);
+-	if (ret !=3D PBOOK_SLEEP_OK) {
+-		printk(KERN_ERR "Driver sleep failed\n");
+-		return -EBUSY;
+-	}
++	broadcast_sleep(PBOOK_SLEEP_NOW);
+ =
+
+ 	/* Send suspend call to devices, hold the device core's dpm_sem */
+ 	ret =3D device_suspend(PMSG_SUSPEND);
+--- linux-2.6-git.orig/include/linux/pmu.h	2007-02-07 22:33:32.817922690 +0=
+100
++++ linux-2.6-git/include/linux/pmu.h	2007-02-07 22:34:39.685922690 +0100
+@@ -168,24 +168,16 @@ extern int pmu_get_model(void);
+ =
+
+ struct pmu_sleep_notifier
+ {
+-	int (*notifier_call)(struct pmu_sleep_notifier *self, int when);
++	void (*notifier_call)(struct pmu_sleep_notifier *self, int when);
+ 	int priority;
+ 	struct list_head list;
+ };
+ =
+
+ /* Code values for calling sleep/wakeup handlers
+- *
+- * Note: If a sleep request got cancelled, all drivers will get
+- * the PBOOK_SLEEP_REJECT, even those who didn't get the PBOOK_SLEEP_REQUE=
+ST.
+  */
+ #define PBOOK_SLEEP_REQUEST	1
+ #define PBOOK_SLEEP_NOW		2
+-#define PBOOK_SLEEP_REJECT	3
+-#define PBOOK_WAKE		4
+-
+-/* Result codes returned by the notifiers */
+-#define PBOOK_SLEEP_OK		0
+-#define PBOOK_SLEEP_REFUSE	-1
++#define PBOOK_WAKE		3
+ =
+
+ /* priority levels in notifiers */
+ #define SLEEP_LEVEL_VIDEO	100	/* Video driver (first wake) */
+--- linux-2.6-git.orig/drivers/macintosh/via-pmu-led.c	2007-02-07 22:33:32.=
+737922690 +0100
++++ linux-2.6-git/drivers/macintosh/via-pmu-led.c	2007-02-07 22:34:39.68792=
+2690 +0100
+@@ -81,7 +81,7 @@ static struct led_classdev pmu_led =3D {
+ };
+ =
+
+ #ifdef CONFIG_PM
+-static int pmu_led_sleep_call(struct pmu_sleep_notifier *self, int when)
++static void pmu_led_sleep_call(struct pmu_sleep_notifier *self, int when)
+ {
+ 	unsigned long flags;
+ =
+
+@@ -99,8 +99,6 @@ static int pmu_led_sleep_call(struct pmu
+ 		break;
+ 	}
+ 	spin_unlock_irqrestore(&pmu_blink_lock, flags);
+-
+-	return PBOOK_SLEEP_OK;
+ }
+ =
+
+ static struct pmu_sleep_notifier via_pmu_led_sleep_notif =3D {
+--- linux-2.6-git.orig/drivers/macintosh/apm_emu.c	2007-02-07 22:33:32.7759=
+22690 +0100
++++ linux-2.6-git/drivers/macintosh/apm_emu.c	2007-02-07 22:34:39.689922690=
+ +0100
+@@ -96,7 +96,7 @@ static DECLARE_WAIT_QUEUE_HEAD(apm_waitq
+ static DECLARE_WAIT_QUEUE_HEAD(apm_suspend_waitqueue);
+ static struct apm_user *	user_list;
+ =
+
+-static int apm_notify_sleep(struct pmu_sleep_notifier *self, int when);
++static void apm_notify_sleep(struct pmu_sleep_notifier *self, int when);
+ static struct pmu_sleep_notifier apm_sleep_notifier =3D {
+ 	apm_notify_sleep,
+ 	SLEEP_LEVEL_USERLAND,
+@@ -352,7 +352,7 @@ static int do_open(struct inode * inode,
+  * doesn't provide a way to NAK, but this could be added
+  * here.
+  */
+-static int wait_all_suspend(void)
++static void wait_all_suspend(void)
+ {
+ 	DECLARE_WAITQUEUE(wait, current);
+ =
+
+@@ -366,24 +366,19 @@ static int wait_all_suspend(void)
+ 	remove_wait_queue(&apm_suspend_waitqueue, &wait);
+ =
+
+ 	DBG("apm_emu: wait_all_suspend() - complete !\n");
+-	=
+
+-	return 1;
+ }
+ =
+
+-static int apm_notify_sleep(struct pmu_sleep_notifier *self, int when)
++static void apm_notify_sleep(struct pmu_sleep_notifier *self, int when)
+ {
+ 	switch(when) {
+ 		case PBOOK_SLEEP_REQUEST:
+ 			queue_event(APM_SYS_SUSPEND, NULL);
+-			if (!wait_all_suspend())
+-				return PBOOK_SLEEP_REFUSE;
++			wait_all_suspend();
+ 			break;
+-		case PBOOK_SLEEP_REJECT:
+ 		case PBOOK_WAKE:
+ 			queue_event(APM_NORMAL_RESUME, NULL);
+ 			break;
+ 	}
+-	return PBOOK_SLEEP_OK;
+ }
+ =
+
+ #define APM_CRITICAL		10
+--- linux-2.6-git.orig/sound/oss/dmasound/dmasound_awacs.c	2007-02-07 22:37=
+:25.300922690 +0100
++++ linux-2.6-git/sound/oss/dmasound/dmasound_awacs.c	2007-02-07 22:38:20.4=
+07922690 +0100
+@@ -257,7 +257,7 @@ static volatile struct dbdma_cmd *emerge
+ /*
+  * Stuff for restoring after a sleep.
+  */
+-static int awacs_sleep_notify(struct pmu_sleep_notifier *self, int when);
++static void awacs_sleep_notify(struct pmu_sleep_notifier *self, int when);
+ struct pmu_sleep_notifier awacs_sleep_notifier =3D {
+ 	awacs_sleep_notify, SLEEP_LEVEL_SOUND,
+ };
+@@ -1419,7 +1419,7 @@ load_awacs(void)
+  * Save state when going to sleep, restore it afterwards.
+  */
+ /* FIXME: sort out disabling/re-enabling of read stuff as well */
+-static int awacs_sleep_notify(struct pmu_sleep_notifier *self, int when)
++static void awacs_sleep_notify(struct pmu_sleep_notifier *self, int when)
+ {
+ 	unsigned long flags;
+ =
+
+@@ -1548,7 +1548,6 @@ static int awacs_sleep_notify(struct pmu
+ 		spin_unlock_irqrestore(&dmasound.lock, flags);
+ 		UNLOCK();
+ 	}
+-	return PBOOK_SLEEP_OK;
+ }
+ #endif /* CONFIG_PM */
+ =
