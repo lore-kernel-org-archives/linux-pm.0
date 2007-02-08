@@ -1,11 +1,16 @@
-From: "Shenaz SixtyNine" <harvest'sultraconservatives@portoseguro.com>
-Subject: Simpson ordered to stop spending
-Date: Thu, 8 Feb 2007 21:30:46 +0000 (UTC)
-Message-ID: <HQE2UUVQ6E2_45AAA_QWLE07@portoseguro.com>
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+Date: Fri, 9 Feb 2007 08:59:53 +1100
+Message-ID: <17867.40281.175422.116673@cargo.ozlabs.ibm.com>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170941321.4385.61.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1766753863=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Thu, 8 Feb 2007 21:29:35 -0060
+In-Reply-To: <1170941321.4385.61.camel@johannes.berg>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,68 +20,26 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============1766753863==
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l18LUE3O001826
+Johannes Berg writes:
 
-Good news from QCPC give you the real alternative to hit the jackpot.=20
-QCPC is a company with far-sighted aims.
+> +#ifdef CONFIG_CPU_HOTPLUG
+> +	/* if we have fake CPU hotplug just to support suspend to disk
+> +	 * and can't really turn off a CPU, it may be taking timer interrupts
+> +	 * even when it is dead. Avoid doing anything in that case so global
+> +	 * state is not modified for and by a CPU that doesn't really exist. */
+> +	if (__get_cpu_var(cpu_state) =3D=3D CPU_DEAD)
+> +		return;
+> +#endif
 
-QCPC strategy is to diversify within the power supply marketplace=20
-and build strong, niche oriented operations around the globe.=20
-QCPC take a long-term view of business, focusing on growth and overall=20
-development of our subsidiaries over a number of years.
+Are you sure this is necessary?  IIRC, the if (!cpu_is_offline(cpu)) a
+little bit further down is there to cope with this exact situation.
+And cpu hotplug already works on G4 SMP powermacs, where we can't
+physically remove the cpu either - we just put it into sleep mode with
+interrupts disabled, which is what we would be doing on a G5 powermac
+also.
 
-
-Company has chosen one of solar power producer.=20
-
-As you know oil prices are growing up higer and higer!
-A great amount of electricity generating plants uses oil-products.
-May be your domestic electrical power supplier or heat register works by =
-using oil-products.
-High technologies of solar extraction  also are very effective in bad lig=
-ht or sun and the accumulating
-energy can be saved inside special batteries. That is why we can talk abo=
-ut full energy-independent house.
-
-In century of high technologies we can't imagine urban life without energ=
-y. =20
-A lot of states in the USA has enough reserve of solar power to generate =
-needed=20
-electric energy. Furthermore the President realizes the important role of=
- this policy and=20
-allocated $1 Billion to Renewable Energy.
-
-U.S. Department of Energy FY 08 budget includes $179 million for the Pres=
-ident's Initiative.
-Particularly Solar America Initiative - $148 million;
-
-QCPC is at the right time and place now. They have chosen promising line =
-of activity for your=20
-share investments and we negotiated a contract with Samlex America, which=
- has manufactured and distributed power supply products to more than 90 c=
-ountries worldwide since 1991.
-Pathfinding product designs, strict quality control, and responsible afte=
-r sales service provide customers with high quality power conversion prod=
-ucts at extremely competitive prices.
-
-Because of this news the prices of the QCPC stocks are about to grow up.=20
-Companies=92 financial condition is stable now. An overall market and eco=
-nomic situation are also can better affect the performance of  the QCPC's=
- shares.
-
-
-
-
---===============1766753863==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
---===============1766753863==--
+Paul.
