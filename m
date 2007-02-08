@@ -1,7 +1,7 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-Date: Fri, 09 Feb 2007 09:24:03 +1100
-Message-ID: <1170973443.2620.371.camel@localhost.localdomain>
+Date: Fri, 09 Feb 2007 09:24:23 +1100
+Message-ID: <1170973463.2620.373.camel@localhost.localdomain>
 References: <20070207124536.963531000@sipsolutions.net>
 	<20070207124610.392302000@sipsolutions.net>
 	<1170940494.4385.51.camel@johannes.berg>
@@ -53,6 +53,6 @@ his.
 > timer interrupt does we don't modify any state for/by the CPU that isn't
 > supposed to exist.
 
-Agreed.
+Or we can just mark interrupts as soft-disabled ?
 
 Ben.
