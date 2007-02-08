@@ -1,16 +1,15 @@
-From: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-Date: Fri, 9 Feb 2007 08:59:53 +1100
-Message-ID: <17867.40281.175422.116673@cargo.ozlabs.ibm.com>
+Date: Fri, 09 Feb 2007 09:24:03 +1100
+Message-ID: <1170973443.2620.371.camel@localhost.localdomain>
 References: <20070207124536.963531000@sipsolutions.net>
 	<20070207124610.392302000@sipsolutions.net>
 	<1170940494.4385.51.camel@johannes.berg>
-	<1170941321.4385.61.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1170941321.4385.61.camel@johannes.berg>
+In-Reply-To: <1170940494.4385.51.camel@johannes.berg>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,22 +23,36 @@ To: Johannes Berg <johannes@sipsolutions.net>
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Johannes Berg writes:
+On Thu, 2007-02-08 at 14:14 +0100, Johannes Berg wrote:
+> On Wed, 2007-02-07 at 13:45 +0100, Johannes Berg wrote:
+> =
 
-> +#ifdef CONFIG_CPU_HOTPLUG
-> +	/* if we have fake CPU hotplug just to support suspend to disk
-> +	 * and can't really turn off a CPU, it may be taking timer interrupts
-> +	 * even when it is dead. Avoid doing anything in that case so global
-> +	 * state is not modified for and by a CPU that doesn't really exist. */
-> +	if (__get_cpu_var(cpu_state) =3D=3D CPU_DEAD)
-> +		return;
-> +#endif
+> > Except for the in-irq count hack I'm happy with this. I still haven't f=
+ound
+> > where the in-hard-irq count is set to 1 in the down path during suspend=
+ or
+> > resume and other platforms do similar things so I'm inclined to leave t=
+his.
+> =
 
-Are you sure this is necessary?  IIRC, the if (!cpu_is_offline(cpu)) a
-little bit further down is there to cope with this exact situation.
-And cpu hotplug already works on G4 SMP powermacs, where we can't
-physically remove the cpu either - we just put it into sleep mode with
-interrupts disabled, which is what we would be doing on a G5 powermac
-also.
+> Um, ok, so the hack breaks platforms that don't have paca, e.g. chrp32.
+> =
 
-Paul.
+> Also, I finally figured out how the in-hard-irq count happens. The thing
+> is that when I try to turn off the CPU it actually doesn't really turn
+> off of course, so it ends up doing NAP and taking timer interrupts...
+> which goes irq_enter() and we happen to kill it afterwards.
+> =
+
+> I have two ways of fixing this:
+>  - just ignore it as we do now
+>  - insert a "if (cpu_dead) return" into the timer interrupt function
+> =
+
+> I prefer the latter because then we're guaranteed that whatever the
+> timer interrupt does we don't modify any state for/by the CPU that isn't
+> supposed to exist.
+
+Agreed.
+
+Ben.
