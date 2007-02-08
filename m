@@ -1,77 +1,83 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 10/12] powerpc: remove unneeded exports in mem.c
-Date: Thu, 08 Feb 2007 14:10:53 +0100
-Message-ID: <1170940253.4385.44.camel@johannes.berg>
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+Date: Thu, 08 Feb 2007 14:14:54 +0100
+Message-ID: <1170940494.4385.51.camel@johannes.berg>
 References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124614.830282000@sipsolutions.net>
-	<17866.42529.436809.257415@cargo.ozlabs.ibm.com>
+	<20070207124610.392302000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1576868106=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <17866.42529.436809.257415@cargo.ozlabs.ibm.com>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
+Content-Type: multipart/mixed; boundary="===============0536663159=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20070207124610.392302000@sipsolutions.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linuxppc-dev@ozlabs.org
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1576868106==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ct+vjF7HD9KnPiLCeam9"
+--===============0536663159==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-j8baZh/sR370sU53uJcs"
 
 
---=-ct+vjF7HD9KnPiLCeam9
+--=-j8baZh/sR370sU53uJcs
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-02-08 at 15:25 +1100, Paul Mackerras wrote:
-> Johannes Berg writes:
->=20
-> > arch/powerpc/mm/mem.c exports page_is_ram and phys_mem_access_prot whic=
-h
-> > both are not used anywhere that could be modular.
->=20
-> phys_mem_access_prot is used in drivers/video/fbmem.c, and the fb
-> stuff can be a module.
+On Wed, 2007-02-07 at 13:45 +0100, Johannes Berg wrote:
 
-Ouch, sorry, the Makefile there with fb-y confused me. Seems all these
-patches have one problem or another :(
+> Except for the in-irq count hack I'm happy with this. I still haven't fou=
+nd
+> where the in-hard-irq count is set to 1 in the down path during suspend o=
+r
+> resume and other platforms do similar things so I'm inclined to leave thi=
+s.
 
-I'll repost just the removal of page_is_ram then.
+Um, ok, so the hack breaks platforms that don't have paca, e.g. chrp32.
+
+Also, I finally figured out how the in-hard-irq count happens. The thing
+is that when I try to turn off the CPU it actually doesn't really turn
+off of course, so it ends up doing NAP and taking timer interrupts...
+which goes irq_enter() and we happen to kill it afterwards.
+
+I have two ways of fixing this:
+ - just ignore it as we do now
+ - insert a "if (cpu_dead) return" into the timer interrupt function
+
+I prefer the latter because then we're guaranteed that whatever the
+timer interrupt does we don't modify any state for/by the CPU that isn't
+supposed to exist.
 
 johannes
 
---=-ct+vjF7HD9KnPiLCeam9
+--=-j8baZh/sR370sU53uJcs
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFyyFd/ETPhpq3jKURAnG3AJ0RuqjhNObIKx8t3+94mlVfKcm9SgCgghpy
-6OD5XGwPDkS3wxJgNPrkKZo=
-=oxPE
+iD8DBQBFyyJO/ETPhpq3jKURAtIvAKC3peiqx1+DS509RvNWdyMpsl3+CwCeIRfe
+HEyGnG+EZDfamXCylK881mQ=
+=EICJ
 -----END PGP SIGNATURE-----
 
---=-ct+vjF7HD9KnPiLCeam9--
+--=-j8baZh/sR370sU53uJcs--
 
 
---===============1576868106==
-Content-Type: text/plain; charset="us-ascii"
+--===============0536663159==
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============1576868106==--
+
+--===============0536663159==--
