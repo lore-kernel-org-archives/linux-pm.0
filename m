@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: question on freeze and aio
-Date: Fri, 9 Feb 2007 23:16:29 +0100
-Message-ID: <200702092316.30240.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0702091700450.4557-100000@iolanthe.rowland.org>
-	<1171058926.1484.74.camel@nigel.suspend2.net>
+From: "Marie Gaelle Niedbalski" <northboundvaliantly@podspodem.art.pl>
+Subject: PETER wrote:
+Date: Fri, 9 Feb 2007 22:18:24 -0120
+Message-ID: <01c74c98$372637e0$6c822ecf@northboundvaliantly>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1171058926.1484.74.camel@nigel.suspend2.net>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,65 +15,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: nigel@nigel.suspend2.net
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 9 February 2007 23:08, Nigel Cunningham wrote:
-> Hi.
-> =
+Broker Alert!
 
-> On Fri, 2007-02-09 at 17:03 -0500, Alan Stern wrote:
-> > On Sat, 10 Feb 2007, Nigel Cunningham wrote:
-> > =
+Good stock MHII.OB(MARSHAL HOLDINGS INC) especially for businessmen.
+MHII.OB Examined stock has a huge potential and growth.
+Check the news about this great stock on broker web-site
+Hurry up. It is very essential you grab MHII on Friday 02.09.07
+Purchasing this great stock you will not miss your target.
 
-> > > Hi.
-> > > =
+The fact is that Marshall Holdings International Inc. (OTC BB:MHII.OB - New=
+s) said that revenues for the Third Quarter 2006 were eight times higher th=
+an in the same period for 2005, with an increase of $1.4 million in revenue.
 
-> > > On Fri, 2007-02-09 at 17:04 +0100, Oliver Neukum wrote:
-> > > > Hi,
-> > > > =
+We {LETprovide,give,offer} you the best stock and prices:
+Now last: 0.023
+Growth: + 35.29%
 
-> > > > can there be running aio requests if all tasks are frozen?
-> > > =
-
-> > > Since tasks are frozen, no new aio requests would be submitted. We do=
- a
-> > > sync to ssek to complete existing requests; I haven't looked to see
-> > > whether that would need extending to flush aio as well, but don't thi=
-nk
-> > > that would be the case. Given everyone else's silence, so far, you mi=
-ght
-> > > be better to ask the author(s) of the aio code.
-> > =
-
-> > I believe Nigel is basically correct.  However sync will only flush aio =
-
-> > for block devices.  Other types of aio will remain active.
-> > =
-
-> > aio callbacks are interrupt-driven and execute in a workqueue (see
-> > fs/aio.c), and as far as I can tell that workqueue doesn't freeze.  =
-
-> > Unless some general facility freezes all workqueues...
-> =
-
-> Hmm. That applies to Raid, too? I've had some reports of raid i/o being
-> caught in the BUG_ON() I have to catch I/O that shouldn't be happening,
-> but haven't gotten around to looking at them yet.
-
-Yes, I think it applies to RAID, but that's because md_thread has been made
-PF_NOFREEZE explicitly, since we want to be able to save the image to an
-md-based swap.
-
-Pretty much everything that uses workqueues can do that, too.
-
-Greetings,
-Rafael
+Coming up...  =
 
 
--- =
+Current high bids: 0.023 (was 0.016)
+Current high ask: 0.024 (was 0.018)
 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+Today prognosis -> 0.025 (+ 47 %)
+Monday -> 0.035 (+ 105 %)
+
+
+We have brought such information to you as WEXE 0.55 -> 0.7 HSBC 0.07->0.12=
+ AUNI 0.165 -> 0.28
+You know absolutly witch ones are real what not but this are real one.
+Campaign just started more news will be soon.
+
+
+71737D75457871746C6E7A327274693377
+caesir2
