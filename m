@@ -1,37 +1,54 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: hwsusp defunct
-Date: Fri, 09 Feb 2007 13:25:57 +0100
-Message-ID: <45CC6855.90501@gmail.com>
-References: <45C5DBBA.20502@gmail.com> <200702041452.28874.rjw@sisk.pl> <45C86405.1070902@gmail.com> <200702061855.49077.rjw@sisk.pl>
+From: "MYRTLE Petersen" <precursorsjacks@whbs.net>
+Subject: Join MHII.OB
+Date: Fri, 9 Feb 2007 15:11:33 +0000 (UTC)
+Message-ID: <1IO9KVNRNJV_1AV4J_RH8JFT@whbs.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1946407AbXBIMZz@vger.kernel.org>
-In-Reply-To: <200702061855.49077.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, linux-pm@osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Fri, 9 Feb 2007 15:07:42 -0060
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> On Tuesday, 6 February 2007 12:18, Jiri Slaby wrote:
->> running) -- how to debug both of this? Do not suspend consoles? PM_TRACE (this 
->> won't help since it completely resumes, I guess)?
-> 
-> First, you can try s2ram if you haven't done it already (http://en.opensuse.org/s2ram).
-> It may help to get your video back after the resume.
+MARSHAL HOLDINGS INC(MHII.OB) unthinkable share.
 
-Yes. s2ram -a 1 with minimal -mm does the job perfectly. Now, I'm going to 
-involve the rest of modules world.
+>From the beginning it occupied first places on market of issues. =
 
-> If you have a COM port, it is also possible to use a serial console throughout the
-> suspend/resume cycle.
+And for this moment this share brings 300% of clear gain.
 
-Only monitor didn't go up -- dmesg was able to be grabbed without monitor :).
+This statistics will help you to know our proposal:
+DATE           C O S T
+02/09/07     0.02$
+02/16/07     0.12$
+You can get more info using your broker web-page
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+WARNING: PLEASE contant YOUR brroker AND MAKE an order.
+Continue to BUY this ama zing sha res on MONDAY.
+
+
+
+
+
+
+
+
+
+
+The federal deficit hit an all-time high under Bush of $413 billion in 2004=
+. It has been declining since that time and the 2008 budget projects it wil=
+l continue to decline and show a surplus in 2012, three years after Bush le=
+aves office.
+71737D75457871746C6E7A327274693377
+5EAQ0BZ77TMGLSHVCB7JJPUIEG9KFNN18JDVVMC
+"It just gives you sticker shock. Every time you turn around it's another $=
+100 billion," Senate Budget Committee Chairman Kent Conrad, a Democrat from=
+ North Dakota, said of Bush's war spending.
