@@ -1,7 +1,7 @@
 From: Oliver Neukum <oliver@neukum.org>
-Subject: question on SCSI and freezing
-Date: Fri, 9 Feb 2007 16:48:14 +0100
-Message-ID: <200702091648.14707.oliver@neukum.org>
+Subject: question on freeze and aio
+Date: Fri, 9 Feb 2007 17:04:30 +0100
+Message-ID: <200702091704.30770.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -21,7 +21,7 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-can the SCSI error handlers run while the system is frozen?
+can there be running aio requests if all tasks are frozen?
 
 	Regards
 		Oliver
