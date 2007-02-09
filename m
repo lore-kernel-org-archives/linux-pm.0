@@ -1,14 +1,14 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: question on freeze and aio
-Date: Sat, 10 Feb 2007 09:08:46 +1100
-Message-ID: <1171058926.1484.74.camel@nigel.suspend2.net>
+Date: Fri, 9 Feb 2007 23:09:11 +0100
+Message-ID: <200702092309.11530.rjw@sisk.pl>
 References: <Pine.LNX.4.44L0.0702091700450.4557-100000@iolanthe.rowland.org>
-Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <Pine.LNX.4.44L0.0702091700450.4557-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,13 +18,10 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On Fri, 2007-02-09 at 17:03 -0500, Alan Stern wrote:
+On Friday, 9 February 2007 23:03, Alan Stern wrote:
 > On Sat, 10 Feb 2007, Nigel Cunningham wrote:
 > =
 
@@ -55,10 +52,15 @@ On Fri, 2007-02-09 at 17:03 -0500, Alan Stern wrote:
 
 > Unless some general facility freezes all workqueues...
 
-Hmm. That applies to Raid, too? I've had some reports of raid i/o being
-caught in the BUG_ON() I have to catch I/O that shouldn't be happening,
-but haven't gotten around to looking at them yet.
+No, workqueues are not frozen unless they are explicitly declared as
+freezeable.  Which currently is only done by XFS, AFAIKS.
 
-Regards,
+Greetings,
+Rafael
 
-Nigel
+
+-- =
+
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
