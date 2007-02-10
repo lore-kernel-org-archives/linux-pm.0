@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power
-	management?
-Date: Sat, 10 Feb 2007 20:50:27 +0100
-Message-ID: <200702102050.28218.rjw@sisk.pl>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
-	<200702101130.44471.rjw@sisk.pl>
-	<Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: Request for testing remote wakeup during STD
+Date: Sun, 11 Feb 2007 07:52:10 +1100
+Message-ID: <1171140730.30705.28.camel@nigel.suspend2.net>
+References: <Pine.LNX.4.44L0.0702101143090.12146-100000@netrider.rowland.org>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0702101143090.12146-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,78 +18,56 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 10 February 2007 18:52, Daniel Barkalow wrote:
-> On Sat, 10 Feb 2007, Rafael J. Wysocki wrote:
+Hi.
+
+On Sat, 2007-02-10 at 12:08 -0500, Alan Stern wrote:
+> On Sat, 10 Feb 2007, Nigel Cunningham wrote:
 > =
 
-> > On Saturday, 10 February 2007 11:02, Nigel Cunningham wrote:
-> >
-> > > Well, the original desire was to stop new drivers getting in without
-> > > proper power management.
-> > =
-
-> > I know, but I agree with the argument that having a driver without the
-> > suspend/resume support is better than not having the driver at all.
+> > Hi Alan.
 > =
 
-> How about if "proper power management" is defined to include the driver =
-
-> explicitly preventing suspend? It seems to me like the current problem is =
-
-> that driver writers don't think about power management at all, and the =
-
-> result is that, after suspend/resume, the system doesn't come back. It =
-
-> would be better if driver writers had to think about power management jus=
-t =
-
-> enough to realize that it's not going to work, and make this information =
-
-> available to the system. At that point, it's relatively easy for the =
-
-> system to do something useful about it.
-
-Actually, it is easy for the driver authors to do this right now.  They can
-just make the .suspend() routine always return an error.
-
-Well, I think this is a good idea: if the device in question requires speci=
-fic
-power management during the suspend/resume, but it is not implemented by the
-driver, we should require the author of the driver to define the .suspend()
-routine that returns -ENOSYS (preferably, with an explanatory warning in
-dmesg).
-
-Thoughts?
-
-> > Also, I think there are quite some drivers already in the tree that don=
-'t
-> > support suspend/resume explicitly and honestly we should start from add=
-ing the
-> > suspend/resume routines to these drivers _before_ we ban new drivers li=
-ke that.
+> > I'd love to be able to help you. My lappy loads ehci and lsusb shows the
+> > controller, but I'll be darned if I can find the socket! I have other
+> > things to get done right now, but if no-one beats me to it, I'll try the
+> > desktop I have - I think that has ehci somewhere.
 > =
 
-> It'd be relatively quick to modify all the current drivers that don't =
+> Thanks, Nigel.  You mean your laptop has an EHCI controller but no USB
+> ports?  That's odd...
 
-> explicitly support suspend/resume to explicitly not support it. (Or to =
+Yeah. I have three USB ports on it, but two of them seem to be connected
+to one controller (going by lsusb after plugging my Palm into each of
+them).
 
-> explicitly support it trivially; /dev/null obviously doesn't need =
+> Anyway, here are instructions for you or anyone else who can do the test.=
+  =
 
-> anything.)
+> (I forgot to include them in the original message.)  Running the test
+> involves two steps.
+> =
 
-The problem is we have to review quite a lot of drivers for this purpose.
-Still it looks like we should do this anyway.
+> The first step is to check that an unpatched system supports Wake-on-USB.=
+  =
 
-Greetings,
-Rafael
+> This means enabling it in the BIOS and/or in ACPI (whatever that might
+> entail; I have no idea what's needed) and actually trying it out.  Either
+> plugging or unplugging a USB device while the system is in STD should wake
+> the machine up.
+> =
 
+> The second step is to see whether Wake-on-USB continues to work after
+> applying the patch mentioned previously.  That's the real question.
+> =
 
--- =
+> It may turn out that _nobody_ has Wake-on-USB working at all... in which =
 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+> case we'd have a different problem to solve.
+
+Thanks!
+
+Nigel
