@@ -1,11 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Request for testing remote wakeup during STD
-Date: Fri, 9 Feb 2007 22:59:45 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: Request for testing remote wakeup during STD
+Date: Sat, 10 Feb 2007 15:50:48 +1100
+Message-ID: <1171083048.10170.23.camel@nigel.suspend2.net>
+References: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,44 +18,59 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-There have been reports of problems related to shutting down with remote =
+Hi Alan.
 
-wakeup enabled on EHCI USB controllers in 2.6.20; see
+On Fri, 2007-02-09 at 22:59 -0500, Alan Stern wrote:
+> There have been reports of problems related to shutting down with remote =
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=3D7828
+> wakeup enabled on EHCI USB controllers in 2.6.20; see
+> =
 
-In brief, some people have found that if ehci-hcd is loaded and the =
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=3D7828
+> =
 
-controller is suspended when they try to shut down their systems, the =
+> In brief, some people have found that if ehci-hcd is loaded and the =
 
-machine reboots immediately instead of turning off.  Apparently this is =
+> controller is suspended when they try to shut down their systems, the =
 
-caused by the firmware mistakenly thinking that a remote-wakeup event has =
+> machine reboots immediately instead of turning off.  Apparently this is =
 
-occurred.  Admittedly, remote wakeup from a system sleep is still black =
+> caused by the firmware mistakenly thinking that a remote-wakeup event has =
 
-magic to most of us...
+> occurred.  Admittedly, remote wakeup from a system sleep is still black =
 
-I wrote a patch to try and fix the problem by turning off EHCI remote
-wakeup from within the driver's shutdown() method.  The patch is here:
+> magic to most of us...
+> =
 
-	http://bugzilla.kernel.org/attachment.cgi?id=3D10313&action=3Dview
+> I wrote a patch to try and fix the problem by turning off EHCI remote
+> wakeup from within the driver's shutdown() method.  The patch is here:
+> =
 
-However I'm concerned that this might affect suspend-to-disk.  Some lucky =
+> 	http://bugzilla.kernel.org/attachment.cgi?id=3D10313&action=3Dview
+> =
 
-people have systems which do keep their EHCI controllers in D3hot during =
+> However I'm concerned that this might affect suspend-to-disk.  Some lucky =
 
-STD, and such people might reasonably want Wake-on-USB to work properly.  =
+> people have systems which do keep their EHCI controllers in D3hot during =
 
-It seems likely that the patch would prevent it from working.
+> STD, and such people might reasonably want Wake-on-USB to work properly.  =
 
-Does anyone have a system capable of testing this?  I think Macs are most =
+> It seems likely that the patch would prevent it from working.
+> =
 
-likely to have the necessary hardware support.
+> Does anyone have a system capable of testing this?  I think Macs are most =
 
-Thanks,
+> likely to have the necessary hardware support.
 
-Alan Stern
+I'd love to be able to help you. My lappy loads ehci and lsusb shows the
+controller, but I'll be darned if I can find the socket! I have other
+things to get done right now, but if no-one beats me to it, I'll try the
+desktop I have - I think that has ehci somewhere.
+
+Regards,
+
+Nigel
