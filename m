@@ -1,14 +1,17 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: Request for testing remote wakeup during STD
-Date: Sat, 10 Feb 2007 15:50:48 +1100
-Message-ID: <1171083048.10170.23.camel@nigel.suspend2.net>
-References: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
-Reply-To: nigel@nigel.suspend2.net
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Re: NAK new drivers without proper power
+	management?
+Date: Sat, 10 Feb 2007 10:34:03 +0100
+Message-ID: <200702101034.04410.rjw@sisk.pl>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+	<45CD24F6.8090107@shaw.ca>
+	<1171076554.10170.5.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
+In-Reply-To: <1171076554.10170.5.camel@nigel.suspend2.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,59 +21,55 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: nigel@nigel.suspend2.net
+Cc: Robert Hancock <hancockr@shaw.ca>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan.
+Hi,
 
-On Fri, 2007-02-09 at 22:59 -0500, Alan Stern wrote:
-> There have been reports of problems related to shutting down with remote =
-
-> wakeup enabled on EHCI USB controllers in 2.6.20; see
+On Saturday, 10 February 2007 04:02, Nigel Cunningham wrote:
+> Hi.
 > =
 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=3D7828
+> On Fri, 2007-02-09 at 19:50 -0600, Robert Hancock wrote:
+> > It also kind of bothers me that if a driver has no suspend/resume =
+
+> > functions, and you suspend and resume the system, we don't complain =
+
+> > about it even though there's a very good chance that device is not goin=
+g =
+
+> > to function properly. How about something in dmesg like:
+> > =
+
+> > Warning: driver for device XXXX has no suspend or resume support.
+> > Device may not function properly after resume.
+> > =
+
+> > so that users know who to complain to. Maybe there are some devices tha=
+t =
+
+> > truly don't need any handling for suspend, but if so I suspect the =
+
+> > number of those is small enough that adding empty functions would be a =
+
+> > good-enough solution.
 > =
 
-> In brief, some people have found that if ehci-hcd is loaded and the =
+> Here's my current version of a patch to do this, if anyone wants to try
+> it out. It dumps stack with the warning to make it easier to see what
+> the source of the message is:
 
-> controller is suspended when they try to shut down their systems, the =
+I have an alternative idea.
 
-> machine reboots immediately instead of turning off.  Apparently this is =
+There is a test mode of swsusp that's triggered with
+"echo test > /sys/power/disk" and "echo disk > /sys/power/state".  We can m=
+ake
+it set a switch that will be used to trigger the warnings in the core.
 
-> caused by the firmware mistakenly thinking that a remote-wakeup event has =
+This way the warnings will only appear in the user's dmesg in the test mode
+and not always.
 
-> occurred.  Admittedly, remote wakeup from a system sleep is still black =
+Would that be acceptable?
 
-> magic to most of us...
-> =
-
-> I wrote a patch to try and fix the problem by turning off EHCI remote
-> wakeup from within the driver's shutdown() method.  The patch is here:
-> =
-
-> 	http://bugzilla.kernel.org/attachment.cgi?id=3D10313&action=3Dview
-> =
-
-> However I'm concerned that this might affect suspend-to-disk.  Some lucky =
-
-> people have systems which do keep their EHCI controllers in D3hot during =
-
-> STD, and such people might reasonably want Wake-on-USB to work properly.  =
-
-> It seems likely that the patch would prevent it from working.
-> =
-
-> Does anyone have a system capable of testing this?  I think Macs are most =
-
-> likely to have the necessary hardware support.
-
-I'd love to be able to help you. My lappy loads ehci and lsusb shows the
-controller, but I'll be darned if I can find the socket! I have other
-things to get done right now, but if no-one beats me to it, I'll try the
-desktop I have - I think that has ehci somewhere.
-
-Regards,
-
-Nigel
+Rafael
