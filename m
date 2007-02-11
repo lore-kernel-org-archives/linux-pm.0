@@ -1,14 +1,16 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: Request for testing remote wakeup during STD
-Date: Mon, 12 Feb 2007 07:28:20 +1100
-Message-ID: <1171225701.4493.38.camel@nigel.suspend2.net>
-References: <Pine.LNX.4.44L0.0702111406320.18883-100000@netrider.rowland.org>
-Reply-To: nigel@nigel.suspend2.net
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] Re: NAK new drivers without proper power
+	management?
+Date: Sun, 11 Feb 2007 22:04:20 +0100
+Message-ID: <45CF84D4.3040305@s5r6.in-berlin.de>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+	<200702111450.49736.rjw@sisk.pl> <20070211135708.GC1868@1wt.eu>
+	<200702111536.20871.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0702111406320.18883-100000@netrider.rowland.org>
+In-Reply-To: <200702111536.20871.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,149 +20,27 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Hancock <hancockr@shaw.ca>, Matthew Garrett <mjg59@srcf.ucam.org>, Pavel Machek <pavel@ucw.cz>, Jeff Garzik <jeff@garzik.org>, Daniel Barkalow <barkalow@iabervon.org>, pm list <linux-pm@lists.osdl.org>, Willy Tarreau <w@1wt.eu>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Rafael J. Wysocki wrote:
+> - Problem what to do with drivers that work for some people and don't work
+> for the others (ie. if we don't flag them as known good, we will break the
+> setups in which they work)
 
-On Sun, 2007-02-11 at 14:44 -0500, Alan Stern wrote:
-> On Sun, 11 Feb 2007, Nigel Cunningham wrote:
-> =
+And this issue is independent of whether a driver has .suspend and
+.resume or not. For example, ohci1394 had them for ages but they didn't
+work as expected before 2.6.20.
 
-> > Hi.
-> > =
+What's more, ohci1394's resume routine alone is insufficient; an
+additional facility in ieee1394 was necessary and added for 2.6.21(-rc).
+This shows that the original authors of ohci1394's .suspend and .resume
+didn't test with actual external devices or gave up when they figured
+that the problem reaches into upper subsystem layers. (We still haven't
+tested interaction with most of the IEEE 1394 high level.)
+-- =
 
-> > On Sat, 2007-02-10 at 12:08 -0500, Alan Stern wrote:
-> > > On Sat, 10 Feb 2007, Nigel Cunningham wrote:
-> > > =
-
-> > > > Hi Alan.
-> > > =
-
-> > > > I'd love to be able to help you. My lappy loads ehci and lsusb show=
-s the
-> > > > controller, but I'll be darned if I can find the socket! I have oth=
-er
-> > > > things to get done right now, but if no-one beats me to it, I'll tr=
-y the
-> > > > desktop I have - I think that has ehci somewhere.
-> > > =
-
-> > > Thanks, Nigel.  You mean your laptop has an EHCI controller but no USB
-> > > ports?  That's odd...
-> > =
-
-> > Yeah. I have three USB ports on it, but two of them seem to be connected
-> > to one controller (going by lsusb after plugging my Palm into each of
-> > them).
-> =
-
-> The contents of /proc/bus/usb/devices would be easier to read.
-> Nevertheless, here's a capsule explanation:
-> =
-
-> Most high-speed USB host controllers aren't capable of supporting full
-> speed or low speed.  In order to make a completely functional system,
-> vendors have to pair each high-speed controller with a companion
-> full-and-low-speed controller.  USB ports are wired internally to both
-> controllers, and an electronic switch decides which controller actually
-> manages the port at any time, based on the speed of the device plugged
-> into the port.
-> =
-
-> Sometimes a single high-speed controller will have more than one
-> companion.  For example, each companion controller might handle only two
-> ports while the high-speed controller can handle six; in that case there
-> would have to be three companions.
-> =
-
-> And sometimes controllers aren't connected to anything at all!  For
-> example, I've got a PCI USB card on my machine.  It contains 1 EHCI (high
-> speed) controller capable of handling six ports and 3 OHCI (full and low
-> speed) each capable of handling two ports, as described above.  But the
-> card has only 4 ports!  Each port is connected to the EHCI controller and
-> to one of the OHCI controllers, and one OHCI is connected to nothing.  =
-
-> The card is a cut-down version of a 6-port model, and the manufacturer
-> simply removed two of the ports while leaving the third OHCI controller on
-> board.
-> =
-
-> As another example, my motherboard has three USB ports and three OHCI =
-
-> controllers, each of which is capable of driving two ports but is wired u=
-p =
-
-> only to one.
-> =
-
-> > > Anyway, here are instructions for you or anyone else who can do the t=
-est.  =
-
-> > > (I forgot to include them in the original message.)  Running the test
-> > > involves two steps.
-> > > =
-
-> > > The first step is to check that an unpatched system supports Wake-on-=
-USB.  =
-
-> > > This means enabling it in the BIOS and/or in ACPI (whatever that might
-> > > entail; I have no idea what's needed) and actually trying it out.  Ei=
-ther
-> > > plugging or unplugging a USB device while the system is in STD should=
- wake
-> > > the machine up.
-> > > =
-
-> > > The second step is to see whether Wake-on-USB continues to work after
-> > > applying the patch mentioned previously.  That's the real question.
-> > > =
-
-> > > It may turn out that _nobody_ has Wake-on-USB working at all... in wh=
-ich =
-
-> > > case we'd have a different problem to solve.
-> > =
-
-> > Thanks!
-> =
-
-> On further thought, I wonder if this could ever work reliably.  During =
-
-> suspend-to-disk, after the memory snapshot is created every device is =
-
-> woken up to write out the image (or at least, every device that was awake =
-
-> before the suspend-to-disk started).  The image is written and then the =
-
-> system shuts down, without bothering to suspend anything.
-> =
-
-> Now I don't know about other subsystems, but in USB we disable remote
-> wakeup when a device is resumed and enable it when the device is
-> suspended.  Since the sequence of events is <resume, write image,
-> shutdown> with no intervening suspend, remote wakeup will not be enabled.
-> =
-
-> That's true for external devices, anyway.  For devices on the motherboard=
-, =
-
-> like host controllers, it's entirely possible that the firmware uses some =
-
-> other technique to control remote wakeup (something involving ACPI, for =
-
-> example).  Documentation on this point is almost non-existent, so it's =
-
-> kind of hard to say anything definite.
-> =
-
-> This suggests that I shouldn't worry about remote wakeup during
-> suspend-to-disk at all -- it's a lost cause.
-
-Or we should change to suspend drivers rather than shutting them down,
-if that's possible.
-
-Regards,
-
-Nigel
+Stefan Richter
+-=3D=3D=3D=3D=3D-=3D-=3D=3D=3D --=3D- -=3D-=3D=3D
+http://arcgraph.de/sr/
