@@ -1,60 +1,51 @@
-From: Daniel Barkalow <barkalow@iabervon.org>
+From: Robert Hancock <hancockr@shaw.ca>
 Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-Date: Sun, 11 Feb 2007 12:27:07 -0500 (EST)
-Message-ID: <Pine.LNX.4.64.0702111154570.20138@iabervon.org>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702111450.49736.rjw@sisk.pl>
- <20070211135708.GC1868@1wt.eu> <200702111536.20871.rjw@sisk.pl>
+Date: Sun, 11 Feb 2007 11:36:53 -0600
+Message-ID: <45CF5435.7030802@shaw.ca>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+ <200702101130.44471.rjw@sisk.pl>
+ <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+ <200702102050.28218.rjw@sisk.pl> <20070211065404.GA943@1wt.eu>
+ <20070211121339.GB4204@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750746AbXBKR1K@vger.kernel.org>
-In-Reply-To: <200702111536.20871.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750755AbXBKRg5@vger.kernel.org>
+In-reply-to: <20070211121339.GB4204@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Willy Tarreau <w@1wt.eu>, Matthew Garrett <mjg59@srcf.ucam.org>, nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>, linux-kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Willy Tarreau <w@1wt.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Barkalow <barkalow@iabervon.org>, nigel@nigel.suspend2.net, linux-kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 11 Feb 2007, Rafael J. Wysocki wrote:
-
-> The problem is it was made implicit long ago.  The design is "optimistic", so
-> to speak, and I think we have the following choices:
+Matthew Garrett wrote:
+> On Sun, Feb 11, 2007 at 07:54:04AM +0100, Willy Tarreau wrote:
 > 
-> 1) Change the design to make the kernel refuse to suspend if there are any
-> drivers not explicitly flagged as "suspend/resume-safe".  [This looks like a
-> lot of work to me, but it is generally doable provided that someone has enough
-> time to do it.  Unfortunately it has to be done in one shot for all of the
-> known good drivers to avoid user-observable regressions.]
+>> instead of modifying all drivers to explicitly state that they don't support
+>> it, we should start with a test of the NULL pointer for .suspend which should
+>> mean exactly the same without modifying the drivers. I find it obvious that
+>> a driver which does provide a suspend function will not support it. And if
+>> some drivers (eg /dev/null) can support it anyway, it's better to change
+>> *those* drivers to explicitly mark them as compatible.
+> 
+> No, that doesn't work. In the absence of suspend/resume methods, the PCI 
+> layer will implement basic PM itself. In some cases, this works. In 
+> others, it doesn't. There's no way to automatically determine which is 
+> which without modifying the drivers.
+> 
 
-The kernel wouldn't necessarily have to refuse to suspend. It could just 
-warn (and list the drivers that aren't marked), or could require some 
-extra insistance from the user. It would be good to have it log a message 
-saying something like: "If you can read this, report that ne2000 seems to 
-be safe for suspend/resume". Having drivers explicitly marked as to 
-whether they are safe is a good kernel feature; what to do if they're not 
-is policy.
+The only thing that the PCI layer does for PM is the stuff that the 
+driver would normally tell the PCI layer to do as part of a proper 
+suspend/resume implementation: enable/disable the device and 
+save/restore the PCI configuration space (only the standardized part, I 
+believe). This is the bare minimum that's needed on all PCI devices, 
+whether or not they even have a driver loaded. I suspect the number of 
+PCI devices where this is truly all they need, i.e. no state in any IO 
+ports or MMIO registers that need to be reset on resume, is quite low. 
+Maybe in some cases it may appear to work by luck, i.e. the registers 
+happening to be set to the correct values (especially on 
+suspend-to-disk) but this is not a proper implementation.
 
-> 2) Require the authors of new drivers to _either_ ensure that their drivers
-> will be suspend/resume-safe (and I mean both STR and STD here), _or_ explicitly
-> flag the drivers as "suspend/resume-unsafe", for example by impelenting
-> .suspend() routines returning -ENOSYS.  [The existing drivers can be modified
-> to follow this convention gradually.]
-
-I don't see any reason not to do (2) regardless of (1). That was (my idea 
-of) the statement that started this thread: new drivers need to not mess 
-up on suspend/resume, as a matter of suitability for inclusion. Of course, 
-we need some way for drivers to indicate that they work fine with the 
-PCI-layer defaults. And it should probably more machine-readable than the 
-author telling reviewers that it works.
-
-> - Problem what to do with drivers that work for some people and don't work
-> for the others (ie. if we don't flag them as known good, we will break the
-> setups in which they work)
-
-I think the only interesting case here is when a device resumes fine with 
-no driver support if the BIOS manages to deal effectively with it, but the 
-BIOS generally doesn't. Otherwise, I think it's only going to work at 
-all if the author put in the effort to make it work (so it should be 
-"known good"), but there may be bugs (firmware, BIOS, driver, etc). But 
-that's true of any functionality.
-
-	-Daniel
-*This .sig left intentionally blank*
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
