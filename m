@@ -1,34 +1,60 @@
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power
-	management?
-Date: Sun, 11 Feb 2007 17:19:40 +0200
-Message-ID: <84144f020702110719i27718657s4c74a4f7217cce6@mail.gmail.com>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
-	<200702111450.49736.rjw@sisk.pl> <20070211135708.GC1868@1wt.eu>
-	<200702111536.20871.rjw@sisk.pl>
+From: Daniel Barkalow <barkalow@iabervon.org>
+Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
+Date: Sun, 11 Feb 2007 12:27:07 -0500 (EST)
+Message-ID: <Pine.LNX.4.64.0702111154570.20138@iabervon.org>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702111450.49736.rjw@sisk.pl>
+ <20070211135708.GC1868@1wt.eu> <200702111536.20871.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750746AbXBKR1K@vger.kernel.org>
 In-Reply-To: <200702111536.20871.rjw@sisk.pl>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Robert Hancock <hancockr@shaw.ca>, Matthew Garrett <mjg59@srcf.ucam.org>, Pavel Machek <pavel@ucw.cz>, Jeff Garzik <jeff@garzik.org>, Daniel Barkalow <barkalow@iabervon.org>, pm list <linux-pm@lists.osdl.org>, Willy Tarreau <w@1wt.eu>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Willy Tarreau <w@1wt.eu>, Matthew Garrett <mjg59@srcf.ucam.org>, nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>, linux-kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2/11/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Unfortunately it has to be done in one shot for all of the known good dri=
-vers to avoid
-> user-observable regressions.
+On Sun, 11 Feb 2007, Rafael J. Wysocki wrote:
 
-No you don't. You can make it a config option that defaults to n
-during a transition period.
+> The problem is it was made implicit long ago.  The design is "optimistic", so
+> to speak, and I think we have the following choices:
+> 
+> 1) Change the design to make the kernel refuse to suspend if there are any
+> drivers not explicitly flagged as "suspend/resume-safe".  [This looks like a
+> lot of work to me, but it is generally doable provided that someone has enough
+> time to do it.  Unfortunately it has to be done in one shot for all of the
+> known good drivers to avoid user-observable regressions.]
+
+The kernel wouldn't necessarily have to refuse to suspend. It could just 
+warn (and list the drivers that aren't marked), or could require some 
+extra insistance from the user. It would be good to have it log a message 
+saying something like: "If you can read this, report that ne2000 seems to 
+be safe for suspend/resume". Having drivers explicitly marked as to 
+whether they are safe is a good kernel feature; what to do if they're not 
+is policy.
+
+> 2) Require the authors of new drivers to _either_ ensure that their drivers
+> will be suspend/resume-safe (and I mean both STR and STD here), _or_ explicitly
+> flag the drivers as "suspend/resume-unsafe", for example by impelenting
+> .suspend() routines returning -ENOSYS.  [The existing drivers can be modified
+> to follow this convention gradually.]
+
+I don't see any reason not to do (2) regardless of (1). That was (my idea 
+of) the statement that started this thread: new drivers need to not mess 
+up on suspend/resume, as a matter of suitability for inclusion. Of course, 
+we need some way for drivers to indicate that they work fine with the 
+PCI-layer defaults. And it should probably more machine-readable than the 
+author telling reviewers that it works.
+
+> - Problem what to do with drivers that work for some people and don't work
+> for the others (ie. if we don't flag them as known good, we will break the
+> setups in which they work)
+
+I think the only interesting case here is when a device resumes fine with 
+no driver support if the BIOS manages to deal effectively with it, but the 
+BIOS generally doesn't. Otherwise, I think it's only going to work at 
+all if the author put in the effort to make it work (so it should be 
+"known good"), but there may be bugs (firmware, BIOS, driver, etc). But 
+that's true of any functionality.
+
+	-Daniel
+*This .sig left intentionally blank*
