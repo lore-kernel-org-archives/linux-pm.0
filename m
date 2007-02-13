@@ -1,16 +1,15 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] power management: no valid states w/o	pm_ops
- + docs
-Date: Tue, 13 Feb 2007 09:41:09 -0800
-Message-ID: <45D1F835.9030103@oracle.com>
-References: <1171383980.10344.39.camel@johannes.berg>	
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] power management: no valid states	w/o	pm_ops
+	+ docs
+Date: Tue, 13 Feb 2007 18:54:19 +0100
+Message-ID: <1171389259.10344.62.camel@johannes.berg>
+References: <1171383980.10344.39.camel@johannes.berg>
 	<20070213092357.7ea02880.randy.dunlap@oracle.com>
-	<1171388184.10344.55.camel@johannes.berg>
+	<1171388184.10344.55.camel@johannes.berg> <45D1F835.9030103@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="=-0dvoCeyzSozvb+CJ69ww"
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1171388184.10344.55.camel@johannes.berg>
+In-Reply-To: <45D1F835.9030103@oracle.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,101 +19,136 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: Andrew Morton <akpm@osdl.org>, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Johannes Berg wrote:
-> On Tue, 2007-02-13 at 09:23 -0800, Randy Dunlap wrote:
->> On Tue, 13 Feb 2007 17:26:20 +0100 Johannes Berg wrote:
->>
->>> This patch changes /sys/power/state to not advertise any valid states
->>> (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have be=
-en
->>> set so userspace can easily discover what states should be available.
->>>
->>> Also, because the pm ops in powermac are obviously not using them as
->>> intended, I added documentation for it in kernel-doc format.
->> Thanks... but it's not quite in kernel-doc format.
-> =
+This is a multi-part message in MIME format...
 
-> Hmm ok :)
-> =
+--=-0dvoCeyzSozvb+CJ69ww
+Content-Type: multipart/mixed; boundary="----------=_1171389419-20113-469"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
->> Did you test it?
-> =
+This is a multi-part message in MIME format...
 
-> Yes! The output (in html) looked fine to me.
+------------=_1171389419-20113-469
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Great.  Some people don't even test.  :(
+On Tue, 2007-02-13 at 09:41 -0800, Randy Dunlap wrote:
 
->>> +/**
->>> + * struct pm_ops
->>> + *
->>> + * Callbacks for managing platform dependent suspend states.
->>> + *
->>  * struct pm_ops - callbacks for managing platform-dependent suspend sta=
-tes
-> =
+> >>  * struct pm_ops - callbacks for managing platform-dependent suspend s=
+tates
+> >=20
+> > But then the description "callbacks for ..." disappears completely in
+> > the HTML output! Should I duplicate it or something?
+>=20
+> No, it's right there by the struct name (top line).
+> As you have it, it shows up at the bottom, after the struct members,
+> doesn't it (i.e., out of order)?
 
-> But then the description "callbacks for ..." disappears completely in
-> the HTML output! Should I duplicate it or something?
+I now have:
 
-No, it's right there by the struct name (top line).
-As you have it, it shows up at the bottom, after the struct members,
-doesn't it (i.e., out of order)?
+/**
+ * struct pm_ops - Callbacks for managing platform dependent suspend states.
+ *
+ *... (rest kept identical)
+ */
 
->>> + * @valid: Callback to determine whether the given state can be entere=
-d.
->>> + *         If %CONFIG_SOFTWARE_SUSPEND is set then %PM_SUSPEND_DISK is
->>> + *         always valid and never passed to this call.
->>> + *         If not assigned, all suspend states are advertised as valid
->>> + *         in /sys/power/state (but can still be rejected by prepare o=
-r enter.)
->>> + * @prepare: Prepare the platform for the given suspend state. Can ret=
-urn a
->>> + *           negative error code if necessary.
->>> + * @enter: Enter the given suspend state, must be assigned. Can return=
- a
->>> + *         negative error code if necessary.
->>> + * @finish: Called when the system has left the given state and all de=
-vices
->>> + *          are resumed. The return value is ignored.
->>> + * @pm_disk_mode: Set to the disk method that the user should be able =
-to
->>> + *                configure for suspend-to-disk. Since %PM_DISK_SHUTDO=
-WN,
->>> + *                %PM_DISK_REBOOT, %PM_DISK_TEST and %PM_DISK_TESTPROC
->>> + *                are always allowed, currently only %PM_DISK_PLATFORM
->>> + *                makes sense. If the user then choses %PM_DISK_PLATFO=
-RM,
->>> + *                the @prepare call will be called before suspending t=
-o disk
->>> + *                (if present), the @enter call should be present and =
-will
->>> + *                be called after all state has been saved and the mac=
-hine
->>> + *                is ready to be shut down/suspended/..., and the @fin=
-ish
->>> + *                callback is called after state has been restored. All
->>> + *                these calls are called with %PM_SUSPEND_DISK as the =
-state.
->> We usually just indent the following lines the same for all function
->> parameters or struct members.
-> =
+and it's not there for me (output of
+  ./scripts/kernel-doc -html include/linux/pm.h
+attached). I also get an empty "Description" section.
 
-> So I should indent them to the deepest indent I have like this?
-> =
+But yes, if I put it into the third line then it shows up in the
+"Description" section which is all the way down.
 
->  @x:         description for x
->              in two lines
->  @verylong:  description for verylong
->              in two lines
+I think I'll put this down to a bug in the html output (that maybe you
+get to fix? :) ), I just tested text and man output now and they both
+look fine as you describe.
 
-I would probably just indent all of them by one tab.  Don't worry about
-the @verylong one.
+> I would probably just indent all of them by one tab.  Don't worry about
+> the @verylong one.
 
--- =
+ok.
 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+johannes
+
+------------=_1171389419-20113-469
+Content-Disposition: attachment; filename="pm.html"
+Content-Type: text/html; name=pm.html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGgyPnN0cnVjdCBwbV9vcHM8L2gyPg0KPGI+c3RydWN0IHBtX29wczwvYj4g
+ezxicj4NCiA8aT5pbnQgKCo8L2k+PGI+dmFsaWQ8L2I+KSA8aT4oc3VzcGVu
+ZF9zdGF0ZV90IHN0YXRlKTwvaT47PGJyPg0KIDxpPmludCAoKjwvaT48Yj5w
+cmVwYXJlPC9iPikgPGk+KHN1c3BlbmRfc3RhdGVfdCBzdGF0ZSk8L2k+Ozxi
+cj4NCiA8aT5pbnQgKCo8L2k+PGI+ZW50ZXI8L2I+KSA8aT4oc3VzcGVuZF9z
+dGF0ZV90IHN0YXRlKTwvaT47PGJyPg0KIDxpPmludCAoKjwvaT48Yj5maW5p
+c2g8L2I+KSA8aT4oc3VzcGVuZF9zdGF0ZV90IHN0YXRlKTwvaT47PGJyPg0K
+IDxpPnN1c3BlbmRfZGlza19tZXRob2RfdDwvaT4gPGI+cG1fZGlza19tb2Rl
+PC9iPjs8YnI+DQp9Ozxicj4NCjxoMz5NZW1iZXJzPC9oMz4NCjxkbD4NCjxk
+dD48Yj52YWxpZDwvYj4NCjxkZD5DYWxsYmFjayB0byBkZXRlcm1pbmUgd2hl
+dGhlciB0aGUgZ2l2ZW4gc3RhdGUgY2FuIGJlIGVudGVyZWQuDQpJZiA8aT5D
+T05GSUdfU09GVFdBUkVfU1VTUEVORDwvaT4gaXMgc2V0IHRoZW4gPGk+UE1f
+U1VTUEVORF9ESVNLPC9pPiBpcw0KYWx3YXlzIHZhbGlkIGFuZCBuZXZlciBw
+YXNzZWQgdG8gdGhpcyBjYWxsLg0KSWYgbm90IGFzc2lnbmVkLCBhbGwgc3Vz
+cGVuZCBzdGF0ZXMgYXJlIGFkdmVydGlzZWQgYXMgdmFsaWQNCmluIC9zeXMv
+cG93ZXIvc3RhdGUgKGJ1dCBjYW4gc3RpbGwgYmUgcmVqZWN0ZWQgYnkgcHJl
+cGFyZSBvciBlbnRlci4pDQo8ZHQ+PGI+cHJlcGFyZTwvYj4NCjxkZD5QcmVw
+YXJlIHRoZSBwbGF0Zm9ybSBmb3IgdGhlIGdpdmVuIHN1c3BlbmQgc3RhdGUu
+IENhbiByZXR1cm4gYQ0KbmVnYXRpdmUgZXJyb3IgY29kZSBpZiBuZWNlc3Nh
+cnkuDQo8ZHQ+PGI+ZW50ZXI8L2I+DQo8ZGQ+RW50ZXIgdGhlIGdpdmVuIHN1
+c3BlbmQgc3RhdGUsIG11c3QgYmUgYXNzaWduZWQuIENhbiByZXR1cm4gYQ0K
+bmVnYXRpdmUgZXJyb3IgY29kZSBpZiBuZWNlc3NhcnkuDQo8ZHQ+PGI+Zmlu
+aXNoPC9iPg0KPGRkPkNhbGxlZCB3aGVuIHRoZSBzeXN0ZW0gaGFzIGxlZnQg
+dGhlIGdpdmVuIHN0YXRlIGFuZCBhbGwgZGV2aWNlcw0KYXJlIHJlc3VtZWQu
+IFRoZSByZXR1cm4gdmFsdWUgaXMgaWdub3JlZC4NCjxkdD48Yj5wbV9kaXNr
+X21vZGU8L2I+DQo8ZGQ+U2V0IHRvIHRoZSBkaXNrIG1ldGhvZCB0aGF0IHRo
+ZSB1c2VyIHNob3VsZCBiZSBhYmxlIHRvDQpjb25maWd1cmUgZm9yIHN1c3Bl
+bmQtdG8tZGlzay4gU2luY2UgPGk+UE1fRElTS19TSFVURE9XTjwvaT4sDQo8
+aT5QTV9ESVNLX1JFQk9PVDwvaT4sIDxpPlBNX0RJU0tfVEVTVDwvaT4gYW5k
+IDxpPlBNX0RJU0tfVEVTVFBST0M8L2k+DQphcmUgYWx3YXlzIGFsbG93ZWQs
+IGN1cnJlbnRseSBvbmx5IDxpPlBNX0RJU0tfUExBVEZPUk08L2k+DQptYWtl
+cyBzZW5zZS4gSWYgdGhlIHVzZXIgdGhlbiBjaG9zZXMgPGk+UE1fRElTS19Q
+TEFURk9STTwvaT4sDQp0aGUgPHR0PjxiPnByZXBhcmU8L2I+PC90dD4gY2Fs
+bCB3aWxsIGJlIGNhbGxlZCBiZWZvcmUgc3VzcGVuZGluZyB0byBkaXNrDQoo
+aWYgcHJlc2VudCksIHRoZSA8dHQ+PGI+ZW50ZXI8L2I+PC90dD4gY2FsbCBz
+aG91bGQgYmUgcHJlc2VudCBhbmQgd2lsbA0KYmUgY2FsbGVkIGFmdGVyIGFs
+bCBzdGF0ZSBoYXMgYmVlbiBzYXZlZCBhbmQgdGhlIG1hY2hpbmUNCmlzIHJl
+YWR5IHRvIGJlIHNodXQgZG93bi9zdXNwZW5kZWQvLi4uLCBhbmQgdGhlIDx0
+dD48Yj5maW5pc2g8L2I+PC90dD4NCmNhbGxiYWNrIGlzIGNhbGxlZCBhZnRl
+ciBzdGF0ZSBoYXMgYmVlbiByZXN0b3JlZC4gQWxsDQp0aGVzZSBjYWxscyBh
+cmUgY2FsbGVkIHdpdGggPGk+UE1fU1VTUEVORF9ESVNLPC9pPiBhcyB0aGUg
+c3RhdGUuDQo8L2RsPg0KPGgzPkRlc2NyaXB0aW9uPC9oMz4NCjxibG9ja3F1
+b3RlPg0KPC9ibG9ja3F1b3RlPg0KPGhyPg0KPGgyPkZ1bmN0aW9uPC9oMj4N
+CjxpPnZvaWQ8L2k+DQo8Yj5wbV9zZXRfb3BzPC9iPg0KKDxpPnN0cnVjdCBw
+bV9vcHMgKjwvaT4gPGI+cG1fb3BzPC9iPikNCjxoMz5Bcmd1bWVudHM8L2gz
+Pg0KPGRsPg0KPGR0PjxiPnBtX29wczwvYj4NCjxkZD5UaGUgbmV3IHBvd2Vy
+IG1hbmFnZW1lbnQgb3BlcmF0aW9ucyB0byBzZXQuDQo8L2RsPg0KPGhyPg0K
+
+------------=_1171389419-20113-469--
+
+--=-0dvoCeyzSozvb+CJ69ww
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF0ftL/ETPhpq3jKURAhKNAJ4g23FcoTLb+VRV1Y6PTnjj9Wh8eACfbtRP
+Ca726HNu5NkFUsYKDBnjBfU=
+=YF1Y
+-----END PGP SIGNATURE-----
+
+--=-0dvoCeyzSozvb+CJ69ww
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--=-0dvoCeyzSozvb+CJ69ww--
