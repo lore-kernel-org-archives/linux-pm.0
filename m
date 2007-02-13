@@ -1,15 +1,14 @@
 From: Pavel Machek <pavel@suse.cz>
-Subject: Re: question on freeze and aio
-Date: Tue, 13 Feb 2007 11:18:59 +0100
-Message-ID: <20070213101859.GD12996@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0702091700450.4557-100000@iolanthe.rowland.org>
-	<200702092309.11530.rjw@sisk.pl>
+Subject: Re: Request for testing remote wakeup during STD
+Date: Tue, 13 Feb 2007 12:35:47 +0100
+Message-ID: <20070213113547.GI12996@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <200702092309.11530.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0702092244570.32161-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,42 +18,52 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > > can there be running aio requests if all tasks are frozen?
-> > > =
+> There have been reports of problems related to shutting down with remote =
 
-> > > Since tasks are frozen, no new aio requests would be submitted. We do=
- a
-> > > sync to ssek to complete existing requests; I haven't looked to see
-> > > whether that would need extending to flush aio as well, but don't thi=
-nk
-> > > that would be the case. Given everyone else's silence, so far, you mi=
-ght
-> > > be better to ask the author(s) of the aio code.
-> > =
-
-> > I believe Nigel is basically correct.  However sync will only flush aio =
-
-> > for block devices.  Other types of aio will remain active.
-> > =
-
-> > aio callbacks are interrupt-driven and execute in a workqueue (see
-> > fs/aio.c), and as far as I can tell that workqueue doesn't freeze.  =
-
-> > Unless some general facility freezes all workqueues...
+> wakeup enabled on EHCI USB controllers in 2.6.20; see
 > =
 
-> No, workqueues are not frozen unless they are explicitly declared as
-> freezeable.  Which currently is only done by XFS, AFAIKS.
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=3D7828
+> =
 
-Ok, then we have a bug in swsusp. Can someone locate _which_ workqueue
-is used for aio... and make it freezeable?
-								Pavel
+> In brief, some people have found that if ehci-hcd is loaded and the =
+
+> controller is suspended when they try to shut down their systems, the =
+
+> machine reboots immediately instead of turning off.  Apparently this is =
+
+> caused by the firmware mistakenly thinking that a remote-wakeup event has =
+
+> occurred.  Admittedly, remote wakeup from a system sleep is still black =
+
+> magic to most of us...
+> =
+
+> I wrote a patch to try and fix the problem by turning off EHCI remote
+> wakeup from within the driver's shutdown() method.  The patch is here:
+> =
+
+> 	http://bugzilla.kernel.org/attachment.cgi?id=3D10313&action=3Dview
+> =
+
+> However I'm concerned that this might affect suspend-to-disk.  Some lucky =
+
+> people have systems which do keep their EHCI controllers in D3hot during =
+
+> STD, and such people might reasonably want Wake-on-USB to work properly.  =
+
+> It seems likely that the patch would prevent it from working.
+
+I do not think such "lucky people" exist. And not being able to
+control the wakeups.... no I do not think that feature is useful,
+yet. KISS.
+									Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
