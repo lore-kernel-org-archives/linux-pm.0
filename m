@@ -1,16 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 05/12] power management: no valid states w/o
-	pm_ops + docs
-Date: Tue, 13 Feb 2007 13:12:49 +0100
-Message-ID: <20070213121249.GJ18101@elf.ucw.cz>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124612.176570000@sipsolutions.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Request for testing remote wakeup during STD
+Date: Tue, 13 Feb 2007 10:52:07 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0702131051330.3766-100000@iolanthe.rowland.org>
+References: <20070213113547.GI12996@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20070207124612.176570000@sipsolutions.net>
+In-Reply-To: <20070213113547.GI12996@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,36 +17,63 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 13 Feb 2007, Pavel Machek wrote:
 
-> This patch changes /sys/power/state to not advertise any valid states
-> (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have been
-> set so userspace can easily discover what states should be available.
+> Hi!
 > =
 
-> Also, because the pm ops in powermac are obviously not using them as
-> intended, I added documentation for it in kernel-doc format.
+> > There have been reports of problems related to shutting down with remot=
+e =
+
+> > wakeup enabled on EHCI USB controllers in 2.6.20; see
+> > =
+
+> > 	http://bugzilla.kernel.org/show_bug.cgi?id=3D7828
+> > =
+
+> > In brief, some people have found that if ehci-hcd is loaded and the =
+
+> > controller is suspended when they try to shut down their systems, the =
+
+> > machine reboots immediately instead of turning off.  Apparently this is =
+
+> > caused by the firmware mistakenly thinking that a remote-wakeup event h=
+as =
+
+> > occurred.  Admittedly, remote wakeup from a system sleep is still black =
+
+> > magic to most of us...
+> > =
+
+> > I wrote a patch to try and fix the problem by turning off EHCI remote
+> > wakeup from within the driver's shutdown() method.  The patch is here:
+> > =
+
+> > 	http://bugzilla.kernel.org/attachment.cgi?id=3D10313&action=3Dview
+> > =
+
+> > However I'm concerned that this might affect suspend-to-disk.  Some luc=
+ky =
+
+> > people have systems which do keep their EHCI controllers in D3hot durin=
+g =
+
+> > STD, and such people might reasonably want Wake-on-USB to work properly=
+.  =
+
+> > It seems likely that the patch would prevent it from working.
 > =
 
-> Reordering the fields in struct pm_ops not only makes the output of
-> kernel-doc make more sense but also removes a hole from the structure on
-> 64-bit platforms.
-> =
+> I do not think such "lucky people" exist. And not being able to
+> control the wakeups.... no I do not think that feature is useful,
+> yet. KISS.
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: linux-pm@lists.osdl.org
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Macheck <pavel@ucw.cz>
+Okay, based on your feedback and that from others, I will submit the =
 
-Looks okay to me.
-										Pavel
+original simple patch.  Thanks.
 
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Alan Stern
