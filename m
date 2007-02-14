@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-Date: Wed, 14 Feb 2007 15:45:56 +0100
-Message-ID: <20070214144556.GC25910@elf.ucw.cz>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
-	<1170940494.4385.51.camel@johannes.berg>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: Re: [RFC][PATCH] PM: Document requirements for basic
+	PM	support in	drivers
+Date: Wed, 14 Feb 2007 17:41:40 +0200
+Message-ID: <1171467700.16413.12.camel@Dogbert.NOE.nokia.com>
+References: <200702130023.23418.rjw@sisk.pl>
+	<1171324020.4081.94.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <1170940494.4385.51.camel@johannes.berg>
+In-Reply-To: <1171324020.4081.94.camel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,44 +19,291 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
+To: ext Nigel Cunningham <ncunningham@linuxmail.org>
+Cc: Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 2007-02-13 at 10:47 +1100, ext Nigel Cunningham wrote:
+> Hi.
+> =
 
-> > Except for the in-irq count hack I'm happy with this. I still haven't f=
-ound
-> > where the in-hard-irq count is set to 1 in the down path during suspend=
+> On Tue, 2007-02-13 at 00:23 +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > =
+
+> > Here's my attempt to document the requirements with respect to the basi=
+c PM
+> > support in drivers and the testing of that.  Comments welcome.
+> > =
+
+> > Greetings,
+> > Rafael
+> > =
+
+> > ---
+> >  Documentation/SubmittingDrivers         |   10 ++
+> >  Documentation/power/drivers-testing.txt |  119 +++++++++++++++++++++++=
++++++++++
+> >  2 files changed, 129 insertions(+)
+> > =
+
+> > Index: linux-2.6.20-git4/Documentation/SubmittingDrivers
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-2.6.20-git4.orig/Documentation/SubmittingDrivers
+> > +++ linux-2.6.20-git4/Documentation/SubmittingDrivers
+> > @@ -87,6 +87,16 @@ Clarity:	It helps if anyone can see how =
+
+> >  		driver that intentionally obfuscates how the hardware works
+> >  		it will go in the bitbucket.
+> >  =
+
+> > +PM support:	Since Linux is used on many portable and desktop systems, =
+your
+> > +		driver is likely to be used on such a system and therefore it
+> > +		should support basic power management by implementing, if
+> > +		necessary, the .suspend and .resume methods used during the
+> > +		system-wide suspend and resume transitions.  You should verify
+> > +		that your driver correctly handles the suspend and resume, but
+> > +		if you are unable to ensure that, please at least define the
+> > +		.suspend method returning the -ENOSYS ("Function not
+> > +		implemented") error.
+> > +
+> >  Control:	In general if there is active maintainance of a driver by
+> >  		the author then patches will be redirected to them unless
+> >  		they are totally obvious and without need of checking.
+> > Index: linux-2.6.20-git4/Documentation/power/drivers-testing.txt
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- /dev/null
+> > +++ linux-2.6.20-git4/Documentation/power/drivers-testing.txt
+> > @@ -0,0 +1,119 @@
+> > +Testing suspend and resume support in drivers
+> > +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>
+> > +
+> > +Unfortunately, to effectively test the support for the system-wide sus=
+pend and
+> > +resume transitions in a driver, it is necessary to suspend and resume =
+a fully
+> > +functional system with this driver loaded.  Moreover, that should be d=
+one many
+> > +times, preferably many times in a row, and separately for the suspend =
+to disk
+> > +(STD) and the suspend to RAM (STR) transitions, because each of these =
+cases
+> > +involves different ordering of operations and different interactions w=
+ith the
+> > +machine's BIOS.
+> > +
+> > +Of course, for this purpose the test system has to be known to suspend=
+ and
+> > +resume without the driver being tested.  Thus, if possible, you should=
+ first
+> > +resolve all suspend/resume-related problems in the test system before =
+you start
+> > +testing the new driver.
+> > +
+> > +I. Preparing the test system
+> > +
+> > +1. To verify that the STD works, you can try to suspend in the "reboot=
+" mode:
+> > +
+> > +# echo reboot > /sys/power/disk
+> > +# echo disk > /sys/power/state
+> > +
+> > +and the system should suspend, reboot, resume and get back to the comm=
+and prompt
+> > +where you have started the transition.  If that happens, the STD is mo=
+st likely
+> > +to work correctly, but you can repeat the test a couple of times in a =
+row for
+> > +confidence.  You should also test the "platform" and "shutdown" modes =
+of
+> =
+
+> I would say "you need to repeat the test at least a couple of times...",
+> perhaps adding something along the lines of "This is necessary because
+> some problems only show up on a second attempt at suspending and
+> resuming a driver. You can think of it as the driver coming back 'dazed
+> and confused' after the first cycle, and only being properly killed by
+> the second attempt."
+
+"at least a couple of times" sounds very optimistic :-D
+
+> =
+
+> > +suspend:
+> > +
+> > +# echo platform > /sys/power/disk
+> > +# echo disk > /sys/power/state
+> > +
+> > +or
+> > +
+> > +# echo shutdown > /sys/power/disk
+> > +# echo disk > /sys/power/state
+> > +
+> > +in which cases you will have to press the power button to make the sys=
+tem
+> > +resume.  If that works, you are ready to test the STD with the new dri=
+ver
+> > +loaded.  Otherwise, you have to identify what is wrong.
+> > +
+> > +a) To verify if there are any drivers that cause problems you can run =
+the STD
+> > +in the test mode:
+> > +
+> > +# echo test > /sys/power/disk
+> > +# echo disk > /sys/power/state
+> > +
+> > +in which case the system should freeze tasks, suspend devices, disable=
+ nonboot
+> > +CPUs (if any), wait for 5 seconds, enable nonboot CPUs, resume devices=
+, thaw
+> > +tasks and return to your command prompt.  If that fails, most likely t=
+here is
+> > +a driver that fails to either suspend or resume (in the latter case th=
+e system
+> > +may hang or be unstable after the test, so please take that into consi=
+deration).
+> > +To find this driver, you can carry out a binary search according to th=
+e rules:
+> > +- if the test fails, unload a half of the drivers currently loaded and=
+ repeat
+> > +(that would probably involve rebooting the system, so always note what=
+ drivers
+> > +have been loaded before the test),
+> > +- if the test succeeds, load a half of the drivers you have unloaded m=
+ost
+> > +recently and repeat.
+> > +
+> > +Once you have found the failing driver (there can be more than just on=
+e of
+> > +them), you have to unload it every time before the STD transition.  In=
+ that case
+> > +please make sure to report the problem with the driver.
+> =
+
+> It is also possible that a cycle can still fail after you have unloaded
+> all modules. In that case, you would want to look in your kernel
+> configuration for possibilities that can be modularised (testing again
+> with them as modules), and possibly also try boot time options such as
+> noapic or noacpi.
+
+The first step, imho, would be to identify all the peripherals requiired
+for a barebone configuration to run (i.e. serial console) and verify
+that at least those can reliably go through several suspend/resume
+cycles. Then the dicotomic approach can be used.
+> =
+
+> > +
+> > +b) If the test mode of STD works, you can boot the system with "init=
+=3D/bin/bash"
+> > +and attempt to suspend in the "reboot", "shutdown" and "platform" mode=
+s.  If
+> > +that does not work, there probably is a problem with one of the low le=
+vel
+> > +drivers and you generally cannot do much about it except for reporting=
+ it
+> > +(fortunately, that does not happen very often these days).  Otherwise,=
+ there is
+> =
+
+> Oh. Perhaps some of the suggestions from above belong here?
+> =
+
+> > +a problem with a modular driver and you can find it by loading a half =
+of the
+> > +modules you normally use and binary searching in accordance with the a=
+lgorithm:
+> > +- if there are n modules loaded and the attempt to suspend and resume =
+fails,
+> > +unload n/2 of the modules and try again (that would probably involve r=
+ebooting
+> > +the system),
+> > +- if there are n modules loaded and the attempt to suspend and resume =
+succeeds,
+> > +load n/2 modules more and try again.
+> > +
+> > +Again, if you find the offending module(s), it(they) must be unloaded =
+every time
+> > +before the STD transition, and please report the problem with it(them).
+> > +
+> > +2. To verify that the STR works, it is generally more convenient to us=
+e the
+> > +s2ram tool available from http://suspend.sf.net and documented at
+> > +http://en.opensuse.org/s2ram .  However, before doing that it is recom=
+mended to
+> > +carry out the procedure described in section 1.
+> > +
+> > +Assume you have resolved the problems with the STD and you have found =
+some
+> > +failing drivers.  These drivers are also likely to fail during the STR=
  or
-> > resume and other platforms do similar things so I'm inclined to leave t=
-his.
+> > +during the resume, so it is better to unload them every time before th=
+e STR
+> > +transition.  Now, you can follow the instructions at
+> > +http://en.opensuse.org/s2ram to test the system, but if it does not wo=
+rk
+> > +"out of the box", you may need to boot it with "init=3D/bin/bash" and =
+test
+> > +s2ram in the minimal configuration.  In that case, you may be able to =
+search
+> > +for failing drivers by following the procedure analogous to the one de=
+scribed in
+> > +1b).  If you find some failing drivers, you will have to unload them e=
+very time
+> > +before the STR transition (ie. before you run s2ram), and please repor=
+t the
+> > +problem with them.
+> > +
+> > +II. Testing the driver
+> > +
+> > +Once you have resolved the suspend/resume-related problems with your t=
+est system
+> > +without the new driver, you are ready to test it:
+Why not first get the driver working against the barebone configuration?
+
+> > +
+> > +1. Build the driver as a module, load it and try the STD in the test m=
+ode
+> > +(cf. 1a)).
+> > +
+> > +2. Compile the driver directly into the kernel and try the STD in the =
+test mode
+> > +(cf. 1a)).
+> > +
+> > +3. Build the driver as a module, load it and attempt to suspend to dis=
+k in the
+> > +"reboot", "shutdown" and "platform" modes (cf. 1).
+> > +
+> > +4. Compile the driver directly into the kernel and attempt to suspend =
+to disk in
+> > +the "reboot", "shutdown" and "platform" modes (cf. 1).
+> > +
+> > +5. Build the driver as a module, load it and attempt to run s2ram (cf.=
+ 2).
+> > +
+> > +6. Compile the driver directly into the kernel and attempt to run s2ra=
+m (cf. 2).
+> > +
+> > +Each of the above tests should be repeated several times and if any of=
+ them
+> > +fails, the driver cannot be regarded as suspend/resume-safe.
 > =
 
-> Um, ok, so the hack breaks platforms that don't have paca, e.g. chrp32.
+> Apart from the minor comments above, looks good to me.
 > =
 
-> Also, I finally figured out how the in-hard-irq count happens. The thing
-> is that when I try to turn off the CPU it actually doesn't really turn
-> off of course, so it ends up doing NAP and taking timer interrupts...
-> which goes irq_enter() and we happen to kill it afterwards.
+> Regards,
 > =
 
-> I have two ways of fixing this:
->  - just ignore it as we do now
->  - insert a "if (cpu_dead) return" into the timer interrupt function
-> =
-
-> I prefer the latter because then we're guaranteed that whatever the
-> timer interrupt does we don't modify any state for/by the CPU that isn't
-> supposed to exist.
-
-Can you disable timer interrupt on the interrupt controller, instead?
-Provides same functionality, and needs no runtime overhead...
-									Pavel
+> Nigel
 
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Cheers, Igor
+
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia M - OSSO /Helsinki Finland)
