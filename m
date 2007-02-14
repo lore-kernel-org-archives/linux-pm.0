@@ -1,14 +1,15 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: question on freeze and aio
-Date: Wed, 14 Feb 2007 09:25:10 -0800
-Message-ID: <20070214092510.5468db34.rdunlap@xenotime.net>
-References: <20070213101859.GD12996@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0702131557400.2741-100000@iolanthe.rowland.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+Date: Wed, 14 Feb 2007 20:11:36 +0100
+Message-ID: <1171480296.6093.0.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<20070214144556.GC25910@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1401525160=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.44L0.0702131557400.2741-100000@iolanthe.rowland.org>
+In-Reply-To: <20070214144556.GC25910@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,50 +19,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 13 Feb 2007 16:01:30 -0500 (EST) Alan Stern wrote:
 
-> On Tue, 13 Feb 2007, Pavel Machek wrote:
-> =
-
-> > > No, workqueues are not frozen unless they are explicitly declared as
-> > > freezeable.  Which currently is only done by XFS, AFAIKS.
-> > =
-
-> > Ok, then we have a bug in swsusp. Can someone locate _which_ workqueue
-> > is used for aio... and make it freezeable?
-> =
-
-> Here is an untested patch.  Does anybody have a way to test it?
-> =
-
-> (BTW, should it be spelled "freezeable" or "freezable"?)
-
-www.dict.org says freezable.
+--===============1401525160==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-TRf2EKv4GHGAT4HlgM1I"
 
 
-> Index: usb-2.6/fs/aio.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-2.6.orig/fs/aio.c
-> +++ usb-2.6/fs/aio.c
-> @@ -73,7 +73,7 @@ static int __init aio_setup(void)
->  	kioctx_cachep =3D kmem_cache_create("kioctx", sizeof(struct kioctx),
->  				0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL, NULL);
->  =
+--=-TRf2EKv4GHGAT4HlgM1I
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> -	aio_wq =3D create_workqueue("aio");
-> +	aio_wq =3D create_freezeable_workqueue("aio");
->  =
+On Wed, 2007-02-14 at 15:45 +0100, Pavel Machek wrote:
 
->  	pr_debug("aio_setup: sizeof(struct page) =3D %d\n", (int)sizeof(struct =
-page));
+> Can you disable timer interrupt on the interrupt controller, instead?
+
+No, it's not actually an external interrupt, the "timer interrupt" on
+powerpc is the decrementer exception which is built into the CPU.
+
+In any case, the soft-irq disable stuff I already posted a bit later
+provides the same with no more runtime overhead than we already have.
+
+johannes
+
+--=-TRf2EKv4GHGAT4HlgM1I
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF017o/ETPhpq3jKURAjt9AKC1L3dZDIYIaue8Os66b7nx4dTa2gCeInjI
+p63Mh9pQwNrbH4YKP5+oFpM=
+=Ztey
+-----END PGP SIGNATURE-----
+
+--=-TRf2EKv4GHGAT4HlgM1I--
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+--===============1401525160==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1401525160==--
