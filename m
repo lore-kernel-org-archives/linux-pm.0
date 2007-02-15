@@ -1,45 +1,196 @@
-From: Jan Dittmer <jdi@l4x.org>
-Subject: Re: [linux-pm] Suspend to RAM, Sony Vaio PCG-SRX51P, lcd stays off
-Date: Fri, 16 Feb 2007 08:10:14 +0100
-Message-ID: <45D558D6.3050303@l4x.org>
-References: <45D43489.3060409@l4x.org> <20070215103639.GB27338@elf.ucw.cz> <37556.85.47.20.193.1171540572.squirrel@picard.linux.it>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+Date: Thu, 15 Feb 2007 20:43:49 +0100
+Message-ID: <1171568629.5220.51.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170973463.2620.373.camel@localhost.localdomain>
+	<1171035382.4520.7.camel@johannes.berg>
+	<1171293354.10344.6.camel@johannes.berg>
+	<17875.55046.873365.575945@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <37556.85.47.20.193.1171540572.squirrel@picard.linux.it>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Mattia Dongili <malattia@linux.it>
-Cc: Pavel Machek <pavel@ucw.cz>, stelian@popies.net, linux-acpi@vger.kernel.org, linux-pm@osdl.org, adaplas@pol.net, dawes@xfree86.org, Linux kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <17875.55046.873365.575945@cargo.ozlabs.ibm.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-Mattia Dongili wrote:
-> On Thu, February 15, 2007 11:36 am, Pavel Machek said:
+This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+disabled are put into an idle loop with the decrementer frequency set
+to minimum. To wake them up again we kick them just like when bringing
+them up. To stop those CPUs from messing with any global state we stop
+them from entering the timer interrupt.
 
->>>     sys_vendor   = "Sony Corporation    "
->>>     sys_product  = "PCG-SRX51P(DE)      "
->>>     sys_version  = "01                  "
->>>     bios_version = "R0232U2"
->>>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> (unrelated to your suspend problems) does the sony-laptop (formerly
-> sony_acpi) module helps controlling brightness?
-> (should appear soon or you can eventually grab it from the linux-acpi tree)
+---
+This makes more sense... Thanks for pointing that out. I wonder why it
+actually worked.
 
-No, I use the sonypi driver. But I can test the sony-laptop one as
-soon as it is in -mm again if it would be of any help.
+ arch/powerpc/kernel/idle_power4.S       |   15 ++++++++++----
+ arch/powerpc/platforms/powermac/setup.c |   34 +++++++++++++++++++++++++++=
+++++-
+ arch/powerpc/platforms/powermac/smp.c   |   12 +++++++++--
+ include/asm-powerpc/machdep.h           |    2 +
+ 4 files changed, 56 insertions(+), 7 deletions(-)
 
->>> Latest kernel I tested is 2.6.20-git11 from today.
-> 
-> I read reports of successful suspends on that laptop, eg:
-> http://freenet-homepage.de/obauer/index.html
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/smp.c	2007-02-12 19:=
+14:13.584037567 +0100
++++ linux-2.6-git/arch/powerpc/platforms/powermac/smp.c	2007-02-12 19:14:32=
+.345037567 +0100
+@@ -897,7 +897,7 @@ void smp_core99_cpu_die(unsigned int cpu
+ 	cpu_dead[cpu] =3D 0;
+ }
+ =
 
-Ok, now I feel totally dumb. 's2ram -s -f' actually works iff you disable
-fb support completely in the kernel. It works even from X. Don't know how
-many combinations I tried but that one somehow slipped through. Anyway
-thanks for your help. So could this machine be added to the s2ram
-database?
+-#endif
++#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
+ =
 
-Thanks,
+ /* Core99 Macs (dual G4s and G5s) */
+ struct smp_ops_t core99_smp_ops =3D {
+@@ -907,8 +907,16 @@ struct smp_ops_t core99_smp_ops =3D {
+ 	.setup_cpu	=3D smp_core99_setup_cpu,
+ 	.give_timebase	=3D smp_core99_give_timebase,
+ 	.take_timebase	=3D smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	=3D smp_core99_cpu_disable,
+ 	.cpu_die	=3D smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	=3D generic_cpu_disable,
++	.cpu_die	=3D generic_cpu_die,
++	/* intentionally do *NOT* assign cpu_enable,
++	 * the generic code will use kick_cpu then! */
++# endif
+ #endif
+ };
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/setup.c	2007-02-12 1=
+9:14:32.182037567 +0100
++++ linux-2.6-git/arch/powerpc/platforms/powermac/setup.c	2007-02-12 19:14:=
+32.347037567 +0100
+@@ -425,6 +425,9 @@ static int initializing =3D 1;
+ static int pmac_late_init(void)
+ {
+ 	initializing =3D 0;
++	/* this is udbg (which is __init) and we can later use it during
++	 * cpu hotplug (in smp_core99_kick_cpu) */
++	ppc_md.progress =3D NULL;
+ 	return 0;
+ }
+ =
 
-Jan
+@@ -651,6 +654,35 @@ static int pmac_pci_probe_mode(struct pc
+ 		return PCI_PROBE_NORMAL;
+ 	return PCI_PROBE_DEVTREE;
+ }
++
++#ifdef CONFIG_HOTPLUG_CPU
++/* access per cpu vars from generic smp.c */
++DECLARE_PER_CPU(int, cpu_state);
++
++static void pmac_cpu_die(void)
++{
++	/* turn off as much as possible, we'll be
++	 * kicked out as this will only be invoked
++	 * on core99 platforms for now ... */
++
++	printk(KERN_INFO "CPU#%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) =3D CPU_DEAD;
++	smp_wmb();
++
++	/* during the path that leads here preemption is disabled,
++	 * reenable it now so that when coming up preempt count is
++	 * zero correctly */
++	preempt_enable();
++
++	while (1) {
++		/* let's not take timer interrupts too often ... */
++		set_dec(0x7fffffff);
++
++		power4_idle_irqs_softdisabled();
++	}
++}
++#endif
++
+ #endif
+ =
+
+ define_machine(powermac) {
+@@ -689,6 +721,6 @@ define_machine(powermac) {
+ 	.phys_mem_access_prot	=3D pci_phys_mem_access_prot,
+ #endif
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
+-	.cpu_die		=3D generic_mach_cpu_die,
++	.cpu_die		=3D pmac_cpu_die,
+ #endif
+ };
+--- linux-2.6-git.orig/arch/powerpc/kernel/idle_power4.S	2007-02-12 19:14:1=
+3.624037567 +0100
++++ linux-2.6-git/arch/powerpc/kernel/idle_power4.S	2007-02-15 20:16:06.906=
+249905 +0100
+@@ -19,7 +19,12 @@
+ =
+
+ 	.text
+ =
+
++_GLOBAL(power4_idle_irqs_softdisabled)
++	li	r6,0
++	b	0f
+ _GLOBAL(power4_idle)
++	li	r6,1
++0:
+ BEGIN_FTR_SECTION
+ 	blr
+ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+@@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	rotldi	r0,r0,16
+ 	mtmsrd	r0,1			/* hard-disable interrupts */
+ 	li	r0,1
+-	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+-	stb	r0,PACAHARDIRQEN(r13)
++	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
++	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
+ BEGIN_FTR_SECTION
+ 	DSSALL
+ 	sync
+@@ -51,5 +56,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	mtmsrd	r7
+ 	isync
+-	b	1b
+-
++	cmpdi	0,r6,0
++	bne+	1b
++	blr
+--- linux-2.6-git.orig/include/asm-powerpc/machdep.h	2007-02-12 19:14:13.64=
+5037567 +0100
++++ linux-2.6-git/include/asm-powerpc/machdep.h	2007-02-15 20:15:27.2872499=
+05 +0100
+@@ -252,6 +252,8 @@ struct machdep_calls {
+ =
+
+ extern void power4_idle(void);
+ extern void ppc6xx_idle(void);
++/* this one is for CPU hotplug (e.g. powermac) */
++extern void power4_idle_irqs_softdisabled(void);
+ =
+
+ /*
+  * ppc_md contains a copy of the machine description structure for the
