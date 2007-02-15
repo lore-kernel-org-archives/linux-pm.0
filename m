@@ -1,93 +1,88 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-Date: Thu, 15 Feb 2007 16:08:28 +0100
-Message-ID: <1171552108.5220.6.camel@johannes.berg>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
-	<1170940494.4385.51.camel@johannes.berg>
-	<1170973463.2620.373.camel@localhost.localdomain>
-	<1171035382.4520.7.camel@johannes.berg>
-	<1171293354.10344.6.camel@johannes.berg>
-	<17875.55046.873365.575945@cargo.ozlabs.ibm.com>
+From: "Najib Mwenisongole" <matriarchiespluralizes@nwjcompanies.com>
+Subject: {subj150207kap}
+Date: Thu, 15 Feb 2007 17:14:06 +0000 (UTC)
+Message-ID: <FDQZLGSGOAZ_VVJ9W_SE7BT6@nwjcompanies.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1657069597=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <17875.55046.873365.575945@cargo.ozlabs.ibm.com>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-pm@lists.osdl.org, linuxppc-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="----------=_1171559574-4069-162"
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Thu, 15 Feb 2007 18:13:49 -0060
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format...
 
---===============1657069597==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-23w1eI5bxGkw6efWr0xa"
-
-
---=-23w1eI5bxGkw6efWr0xa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-02-15 at 14:44 +1100, Paul Mackerras wrote:
-
-> > +_GLOBAL(power4_idle_irqs_softdisabled)
-> > +	li	r6,1
-> > +	b	0f
-> >  _GLOBAL(power4_idle)
-> > +	li	r6,0
-> > +0:
-> >  BEGIN_FTR_SECTION
-> >  	blr
-> >  END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
-> > @@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
-> >  	rotldi	r0,r0,16
-> >  	mtmsrd	r0,1			/* hard-disable interrupts */
-> >  	li	r0,1
-> > -	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
-> > -	stb	r0,PACAHARDIRQEN(r13)
-> > +	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
-> > +	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
->=20
-> Don't you have something backwards here?  If we come in through
-> power4_idle_irqs_softdisabled, the name would indicate to me that we
-> want to end up with paca->soft_enabled set to 0, not 1.
-
-Umm, yes, looks like. I'll rewrite it. Interesting that it worked as I
-had expected though (I actually put a printk into the timer interrupt!).
-
-johannes
-
---=-23w1eI5bxGkw6efWr0xa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF1Hds/ETPhpq3jKURArhQAKCXNsmEFmHexmyDg76Z5/N5Fcr55QCdG41f
-35Yjz/biIRlpYsAJNSlwoCA=
-=2pzT
------END PGP SIGNATURE-----
-
---=-23w1eI5bxGkw6efWr0xa--
-
-
---===============1657069597==
+------------=_1171559574-4069-162
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============1657069597==--
+Authoritative Oil and Gas company with Drilling Results on the Way=0A=
+=0A=
+Company: Victory Energy Corporation (VYEY)=0A=
+Current Price: around $0.80=0A=
+=0A=
+Price Projection:=0A=
+=0A=
+Drilling exceeds expectations: $4.00=0A=
+Drilling meets prognosis: $2.60=0A=
+Drilling is below expectations: $1.50=0A=
+=0A=
+On January 29th VYEY announced that its first pioneer well  "has probable s=
+hows for oil and gas in 3 medium to large zones which total 195=0A=
+feet of potential production."=0A=
+=0A=
+Further drilling is being done right now. We are waiting for results to be =
+announced shortly.=0A=
+=0A=
+Don't wait the moment they will be announced.=0A=
+Trust your feelings. It is Time to Get In Now.=0A=
+=0A=
+=0A=
+=0A=
+
+------------=_1171559574-4069-162
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+
+Spam detection software, running on the system "daredevil.osdl.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  Authoritative Oil and Gas company with Drilling Results
+  on the Way Company: Victory Energy Corporation (VYEY) Current Price:
+  around $0.80 Price Projection: [...] 
+
+Content analysis details:   (6.2 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 5.0 OSDL_STOCK15           BODY: "VYEY" spam
+ 1.0 OUTFLUX_INVEST_PRICE   BODY: contains "Price"
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.4583]
+ 0.2 MIME_QP_LONG_LINE      RAW: Quoted-printable line longer than 76 chars
+
+
+
+------------=_1171559574-4069-162
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+------------=_1171559574-4069-162--
