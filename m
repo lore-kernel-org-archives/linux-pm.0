@@ -1,55 +1,93 @@
-From: "Mattia Dongili" <malattia@linux.it>
-Subject: Re: [linux-pm] Suspend to RAM, Sony Vaio PCG-SRX51P, lcd stays off
-Date: Thu, 15 Feb 2007 12:56:12 +0100 (CET)
-Message-ID: <37556.85.47.20.193.1171540572.squirrel@picard.linux.it>
-References: <45D43489.3060409@l4x.org> <20070215103639.GB27338@elf.ucw.cz>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+Date: Thu, 15 Feb 2007 16:08:28 +0100
+Message-ID: <1171552108.5220.6.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170973463.2620.373.camel@localhost.localdomain>
+	<1171035382.4520.7.camel@johannes.berg>
+	<1171293354.10344.6.camel@johannes.berg>
+	<17875.55046.873365.575945@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070215103639.GB27338@elf.ucw.cz>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jan Dittmer <jdi@l4x.org>, stelian@popies.net, linux-acpi@vger.kernel.org, linux-pm@osdl.org, adaplas@pol.net, dawes@xfree86.org, Linux kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============1657069597=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <17875.55046.873365.575945@cargo.ozlabs.ibm.com>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, February 15, 2007 11:36 am, Pavel Machek said:
-> Hi!
->
->> I own an older Sony Vaio SRX51P, European Model, P3 based. s2ram
->> identifies it with
->>
->>     sys_vendor   = "Sony Corporation    "
->>     sys_product  = "PCG-SRX51P(DE)      "
->>     sys_version  = "01                  "
->>     bios_version = "R0232U2"
->>
->> Suspend to RAM by using "s2ram -v -m -f" actually works and the
->> laptop comes back to life, is accessible by network, etc. kudos
->> so far.
->> The only but serious problem is, that the lcd stays off after
->> resume. No matter what kind of options for s2ram I try, if I disable
->
-> Is the _lcd_ off or the _backlight_ off? Use bright flashlight to
-> tell.
->
->> framebuffer or suspend from X, the lcd always stays off. Only
->> a reboot fixes this. Note that the X driver also cannot dis-/enable
->> the lcd (xset dpms force off). It always stays lit. I also tried
->> with i810switch, but that also does not affect the lcd.
->> spicctrl -b42 neither.
 
-(unrelated to your suspend problems) does the sony-laptop (formerly
-sony_acpi) module helps controlling brightness?
-(should appear soon or you can eventually grab it from the linux-acpi tree)
-
->> Latest kernel I tested is 2.6.20-git11 from today.
-
-I read reports of successful suspends on that laptop, eg:
-http://freenet-homepage.de/obauer/index.html
-
--- 
-mattia
-:wq!
+--===============1657069597==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-23w1eI5bxGkw6efWr0xa"
 
 
+--=-23w1eI5bxGkw6efWr0xa
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2007-02-15 at 14:44 +1100, Paul Mackerras wrote:
+
+> > +_GLOBAL(power4_idle_irqs_softdisabled)
+> > +	li	r6,1
+> > +	b	0f
+> >  _GLOBAL(power4_idle)
+> > +	li	r6,0
+> > +0:
+> >  BEGIN_FTR_SECTION
+> >  	blr
+> >  END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+> > @@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+> >  	rotldi	r0,r0,16
+> >  	mtmsrd	r0,1			/* hard-disable interrupts */
+> >  	li	r0,1
+> > -	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+> > -	stb	r0,PACAHARDIRQEN(r13)
+> > +	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
+> > +	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
+>=20
+> Don't you have something backwards here?  If we come in through
+> power4_idle_irqs_softdisabled, the name would indicate to me that we
+> want to end up with paca->soft_enabled set to 0, not 1.
+
+Umm, yes, looks like. I'll rewrite it. Interesting that it worked as I
+had expected though (I actually put a printk into the timer interrupt!).
+
+johannes
+
+--=-23w1eI5bxGkw6efWr0xa
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF1Hds/ETPhpq3jKURArhQAKCXNsmEFmHexmyDg76Z5/N5Fcr55QCdG41f
+35Yjz/biIRlpYsAJNSlwoCA=
+=2pzT
+-----END PGP SIGNATURE-----
+
+--=-23w1eI5bxGkw6efWr0xa--
+
+
+--===============1657069597==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============1657069597==--
