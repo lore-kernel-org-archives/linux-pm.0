@@ -1,39 +1,34 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: Use of parallel init threads for slow devices start ups?
-Date: Mon, 19 Feb 2007 11:50:38 -0600
-Message-ID: <3B6D69C3A9EBCA4BA5DA60D9130274295B9D66@dlee13.ent.ti.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] [Ipw2100-devel] [RFC] Runtime power management on ipw2100
+Date: Mon, 19 Feb 2007 13:08:49 -0800
+Message-ID: <200702191308.49797.david-b@pacbell.net>
+References: <20070131075249.GA22115@srcf.ucam.org> <20070206214407.GA5254@srcf.ucam.org> <1170925306.19089.125.camel@debian.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-class: urn:content-classes:message
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: pm list <linux-pm@lists.osdl.org>
-Cc: "Reddy, Teerth" <teerth@ti.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <1170925306.19089.125.camel@debian.sh.intel.com>
+Content-Disposition: inline
+Sender: netdev-owner@vger.kernel.org
+To: linux-pm@lists.osdl.org
+Cc: Zhu Yi <yi.zhu@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, ipw2100-devel@lists.sourceforge.net, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thursday 08 February 2007 1:01 am, Zhu Yi wrote:
 
-While doing some startup time profiling it is noticed we spend a lot of
-time in the idle loop.  As there is only one thread initializing devices
-there is no one to schedule during device start ups.  So for example an
-external sensor might need a couple seconds to power up.
+> A generic requirement for dynamic power management is the hardware
+> resource should not be touched when you put it in a low power state.
 
-Does anyone want to give an opinion on forking off a parallel thread to
-handle slower devices which are not dependent?
+That is in no way a "generic" requirement.  It might apply specifically
+to one ipw2100 low power state ... but "in general" devices may support
+more than one low power state, with different levels of functionality.
+Not all of those levels necessarily disallow touching the hardware.
 
-The init could be deferred but you still need to eat the wait time.  Its
-nicest if a few devices can be doing their waiting at the same time.
+> 	But I think
+> freeing the irq handler before suspend should be the right way to go.
 
-This is true for boot time and for device resume time...
+Some folk like that model a lot for shared IRQs.  It shouldn't
+matter for non-sharable ones.
 
-Regards,
-Richard W.
+- Dave
