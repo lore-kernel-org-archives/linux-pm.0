@@ -1,44 +1,68 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Suspend to RAM, Sony Vaio PCG-SRX51P, lcd stays off
-Date: Fri, 16 Feb 2007 11:59:31 +0100
-Message-ID: <20070216105931.GE4176@elf.ucw.cz>
-References: <45D43489.3060409@l4x.org> <20070215103639.GB27338@elf.ucw.cz> <37556.85.47.20.193.1171540572.squirrel@picard.linux.it> <45D558D6.3050303@l4x.org>
+From: "Kelvin Roland"<kelvinroland111@myway.com>
+Subject: YOUR BANK DRAFT IS READY
+Date: Mon, 19 Feb 2007 02:49:58 -0500 (EST)
+Message-ID: <20070219074958.3EA2B6768F@mprdmxin.myway.com>
+Reply-To: peterlouise@excite.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <45D558D6.3050303@l4x.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jan Dittmer <jdi@l4x.org>, seife@novell.com
-Cc: Mattia Dongili <malattia@linux.it>, stelian@popies.net, linux-acpi@vger.kernel.org, linux-pm@osdl.org, adaplas@pol.net, dawes@xfree86.org, Linux kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============1839846037=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: kelvinroland111@myway.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+This is a multi-part message in MIME format...
 
-> > On Thu, February 15, 2007 11:36 am, Pavel Machek said:
-> 
-> >>>     sys_vendor   = "Sony Corporation    "
-> >>>     sys_product  = "PCG-SRX51P(DE)      "
-> >>>     sys_version  = "01                  "
-> >>>     bios_version = "R0232U2"
-> >>>
-...
-> >>> Latest kernel I tested is 2.6.20-git11 from today.
-> > 
-> > I read reports of successful suspends on that laptop, eg:
-> > http://freenet-homepage.de/obauer/index.html
-> 
-> Ok, now I feel totally dumb. 's2ram -s -f' actually works iff you disable
-> fb support completely in the kernel. It works even from X. Don't know how
-> many combinations I tried but that one somehow slipped through. Anyway
-> thanks for your help. So could this machine be added to the s2ram
-> database?
+--===============1839846037==
+Content-Type: multipart/alternative;
+    boundary="----------=_1171871421-32713-24"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-Stefan, can we add this one?
+This is a multi-part message in MIME format...
 
-Anyway, it would be nice to actually fix the fb support in kernel not
-to hang the machine on your Sony...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+------------=_1171871421-32713-24
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+ 
+Compliment ,How are you doing today, Hope you have not forgotten me? I am .Mr Kelvin Roland, the man from Nigeria who contacted you some time ago to assist me secure the release of some money accrued from the over Invoicing of a contract/ inheritance that was awarded by my Government) some time ago during the military regime.Though you were not able to assist me conclude the transaction, I'm happy to inform you about my success in getting those funds transffered under the assistance and co-operation of a new partner from Brazile.Presently i'm in Netherlands for investment projects with my own share of the total sum.meanwhile, i didn't forget your past efforts and attempts to assit me in transffering those funds, I made sure you are not left out the benefit of the transaction hence I kept aside for you the sum of Five Hundred Thousand United States Dollars.($500,000.00)Draft, the compensa
+ tion also go for the good work of God meaning for the orphans and disable in your country 
+Please take good care of them and the poor in needs also.I and my new partner agreed to compensate you with that amount for all your past efforts and attempts to assist me in this matter. I Appreciate your efforts at that time very much, so feel free and get in touch with my secretary Mr.peter Louise, and instruct him on how to send the Bank draft to you.Please do let me know immediately you receive the Draft so that we can share the joy together after all the sufferness at that time. In the moment, i'm very busy here because of the investment projects which me and my partner are having at hands, finally, remember that i had left instruction to my secretary so as soon as you contact him, he will send the Draft to you,so feel free to get in touch with MY SECRETARY NOW.Below is the contact of my secretary:Mr.Peter Louise.Phone Number:234-8036059255E-mail:peterlouise@excite.comWith Best Reg
+ ards,Mr. Peter louise
+
+_______________________________________________
+No banners. No pop-ups. No kidding.
+Make My Way  your home on the Web - http://www.myway.com
+
+------------=_1171871421-32713-24
+Content-Type: text/html; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+ 
+<br /><br /><br /><br />Compliment ,<br /><br />How are you doing today, Hope you have not forgotten me? I am .Mr Kelvin Roland, the man from Nigeria who contacted you some time ago to assist me secure the release of some money accrued from the over Invoicing of a contract/ inheritance that was awarded by my Government) some time ago during the military regime.<br /><br />Though you were not able to assist me conclude the transaction, I'm happy to inform you about my success in getting those funds transffered under the assistance and co-operation of a new partner from Brazile.Presently i'm in Netherlands for investment projects with my own share of the total sum.meanwhile, i didn't forget your past efforts and attempts to assit me in transffering those funds, I made sure you are not left out the benefit of the transaction hence I kept aside for you the sum of Five Hundred Thousand United
+  States Dollars.($500,000.00)Draft, the compensation also go for the good work of God 
+meaning for the orphans and disable in your country Please take good care of them and the poor in needs also.<br /><br />I and my new partner agreed to compensate you with that amount for all your past efforts and attempts to assist me in this matter. I Appreciate your efforts at that time very much, so feel free and get in touch with my secretary Mr.peter Louise, and instruct him on how to send the Bank draft to you.<br /><br />Please do let me know immediately you receive the Draft so that we can share the joy together after all the sufferness at that time. In the moment, i'm very busy here because of the investment projects which me and my partner are having at hands, finally, remember that i had left instruction to my secretary so as soon as you contact him, he will send the Draft to you,so feel free to get in touch with MY SECRETARY NOW.<br /><br />Below is the contact of my secreta
+ ry:<br /><br />Mr.Peter Louise.<br />Phone Number:234-8036059255<br 
+/>E-mail:peterlouise@excite.com<br />With Best Regards,<br />Mr. Peter louise<p><hr><font size=2 face=verdana><span DEFANGED_style="font-weight:bold">No banners. No pop-ups. No kidding.</span><br>Make My Way  your home on the Web - <a href=http://www.myway.com target=_blank>http://www.myway.com</a></font></b>
+
+------------=_1171871421-32713-24--
+
+--===============1839846037==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1839846037==--
