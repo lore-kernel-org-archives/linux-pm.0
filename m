@@ -1,11 +1,11 @@
-From: Roman Stankovsky <franklinpep220@yahoo.co.uk>
-Subject: YUKOS OIL.
-Date: Tue, 20 Feb 2007 07:21:48 -0800
-Message-ID: <200702201521.l1KFLm709085@lsh411.van.ca.siteprotect.com>
-Reply-To: romanstanko444@yahoo.com
+From: "Tellie Vineyard" <indirectingorthodontists@kki.pl>
+Subject: For Linus
+Date: Tue, 20 Feb 2007 20:31:49 +0000 (UTC)
+Message-ID: <01c7552e$11a98f50$6c822ecf@indirectingorthodontists>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1171984910-4069-16"
+Content-Type: multipart/mixed; boundary="===============0499572278=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Date: Tue, 20 Feb 2007 20:31:15 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,84 +15,101 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
-------------=_1171984910-4069-16
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
+--===============0499572278==
+Content-Type: multipart/alternative;
+    boundary="----------=_1172003490-8936-897"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1172003490-8936-897
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Dear Friend
- 
-I am ROMAN STANKOVSKY and I represent Mr. Mikhail B. khodorkovsky the former C.E.O of Yukos Oil Company in Russia. I have a very sensitive and confidential brief from him to ask for your partnership in re-profiling funds in a private bank investment portfolio in London I will give the  details, but in summary, the funds are coming via Bank Menatep in Russia.
-
-You can catch more of the story on This website below or you can watch more of CNN or BBC to get more news about my boss.
-
-http://www.mosnews.com/mn-files/khodorkovsky.shtml
-http://www.mbktrial.com/
-http://news.bbc.co.uk/1/hi/business/3213505.stm
-http://www.themoscowtimes.com/stories/2005/04/11/041.html
-http://www.nndb.com/people/633/000025558/
-
-This is a legitimate transaction. You will be paid 5% of the portfolio investment value as your "management fees". If you are interested, please write back to me via my private E-mail and provide me with your confidential telephone number,fax number and email address and I will
-provide further details and if you are satisfied I can proceed with the instructions.
-
-l suggest that you contact me only via my private email:
-(romanstanko444@yahoo.com).
-
-Please we can not afford any political problems because of recent events in Russia. So I will advice you keep this to your self.Finally, please  note that this must be concluded within reasonable time frame therefore your  prompt reply is essential. And also I will like to invest in your country , after which the  fund is your position.
-Write me back. I look forward to it.
-
-ROMAN STANKOVSKY
+Fake enhance1ment meds have once again flooded the market. A recent study has shown that as much as 90% of male en1hancement meds sites out there are selling inexpensive knockoff versions of the original product! Don't be fooled by flashy online  webstores either or fabricated testimonials either!Canadian Pharmacy is the real deal - good ingredients, 100% guarantee, good effect! Canadian medications have been proven to effect, and use only the highest quality ingredients available anywhere.Don't wait any longer, join the millions of men already benefiting from using Canada based pharmacy. Why be average when you can be the best?Save your money - buy pills immediately!Here are just a few of the thousands of positive responses we have gotten recently:&quot;I Couldn't believe the change..."
+"Gentlemen,  I took the plunge and ordered a 120 day supply of Canada based pills. All I can say is THANK God I DID! Using the measuring guide in the free en1argement exercise section I can proudly tell you that I have gained over 1.8 inches in length and 1.6 inches in girth, AGAIN thank you!"
+  Tamille, Arkansas"I have been using Canadian pills for 3 months now and I should say I'm simply amazed. I really didn't think the product would have this many advantage. I really only purchased the pills to help the reliability of my erections. But to my surprise every aspect of my penis and sex life has improved. I have 1arger, harder erections easily, and I can really satisfy my girlfriend fully now."
+  Shah, Chicago"My partner has no idea, but has commented on my peni$ feeling thicker on entry lol.. Another thing i have noticed and i know she has been telling her girlfriends is my increased $ex dr1ve and confidence in bed.
+  I want it far more often now and even if I had never gained I now know that with the improved confidence and fuller erections and also improved dr1ve I can always put a smile on her face. So far so very good. Thank you sooo much!"
+  SHAHNEWAZ, Denver
 
 
+------------=_1172003490-8936-897
+Content-Type: text/html;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+<html DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office" DEFANGED=
+_xmlns:w=3D"urn:schemas-microsoft-com:office:word" DEFANGED_xmlns=3D"http:/=
+/www.w3.org/TR/REC-html40">
 
-------------=_1171984910-4069-16
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3DWindows-1=
+252">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+</head>
+<body>
+<html>
+<body bgColor=3D#ffffff>
+<p>Fake enhance1ment meds have once again flooded the market. A recent stud=
+y has shown that as much as 90% of male en1hancement meds sites out there a=
+re selling inexpensive knockoff versions of the original product! Don't be =
+fooled by flashy online  webstores either or fabricated testimonials either=
+!</p>
+<p><strong>Canadian Pharmacy is the real deal</strong> - good ingredients, =
+100% guarantee, good effect! Canadian medications have been proven to effec=
+t, and use only the highest quality ingredients available anywhere.</p>
+<p>Don't wait any longer, join the millions of men already benefiting from =
+using Canada based pharmacy. Why be average when you can be the best?</p>
+<p align=3D"center"><strong><a href=3D"http://outkast7327.ziggster.com/">Sa=
+ve your money - buy pills immediately!</a></strong></p>
+<p>Here are just a few of the thousands of positive responses we have gotte=
+n recently:</p>
+<p><em>&quot;<strong>I Couldn't believe the change...</strong>"<br>
+"Gentlemen,  I took the plunge and ordered a 120 day supply of Canada based=
+ pills. All I can say is THANK God I DID! Using the measuring guide in the =
+free en1argement exercise section I can proudly tell you that I have gained=
+ over 1.8 inches in length and 1.6 inches in girth, AGAIN thank you!"</em><=
+br>
+  <strong>Tamille, Arkansas</strong></p>
+<p><em>"I have been using Canadian pills for 3 months now and I should say =
+I'm simply amazed. I really didn't think the product would have this many a=
+dvantage. I really only purchased the pills to help the reliability of my e=
+rections. But to my surprise every aspect of my penis and sex life has impr=
+oved. <strong>I have 1arger, harder erections easily, and I can really sati=
+sfy my girlfriend fully now</strong>."</em><br>
+  <strong>Shah, Chicago</strong></p>
+<p><em>"My partner has no idea, but has commented on my peni$ feeling thick=
+er on entry lol.. Another thing i have noticed and i know she has been tell=
+ing her girlfriends is my <strong>increased $ex dr1ve and confidence</stron=
+g> in bed.<br>
+  I want it far more often now and even if I had never gained I now know th=
+at with the improved confidence and fuller erections and also improved dr1v=
+e I can always put a smile on her face. So far so very good. Thank you sooo=
+ much!"</em><br>
+  <strong>SHAHNEWAZ, Denver</strong></p>
+</body>
+</html>
+</body>
+</html>
 
-Spam detection software, running on the system "daredevil.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
+------------=_1172003490-8936-897--
 
-Content preview:  Dear Friend I am ROMAN STANKOVSKY and I represent Mr.
-  Mikhail B. khodorkovsky the former C.E.O of Yukos Oil Company in Russia.
-  I have a very sensitive and confidential brief from him to ask for your
-  partnership in re-profiling funds in a private bank investment portfolio
-  in London I will give the details, but in summary, the funds are coming
-  via Bank Menatep in Russia. [...] 
-
-Content analysis details:   (6.3 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 0.5 SUBJ_ALL_CAPS          Subject is all capitals
- 0.1 OSDL_NIGERIAN_FUNDS    BODY: "fun*ds"
- 0.2 OSDL_DEAR_FRIEND       BODY: "Dear*Friend" greeting
- 1.0 DEAR_FRIEND            BODY: Dear Friend? That's not very dear!
- 0.4 MAILTO_TO_SPAM_ADDR    URI: Includes a link to a likely spammer email
- 3.0 BAYES_95               BODY: Bayesian spam probability is 95 to 99%
-                            [score: 0.9671]
- 1.2 ADVANCE_FEE_2          Appears to be advance fee fraud (Nigerian 419)
- 0.1 ADVANCE_FEE_1          Appears to be advance fee fraud (Nigerian 419)
--0.2 AWL                    AWL: From: address is in the auto white-list
-
-
-
-------------=_1171984910-4069-16
+--===============0499572278==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
-------------=_1171984910-4069-16--
+--===============0499572278==--
