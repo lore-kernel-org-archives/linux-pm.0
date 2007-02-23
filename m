@@ -1,16 +1,15 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: rtc suspend()/resume() restores system clock
-Date: Fri, 23 Feb 2007 19:31:27 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0702231927220.8712@poirot.grange>
-References: <200702211929.17203.david-b@pacbell.net>
-	<200702211950.22422.david-b@pacbell.net>
-	<Pine.LNX.4.60.0702222352460.6771@poirot.grange>
-	<1172229450.3870.5.camel@johannes.berg>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: SMP suspend broken due to "swsusp: Change code
+	ordering in	disk.c" et al.
+Date: Fri, 23 Feb 2007 14:31:59 +0100
+Message-ID: <1172237519.3870.34.camel@johannes.berg>
+References: <1172201385.15769.32.camel@johannes.berg>
+	<200702231254.47009.rjw@sisk.pl>
+	<1172233076.3870.26.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0195838688=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1172229450.3870.5.camel@johannes.berg>
+In-Reply-To: <1172233076.3870.26.camel@johannes.berg>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,44 +19,60 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org, Alessandro Zummo <alessandro.zummo@towertech.it>, rtc-linux@googlegroups.com, john stultz <johnstul@us.ibm.com>, Torrance <torrance123@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Dave Vasilevsky <djvasi@gmail.com>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@suspend2.net>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-First, sorry for messing up the subject line.
 
-On Fri, 23 Feb 2007, Johannes Berg wrote:
+--===============0195838688==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-VIZiNrgGo01JIhg04xFK"
 
-> On Thu, 2007-02-22 at 23:58 +0100, Guennadi Liakhovetski wrote:
-> =
 
-> > I think, we only want 1, right? And the latter seems to be more generic=
- / =
+--=-VIZiNrgGo01JIhg04xFK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > platform independent? And as a side-effect, powermac would have to migr=
-ate =
+On Fri, 2007-02-23 at 13:19 +0100, Johannes Berg wrote:
 
-> > to generic rtc:-)
-> =
+> I can give it a go, but it doesn't look as though it'd help. It still
+> freezes all threads before disabling CPUs, and my debugging certainly
+> pinpointed to kthread_stop() in the workqueue.
 
-> Can we migrate all of powerpc to genrtc? But yes, I agree. Had enough to
-> do though already to get suspend working :)
+As expected, it prints:
+CPU#1 offline
+CPU 1 dead (my message when it goes into the dead loop)
+kthread_stop: stopping migration/1
+kthread_stop: stopping ksoftirq/1
+kthread_stop: stopping watchdog/1
+kthread_stop: kcryptd/1
+kthread_stop: stopping xfsdatad/1
 
-Johannes, is there any special meaning in "migrate all of powerpc to =
+and then hangs.
 
-genrtc"? Or is it just porting every single rtc driver to the generic rtc =
+johannes
 
-API, moving it under drivers/rtc and adjusting its users or are there any =
+--=-VIZiNrgGo01JIhg04xFK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-global changes required to arch/powerpc? Linkstation is now happily using =
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-a driver under drivers/rtc, whereas originally it also had a "all special" =
+iD8DBQBF3uzP/ETPhpq3jKURAtTyAJ9ZJbtkEop3ALhukxfMkmPNAhzv1wCfbg8b
+RbFYk3sjGCrpfGXCrb8SsZE=
+=OFwO
+-----END PGP SIGNATURE-----
 
-driver, and the migration for me wasn't that difficult... Or is there more =
+--=-VIZiNrgGo01JIhg04xFK--
 
-to do for other platforms?
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+--===============0195838688==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0195838688==--
