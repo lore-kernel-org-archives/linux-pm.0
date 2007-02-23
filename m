@@ -1,17 +1,10 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: SMP suspend broken due to "swsusp: Change code
-	ordering in disk.c" et al.
-Date: Fri, 23 Feb 2007 14:25:36 +0100
-Message-ID: <200702231425.38217.rjw@sisk.pl>
-References: <1172201385.15769.32.camel@johannes.berg>
-	<200702231254.47009.rjw@sisk.pl>
-	<1172233076.3870.26.camel@johannes.berg>
+From: "produced martial" <wetftjve@iol.cz>
+Subject: Surprises
+Date: Fri, 23 Feb 2007 16:05:26 -0100
+Message-ID: <83A04CC4BF8085F.1F17DAADCE@iol.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="----------=_1172243169-4069-184"
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1172233076.3870.26.camel@johannes.berg>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,138 +14,88 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Dave Vasilevsky <djvasi@gmail.com>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@suspend2.net>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This is a multi-part message in MIME format...
 
-On Friday, 23 February 2007 13:17, Johannes Berg wrote:
-> [correcting address for Nigel]
-> =
+------------=_1172243169-4069-184
+Content-Type: multipart/related; boundary="----------=_1172243194-2536-705"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-> Hi Rafael,
-> =
+This is a multi-part message in MIME format...
 
-> > Hm, the only freezable workqueues I was aware of were those in XFS.
-> =
+------------=_1172243194-2536-705
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Well, I have an XFS root fs.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2912" name=3D"GENERATOR">
+</HEAD>
+<BODY>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>___Physicians Adult Daycar=
+e, Inc. Up 7% from yesterday! Wow____</B></FONT></DIV><BR>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><I>Physicians Adult Daycare, =
+Inc. (phya.pk)</I></FONT></DIV><BR>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>DATE   :   FEB 23, 2007</FONT=
+></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Company:   PHYSICIANS ADULT D=
+AY</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Currently: <B>$0.33 (+0.02) (=
++6.45% in a day!!!)</B></FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Expected Day Target: <B>$0.75=
+</B></FONT></DIV><BR>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>News:</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Physicians Adult Daycare, Inc=
+. (PHYA) announced that the Company is in the final negotiation stages with=
+ TOTALtrak Global, Inc., a global provider of leading-edge Radio Frequency =
+Identification (RFID)-based and patent-pending Multi-Range (MRID) technolog=
+y solutions, to implement this versatile and powerful technology into the C=
+ompany's innovative adult daycare program......</FONT></DIV></BODY></HTML>
 
-I see.
+------------=_1172243194-2536-705--
 
-> In fact, the one that was mostly causing it was the xfs one, but I'm not
-> sure it was all the time. The same bug happens at resume time (if I manua=
-lly
-> offline all nonboot CPUs before suspend), at which point I couldn't tell
-> whether it was XFS or something else.
+------------=_1172243169-4069-184
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
 
-Probably XFS too.
+Spam detection software, running on the system "daredevil.osdl.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
 
-> > Moreover, the patch has got _a_ _lot_ of testing on SMP on x86_64
-> > and I believe it works for people on i386 too.  So the workqueues in qu=
-estion
-> > seem to be architecture-specific.  Is that correct?
-> =
+Content preview:  ___Physicians Adult Daycare, Inc. Up 7% from yesterday!
+  Wow____ Physicians Adult Daycare, Inc. (phya.pk) DATE : FEB 23, 2007
+  Company: PHYSICIANS ADULT DAY Currently: $0.33 (+0.02) (+6.45% in a
+  day!!!) Expected Day Target: $0.75 [...] 
 
-> There could be some arch-specific workqueues as well, but at least in
-> one case I saw xfsdatad causing it.
+Content analysis details:   (5.7 points, 5.0 required)
 
-Yes, that makes sense.
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 0.0 HTML_MESSAGE           BODY: HTML included in message
+ 3.5 BAYES_99               BODY: Bayesian spam probability is 99 to 100%
+                            [score: 1.0000]
+ 2.0 MIME_HTML_ONLY         BODY: Message only has text/html MIME parts
+ 0.2 MIME_QP_LONG_LINE      RAW: Quoted-printable line longer than 76 chars
 
-In that case the fastest fix would be to revert the commit in question (and
-some others too), but I don't think it will be satisfactory for the people =
-with
-the ACPI issues related to the resume code ordering.  Moreover, it really
-is more reasonable to disable nonboot CPUs after tasks have been frozen
-(I think it's also necessary for the CPU hotplugging with the help of the
-freezer; see below).
 
-I'll try to find a better solution later today.
 
-[Why, o why people don't test -mm kernels???  The patch that causes the pro=
-blem
-has been in -mm since 2.6.20-rc2-mm1 and _nobody_ has reported any problem
-with it until now.  Sigh.]
+------------=_1172243169-4069-184
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > > (1) would work, but also only punts the problem until someone wants to
-> > > do multi-threaded suspend (as if...).
-> > =
 
-> > It will also break symmetry with the resume code that has to be like th=
-is
-> > because of ACPI-related issues.
-> =
-
-> Ok. I don't have any ACPI issues due to the lack of ACPI ;)
-
-Lucky you. ;-)
-
-> > > (2a) would sort-of work, but what if someone unplugs a CPU while the
-> > > system is suspended [will that even work]? the thread would get really
-> > > stuck there, bound to a CPU that no longer exists.
-> > =
-
-> > Right now we are working on using the task freezer for CPU hotplugging =
-and if
-> > that works, this won't be an issue.
-> =
-
-> Care to elaborate? It doesn't seem to make sense to freeze tasks that
-> are running on some other CPU if that one is going offline, but I'm
-> probably misunderstanding you here.
-
-The idea is to freeze tasks every time before CPUs are hot(un)plugged.  This
-way we can avoid nasty locking-related issues that have been haunting us
-for some time.  And yes, we are going to freeze all tasks for this purpose,
-although it seems inefficient at first sight.
-
-Of course if we do it, the suspend code will have to be changed so that the
-freezing of tasks related to the CPU hotplug doesn't interfere with the
-freezing of tasks related to the suspend in a destructive way.  Then, proba=
-bly,
-the problem you have discovered will go away automatically.
-
-For this reason I'd like to keep the ordering of code in disk.c as it is no=
-w,
-because something like
-
-freeze_processes(SUSPEND)
-...
-freeze_processes(CPU_HOTPLUG)
-...
-thaw_processes(CPU_HOTPLUG)
-...
-thaw_processes(SUSPEND)
-
-seems to be more logical than any other ordering.
-
-> > I'd like to first understand why the workqueues in question here are fr=
-eezable.
-> =
-
-> I don't think that matters much. We can't have freezable per-CPU
-> workqueues and then forbid using them.
-
-Yes.
-
-> > Could you please check if the appended patch (on top of the commit you =
-have
-> > reverted) changes anything?
-> =
-
-> I can give it a go, but it doesn't look as though it'd help. It still
-> freezes all threads before disabling CPUs, and my debugging certainly
-> pinpointed to kthread_stop() in the workqueue.
-
-Yes, you're right.
-
-I wasn't quite sure which workqueues were causing the problem, but if that's
-XFS, I know enough.
-
-The fix is needed, because we'd like to make the majority of worqueues
-freezable, but the return to the old code ordering doesn't seem to be a good
-solution in the long run.
-
-Greetings,
-Rafael
+------------=_1172243169-4069-184--
