@@ -1,16 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: rtc suspend()/resume() restores system clock
-Date: Fri, 23 Feb 2007 21:24:35 +0100
-Message-ID: <1172262275.3870.65.camel@johannes.berg>
-References: <200702211929.17203.david-b@pacbell.net>
-	<200702211950.22422.david-b@pacbell.net>
-	<Pine.LNX.4.60.0702222352460.6771@poirot.grange>
-	<1172229450.3870.5.camel@johannes.berg>
-	<Pine.LNX.4.60.0702231927220.8712@poirot.grange>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: SMP suspend broken due to "swsusp: Change code
+	ordering in disk.c" et al.
+Date: Sat, 24 Feb 2007 01:01:11 +0100
+Message-ID: <200702240101.12846.rjw@sisk.pl>
+References: <1172201385.15769.32.camel@johannes.berg>
+	<200702231425.38217.rjw@sisk.pl>
+	<1172262219.3870.63.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1549794615=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.60.0702231927220.8712@poirot.grange>
+In-Reply-To: <1172262219.3870.63.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,55 +21,86 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, Alessandro Zummo <alessandro.zummo@towertech.it>, rtc-linux@googlegroups.com, john stultz <johnstul@us.ibm.com>, Torrance <torrance123@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Dave Vasilevsky <djvasi@gmail.com>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@suspend2.net>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---===============1549794615==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-JjbS1zQ0owr6QPZ/V+s1"
+On Friday, 23 February 2007 21:23, Johannes Berg wrote:
+> Hi,
+> =
 
+> > In that case the fastest fix would be to revert the commit in question =
+(and
+> > some others too),
+> =
 
---=-JjbS1zQ0owr6QPZ/V+s1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Yeah, the same thing exists for uswsusp and regular suspend-to-ram
+> afaict.
 
-On Fri, 2007-02-23 at 19:31 +0100, Guennadi Liakhovetski wrote:
+Exactly.
 
-> Johannes, is there any special meaning in "migrate all of powerpc to=20
-> genrtc"? Or is it just porting every single rtc driver to the generic rtc=
-=20
-> API, moving it under drivers/rtc and adjusting its users or are there any=
-=20
-> global changes required to arch/powerpc?
+> > but I don't think it will be satisfactory for the people with
+> > the ACPI issues related to the resume code ordering.  Moreover, it real=
+ly
+> > is more reasonable to disable nonboot CPUs after tasks have been frozen
+> > (I think it's also necessary for the CPU hotplugging with the help of t=
+he
+> > freezer; see below).
+> > =
 
-I don't know. powerpc has some platform-specific rtc hooks that will
-want conversion (or deletion?), I think.
+> > I'll try to find a better solution later today.
+> =
 
-johannes
+> Great.
 
---=-JjbS1zQ0owr6QPZ/V+s1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I'm looking at it right now, but this is quite complicated.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Could you please try the appended patch?  It's somewhat hackish, but may wo=
+rk.
 
-iD8DBQBF302D/ETPhpq3jKURAo4sAKCFgLQ4ijCOpAuiNu9f8FhP0h/IzgCfTJYH
-HgAnaJqH7UX5RnEWy+kV9zE=
-=Fm8Y
------END PGP SIGNATURE-----
+The idea is to do nothing on CPU unplug if the CPU's worker thread is frozen
+and later check in the thread itself if it has been replaced by another one.
 
---=-JjbS1zQ0owr6QPZ/V+s1--
-
-
---===============1549794615==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Greetings,
+Rafael
 
 
---===============1549794615==--
+ kernel/workqueue.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.20-mm2/kernel/workqueue.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.20-mm2.orig/kernel/workqueue.c	2007-02-23 22:48:50.000000000 =
++0100
++++ linux-2.6.20-mm2/kernel/workqueue.c	2007-02-24 00:58:57.000000000 +0100
+@@ -316,7 +316,13 @@ static int worker_thread(void *__cwq)
+ 	do_sigaction(SIGCHLD, &sa, (struct k_sigaction *)0);
+ =
+
+ 	for (;;) {
+-		try_to_freeze();
++		if (try_to_freeze()) {
++			/* We've just exited the refrigerator.  If our CPU is
++			 * a nonboot one, we might have been replaced.
++			 */
++			if (cwq->thread !=3D current)
++				break;
++		}
+ =
+
+ 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
+ 		if (!cwq->should_stop && list_empty(&cwq->worklist))
+@@ -713,7 +719,7 @@ static void cleanup_workqueue_thread(str
+ 	int alive =3D 0;
+ =
+
+ 	spin_lock_irq(&cwq->lock);
+-	if (cwq->thread !=3D NULL) {
++	if (cwq->thread !=3D NULL && !frozen(cwq->thread)) {
+ 		insert_wq_barrier(cwq, &barr, 1);
+ 		cwq->should_stop =3D 1;
+ 		alive =3D 1;
