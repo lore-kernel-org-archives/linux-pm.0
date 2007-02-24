@@ -1,16 +1,12 @@
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.19: ACPI reports AC not present after resume
-	from STD
-Date: Sat, 24 Feb 2007 12:55:01 +0300
-Message-ID: <200702241255.02073.arvidjaar@mail.ru>
-References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411>
-	<200702132116.05404.arvidjaar@mail.ru>
+From: "Nettie Rucker" <unscrewingmeters@protectbirds.com>
+Subject: You have the experience but lack the proper University
+	Degree.
+Date: Sat, 24 Feb 2007 15:59:36 +0000 (UTC)
+Message-ID: <01c7582c$b7ae3080$6c822ecf@unscrewingmeters>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="----------=_1172332741-4069-36"
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200702132116.05404.arvidjaar@mail.ru>
-Content-Disposition: inline
+Date: Sat, 24 Feb 2007 15:59:08 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,43 +16,263 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-LS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQpIYXNoOiBTSEExCgpPbiDQktGC0L7R
-gNC90LjQuiAxMyDRhNC10LLRgNCw0LvRjyAyMDA3LCBBbmRyZXkgQm9yemVua292IHdyb3RlOgo+
-IE9uINCn0LXRgtCy0LXRgNCzIDA3INC00LXQutCw0LHRgNGPIDIwMDYsIExlYmVkZXYsIFZsYWRp
-bWlyIFAgd3JvdGU6Cj4gPiBQbGVhc2UgcmVnaXN0ZXIgbmV3IGJ1ZywgYXR0YWNoIGFjcGlkdW1w
-IGFuZCBkbWVzZy4KPgo+IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
-ZD03OTk1Cj4KPiByZWdhcmRzCj4KCldlbGwsIHRoaXMgc3RhcnRzIGxvb2tpbmcgbGlrZSBBQ1BJ
-IGlzIG5vdCBhdCBmYXVsdC4KCldoZW4gcmVwb3J0aW5nIEFDIHN0YXRlIEFDUEkganVzdCByZWFk
-cyBjb250ZW50cyBvZiBzeXN0ZW0gbWVtb3J5IChJIHByZXN1bWUgCml0IGdldHMgdXBkYXRlZCBi
-eSBCSU9TL0FDUEkgd2hlbiBBQyBzdGF0ZSBjaGFuZ2VzKS4gSXQgbG9va3MgbGlrZSB0aGlzIApt
-ZW1vcnkgYXJlYSBpcyByZXN0b3JlZCBkdXJpbmcgcmVzdW1lIGZyb20gU1RELiBJIHVwZGF0ZWQg
-bWVudGlvbmVkIGJ1ZyAKcmVwb3J0IHdpdGggbW9yZSBkZXRhaWxlZCBkZXNjcmlwdGlvbi4gTm93
-IGlmIHNvbWVvbmUgY291bGQgc3VnZ2VzdCBhIHdheSB0byAKY2F0Y2ggaWYgc3BlY2lmaWMgcGh5
-c2ljYWwgYWRkcmVzcyBnZXRzIHNhdmVkL3Jlc3RvcmVkIHRoaXMgd291bGQgZmluYWxseSAKZXhw
-bGFpbiBpdC4KCkdyYXRlZnVsbHkgd2FpdGluZyBmb3IgcGF0Y2hlcyB0byB0ZXN0IDopCgotIC1h
-bmRyZXkKCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+ID4gRnJvbTogQWxleGV5IFN0
-YXJpa292c2tpeSBbbWFpbHRvOmFsZXhleS55LnN0YXJpa292c2tpeUBsaW51eC5pbnRlbC5jb21d
-Cj4gPgo+ID4gU2VudDogVGh1cnNkYXksIERlY2VtYmVyIDA3LCAyMDA2IDEwOjQ5IFBNCj4gPiBU
-bzogUmFmYWVsIEouIFd5c29ja2kKPiA+IENjOiBLYXJhc3lvdiwgS29uc3RhbnRpbiBBOyBBbmRy
-ZXkgQm9yemVua292Owo+ID4gbGludXgtYWNwaUB2Z2VyLmtlcm5lbC5vcmc7IExlYmVkZXYsIFZs
-YWRpbWlyIFAKPiA+IFN1YmplY3Q6IFJlOiAyLjYuMTk6IEFDUEkgcmVwb3J0cyBBQyBub3QgcHJl
-c2VudCBhZnRlciByZXN1bWUgZnJvbSBTVEQKPiA+Cj4gPiBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiA+ID4gSGksCj4gPiA+Cj4gPiA+IE9uIFRodXJzZGF5LCA3IERlY2VtYmVyIDIwMDYgMTk6
-NTcsIEthcmFzeW92LCBLb25zdGFudGluIEEgd3JvdGU6Cj4gPiA+PiBIaSwKPiA+ID4+Cj4gPiA+
-PiBVbmZvcnR1bmF0ZWx5LCBJIGNhbm5vdCByZXByb2R1Y2UgdGhpcyBidWcgb24gbXkgc3lzdGVt
-LCBidXQgdGhlCj4gPgo+ID4gcHJvYmxlbQo+ID4KPiA+ID4+IGNvdWxkIGJlIHNvbHZlZCBieSBh
-ZGRpbmcgYSByZXN1bWUgaGFuZGxlciBmb3IgQUMgYWRhcHRlciBkZXZpY2UuCj4gPgo+ID4gQ291
-bGQKPiA+Cj4gPiA+PiB5b3UgdHJ5IHRoZSBhdHRhY2hlZCBwYXRjaCB0byBzZWUgaWYgaXQgaGVs
-cHMuCj4gPiA+Cj4gPiA+IEkgY2FuIHJlcHJvZHVjZSBpdCBhbmQgdGhlIHBhdGNoIGRvZXNuJ3Qg
-aGVscC4KPiA+ID4KPiA+ID4gR3JlZXRpbmdzLAo+ID4gPiBSYWZhZWwKPiA+Cj4gPiBBbnkgQUNQ
-SSBlcnJvcnMgaW4gZG1lc2c/Cj4gPgo+ID4gUmVnYXJkcywKPiA+ICAgICBBbGV4LgoKCi0tLS0t
-QkVHSU4gUEdQIFNJR05BVFVSRS0tLS0tClZlcnNpb246IEdudVBHIHYxLjQuNSAoR05VL0xpbnV4
-KQoKaUQ4REJRRkY0QXQyUjZMTXV0cGQ5NHdSQW5aR0FKOWJHZDk4K2d6Q0RmaElhRmN0SDJ1OTlN
-MnVxUUNmVXpOego3UnFpZVR1N3Y0WjgzamplWTc5dm5Ndz0KPUdRWjYKLS0tLS1FTkQgUEdQIFNJ
-R05BVFVSRS0tLS0tCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5vc2RsLm9yZwpodHRwczov
-L2xpc3RzLm9zZGwub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0K
+This is a multi-part message in MIME format...
+
+------------=_1172332741-4069-36
+Content-Type: multipart/alternative;
+    boundary="----------=_1172332757-25468-195"
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1172332757-25468-195
+Content-Type: text/plain;
+	charset="windows-1250"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l1OFx9hB031193
+
+
+
+Job hunting without the needed Degree?
+
+
+
+
+
+
+=A0
+
+University Degree
+
+=A0
+
+OBTAIN A PROSPEROUS FUTURE, MONEY-EARNING POWER,
+AND THE PRESTIGE THAT COMES WITH HAVING THE CAREER POSITION YOU=D2VE ALWA=
+YS
+DREAMED OF. DIPLOMA FROM PRESTIGIOUS NON-ACCREDITED UNVERSITIES BASED ON =
+YOUR
+PRESENT KNOWLEDGE AND PROFESSIONAL EXPERIENCE.
+
+=A0
+
+If you qualify, no
+required tests, classes, books or examinations.
+
+=A0
+
+Confidentiality
+Assured
+
+=A0
+
+1-213-596-5778
+
+24 hours a day, 7 days a week including Sundays and
+Holidays
+
+=A0
+
+=A0
+
+
+Sat, 24 Feb 2007 15:59:08 -0060
+how patterns are  */XS/M:AB+9J0*I
+you have. You know Z/*U04U8T9VJ-98>G?IN
+
+
+
+
+
+------------=_1172332757-25468-195
+Content-Type: text/html;
+	charset="windows-1250"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+<html DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office" DEFANGED=
+_xmlns:w=3D"urn:schemas-microsoft-com:office:word" DEFANGED_xmlns=3D"http:/=
+/www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dwindows-1=
+250">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+</head>
+<body>
+<html DEFANGED_xmlns:v=3D"urn:schemas-microsoft-com:vml"
+DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office"
+DEFANGED_xmlns:w=3D"urn:schemas-microsoft-com:office:word"
+DEFANGED_xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+1">
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 10">
+<meta name=3DOriginator content=3D"Microsoft Word 10">
+<title>Job hunting without the needed Degree?</title>
+<DEFANGED_style>
+<!--
+  @font-face
+	{font-family:Georgia;
+	panose-1:2 4 5 2 5 4 5 2 3 3;
+	mso-font-charset:204;
+	mso-generic-font-family:roman;
+	mso-font-pitch:variable;
+	mso-font-signature:647 0 0 0 159 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	mso-header-margin:36.0pt;
+	mso-footer-margin:36.0pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</DEFANGED_style>
+
+</head>
+
+
+<div class=3DSection1>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
+n></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:22.0pt;font-family:Georgia">University Degree<o=
+:p></o:p></span></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia">OBTAIN A PROSPEROUS FUTURE, MONEY-EA=
+RNING POWER,
+AND THE PRESTIGE THAT COMES WITH HAVING THE CAREER POSITION YOU=D2VE ALWAYS
+DREAMED OF. DIPLOMA FROM PRESTIGIOUS NON-ACCREDITED UNVERSITIES BASED ON YO=
+UR
+PRESENT KNOWLEDGE AND PROFESSIONAL EXPERIENCE.<o:p></o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span class=3DGramE><i><span
+lang=3D"EN-US" DEFANGED_style=3D"font-size:14.0pt;font-family:Georgia">If y=
+ou qualify, no
+required tests, classes, books or examinations.</span></i></span><i><span
+lang=3D"EN-US" DEFANGED_style=3D"font-size:14.0pt;font-family:Georgia"><o:p=
+></o:p></span></i></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b DEFANGED_style=3D"mso-bidi-font-weight:
+normal"><span lang=3D"EN-US" DEFANGED_style=3D"font-size:18.0pt;font-family=
+:Georgia">Confidentiality
+Assured<o:p></o:p></span></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
+n></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:20.0pt;font-family:Georgia;color:red">1-213-596=
+-5778<o:p></o:p></span></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia">24 hours a day, 7 days a week includ=
+ing Sundays and
+Holidays<o:p></o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
+n></p>
+
+<p class=3DMsoNormal><span lang=3DEN-US><o:p>=A0</o:p></span></p>
+
+</div>
+<center>
+Sat, 24 Feb 2007 15:59:08 -0060
+how patterns are  */XS/M:AB+9J0*I<br>
+you have. You know Z/*U04U8T9VJ-98>G?IN<br>
+</center>
+</body>
+
+</html>
+
+</body>
+</html>
+
+------------=_1172332757-25468-195--
+
+------------=_1172332741-4069-36
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+Content-Transfer-Encoding: 7bit
+
+Spam detection software, running on the system "daredevil.osdl.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  Job hunting without the needed Degree? University Degree
+  [...] 
+
+Content analysis details:   (7.3 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 3.8 HELO_DYNAMIC_HCC       Relay HELO'd using suspicious hostname (HCC)
+ 0.5 OSDL_UNIDEGREE_NO_EXAM BODY: talks about no testing/studying
+ 2.0 BAYES_80               BODY: Bayesian spam probability is 80 to 95%
+                            [score: 0.8909]
+ 0.0 HTML_MESSAGE           BODY: HTML included in message
+ 0.2 MIME_QP_LONG_LINE      RAW: Quoted-printable line longer than 76 chars
+ 0.8 UPPERCASE_25_50        message body is 25-50% uppercase
+
+
+
+------------=_1172332741-4069-36
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+------------=_1172332741-4069-36--
