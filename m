@@ -1,16 +1,11 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: SMP suspend broken due to "swsusp: Change code
-	ordering in	disk.c" et al.
-Date: Sat, 24 Feb 2007 01:31:20 +0100
-Message-ID: <1172277080.3870.108.camel@johannes.berg>
-References: <1172201385.15769.32.camel@johannes.berg>
-	<200702231425.38217.rjw@sisk.pl>
-	<1172262219.3870.63.camel@johannes.berg>
-	<200702240101.12846.rjw@sisk.pl>
+From: notification <info_agent@yahoo.co.uk>
+Subject: winning notification..........contcat    claims agent
+Date: Sat, 24 Feb 2007 03:56:57 +0100 (CET)
+Message-ID: <20070224025658.2D06B3E63A9@ema-hosting.de>
+Reply-To: claimsagent_00001@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0796339805=="
+Content-Type: multipart/mixed; boundary="===============1253220775=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200702240101.12846.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,98 +15,73 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Dave Vasilevsky <djvasi@gmail.com>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@suspend2.net>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-
---===============0796339805==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-DhyUXA1A4k57KCO+h4iR"
-
-
---=-DhyUXA1A4k57KCO+h4iR
+--===============1253220775==
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-> Could you please try the appended patch?  It's somewhat hackish, but may =
-work.
-
-Not before Monday or Tuesday unfortunately, I'm away from the machine.
-Maybe I can find someone else willing to test who has the same box.
-
-> The idea is to do nothing on CPU unplug if the CPU's worker thread is fro=
-zen
-> and later check in the thread itself if it has been replaced by another o=
-ne.
-
-Yeah that should work. That patch won't apply to my tree though unless I
-actually go to -mm2 as well :)
-
-> Greetings,
-> Rafael
->=20
->=20
->  kernel/workqueue.c |   10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->=20
-> Index: linux-2.6.20-mm2/kernel/workqueue.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.20-mm2.orig/kernel/workqueue.c	2007-02-23 22:48:50.00000000=
-0 +0100
-> +++ linux-2.6.20-mm2/kernel/workqueue.c	2007-02-24 00:58:57.000000000 +01=
-00
-> @@ -316,7 +316,13 @@ static int worker_thread(void *__cwq)
->  	do_sigaction(SIGCHLD, &sa, (struct k_sigaction *)0);
-> =20
->  	for (;;) {
-> -		try_to_freeze();
-> +		if (try_to_freeze()) {
-> +			/* We've just exited the refrigerator.  If our CPU is
-> +			 * a nonboot one, we might have been replaced.
-> +			 */
-> +			if (cwq->thread !=3D current)
-> +				break;
-> +		}
-> =20
->  		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
->  		if (!cwq->should_stop && list_empty(&cwq->worklist))
-> @@ -713,7 +719,7 @@ static void cleanup_workqueue_thread(str
->  	int alive =3D 0;
-> =20
->  	spin_lock_irq(&cwq->lock);
-> -	if (cwq->thread !=3D NULL) {
-> +	if (cwq->thread !=3D NULL && !frozen(cwq->thread)) {
->  		insert_wq_barrier(cwq, &barr, 1);
->  		cwq->should_stop =3D 1;
->  		alive =3D 1;
->=20
-
---=-DhyUXA1A4k57KCO+h4iR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF34dY/ETPhpq3jKURAk3DAJ0bJpxDLfdIkgQLBxclI0fvfVHXhgCglaAs
-YAG5UXT3gwHa1OGuYmt2BrE=
-=cw43
------END PGP SIGNATURE-----
-
---=-DhyUXA1A4k57KCO+h4iR--
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l1O3WHhB009358
 
 
---===============0796339805==
+NATIONAL LOTTERY
+PROMOTIONS/ PRIZE AWARD DEPARTMENT.
+79 BOVILL ROAD
+LONDON. SE23 1EL.
+>>>>>>>>>>>>>>>>>>>>>>
+Ref: EGS/2251256003/02
+Batch: 14/0017/1PD
+>>>>>>>>>>>>>>>>>>>>>>
+
+DATE: 22th february, 2007
+
+                               WINNING NOTIFICATION
+                       >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Your email account have been picked as a winner of Six Hundred Thousand
+Pounds Sterling (=A3600,000.00) in cash credited to file=20
+KTU/9023118308/03.
+This is from a total sum of Four Million, Two hundred Thousand Pounds
+Sterling (=A34,200,000.00) shared amongst seven winners. This results is=20
+now
+released to you on the 22th of february, 2007 and your email address
+attached to ticket number: 56475600545 188 with Serial number
+5368/02.participants were selected through a computer ballot system=20
+drawn
+from Microsoft users from company and individual email address.
+
+Anybody under the age of 17 and members of the affiliate agencies are
+automatically not allowed to participate in this program.
+
+1. Full name and address.
+2. Country.
+3. Tel and fax number.
+4. Occupation.
+6. Languages Spoken.
+7. Age:
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Foreign Service Manager
+Mr. Adams Richards,
+DIRECT TELEPHONE:     +44 701 421 9046
+Fax:                             +44-871-715-6044
+Email:claimsagent_00001@yahoo.co.uk
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+Yours Sincerely,
+Mrs.Ann Roberts,
+Executive (International Sweepstakes).
+
+
+
+
+
+
+
+--===============1253220775==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
---===============0796339805==--
+--===============1253220775==--
