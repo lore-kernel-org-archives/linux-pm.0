@@ -1,15 +1,15 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: SMP suspend broken due to "swsusp: Change
-	code	ordering in disk.c" et al.
-Date: Sat, 24 Feb 2007 22:07:57 +0100
-Message-ID: <1172351277.3870.123.camel@johannes.berg>
-References: <1172201385.15769.32.camel@johannes.berg>
-	<1172277080.3870.108.camel@johannes.berg>
-	<200702240957.22636.rjw@sisk.pl> <200702242154.27167.rjw@sisk.pl>
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Date: Sat, 24 Feb 2007 23:11:41 +0200
+Message-ID: <20070224211141.GA4425@mellanox.co.il>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2032776942=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200702242154.27167.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20070223020904.c8fc8a3e.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,53 +19,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@suspend2.net>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-pm@lists.osdl.org, Dave Vasilevsky <djvasi@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, mingo@redhat.com, len.brown@intel.com, bunk@stusta.de, linux-kernel@vger.kernel.org, linux-pm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+> Quoting Andrew Morton <akpm@linux-foundation.org>:
+> Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+> =
 
---===============2032776942==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-oH6Khw/xiXqFTi6k4Sca"
+> > On Fri, 23 Feb 2007 01:38:03 +0200 "Michael S. Tsirkin" <mst@mellanox.c=
+o.il> wrote:
+> > I tested this:
+> > commit 9654640d0af8f2de40ff3807d3695109d3463f54
+> > and see 2 issues:
+> > =
 
+> > 1. After suspend to RAM, system wakes up but no screen.
+> > I can log in through ssh though.
+> > dmesg output at this point below.
+> > Works fine on 2.6.20 and below, with same .config
+> > .config and log file for this issue attached.
+> > =
 
---=-oH6Khw/xiXqFTi6k4Sca
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > 2. As a separate test, I enabled DynTicks in .config.
+> > Seems to work fine but won't come out of suspend to memory at all:
+> > pressing Fn/F4 seems to have no effect.
+> > =
 
-On Sat, 2007-02-24 at 21:54 +0100, Rafael J. Wysocki wrote:
+> =
 
-> No, this one is better IMO.
->=20
-> Appended is the version against 2.6.21-rc1.  It seems to work for me, but=
- I'd
-> like someone else to confirm it.
+> Do you believe that the second problem was caused by dynticks?
 
-I'll give it a try at the beginning of next week, thanks.
+Assuming these are 2 different problems, yes, the second one seems
+to be caused by dyntics.
 
-johannes
+-- =
 
---=-oH6Khw/xiXqFTi6k4Sca
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF4Kkt/ETPhpq3jKURAtXQAJ9UmrR3kUWjD0nV5CuoohePOgnY3ACeKY5r
-nVfEsVNzKu1Q6tyM5S1j31w=
-=lrWQ
------END PGP SIGNATURE-----
-
---=-oH6Khw/xiXqFTi6k4Sca--
-
-
---===============2032776942==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============2032776942==--
+MST
