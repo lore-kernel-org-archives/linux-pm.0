@@ -1,266 +1,107 @@
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
-Date: Sun, 25 Feb 2007 20:14:22 +0300
-Message-ID: <200702252014.26110.arvidjaar@mail.ru>
-References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702251337.08914.arvidjaar@mail.ru> <200702251151.12107.rjw@sisk.pl>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.21-rc1: known regressions (part 1)
+Date: Sun, 25 Feb 2007 18:52:47 +0100
+Message-ID: <20070225175247.GB12392@stusta.de>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1222813.WCPcBIExH4";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200702251151.12107.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>, "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Andrew Morton <akpm@osdl.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Andrew <andrew@nelless.net>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Lukas Hejtmanek <xhejtman@fi.muni.cz>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Meelis Roos <mroos@linux.ee>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Fabio Comolli <fabio.comolli@gmail.com>, Jean-Luc Coulon <jean.luc.coulon@gmail.com>, Markus Trippelsdorf <markus@trippelsdorf.de>, Tejun Heo <htejun@gmail.com>, Rafae
 List-Id: linux-pm@vger.kernel.org
 
---nextPart1222813.WCPcBIExH4
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_xPc4FyUkCnyB/l+"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
+that are not yet fixed in Linus' tree.
 
---Boundary-01=_xPc4FyUkCnyB/l+
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=B5 25 =
-=D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> On Sunday, 25 February 2007 11:37, Andrey Borzenkov wrote:
-> > On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=B5 2=
-5 =D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> > > On Sunday, 25 February 2007 00:26, Andrey Borzenkov wrote:
-> > > > On =D0=A1=D1=83=D0=B1=D0=B1=D0=BE=D1=82=D0=B0 24 =D1=84=D0=B5=D0=B2=
-=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> > > > > Hi,
-> > > > >
-> > > > > On Saturday, 24 February 2007 10:55, Andrey Borzenkov wrote:
-> > > > > > On =D0=92=D1=82=D0=BE=D1=80=D0=BD=D0=B8=D0=BA 13 =D1=84=D0=B5=
-=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Andrey Borzenkov wrote:
-> > > > > > > On =D0=A7=D0=B5=D1=82=D0=B2=D0=B5=D1=80=D0=B3 07 =D0=B4=D0=B5=
-=D0=BA=D0=B0=D0=B1=D1=80=D1=8F 2006, Lebedev, Vladimir P wrote:
-> > > > > > > > Please register new bug, attach acpidump and dmesg.
-> > > > > > >
-> > > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=3D7995
-> > > > > > >
-> > > > > > > regards
-> > > > > >
-> > > > > > Well, this starts looking like ACPI is not at fault.
-> > > > > >
-> > > > > > When reporting AC state ACPI just reads contents of system memo=
-ry
-> > > > > > (I presume it gets updated by BIOS/ACPI when AC state changes).
-> > > > > > It looks like this memory area is restored during resume from
-> > > > > > STD. I updated mentioned bug report with more detailed
-> > > > > > description. Now if someone could suggest a way to catch if
-> > > > > > specific physical address gets saved/restored this would finally
-> > > > > > explain it.
-> > > > >
-> > > > > First, if you want the reserved memory areas to be left alone by
-> > > > > swsusp, you need to mark them as 'nosave'.  On x86_64 this is done
-> > > > > by the function e820_mark_nosave_range() in
-> > > > > arch/x86_64/kernel/e820.c that can be ported to i386 with no
-> > > > > problems.  However, we haven't found that very useful, so far,
-> > > > > since no one has ever reported any problems with the current
-> > > > > approach, which is to save and restore them.
-> > > >
-> > > > Well, the following proof of concept patch fixes this issue for me.
-> > > > Please notice that original version of e820_mark_nosave_range() cou=
-ld
-> > > > fail to exclude some areas due to alignment issues (exactly what
-> > > > happened to me on first try) so it still can explain your problem
-> > > > too.
-> > >
-> > > Great job, thanks for the patch!  It looks good, so I'm going to
-> > > forward it for merging.
-> >
-> > Please no; I'm currently testing slightly more polished version; I will
-> > send it later.
->
-> OK
->
-> > Could anybody explain (or give pointer to) what happens which region th=
-at
-> > is not page-aligned? In particular, the very first one:
-> >
-> >  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-> >  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-> >
-> > Will the kernel allocate partial page (how?) or will the kernel ignore
-> > last (first) incomplete page? In the former case how those incomplete
-> > pages can be detected?
->
-> Well, on x86_64, if I understand e820_register_active_regions() correctly,
-> the partial pages won't be registered.
->
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-It appears that for low memory kernel will ignore incomplete pages for sure=
-=2E I=20
-hope it does the same for high memory - but for now I just throw this in an=
-d=20
-pray :) This also significantly simplifies patch.
 
-As this touches quite sensitive field, I Cc Andrew - if he considers this=20
-appropriate for mm; or would you do it as part of your tree? Also he probab=
-ly=20
-can easily clarify memory allocation questions :p
+Subject    : resume: slab error in verify_redzone_free(): cache `size-512':
+                     memory outside object was overwritten
+References : http://lkml.org/lkml/2007/2/24/41
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Handled-By : Marcel Holtmann <marcel@holtmann.org>
+Status     : unknown
 
-regards
 
-=2Dandrey
+Subject    : ThinkPad T60: no screen after suspend to RAM
+References : http://lkml.org/lkml/2007/2/22/391
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Handled-By : Ingo Molnar <mingo@elte.hu>
+Status     : unknown
 
---Boundary-01=_xPc4FyUkCnyB/l+
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="nosave_reserved_memory"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
-	filename="nosave_reserved_memory"
 
-Subject: [PATCH] Mark e820 reserved memory areas as nosave for suspend/resu=
-me
-=46rom: Andrey Borzenkov <<arvidjaar@mail.ru>>
+Subject    : HP nx6325 notebook: usb mouse stops working after suspend to ram
+References : http://lkml.org/lkml/2007/2/21/413
+Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
+Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+             commit 0a6139027f3986162233adc17285151e78b39cac
+Status     : unknown
 
-This fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=3D7995. From
-lkml discussion (http://marc.theaimsgroup.com/?t=3D116514878500001&r=3D1&w=
-=3D2):
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> When reporting AC state ACPI just reads contents of system memory (I
-> presume
-> it gets updated by BIOS/ACPI when AC state changes). It looks like this
-> memory area is restored during resume from STD. I updated mentioned bug
-> report with more detailed description. Now if someone could suggest a way
-> to
-> catch if specific physical address gets saved/restored this would finally
-> explain it.
+Subject    : MacBook: AE_NOT_FOUND ACPI messages
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8066
+Submitter  : Thomas Meyer <thomas.mey@web.de>
+Status     : unknown
 
-=46irst, if you want the reserved memory areas to be left alone by swsusp,
-you need to mark them as 'nosave'.  On x86_64 this is done by the function
-e820_mark_nosave_range() in arch/x86_64/kernel/e820.c that can be ported to
-i386 with no problems.  However, we haven't found that very useful, so far,
-since no one has ever reported any problems with the current approach,
-which is to save and restore them.
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-The patch adds adapted x84_64 version for i386. It differs from x86_64
-in that
+Subject    : Asus A8N-VM motherboard: boot failure (ACPI related)
+References : http://lkml.org/lkml/2007/2/23/132
+Submitter  : Andrew <andrew@nelless.net>
+Status     : unknown
 
-=2D it does not touch memory regions not covered by e820 table (I simply
-have no idea if this is appropriate to do)
 
-=2D it properly marks also partial pages (like the initial one in second
-line below). Apparently kernel won't allocate and use such pages, so there
-is nothing to preserve there.
+Subject    : Asus M6Ne notebook: ACPI: First battery is not detected
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
+Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
+Status     : unknown
 
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
 
-The region in question starts at ee800. This is likely true for x86_64 as
-well.
+Subject    : Asus M6Ne/M6A notebooks: SATA_ACPI errors during kernel boot
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
+             http://bugzilla.kernel.org/show_bug.cgi?id=8046
+Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
+             Lukas Hejtmanek <xhejtman@fi.muni.cz>
+Status     : unknown
 
-Signed-off-by: Andrey Borzenkov <<arvidjaar@mail.ru>>
 
-=2D--
+Subject    : ata-piix ACPI errors (40/80 pin cable mix)
+References : http://lkml.org/lkml/2007/2/22/159
+Submitter  : Meelis Roos <mroos@linux.ee>
+Handled-By : Alan Cox <alan@lxorguk.ukuu.org.uk>
+Status     : unknown
 
- arch/i386/kernel/e820.c  |   41 +++++++++++++++++++++++++++++++++++++++++
- arch/i386/kernel/setup.c |    1 +
- include/asm-i386/e820.h  |    1 +
- 3 files changed, 43 insertions(+), 0 deletions(-)
 
-diff --git a/arch/i386/kernel/e820.c b/arch/i386/kernel/e820.c
-index f391abc..adf0e6f 100644
-=2D-- a/arch/i386/kernel/e820.c
-+++ b/arch/i386/kernel/e820.c
-@@ -311,6 +311,47 @@ static int __init request_standard_resources(void)
-=20
- subsys_initcall(request_standard_resources);
-=20
-+/*
-+ * Mark pages corresponding to given pfn range as nosaves
-+ *
-+ * For low memory kernel definitely won't use partial pages;
-+ * I hope the same happens for high memory too. That is why
-+ * round in outer direction to be sure to preserve those partial
-+ * pages if they contain reserved regions.
-+ */
-+static void __init
-+e820_mark_nosave_range(unsigned long long start, unsigned long long end)
-+{
-+	unsigned long pfn, max_pfn =3D PFN_UP(end);
-+
-+	if (start >=3D end)
-+		return;
-+
-+	printk("Nosave address range: %016Lx - %016Lx\n", start, end);
-+	for (pfn =3D PFN_DOWN(start); pfn < max_pfn; pfn++)
-+		if (pfn_valid(pfn))
-+			SetPageNosave(pfn_to_page(pfn));
-+}
-+
-+/*
-+ * Find the ranges of physical addresses that do not correspond to
-+ * e820 RAM areas and mark the corresponding pages as nosave for software
-+ * suspend and suspend to RAM.
-+ *
-+ * This assumes kernel won't use partial pages.
-+ */
-+void __init e820_mark_nosave_regions(void)
-+{
-+	int i;
-+
-+	for (i =3D 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei =3D &e820.map[i];
-+
-+		if (ei->type !=3D E820_RAM)
-+			e820_mark_nosave_range(ei->addr, ei->addr + ei->size);
-+	}
-+}
-+
- void __init add_memory_region(unsigned long long start,
- 			      unsigned long long size, int type)
- {
-diff --git a/arch/i386/kernel/setup.c b/arch/i386/kernel/setup.c
-index 4b31ad7..4f43e46 100644
-=2D-- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -640,6 +640,7 @@ void __init setup_arch(char **cmdline_p)
- #endif
-=20
- 	e820_register_memory();
-+	e820_mark_nosave_regions();
-=20
- #ifdef CONFIG_VT
- #if defined(CONFIG_VGA_CONSOLE)
-diff --git a/include/asm-i386/e820.h b/include/asm-i386/e820.h
-index c5b8fc6..80e49bc 100644
-=2D-- a/include/asm-i386/e820.h
-+++ b/include/asm-i386/e820.h
-@@ -43,6 +43,7 @@ extern void register_bootmem_low_pages(unsigned long max_=
-low_pfn);
- extern void e820_register_memory(void);
- extern void limit_regions(unsigned long long size);
- extern void print_memory_map(char *who);
-+extern void e820_mark_nosave_regions(void);
-=20
- #endif/*!__ASSEMBLY__*/
-=20
+Subject    : ata_piix: PATA UDMA/100 configured as UDMA/33
+References : http://lkml.org/lkml/2007/2/20/294
+Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
+Status     : unknown
 
---Boundary-01=_xPc4FyUkCnyB/l+--
 
---nextPart1222813.WCPcBIExH4
-Content-Type: application/pgp-signature
+Subject    : sata_via failure
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8025
+Submitter  : Jean-Luc Coulon <jean.luc.coulon@gmail.com>
+             Markus Trippelsdorf <markus@trippelsdorf.de>
+Handled-By : Tejun Heo <htejun@gmail.com>
+Patch      : http://www.mail-archive.com/linux-ide@vger.kernel.org/msg03945.html
+Status     : patch available
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBF4cPyR6LMutpd94wRAouVAJ0f0PqS/Jm7HzkltbFxXC77v6xEoQCfR2bP
-okU1Nt+WzUslf3CnHAIQKt0=
-=p/e1
------END PGP SIGNATURE-----
+Subject    : BUG: at drivers/pci/pci.c:817 pcim_enable_device() (suspend, ata)
+References : http://lkml.org/lkml/2007/2/14/275
+             http://lkml.org/lkml/2007/2/22/367
+Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
+             Lukas Hejtmanek <xhejtman@mail.muni.cz>
+Handled-By : Tejun Heo <htejun@gmail.com>
+Patch      : http://lkml.org/lkml/2007/2/25/102
+Status     : patch available
 
---nextPart1222813.WCPcBIExH4--
+
