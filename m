@@ -1,16 +1,25 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.21-rc1: known regressions (part 1)
-Date: Sun, 25 Feb 2007 18:52:47 +0100
-Message-ID: <20070225175247.GB12392@stusta.de>
+Subject: 2.6.21-rc1: known regressions (part 2)
+Date: Sun, 25 Feb 2007 18:55:59 +0100
+Message-ID: <20070225175559.GC12392@stusta.de>
 References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-Sender: linux-acpi-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Andrew <andrew@nelless.net>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Lukas Hejtmanek <xhejtman@fi.muni.cz>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Meelis Roos <mroos@linux.ee>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Fabio Comolli <fabio.comolli@gmail.com>, Jean-Luc Coulon <jean.luc.coulon@gmail.com>, Markus Trippelsdorf <markus@trippelsdorf.de>, Tejun Heo <htejun@gmail.com>, Rafae
+Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
@@ -24,84 +33,35 @@ involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : resume: slab error in verify_redzone_free(): cache `size-512':
-                     memory outside object was overwritten
-References : http://lkml.org/lkml/2007/2/24/41
-Submitter  : Pavel Machek <pavel@ucw.cz>
-Handled-By : Marcel Holtmann <marcel@holtmann.org>
-Status     : unknown
-
-
-Subject    : ThinkPad T60: no screen after suspend to RAM
+Subject    : ThinkPad T60: system doesn't come out of suspend to RAM
+             (CONFIG_NO_HZ)
 References : http://lkml.org/lkml/2007/2/22/391
 Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+             Thomas Gleixner <tglx@linutronix.de>
 Handled-By : Ingo Molnar <mingo@elte.hu>
 Status     : unknown
 
 
-Subject    : HP nx6325 notebook: usb mouse stops working after suspend to ram
-References : http://lkml.org/lkml/2007/2/21/413
-Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
-             commit 0a6139027f3986162233adc17285151e78b39cac
-Status     : unknown
+Subject    : kernel BUG at kernel/time/tick-sched.c:168  (CONFIG_NO_HZ)
+References : http://lkml.org/lkml/2007/2/16/346
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : problem is being debugged
 
 
-Subject    : MacBook: AE_NOT_FOUND ACPI messages
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8066
-Submitter  : Thomas Meyer <thomas.mey@web.de>
-Status     : unknown
+Subject    : BUG: soft lockup detected on CPU#0
+             NOHZ: local_softirq_pending 20
+References : http://lkml.org/lkml/2007/2/20/257
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+             Ingo Molnar <mingo@elte.hu>
+Status     : problem is being debugged
 
 
-Subject    : Asus A8N-VM motherboard: boot failure (ACPI related)
-References : http://lkml.org/lkml/2007/2/23/132
-Submitter  : Andrew <andrew@nelless.net>
-Status     : unknown
-
-
-Subject    : Asus M6Ne notebook: ACPI: First battery is not detected
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
-Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
-Status     : unknown
-
-
-Subject    : Asus M6Ne/M6A notebooks: SATA_ACPI errors during kernel boot
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
-             http://bugzilla.kernel.org/show_bug.cgi?id=8046
-Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
-             Lukas Hejtmanek <xhejtman@fi.muni.cz>
-Status     : unknown
-
-
-Subject    : ata-piix ACPI errors (40/80 pin cable mix)
-References : http://lkml.org/lkml/2007/2/22/159
-Submitter  : Meelis Roos <mroos@linux.ee>
-Handled-By : Alan Cox <alan@lxorguk.ukuu.org.uk>
-Status     : unknown
-
-
-Subject    : ata_piix: PATA UDMA/100 configured as UDMA/33
-References : http://lkml.org/lkml/2007/2/20/294
-Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
-Status     : unknown
-
-
-Subject    : sata_via failure
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8025
-Submitter  : Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-             Markus Trippelsdorf <markus@trippelsdorf.de>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Patch      : http://www.mail-archive.com/linux-ide@vger.kernel.org/msg03945.html
-Status     : patch available
-
-
-Subject    : BUG: at drivers/pci/pci.c:817 pcim_enable_device() (suspend, ata)
-References : http://lkml.org/lkml/2007/2/14/275
-             http://lkml.org/lkml/2007/2/22/367
-Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
-             Lukas Hejtmanek <xhejtman@mail.muni.cz>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Patch      : http://lkml.org/lkml/2007/2/25/102
-Status     : patch available
-
-
+Subject    : i386: no boot with nmi_watchdog=3D1  (clockevents)
+References : http://lkml.org/lkml/2007/2/21/208
+Submitter  : Daniel Walker <dwalker@mvista.com>
+Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+             commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : problem is being debugged
