@@ -1,11 +1,17 @@
-From: "(270) 818-7244 Freeman " <462augustine@hypn.za.net>
-Subject: Re: Nede a{} Diploma?
-Date: Mon, 26 Feb 2007 14:30:37 +0200
-Message-ID: <78702176803089.05DC8B1C37@I99FBHEA>
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.19: ACPI reports AC not present after resume
+	from STD
+Date: Mon, 26 Feb 2007 23:35:41 +0300
+Message-ID: <200702262335.47874.arvidjaar@mail.ru>
+References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411>
+	<200702252014.26110.arvidjaar@mail.ru>
+	<200702251958.37315.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200702251958.37315.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,71 +21,36 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: bugme-janitors@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Yo Bugme-janitors!!.
-A Genuine Univers1ty Degree 1n notime! =
-
- =
-
-Have you ever thought that the only thing stopping you from a great job and=
- better apy was a few letters behind you name? =
-
-Well now you can get them! =
-
-
-
- =
-
-BA BSc MA MSc MBA PhD =
-
-
- =
-
-Within notime! =
-
-No Study Required! =
-
-10%0 Verifiable! =
-
-
-
- =
-
-These are real, genuine degrees that include Bacheolrs, Masters, MBA and Do=
-ctorate Degrees. They are fully verifiable and certified transcripts are al=
-so available. =
-
-
- =
-
-Just call the numbre below. =
-
-You?ll thank me later? =
-
-
- =
-
-Contact Anytime +1   (270) 818-7244 =
-
-Operators Live 24 hours
-________------------__________
-
-
-
-
-
-
-
-
-
-
-
-
-
-and  enforced the command with a whack of his staff across the back ofwith =
-    Atlantis     and     solar     mythology     in    inimitablefarmhouse =
- near  the Tiber, just as none would come back from Carrhae.Romans'  will  =
-to  fight  was gone with their leader's. The Surena hadhis  throat.  "Bette=
-r  than  just leaving him, sir," he muttered, then
+LS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQpIYXNoOiBTSEExCgpPbiDQktC+0YHQ
+utGA0LXRgdC10L3RjNC1IDI1INGE0LXQstGA0LDQu9GPIDIwMDcsIFJhZmFlbCBKLiBXeXNvY2tp
+IHdyb3RlOgo+Cj4gVGhlIHBhdGNoIGxvb2tzIGdvb2QsIGJ1dCB0aGUgY2hhbmdlbG9nIGRvZXMg
+bm90LiAgRmlyc3QsIEFGQUlDVCwgdGhlCj4geDg2XzY0IGNvZGUgZG9lc24ndCB0b3VjaCBhbnl0
+aGluZyBvdXRzaWRlIHRoZSBlODIwIG1hcC4gIFdoeSBkbyB5b3UgdGhpbmsKPiBpdCBkb2VzPwo+
+Cgp0aGUgZm9sbG93aW5nIGNvZGU6CgogICAgICAgcGFkZHIgPSByb3VuZF9kb3duKGU4MjAubWFw
+WzBdLmFkZHIgKyBlODIwLm1hcFswXS5zaXplLCBQQUdFX1NJWkUpOwogICAgICAgIGZvciAoaSA9
+IDE7IGkgPCBlODIwLm5yX21hcDsgaSsrKSB7CiAgICAgICAgICAgICAgICBzdHJ1Y3QgZTgyMGVu
+dHJ5ICplaSA9ICZlODIwLm1hcFtpXTsKCiAgICAgICAgICAgICAgICBpZiAocGFkZHIgPCBlaS0+
+YWRkcikKICAgICAgICAgICAgICAgICAgICAgICAgZTgyMF9tYXJrX25vc2F2ZV9yYW5nZShwYWRk
+ciwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJvdW5kX3VwKGVpLT5h
+ZGRyLCBQQUdFX1NJWkUpKTsKCm9idmlvdXNseSB3aWxsIG1hcmsgcmVnaW9uICpiZXR3ZWVuKiB0
+d28gZTgyMCByZWdpb25zIGlmIHRoZXkgYXJlIG5vdCAKYWRqYWNlbnQuIEkgZG8gbm90IHNheSB0
+aGF0IGl0IGlzIHdyb25nIChJIGhhdmUgbm8gaWRlYSk7IGJ1dCBleGFjdGx5IGJlY2F1c2UgCkkg
+aGF2ZSBubyBpZGVhIEkgdHJpZWQgdG8gYXZvaWQgaXQuCgo+IFNlY29uZCwgaXQgaXMgbm90IHRy
+dWUgdGhhdCB0aGUgcmVnaW9uIGluIHF1ZXN0aW9uIGlzIGF0IDB4ZWUwMCBvbiB4ODZfNjQuCj4g
+QXQgbGVhc3Qgb24gbXkgYm94IGl0J3MgYWJvdmUgdGhlIGVuZCBvZiBSQU0uCj4KCk9uIG15IGJv
+eCB0aGUgcHJvYmxlbSByZWdpb24gc3RhcnRzIGF0IGVlODAwIDopIEJ1dCB5b3UgYXJlIHJpZ2h0
+LCBpdCBkb2VzIG5vdCAKYmVsb25nIGhlcmUuCgo+IEkgdGhpbmsgdGhlIHg4Nl82NCB2ZXJzaW9u
+IGlzIGNvcnJlY3QgdG9vLgo+CgpJIGRvIG5vdCBzYXkgaXQgaXMgbm90LiBJIGp1c3Qgc2F5IHRo
+YXQgaXQgZG9lcyBzb21ldGhpbmcgSSBjYW5ub3QgdmVyaWZ5IHNvIEkgCmJldHRlciBhdm9pZCBp
+dCAoaS5lLiBJIGJldHRlciBjaGFuZ2UgZXhpc3RpbmcgYmVoYXZpb3VyIGFzIGxpdHRsZSBhcyAK
+cG9zc2libGUpLgoKLSAtYW5kcmV5Ci0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0tLS0tClZlcnNp
+b246IEdudVBHIHYxLjQuNSAoR05VL0xpbnV4KQoKaUQ4REJRRkY0MFNqUjZMTXV0cGQ5NHdSQWxM
+dkFLQ01rVnhNa0tOd3BHWC9KM29uMGpRUzY1OSt6Z0NnbW9mSwp2dUc0cDNnUjR5Qmpmb0h1TUFS
+MGNEVT0KPUpHOXoKLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
+eC1wbUBsaXN0cy5vc2RsLm9yZwpodHRwczovL2xpc3RzLm9zZGwub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtcG0K
