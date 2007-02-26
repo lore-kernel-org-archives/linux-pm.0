@@ -1,10 +1,10 @@
 From: notification <info_agent@yahoo.co.uk>
 Subject: winning notification................contcat claims agent
-Date: Sun, 25 Feb 2007 17:59:22 -0600
-Message-ID: <E1HLTH0-0005tZ-AB@w2.eleven2.com>
+Date: Sun, 25 Feb 2007 18:29:38 -0600
+Message-ID: <E1HLTkI-0005Ch-Ve@w2.eleven2.com>
 Reply-To: claimsagent_00001@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0162598103=="
+Content-Type: multipart/mixed; boundary="===============1511300116=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,10 +18,10 @@ Errors-To: linux-pm-bounces@lists.osdl.org
 To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============0162598103==
+--===============1511300116==
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l1PNxihB001975
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l1Q0TuhB002969
 
 NATIONAL LOTTERY
 PROMOTIONS/ PRIZE AWARD DEPARTMENT.
@@ -73,11 +73,11 @@ Executive (International Sweepstakes).
 
 
 
---===============0162598103==
+--===============1511300116==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 
---===============0162598103==--
+--===============1511300116==--
