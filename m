@@ -1,56 +1,84 @@
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.19: ACPI reports AC not present after resume
-	from STD
-Date: Mon, 26 Feb 2007 23:35:41 +0300
-Message-ID: <200702262335.47874.arvidjaar@mail.ru>
-References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411>
-	<200702252014.26110.arvidjaar@mail.ru>
-	<200702251958.37315.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
+Date: Mon, 26 Feb 2007 22:23:14 +0100
+Message-ID: <200702262223.14974.rjw@sisk.pl>
+References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702251958.37315.rjw@sisk.pl> <200702262335.47874.arvidjaar@mail.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200702251958.37315.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200702262335.47874.arvidjaar@mail.ru>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@osdl.org>, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>, "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-LS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQpIYXNoOiBTSEExCgpPbiDQktC+0YHQ
-utGA0LXRgdC10L3RjNC1IDI1INGE0LXQstGA0LDQu9GPIDIwMDcsIFJhZmFlbCBKLiBXeXNvY2tp
-IHdyb3RlOgo+Cj4gVGhlIHBhdGNoIGxvb2tzIGdvb2QsIGJ1dCB0aGUgY2hhbmdlbG9nIGRvZXMg
-bm90LiAgRmlyc3QsIEFGQUlDVCwgdGhlCj4geDg2XzY0IGNvZGUgZG9lc24ndCB0b3VjaCBhbnl0
-aGluZyBvdXRzaWRlIHRoZSBlODIwIG1hcC4gIFdoeSBkbyB5b3UgdGhpbmsKPiBpdCBkb2VzPwo+
-Cgp0aGUgZm9sbG93aW5nIGNvZGU6CgogICAgICAgcGFkZHIgPSByb3VuZF9kb3duKGU4MjAubWFw
-WzBdLmFkZHIgKyBlODIwLm1hcFswXS5zaXplLCBQQUdFX1NJWkUpOwogICAgICAgIGZvciAoaSA9
-IDE7IGkgPCBlODIwLm5yX21hcDsgaSsrKSB7CiAgICAgICAgICAgICAgICBzdHJ1Y3QgZTgyMGVu
-dHJ5ICplaSA9ICZlODIwLm1hcFtpXTsKCiAgICAgICAgICAgICAgICBpZiAocGFkZHIgPCBlaS0+
-YWRkcikKICAgICAgICAgICAgICAgICAgICAgICAgZTgyMF9tYXJrX25vc2F2ZV9yYW5nZShwYWRk
-ciwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJvdW5kX3VwKGVpLT5h
-ZGRyLCBQQUdFX1NJWkUpKTsKCm9idmlvdXNseSB3aWxsIG1hcmsgcmVnaW9uICpiZXR3ZWVuKiB0
-d28gZTgyMCByZWdpb25zIGlmIHRoZXkgYXJlIG5vdCAKYWRqYWNlbnQuIEkgZG8gbm90IHNheSB0
-aGF0IGl0IGlzIHdyb25nIChJIGhhdmUgbm8gaWRlYSk7IGJ1dCBleGFjdGx5IGJlY2F1c2UgCkkg
-aGF2ZSBubyBpZGVhIEkgdHJpZWQgdG8gYXZvaWQgaXQuCgo+IFNlY29uZCwgaXQgaXMgbm90IHRy
-dWUgdGhhdCB0aGUgcmVnaW9uIGluIHF1ZXN0aW9uIGlzIGF0IDB4ZWUwMCBvbiB4ODZfNjQuCj4g
-QXQgbGVhc3Qgb24gbXkgYm94IGl0J3MgYWJvdmUgdGhlIGVuZCBvZiBSQU0uCj4KCk9uIG15IGJv
-eCB0aGUgcHJvYmxlbSByZWdpb24gc3RhcnRzIGF0IGVlODAwIDopIEJ1dCB5b3UgYXJlIHJpZ2h0
-LCBpdCBkb2VzIG5vdCAKYmVsb25nIGhlcmUuCgo+IEkgdGhpbmsgdGhlIHg4Nl82NCB2ZXJzaW9u
-IGlzIGNvcnJlY3QgdG9vLgo+CgpJIGRvIG5vdCBzYXkgaXQgaXMgbm90LiBJIGp1c3Qgc2F5IHRo
-YXQgaXQgZG9lcyBzb21ldGhpbmcgSSBjYW5ub3QgdmVyaWZ5IHNvIEkgCmJldHRlciBhdm9pZCBp
-dCAoaS5lLiBJIGJldHRlciBjaGFuZ2UgZXhpc3RpbmcgYmVoYXZpb3VyIGFzIGxpdHRsZSBhcyAK
-cG9zc2libGUpLgoKLSAtYW5kcmV5Ci0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0tLS0tClZlcnNp
-b246IEdudVBHIHYxLjQuNSAoR05VL0xpbnV4KQoKaUQ4REJRRkY0MFNqUjZMTXV0cGQ5NHdSQWxM
-dkFLQ01rVnhNa0tOd3BHWC9KM29uMGpRUzY1OSt6Z0NnbW9mSwp2dUc0cDNnUjR5Qmpmb0h1TUFS
-MGNEVT0KPUpHOXoKLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
-eC1wbUBsaXN0cy5vc2RsLm9yZwpodHRwczovL2xpc3RzLm9zZGwub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtcG0K
+On Monday, 26 February 2007 21:35, Andrey Borzenkov wrote:
+> On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=B5=
+ 25 =D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki =
+wrote:
+> >
+> > The patch looks good, but the changelog does not.  First, AFAICT, t=
+he
+> > x86_64 code doesn't touch anything outside the e820 map.  Why do yo=
+u think
+> > it does?
+> >
+>=20
+> the following code:
+>=20
+>        paddr =3D round_down(e820.map[0].addr + e820.map[0].size, PAGE=
+_SIZE);
+>         for (i =3D 1; i < e820.nr_map; i++) {
+>                 struct e820entry *ei =3D &e820.map[i];
+>=20
+>                 if (paddr < ei->addr)
+>                         e820_mark_nosave_range(paddr,
+>                                         round_up(ei->addr, PAGE_SIZE)=
+);
+>=20
+> obviously will mark region *between* two e820 regions if they are not
+> adjacent. I do not say that it is wrong (I have no idea); but exactly=
+ because
+> I have no idea I tried to avoid it.
+
+Yes, you are right, sorry.  We have to do this for x86_64, because ther=
+e are
+such holes in there on machines with more than 2 GB of RAM and swsusp c=
+hokes
+on them if they are not marked.
+
+On i386 we shouldn't really mark reserved areas in the highmem zone(s) =
+as
+nosave, because they are handled in a different way.
+
+> > Second, it is not true that the region in question is at 0xee00 on =
+x86_64.
+> > At least on my box it's above the end of RAM.
+> >
+>=20
+> On my box the problem region starts at ee800 :) But you are right, it=
+ does not
+> belong here.
+>=20
+> > I think the x86_64 version is correct too.
+> >
+>=20
+> I do not say it is not. I just say that it does something I cannot ve=
+rify so I
+> better avoid it (i.e. I better change existing behaviour as little as
+> possible).
+
+OK
+
+Can you please test your patch with the loop in e820_mark_nosave_region=
+s()
+restricted to the zones below highmem?
+
+Rafael
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
