@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Tue, 27 Feb 2007 11:21:09 +0100
-Message-ID: <20070227102109.GG6745@elf.ucw.cz>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<20070225175559.GC12392@stusta.de>
-	<20070227100202.GV3822@kernel.dk>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Date: Tue, 27 Feb 2007 11:14:51 +0100
+Message-ID: <20070227101451.GA11981@elte.hu>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org>
+	<20070224211141.GA4425@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20070227100202.GV3822@kernel.dk>
+In-Reply-To: <20070224211141.GA4425@mellanox.co.il>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,45 +19,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Daniel Walker <dwalker@mvista.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: linux-acpi@vger.kernel.org, mingo@redhat.com, len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>, bunk@stusta.de, linux-kernel@vger.kernel.org, linux-pm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
-> > that are not yet fixed in Linus' tree.
+* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+
+> > > 2. As a separate test, I enabled DynTicks in .config. Seems to =
+
+> > > work fine but won't come out of suspend to memory at all: pressing =
+
+> > > Fn/F4 seems to have no effect.
 > > =
 
-> > If you find your name in the Cc header, you are either submitter of one
-> > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > of you caused a breakage or I'm considering you in any other way possib=
-ly
-> > involved with one or more of these issues.
-> > =
-
-> > Due to the huge amount of recipients, please trim the Cc when answering.
-> > =
-
-> > =
-
-> > Subject    : ThinkPad T60: system doesn't come out of suspend to RAM
-> >              (CONFIG_NO_HZ)
-> > References : http://lkml.org/lkml/2007/2/22/391
-> > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> >              Thomas Gleixner <tglx@linutronix.de>
-> > Handled-By : Ingo Molnar <mingo@elte.hu>
-> > Status     : unknown
+> > Do you believe that the second problem was caused by dynticks?
 > =
 
-> x60 doesn't resume from S2R either, it doesn't matter if CONFIG_NO_HZ is
-> set or not though. 2.6.20 worked fine.
+> Assuming these are 2 different problems, yes, the second one seems to =
 
-It somehow works for me. As long as I do not play with bluetooth and
-suspend to disk...
-								Pavel
--- =
+> be caused by dyntics.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+on my T60 current -git does not resume even without dynticks. v2.6.20 =
+
+with the same .config resumes fine (except for the display).
+
+after pressing Fn/F4 the disk light flashes briefly, which suggests that =
+
+action is probably back to the Linux kernel at that point, and that we =
+
+hung somewhere there. Will try a bisection thing.
+
+	Ingo
