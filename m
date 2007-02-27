@@ -1,17 +1,19 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
-Date: Tue, 27 Feb 2007 12:03:06 +0100
-Message-ID: <20070227110306.GE20927__46986.5596540787$1172574648$gmane$org@elte.hu>
-References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org>
-	<20070224211141.GA4425@mellanox.co.il>
-	<20070227101451.GA11981@elte.hu>
-	<20070227102809.GD10548@mellanox.co.il>
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Date: Tue, 27 Feb 2007 12:15:15 +0100
+Message-ID: <20070227111515.GA4271@kernel.dk>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	<20070225175559.GC12392@stusta.de>
+	<20070227100202.GV3822@kernel.dk>
+	<20070227102109.GG6745@elf.ucw.cz>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20070227102809.GD10548@mellanox.co.il>
+In-Reply-To: <20070227105922.GD2250@kernel.dk>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,37 +23,74 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: linux-acpi@vger.kernel.org, mingo@redhat.com, len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>, bunk@stusta.de, linux-kernel@vger.kernel.org, linux-pm@linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Daniel Walker <dwalker@mvista.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Feb 27 2007, Jens Axboe wrote:
+> On Tue, Feb 27 2007, Ingo Molnar wrote:
+> > =
 
-* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > =
 
-> > > > Do you believe that the second problem was caused by dynticks?
+> > > > > x60 doesn't resume from S2R either, it doesn't matter if =
+
+> > > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
+> > > > =
+
+> > > > It somehow works for me. As long as I do not play with bluetooth an=
+d =
+
+> > > > suspend to disk...
 > > > =
 
-> > > Assuming these are 2 different problems, yes, the second one seems =
+> > > It locks solid here on resume, going back to 2.6.20 makes it work =
 
-> > > to be caused by dyntics.
+> > > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change =
+
+> > > broke resume, but that got fixed. Some other change later snuck in =
+
+> > > that broke it AGAIN for me, sigh.
+> > > =
+
+> > > I don't use bluetooth nor suspend to disk.
 > > =
 
-> > on my T60 current -git does not resume even without dynticks. =
+> > resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works =
 
-> > v2.6.20 with the same .config resumes fine (except for the display).
-> > =
+> > fine? Do you know a commit ID that works for sure? I'd like to bisect =
 
-> > after pressing Fn/F4 the disk light flashes briefly, which suggests =
-
-> > that action is probably back to the Linux kernel at that point, and =
-
-> > that we hung somewhere there. Will try a bisection thing.
 > =
 
-> That's exactly the behaviour I have with DynTicks: the disk light =
+> Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
+> until some acpi change broke it, the below patch fixed that for me. That
+> got merged in a later 2.6.20-gitY, but then some other patch broke it
+> again so that 2.6.21-rc1 is broken. Not much luck there :-)
+> =
 
-> flashes briefly.
+> So it looks like:
+> =
 
-it flashes here briefly even if suspend works fine.
+> - c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
+> - f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
+> - Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
+>   again.
+> =
 
-	Ingo
+> > this, but this way i might just find that ACPI change that got already =
+
+> > fixed later on (and then got re-broken).
+> =
+
+> Yeah, it gets trickier. I'll try
+> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
+> bisect to 2.6.21-rc1 to find the other offender. I hope the other
+> offender didn't get added before
+> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
+
+f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, starting bisect.
+
+-- =
+
+Jens Axboe
