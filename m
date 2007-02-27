@@ -1,18 +1,18 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Jens Axboe <jens.axboe@oracle.com>
 Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Tue, 27 Feb 2007 11:34:07 +0100
-Message-ID: <20070227103407.GA17819@elte.hu>
+Date: Tue, 27 Feb 2007 11:59:22 +0100
+Message-ID: <20070227105922.GD2250@kernel.dk>
 References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 	<20070225175559.GC12392@stusta.de>
 	<20070227100202.GV3822@kernel.dk>
 	<20070227102109.GG6745@elf.ucw.cz>
-	<20070227103021.GA2250@kernel.dk>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20070227103021.GA2250@kernel.dk>
+In-Reply-To: <20070227103407.GA17819@elte.hu>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,40 +22,65 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Daniel Walker <dwalker@mvista.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Feb 27 2007, Ingo Molnar wrote:
+> =
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> =
 
-> > > x60 doesn't resume from S2R either, it doesn't matter if =
+> > > > x60 doesn't resume from S2R either, it doesn't matter if =
 
-> > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
+> > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
+> > > =
+
+> > > It somehow works for me. As long as I do not play with bluetooth and =
+
+> > > suspend to disk...
 > > =
 
-> > It somehow works for me. As long as I do not play with bluetooth and =
+> > It locks solid here on resume, going back to 2.6.20 makes it work =
 
-> > suspend to disk...
+> > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change =
+
+> > broke resume, but that got fixed. Some other change later snuck in =
+
+> > that broke it AGAIN for me, sigh.
+> > =
+
+> > I don't use bluetooth nor suspend to disk.
 > =
 
-> It locks solid here on resume, going back to 2.6.20 makes it work =
+> resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works =
 
-> perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change =
+> fine? Do you know a commit ID that works for sure? I'd like to bisect =
 
-> broke resume, but that got fixed. Some other change later snuck in =
 
-> that broke it AGAIN for me, sigh.
-> =
+Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
+until some acpi change broke it, the below patch fixed that for me. That
+got merged in a later 2.6.20-gitY, but then some other patch broke it
+again so that 2.6.21-rc1 is broken. Not much luck there :-)
 
-> I don't use bluetooth nor suspend to disk.
+So it looks like:
 
-resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works =
+- c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
+- f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
+- Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
+  again.
 
-fine? Do you know a commit ID that works for sure? I'd like to bisect =
+> this, but this way i might just find that ACPI change that got already =
 
-this, but this way i might just find that ACPI change that got already =
+> fixed later on (and then got re-broken).
 
-fixed later on (and then got re-broken).
+Yeah, it gets trickier. I'll try
+f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
+bisect to 2.6.21-rc1 to find the other offender. I hope the other
+offender didn't get added before
+f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
 
-	Ingo
+-- =
+
+Jens Axboe
