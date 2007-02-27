@@ -1,19 +1,16 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Tue, 27 Feb 2007 14:09:13 +0100
-Message-ID: <20070227130913.GA6035@kernel.dk>
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
+Date: Tue, 27 Feb 2007 15:25:45 +0200
+Message-ID: <200702271525.48645.ismail@pardus.org.tr>
 References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<20070225175559.GC12392@stusta.de>
-	<20070227100202.GV3822@kernel.dk>
-	<20070227102109.GG6745@elf.ucw.cz>
-	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070226220152.GA29575@stusta.de>
+	<200702271450.19080.caglar@pardus.org.tr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200702271450.19080.caglar@pardus.org.tr>
 Content-Disposition: inline
-In-Reply-To: <20070227111515.GA4271@kernel.dk>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,81 +20,29 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Daniel Walker <dwalker@mvista.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+To: caglar@pardus.org.tr
+Cc: Tejun Heo <htejun@gmail.com>, Arkadiusz Miskiewicz <arekm@maven.pl>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-pm@lists.osdl.org, Marcel Holtmann <marcel@holtmann.org>, linux-ide@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Lukas Hejtmanek <xhejtman@fi.muni.cz>, Jean-Luc Coulon <jean.luc.coulon@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-usb-devel@lists.sourceforge.net, Andrew Nelless <andrew@nelless.net>, jgarzik@pobox.com, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Fabio Comolli <fabio.comolli@gmail.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Markus
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 27 2007, Jens Axboe wrote:
-> On Tue, Feb 27 2007, Jens Axboe wrote:
-> > On Tue, Feb 27 2007, Ingo Molnar wrote:
-> > > =
-
-> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > =
-
-> > > > > > x60 doesn't resume from S2R either, it doesn't matter if =
-
-> > > > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
-> > > > > =
-
-> > > > > It somehow works for me. As long as I do not play with bluetooth =
-and =
-
-> > > > > suspend to disk...
-> > > > =
-
-> > > > It locks solid here on resume, going back to 2.6.20 makes it work =
-
-> > > > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change =
-
-> > > > broke resume, but that got fixed. Some other change later snuck in =
-
-> > > > that broke it AGAIN for me, sigh.
-> > > > =
-
-> > > > I don't use bluetooth nor suspend to disk.
-> > > =
-
-> > > resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works =
-
-> > > fine? Do you know a commit ID that works for sure? I'd like to bisect =
-
-> > =
-
-> > Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
-> > until some acpi change broke it, the below patch fixed that for me. That
-> > got merged in a later 2.6.20-gitY, but then some other patch broke it
-> > again so that 2.6.21-rc1 is broken. Not much luck there :-)
-> > =
-
-> > So it looks like:
-> > =
-
-> > - c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
-> > - f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
-> > - Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
-> >   again.
-> > =
-
-> > > this, but this way i might just find that ACPI change that got alread=
-y =
-
-> > > fixed later on (and then got re-broken).
-> > =
-
-> > Yeah, it gets trickier. I'll try
-> > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
-> > bisect to 2.6.21-rc1 to find the other offender. I hope the other
-> > offender didn't get added before
-> > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
-> =
-
-> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, starting bisect.
-
-Which got me nowhere, after bisecting down from 1213 revisions to
-nothing. f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 certainly works, just
-verified again. Trying only acpi related changes now...
-
--- =
-
-Jens Axboe
+T24gVHVlc2RheSAyNyBGZWJydWFyeSAyMDA3IDE0OjUwOjE3IFMuw4dhxJ9sYXIgT251ciB3cm90
+ZToKPiAyNyDFnnViIDIwMDcgU2FsIHRhcmloaW5kZSwgQWRyaWFuIEJ1bmsgxZ91bmxhcsSxIHlh
+em3EscWfdMSxOgo+ID4gVGhpcyBlbWFpbCBsaXN0cyBzb21lIGtub3duIHJlZ3Jlc3Npb25zIGlu
+IDIuNi4yMS1yYzEgY29tcGFyZWQgdG8gMi42LjIwCj4gPiB0aGF0IGFyZSBub3QgeWV0IGZpeGVk
+IGluIExpbnVzJyB0cmVlLgo+ID4KPiA+IElmIHlvdSBmaW5kIHlvdXIgbmFtZSBpbiB0aGUgQ2Mg
+aGVhZGVyLCB5b3UgYXJlIGVpdGhlciBzdWJtaXR0ZXIgb2Ygb25lCj4gPiBvZiB0aGUgYnVncywg
+bWFpbnRhaW5lciBvZiBhbiBhZmZlY3RlY3RlZCBzdWJzeXN0ZW0gb3IgZHJpdmVyLCBhIHBhdGNo
+Cj4gPiBvZiB5b3UgY2F1c2VkIGEgYnJlYWthZ2Ugb3IgSSdtIGNvbnNpZGVyaW5nIHlvdSBpbiBh
+bnkgb3RoZXIgd2F5IHBvc3NpYmx5Cj4gPiBpbnZvbHZlZCB3aXRoIG9uZSBvciBtb3JlIG9mIHRo
+ZXNlIGlzc3Vlcy4KPgo+IC4uLgo+Cj4gPiBTdWJqZWN0ICAgIDogQUNQSSB1cGRhdGUgYnJlYWtz
+IGtwb3dlcnNhdmUKPiA+IFJlZmVyZW5jZXMgOiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA3LzIv
+MTAvNwo+ID4gU3VibWl0dGVyICA6IElzbWFpbCBEw7ZubWV6IDxpc21haWxAcGFyZHVzLm9yZy50
+cj4KPiA+ICAgICAgICAgICAgICBGYWJpbyBDb21vbGxpIDxmYWJpby5jb21vbGxpQGdtYWlsLmNv
+bT4KPiA+IFN0YXR1cyAgICAgOiB1bmtub3duCj4KPiBUaGF0IHJlZ3Jlc3Npb24gZml4ZWQgYnkg
+YzJiNjcwNWI3NWQ5YzdhZmY5OGE0NjAyYTMyMjMwNjM5ZTEwODkxYyBhY2NvcmRpbmcKPiB0byDE
+sHNtYWlsIFsxXQo+Cj4gWzFdIGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDcvMi8xMy8xMDUKCk5v
+dCBxdWl0ZSwgbXkgbGFwdG9wIGRpZWQgdGhlIHNhbWUgZGF5LiBTbyBJIGNhbid0IGRvIGFueSBy
+ZWxpYWJsZSB0ZXN0LiBBbHNvIApGYWJpbyBzZWVtcyB0byByZXByb2R1Y2UgaXQgd2l0aCAyLjYu
+MjEtcmMxLgoKUmVnYXJkcywKaXNtYWlsCgoKLS0gCkluIEdvZCBXZSBUcnVzdCBPdGhlcnMgV2Ug
+TW9uaXRvcgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLm9zZGwub3JnCmh0dHBzOi8vbGlz
+dHMub3NkbC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQo=
