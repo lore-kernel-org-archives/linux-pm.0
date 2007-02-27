@@ -1,16 +1,12 @@
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Tue, 27 Feb 2007 15:25:45 +0200
-Message-ID: <200702271525.48645.ismail@pardus.org.tr>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<20070226220152.GA29575@stusta.de>
-	<200702271450.19080.caglar@pardus.org.tr>
+From: "Dorthy Bowman" <windsocksCruikshank's@chillymail.com>
+Subject: Earn a University Degree based on your professional
+	experience.
+Date: Tue, 27 Feb 2007 20:50:28 +0000 (UTC)
+Message-ID: <01c75ab0$c1906c40$6c822ecf@windsocksCruikshank's>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============1675612823=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200702271450.19080.caglar@pardus.org.tr>
-Content-Disposition: inline
+Date: Tue, 27 Feb 2007 20:49:21 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,29 +16,233 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: caglar@pardus.org.tr
-Cc: Tejun Heo <htejun@gmail.com>, Arkadiusz Miskiewicz <arekm@maven.pl>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-pm@lists.osdl.org, Marcel Holtmann <marcel@holtmann.org>, linux-ide@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Lukas Hejtmanek <xhejtman@fi.muni.cz>, Jean-Luc Coulon <jean.luc.coulon@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-usb-devel@lists.sourceforge.net, Andrew Nelless <andrew@nelless.net>, jgarzik@pobox.com, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Fabio Comolli <fabio.comolli@gmail.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Markus
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlc2RheSAyNyBGZWJydWFyeSAyMDA3IDE0OjUwOjE3IFMuw4dhxJ9sYXIgT251ciB3cm90
-ZToKPiAyNyDFnnViIDIwMDcgU2FsIHRhcmloaW5kZSwgQWRyaWFuIEJ1bmsgxZ91bmxhcsSxIHlh
-em3EscWfdMSxOgo+ID4gVGhpcyBlbWFpbCBsaXN0cyBzb21lIGtub3duIHJlZ3Jlc3Npb25zIGlu
-IDIuNi4yMS1yYzEgY29tcGFyZWQgdG8gMi42LjIwCj4gPiB0aGF0IGFyZSBub3QgeWV0IGZpeGVk
-IGluIExpbnVzJyB0cmVlLgo+ID4KPiA+IElmIHlvdSBmaW5kIHlvdXIgbmFtZSBpbiB0aGUgQ2Mg
-aGVhZGVyLCB5b3UgYXJlIGVpdGhlciBzdWJtaXR0ZXIgb2Ygb25lCj4gPiBvZiB0aGUgYnVncywg
-bWFpbnRhaW5lciBvZiBhbiBhZmZlY3RlY3RlZCBzdWJzeXN0ZW0gb3IgZHJpdmVyLCBhIHBhdGNo
-Cj4gPiBvZiB5b3UgY2F1c2VkIGEgYnJlYWthZ2Ugb3IgSSdtIGNvbnNpZGVyaW5nIHlvdSBpbiBh
-bnkgb3RoZXIgd2F5IHBvc3NpYmx5Cj4gPiBpbnZvbHZlZCB3aXRoIG9uZSBvciBtb3JlIG9mIHRo
-ZXNlIGlzc3Vlcy4KPgo+IC4uLgo+Cj4gPiBTdWJqZWN0ICAgIDogQUNQSSB1cGRhdGUgYnJlYWtz
-IGtwb3dlcnNhdmUKPiA+IFJlZmVyZW5jZXMgOiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA3LzIv
-MTAvNwo+ID4gU3VibWl0dGVyICA6IElzbWFpbCBEw7ZubWV6IDxpc21haWxAcGFyZHVzLm9yZy50
-cj4KPiA+ICAgICAgICAgICAgICBGYWJpbyBDb21vbGxpIDxmYWJpby5jb21vbGxpQGdtYWlsLmNv
-bT4KPiA+IFN0YXR1cyAgICAgOiB1bmtub3duCj4KPiBUaGF0IHJlZ3Jlc3Npb24gZml4ZWQgYnkg
-YzJiNjcwNWI3NWQ5YzdhZmY5OGE0NjAyYTMyMjMwNjM5ZTEwODkxYyBhY2NvcmRpbmcKPiB0byDE
-sHNtYWlsIFsxXQo+Cj4gWzFdIGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMDcvMi8xMy8xMDUKCk5v
-dCBxdWl0ZSwgbXkgbGFwdG9wIGRpZWQgdGhlIHNhbWUgZGF5LiBTbyBJIGNhbid0IGRvIGFueSBy
-ZWxpYWJsZSB0ZXN0LiBBbHNvIApGYWJpbyBzZWVtcyB0byByZXByb2R1Y2UgaXQgd2l0aCAyLjYu
-MjEtcmMxLgoKUmVnYXJkcywKaXNtYWlsCgoKLS0gCkluIEdvZCBXZSBUcnVzdCBPdGhlcnMgV2Ug
-TW9uaXRvcgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLm9zZGwub3JnCmh0dHBzOi8vbGlz
-dHMub3NkbC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQo=
+This is a multi-part message in MIME format...
+
+--===============1675612823==
+Content-Type: multipart/alternative;
+    boundary="----------=_1172609408-3154-759"
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+------------=_1172609408-3154-759
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l1RKo4hB017215
+
+
+
+Start earning the salary you deserve by obtaining the proper credentials!
+
+
+
+
+
+
+=A0
+
+University Degree
+
+=A0
+
+OBTAIN A PROSPEROUS FUTURE, MONEY-EARNING POWER,
+AND THE PRESTIGE THAT COMES WITH HAVING THE CAREER POSITION YOU=D2VE ALWA=
+YS
+DREAMED OF. DIPLOMA FROM PRESTIGIOUS NON-ACCREDITED UNVERSITIES BASED ON =
+YOUR
+PRESENT KNOWLEDGE AND PROFESSIONAL EXPERIENCE.
+
+=A0
+
+If you qualify, no
+required tests, classes, books or examinations.
+
+=A0
+
+Confidentiality
+Assured
+
+=A0
+
+1-213-596-5778
+
+24 hours a day, 7 days a week including Sundays and
+Holidays
+
+=A0
+
+=A0
+
+
+Tue, 27 Feb 2007 20:49:21 -0060
+of patterns with others  7Q12+8.)AI76
+words, in real world  /E-6=3D6MJ040)MAT.)W/'1M)LG7V
+
+
+
+
+
+------------=_1172609408-3154-759
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+<html DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office" DEFANGED=
+_xmlns:w=3D"urn:schemas-microsoft-com:office:word" DEFANGED_xmlns=3D"http:/=
+/www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+</head>
+<body>
+<html DEFANGED_xmlns:v=3D"urn:schemas-microsoft-com:vml"
+DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office"
+DEFANGED_xmlns:w=3D"urn:schemas-microsoft-com:office:word"
+DEFANGED_xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+1">
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 10">
+<meta name=3DOriginator content=3D"Microsoft Word 10">
+<title>Start earning the salary you deserve by obtaining the proper credent=
+ials!</title>
+<DEFANGED_style>
+<!--
+  @font-face
+	{font-family:Georgia;
+	panose-1:2 4 5 2 5 4 5 2 3 3;
+	mso-font-charset:204;
+	mso-generic-font-family:roman;
+	mso-font-pitch:variable;
+	mso-font-signature:647 0 0 0 159 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	mso-header-margin:36.0pt;
+	mso-footer-margin:36.0pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</DEFANGED_style>
+
+</head>
+
+
+<div class=3DSection1>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
+n></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:22.0pt;font-family:Georgia">University Degree<o=
+:p></o:p></span></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia">OBTAIN A PROSPEROUS FUTURE, MONEY-EA=
+RNING POWER,
+AND THE PRESTIGE THAT COMES WITH HAVING THE CAREER POSITION YOU=D2VE ALWAYS
+DREAMED OF. DIPLOMA FROM PRESTIGIOUS NON-ACCREDITED UNVERSITIES BASED ON YO=
+UR
+PRESENT KNOWLEDGE AND PROFESSIONAL EXPERIENCE.<o:p></o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span class=3DGramE><i><span
+lang=3D"EN-US" DEFANGED_style=3D"font-size:14.0pt;font-family:Georgia">If y=
+ou qualify, no
+required tests, classes, books or examinations.</span></i></span><i><span
+lang=3D"EN-US" DEFANGED_style=3D"font-size:14.0pt;font-family:Georgia"><o:p=
+></o:p></span></i></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b DEFANGED_style=3D"mso-bidi-font-weight:
+normal"><span lang=3D"EN-US" DEFANGED_style=3D"font-size:18.0pt;font-family=
+:Georgia">Confidentiality
+Assured<o:p></o:p></span></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
+n></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><b><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:20.0pt;font-family:Georgia;color:red">1-213-596=
+-5778<o:p></o:p></span></b></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-family:Georgia">24 hours a day, 7 days a week includ=
+ing Sundays and
+Holidays<o:p></o:p></span></p>
+
+<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
+"><span lang=3D"EN-US"
+DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
+n></p>
+
+<p class=3DMsoNormal><span lang=3DEN-US><o:p>=A0</o:p></span></p>
+
+</div>
+<center>
+Tue, 27 Feb 2007 20:49:21 -0060
+of patterns with others  7Q12+8.)AI76<br>
+words, in real world  /E-6=3D6MJ040)MAT.)W/'1M)LG7V<br>
+</center>
+</body>
+
+</html>
+
+</body>
+</html>
+
+------------=_1172609408-3154-759--
+
+--===============1675612823==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+--===============1675612823==--
