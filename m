@@ -1,110 +1,122 @@
-From: "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>
-Subject: RE: 2.6.21-rc1: known regressions (part 1)
-Date: Wed, 28 Feb 2007 21:16:48 +0300
-Message-ID: <E3C0BCA40296C347AF7142161DB9FC82B2EDB2@mssmsx411>
-References: <20070225175247.GB12392@stusta.de>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC/PATCH 2/3] Allow objects other than "struct
+	device" in pm list
+Date: Wed, 28 Feb 2007 10:24:09 -0800
+Message-ID: <200702281024.10384.david-b@pacbell.net>
+References: <20061011060138.920913139.dtor@insightbb.com>
+	<20061011061030.258583307.dtor@insightbb.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C75B64.9D3198F5"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20070225175247.GB12392@stusta.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org, Arkadiusz Miskiewicz <arekm@maven.pl>, linux-usb-devel@lists.sourceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20061011061030.258583307.dtor@insightbb.com>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
+Cc: Andrew Morton <akpm@osdl.org>, Kay Sievers <kay.sievers@vrfy.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Tuesday 10 October 2006 11:01 pm, Dmitry Torokhov wrote:
+> PM: allow objects other than "struct device" in pm list
 
-------_=_NextPart_001_01C75B64.9D3198F5
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+For what it's worth I'd like to see that global list go away.  It's only
+a shortcut to simplify the "walk the whole device tree" during system-wide
+sleep state transitions, and it doesn't cooperate all that well with the
+notion that large chunks of that tree might already be suspended.
 
-Arkadiusz,
-
-Could try the attached patch to see if it solves the problem?
-If not, please send the output of acpidump command and log.
-
-Regards.
-Konstantin.
-
->-----Original Message-----
->From: Adrian Bunk [mailto:bunk@stusta.de]
->Sent: Sunday, February 25, 2007 8:53 PM
->To: Linus Torvalds; Andrew Morton
->Cc: Linux Kernel Mailing List; Pavel Machek; Marcel Holtmann; linux-
->pm@lists.osdl.org; Michael S. Tsirkin; Ingo Molnar; lenb@kernel.org;
-linux-
->acpi@vger.kernel.org; Yu, Luming; Arkadiusz Miskiewicz; Karasyov,
->Konstantin A; linux-usb-devel@lists.sourceforge.net; Thomas Meyer;
-Andrew;
->Janosch Machowinski; Lebedev, Vladimir P; Lukas Hejtmanek;
->jgarzik@pobox.com; linux-ide@vger.kernel.org; Meelis Roos; Alan Cox;
-Fabio
->Comolli; Jean-Luc Coulon; Markus Trippelsdorf; Tejun Heo; Rafael J.
-Wysocki
->Subject: 2.6.21-rc1: known regressions (part 1)
->
->This email lists some known regressions in 2.6.21-rc1 compared to
-2.6.20
->that are not yet fixed in Linus' tree.
->
->If you find your name in the Cc header, you are either submitter of one
->of the bugs, maintainer of an affectected subsystem or driver, a patch
->of you caused a breakage or I'm considering you in any other way
-possibly
->involved with one or more of these issues.
->
->Due to the huge amount of recipients, please trim the Cc when
-answering.
->
->
->Subject    : HP nx6325 notebook: usb mouse stops working after suspend
-to
->ram
->References : http://lkml.org/lkml/2007/2/21/413
->Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
->Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
->             commit 0a6139027f3986162233adc17285151e78b39cac
->Status     : unknown
->
->
+It's straightforward to construct the relevant list on the fly, and in a
+way that could let subtrees suspend and resume based on the demands of
+runtime PM.  (Like, hmm, a tree of USB devices ...)  Which could achieve
+goals like suspending and resuming into the same system state, rather than
+having resume force all devices into full power state (even ones that had
+previously been in low power states).  Heck, there might not _be_ enough
+power available to turn everything back on!
 
 
-------_=_NextPart_001_01C75B64.9D3198F5
-Content-Type: application/octet-stream;
-	name="usb_power.patch"
-Content-Transfer-Encoding: base64
-Content-Description: usb_power.patch
-Content-Disposition: attachment;
-	filename="usb_power.patch"
+> Any object with embedded dev_pm_info structure can be added to
+> ower management list and have its suspend/resume methods called
+> automatically by driver core.
+> =
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS9wb3dlci5jIGIvZHJpdmVycy9hY3BpL3Bvd2VyLmMK
-aW5kZXggMWVmMzM4NS4uODY2YzhlNyAxMDA2NDQKLS0tIGEvZHJpdmVycy9hY3BpL3Bvd2VyLmMK
-KysrIGIvZHJpdmVycy9hY3BpL3Bvd2VyLmMKQEAgLTQzNiw4ICs0MzYsNiBAQCBpbnQgYWNwaV9w
-b3dlcl90cmFuc2l0aW9uKHN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlLCBpbnQgc3RhdGUpCiAJ
-Y2wgPSAmZGV2aWNlLT5wb3dlci5zdGF0ZXNbZGV2aWNlLT5wb3dlci5zdGF0ZV0ucmVzb3VyY2Vz
-OwogCXRsID0gJmRldmljZS0+cG93ZXIuc3RhdGVzW3N0YXRlXS5yZXNvdXJjZXM7CiAKLQlkZXZp
-Y2UtPnBvd2VyLnN0YXRlID0gQUNQSV9TVEFURV9VTktOT1dOOwotCiAJaWYgKCFjbC0+Y291bnQg
-JiYgIXRsLT5jb3VudCkgewogCQlyZXN1bHQgPSAtRU5PREVWOwogCQlnb3RvIGVuZDsKQEAgLTQ2
-OCwxMiArNDY2LDE1IEBAIGludCBhY3BpX3Bvd2VyX3RyYW5zaXRpb24oc3RydWN0IGFjcGlfZGV2
-aWNlICpkZXZpY2UsIGludCBzdGF0ZSkKIAkJCWdvdG8gZW5kOwogCX0KIAotCS8qIFdlIHNob3Vs
-ZG4ndCBjaGFuZ2UgdGhlIHN0YXRlIHRpbGwgYWxsIGFib3ZlIG9wZXJhdGlvbnMgc3VjY2VlZCAq
-LwotCWRldmljZS0+cG93ZXIuc3RhdGUgPSBzdGF0ZTsKLSAgICAgIGVuZDoKLQlpZiAocmVzdWx0
-KQorICAgICBlbmQ6CisJaWYgKHJlc3VsdCkgeworCQlkZXZpY2UtPnBvd2VyLnN0YXRlID0gQUNQ
-SV9TVEFURV9VTktOT1dOOwogCQlwcmludGsoS0VSTl9XQVJOSU5HIFBSRUZJWCAiVHJhbnNpdGlv
-bmluZyBkZXZpY2UgWyVzXSB0byBEJWRcbiIsCiAJCQkgICAgICBkZXZpY2UtPnBucC5idXNfaWQs
-IHN0YXRlKTsKKwl9IGVsc2UgeworCS8qIFdlIHNob3VsZG4ndCBjaGFuZ2UgdGhlIHN0YXRlIHRp
-bGwgYWxsIGFib3ZlIG9wZXJhdGlvbnMgc3VjY2VlZCAqLworIAkJZGV2aWNlLT5wb3dlci5zdGF0
-ZSA9IHN0YXRlOworCX0KIAogCXJldHVybiByZXN1bHQ7CiB9CkBAIC02OTAsNyArNjkxLDggQEAg
-c3RhdGljIGludCBhY3BpX3Bvd2VyX3Jlc3VtZShzdHJ1Y3QgYWNwaV9kZXZpY2UgKmRldmljZSkK
-IAlpZiAoKHJlc291cmNlLT5zdGF0ZSA9PSBBQ1BJX1BPV0VSX1JFU09VUkNFX1NUQVRFX09OKSAm
-JgogCSAgICBsaXN0X2VtcHR5KCZyZXNvdXJjZS0+cmVmZXJlbmNlKSkgewogCQltdXRleF91bmxv
-Y2soJnJlc291cmNlLT5yZXNvdXJjZV9sb2NrKTsKLQkJcmVzdWx0ID0gYWNwaV9wb3dlcl9vZmZf
-ZGV2aWNlKGRldmljZS0+aGFuZGxlLCBOVUxMKTsKKy8vCQlyZXN1bHQgPSBhY3BpX3Bvd2VyX29m
-Zl9kZXZpY2UoZGV2aWNlLT5oYW5kbGUsIE5VTEwpOworcHJpbnRrKCJSRVNVTUU6IHBvd2VyIHJl
-c291cmNlICVzIGZvdW5kIHRvIGJlIE9GRlxuIiwgZGV2aWNlLT5wbnAuYnVzX2lkKTsKIAkJcmV0
-dXJuIHJlc3VsdDsKIAl9CiAK
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 
-------_=_NextPart_001_01C75B64.9D3198F5--
+This patch was interesting ... was there followup that I missed?
+(The patch 3/3, teaching class_device how to do PM, seems like it's
+not a good approach, now that class suspend/resume can work.)
+
+The thing is that the driver model tree parent mostly reflects one kind of
+relationship -- I'll call it "control", it's at least "suspends after" plus
+"resumes before" -- while power management can involve many relationships.
+
+For example, the clock tree never shows up in the driver model tree.  (In
+fact it doesn't "show up" much of anywhere, despite being essential  ...)
+And for various reasons, folk tend to hide the bus hierarchy found inside
+a given SOC ... and the way it's common for devices to use one bus for
+volume data transfers, and another for control transfers.  (Power saving
+points for powering both bus interfaces on/off at runtime...)
+
+And the only infrastructure that currently exists to reflect other kinds
+of PM relationship is the pm_parent ... which never worked for much of
+anything that I can see.
+
+Something like this patch might actually be able to make that mechanism
+become useful for something.  If not ... then maybe pm_parent should be
+removed.
+
+
+> --- work.orig/drivers/base/power/main.c
+> +++ work/drivers/base/power/main.c
+> @@ -31,8 +31,8 @@ DECLARE_MUTEX(dpm_list_sem);
+>  =
+
+>  /**
+>   *	device_pm_set_parent - Specify power dependency.
+> - *	@dev:		Device who needs power.
+> - *	@parent:	Device that supplies power.
+> + *	@dpm:		Object who needs power.
+> + *	@parent:	Object that supplies power.
+
+I'm not 100% sure that "supplies power" is the interesting relationship.
+Or that there's necessarily only one such supplier; it's common for
+devices to use more than one voltage.
+
+- Dave
+
+
+> --- work.orig/include/linux/pm.h
+> +++ work/include/linux/pm.h
+> @@ -206,12 +206,21 @@ struct dev_pm_info {
+>  #ifdef	CONFIG_PM
+>  	unsigned		should_wakeup:1;
+>  	pm_message_t		prev_state;
+> -	void			* saved_state;
+> -	struct device		* pm_parent;
+> +	void			*saved_state;
+> +	struct kobject		*pm_object;
+> +	struct dev_pm_info	*pm_parent;
+>  	struct list_head	entry;
+> +	const struct dev_pm_ops	*pm_ops;
+>  #endif
+>  };
+>  =
+
+> +struct dev_pm_ops {
+> +	int (*suspend)(struct dev_pm_info *dpm, pm_message_t state);
+> +	int (*suspend_late)(struct dev_pm_info *dpm, pm_message_t state);
+> +	int (*resume_early)(struct dev_pm_info *dpm);
+> +	int (*resume)(struct dev_pm_info *dpm);
+> +};
+> +
+>  extern void device_pm_set_parent(struct device * dev, struct device * pa=
+rent);
+>  =
+
+>  extern int device_power_down(pm_message_t state);
