@@ -1,17 +1,11 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Wed, 28 Feb 2007 08:41:27 +0100
-Message-ID: <20070228074127.GL3733@kernel.dk>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<20070225175559.GC12392@stusta.de>
-	<20070227100202.GV3822@kernel.dk>
-	<20070227220943.GP29575@stusta.de>
+From: "(270) 818-7244 Dorian " <950harvard@localink4.com>
+Subject: Fwd:  Do youw ant a {}prosperous future?
+Date: Wed, 28 Feb 2007 16:51:02 +0200
+Message-ID: <62164202280775.88EAF6BF51@I034062D>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20070227220943.GP29575@stusta.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,60 +15,73 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Daniel Walker <dwalker@mvista.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: kernel-janitors-request@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 27 2007, Adrian Bunk wrote:
-> On Tue, Feb 27, 2007 at 11:02:02AM +0100, Jens Axboe wrote:
-> > On Sun, Feb 25 2007, Adrian Bunk wrote:
-> > > This email lists some known regressions in 2.6.21-rc1 compared to 2.6=
-.20
-> > > that are not yet fixed in Linus' tree.
-> > > =
+Hello Kernel-janitors-request!!!
+A Genuine Univers1ty Degree 1n notime! =
 
-> > > If you find your name in the Cc header, you are either submitter of o=
-ne
-> > > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > > of you caused a breakage or I'm considering you in any other way poss=
-ibly
-> > > involved with one or more of these issues.
-> > > =
 
-> > > Due to the huge amount of recipients, please trim the Cc when answeri=
-ng.
-> > > =
+ =
 
-> > > =
+Have you ever thought that the only thing stopping you from a great job and=
+ better pya was a few letters behind you name? =
 
-> > > Subject    : ThinkPad T60: system doesn't come out of suspend to RAM
-> > >              (CONFIG_NO_HZ)
-> > > References : http://lkml.org/lkml/2007/2/22/391
-> > > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> > >              Thomas Gleixner <tglx@linutronix.de>
-> > > Handled-By : Ingo Molnar <mingo@elte.hu>
-> > > Status     : unknown
-> > =
+Well now you can get them! =
 
-> > x60 doesn't resume from S2R either, it doesn't matter if CONFIG_NO_HZ is
-> > set or not though. 2.6.20 worked fine.
-> =
 
-> Is this
-> =
 
-> Subject    : ThinkPad T60: no screen after suspend to RAM
-> References : http://lkml.org/lkml/2007/2/22/391
-> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
->              Ingo Molnar <mingo@elte.hu>
-> Handled-By : Ingo Molnar <mingo@elte.hu>
-> Status     : unknown
-> =
+ =
 
-> or doesn't it resume at all?
+BA BSc MA MSc MBA PhD =
 
-It doesn't resume at all.
+ =
 
--- =
+Within notime! =
 
-Jens Axboe
+No Study Requirde! =
+
+100% Verifiable! =
+
+
+ =
+
+These are real, genuine degrees that inlcude Bachelors, Masters, MBA and Do=
+ctorate Degrees. They are fully verifiable and certified transcripts are al=
+so available. =
+
+
+ =
+
+Just call hte number below. =
+
+You?ll thank me later? =
+
+
+ =
+
+Contact Us Today +1          (270) 818-7244 =
+
+Operators Live 24 hours
+--------+++++++---------++++++++
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+remembered  the  light  upon  the  Tiber, the way it shone through thewith =
+him, a solemn little thing with a face worn away under its peakedbeneath hi=
+s eyes to cut the glare. Who knew, if they had a chance, howeven  now. Why =
+not? Hadn't his luck always come around before? "So whogenius  and  practic=
+al  knowledge, who forged that steel-hard backbonechance  thereafter?  Andr=
+e  Norton December 1992 Introduction by Susan
