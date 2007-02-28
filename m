@@ -1,14 +1,17 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] pata_sil680 suspend/resume
-Date: Wed, 28 Feb 2007 22:19:16 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
-References: <20061122172841.0b90f042@localhost.localdomain>
-	<Pine.LNX.4.60.0702262150460.5079@poirot.grange>
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [RFC/PATCH 2/3] Allow objects other than "struct
+	device" in pm list
+Date: Wed, 28 Feb 2007 16:20:51 -0500
+Message-ID: <d120d5000702281320k349e762bqcf05c1e63555a4f0@mail.gmail.com>
+References: <20061011060138.920913139.dtor@insightbb.com>
+	<20061011061030.258583307.dtor@insightbb.com>
+	<200702281024.10384.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.60.0702262150460.5079@poirot.grange>
+In-Reply-To: <200702281024.10384.david-b@pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,47 +21,35 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: linux-pm@lists.osdl.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@osdl.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 26 Feb 2007, Guennadi Liakhovetski wrote:
+Hi David,
 
-> With a post 2.6.20 kernel from powerpc.git I cannot suspend at all:
-> =
+It appears that your unread lists backlog is even longer than mine ;)
 
-> pata_sil680 0000:00:0c.0: suspend
-> ata1: suspend failed, device 0 still active
-> pci_device_suspend(): ata_pci_device_suspend+0x0/0x74() returns -16
-> suspend_device(): pci_device_suspend+0x0/0xac() returns -16
-> Could not suspend device 0000:00:0c.0: error -16
+On 2/28/07, David Brownell <david-b@pacbell.net> wrote:
+>
+> > Any object with embedded dev_pm_info structure can be added to
+> > ower management list and have its suspend/resume methods called
+> > automatically by driver core.
+> >
+> > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+>
+> This patch was interesting ... was there followup that I missed?
 
-AFAICS, "still active" is printed from ata_host_suspend() if a device =
+Yes, there was:
+http://lists.osdl.org/pipermail/linux-pm/2006-October/003927.html
 
-(disk) on the host to be suspended doesn't have ATA_DFLAG_SUSPENDED flag =
+> (The patch 3/3, teaching class_device how to do PM, seems like it's
+> not a good approach, now that class suspend/resume can work.)
+>
 
-set. This flag is only set in ata_eh_suspend(), which is only called from =
+Now the point is moot; I was just trying to do class device
+suspend/resume without wholesale conversion to struct device requiring
+entire tree shakeup.
 
-ata_eh_recover(), like this:
+-- =
 
-generic_error_handler()
-ata_bmdma_drive_eh()
-ata_do_eh()
-ata_eh_recover()
-ata_eh_suspend()
-dev->flags |=3D ATA_DFLAG_SUSPENDED;
-
-but I don't understand why the error handler should be envoked? Should the =
-
-"disk" be suspended before the host and is it when the eh should set the =
-
-flag? If my guess is right - why doesn't the disk get suspended on my =
-
-machine? Shall I suspend it explicitely from userspace? I do "hdparm -Y", =
-
-and it does stop spinning", but I still get the error.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Dmitry
