@@ -1,32 +1,64 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Wed, 28 Feb 2007 23:13:18 +0200
-Message-ID: <20070228211318.GB4301@mellanox.co.il>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070226220152.GA29575@stusta.de>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] pata_sil680 suspend/resume
+Date: Wed, 28 Feb 2007 22:19:16 +0100 (CET)
+Message-ID: <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
+References: <20061122172841.0b90f042@localhost.localdomain>
+	<Pine.LNX.4.60.0702262150460.5079@poirot.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070226220152.GA29575@stusta.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.60.0702262150460.5079@poirot.grange>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: linux-pm@lists.osdl.org, jgarzik@pobox.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
->Subject    : ThinkPad T60: no screen after suspend to RAM
->References : http://lkml.org/lkml/2007/2/22/391
->Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
->Handled-By : Ingo Molnar <mingo@elte.hu>
->Status     : unknown
+On Mon, 26 Feb 2007, Guennadi Liakhovetski wrote:
 
-Just reproduced this in -rc2.
-Another thing I noticed:
-with 2.6.20, pressing Fn/F4 generates an ACPI event and triggers suspend to RAM.
+> With a post 2.6.20 kernel from powerpc.git I cannot suspend at all:
+> =
 
-On 2.6.21-rc2, after resume (when the box is accessible from network),
-pressing Fn/F4 again does not seem to have any effect.
+> pata_sil680 0000:00:0c.0: suspend
+> ata1: suspend failed, device 0 still active
+> pci_device_suspend(): ata_pci_device_suspend+0x0/0x74() returns -16
+> suspend_device(): pci_device_suspend+0x0/0xac() returns -16
+> Could not suspend device 0000:00:0c.0: error -16
 
+AFAICS, "still active" is printed from ata_host_suspend() if a device =
 
--- 
-MST
+(disk) on the host to be suspended doesn't have ATA_DFLAG_SUSPENDED flag =
+
+set. This flag is only set in ata_eh_suspend(), which is only called from =
+
+ata_eh_recover(), like this:
+
+generic_error_handler()
+ata_bmdma_drive_eh()
+ata_do_eh()
+ata_eh_recover()
+ata_eh_suspend()
+dev->flags |=3D ATA_DFLAG_SUSPENDED;
+
+but I don't understand why the error handler should be envoked? Should the =
+
+"disk" be suspended before the host and is it when the eh should set the =
+
+flag? If my guess is right - why doesn't the disk get suspended on my =
+
+machine? Shall I suspend it explicitely from userspace? I do "hdparm -Y", =
+
+and it does stop spinning", but I still get the error.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
