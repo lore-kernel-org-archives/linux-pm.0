@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Thu, 1 Mar 2007 17:12:35 +0100
-Message-ID: <200703011712.36896.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu>
+From: "Sangmin Wynder" <abridgementswaddles@lvrio.harrahs.com>
+Subject: Some swing news ?
+Date: Thu, 1 Mar 2007 20:10:25 +0000 (UTC)
+Message-ID: <01c75c40$6fdb3dd0$6c822ecf@abridgementswaddles>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070301145204.GA25304@elte.hu>
-Content-Disposition: inline
+Date: Thu, 1 Mar 2007 20:30:22 -0060
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,86 +16,43 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 1 March 2007 15:52, Ingo Molnar wrote:
-> =
+Today we have something new and fresh for you.     =
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> =
+It's an another target for some day trade or swing trade.    =
 
-> > hm. There's some weird bisection artifact here. Here are the commits i =
 
-> > tested, in git-log order:
-> > =
 
-> > #1 commit 01363220f5d23ef68276db8974e46a502e43d01d bad
-> > #2 commit ee404566f97f9254433399fbbcfa05390c7c55f7 bad
-> > #3 commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 good
-> > #4 commit c827ba4cb49a30ce581201fd0ba2be77cde412c7 bad
-> > =
+We strongly beleive that the price will go high during several days, begini=
+ng from Thursday and reach it's maximum     on Tuesday or Wednesday.     Af=
+ter that will be a not big resession and then a new stage of growth. =
 
-> > if i tell git-bisect that #1 is bad and #3 is good, then it offers me =
 
-> > #2 - that's OK. But when i tell it that #2 is bad, it offers #4 - =
 
-> > which is out of order! The bisection goes off into la-la land after =
+Our pick: ACEN at pink.   =
 
-> > that and never gets back to a commit that is /after/ the good commit. =
 
-> > How is this possible? (I upgraded from git-1.4.4 to 1.5.0 to make sure =
+As you very well know, the market can be forecasted and controlled.   In ma=
+ny cases unknown  companies gained 80-130% in some days.     =
 
-> > this isnt some git bug that's already fixed.)
-> > =
 
-> > i'll try to straighten this out manually, perhaps #3 is in some merge =
+Just add it to watch list and check it sometimes.  =
 
-> > branch that confuses bisection. Or maybe i misunderstood how =
+Don't lose the start and win with ACEN!   =
 
-> > git-bisect works.
-> =
+     =
 
-> git-bisect gets royally confused on those ACPI merge branches around =
 
-> commit c0cd79d11412969b6b8fa1624cdc1277db82e2fe. Here are my test =
+What does the technical analysis tell you?    Take a paper and do the paper=
+ trade.   =
 
-> results so far:
-> =
+According to all parameters stock is going high. Now is the best time after=
+ slight pullback on Wednesday. =
 
->  commit 01363220f5d23ef68276db8974e46a502e43d01d: bad
->  commit 255f0385c8e0d6b9005c0e09fffb5bd852f3b506: bad
->  commit c0cd79d11412969b6b8fa1624cdc1277db82e2fe: bad
->  commit c24e912b61b1ab2301c59777134194066b06465c: good
->  commit e9e2cdb412412326c4827fc78ba27f410d837e6e: bad
->  commit 79bf2bb335b85db25d27421c798595a2fa2a0e82: bad
->  commit fc955f670c0a66aca965605dae797e747b2bef7d: good
->  commit 70c0846e430881967776582e13aefb81407919f1: good
->  commit 414f827c46973ba39320cfb43feb55a0eeb9b4e8: bad
->  commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38: good
->  commit 5f0b1437e0708772b6fecae5900c01c3b5f9b512: bad
->  commit b878ca5d37953ad1c4578b225a13a3c3e7e743b7: bad
->  commit c2902c8ae06762d941fab64198467f78cab6f8cd: bad
->  commit 12e74f7d430655f541b85018ea62bcd669094bd7: bad
->  commit 3388c37e04ec0e35ebc1b4c732fdefc9ea938f3b: bad
->  commit 9f4bd5dde81b5cb94e4f52f2f05825aa0422f1ff: bad
-> =
 
-> the results are totally reproducible (i re-tried a few of both the good =
 
-> and the bad commits), i.e. it's not a sporadic condition. Also, a number =
+Don't beleive in words, just enjoy the show!     =
 
-> of the 'bad' commits have no dynticks stuff in them at all, so i'd =
-
-> exclude dynticks.
-> =
-
-> could someone suggest a sane way to go with this? Perhaps suggest =
-
-> specific commit IDs to test?
-
-Hm, does 2.6.20-mm2 work?  If not, you can bisect the broken-out sereis
-with quilt.
-
-Rafael
+Still thinking? You on the right way!     =
