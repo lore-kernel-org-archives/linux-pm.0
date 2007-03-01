@@ -1,58 +1,68 @@
-From: "Sangmin Wynder" <abridgementswaddles@lvrio.harrahs.com>
-Subject: Some swing news ?
-Date: Thu, 1 Mar 2007 20:10:25 +0000 (UTC)
-Message-ID: <01c75c40$6fdb3dd0$6c822ecf@abridgementswaddles>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] pata_sil680 suspend/resume
+Date: Thu, 1 Mar 2007 23:11:54 +0100 (CET)
+Message-ID: <Pine.LNX.4.60.0703012305030.7351@poirot.grange>
+References: <20061122172841.0b90f042@localhost.localdomain>
+ <Pine.LNX.4.60.0702262150460.5079@poirot.grange> <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-Date: Thu, 1 Mar 2007 20:30:22 -0060
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: linus@osdl.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.60.0702282201250.8832@poirot.grange>
+Sender: linux-ide-owner@vger.kernel.org
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com, linux-pm@lists.osdl.org, Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Today we have something new and fresh for you.     =
+Tejun,
 
-It's an another target for some day trade or swing trade.    =
+I tracked this change down to your patch: 
+http://marc.theaimsgroup.com/?t=115012763500002&r=1&w=2 (approximately). 
+(Interestingly, Jeff submitted the respective cumulative libata patch last 
+year on my birthday:-( ) Also, there's a Ubuntu bug report: 
+https://launchpad.net/ubuntu/+source/linux-source-2.6.20/+bug/76431 
+identical to what I see, although I cannot check if it worked before 
+2.6.20. Could you, please, comment how is this supposed to work? In 
+particular, what shoud trigger the EH action, leading to setting the 
+ATA_DFLAG_SUSPENDED flag? Below again my earlier post for reference.
 
+Thanks
+Guennadi
 
+On Wed, 28 Feb 2007, Guennadi Liakhovetski wrote:
 
-We strongly beleive that the price will go high during several days, begini=
-ng from Thursday and reach it's maximum     on Tuesday or Wednesday.     Af=
-ter that will be a not big resession and then a new stage of growth. =
+> On Mon, 26 Feb 2007, Guennadi Liakhovetski wrote:
+> 
+> > With a post 2.6.20 kernel from powerpc.git I cannot suspend at all:
+> > 
+> > pata_sil680 0000:00:0c.0: suspend
+> > ata1: suspend failed, device 0 still active
+> > pci_device_suspend(): ata_pci_device_suspend+0x0/0x74() returns -16
+> > suspend_device(): pci_device_suspend+0x0/0xac() returns -16
+> > Could not suspend device 0000:00:0c.0: error -16
+> 
+> AFAICS, "still active" is printed from ata_host_suspend() if a device 
+> (disk) on the host to be suspended doesn't have ATA_DFLAG_SUSPENDED flag 
+> set. This flag is only set in ata_eh_suspend(), which is only called from 
+> ata_eh_recover(), like this:
+> 
+> generic_error_handler()
+> ata_bmdma_drive_eh()
+> ata_do_eh()
+> ata_eh_recover()
+> ata_eh_suspend()
+> dev->flags |= ATA_DFLAG_SUSPENDED;
+> 
+> but I don't understand why the error handler should be envoked? Should the 
+> "disk" be suspended before the host and is it when the eh should set the 
+> flag? If my guess is right - why doesn't the disk get suspended on my 
+> machine? Shall I suspend it explicitely from userspace? I do "hdparm -Y", 
+> and it does stop spinning", but I still get the error.
+> 
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> 
 
-
-
-Our pick: ACEN at pink.   =
-
-
-As you very well know, the market can be forecasted and controlled.   In ma=
-ny cases unknown  companies gained 80-130% in some days.     =
-
-
-Just add it to watch list and check it sometimes.  =
-
-Don't lose the start and win with ACEN!   =
-
-     =
-
-
-What does the technical analysis tell you?    Take a paper and do the paper=
- trade.   =
-
-According to all parameters stock is going high. Now is the best time after=
- slight pullback on Wednesday. =
-
-
-
-Don't beleive in words, just enjoy the show!     =
-
-Still thinking? You on the right way!     =
+---
+Guennadi Liakhovetski
