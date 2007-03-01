@@ -1,11 +1,15 @@
-From: "Branden Robinson" <reprise'shunchbacked@tuffmail.co.uk>
-Subject: Start earning the salary you deserve by obtaining the
-	proper credentials!
-Date: Thu, 1 Mar 2007 16:06:53 +0000
-Message-ID: <01c75c1b$a10f8610$6c822ecf@reprise'shunchbacked>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Date: Thu, 1 Mar 2007 17:12:35 +0100
+Message-ID: <200703011712.36896.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	<20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0614206053=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20070301145204.GA25304@elte.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -15,233 +19,86 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Thursday, 1 March 2007 15:52, Ingo Molnar wrote:
+> =
 
---===============0614206053==
-Content-Type: multipart/alternative;
-    boundary="----------=_1172765231-6697-568"
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> =
 
-This is a multi-part message in MIME format...
+> > hm. There's some weird bisection artifact here. Here are the commits i =
 
-------------=_1172765231-6697-568
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l21G76hB011381
+> > tested, in git-log order:
+> > =
 
+> > #1 commit 01363220f5d23ef68276db8974e46a502e43d01d bad
+> > #2 commit ee404566f97f9254433399fbbcfa05390c7c55f7 bad
+> > #3 commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 good
+> > #4 commit c827ba4cb49a30ce581201fd0ba2be77cde412c7 bad
+> > =
 
+> > if i tell git-bisect that #1 is bad and #3 is good, then it offers me =
 
-Turn your professional experience into the University Degree you deserve.
+> > #2 - that's OK. But when i tell it that #2 is bad, it offers #4 - =
 
+> > which is out of order! The bisection goes off into la-la land after =
 
+> > that and never gets back to a commit that is /after/ the good commit. =
 
+> > How is this possible? (I upgraded from git-1.4.4 to 1.5.0 to make sure =
 
+> > this isnt some git bug that's already fixed.)
+> > =
 
+> > i'll try to straighten this out manually, perhaps #3 is in some merge =
 
-=A0
+> > branch that confuses bisection. Or maybe i misunderstood how =
 
-University Degree
+> > git-bisect works.
+> =
 
-=A0
+> git-bisect gets royally confused on those ACPI merge branches around =
 
-OBTAIN A PROSPEROUS FUTURE, MONEY-EARNING POWER,
-AND THE PRESTIGE THAT COMES WITH HAVING THE CAREER POSITION YOU=D2VE ALWA=
-YS
-DREAMED OF. DIPLOMA FROM PRESTIGIOUS NON-ACCREDITED UNVERSITIES BASED ON =
-YOUR
-PRESENT KNOWLEDGE AND PROFESSIONAL EXPERIENCE.
+> commit c0cd79d11412969b6b8fa1624cdc1277db82e2fe. Here are my test =
 
-=A0
+> results so far:
+> =
 
-If you qualify, no
-required tests, classes, books or examinations.
+>  commit 01363220f5d23ef68276db8974e46a502e43d01d: bad
+>  commit 255f0385c8e0d6b9005c0e09fffb5bd852f3b506: bad
+>  commit c0cd79d11412969b6b8fa1624cdc1277db82e2fe: bad
+>  commit c24e912b61b1ab2301c59777134194066b06465c: good
+>  commit e9e2cdb412412326c4827fc78ba27f410d837e6e: bad
+>  commit 79bf2bb335b85db25d27421c798595a2fa2a0e82: bad
+>  commit fc955f670c0a66aca965605dae797e747b2bef7d: good
+>  commit 70c0846e430881967776582e13aefb81407919f1: good
+>  commit 414f827c46973ba39320cfb43feb55a0eeb9b4e8: bad
+>  commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38: good
+>  commit 5f0b1437e0708772b6fecae5900c01c3b5f9b512: bad
+>  commit b878ca5d37953ad1c4578b225a13a3c3e7e743b7: bad
+>  commit c2902c8ae06762d941fab64198467f78cab6f8cd: bad
+>  commit 12e74f7d430655f541b85018ea62bcd669094bd7: bad
+>  commit 3388c37e04ec0e35ebc1b4c732fdefc9ea938f3b: bad
+>  commit 9f4bd5dde81b5cb94e4f52f2f05825aa0422f1ff: bad
+> =
 
-=A0
+> the results are totally reproducible (i re-tried a few of both the good =
 
-Confidentiality
-Assured
+> and the bad commits), i.e. it's not a sporadic condition. Also, a number =
 
-=A0
+> of the 'bad' commits have no dynticks stuff in them at all, so i'd =
 
-1-213-596-5778
+> exclude dynticks.
+> =
 
-24 hours a day, 7 days a week including Sundays and
-Holidays
+> could someone suggest a sane way to go with this? Perhaps suggest =
 
-=A0
+> specific commit IDs to test?
 
-=A0
+Hm, does 2.6.20-mm2 work?  If not, you can bisect the broken-out sereis
+with quilt.
 
-
-Thu, 1 Mar 2007 16:06:53 +0000
- the next time you're  NSG80P
- and why everything  46974,LFJ*I+(,Y0;N(P-0,(G/WAT8
-
-
-
-
-
-------------=_1172765231-6697-568
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-<html DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office" DEFANGED=
-_xmlns:w=3D"urn:schemas-microsoft-com:office:word" DEFANGED_xmlns=3D"http:/=
-/www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-</head>
-<body>
-<html DEFANGED_xmlns:v=3D"urn:schemas-microsoft-com:vml"
-DEFANGED_xmlns:o=3D"urn:schemas-microsoft-com:office:office"
-DEFANGED_xmlns:w=3D"urn:schemas-microsoft-com:office:word"
-DEFANGED_xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
-1">
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 10">
-<meta name=3DOriginator content=3D"Microsoft Word 10">
-<title>Turn your professional experience into the University Degree you des=
-erve.</title>
-<DEFANGED_style>
-<!--
-  @font-face
-	{font-family:Georgia;
-	panose-1:2 4 5 2 5 4 5 2 3 3;
-	mso-font-charset:204;
-	mso-generic-font-family:roman;
-	mso-font-pitch:variable;
-	mso-font-signature:647 0 0 0 159 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0cm;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";
-	mso-ansi-language:EN-US;
-	mso-fareast-language:EN-US;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
-@page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;
-	mso-header-margin:36.0pt;
-	mso-footer-margin:36.0pt;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</DEFANGED_style>
-
-</head>
-
-
-<div class=3DSection1>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><b><span lang=3D"EN-US"
-DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
-n></b></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><b><span lang=3D"EN-US"
-DEFANGED_style=3D"font-size:22.0pt;font-family:Georgia">University Degree<o=
-:p></o:p></span></b></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-family:Georgia">OBTAIN A PROSPEROUS FUTURE, MONEY-EA=
-RNING POWER,
-AND THE PRESTIGE THAT COMES WITH HAVING THE CAREER POSITION YOU=D2VE ALWAYS
-DREAMED OF. DIPLOMA FROM PRESTIGIOUS NON-ACCREDITED UNVERSITIES BASED ON YO=
-UR
-PRESENT KNOWLEDGE AND PROFESSIONAL EXPERIENCE.<o:p></o:p></span></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span class=3DGramE><i><span
-lang=3D"EN-US" DEFANGED_style=3D"font-size:14.0pt;font-family:Georgia">If y=
-ou qualify, no
-required tests, classes, books or examinations.</span></i></span><i><span
-lang=3D"EN-US" DEFANGED_style=3D"font-size:14.0pt;font-family:Georgia"><o:p=
-></o:p></span></i></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-family:Georgia"><o:p>=A0</o:p></span></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><b DEFANGED_style=3D"mso-bidi-font-weight:
-normal"><span lang=3D"EN-US" DEFANGED_style=3D"font-size:18.0pt;font-family=
-:Georgia">Confidentiality
-Assured<o:p></o:p></span></b></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
-n></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><b><span lang=3D"EN-US"
-DEFANGED_style=3D"font-size:20.0pt;font-family:Georgia;color:red">1-213-596=
--5778<o:p></o:p></span></b></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-family:Georgia">24 hours a day, 7 days a week includ=
-ing Sundays and
-Holidays<o:p></o:p></span></p>
-
-<p class=3D"MsoNormal" align=3D"center" DEFANGED_style=3D"text-align:center=
-"><span lang=3D"EN-US"
-DEFANGED_style=3D"font-size:16.0pt;font-family:Georgia"><o:p>=A0</o:p></spa=
-n></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>=A0</o:p></span></p>
-
-</div>
-<center>
-Thu, 1 Mar 2007 16:06:53 +0000
- the next time you're  NSG80P<br>
- and why everything  46974,LFJ*I+(,Y0;N(P-0,(G/WAT8<br>
-</center>
-</body>
-
-</html>
-
-</body>
-</html>
-
-------------=_1172765231-6697-568--
-
---===============0614206053==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
---===============0614206053==--
+Rafael
