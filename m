@@ -1,20 +1,20 @@
 From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Fri, 2 Mar 2007 08:21:00 +0100
-Message-ID: <20070302072100.GB30634@elte.hu>
-References: <20070227100202.GV3822@kernel.dk>
-	<20070227102109.GG6745@elf.ucw.cz>
+Date: Fri, 2 Mar 2007 09:04:41 +0100
+Message-ID: <20070302080441.GA12785@elte.hu>
+References: <20070227102109.GG6745@elf.ucw.cz>
 	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
 	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
 	<20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu>
 	<20070301145204.GA25304@elte.hu>
 	<Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
+	<20070302072100.GB30634@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
+In-Reply-To: <20070302072100.GB30634@elte.hu>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,40 +25,75 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, git@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> But most likely, 9f4bd5dd is actually already bad, and what you are =
+> I'll try what i've described in the previous mail: mark all bisection =
 
-> seeing is two *different* bugs that just have the same symptoms =
+> points that do not include f3ccb06f as 'good' - thus 'merging' the =
 
-> ("suspend doesn't work").
+> known-bad area with the first known-good commit, and thus eliminating =
 
-the situation is simpler than that: there is a /known/ bug, and i marked =
+> it from the bisection space.
 
-the bugfix commit as 'good'. I never met such a multiple-bugs scenario =
+this got me quite a bit further:
 
-before and forgot that git-bisect could easily pick a tree without this =
+ git-bisect start
+ git-bisect bad       01363220f5d23ef68276db8974e46a502e43d01d
+ git-bisect good      f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 =
 
-essential bugfix and would not be able to make a distinction between the =
+ git-bisect fake-good ee404566f97f9254433399fbbcfa05390c7c55f7
+ git-bisect bad       d43a338e395371733a80ec473b40baac5f74d768
+ git-bisect bad       255f0385c8e0d6b9005c0e09fffb5bd852f3b506
+ git-bisect fake-good f99c6bb6e2e9c35bd3dc0b1d0faa28bd6970930d
+ git-bisect fake-good 0187f221e96e3436d552c0c7143f183eb82fb658
+ git-bisect bad       81450b73dde07f473a4a7208b209b4c8b7251d90
+ git-bisect fake-good ef29498655b18d2bfd69048e20835d19333981ab
+ git-bisect fake-good 8a03d9a498eaf02c8a118752050a5154852c13bf
+ git-bisect good      5c95d3f5783ab184f64b7848f0a871352c35c3cf
+ git-bisect good      ecb5f7521a309cb9c5fc0832b9705cd2a03d7d45
+ git-bisect good      0539771d7236b425f285652f6f297cc7939c8f9a
 
-two types of badness.
+ 81450b73dde07f473a4a7208b209b4c8b7251d90 is first bad commit
 
-I'll try what i've described in the previous mail: mark all bisection =
+[ note: by having the "git-bisect must-have-bugfix f3ccb06f" =
 
-points that do not include f3ccb06f as 'good' - thus 'merging' the =
+  functionality i mentioned in the previous mail git-bisect could
+  have eliminated the fake-good steps. ]
 
-known-bad area with the first known-good commit, and thus eliminating it =
+it's not a resolution of this regression yet, because this commit is a =
 
-from the bisection space.
+merge with upstream:
 
-(but it might also be useful to have a "git-bisect must-include" kind of =
+|  commit 81450b73dde07f473a4a7208b209b4c8b7251d90
+|  Merge: 8a03d9a... 0539771...
+|  Author: Len Brown <len.brown@intel.com>
+|  Date:   Fri Feb 16 18:52:41 2007 -0500
+|
+|      Pull misc-for-upstream into release branch
 
-command that would allow this to be automated: mark a particular tree as =
+which means that the fix in Len's tree got broken by merging with =
 
-an essential component of the search space.)
+upstream. Note: this 'upstream' in isolation is broken too, due to not =
+
+having that essential fix from Len's tree!
+
+So we quite likely have /two/ bugs, any of which breaks resume (which =
+
+breakage looks the same, so no way to isolate them via testing).
+
+I'll now try the following: i'll try to manually apply Len's fix to =
+
+every tree that git-bisect offers me, in the hope of being able to =
+
+isolate the /other/ bug.
+
+[ But really, i'm not expecting any miracles because this is way out of
+  league for git-bisect which really depends on only having a binary =
+
+  space to search for. ]
 
 	Ingo
