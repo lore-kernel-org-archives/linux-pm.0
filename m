@@ -1,18 +1,18 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Thu, 1 Mar 2007 15:36:28 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0703011510130.12485@woody.linux-foundation.org>
+Date: Thu, 1 Mar 2007 16:26:49 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
 References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 	<20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk>
 	<20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk>
 	<20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk>
 	<20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu>
-	<20070301104117.GA22788@elte.hu>
+	<20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070301104117.GA22788@elte.hu>
+In-Reply-To: <20070301145204.GA25304@elte.hu>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -31,208 +31,234 @@ List-Id: linux-pm@vger.kernel.org
 On Thu, 1 Mar 2007, Ingo Molnar wrote:
 > =
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> git-bisect gets royally confused on those ACPI merge branches around =
+
+> commit c0cd79d11412969b6b8fa1624cdc1277db82e2fe. Here are my test =
+
+> results so far:
+
+Looks like git bisect worked for you, and wasn't confused at all. You =
+
+started out with 2931 commits between your first known-bad and known-good =
+
+commits, which means that you usually end up having to check "log2(n)+1" =
+
+kernels, ie I'd have expected you to have to do 12-13 bisection attempts =
+
+to cut it down to one.
+
+You seem to have done 14 (you list 16 commits, two of which are the =
+
+starting points), which is right in that range. The reason you sometimes =
+
+get more is:
+
+ - you "help" git bisect by choosing other commits than the optimal ones. =
+
+
+ - with bad luck, it can be hard to get really close to "half the commits" =
+
+   in the reachability analysis, especially if you have lots of merges =
+
+   (and *especially* if you have octopus merges that merge more than two =
+
+   branches of development). For example, say that you have something like
+
+	           a
+	           |
+	   +---+---+---+---+
+	   |   |   |   |   |
+	   b   c   d   e   f
+
+   where you have six commits - you can't test any "combinations" at all, =
+
+   since they are all independent, so "git bisect" cannot test them three =
+
+   and three to cut down the time, so if you don't know which one is bad, =
+
+   you'll basically end up testing them all.
+
+The bad luck case never really happens to that extreme in practice, and =
+
+even when it does you can sometimes be lucky and just hit on the bug early =
+
+(so "bad luck" may end up being "good luck" after all), but it explains =
+
+why you can get more - or less - than log2(n)+1 attempts. More commonly =
+
+one more.
+
+A much *bigger* problem is if you mark something good or bad that isn't =
+
+really. Ie if the bug comes and goes (it might be timing-dependent, for =
+
+example), the problem will be that you'll always narrow things down =
+
+(that's what bisection does), but you may not narrow it down to the right =
+
+thing!
+
+We've had that happen several times. If the bug (for example) means that =
+
+suspend *often* breaks, but sometimes works just by luck, you might mark a =
+
+kernel "good" when it really wasn't and then "git bisect" will *really* go =
+
+out in the weeds, and won't even try to test the commits that may have =
+
+introduced the bug, because you told it that those commits resulted in a =
+
+good kernel..
+
+>  commit 01363220f5d23ef68276db8974e46a502e43d01d: bad
+>  commit 255f0385c8e0d6b9005c0e09fffb5bd852f3b506: bad
+>  commit c0cd79d11412969b6b8fa1624cdc1277db82e2fe: bad
+>  commit c24e912b61b1ab2301c59777134194066b06465c: good
+>  commit e9e2cdb412412326c4827fc78ba27f410d837e6e: bad
+>  commit 79bf2bb335b85db25d27421c798595a2fa2a0e82: bad
+>  commit fc955f670c0a66aca965605dae797e747b2bef7d: good
+>  commit 70c0846e430881967776582e13aefb81407919f1: good
+>  commit 414f827c46973ba39320cfb43feb55a0eeb9b4e8: bad
+>  commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38: good
+>  commit 5f0b1437e0708772b6fecae5900c01c3b5f9b512: bad
+>  commit b878ca5d37953ad1c4578b225a13a3c3e7e743b7: bad
+>  commit c2902c8ae06762d941fab64198467f78cab6f8cd: bad
+>  commit 12e74f7d430655f541b85018ea62bcd669094bd7: bad
+>  commit 3388c37e04ec0e35ebc1b4c732fdefc9ea938f3b: bad
+>  commit 9f4bd5dde81b5cb94e4f52f2f05825aa0422f1ff: bad
+
+Looks like it's claiming that 9f4bd5dde81b5cb94e4f52f2f05825aa0422f1ff is =
+
+the bad commit. Which is extremely unlikely, since it only seems to affect =
+
+the emu10k sound driver, which I don't think even exists on any ThinkPad =
+
+laptops (correct me if I'm wrong). =
+
+
+Btw, you seem to have re-ordered the commits - the above is not the order =
+
+you did the bisection in. The known-good commit (f3ccb06..) is in the =
+
+middle. That's totally bogus. Please use the git bisection log (see =
+
+.git/BISECT_LOG), and don't think that you know some "better" order. You =
+
+really don't.
+
+> the results are totally reproducible (i re-tried a few of both the good =
+
+> and the bad commits), i.e. it's not a sporadic condition. Also, a number =
+
+> of the 'bad' commits have no dynticks stuff in them at all, so i'd =
+
+> exclude dynticks.
 > =
 
-> > update: f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me too, and =
+> could someone suggest a sane way to go with this? Perhaps suggest =
 
-> > 01363220f5d23ef68276db8974e46a502e43d01d is broken. I too will attempt =
+> specific commit IDs to test?
 
-> > to bisect this.
-> =
+You claim that 9f4bd5dd is bad, but you indirectly claim that its direct =
 
-> hm. There's some weird bisection artifact here. Here are the commits i =
+parent (5986a2ec) is good by saying that f3ccb06f is good. This is why =
 
-> tested, in git-log order:
-> =
+"git bisect" will claim that 9f4bd5dd must be the bad commit.
 
-> #1 commit 01363220f5d23ef68276db8974e46a502e43d01d bad
-> #2 commit ee404566f97f9254433399fbbcfa05390c7c55f7 bad
-> #3 commit f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 good
-> #4 commit c827ba4cb49a30ce581201fd0ba2be77cde412c7 bad
+I would suggest testing commit 5986a2ec explicitly. If that one is good, =
 
-Use "git bisect visualize" to see what bisect ends up doing.
+then, since you claim that 9f4bd5dd is bad, then yes, 9f4bd5dd *is* the =
 
-> if i tell git-bisect that #1 is bad and #3 is good, then it offers me #2 =
+bad commit (because 5986a2ec is its direct parent).
 
-> - that's OK. But when i tell it that #2 is bad, it offers #4 - which is =
+But most likely, 9f4bd5dd is actually already bad, and what you are seeing =
 
-> out of order!
+is two *different* bugs that just have the same symptoms ("suspend doesn't =
 
-No it's not. "git bisect" does exactly the right thing. There is no simple =
+work").
 
-ordering in a complex branch-merge schenario, you can't just put the =
+What happens is that you've chased them *both*, and you cannot bisect that =
 
-commits in some "ordering" and test things in time order. That would be =
+kind of behaviour totally automatically and mindlessly, simply because =
 
-totally broken, and idiotic. It doesn't give the right results.
+when you say "git bisect bad", that means that *one* of the bugs is =
 
-What git bisect does is to find the commit that most closely *bisects* the =
+active, but not necessarily both of them. So you may well be marking =
 
-history of commits, so that if it is marked good/bad, it will leave you =
+kernels that are "good" (as far as the other bug is concerned) as bad - =
 
-with about 50% of the commits left. But if you are looking at date order, =
+and that just means that bisection won't even test them.
 
-you're entirely confused.
+When that happens, you need to basically
 
-For example, let's take a really simple case
+ - be able to separate the bugs out some way (so that you can still mark a =
 
-	    a <- bad
-	   / \
-          b   c
-	  |   |
-	  d   e
-	  |   |
-	  f   g
-	   \ /
-	    h
-            |
-	    * <-good
+   non-working kernel "good" if it's good *with*respect*to* the particular =
 
-and if you are looking to find something "in the middle", you might thing =
+   bug you're chasing)
 
-that "d" or "e" are the best choices, since time-wise, they are in the =
+   This is often practically impossible, _especially_ with suspend, where =
 
-middle.
+   the behaviour is so unhelpful that it's usually not possible to =
 
-But that's not true AT ALL.
+   separate out "ACPI is broken" from "one particular device driver is =
 
-If you actually want to bisect that kind of history, you need to choose =
+   broken", because they both have exactly the same symptoms: the machine =
 
-"b" or "c", even though they may both be *much* more "recent" than the =
+   doesn't resume.
 
-others. Why? Because if you pick "d", you're really only testing three =
+HOWEVER. Even if you can't actually separate the bugs out, you can usually =
 
-commits ('d' 'f' and 'h') out of the 8 commits you have to test.
+find where *one* of the bugs starts, and that point you can generally find =
 
-In contrast, if you pick 'b', you are testing the effects of *four* =
+the fix for it too. In this case, we already know one of the bugs: it's =
 
-commits ('b', 'd', 'f' and 'h') and you have thus neatly bisected the =
+the ACPI bug that was apparently fixed by f3ccb06f3 (or maybe another one =
 
-commits into two equal groups for testing (one group _with_ those four =
+in that series).
 
-commits, and one group _without_) instead of having partitioned them as 3 =
+Once you have that, you now actually have a way to "correct" for that =
 
-commits vs 5 commits.
+known bug, and by correcting for the known bug, you now *can* separate the =
 
-So please realize that non-linear history very much means that you MUST =
+behaviour of the two bugs:
 
-NOT think that you just pick a commit "in the middle". No, git bisect is a =
+ - You can now re-do a totally mindless git bisection for the *other* bug, =
 
-LOT smarter than that - it picks a commit that *reaches* about half the =
+   but what you now need to do is that at each bisection step, you look at =
 
-commits you have left to test.
+   whether the bisection point has the known bug, and if so, you apply the =
 
-> The bisection goes off into la-la land after that and =
+   known fix for that known bug, and thus you can test the kernel =
 
-> never gets back to a commit that is /after/ the good commit. How is this =
+   *without* the interaction of the bug you already found.
 
-> possible? (I upgraded from git-1.4.4 to 1.5.0 to make sure this isnt =
+This makes bisection a lot less automated (you have to apply the "fix" for =
 
-> some git bug that's already fixed.)
+the other bug at each step), but it still allows "total automation" in the =
 
-It's possible because git knows what it is doing, and you didn't think =
+sense that you don't actually need to know at all what you're looking for: =
 
-things through.
+you're just following a known pattern, and you're basically just =
 
-The commits that "git bisect" picked out are the right ones. Quite often, =
+correcting for the effects of another bug that you're no longer interested =
 
-there may be two or more "equally good" commits (in my example above, you =
+in, since you already know what the fix for that bug was.
 
-can choose either "b" or "c", and it will bisect the set of untested =
+The other alternative is to actually have a clue what you're searching =
 
-commits equally well - in two groups of four, but two *different* groups =
+for, and/or look deeply at where the fix was merged, and trying to narrow =
 
-of four commits), and yes, it's possible that git has a bug that makes it =
+things down by actually understanding the problem. But at that point, =
 
-pick the wrong ones, but quite frankly, I seriously doubt it. "git bisect" =
+bisection won't much help you, except perhaps as a way to find a mid-way =
 
-has been very successful indeed, and is generally a *lot* better at =
+point to test out theories with ("which drivers that I actually use have =
 
-picking a commit "in the middle" than people are, exactly because it's =
+changed in between" kinds of experiments where you simply undo part of =
 
-quite hard to see which commit "reaches" half the commits if you have lots =
+the changes entirely, and bisection ends up being just a way to pick =
 
-of merges and branches.
+points that are hopefully "interestingly far apart").
 
-Try out
-
-	git bisect visualize
-
-and it will literally show you what it is doing.
-
-What can be confusing is that if the "good" and "bad" markers are ON =
-
-DIFFERENT BRANCHES OF DEVELOPMENT, you may not even *see* the "good" =
-
-marker, because you may well have something like this:
-
-
-	a <- bad
-	|
-	b   * <- good
-	|   |
-	c   d
-	 \ /
-	  e
-	  |
-	  f
-	  |
-	 ...
-
-and what do you think "git bisect visualize" will actually show you?
-
-Since 'd', 'e' and 'f' are all in the "good" set (they both exist as =
-
-commits in something leading up to a commit that has already been deemed =
-
-fine), they aren't *interesting* - they can't be introducing the bug, =
-
-since if that was the case, the good commit wouldn't have been good. So as =
-
-far as bisection is concerned, the tree actually looks like
-
-	 a <- bad
-	 |
-	 b
-	 |
-	 c
-	 |
-	...
-
-and you have just three commits that are potentially interesting: 'a', 'b' =
-
-and 'c'.
-
-Now, with three commits, you cannot test them half-and-half, so you have =
-
-to test it in groups of 1 vs 2 commits, so it's arbitrary whether you =
-
-choose 'b' or 'c' to test, but you'd test one of them. Say that you choose =
-
-'b', and it turns out to be good. If so, you're done: 'a' is bad and 'b' =
-
-is good, so the bug was introduced in 'a'. But if it turns out to be bad, =
-
-you'll still have to test 'c' too, since you don't know if the bug was =
-
-*introduced* in 'b' or not.
-
-See? =
-
-
-> i'll try to straighten this out manually
-
-Don't. You're just going to make your bisection much less effective. The =
-
-whole point of bisection is that you can usually cut the number of commits =
-
-to test pretty exactly in half.  If you start mucking with the commits to =
-
-test, and you don't understand about the reachability graph, you'll just =
-
-choose a much worse set of commits to test than "git bisect" will do.
-
-So learn to trust "git bisect". It really does know what it is doing.
-
-		Linus
+			Linus
