@@ -1,38 +1,89 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [linux-pm] 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Sat, 3 Mar 2007 12:17:11 +0100
-Message-ID: <20070303111710.GL3178@kernel.dk>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070226220152.GA29575@stusta.de> <20070228211318.GB4301@mellanox.co.il> <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com> <20070302122641.GA3034@elf.ucw.cz>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] KVM: T60 resume fix
+Date: Sat, 3 Mar 2007 03:57:42 -0800
+Message-ID: <20070303035742.72eed3df.akpm@linux-foundation.org>
+References: <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk>
+	<20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu>
+	<20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu>
+	<Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
+	<20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu>
+	<20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu>
+	<45E93012.4000100@qumranet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070302122641.GA3034@elf.ucw.cz>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@stusta.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <45E93012.4000100@qumranet.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Avi Kivity <avi@qumranet.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Pavel@smtp.osdl.org, linux-pm@lists.osdl.org, List <linux-kernel@vger.kernel.org>, Len@smtp.osdl.org, Adrian Bunk <bunk@stusta.de>, Machek <pavel@ucw.cz>, Linux@smtp.osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, git@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 02 2007, Pavel Machek wrote:
-> On Thu 2007-03-01 11:45:35, Jeff Chua wrote:
-> > On 3/1/07, Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> > 
-> > > with 2.6.20, pressing Fn/F4 generates an ACPI event and triggers suspend to RAM.
-> > >
-> > > On 2.6.21-rc2, after resume (when the box is accessible from network),
-> > > pressing Fn/F4 again does not seem to have any effect.
-> > 
-> > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> > from RAM, can't suspend to disk. It is possible to revert all the
-> > changes to ACPI and test it?
-> 
-> As I said elsewhere in the thread, suspend/resume to RAM works ok on
-> my thinkpad x60. I posted my .config there, perhaps difference is in
-> it? Ingo identified KVM as possible culprit.
+On Sat, 03 Mar 2007 10:21:38 +0200 Avi Kivity <avi@qumranet.com> wrote:
 
-I'll try your .config for kicks, the problem that Ingo pin pointed is
-not what is affecting me.
+> Ingo Molnar wrote:
+> > Subject: [patch] KVM: T60 resume fix
+> > From: Ingo Molnar <mingo@elte.hu>
+> >
+> > my T60 laptop does not resume correctly due to KVM attempting to send a=
+n =
 
--- 
-Jens Axboe
+> > IPI to a CPU that might be down (or not up yet). (Doing so also trigger=
+s =
 
+> > the send_IPI_mask_bitmask() warning in arch/i386/kernel/smp.c, line =
+
+> > 732.)
+> >
+> > with this fix applied my laptop does not hang during resume.
+> >
+> > [ KVM will have to disable/enable virtualization on the CPU itself that
+> >   goes down / comes up, not via an IPI sent from the requesting CPU. ]
+> >
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >  drivers/kvm/kvm_main.c |    6 ------
+> >  1 file changed, 6 deletions(-)
+> >
+> > Index: linux/drivers/kvm/kvm_main.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/drivers/kvm/kvm_main.c
+> > +++ linux/drivers/kvm/kvm_main.c
+> > @@ -2083,12 +2083,6 @@ static int kvm_cpu_hotplug(struct notifi
+> >  	case CPU_DEAD:
+> >  	case CPU_UP_CANCELED:
+> >  		decache_vcpus_on_cpu(cpu);
+> > -		smp_call_function_single(cpu, kvm_arch_ops->hardware_disable,
+> > -					 NULL, 0, 1);
+> > -		break;
+> > -	case CPU_UP_PREPARE:
+> > -		smp_call_function_single(cpu, kvm_arch_ops->hardware_enable,
+> > -					 NULL, 0, 1);
+> >  		break;
+> >  	}
+> >  	return NOTIFY_OK;
+> >   =
+
+> =
+
+> That is already CPU_ONLINE in my tree
+
+I noticed ;)
+
+So this mean that Ingo's bug should already be fixed there.  And in rc2-mm1.
+
+> (and in the pull request sent to =
+
+> Linus a couple of days ago).
+
+Resend, please.
