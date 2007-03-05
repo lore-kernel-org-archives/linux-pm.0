@@ -1,577 +1,525 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Mon, 5 Mar 2007 19:16:01 +0100
-Message-ID: <20070305181601.GD10193@kernel.dk>
-References: <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu> <Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org> <20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu> <20070305161450.GA4972@mellanox.co.il>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: [RFC] [PATCH] Power Managed memory base enabling
+Date: Mon, 5 Mar 2007 10:18:26 -0800
+Message-ID: <20070305181826.GA21515@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="QKdGvSO+nmPlgiQ/"
-Return-path: <git-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <20070305161450.GA4972@mellanox.co.il>
-Sender: git-owner@vger.kernel.org
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Daniel Walker <dwalker@mvista.com>, Len Brown <lenb@kernel.org>, git@vger.kernel.org
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-mm@kvack.org, linux-pm@lists.osdl.org
+Cc: mark.gross@intel.com, akpm@linux-foundation.org, torvalds@linux-foundation.org, neelam.chandwani@intel.com
 List-Id: linux-pm@vger.kernel.org
 
+The following patch is to help enable both allocation and access based
+memory power optimization policies for systems that have the capability
+to put sticks of memory selectively into lower power states based on
+workload requirement.
 
---QKdGvSO+nmPlgiQ/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Mar 05 2007, Michael S. Tsirkin wrote:
-> > Quoting Ingo Molnar <mingo@elte.hu>:
-> >  git-bisect good      0539771d7236b425f285652f6f297cc7939c8f9a
-> > 
-> >  81450b73dde07f473a4a7208b209b4c8b7251d90 is first bad commit
-> 
-> I have confirmed these two on my system.
-
-BTW, the key here seems to be CONFIG_CC_OPTIMIZE_FOR_SIZE, at least that
-is my current guess looking at the config options I still need to test
-whether they make a difference. Either that, or the vmsplit option got
-broken again. I'm attaching my x60 config that works for me.
-
--- 
-Jens Axboe
+To be clear PM-memory will not be useful unless you have workloads that
+can take advantage of it.  The identified workloads are not desktop
+workloads.  However; there is a non-zero number of interested users with
+applicable workloads that make pushing the enabling patches out to the
+community worth while.  These workloads tend to be within network
+elements and servers where memory utilization tracks traffic load.  =
 
 
---QKdGvSO+nmPlgiQ/
-Content-Type: application/x-config
-Content-Disposition: attachment; filename=".config"
-Content-Transfer-Encoding: quoted-printable
+This patch is very simple.  It is independent of the ongoing
+anti-fragmentation, page migration and hot remove activities.  It should
+coexist and be complimentary to those.
 
-#=0A# Automatically generated make config: don't edit=0A# Linux kernel vers=
-ion: 2.6.21-rc2=0A# Mon Mar  5 13:03:54 2007=0A#=0ACONFIG_X86_32=3Dy=0ACONF=
-IG_GENERIC_TIME=3Dy=0ACONFIG_CLOCKSOURCE_WATCHDOG=3Dy=0ACONFIG_GENERIC_CLOC=
-KEVENTS=3Dy=0ACONFIG_GENERIC_CLOCKEVENTS_BROADCAST=3Dy=0ACONFIG_LOCKDEP_SUP=
-PORT=3Dy=0ACONFIG_STACKTRACE_SUPPORT=3Dy=0ACONFIG_SEMAPHORE_SLEEPERS=3Dy=0A=
-CONFIG_X86=3Dy=0ACONFIG_MMU=3Dy=0ACONFIG_ZONE_DMA=3Dy=0ACONFIG_ASYNC_SUPPOR=
-T=3Dy=0ACONFIG_GENERIC_ISA_DMA=3Dy=0ACONFIG_GENERIC_IOMAP=3Dy=0ACONFIG_GENE=
-RIC_BUG=3Dy=0ACONFIG_GENERIC_HWEIGHT=3Dy=0ACONFIG_ARCH_MAY_HAVE_PC_FDC=3Dy=
-=0ACONFIG_DMI=3Dy=0ACONFIG_DEFCONFIG_LIST=3D"/lib/modules/$UNAME_RELEASE/.c=
-onfig"=0A=0A#=0A# Code maturity level options=0A#=0ACONFIG_EXPERIMENTAL=3Dy=
-=0ACONFIG_LOCK_KERNEL=3Dy=0ACONFIG_INIT_ENV_ARG_LIMIT=3D32=0A=0A#=0A# Gener=
-al setup=0A#=0ACONFIG_LOCALVERSION=3D""=0A# CONFIG_LOCALVERSION_AUTO is not=
- set=0ACONFIG_SWAP=3Dy=0ACONFIG_SYSVIPC=3Dy=0A# CONFIG_IPC_NS is not set=0A=
-CONFIG_SYSVIPC_SYSCTL=3Dy=0ACONFIG_POSIX_MQUEUE=3Dy=0ACONFIG_BSD_PROCESS_AC=
-CT=3Dy=0ACONFIG_BSD_PROCESS_ACCT_V3=3Dy=0A# CONFIG_TASKSTATS is not set=0A#=
- CONFIG_UTS_NS is not set=0A# CONFIG_AUDIT is not set=0ACONFIG_IKCONFIG=3Dy=
-=0ACONFIG_IKCONFIG_PROC=3Dy=0ACONFIG_CPUSETS=3Dy=0ACONFIG_SYSFS_DEPRECATED=
-=3Dy=0ACONFIG_RELAY=3Dy=0A# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set=0ACONFIG=
-_SYSCTL=3Dy=0A# CONFIG_EMBEDDED is not set=0ACONFIG_UID16=3Dy=0ACONFIG_SYSC=
-TL_SYSCALL=3Dy=0ACONFIG_KALLSYMS=3Dy=0A# CONFIG_KALLSYMS_ALL is not set=0A#=
- CONFIG_KALLSYMS_EXTRA_PASS is not set=0ACONFIG_HOTPLUG=3Dy=0ACONFIG_PRINTK=
-=3Dy=0ACONFIG_BUG=3Dy=0ACONFIG_ELF_CORE=3Dy=0ACONFIG_BASE_FULL=3Dy=0ACONFIG=
-_FUTEX=3Dy=0ACONFIG_EPOLL=3Dy=0ACONFIG_SHMEM=3Dy=0ACONFIG_SLAB=3Dy=0ACONFIG=
-_VM_EVENT_COUNTERS=3Dy=0ACONFIG_RT_MUTEXES=3Dy=0A# CONFIG_TINY_SHMEM is not=
- set=0ACONFIG_BASE_SMALL=3D0=0A# CONFIG_SLOB is not set=0A=0A#=0A# Loadable=
- module support=0A#=0ACONFIG_MODULES=3Dy=0ACONFIG_MODULE_UNLOAD=3Dy=0A# CON=
-FIG_MODULE_FORCE_UNLOAD is not set=0ACONFIG_MODVERSIONS=3Dy=0ACONFIG_MODULE=
-_SRCVERSION_ALL=3Dy=0ACONFIG_KMOD=3Dy=0ACONFIG_STOP_MACHINE=3Dy=0A=0A#=0A# =
-Block layer=0A#=0ACONFIG_BLOCK=3Dy=0A# CONFIG_LBD is not set=0ACONFIG_BLK_D=
-EV_IO_TRACE=3Dy=0A# CONFIG_LSF is not set=0A=0A#=0A# IO Schedulers=0A#=0ACO=
-NFIG_IOSCHED_NOOP=3Dy=0ACONFIG_IOSCHED_AS=3Dm=0ACONFIG_IOSCHED_DEADLINE=3Dm=
-=0ACONFIG_IOSCHED_CFQ=3Dy=0A# CONFIG_DEFAULT_AS is not set=0A# CONFIG_DEFAU=
-LT_DEADLINE is not set=0ACONFIG_DEFAULT_CFQ=3Dy=0A# CONFIG_DEFAULT_NOOP is =
-not set=0ACONFIG_DEFAULT_IOSCHED=3D"cfq"=0A=0A#=0A# Processor type and feat=
-ures=0A#=0ACONFIG_TICK_ONESHOT=3Dy=0ACONFIG_NO_HZ=3Dy=0ACONFIG_HIGH_RES_TIM=
-ERS=3Dy=0ACONFIG_SMP=3Dy=0ACONFIG_X86_PC=3Dy=0A# CONFIG_X86_ELAN is not set=
-=0A# CONFIG_X86_VOYAGER is not set=0A# CONFIG_X86_NUMAQ is not set=0A# CONF=
-IG_X86_SUMMIT is not set=0A# CONFIG_X86_BIGSMP is not set=0A# CONFIG_X86_VI=
-SWS is not set=0A# CONFIG_X86_GENERICARCH is not set=0A# CONFIG_X86_ES7000 =
-is not set=0A# CONFIG_PARAVIRT is not set=0A# CONFIG_M386 is not set=0A# CO=
-NFIG_M486 is not set=0A# CONFIG_M586 is not set=0A# CONFIG_M586TSC is not s=
-et=0A# CONFIG_M586MMX is not set=0A# CONFIG_M686 is not set=0A# CONFIG_MPEN=
-TIUMII is not set=0A# CONFIG_MPENTIUMIII is not set=0A# CONFIG_MPENTIUMM is=
- not set=0ACONFIG_MCORE2=3Dy=0A# CONFIG_MPENTIUM4 is not set=0A# CONFIG_MK6=
- is not set=0A# CONFIG_MK7 is not set=0A# CONFIG_MK8 is not set=0A# CONFIG_=
-MCRUSOE is not set=0A# CONFIG_MEFFICEON is not set=0A# CONFIG_MWINCHIPC6 is=
- not set=0A# CONFIG_MWINCHIP2 is not set=0A# CONFIG_MWINCHIP3D is not set=
-=0A# CONFIG_MGEODEGX1 is not set=0A# CONFIG_MGEODE_LX is not set=0A# CONFIG=
-_MCYRIXIII is not set=0A# CONFIG_MVIAC3_2 is not set=0A# CONFIG_X86_GENERIC=
- is not set=0ACONFIG_X86_CMPXCHG=3Dy=0ACONFIG_X86_L1_CACHE_SHIFT=3D6=0ACONF=
-IG_RWSEM_XCHGADD_ALGORITHM=3Dy=0A# CONFIG_ARCH_HAS_ILOG2_U32 is not set=0A#=
- CONFIG_ARCH_HAS_ILOG2_U64 is not set=0ACONFIG_GENERIC_CALIBRATE_DELAY=3Dy=
-=0ACONFIG_X86_WP_WORKS_OK=3Dy=0ACONFIG_X86_INVLPG=3Dy=0ACONFIG_X86_BSWAP=3D=
-y=0ACONFIG_X86_POPAD_OK=3Dy=0ACONFIG_X86_CMPXCHG64=3Dy=0ACONFIG_X86_GOOD_AP=
-IC=3Dy=0ACONFIG_X86_INTEL_USERCOPY=3Dy=0ACONFIG_X86_USE_PPRO_CHECKSUM=3Dy=
-=0ACONFIG_X86_TSC=3Dy=0A# CONFIG_HPET_TIMER is not set=0ACONFIG_NR_CPUS=3D2=
-=0A# CONFIG_SCHED_SMT is not set=0A# CONFIG_SCHED_MC is not set=0A# CONFIG_=
-PREEMPT_NONE is not set=0ACONFIG_PREEMPT_VOLUNTARY=3Dy=0A# CONFIG_PREEMPT i=
-s not set=0ACONFIG_PREEMPT_BKL=3Dy=0ACONFIG_X86_LOCAL_APIC=3Dy=0ACONFIG_X86=
-_IO_APIC=3Dy=0A# CONFIG_X86_MCE is not set=0ACONFIG_VM86=3Dy=0A# CONFIG_TOS=
-HIBA is not set=0A# CONFIG_I8K is not set=0A# CONFIG_X86_REBOOTFIXUPS is no=
-t set=0A# CONFIG_MICROCODE is not set=0ACONFIG_X86_MSR=3Dy=0ACONFIG_X86_CPU=
-ID=3Dy=0A=0A#=0A# Firmware Drivers=0A#=0A# CONFIG_EDD is not set=0A# CONFIG=
-_DELL_RBU is not set=0A# CONFIG_DCDBAS is not set=0A# CONFIG_NOHIGHMEM is n=
-ot set=0ACONFIG_HIGHMEM4G=3Dy=0A# CONFIG_HIGHMEM64G is not set=0ACONFIG_PAG=
-E_OFFSET=3D0xC0000000=0ACONFIG_HIGHMEM=3Dy=0ACONFIG_ARCH_FLATMEM_ENABLE=3Dy=
-=0ACONFIG_ARCH_SPARSEMEM_ENABLE=3Dy=0ACONFIG_ARCH_SELECT_MEMORY_MODEL=3Dy=
-=0ACONFIG_ARCH_POPULATES_NODE_MAP=3Dy=0ACONFIG_SELECT_MEMORY_MODEL=3Dy=0ACO=
-NFIG_FLATMEM_MANUAL=3Dy=0A# CONFIG_DISCONTIGMEM_MANUAL is not set=0A# CONFI=
-G_SPARSEMEM_MANUAL is not set=0ACONFIG_FLATMEM=3Dy=0ACONFIG_FLAT_NODE_MEM_M=
-AP=3Dy=0ACONFIG_SPARSEMEM_STATIC=3Dy=0ACONFIG_SPLIT_PTLOCK_CPUS=3D4=0A# CON=
-FIG_RESOURCES_64BIT is not set=0ACONFIG_ZONE_DMA_FLAG=3D1=0A# CONFIG_HIGHPT=
-E is not set=0A# CONFIG_MATH_EMULATION is not set=0ACONFIG_MTRR=3Dy=0A# CON=
-FIG_EFI is not set=0ACONFIG_IRQBALANCE=3Dy=0A# CONFIG_SECCOMP is not set=0A=
-# CONFIG_HZ_100 is not set=0A# CONFIG_HZ_250 is not set=0A# CONFIG_HZ_300 i=
-s not set=0ACONFIG_HZ_1000=3Dy=0ACONFIG_HZ=3D1000=0ACONFIG_KEXEC=3Dy=0A# CO=
-NFIG_CRASH_DUMP is not set=0ACONFIG_PHYSICAL_START=3D0x100000=0A# CONFIG_RE=
-LOCATABLE is not set=0ACONFIG_PHYSICAL_ALIGN=3D0x100000=0ACONFIG_HOTPLUG_CP=
-U=3Dy=0ACONFIG_COMPAT_VDSO=3Dy=0ACONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=3Dy=0A=
-=0A#=0A# Power management options (ACPI, APM)=0A#=0ACONFIG_PM=3Dy=0ACONFIG_=
-PM_LEGACY=3Dy=0A# CONFIG_PM_DEBUG is not set=0ACONFIG_PM_SYSFS_DEPRECATED=
-=3Dy=0ACONFIG_SOFTWARE_SUSPEND=3Dy=0ACONFIG_PM_STD_PARTITION=3D"/dev/sda5"=
-=0ACONFIG_SUSPEND_SMP=3Dy=0A=0A#=0A# ACPI (Advanced Configuration and Power=
- Interface) Support=0A#=0ACONFIG_ACPI=3Dy=0ACONFIG_ACPI_SLEEP=3Dy=0ACONFIG_=
-ACPI_SLEEP_PROC_FS=3Dy=0ACONFIG_ACPI_SLEEP_PROC_SLEEP=3Dy=0ACONFIG_ACPI_PRO=
-CFS=3Dy=0ACONFIG_ACPI_AC=3Dm=0ACONFIG_ACPI_BATTERY=3Dm=0ACONFIG_ACPI_BUTTON=
-=3Dm=0ACONFIG_ACPI_VIDEO=3Dm=0ACONFIG_ACPI_FAN=3Dm=0ACONFIG_ACPI_DOCK=3Dm=
-=0A# CONFIG_ACPI_BAY is not set=0ACONFIG_ACPI_PROCESSOR=3Dm=0ACONFIG_ACPI_H=
-OTPLUG_CPU=3Dy=0ACONFIG_ACPI_THERMAL=3Dm=0A# CONFIG_ACPI_ASUS is not set=0A=
-CONFIG_ACPI_IBM=3Dm=0A# CONFIG_ACPI_TOSHIBA is not set=0A# CONFIG_ACPI_CUST=
-OM_DSDT is not set=0ACONFIG_ACPI_BLACKLIST_YEAR=3D2001=0A# CONFIG_ACPI_DEBU=
-G is not set=0ACONFIG_ACPI_EC=3Dy=0ACONFIG_ACPI_POWER=3Dy=0ACONFIG_ACPI_SYS=
-TEM=3Dy=0ACONFIG_X86_PM_TIMER=3Dy=0ACONFIG_ACPI_CONTAINER=3Dm=0A=0A#=0A# AP=
-M (Advanced Power Management) BIOS Support=0A#=0ACONFIG_APM=3Dy=0A# CONFIG_=
-APM_IGNORE_USER_SUSPEND is not set=0ACONFIG_APM_DO_ENABLE=3Dy=0ACONFIG_APM_=
-CPU_IDLE=3Dy=0ACONFIG_APM_DISPLAY_BLANK=3Dy=0A# CONFIG_APM_RTC_IS_GMT is no=
-t set=0A# CONFIG_APM_ALLOW_INTS is not set=0A# CONFIG_APM_REAL_MODE_POWER_O=
-FF is not set=0A=0A#=0A# CPU Frequency scaling=0A#=0ACONFIG_CPU_FREQ=3Dy=0A=
-CONFIG_CPU_FREQ_TABLE=3Dm=0A# CONFIG_CPU_FREQ_DEBUG is not set=0ACONFIG_CPU=
-_FREQ_STAT=3Dm=0ACONFIG_CPU_FREQ_STAT_DETAILS=3Dy=0ACONFIG_CPU_FREQ_DEFAULT=
-_GOV_PERFORMANCE=3Dy=0A# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set=
-=0ACONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy=0ACONFIG_CPU_FREQ_GOV_POWERSAVE=3Dm=
-=0ACONFIG_CPU_FREQ_GOV_USERSPACE=3Dm=0ACONFIG_CPU_FREQ_GOV_ONDEMAND=3Dm=0A#=
- CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set=0A=0A#=0A# CPUFreq processor d=
-rivers=0A#=0ACONFIG_X86_ACPI_CPUFREQ=3Dm=0A# CONFIG_X86_POWERNOW_K6 is not =
-set=0A# CONFIG_X86_POWERNOW_K7 is not set=0A# CONFIG_X86_POWERNOW_K8 is not=
- set=0A# CONFIG_X86_GX_SUSPMOD is not set=0ACONFIG_X86_SPEEDSTEP_CENTRINO=
-=3Dm=0A# CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI is not set=0ACONFIG_X86_SPEEDST=
-EP_CENTRINO_TABLE=3Dy=0A# CONFIG_X86_SPEEDSTEP_ICH is not set=0A# CONFIG_X8=
-6_SPEEDSTEP_SMI is not set=0A# CONFIG_X86_P4_CLOCKMOD is not set=0A# CONFIG=
-_X86_CPUFREQ_NFORCE2 is not set=0A# CONFIG_X86_LONGRUN is not set=0A# CONFI=
-G_X86_LONGHAUL is not set=0A# CONFIG_X86_E_POWERSAVER is not set=0A=0A#=0A#=
- shared options=0A#=0A# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set=0A# CO=
-NFIG_X86_SPEEDSTEP_LIB is not set=0A=0A#=0A# Bus options (PCI, PCMCIA, EISA=
-, MCA, ISA)=0A#=0ACONFIG_PCI=3Dy=0A# CONFIG_PCI_GOBIOS is not set=0A# CONFI=
-G_PCI_GOMMCONFIG is not set=0A# CONFIG_PCI_GODIRECT is not set=0ACONFIG_PCI=
-_GOANY=3Dy=0ACONFIG_PCI_BIOS=3Dy=0ACONFIG_PCI_DIRECT=3Dy=0ACONFIG_PCI_MMCON=
-FIG=3Dy=0ACONFIG_PCIEPORTBUS=3Dy=0A# CONFIG_HOTPLUG_PCI_PCIE is not set=0A#=
- CONFIG_PCIEAER is not set=0ACONFIG_PCI_MSI=3Dy=0A# CONFIG_PCI_DEBUG is not=
- set=0A# CONFIG_HT_IRQ is not set=0ACONFIG_ISA_DMA_API=3Dy=0A# CONFIG_ISA i=
-s not set=0A# CONFIG_MCA is not set=0A# CONFIG_SCx200 is not set=0A=0A#=0A#=
- PCCARD (PCMCIA/CardBus) support=0A#=0ACONFIG_PCCARD=3Dm=0A# CONFIG_PCMCIA_=
-DEBUG is not set=0ACONFIG_PCMCIA=3Dm=0ACONFIG_PCMCIA_LOAD_CIS=3Dy=0ACONFIG_=
-PCMCIA_IOCTL=3Dy=0ACONFIG_CARDBUS=3Dy=0A=0A#=0A# PC-card bridges=0A#=0ACONF=
-IG_YENTA=3Dm=0ACONFIG_YENTA_O2=3Dy=0ACONFIG_YENTA_RICOH=3Dy=0ACONFIG_YENTA_=
-TI=3Dy=0ACONFIG_YENTA_ENE_TUNE=3Dy=0ACONFIG_YENTA_TOSHIBA=3Dy=0A# CONFIG_PD=
-6729 is not set=0A# CONFIG_I82092 is not set=0ACONFIG_PCCARD_NONSTATIC=3Dm=
-=0A=0A#=0A# PCI Hotplug Support=0A#=0ACONFIG_HOTPLUG_PCI=3Dy=0A# CONFIG_HOT=
-PLUG_PCI_FAKE is not set=0A# CONFIG_HOTPLUG_PCI_COMPAQ is not set=0ACONFIG_=
-HOTPLUG_PCI_IBM=3Dy=0ACONFIG_HOTPLUG_PCI_ACPI=3Dm=0ACONFIG_HOTPLUG_PCI_ACPI=
-_IBM=3Dm=0A# CONFIG_HOTPLUG_PCI_CPCI is not set=0A# CONFIG_HOTPLUG_PCI_SHPC=
- is not set=0A=0A#=0A# Executable file formats=0A#=0ACONFIG_BINFMT_ELF=3Dy=
-=0ACONFIG_BINFMT_AOUT=3Dm=0ACONFIG_BINFMT_MISC=3Dm=0A=0A#=0A# Networking=0A=
-#=0ACONFIG_NET=3Dy=0A=0A#=0A# Networking options=0A#=0A# CONFIG_NETDEBUG is=
- not set=0ACONFIG_PACKET=3Dm=0ACONFIG_PACKET_MMAP=3Dy=0ACONFIG_UNIX=3Dy=0A#=
- CONFIG_NET_KEY is not set=0ACONFIG_INET=3Dy=0A# CONFIG_IP_MULTICAST is not=
- set=0A# CONFIG_IP_ADVANCED_ROUTER is not set=0ACONFIG_IP_FIB_HASH=3Dy=0A# =
-CONFIG_IP_PNP is not set=0A# CONFIG_NET_IPIP is not set=0A# CONFIG_NET_IPGR=
-E is not set=0A# CONFIG_ARPD is not set=0ACONFIG_SYN_COOKIES=3Dy=0A# CONFIG=
-_INET_AH is not set=0A# CONFIG_INET_ESP is not set=0A# CONFIG_INET_IPCOMP i=
-s not set=0A# CONFIG_INET_XFRM_TUNNEL is not set=0A# CONFIG_INET_TUNNEL is =
-not set=0A# CONFIG_INET_XFRM_MODE_TRANSPORT is not set=0A# CONFIG_INET_XFRM=
-_MODE_TUNNEL is not set=0A# CONFIG_INET_XFRM_MODE_BEET is not set=0A# CONFI=
-G_INET_DIAG is not set=0A# CONFIG_TCP_CONG_ADVANCED is not set=0ACONFIG_TCP=
-_CONG_CUBIC=3Dy=0ACONFIG_DEFAULT_TCP_CONG=3D"cubic"=0A# CONFIG_TCP_MD5SIG i=
-s not set=0A# CONFIG_IPV6 is not set=0A# CONFIG_INET6_XFRM_TUNNEL is not se=
-t=0A# CONFIG_INET6_TUNNEL is not set=0A# CONFIG_NETWORK_SECMARK is not set=
-=0A# CONFIG_NETFILTER is not set=0A=0A#=0A# DCCP Configuration (EXPERIMENTA=
-L)=0A#=0A# CONFIG_IP_DCCP is not set=0A=0A#=0A# SCTP Configuration (EXPERIM=
-ENTAL)=0A#=0A# CONFIG_IP_SCTP is not set=0A=0A#=0A# TIPC Configuration (EXP=
-ERIMENTAL)=0A#=0A# CONFIG_TIPC is not set=0A# CONFIG_ATM is not set=0A# CON=
-FIG_BRIDGE is not set=0A# CONFIG_VLAN_8021Q is not set=0A# CONFIG_DECNET is=
- not set=0A# CONFIG_LLC2 is not set=0A# CONFIG_IPX is not set=0A# CONFIG_AT=
-ALK is not set=0A# CONFIG_X25 is not set=0A# CONFIG_LAPB is not set=0A# CON=
-FIG_ECONET is not set=0A# CONFIG_WAN_ROUTER is not set=0A=0A#=0A# QoS and/o=
-r fair queueing=0A#=0A# CONFIG_NET_SCHED is not set=0A=0A#=0A# Network test=
-ing=0A#=0A# CONFIG_NET_PKTGEN is not set=0A# CONFIG_HAMRADIO is not set=0A#=
- CONFIG_IRDA is not set=0ACONFIG_BT=3Dm=0ACONFIG_BT_L2CAP=3Dm=0ACONFIG_BT_S=
-CO=3Dm=0ACONFIG_BT_RFCOMM=3Dm=0ACONFIG_BT_RFCOMM_TTY=3Dy=0ACONFIG_BT_BNEP=
-=3Dm=0ACONFIG_BT_BNEP_MC_FILTER=3Dy=0ACONFIG_BT_BNEP_PROTO_FILTER=3Dy=0ACON=
-FIG_BT_HIDP=3Dm=0A=0A#=0A# Bluetooth device drivers=0A#=0ACONFIG_BT_HCIUSB=
-=3Dm=0ACONFIG_BT_HCIUSB_SCO=3Dy=0ACONFIG_BT_HCIUART=3Dm=0ACONFIG_BT_HCIUART=
-_H4=3Dy=0ACONFIG_BT_HCIUART_BCSP=3Dy=0A# CONFIG_BT_HCIBCM203X is not set=0A=
-# CONFIG_BT_HCIBPA10X is not set=0A# CONFIG_BT_HCIBFUSB is not set=0A# CONF=
-IG_BT_HCIDTL1 is not set=0A# CONFIG_BT_HCIBT3C is not set=0A# CONFIG_BT_HCI=
-BLUECARD is not set=0A# CONFIG_BT_HCIBTUART is not set=0A# CONFIG_BT_HCIVHC=
-I is not set=0ACONFIG_IEEE80211=3Dm=0A# CONFIG_IEEE80211_DEBUG is not set=
-=0ACONFIG_IEEE80211_CRYPT_WEP=3Dm=0ACONFIG_IEEE80211_CRYPT_CCMP=3Dm=0A# CON=
-FIG_IEEE80211_CRYPT_TKIP is not set=0A# CONFIG_IEEE80211_SOFTMAC is not set=
-=0ACONFIG_WIRELESS_EXT=3Dy=0A=0A#=0A# Device Drivers=0A#=0A=0A#=0A# Generic=
- Driver Options=0A#=0A# CONFIG_STANDALONE is not set=0ACONFIG_PREVENT_FIRMW=
-ARE_BUILD=3Dy=0ACONFIG_FW_LOADER=3Dm=0A# CONFIG_DEBUG_DRIVER is not set=0A#=
- CONFIG_DEBUG_DEVRES is not set=0A# CONFIG_SYS_HYPERVISOR is not set=0A=0A#=
-=0A# Connector - unified userspace <-> kernelspace linker=0A#=0A# CONFIG_CO=
-NNECTOR is not set=0A=0A#=0A# Memory Technology Devices (MTD)=0A#=0A# CONFI=
-G_MTD is not set=0A=0A#=0A# Parallel port support=0A#=0A# CONFIG_PARPORT is=
- not set=0A=0A#=0A# Plug and Play support=0A#=0ACONFIG_PNP=3Dy=0A# CONFIG_P=
-NP_DEBUG is not set=0A=0A#=0A# Protocols=0A#=0ACONFIG_PNPACPI=3Dy=0A=0A#=0A=
-# Block devices=0A#=0A# CONFIG_BLK_DEV_FD is not set=0A# CONFIG_BLK_CPQ_DA =
-is not set=0A# CONFIG_BLK_CPQ_CISS_DA is not set=0A# CONFIG_BLK_DEV_DAC960 =
-is not set=0A# CONFIG_BLK_DEV_UMEM is not set=0A# CONFIG_BLK_DEV_COW_COMMON=
- is not set=0ACONFIG_BLK_DEV_LOOP=3Dm=0A# CONFIG_BLK_DEV_CRYPTOLOOP is not =
-set=0A# CONFIG_BLK_DEV_NBD is not set=0A# CONFIG_BLK_DEV_SX8 is not set=0A#=
- CONFIG_BLK_DEV_UB is not set=0A# CONFIG_BLK_DEV_RAM is not set=0A# CONFIG_=
-BLK_DEV_INITRD is not set=0A# CONFIG_CDROM_PKTCDVD is not set=0A# CONFIG_AT=
-A_OVER_ETH is not set=0A=0A#=0A# Misc devices=0A#=0A# CONFIG_IBM_ASM is not=
- set=0A# CONFIG_SGI_IOC4 is not set=0A# CONFIG_TIFM_CORE is not set=0A# CON=
-FIG_MSI_LAPTOP is not set=0A# CONFIG_SONY_LAPTOP is not set=0A=0A#=0A# ATA/=
-ATAPI/MFM/RLL support=0A#=0A# CONFIG_IDE is not set=0A=0A#=0A# SCSI device =
-support=0A#=0A# CONFIG_RAID_ATTRS is not set=0ACONFIG_SCSI=3Dy=0A# CONFIG_S=
-CSI_TGT is not set=0A# CONFIG_SCSI_NETLINK is not set=0ACONFIG_SCSI_PROC_FS=
-=3Dy=0A=0A#=0A# SCSI support type (disk, tape, CD-ROM)=0A#=0ACONFIG_BLK_DEV=
-_SD=3Dy=0A# CONFIG_CHR_DEV_ST is not set=0A# CONFIG_CHR_DEV_OSST is not set=
-=0ACONFIG_BLK_DEV_SR=3Dm=0A# CONFIG_BLK_DEV_SR_VENDOR is not set=0ACONFIG_C=
-HR_DEV_SG=3Dm=0A# CONFIG_CHR_DEV_SCH is not set=0A=0A#=0A# Some SCSI device=
-s (e.g. CD jukebox) support multiple LUNs=0A#=0ACONFIG_SCSI_MULTI_LUN=3Dy=
-=0ACONFIG_SCSI_CONSTANTS=3Dy=0ACONFIG_SCSI_LOGGING=3Dy=0A# CONFIG_SCSI_SCAN=
-_ASYNC is not set=0A=0A#=0A# SCSI Transports=0A#=0A# CONFIG_SCSI_SPI_ATTRS =
-is not set=0A# CONFIG_SCSI_FC_ATTRS is not set=0A# CONFIG_SCSI_ISCSI_ATTRS =
-is not set=0A# CONFIG_SCSI_SAS_ATTRS is not set=0A# CONFIG_SCSI_SAS_LIBSAS =
-is not set=0A=0A#=0A# SCSI low-level drivers=0A#=0A# CONFIG_ISCSI_TCP is no=
-t set=0A# CONFIG_BLK_DEV_3W_XXXX_RAID is not set=0A# CONFIG_SCSI_3W_9XXX is=
- not set=0A# CONFIG_SCSI_ACARD is not set=0A# CONFIG_SCSI_AACRAID is not se=
-t=0A# CONFIG_SCSI_AIC7XXX is not set=0A# CONFIG_SCSI_AIC7XXX_OLD is not set=
-=0A# CONFIG_SCSI_AIC79XX is not set=0A# CONFIG_SCSI_AIC94XX is not set=0A# =
-CONFIG_SCSI_DPT_I2O is not set=0A# CONFIG_SCSI_ADVANSYS is not set=0A# CONF=
-IG_SCSI_ARCMSR is not set=0A# CONFIG_MEGARAID_NEWGEN is not set=0A# CONFIG_=
-MEGARAID_LEGACY is not set=0A# CONFIG_MEGARAID_SAS is not set=0A# CONFIG_SC=
-SI_HPTIOP is not set=0A# CONFIG_SCSI_BUSLOGIC is not set=0A# CONFIG_SCSI_DM=
-X3191D is not set=0A# CONFIG_SCSI_EATA is not set=0A# CONFIG_SCSI_FUTURE_DO=
-MAIN is not set=0A# CONFIG_SCSI_GDTH is not set=0A# CONFIG_SCSI_IPS is not =
-set=0A# CONFIG_SCSI_INITIO is not set=0A# CONFIG_SCSI_INIA100 is not set=0A=
-# CONFIG_SCSI_STEX is not set=0A# CONFIG_SCSI_SYM53C8XX_2 is not set=0A# CO=
-NFIG_SCSI_IPR is not set=0A# CONFIG_SCSI_QLOGIC_1280 is not set=0A# CONFIG_=
-SCSI_QLA_FC is not set=0A# CONFIG_SCSI_QLA_ISCSI is not set=0A# CONFIG_SCSI=
-_LPFC is not set=0A# CONFIG_SCSI_DC395x is not set=0A# CONFIG_SCSI_DC390T i=
-s not set=0A# CONFIG_SCSI_NSP32 is not set=0ACONFIG_SCSI_DEBUG=3Dm=0A# CONF=
-IG_SCSI_SRP is not set=0A=0A#=0A# PCMCIA SCSI adapter support=0A#=0A# CONFI=
-G_PCMCIA_AHA152X is not set=0A# CONFIG_PCMCIA_FDOMAIN is not set=0A# CONFIG=
-_PCMCIA_NINJA_SCSI is not set=0A# CONFIG_PCMCIA_QLOGIC is not set=0A# CONFI=
-G_PCMCIA_SYM53C500 is not set=0A=0A#=0A# Serial ATA (prod) and Parallel ATA=
- (experimental) drivers=0A#=0ACONFIG_ATA=3Dy=0A# CONFIG_ATA_NONSTANDARD is =
-not set=0ACONFIG_SATA_AHCI=3Dy=0A# CONFIG_SATA_SVW is not set=0ACONFIG_ATA_=
-PIIX=3Dm=0A# CONFIG_SATA_MV is not set=0A# CONFIG_SATA_NV is not set=0A# CO=
-NFIG_PDC_ADMA is not set=0A# CONFIG_SATA_QSTOR is not set=0A# CONFIG_SATA_P=
-ROMISE is not set=0A# CONFIG_SATA_SX4 is not set=0A# CONFIG_SATA_SIL is not=
- set=0A# CONFIG_SATA_SIL24 is not set=0A# CONFIG_SATA_SIS is not set=0A# CO=
-NFIG_SATA_ULI is not set=0A# CONFIG_SATA_VIA is not set=0A# CONFIG_SATA_VIT=
-ESSE is not set=0A# CONFIG_SATA_INIC162X is not set=0ACONFIG_SATA_ACPI=3Dy=
-=0A# CONFIG_PATA_ALI is not set=0A# CONFIG_PATA_AMD is not set=0A# CONFIG_P=
-ATA_ARTOP is not set=0A# CONFIG_PATA_ATIIXP is not set=0A# CONFIG_PATA_CMD6=
-4X is not set=0A# CONFIG_PATA_CS5520 is not set=0A# CONFIG_PATA_CS5530 is n=
-ot set=0A# CONFIG_PATA_CS5535 is not set=0A# CONFIG_PATA_CYPRESS is not set=
-=0A# CONFIG_PATA_EFAR is not set=0A# CONFIG_ATA_GENERIC is not set=0A# CONF=
-IG_PATA_HPT366 is not set=0A# CONFIG_PATA_HPT37X is not set=0A# CONFIG_PATA=
-_HPT3X2N is not set=0A# CONFIG_PATA_HPT3X3 is not set=0A# CONFIG_PATA_IT821=
-X is not set=0A# CONFIG_PATA_IT8213 is not set=0A# CONFIG_PATA_JMICRON is n=
-ot set=0A# CONFIG_PATA_TRIFLEX is not set=0A# CONFIG_PATA_MARVELL is not se=
-t=0A# CONFIG_PATA_MPIIX is not set=0A# CONFIG_PATA_OLDPIIX is not set=0A# C=
-ONFIG_PATA_NETCELL is not set=0A# CONFIG_PATA_NS87410 is not set=0A# CONFIG=
-_PATA_OPTI is not set=0A# CONFIG_PATA_OPTIDMA is not set=0A# CONFIG_PATA_PC=
-MCIA is not set=0A# CONFIG_PATA_PDC_OLD is not set=0A# CONFIG_PATA_RADISYS =
-is not set=0A# CONFIG_PATA_RZ1000 is not set=0A# CONFIG_PATA_SC1200 is not =
-set=0A# CONFIG_PATA_SERVERWORKS is not set=0A# CONFIG_PATA_PDC2027X is not =
-set=0A# CONFIG_PATA_SIL680 is not set=0A# CONFIG_PATA_SIS is not set=0A# CO=
-NFIG_PATA_VIA is not set=0A# CONFIG_PATA_WINBOND is not set=0A=0A#=0A# Mult=
-i-device support (RAID and LVM)=0A#=0A# CONFIG_MD is not set=0A=0A#=0A# Fus=
-ion MPT device support=0A#=0A# CONFIG_FUSION is not set=0A# CONFIG_FUSION_S=
-PI is not set=0A# CONFIG_FUSION_FC is not set=0A# CONFIG_FUSION_SAS is not =
-set=0A=0A#=0A# IEEE 1394 (FireWire) support=0A#=0A# CONFIG_IEEE1394 is not =
-set=0A=0A#=0A# I2O device support=0A#=0A# CONFIG_I2O is not set=0A=0A#=0A# =
-Macintosh device drivers=0A#=0A# CONFIG_MAC_EMUMOUSEBTN is not set=0A=0A#=
-=0A# Network device support=0A#=0ACONFIG_NETDEVICES=3Dy=0ACONFIG_DUMMY=3Dm=
-=0A# CONFIG_BONDING is not set=0A# CONFIG_EQUALIZER is not set=0ACONFIG_TUN=
-=3Dm=0A# CONFIG_NET_SB1000 is not set=0A=0A#=0A# ARCnet devices=0A#=0A# CON=
-FIG_ARCNET is not set=0A=0A#=0A# PHY device support=0A#=0A=0A#=0A# Ethernet=
- (10 or 100Mbit)=0A#=0A# CONFIG_NET_ETHERNET is not set=0A=0A#=0A# Ethernet=
- (1000 Mbit)=0A#=0A# CONFIG_ACENIC is not set=0A# CONFIG_DL2K is not set=0A=
-CONFIG_E1000=3Dm=0ACONFIG_E1000_NAPI=3Dy=0A# CONFIG_E1000_DISABLE_PACKET_SP=
-LIT is not set=0A# CONFIG_NS83820 is not set=0A# CONFIG_HAMACHI is not set=
-=0A# CONFIG_YELLOWFIN is not set=0A# CONFIG_R8169 is not set=0A# CONFIG_SIS=
-190 is not set=0A# CONFIG_SKGE is not set=0A# CONFIG_SKY2 is not set=0A# CO=
-NFIG_SK98LIN is not set=0A# CONFIG_TIGON3 is not set=0A# CONFIG_BNX2 is not=
- set=0A# CONFIG_QLA3XXX is not set=0A# CONFIG_ATL1 is not set=0A=0A#=0A# Et=
-hernet (10000 Mbit)=0A#=0A# CONFIG_CHELSIO_T1 is not set=0A# CONFIG_CHELSIO=
-_T3 is not set=0A# CONFIG_IXGB is not set=0A# CONFIG_S2IO is not set=0A# CO=
-NFIG_MYRI10GE is not set=0A# CONFIG_NETXEN_NIC is not set=0A=0A#=0A# Token =
-Ring devices=0A#=0A# CONFIG_TR is not set=0A=0A#=0A# Wireless LAN (non-hamr=
-adio)=0A#=0ACONFIG_NET_RADIO=3Dy=0A# CONFIG_NET_WIRELESS_RTNETLINK is not s=
-et=0A=0A#=0A# Obsolete Wireless cards support (pre-802.11)=0A#=0A# CONFIG_S=
-TRIP is not set=0A# CONFIG_PCMCIA_WAVELAN is not set=0A# CONFIG_PCMCIA_NETW=
-AVE is not set=0A=0A#=0A# Wireless 802.11 Frequency Hopping cards support=
-=0A#=0A# CONFIG_PCMCIA_RAYCS is not set=0A=0A#=0A# Wireless 802.11b ISA/PCI=
- cards support=0A#=0A# CONFIG_IPW2100 is not set=0A# CONFIG_IPW2200 is not =
-set=0A# CONFIG_AIRO is not set=0A# CONFIG_HERMES is not set=0A# CONFIG_ATME=
-L is not set=0A=0A#=0A# Wireless 802.11b Pcmcia/Cardbus cards support=0A#=
-=0A# CONFIG_AIRO_CS is not set=0A# CONFIG_PCMCIA_WL3501 is not set=0A=0A#=
-=0A# Prism GT/Duette 802.11(a/b/g) PCI/Cardbus support=0A#=0A# CONFIG_PRISM=
-54 is not set=0A# CONFIG_USB_ZD1201 is not set=0A# CONFIG_HOSTAP is not set=
-=0ACONFIG_IPW3945=3Dm=0A# CONFIG_IPW3945_DEBUG is not set=0ACONFIG_IPW3945_=
-MONITOR=3Dy=0ACONFIG_IPW3945_PROMISCUOUS=3Dy=0ACONFIG_NET_WIRELESS=3Dy=0A=
-=0A#=0A# PCMCIA network device support=0A#=0A# CONFIG_NET_PCMCIA is not set=
-=0A=0A#=0A# Wan interfaces=0A#=0A# CONFIG_WAN is not set=0A# CONFIG_FDDI is=
- not set=0A# CONFIG_HIPPI is not set=0A# CONFIG_PPP is not set=0A# CONFIG_S=
-LIP is not set=0A# CONFIG_NET_FC is not set=0A# CONFIG_SHAPER is not set=0A=
-# CONFIG_NETCONSOLE is not set=0A# CONFIG_NETPOLL is not set=0A# CONFIG_NET=
-_POLL_CONTROLLER is not set=0A=0A#=0A# ISDN subsystem=0A#=0A# CONFIG_ISDN i=
-s not set=0A=0A#=0A# Telephony Support=0A#=0A# CONFIG_PHONE is not set=0A=
-=0A#=0A# Input device support=0A#=0ACONFIG_INPUT=3Dy=0A# CONFIG_INPUT_FF_ME=
-MLESS is not set=0A=0A#=0A# Userland interfaces=0A#=0ACONFIG_INPUT_MOUSEDEV=
-=3Dy=0ACONFIG_INPUT_MOUSEDEV_PSAUX=3Dy=0ACONFIG_INPUT_MOUSEDEV_SCREEN_X=3D1=
-024=0ACONFIG_INPUT_MOUSEDEV_SCREEN_Y=3D768=0A# CONFIG_INPUT_JOYDEV is not s=
-et=0A# CONFIG_INPUT_TSDEV is not set=0ACONFIG_INPUT_EVDEV=3Dy=0A# CONFIG_IN=
-PUT_EVBUG is not set=0A=0A#=0A# Input Device Drivers=0A#=0ACONFIG_INPUT_KEY=
-BOARD=3Dy=0ACONFIG_KEYBOARD_ATKBD=3Dy=0A# CONFIG_KEYBOARD_SUNKBD is not set=
-=0A# CONFIG_KEYBOARD_LKKBD is not set=0A# CONFIG_KEYBOARD_XTKBD is not set=
-=0A# CONFIG_KEYBOARD_NEWTON is not set=0A# CONFIG_KEYBOARD_STOWAWAY is not =
-set=0ACONFIG_INPUT_MOUSE=3Dy=0ACONFIG_MOUSE_PS2=3Dy=0A# CONFIG_MOUSE_SERIAL=
- is not set=0A# CONFIG_MOUSE_VSXXXAA is not set=0A# CONFIG_INPUT_JOYSTICK i=
-s not set=0A# CONFIG_INPUT_TOUCHSCREEN is not set=0ACONFIG_INPUT_MISC=3Dy=
-=0ACONFIG_INPUT_PCSPKR=3Dy=0A# CONFIG_INPUT_WISTRON_BTNS is not set=0A# CON=
-FIG_INPUT_ATLAS_BTNS is not set=0ACONFIG_INPUT_UINPUT=3Dm=0A=0A#=0A# Hardwa=
-re I/O ports=0A#=0ACONFIG_SERIO=3Dy=0ACONFIG_SERIO_I8042=3Dy=0A# CONFIG_SER=
-IO_SERPORT is not set=0A# CONFIG_SERIO_CT82C710 is not set=0A# CONFIG_SERIO=
-_PCIPS2 is not set=0ACONFIG_SERIO_LIBPS2=3Dy=0A# CONFIG_SERIO_RAW is not se=
-t=0A# CONFIG_GAMEPORT is not set=0A=0A#=0A# Character devices=0A#=0ACONFIG_=
-VT=3Dy=0ACONFIG_VT_CONSOLE=3Dy=0ACONFIG_HW_CONSOLE=3Dy=0A# CONFIG_VT_HW_CON=
-SOLE_BINDING is not set=0A# CONFIG_SERIAL_NONSTANDARD is not set=0A=0A#=0A#=
- Serial drivers=0A#=0A# CONFIG_SERIAL_8250 is not set=0A=0A#=0A# Non-8250 s=
-erial port support=0A#=0A# CONFIG_SERIAL_JSM is not set=0ACONFIG_UNIX98_PTY=
-S=3Dy=0A# CONFIG_LEGACY_PTYS is not set=0A=0A#=0A# IPMI=0A#=0A# CONFIG_IPMI=
-_HANDLER is not set=0A=0A#=0A# Watchdog Cards=0A#=0A# CONFIG_WATCHDOG is no=
-t set=0A# CONFIG_HW_RANDOM is not set=0A# CONFIG_NVRAM is not set=0ACONFIG_=
-RTC=3Dy=0A# CONFIG_DTLK is not set=0A# CONFIG_R3964 is not set=0A# CONFIG_A=
-PPLICOM is not set=0A# CONFIG_SONYPI is not set=0ACONFIG_AGP=3Dy=0A# CONFIG=
-_AGP_ALI is not set=0A# CONFIG_AGP_ATI is not set=0A# CONFIG_AGP_AMD is not=
- set=0A# CONFIG_AGP_AMD64 is not set=0ACONFIG_AGP_INTEL=3Dy=0A# CONFIG_AGP_=
-NVIDIA is not set=0A# CONFIG_AGP_SIS is not set=0A# CONFIG_AGP_SWORKS is no=
-t set=0A# CONFIG_AGP_VIA is not set=0A# CONFIG_AGP_EFFICEON is not set=0ACO=
-NFIG_DRM=3Dm=0A# CONFIG_DRM_TDFX is not set=0A# CONFIG_DRM_R128 is not set=
-=0A# CONFIG_DRM_RADEON is not set=0A# CONFIG_DRM_I810 is not set=0A# CONFIG=
-_DRM_I830 is not set=0ACONFIG_DRM_I915=3Dm=0A# CONFIG_DRM_MGA is not set=0A=
-# CONFIG_DRM_SIS is not set=0A# CONFIG_DRM_VIA is not set=0A# CONFIG_DRM_SA=
-VAGE is not set=0A=0A#=0A# PCMCIA character devices=0A#=0A# CONFIG_SYNCLINK=
-_CS is not set=0A# CONFIG_CARDMAN_4000 is not set=0A# CONFIG_CARDMAN_4040 i=
-s not set=0A# CONFIG_MWAVE is not set=0A# CONFIG_PC8736x_GPIO is not set=0A=
-# CONFIG_NSC_GPIO is not set=0A# CONFIG_CS5535_GPIO is not set=0A# CONFIG_R=
-AW_DRIVER is not set=0ACONFIG_HPET=3Dy=0A# CONFIG_HPET_RTC_IRQ is not set=
-=0ACONFIG_HPET_MMAP=3Dy=0A# CONFIG_HANGCHECK_TIMER is not set=0A=0A#=0A# TP=
-M devices=0A#=0A# CONFIG_TCG_TPM is not set=0A# CONFIG_TELCLOCK is not set=
-=0A=0A#=0A# I2C support=0A#=0A# CONFIG_I2C is not set=0A=0A#=0A# SPI suppor=
-t=0A#=0A# CONFIG_SPI is not set=0A# CONFIG_SPI_MASTER is not set=0A=0A#=0A#=
- Dallas's 1-wire bus=0A#=0A# CONFIG_W1 is not set=0A=0A#=0A# Hardware Monit=
-oring support=0A#=0A# CONFIG_HWMON is not set=0A# CONFIG_HWMON_VID is not s=
-et=0A=0A#=0A# Multifunction device drivers=0A#=0A# CONFIG_MFD_SM501 is not =
-set=0A=0A#=0A# Multimedia devices=0A#=0A# CONFIG_VIDEO_DEV is not set=0A=0A=
-#=0A# Digital Video Broadcasting Devices=0A#=0A# CONFIG_DVB is not set=0A# =
-CONFIG_USB_DABUSB is not set=0A=0A#=0A# Graphics support=0A#=0A# CONFIG_BAC=
-KLIGHT_LCD_SUPPORT is not set=0ACONFIG_BACKLIGHT_CLASS_DEVICE=3Dm=0A# CONFI=
-G_BACKLIGHT_PROGEAR is not set=0A# CONFIG_FB is not set=0A=0A#=0A# Console =
-display driver support=0A#=0ACONFIG_VGA_CONSOLE=3Dy=0A# CONFIG_VGACON_SOFT_=
-SCROLLBACK is not set=0ACONFIG_VIDEO_SELECT=3Dy=0ACONFIG_DUMMY_CONSOLE=3Dy=
-=0A=0A#=0A# Sound=0A#=0ACONFIG_SOUND=3Dm=0A=0A#=0A# Advanced Linux Sound Ar=
-chitecture=0A#=0ACONFIG_SND=3Dm=0ACONFIG_SND_TIMER=3Dm=0ACONFIG_SND_PCM=3Dm=
-=0A# CONFIG_SND_SEQUENCER is not set=0ACONFIG_SND_OSSEMUL=3Dy=0ACONFIG_SND_=
-MIXER_OSS=3Dm=0ACONFIG_SND_PCM_OSS=3Dm=0ACONFIG_SND_PCM_OSS_PLUGINS=3Dy=0A#=
- CONFIG_SND_RTCTIMER is not set=0A# CONFIG_SND_DYNAMIC_MINORS is not set=0A=
-CONFIG_SND_SUPPORT_OLD_API=3Dy=0ACONFIG_SND_VERBOSE_PROCFS=3Dy=0ACONFIG_SND=
-_VERBOSE_PRINTK=3Dy=0A# CONFIG_SND_DEBUG is not set=0A=0A#=0A# Generic devi=
-ces=0A#=0A# CONFIG_SND_DUMMY is not set=0A# CONFIG_SND_MTPAV is not set=0A#=
- CONFIG_SND_SERIAL_U16550 is not set=0A# CONFIG_SND_MPU401 is not set=0A=0A=
-#=0A# PCI devices=0A#=0A# CONFIG_SND_AD1889 is not set=0A# CONFIG_SND_ALS30=
-0 is not set=0A# CONFIG_SND_ALS4000 is not set=0A# CONFIG_SND_ALI5451 is no=
-t set=0A# CONFIG_SND_ATIIXP is not set=0A# CONFIG_SND_ATIIXP_MODEM is not s=
-et=0A# CONFIG_SND_AU8810 is not set=0A# CONFIG_SND_AU8820 is not set=0A# CO=
-NFIG_SND_AU8830 is not set=0A# CONFIG_SND_AZT3328 is not set=0A# CONFIG_SND=
-_BT87X is not set=0A# CONFIG_SND_CA0106 is not set=0A# CONFIG_SND_CMIPCI is=
- not set=0A# CONFIG_SND_CS4281 is not set=0A# CONFIG_SND_CS46XX is not set=
-=0A# CONFIG_SND_CS5535AUDIO is not set=0A# CONFIG_SND_DARLA20 is not set=0A=
-# CONFIG_SND_GINA20 is not set=0A# CONFIG_SND_LAYLA20 is not set=0A# CONFIG=
-_SND_DARLA24 is not set=0A# CONFIG_SND_GINA24 is not set=0A# CONFIG_SND_LAY=
-LA24 is not set=0A# CONFIG_SND_MONA is not set=0A# CONFIG_SND_MIA is not se=
-t=0A# CONFIG_SND_ECHO3G is not set=0A# CONFIG_SND_INDIGO is not set=0A# CON=
-FIG_SND_INDIGOIO is not set=0A# CONFIG_SND_INDIGODJ is not set=0A# CONFIG_S=
-ND_EMU10K1 is not set=0A# CONFIG_SND_EMU10K1X is not set=0A# CONFIG_SND_ENS=
-1370 is not set=0A# CONFIG_SND_ENS1371 is not set=0A# CONFIG_SND_ES1938 is =
-not set=0A# CONFIG_SND_ES1968 is not set=0A# CONFIG_SND_FM801 is not set=0A=
-CONFIG_SND_HDA_INTEL=3Dm=0A# CONFIG_SND_HDSP is not set=0A# CONFIG_SND_HDSP=
-M is not set=0A# CONFIG_SND_ICE1712 is not set=0A# CONFIG_SND_ICE1724 is no=
-t set=0A# CONFIG_SND_INTEL8X0 is not set=0A# CONFIG_SND_INTEL8X0M is not se=
-t=0A# CONFIG_SND_KORG1212 is not set=0A# CONFIG_SND_MAESTRO3 is not set=0A#=
- CONFIG_SND_MIXART is not set=0A# CONFIG_SND_NM256 is not set=0A# CONFIG_SN=
-D_PCXHR is not set=0A# CONFIG_SND_RIPTIDE is not set=0A# CONFIG_SND_RME32 i=
-s not set=0A# CONFIG_SND_RME96 is not set=0A# CONFIG_SND_RME9652 is not set=
-=0A# CONFIG_SND_SONICVIBES is not set=0A# CONFIG_SND_TRIDENT is not set=0A#=
- CONFIG_SND_VIA82XX is not set=0A# CONFIG_SND_VIA82XX_MODEM is not set=0A# =
-CONFIG_SND_VX222 is not set=0A# CONFIG_SND_YMFPCI is not set=0A=0A#=0A# USB=
- devices=0A#=0A# CONFIG_SND_USB_AUDIO is not set=0A# CONFIG_SND_USB_USX2Y i=
-s not set=0A=0A#=0A# PCMCIA devices=0A#=0A# CONFIG_SND_VXPOCKET is not set=
-=0A# CONFIG_SND_PDAUDIOCF is not set=0A=0A#=0A# SoC audio support=0A#=0A# C=
-ONFIG_SND_SOC is not set=0A=0A#=0A# Open Sound System=0A#=0A# CONFIG_SOUND_=
-PRIME is not set=0A=0A#=0A# HID Devices=0A#=0ACONFIG_HID=3Dy=0A# CONFIG_HID=
-_DEBUG is not set=0A=0A#=0A# USB support=0A#=0ACONFIG_USB_ARCH_HAS_HCD=3Dy=
-=0ACONFIG_USB_ARCH_HAS_OHCI=3Dy=0ACONFIG_USB_ARCH_HAS_EHCI=3Dy=0ACONFIG_USB=
-=3Dm=0A# CONFIG_USB_DEBUG is not set=0A=0A#=0A# Miscellaneous USB options=
-=0A#=0ACONFIG_USB_DEVICEFS=3Dy=0A# CONFIG_USB_DYNAMIC_MINORS is not set=0A#=
- CONFIG_USB_SUSPEND is not set=0A# CONFIG_USB_OTG is not set=0A=0A#=0A# USB=
- Host Controller Drivers=0A#=0ACONFIG_USB_EHCI_HCD=3Dm=0ACONFIG_USB_EHCI_SP=
-LIT_ISO=3Dy=0ACONFIG_USB_EHCI_ROOT_HUB_TT=3Dy=0A# CONFIG_USB_EHCI_TT_NEWSCH=
-ED is not set=0A# CONFIG_USB_EHCI_BIG_ENDIAN_MMIO is not set=0A# CONFIG_USB=
-_ISP116X_HCD is not set=0A# CONFIG_USB_OHCI_HCD is not set=0ACONFIG_USB_UHC=
-I_HCD=3Dm=0A# CONFIG_USB_SL811_HCD is not set=0A=0A#=0A# USB Device Class d=
-rivers=0A#=0A# CONFIG_USB_ACM is not set=0A# CONFIG_USB_PRINTER is not set=
-=0A=0A#=0A# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'=0A#=0A=
-=0A#=0A# may also be needed; see USB_STORAGE Help for more information=0A#=
-=0ACONFIG_USB_STORAGE=3Dm=0A# CONFIG_USB_STORAGE_DEBUG is not set=0A# CONFI=
-G_USB_STORAGE_DATAFAB is not set=0A# CONFIG_USB_STORAGE_FREECOM is not set=
-=0A# CONFIG_USB_STORAGE_DPCM is not set=0A# CONFIG_USB_STORAGE_USBAT is not=
- set=0A# CONFIG_USB_STORAGE_SDDR09 is not set=0A# CONFIG_USB_STORAGE_SDDR55=
- is not set=0A# CONFIG_USB_STORAGE_JUMPSHOT is not set=0A# CONFIG_USB_STORA=
-GE_ALAUDA is not set=0A# CONFIG_USB_STORAGE_KARMA is not set=0A# CONFIG_USB=
-_LIBUSUAL is not set=0A=0A#=0A# USB Input Devices=0A#=0ACONFIG_USB_HID=3Dm=
-=0A# CONFIG_USB_HIDINPUT_POWERBOOK is not set=0A# CONFIG_HID_FF is not set=
-=0ACONFIG_USB_HIDDEV=3Dy=0A=0A#=0A# USB HID Boot Protocol drivers=0A#=0A# C=
-ONFIG_USB_KBD is not set=0A# CONFIG_USB_MOUSE is not set=0A# CONFIG_USB_AIP=
-TEK is not set=0A# CONFIG_USB_WACOM is not set=0A# CONFIG_USB_ACECAD is not=
- set=0A# CONFIG_USB_KBTAB is not set=0A# CONFIG_USB_POWERMATE is not set=0A=
-# CONFIG_USB_TOUCHSCREEN is not set=0A# CONFIG_USB_YEALINK is not set=0A# C=
-ONFIG_USB_XPAD is not set=0A# CONFIG_USB_ATI_REMOTE is not set=0A# CONFIG_U=
-SB_ATI_REMOTE2 is not set=0A# CONFIG_USB_KEYSPAN_REMOTE is not set=0A# CONF=
-IG_USB_APPLETOUCH is not set=0A# CONFIG_USB_GTCO is not set=0A=0A#=0A# USB =
-Imaging devices=0A#=0A# CONFIG_USB_MDC800 is not set=0A# CONFIG_USB_MICROTE=
-K is not set=0A=0A#=0A# USB Network Adapters=0A#=0A# CONFIG_USB_CATC is not=
- set=0A# CONFIG_USB_KAWETH is not set=0A# CONFIG_USB_PEGASUS is not set=0A#=
- CONFIG_USB_RTL8150 is not set=0A# CONFIG_USB_USBNET_MII is not set=0A# CON=
-FIG_USB_USBNET is not set=0ACONFIG_USB_MON=3Dy=0A=0A#=0A# USB port drivers=
-=0A#=0A=0A#=0A# USB Serial Converter support=0A#=0A# CONFIG_USB_SERIAL is n=
-ot set=0A=0A#=0A# USB Miscellaneous drivers=0A#=0A# CONFIG_USB_EMI62 is not=
- set=0A# CONFIG_USB_EMI26 is not set=0A# CONFIG_USB_ADUTUX is not set=0A# C=
-ONFIG_USB_AUERSWALD is not set=0A# CONFIG_USB_RIO500 is not set=0A# CONFIG_=
-USB_LEGOTOWER is not set=0A# CONFIG_USB_LCD is not set=0A# CONFIG_USB_BERRY=
-_CHARGE is not set=0A# CONFIG_USB_LED is not set=0A# CONFIG_USB_CYPRESS_CY7=
-C63 is not set=0A# CONFIG_USB_CYTHERM is not set=0A# CONFIG_USB_PHIDGET is =
-not set=0A# CONFIG_USB_IDMOUSE is not set=0A# CONFIG_USB_FTDI_ELAN is not s=
-et=0A# CONFIG_USB_APPLEDISPLAY is not set=0A# CONFIG_USB_SISUSBVGA is not s=
-et=0A# CONFIG_USB_LD is not set=0A# CONFIG_USB_TRANCEVIBRATOR is not set=0A=
-# CONFIG_USB_IOWARRIOR is not set=0A# CONFIG_USB_TEST is not set=0A=0A#=0A#=
- USB DSL modem support=0A#=0A=0A#=0A# USB Gadget Support=0A#=0A# CONFIG_USB=
-_GADGET is not set=0A=0A#=0A# MMC/SD Card support=0A#=0A# CONFIG_MMC is not=
- set=0A=0A#=0A# LED devices=0A#=0A# CONFIG_NEW_LEDS is not set=0A=0A#=0A# L=
-ED drivers=0A#=0A=0A#=0A# LED Triggers=0A#=0A=0A#=0A# InfiniBand support=0A=
-#=0A# CONFIG_INFINIBAND is not set=0A=0A#=0A# EDAC - error detection and re=
-porting (RAS) (EXPERIMENTAL)=0A#=0A# CONFIG_EDAC is not set=0A=0A#=0A# Real=
- Time Clock=0A#=0A# CONFIG_RTC_CLASS is not set=0A=0A#=0A# DMA Engine suppo=
-rt=0A#=0A# CONFIG_DMA_ENGINE is not set=0A=0A#=0A# DMA Clients=0A#=0A=0A#=
-=0A# DMA Devices=0A#=0A=0A#=0A# Auxiliary Display support=0A#=0A=0A#=0A# Vi=
-rtualization=0A#=0ACONFIG_KVM=3Dm=0ACONFIG_KVM_INTEL=3Dm=0A# CONFIG_KVM_AMD=
- is not set=0A=0A#=0A# File systems=0A#=0ACONFIG_EXT2_FS=3Dy=0A# CONFIG_EXT=
-2_FS_XATTR is not set=0A# CONFIG_EXT2_FS_XIP is not set=0ACONFIG_EXT3_FS=3D=
-y=0A# CONFIG_EXT3_FS_XATTR is not set=0A# CONFIG_EXT4DEV_FS is not set=0ACO=
-NFIG_JBD=3Dy=0A# CONFIG_JBD_DEBUG is not set=0A# CONFIG_REISERFS_FS is not =
-set=0A# CONFIG_JFS_FS is not set=0ACONFIG_FS_POSIX_ACL=3Dy=0A# CONFIG_XFS_F=
-S is not set=0A# CONFIG_GFS2_FS is not set=0A# CONFIG_OCFS2_FS is not set=
-=0A# CONFIG_MINIX_FS is not set=0A# CONFIG_ROMFS_FS is not set=0ACONFIG_INO=
-TIFY=3Dy=0ACONFIG_INOTIFY_USER=3Dy=0A# CONFIG_QUOTA is not set=0ACONFIG_DNO=
-TIFY=3Dy=0A# CONFIG_AUTOFS_FS is not set=0A# CONFIG_AUTOFS4_FS is not set=
-=0ACONFIG_FUSE_FS=3Dm=0A=0A#=0A# CD-ROM/DVD Filesystems=0A#=0ACONFIG_ISO966=
-0_FS=3Dm=0ACONFIG_JOLIET=3Dy=0ACONFIG_ZISOFS=3Dy=0A# CONFIG_UDF_FS is not s=
-et=0A=0A#=0A# DOS/FAT/NT Filesystems=0A#=0ACONFIG_FAT_FS=3Dm=0ACONFIG_MSDOS=
-_FS=3Dm=0ACONFIG_VFAT_FS=3Dm=0ACONFIG_FAT_DEFAULT_CODEPAGE=3D437=0ACONFIG_F=
-AT_DEFAULT_IOCHARSET=3D"iso8859-1"=0A# CONFIG_NTFS_FS is not set=0A=0A#=0A#=
- Pseudo filesystems=0A#=0ACONFIG_PROC_FS=3Dy=0ACONFIG_PROC_KCORE=3Dy=0ACONF=
-IG_PROC_SYSCTL=3Dy=0ACONFIG_SYSFS=3Dy=0ACONFIG_TMPFS=3Dy=0A# CONFIG_TMPFS_P=
-OSIX_ACL is not set=0ACONFIG_HUGETLBFS=3Dy=0ACONFIG_HUGETLB_PAGE=3Dy=0ACONF=
-IG_RAMFS=3Dy=0A# CONFIG_CONFIGFS_FS is not set=0A=0A#=0A# Miscellaneous fil=
-esystems=0A#=0A# CONFIG_ADFS_FS is not set=0A# CONFIG_AFFS_FS is not set=0A=
-# CONFIG_HFS_FS is not set=0A# CONFIG_HFSPLUS_FS is not set=0A# CONFIG_BEFS=
-_FS is not set=0A# CONFIG_BFS_FS is not set=0A# CONFIG_EFS_FS is not set=0A=
-# CONFIG_CRAMFS is not set=0A# CONFIG_VXFS_FS is not set=0A# CONFIG_HPFS_FS=
- is not set=0A# CONFIG_QNX4FS_FS is not set=0A# CONFIG_SYSV_FS is not set=
-=0A# CONFIG_UFS_FS is not set=0A=0A#=0A# Network File Systems=0A#=0ACONFIG_=
-NFS_FS=3Dm=0ACONFIG_NFS_V3=3Dy=0ACONFIG_NFS_V3_ACL=3Dy=0ACONFIG_NFS_V4=3Dy=
-=0ACONFIG_NFS_DIRECTIO=3Dy=0A# CONFIG_NFSD is not set=0ACONFIG_LOCKD=3Dm=0A=
-CONFIG_LOCKD_V4=3Dy=0ACONFIG_NFS_ACL_SUPPORT=3Dm=0ACONFIG_NFS_COMMON=3Dy=0A=
-CONFIG_SUNRPC=3Dm=0ACONFIG_SUNRPC_GSS=3Dm=0ACONFIG_RPCSEC_GSS_KRB5=3Dm=0A# =
-CONFIG_RPCSEC_GSS_SPKM3 is not set=0A# CONFIG_SMB_FS is not set=0A# CONFIG_=
-CIFS is not set=0A# CONFIG_NCP_FS is not set=0A# CONFIG_CODA_FS is not set=
-=0A# CONFIG_AFS_FS is not set=0A# CONFIG_9P_FS is not set=0A=0A#=0A# Partit=
-ion Types=0A#=0A# CONFIG_PARTITION_ADVANCED is not set=0ACONFIG_MSDOS_PARTI=
-TION=3Dy=0A=0A#=0A# Native Language Support=0A#=0ACONFIG_NLS=3Dy=0ACONFIG_N=
-LS_DEFAULT=3D"utf8"=0ACONFIG_NLS_CODEPAGE_437=3Dm=0ACONFIG_NLS_CODEPAGE_737=
-=3Dm=0ACONFIG_NLS_CODEPAGE_775=3Dm=0ACONFIG_NLS_CODEPAGE_850=3Dm=0ACONFIG_N=
-LS_CODEPAGE_852=3Dm=0ACONFIG_NLS_CODEPAGE_855=3Dm=0ACONFIG_NLS_CODEPAGE_857=
-=3Dm=0ACONFIG_NLS_CODEPAGE_860=3Dm=0ACONFIG_NLS_CODEPAGE_861=3Dm=0ACONFIG_N=
-LS_CODEPAGE_862=3Dm=0ACONFIG_NLS_CODEPAGE_863=3Dm=0ACONFIG_NLS_CODEPAGE_864=
-=3Dm=0ACONFIG_NLS_CODEPAGE_865=3Dm=0ACONFIG_NLS_CODEPAGE_866=3Dm=0ACONFIG_N=
-LS_CODEPAGE_869=3Dm=0ACONFIG_NLS_CODEPAGE_936=3Dm=0ACONFIG_NLS_CODEPAGE_950=
-=3Dm=0ACONFIG_NLS_CODEPAGE_932=3Dm=0ACONFIG_NLS_CODEPAGE_949=3Dm=0ACONFIG_N=
-LS_CODEPAGE_874=3Dm=0ACONFIG_NLS_ISO8859_8=3Dm=0ACONFIG_NLS_CODEPAGE_1250=
-=3Dm=0ACONFIG_NLS_CODEPAGE_1251=3Dm=0ACONFIG_NLS_ASCII=3Dm=0ACONFIG_NLS_ISO=
-8859_1=3Dm=0ACONFIG_NLS_ISO8859_2=3Dm=0ACONFIG_NLS_ISO8859_3=3Dm=0ACONFIG_N=
-LS_ISO8859_4=3Dm=0ACONFIG_NLS_ISO8859_5=3Dm=0ACONFIG_NLS_ISO8859_6=3Dm=0ACO=
-NFIG_NLS_ISO8859_7=3Dm=0ACONFIG_NLS_ISO8859_9=3Dm=0ACONFIG_NLS_ISO8859_13=
-=3Dm=0ACONFIG_NLS_ISO8859_14=3Dm=0ACONFIG_NLS_ISO8859_15=3Dm=0ACONFIG_NLS_K=
-OI8_R=3Dm=0ACONFIG_NLS_KOI8_U=3Dm=0ACONFIG_NLS_UTF8=3Dm=0A=0A#=0A# Distribu=
-ted Lock Manager=0A#=0A# CONFIG_DLM is not set=0A=0A#=0A# Instrumentation S=
-upport=0A#=0A# CONFIG_PROFILING is not set=0A# CONFIG_KPROBES is not set=0A=
-=0A#=0A# Kernel hacking=0A#=0ACONFIG_TRACE_IRQFLAGS_SUPPORT=3Dy=0A# CONFIG_=
-PRINTK_TIME is not set=0A# CONFIG_ENABLE_MUST_CHECK is not set=0ACONFIG_MAG=
-IC_SYSRQ=3Dy=0ACONFIG_UNUSED_SYMBOLS=3Dy=0ACONFIG_DEBUG_FS=3Dy=0A# CONFIG_H=
-EADERS_CHECK is not set=0ACONFIG_DEBUG_KERNEL=3Dy=0A# CONFIG_DEBUG_SHIRQ is=
- not set=0ACONFIG_LOG_BUF_SHIFT=3D17=0A# CONFIG_DETECT_SOFTLOCKUP is not se=
-t=0A# CONFIG_SCHEDSTATS is not set=0A# CONFIG_TIMER_STATS is not set=0A# CO=
-NFIG_DEBUG_SLAB is not set=0A# CONFIG_DEBUG_RT_MUTEXES is not set=0A# CONFI=
-G_RT_MUTEX_TESTER is not set=0A# CONFIG_DEBUG_SPINLOCK is not set=0A# CONFI=
-G_DEBUG_MUTEXES is not set=0A# CONFIG_DEBUG_LOCK_ALLOC is not set=0A# CONFI=
-G_PROVE_LOCKING is not set=0A# CONFIG_DEBUG_SPINLOCK_SLEEP is not set=0A# C=
-ONFIG_DEBUG_LOCKING_API_SELFTESTS is not set=0A# CONFIG_DEBUG_KOBJECT is no=
-t set=0A# CONFIG_DEBUG_HIGHMEM is not set=0ACONFIG_DEBUG_BUGVERBOSE=3Dy=0AC=
-ONFIG_DEBUG_INFO=3Dy=0A# CONFIG_DEBUG_VM is not set=0A# CONFIG_DEBUG_LIST i=
-s not set=0A# CONFIG_FRAME_POINTER is not set=0ACONFIG_FORCED_INLINING=3Dy=
-=0A# CONFIG_RCU_TORTURE_TEST is not set=0A# CONFIG_FAULT_INJECTION is not s=
-et=0ACONFIG_EARLY_PRINTK=3Dy=0ACONFIG_DEBUG_STACKOVERFLOW=3Dy=0A# CONFIG_DE=
-BUG_STACK_USAGE is not set=0A=0A#=0A# Page alloc debug is incompatible with=
- Software Suspend on i386=0A#=0ACONFIG_DEBUG_RODATA=3Dy=0ACONFIG_4KSTACKS=
-=3Dy=0ACONFIG_X86_FIND_SMP_CONFIG=3Dy=0ACONFIG_X86_MPPARSE=3Dy=0ACONFIG_DOU=
-BLEFAULT=3Dy=0A=0A#=0A# Security options=0A#=0A# CONFIG_KEYS is not set=0A#=
- CONFIG_SECURITY is not set=0A=0A#=0A# Cryptographic options=0A#=0ACONFIG_C=
-RYPTO=3Dy=0ACONFIG_CRYPTO_ALGAPI=3Dy=0ACONFIG_CRYPTO_BLKCIPHER=3Dm=0ACONFIG=
-_CRYPTO_MANAGER=3Dm=0A# CONFIG_CRYPTO_HMAC is not set=0A# CONFIG_CRYPTO_XCB=
-C is not set=0A# CONFIG_CRYPTO_NULL is not set=0A# CONFIG_CRYPTO_MD4 is not=
- set=0ACONFIG_CRYPTO_MD5=3Dy=0ACONFIG_CRYPTO_SHA1=3Dm=0ACONFIG_CRYPTO_SHA25=
-6=3Dm=0A# CONFIG_CRYPTO_SHA512 is not set=0A# CONFIG_CRYPTO_WP512 is not se=
-t=0A# CONFIG_CRYPTO_TGR192 is not set=0A# CONFIG_CRYPTO_GF128MUL is not set=
-=0ACONFIG_CRYPTO_ECB=3Dm=0ACONFIG_CRYPTO_CBC=3Dm=0A# CONFIG_CRYPTO_PCBC is =
-not set=0A# CONFIG_CRYPTO_LRW is not set=0ACONFIG_CRYPTO_DES=3Dy=0A# CONFIG=
-_CRYPTO_FCRYPT is not set=0A# CONFIG_CRYPTO_BLOWFISH is not set=0A# CONFIG_=
-CRYPTO_TWOFISH is not set=0A# CONFIG_CRYPTO_TWOFISH_586 is not set=0A# CONF=
-IG_CRYPTO_SERPENT is not set=0ACONFIG_CRYPTO_AES=3Dm=0A# CONFIG_CRYPTO_AES_=
-586 is not set=0A# CONFIG_CRYPTO_CAST5 is not set=0A# CONFIG_CRYPTO_CAST6 i=
-s not set=0A# CONFIG_CRYPTO_TEA is not set=0ACONFIG_CRYPTO_ARC4=3Dm=0A# CON=
-FIG_CRYPTO_KHAZAD is not set=0A# CONFIG_CRYPTO_ANUBIS is not set=0A# CONFIG=
-_CRYPTO_DEFLATE is not set=0A# CONFIG_CRYPTO_MICHAEL_MIC is not set=0A# CON=
-FIG_CRYPTO_CRC32C is not set=0A# CONFIG_CRYPTO_CAMELLIA is not set=0A# CONF=
-IG_CRYPTO_TEST is not set=0A=0A#=0A# Hardware crypto devices=0A#=0ACONFIG_C=
-RYPTO_DEV_PADLOCK=3Dm=0ACONFIG_CRYPTO_DEV_PADLOCK_AES=3Dm=0ACONFIG_CRYPTO_D=
-EV_PADLOCK_SHA=3Dm=0A# CONFIG_CRYPTO_DEV_GEODE is not set=0A=0A#=0A# Librar=
-y routines=0A#=0ACONFIG_BITREVERSE=3Dy=0A# CONFIG_CRC_CCITT is not set=0A# =
-CONFIG_CRC16 is not set=0ACONFIG_CRC32=3Dy=0A# CONFIG_LIBCRC32C is not set=
-=0ACONFIG_ZLIB_INFLATE=3Dm=0ACONFIG_PLIST=3Dy=0ACONFIG_HAS_IOMEM=3Dy=0ACONF=
-IG_HAS_IOPORT=3Dy=0ACONFIG_GENERIC_HARDIRQS=3Dy=0ACONFIG_GENERIC_IRQ_PROBE=
-=3Dy=0ACONFIG_GENERIC_PENDING_IRQ=3Dy=0ACONFIG_X86_SMP=3Dy=0ACONFIG_X86_HT=
-=3Dy=0ACONFIG_X86_BIOS_REBOOT=3Dy=0ACONFIG_X86_TRAMPOLINE=3Dy=0ACONFIG_KTIM=
-E_SCALAR=3Dy=0A
---QKdGvSO+nmPlgiQ/--
+The goals of this patch are:
+* provide a method for identifying power managed memory that could change
+state at runtime under policy manager and OS control.
+* avoid start up allocations from putting kernel memory structures into
+such memory at boot time.
+* be minimal and transparent for platforms without such memory.
+
+It makes use of the existing NUMA implementation.  =
+
+
+It implements a convention on the 4 bytes of "Proximity Domain ID"
+within the SRAT memory affinity structure as defined in ACPI3.0a.  If
+bit 31 is set, then the memory range represented by that PXM is assumed
+to be power managed.  We are working on defining a "standard" for
+identifying such memory areas as power manageable and progress committee
+based.  =
+
+
+We are going with the above convention for the time being as it doesn't
+violate ACPI specifications.  Some time in the future after the
+committees are finished some of this code may need to be updated.
+
+To exercise the capability on a platform with PM-memory, you will still
+need to include a policy manager with some code to trigger the state
+changes to enable transition into and out of a low power state. =
+
+
+More will be done, but for now we would like to get this base enabling
+into the upstream kernel as an initial step.
+
+Thanks,
+
+--mgross =
+
+
+Signed-off-by: Mark Gross <mark.gross@intel.com>
+
+
+
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/arch/=
+x86_64/mm/numa.c linux-2.6.20-mm2-monroe/arch/x86_64/mm/numa.c
+--- linux-2.6.20-mm2/arch/x86_64/mm/numa.c	2007-02-23 11:20:38.000000000 -0=
+800
++++ linux-2.6.20-mm2-monroe/arch/x86_64/mm/numa.c	2007-03-02 15:15:53.00000=
+0000 -0800
+@@ -156,12 +156,55 @@
+ }
+ #endif
+ =
+
++/* we need a place to save the next start address to use for each node bec=
+ause
++ * we need to allocate the pgdata and bootmem for power managed memory in
++ * non-power managed nodes.  We do this by saving off where we can start
++ * allocating in the nodes and updating them as the boot up proceeds.
++ */
++static unsigned long bootmem_start[MAX_NUMNODES];
++
++
+ static void * __init
+ early_node_mem(int nodeid, unsigned long start, unsigned long end,
+ 	      unsigned long size)
+ {
+-	unsigned long mem =3D find_e820_area(start, end, size);
++	unsigned long mem;
+ 	void *ptr;
++	if (bootmem_start[nodeid] <=3D start) {
++		bootmem_start[nodeid] =3D start;
++	}
++
++	mem =3D -1L;
++	if (power_managed_node(nodeid)) {
++		int non_pm_node =3D find_closest_non_pm_node(nodeid);
++
++		if (!node_online(non_pm_node)) {
++			return NULL; /* expect nodeid to get setup on the next
++					pass of setup_node_boot_mem after
++					non_pm_node is online*/
++		} else {
++			/* We set up the allocation in the non_pm_node
++			 * get the end of non_pm_node boot allocations
++			 * allocate from there.
++			 */
++			unsigned int non_pm_end;
++
++			non_pm_end =3D (NODE_DATA(non_pm_node)->node_start_pfn +
++				NODE_DATA(non_pm_node)->node_spanned_pages)
++					<< PAGE_SHIFT;
++
++			mem =3D find_e820_area(bootmem_start[non_pm_node],
++					non_pm_end, size);
++			/* now increment bootmem_start for next call */
++			if (mem!=3D -1L)
++				bootmem_start[non_pm_node] =3D
++					round_up(mem + size, PAGE_SIZE);
++		}
++	} else {
++		mem =3D find_e820_area(bootmem_start[nodeid], end, size);
++		if (mem!=3D -1L)
++			bootmem_start[nodeid] =3D round_up(mem + size, PAGE_SIZE);
++	}	=
+
+ 	if (mem !=3D -1L)
+ 		return __va(mem);
+ 	ptr =3D __alloc_bootmem_nopanic(size,
+@@ -180,6 +223,7 @@
+ 	unsigned long start_pfn, end_pfn, bootmap_pages, bootmap_size, bootmap_st=
+art; =
+
+ 	unsigned long nodedata_phys;
+ 	void *bootmap;
++	int temp_id;
+ 	const int pgdat_size =3D round_up(sizeof(pg_data_t), PAGE_SIZE);
+ =
+
+ 	start =3D round_up(start, ZONE_ALIGN); =
+
+@@ -219,8 +263,13 @@
+ =
+
+ 	free_bootmem_with_active_regions(nodeid, end);
+ =
+
+-	reserve_bootmem_node(NODE_DATA(nodeid), nodedata_phys, pgdat_size); =
+
+-	reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start, bootmap_pages<<PAG=
+E_SHIFT);
++	if (power_managed_node(nodeid))
++		temp_id =3D find_closest_non_pm_node(nodeid);
++	else
++		temp_id =3D nodeid;
++
++	reserve_bootmem_node(NODE_DATA(temp_id), nodedata_phys, pgdat_size);
++	reserve_bootmem_node(NODE_DATA(temp_id), bootmap_start, bootmap_pages<<PA=
+GE_SHIFT);
+ #ifdef CONFIG_ACPI_NUMA
+ 	srat_reserve_add_area(nodeid);
+ #endif
+@@ -243,11 +292,21 @@
+ 	memmapsize =3D sizeof(struct page) * (end_pfn-start_pfn);
+ 	limit =3D end_pfn << PAGE_SHIFT;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP
+-	NODE_DATA(nodeid)->node_mem_map =3D =
+
+-		__alloc_bootmem_core(NODE_DATA(nodeid)->bdata, =
+
+-				memmapsize, SMP_CACHE_BYTES, =
+
+-				round_down(limit - memmapsize, PAGE_SIZE), =
+
++	if (power_managed_node(nodeid)) {
++		int non_pm_node =3D find_closest_non_pm_node(nodeid);
++
++		NODE_DATA(nodeid)->node_mem_map =3D
++			__alloc_bootmem_core(NODE_DATA(non_pm_node)->bdata,
++				memmapsize, SMP_CACHE_BYTES,
++				round_down(limit - memmapsize, PAGE_SIZE),
+ 				limit);
++	} else {
++ 		NODE_DATA(nodeid)->node_mem_map =3D
++			__alloc_bootmem_core(NODE_DATA(nodeid)->bdata,
++				memmapsize, SMP_CACHE_BYTES,
++				round_down(limit - memmapsize, PAGE_SIZE),
++				limit);
++	}
+ 	printk(KERN_DEBUG "Node %d memmap at 0x%p size %lu first pfn 0x%p\n",
+ 			nodeid, NODE_DATA(nodeid)->node_mem_map,
+ 			memmapsize, NODE_DATA(nodeid)->node_mem_map);
+@@ -266,7 +325,10 @@
+ 	for (i =3D 0; i < NR_CPUS; i++) {
+ 		if (cpu_to_node[i] !=3D NUMA_NO_NODE)
+ 			continue;
+- 		numa_set_node(i, rr);
++		if (power_managed_node(rr))
++			numa_set_node(i,find_closest_non_pm_node(rr));
++		else
++			numa_set_node(i, rr);
+ 		rr =3D next_node(rr, node_online_map);
+ 		if (rr =3D=3D MAX_NUMNODES)
+ 			rr =3D first_node(node_online_map);
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/arch/=
+x86_64/mm/srat.c linux-2.6.20-mm2-monroe/arch/x86_64/mm/srat.c
+--- linux-2.6.20-mm2/arch/x86_64/mm/srat.c	2007-02-23 11:20:38.000000000 -0=
+800
++++ linux-2.6.20-mm2-monroe/arch/x86_64/mm/srat.c	2007-03-02 15:15:53.00000=
+0000 -0800
+@@ -28,6 +28,7 @@
+ static nodemask_t nodes_parsed __initdata;
+ static struct bootnode nodes[MAX_NUMNODES] __initdata;
+ static struct bootnode nodes_add[MAX_NUMNODES];
++static int pm_node[MAX_NUMNODES];
+ static int found_add_area __initdata;
+ int hotadd_percent __initdata =3D 0;
+ =
+
+@@ -299,7 +300,11 @@
+ 		return;
+ 	start =3D ma->base_address;
+ 	end =3D start + ma->length;
+-	pxm =3D ma->proximity_domain;
++	pxm =3D ma->proximity_domain & 0x0000ffff;
++	if (ma->proximity_domain & (1<<31))
++		pm_node[pxm] =3D 1;
++	else
++		pm_node[pxm] =3D 0;
+ 	node =3D setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
+@@ -467,8 +472,6 @@
+ 	return acpi_slit->entry[index + node_to_pxm(b)];
+ }
+ =
+
+-EXPORT_SYMBOL(__node_distance);
+-
+ int memory_add_physaddr_to_nid(u64 start)
+ {
+ 	int i, ret =3D 0;
+@@ -479,5 +482,36 @@
+ =
+
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
+ =
+
++int __power_managed_node(int srat_node)
++{
++	return pm_node[node_to_pxm(srat_node)];
++}
++
++int __power_managed_memory_present(void)
++{
++	int j;
++
++	for (j=3D0; j<MAX_LOCAL_APIC; j++) {
++		if(__power_managed_node(j) )
++			return 1;
++	}
++	return 0;
++}
++
++int __find_closest_non_pm_node(int nodeid)
++{
++	int i, dist, closest, temp;
++
++	dist =3D closest=3D 255;
++	for_each_node(i) {
++		if ((i !=3D nodeid) && !power_managed_node(i)) {
++			temp =3D __node_distance(nodeid, i );
++			if (temp < dist) {
++				closest =3D i;
++				dist =3D temp;
++			}
++		}
++	}
++	return closest;
++}
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/inclu=
+de/linux/mm.h linux-2.6.20-mm2-monroe/include/linux/mm.h
+--- linux-2.6.20-mm2/include/linux/mm.h	2007-02-23 11:20:40.000000000 -0800
++++ linux-2.6.20-mm2-monroe/include/linux/mm.h	2007-03-02 15:15:53.00000000=
+0 -0800
+@@ -1226,5 +1226,9 @@
+ =
+
+ __attribute__((weak)) const char *arch_vma_name(struct vm_area_struct *vma=
+);
+ =
+
++int power_managed_memory_present(void);
++int power_managed_node(int srat_node);
++int find_closest_non_pm_node(int nodeid);
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/mm/bo=
+otmem.c linux-2.6.20-mm2-monroe/mm/bootmem.c
+--- linux-2.6.20-mm2/mm/bootmem.c	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20-mm2-monroe/mm/bootmem.c	2007-03-02 15:17:06.000000000 -0800
+@@ -417,13 +417,14 @@
+ void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long al=
+ign,
+ 				      unsigned long goal)
+ {
+-	bootmem_data_t *bdata;
+ 	void *ptr;
++	int i;
+ =
+
+-	list_for_each_entry(bdata, &bdata_list, list) {
+-		ptr =3D __alloc_bootmem_core(bdata, size, align, goal, 0);
+-		if (ptr)
+-			return ptr;
++	for_each_online_node(i) {
++		if ((!power_managed_node(i)) && (ptr =3D
++			__alloc_bootmem_core(NODE_DATA(i)->bdata, size,
++				align, goal, 0)))
++			return(ptr);
+ 	}
+ 	return NULL;
+ }
+@@ -463,16 +464,15 @@
+ void * __init __alloc_bootmem_low(unsigned long size, unsigned long align,
+ 				  unsigned long goal)
+ {
+-	bootmem_data_t *bdata;
+ 	void *ptr;
++	int i;
+ =
+
+-	list_for_each_entry(bdata, &bdata_list, list) {
+-		ptr =3D __alloc_bootmem_core(bdata, size, align, goal,
+-						ARCH_LOW_ADDRESS_LIMIT);
+-		if (ptr)
+-			return ptr;
++	for_each_online_node(i) {
++		if ((!power_managed_node(i)) && (ptr =3D
++			__alloc_bootmem_core(NODE_DATA(i)->bdata, size,
++				align, goal, ARCH_LOW_ADDRESS_LIMIT)))
++			return(ptr);
+ 	}
+-
+ 	/*
+ 	 * Whoops, we cannot satisfy the allocation request.
+ 	 */
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/mm/me=
+mory.c linux-2.6.20-mm2-monroe/mm/memory.c
+--- linux-2.6.20-mm2/mm/memory.c	2007-02-23 11:20:40.000000000 -0800
++++ linux-2.6.20-mm2-monroe/mm/memory.c	2007-03-02 15:15:53.000000000 -0800
+@@ -2882,3 +2882,29 @@
+ 	return buf - old_buf;
+ }
+ EXPORT_SYMBOL_GPL(access_process_vm);
++
++#ifdef __x86_64__
++extern int __power_managed_memory_present(void);
++extern int __power_managed_node(int srat_node);
++extern int __find_closest_non_pm_node(int nodeid);
++#else
++inline int __power_managed_memory_present(void) { return 0};
++inline int __power_managed_node(int srat_node) { return 0};
++inline int __find_closest_non_pm_node(int nodeid) { return nodeid};
++#endif
++
++int power_managed_memory_present(void)
++{
++	return __power_managed_memory_present();
++}
++
++int power_managed_node(int srat_node)
++{
++	return __power_managed_node(srat_node);
++}
++
++int find_closest_non_pm_node(int nodeid)
++{
++	return __find_closest_non_pm_node(nodeid);
++}
++
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/mm/me=
+mpolicy.c linux-2.6.20-mm2-monroe/mm/mempolicy.c
+--- linux-2.6.20-mm2/mm/mempolicy.c	2007-02-23 11:20:40.000000000 -0800
++++ linux-2.6.20-mm2-monroe/mm/mempolicy.c	2007-03-02 15:15:53.000000000 -0=
+800
+@@ -1617,8 +1617,13 @@
+ 	/* Set interleaving policy for system init. This way not all
+ 	   the data structures allocated at system boot end up in node zero. */
+ =
+
+-	if (do_set_mempolicy(MPOL_INTERLEAVE, &node_online_map))
+-		printk("numa_policy_init: interleaving failed\n");
++	if (power_managed_memory_present()) {
++		if (do_set_mempolicy(MPOL_DEFAULT, &node_online_map))
++			printk("numa_policy_init: interleaving failed\n");
++	} else {
++		if (do_set_mempolicy(MPOL_INTERLEAVE, &node_online_map))
++			printk("numa_policy_init: interleaving failed\n");
++	}
+ }
+ =
+
+ /* Reset policy of current process to default */
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/mm/pa=
+ge_alloc.c linux-2.6.20-mm2-monroe/mm/page_alloc.c
+--- linux-2.6.20-mm2/mm/page_alloc.c	2007-02-23 11:20:40.000000000 -0800
++++ linux-2.6.20-mm2-monroe/mm/page_alloc.c	2007-03-02 15:15:53.000000000 -=
+0800
+@@ -2308,8 +2308,17 @@
+ 					* sizeof(wait_queue_head_t);
+ =
+
+  	if (system_state =3D=3D SYSTEM_BOOTING) {
+-		zone->wait_table =3D (wait_queue_head_t *)
+-			alloc_bootmem_node(pgdat, alloc_size);
++		if(power_managed_node(pgdat->node_id)) {
++			int nid;
++
++			nid =3D find_closest_non_pm_node(pgdat->node_id);
++			zone->wait_table =3D (wait_queue_head_t *)
++				alloc_bootmem_node(NODE_DATA(nid), alloc_size);
++		} else
++		{
++			zone->wait_table =3D (wait_queue_head_t *)
++				alloc_bootmem_node(pgdat, alloc_size);
++		}
+ 	} else {
+ 		/*
+ 		 * This case means that a zone whose size was 0 gets new memory
+@@ -2824,8 +2833,15 @@
+ 		end =3D ALIGN(end, MAX_ORDER_NR_PAGES);
+ 		size =3D  (end - start) * sizeof(struct page);
+ 		map =3D alloc_remap(pgdat->node_id, size);
+-		if (!map)
++		if (!map) {
++		if(power_managed_node(pgdat->node_id)) {
++			int nid;
++
++			nid =3D find_closest_non_pm_node(pgdat->node_id);
++			map =3D alloc_bootmem_node(NODE_DATA(nid), size);
++		} else	=
+
+ 			map =3D alloc_bootmem_node(pgdat, size);
++		}
+ 		pgdat->node_mem_map =3D map + (pgdat->node_start_pfn - start);
+ 		printk(KERN_DEBUG
+ 			"Node %d memmap at 0x%p size %lu first pfn 0x%p\n",
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/mm/sl=
+ab.c linux-2.6.20-mm2-monroe/mm/slab.c
+--- linux-2.6.20-mm2/mm/slab.c	2007-02-23 11:20:40.000000000 -0800
++++ linux-2.6.20-mm2-monroe/mm/slab.c	2007-03-02 15:15:53.000000000 -0800
+@@ -3378,6 +3378,7 @@
+  *
+  * Fallback to other node is possible if __GFP_THISNODE is not set.
+  */
++
+ static __always_inline void *
+ __cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid,
+ 		   void *caller)
+@@ -3391,6 +3392,9 @@
+ 	if (unlikely(nodeid =3D=3D -1))
+ 		nodeid =3D numa_node_id();
+ =
+
++	if (power_managed_node(nodeid) )
++		nodeid =3D find_closest_non_pm_node(nodeid);
++
+ 	if (unlikely(!cachep->nodelists[nodeid])) {
+ 		/* Node not bootstrapped yet */
+ 		ptr =3D fallback_alloc(cachep, flags);
+@@ -3664,6 +3668,8 @@
+ #ifdef CONFIG_NUMA
+ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int no=
+deid)
+ {
++	if (power_managed_node(nodeid) )
++			nodeid =3D find_closest_non_pm_node(nodeid);
+ 	return __cache_alloc_node(cachep, flags, nodeid,
+ 			__builtin_return_address(0));
+ }
+diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2/mm/sp=
+arse.c linux-2.6.20-mm2-monroe/mm/sparse.c
+--- linux-2.6.20-mm2/mm/sparse.c	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20-mm2-monroe/mm/sparse.c	2007-03-02 15:15:53.000000000 -0800
+@@ -49,6 +49,8 @@
+ 	struct mem_section *section =3D NULL;
+ 	unsigned long array_size =3D SECTIONS_PER_ROOT *
+ 				   sizeof(struct mem_section);
++	if (power_managed_node(nid))
++		nid =3D find_closest_non_pm_node(nid);
+ =
+
+ 	if (slab_is_available())
+ 		section =3D kmalloc_node(array_size, GFP_KERNEL, nid);
+@@ -215,6 +217,9 @@
+ 	struct mem_section *ms =3D __nr_to_section(pnum);
+ 	int nid =3D sparse_early_nid(ms);
+ =
+
++	if (power_managed_node(nid))
++		nid =3D find_closest_non_pm_node(nid);
++
+ 	map =3D alloc_remap(nid, sizeof(struct page) * PAGES_PER_SECTION);
+ 	if (map)
+ 		return map;
