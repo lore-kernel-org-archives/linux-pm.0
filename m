@@ -1,19 +1,21 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] KVM: T60 resume fix
-Date: Mon, 5 Mar 2007 09:22:51 +0100
-Message-ID: <20070305082251.GA23366@elte.hu>
-References: <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu>
-	<20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu>
-	<Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
-	<20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu>
-	<20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu>
-	<45E93012.4000100@qumranet.com>
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Date: Mon, 5 Mar 2007 10:42:57 +0200
+Message-ID: <20070305084257.GA4464@mellanox.co.il>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	<20070225175559.GC12392@stusta.de>
+	<20070227100202.GV3822@kernel.dk>
+	<20070227102109.GG6745@elf.ucw.cz>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <45E93012.4000100@qumranet.com>
+In-Reply-To: <20070302100704.GB2293@elf.ucw.cz>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,36 +25,95 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Avi Kivity <avi@qumranet.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, git@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
 List-Id: linux-pm@vger.kernel.org
 
+> Quoting Pavel Machek <pavel@ucw.cz>:
+> Subject: Re: 2.6.21-rc1: known regressions (part 2)
+> =
 
-* Avi Kivity <avi@qumranet.com> wrote:
+> Hi!
+> =
 
-> > my T60 laptop does not resume correctly due to KVM attempting to =
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > =
 
-> > send an IPI to a CPU that might be down (or not up yet). (Doing so =
+> > > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, [...]
+> > =
 
-> > also triggers the send_IPI_mask_bitmask() warning in =
+> > update: f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me too, and =
 
-> > arch/i386/kernel/smp.c, line 732.)
-> >
-> >with this fix applied my laptop does not hang during resume.
-> >
-> >[ KVM will have to disable/enable virtualization on the CPU itself =
+> > 01363220f5d23ef68276db8974e46a502e43d01d is broken. I too will attempt =
 
-> >  that goes down / comes up, not via an IPI sent from the requesting
-> > CPU. ]
+> > to bisect this.
+> =
 
-> That is already CPU_ONLINE in my tree (and in the pull request sent to =
+> Strange; on my x60, suspend to ram works okay.
+> =
 
-> Linus a couple of days ago).
+> (Resume is very slow, because disks are not spinned up properly; and
+> there's something wrong with timers; console beeps take way too long).
+> =
 
-that solves the resume problem - but doesnt solve the CPU_DEAD issue of =
+> dmesg attached.
+> =
 
-sending an IPI to an already offline CPU. Might be a better idea to do =
+> That's with
+> =
 
-it in CPU_DOWN_PREPARE? (and then to also add a CPU_DOWN_FAILED branch?)
+> commit 7b965e0884cee430ffe5dc81cdb117b9316b0549
+> tree 754dce6432258e0a8c3a758e13a34eb3a1d22ee1
+> parent 5a39e8c6d655b4fe8305ef8cc2d9bbe782bfee5f
+> author Trond Myklebust <Trond.Myklebust@netapp.com> Wed, 28 Feb 2007
+> 20:13:55 -0800
+> committer Linus Torvalds <torvalds@woody.linux-foundation.org> Thu, 01
+> Mar 2007 14:53:39 -0800
+> =
 
-	Ingo
+>     [PATCH] VM: invalidate_inode_pages2_range() should not exit early
+> =
+
+>     Fix invalidate_inode_pages2_range() so that it does not
+> immediately exit
+>     just because a single page in the specified range could not be
+> removed.
+> =
+
+>     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+Pavel, I tried with your .config, and indeed the system came back to life a=
+fter
+2-3 minutes after I press Fn/F4, indeed the issue seems to be with the disk.
+It could be that the same takes place with my original .config - maybe
+I just wasn't patient enough. I'll need to re-test that.
+
+However, I noticed that, after resume, when the system is presumably functi=
+onal,
+if I try to suspend to ram again, this second suspend hangs, displaying
+the following on screen:
+
+[   17.170000] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low) -=
+> IRQ 20
+[   17.170000] PCI: Setting latency timer of device 0000:02:00.0 to 64
+[   17.250000] e1000: 0000:02:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width=
+ x1) 00:16:41:5
+4:6c:47
+[   17.330000] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connecti=
+on
+
+the crescent LED starts blinking and does not seem to stop for at lest 10 m=
+in,
+I've run out of patience after that. It could be that it's just very slow a=
+gain.
+
+Pavel, did you try suspend to RAM after a successfull resume from RAM?
+
+Under 2.6.20, the system suspends/resumes to memory within about 20 sec
+any number of times.
+
+-- =
+
+MST
