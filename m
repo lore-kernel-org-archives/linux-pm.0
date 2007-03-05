@@ -1,42 +1,80 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Mon, 5 Mar 2007 01:04:21 +0100
-Message-ID: <20070305000421.GF3441@stusta.de>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070226220152.GA29575@stusta.de> <20070228211318.GB4301@mellanox.co.il> <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
+Subject: [2/6] 2.6.21-rc2: known regressions
+Date: Mon, 5 Mar 2007 02:50:34 +0100
+Message-ID: <20070305015034.GG3441@stusta.de>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
-In-Reply-To: <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
+List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
+List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
+List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
+List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, greg@kroah.com, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 11:45:35AM +0800, Jeff Chua wrote:
-> On 3/1/07, Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> 
-> >with 2.6.20, pressing Fn/F4 generates an ACPI event and triggers suspend 
-> >to RAM.
-> >
-> >On 2.6.21-rc2, after resume (when the box is accessible from network),
-> >pressing Fn/F4 again does not seem to have any effect.
-> 
-> I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> from RAM, can't suspend to disk. It is possible to revert all the
-> changes to ACPI and test it?
+This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
+that are not yet fixed in Linus' tree.
 
-This is with CONFIG_KVM=n?
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-> Jeff.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-cu
-Adrian
 
--- 
+Subject    : ThinkPad doesn't resume from suspend to RAM
+References : http://lkml.org/lkml/2007/2/27/80
+             http://lkml.org/lkml/2007/2/28/348
+Submitter  : Jens Axboe <jens.axboe@oracle.com>
+             Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+Subject    : beeps get longer after suspend
+References : http://lkml.org/lkml/2007/2/26/276
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Status     : unknown
+
+
+Subject    : ThinkPad T60: no screen after suspend to RAM
+References : http://lkml.org/lkml/2007/2/22/391
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Status     : unknown
+
+
+Subject    : ThinkPad Z60m: usb mouse stops working after suspend to ram
+References : http://lkml.org/lkml/2007/2/21/413
+             http://lkml.org/lkml/2007/2/28/172
+Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
+Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+             commit 0a6139027f3986162233adc17285151e78b39cac
+Handled-By : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+Status     : problem is being debugged
+
+
+Subject    : AE_NOT_FOUND ACPI messages
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8066
+             http://lkml.org/lkml/2007/2/27/263
+Submitter  : Thomas Meyer <thomas.mey@web.de>
+             Meelis Roos <mroos@linux.ee>
+Handled-By : Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8066
+Status     : patch available
+
+
+Subject    : Asus M6Ne notebook: ACPI: First battery is not detected
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
+Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
+Status     : unknown
+
+
+Subject    : AT keyboard only works with pci=noacpi
+References : http://lkml.org/lkml/2007/3/3/68
+Submitter  : Ash Milsted <thatistosayiseenem@gawab.com>
+Status     : unknown
