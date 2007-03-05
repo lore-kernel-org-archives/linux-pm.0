@@ -1,57 +1,39 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Greg KH <greg@kroah.com>
 Subject: Re: [1/6] 2.6.21-rc2: known regressions
-Date: Sun, 4 Mar 2007 18:26:19 -0800
-Message-ID: <20070304182619.6110bd74.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015031.GF3441@stusta.de>
+Date: Sun, 4 Mar 2007 19:35:33 -0800
+Message-ID: <20070305033533.GA28319@kroah.com>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <20070305015031.GF3441@stusta.de>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+Sender: netdev-owner@vger.kernel.org
 To: Adrian Bunk <bunk@stusta.de>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Garzik <jeff@garzik.org>, Jeff@smtp.osdl.org, Marcel Holtmann <marcel@holtmann.org>, Matt Mackall <mpm@selenic.com>, linux-pm@lists.osdl.org, List <linux-kernel@vger.kernel.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, netdev@vger.kernel.org, bluez-devel@lists.sourceforge.net, maxk@qualcomm.com, Linux@smtp.osdl.org, Mark Lord <lkml@rtr.ca>, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>, Albert Hopkins <kernel@marduk.letterboxes.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, maxk@qualcomm.com, bluez-devel@lists.sourceforge.net, Mark Lord <lkml@rtr.ca>, Matt Mackall <mpm@selenic.com>, Johannes Berg <johannes@sipsolutions.net>, Albert Hopkins <kernel@marduk.letterboxes.org>, Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 5 Mar 2007 02:50:31 +0100 Adrian Bunk <bunk@stusta.de> wrote:
+On Mon, Mar 05, 2007 at 02:50:31AM +0100, Adrian Bunk wrote:
+> Subject    : kref refcounting breakage
+> References : http://lkml.org/lkml/2007/3/2/67
+> Submitter  : Andrew Morton <akpm@linux-foundation.org>
+> Handled-By : Greg KH <greg@kroah.com>
+> Status     : unknown
 
-> This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
-> that are not yet fixed in Linus' tree.
+I'm working on tracking this down still...
 
+> Subject    : wireless breakage (ipw2200, iwconfig, NetworkManager)
+> References : http://lkml.org/lkml/2007/3/4/135
+> Submitter  : Matt Mackall <mpm@selenic.com>
+> Caused-By  : Greg Kroah-Hartman <gregkh@suse.de> (?)
+>              commit 43cb76d91ee85f579a69d42bc8efc08bac560278 (?)
+> Handled-By : Johannes Berg <johannes@sipsolutions.net>
+> Status     : unknown
 
-We seem to have broken an unusually large amount of stuff this time.
+I really think this is a CONFIG_SYSFS_DEPRECATED issue (not being set),
+but want to get Matt confirm either way before saying this is a real
+issue or not.
 
-partial post-mortem:
+thanks,
 
-- The ACPICA merge landed in -mm super-late: basically it was in mainline
-  a week afterwards and saw only a single -mm release.
-
-  Part of the reason for this short period in -mm was that ACPICA had its
-  paws all over x86_64 code and conflicted badly with significant changes
-  in the x86_64 tree.
-
-  That happens sometimes.  But when it does, the mess lands in my lap
-  rather than in the laps of the perpetrators.
-
-  Lesson: keep the code well-factored so that different subsystems don't
-  soil each others' kennels.
-
-- The hrtimers/dynticks stuff is simply hard: timekeeping, low-level x86,
-  even APICs.  These are areas in which things break a lot, so churning it
-  was inevitably going to cause problems.
-
-  Lesson: none, I think.  Low-level x86 support is just hard, and
-  changing it breaks things.
-
-
-So that accounts for _some_ of the damage, but I wonder if there's more to
-it than that.
+greg k-h
