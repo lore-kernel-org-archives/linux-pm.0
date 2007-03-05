@@ -1,19 +1,15 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [patch] KVM: T60 resume fix
-Date: Mon, 5 Mar 2007 12:40:13 +0200
-Message-ID: <20070305104013.GC5029@mellanox.co.il>
-References: <20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu>
-	<45E93012.4000100@qumranet.com> <20070305082251.GA23366@elte.hu>
-	<45EBD9BC.4030801@qumranet.com> <20070305084449.GA1706@elte.hu>
-	<20070305085718.GA2513@elte.hu> <45EBE288.8010101@qumranet.com>
-	<20070305100537.GA9175@elte.hu> <45EBF1E3.4030003@qumranet.com>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [1/6] 2.6.21-rc2: known regressions
+Date: Mon, 05 Mar 2007 13:42:04 +0100
+Message-ID: <1173098524.6638.19.camel@aeonflux.holtmann.net>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	<20070305015031.GF3441@stusta.de> <45EB961D.6030808@rtr.ca>
+	<20070305043443.GA29158@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <45EBF1E3.4030003@qumranet.com>
+In-Reply-To: <20070305043443.GA29158@kroah.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -23,44 +19,33 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Avi Kivity <avi@qumranet.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Greg KH <greg@kroah.com>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, bluez-devel@lists.sourceforge.net, maxk@qualcomm.com, Matt Mackall <mpm@selenic.com>, Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Albert Hopkins <kernel@marduk.letterboxes.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Quoting Avi Kivity <avi@qumranet.com>:
-> Subject: Re: [patch] KVM: T60 resume fix
+Hi Greg,
+
+> > >Subject    : Bluetooth RFComm locks up the machine  (device_move() rel=
+ated)
+> > >References : http://lkml.org/lkml/2007/3/4/64
+> > >Submitter  : Mark Lord <lkml@rtr.ca>
+> > >Caused-By  : Marcel Holtmann <marcel@holtmann.org>
+> > >             commit c1a3313698895d8ad4760f98642007bf236af2e8
+> > >Status     : unknown
+> > =
+
+> > A 2-line patch exists for fs/sysfs/dir.c to address this.
+> > Waiting on Greg to apply it or substitute something prettier.  ;)
 > =
 
-> Ingo Molnar wrote:
-> > * Avi Kivity <avi@qumranet.com> wrote:
-> >
-> >   =
+> I want to see if Marcel agrees with it, as he did the original patch in
+> that area.
 
-> >>> suspend/resume works fine now and there are no warning messages =
+I am not deep enough in the sysfs code to tell you if Mark's change it
+correct or not. It looks however fully reasonable to me. From the higher
+level perspective of the device_move() usage the RFCOMM code looks
+correct and has been tested before I submitted it for inclusion.
 
-> >>> whatsoever (with suspend simulation). Thanks Avi!
-> >>>       =
+Regards
 
-> >> Where do I find this suspend simulation?  Sounds like a great suspend =
-
-> >> debugging tool.
-> >>     =
-
-> >
-> > it's just the simple hack below.
-> >
-> >
-> >   =
-
-> =
-
-> Thanks, I'll put it to good use.  Are you planning to upstream it?  Not =
-
-> for 2.6.21, presumably ;)
-
-I think Pavel wants it triggerable through /sys/power/state:
-http://lkml.org/lkml/2007/1/25/99
-
--- =
-
-MST
+Marcel
