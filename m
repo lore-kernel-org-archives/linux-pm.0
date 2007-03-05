@@ -1,34 +1,58 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [1/6] 2.6.21-rc2: known regressions
-Date: Sun, 4 Mar 2007 20:34:43 -0800
-Message-ID: <20070305043443.GA29158@kroah.com>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015031.GF3441@stusta.de> <45EB961D.6030808@rtr.ca>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] KVM: T60 resume fix
+Date: Mon, 5 Mar 2007 09:22:51 +0100
+Message-ID: <20070305082251.GA23366@elte.hu>
+References: <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu>
+	<20070301104117.GA22788@elte.hu> <20070301145204.GA25304@elte.hu>
+	<Pine.LNX.4.64.0703011536450.12485@woody.linux-foundation.org>
+	<20070302072100.GB30634@elte.hu> <20070302080441.GA12785@elte.hu>
+	<20070302102018.GA11549@elte.hu> <20070302102216.GA13575@elte.hu>
+	<45E93012.4000100@qumranet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
-In-Reply-To: <45EB961D.6030808@rtr.ca>
-Sender: netdev-owner@vger.kernel.org
-To: Mark Lord <lkml@rtr.ca>
-Cc: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, maxk@qualcomm.com, bluez-devel@lists.sourceforge.net, Matt Mackall <mpm@selenic.com>, Johannes Berg <johannes@sipsolutions.net>, Albert Hopkins <kernel@marduk.letterboxes.org>, Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+In-Reply-To: <45E93012.4000100@qumranet.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Avi Kivity <avi@qumranet.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, git@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 04, 2007 at 11:01:33PM -0500, Mark Lord wrote:
-> Adrian Bunk wrote:
+
+* Avi Kivity <avi@qumranet.com> wrote:
+
+> > my T60 laptop does not resume correctly due to KVM attempting to =
+
+> > send an IPI to a CPU that might be down (or not up yet). (Doing so =
+
+> > also triggers the send_IPI_mask_bitmask() warning in =
+
+> > arch/i386/kernel/smp.c, line 732.)
 > >
-> >Subject    : Bluetooth RFComm locks up the machine  (device_move() related)
-> >References : http://lkml.org/lkml/2007/3/4/64
-> >Submitter  : Mark Lord <lkml@rtr.ca>
-> >Caused-By  : Marcel Holtmann <marcel@holtmann.org>
-> >             commit c1a3313698895d8ad4760f98642007bf236af2e8
-> >Status     : unknown
-> 
-> A 2-line patch exists for fs/sysfs/dir.c to address this.
-> Waiting on Greg to apply it or substitute something prettier.  ;)
+> >with this fix applied my laptop does not hang during resume.
+> >
+> >[ KVM will have to disable/enable virtualization on the CPU itself =
 
-I want to see if Marcel agrees with it, as he did the original patch in
-that area.
+> >  that goes down / comes up, not via an IPI sent from the requesting
+> > CPU. ]
 
-thanks,
+> That is already CPU_ONLINE in my tree (and in the pull request sent to =
 
-greg k-h
+> Linus a couple of days ago).
+
+that solves the resume problem - but doesnt solve the CPU_DEAD issue of =
+
+sending an IPI to an already offline CPU. Might be a better idea to do =
+
+it in CPU_DOWN_PREPARE? (and then to also add a CPU_DOWN_FAILED branch?)
+
+	Ingo
