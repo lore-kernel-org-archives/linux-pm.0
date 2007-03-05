@@ -1,20 +1,25 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: [2/6] 2.6.21-rc2: known regressions
-Date: Mon, 5 Mar 2007 02:50:34 +0100
-Message-ID: <20070305015034.GG3441@stusta.de>
+Subject: [1/6] 2.6.21-rc2: known regressions
+Date: Mon, 5 Mar 2007 02:50:31 +0100
+Message-ID: <20070305015031.GF3441@stusta.de>
 References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, greg@kroah.com, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, maxk@qualcomm.com, Jeff Garzik <jeff@garzik.org>, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, netdev@vger.kernel.org, bluez-devel@lists.sourceforge.net, Pavel Machek <pavel@ucw.cz>, Matt Mackall <mpm@selenic.com>, Mark Lord <lkml@rtr.ca>, Johannes Berg <johannes@sipsolutions.net>, Albert Hopkins <kernel@marduk.letterboxes.org>
 List-Id: linux-pm@vger.kernel.org
 
 This email lists some known regressions in 2.6.21-rc2 compared to 2.6.20
@@ -22,59 +27,58 @@ that are not yet fixed in Linus' tree.
 
 If you find your name in the Cc header, you are either submitter of one
 of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
+of you caused a breakage or I'm considering you in any other way =
+
 possibly involved with one or more of these issues.
 
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : ThinkPad doesn't resume from suspend to RAM
-References : http://lkml.org/lkml/2007/2/27/80
-             http://lkml.org/lkml/2007/2/28/348
-Submitter  : Jens Axboe <jens.axboe@oracle.com>
-             Jeff Chua <jeff.chua.linux@gmail.com>
+Subject    : kwin dies silently
+References : http://lkml.org/lkml/2007/2/28/112
+Submitter  : Sid Boyce <g3vbv@blueyonder.co.uk>
 Status     : unknown
 
 
-Subject    : beeps get longer after suspend
-References : http://lkml.org/lkml/2007/2/26/276
+Subject    : resume: slab error in verify_redzone_free(): cache `size-512':
+                     memory outside object was overwritten
+References : http://lkml.org/lkml/2007/2/24/41
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Handled-By : Marcel Holtmann <marcel@holtmann.org>
+Status     : unknown
+
+
+Subject    : bluetooth hardlocks
+References : http://lkml.org/lkml/2007/3/2/85
 Submitter  : Pavel Machek <pavel@ucw.cz>
 Status     : unknown
 
 
-Subject    : ThinkPad T60: no screen after suspend to RAM
-References : http://lkml.org/lkml/2007/2/22/391
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Subject    : Bluetooth RFComm locks up the machine  (device_move() related)
+References : http://lkml.org/lkml/2007/3/4/64
+Submitter  : Mark Lord <lkml@rtr.ca>
+Caused-By  : Marcel Holtmann <marcel@holtmann.org>
+             commit c1a3313698895d8ad4760f98642007bf236af2e8
 Status     : unknown
 
 
-Subject    : ThinkPad Z60m: usb mouse stops working after suspend to ram
-References : http://lkml.org/lkml/2007/2/21/413
-             http://lkml.org/lkml/2007/2/28/172
-Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
-             commit 0a6139027f3986162233adc17285151e78b39cac
-Handled-By : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
-Status     : problem is being debugged
-
-
-Subject    : AE_NOT_FOUND ACPI messages
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8066
-             http://lkml.org/lkml/2007/2/27/263
-Submitter  : Thomas Meyer <thomas.mey@web.de>
-             Meelis Roos <mroos@linux.ee>
-Handled-By : Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8066
-Status     : patch available
-
-
-Subject    : Asus M6Ne notebook: ACPI: First battery is not detected
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
-Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
+Subject    : kref refcounting breakage
+References : http://lkml.org/lkml/2007/3/2/67
+Submitter  : Andrew Morton <akpm@linux-foundation.org>
+Handled-By : Greg KH <greg@kroah.com>
 Status     : unknown
 
 
-Subject    : AT keyboard only works with pci=noacpi
-References : http://lkml.org/lkml/2007/3/3/68
-Submitter  : Ash Milsted <thatistosayiseenem@gawab.com>
+Subject    : wireless breakage (ipw2200, iwconfig, NetworkManager)
+References : http://lkml.org/lkml/2007/3/4/135
+Submitter  : Matt Mackall <mpm@selenic.com>
+Caused-By  : Greg Kroah-Hartman <gregkh@suse.de> (?)
+             commit 43cb76d91ee85f579a69d42bc8efc08bac560278 (?)
+Handled-By : Johannes Berg <johannes@sipsolutions.net>
+Status     : unknown
+
+
+Subject    : forcedeth: skb_over_panic
+References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8058
+Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
 Status     : unknown
