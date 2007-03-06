@@ -1,29 +1,62 @@
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Tue, 6 Mar 2007 09:32:30 +0800
-Message-ID: <b6a2187b0703051732v79a532f6mbf0d3da857a914e6@mail.gmail.com>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <20070226220152.GA29575@stusta.de>
-	 <20070228211318.GB4301@mellanox.co.il>
-	 <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
-	 <20070305000421.GF3441@stusta.de>
+From: Jeff Garzik <jeff@garzik.org>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+Date: Tue, 06 Mar 2007 00:30:07 -0500
+Message-ID: <45ECFC5F.7000102@garzik.org>
+References: <20070225175559.GC12392@stusta.de>
+	<20070227100202.GV3822@kernel.dk>
+	<20070227102109.GG6745@elf.ucw.cz>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	<20070305084257.GA4464@mellanox.co.il>
+	<20070305101120.GA23032@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070305000421.GF3441@stusta.de>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20070305101120.GA23032@elte.hu>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Auke Kok <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/5/07, Adrian Bunk <bunk@stusta.de> wrote:
+Ingo Molnar wrote:
+> i'm also getting this WARN_ON() from e1000:
+> =
 
-> > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> > from RAM, can't suspend to disk. It is possible to revert all the
-> > changes to ACPI and test it?
->
-> This is with CONFIG_KVM=n?
+> BUG: at drivers/pci/msi.c:611 pci_enable_msi()
+>  [<c01061bd>] show_trace_log_lvl+0x19/0x2e
+>  [<c01062b6>] show_trace+0x12/0x14
+>  [<c01062cc>] dump_stack+0x14/0x16
+>  [<c024fcc4>] pci_enable_msi+0x6d/0x203
+>  [<c02b709e>] e1000_request_irq+0x2e/0xe2
+>  [<c02bb742>] e1000_resume+0x7f/0xef
+>  [<c0249a68>] pci_device_resume+0x1a/0x44
+>  [<c02b39ec>] resume_device+0xf7/0x16f
+>  [<c02b3adb>] dpm_resume+0x77/0xcb
+>  [<c02b3b69>] device_resume+0x3a/0x51
+>  [<c014e669>] enter_state+0x193/0x1bb
+>  [<c014e712>] state_store+0x81/0x97
+>  [<c01b68bc>] subsys_attr_store+0x20/0x25
+>  [<c01b6feb>] sysfs_write_file+0xce/0xf6
+>  [<c017e16b>] vfs_write+0xb1/0x13a
+>  [<c017e899>] sys_write+0x3d/0x61
+>  [<c0105220>] syscall_call+0x7/0xb
+> =
 
-Yes.
+> seems harmless because it seems to work fine.
+
+
+I would poke Eric Biederman(sp?) about this one.  Maybe its even solved =
+
+by the MSI-enable-related patch he posted in the past 24-48 hours.
+
+	Jeff
