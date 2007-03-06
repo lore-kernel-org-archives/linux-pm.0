@@ -1,21 +1,22 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
 Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Tue, 6 Mar 2007 08:52:32 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
+Date: Tue, 06 Mar 2007 09:09:30 -0800
+Message-ID: <45EDA04A.1060500@intel.com>
 References: <20070225175559.GC12392@stusta.de>
 	<20070227100202.GV3822@kernel.dk>
-	<20070227102109.GG6745@elf.ucw.cz>  <20070227103021.GA2250@kernel.dk>
-	<20070227103407.GA17819@elte.hu>  <20070227105922.GD2250@kernel.dk>
-	<20070227111515.GA4271@kernel.dk>  <20070301093450.GA8508@elte.hu>
-	<20070302100704.GB2293@elf.ucw.cz>
+	<20070227102109.GG6745@elf.ucw.cz>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
 	<20070305084257.GA4464@mellanox.co.il>
 	<20070305101120.GA23032@elte.hu>
 	<1173198401.24738.340.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1173198401.24738.340.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -25,67 +26,41 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Auke Kok <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Tue, 6 Mar 2007, Thomas Gleixner wrote:
+Linus Torvalds wrote:
 > =
 
-> SATA has another nice feature. Somehow there is an interrupt pending on
-> the SATA controller, which comes in somewhere in the middle of resume.
-> If it happens before the SATA code resumed, the SATA code ignores the
-> interrupt and the interrupt is disabled due to "nobody cared", which in
-> turn prevents SATA to ever become functional again.
+> On Tue, 6 Mar 2007, Thomas Gleixner wrote:
+>> SATA has another nice feature. Somehow there is an interrupt pending on
+>> the SATA controller, which comes in somewhere in the middle of resume.
+>> If it happens before the SATA code resumed, the SATA code ignores the
+>> interrupt and the interrupt is disabled due to "nobody cared", which in
+>> turn prevents SATA to ever become functional again. >
 
-Jeff - that sounds like a SATA bug.
+> And if you don't want to do any of these things (or are unable to, becaus=
+e =
 
-If you have an interrupt handler registered, you'd better handle the =
+> of some ordering constraint or bad design), then you simply need to =
 
-interrupt regardless of whether you think the hardware might be gone or =
+> unregister and re-register the interrupt handler over sleep.
+> =
 
-not.
+>> Any idea on that one ?
+> =
 
-It's generally *not* ok to do
+> Jeff, Auke, does this ring any bells?
 
-	if (device_offline())
-		return IRQ_NONE;
+For the e1000 issue, the problem is solved with Eric Biederman's 3-patch ms=
+i =
 
-at the top of an interrupt handler. =
+cleanups. You should have another message in your mailbox confirming that I =
 
+tested his patches and the MSI warning for e1000 suspend-resume is gone wit=
+h them.
 
-Of course, if you think the hardware is supposed to be quiescent, then the =
+Cheers,
 
-only thing you should do is generally just do the "shut up" operation (ie =
-
-read status, write it back or whatever). You must generally *not* try to =
-
-pass any data upwards (ie if the higher layers have told you to shut up, =
-
-you may need to handle the hardware, but you must not involve the higher =
-
-layers themselves any more, because they expect you to be quiet).
-
-And if you cannot do that because you need to resume in order to have the =
-
-status register mapped, then you need to have an "early_resume()" function =
-
-which gets called *before* interrupts are enabled. That's what =
-
-early-resume (and late-suspend) are designed for: doing things that happen =
-
-very early in the resume sequence before everything is up.
-
-And if you don't want to do any of these things (or are unable to, because =
-
-of some ordering constraint or bad design), then you simply need to =
-
-unregister and re-register the interrupt handler over sleep.
-
-> Any idea on that one ?
-
-Jeff, Auke, does this ring any bells?
-
-		Linus
+Auke
