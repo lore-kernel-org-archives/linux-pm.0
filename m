@@ -1,16 +1,19 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: [RFC] [PATCH] Power Managed memory base enabling
-Date: Tue, 6 Mar 2007 07:54:04 -0800
-Message-ID: <20070306155404.GA22725@linux.intel.com>
-References: <20070305181826.GA21515@linux.intel.com>
-	<20070306102628.4c32fc65.kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: mgross@linux.intel.com
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+Date: Tue, 06 Mar 2007 17:26:41 +0100
+Message-ID: <1173198401.24738.340.camel@localhost.localdomain>
+References: <20070225175559.GC12392@stusta.de>
+	<20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	<20070305084257.GA4464@mellanox.co.il> <20070305101120.GA23032@elte.hu>
+Reply-To: tglx@linutronix.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20070306102628.4c32fc65.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070305101120.GA23032@elte.hu>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,55 +23,40 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, mark.gross@intel.com, linux-pm@lists.osdl.org, akpm@linux-foundation.org, torvalds@linux-foundation.org, neelam.chandwani@intel.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Auke Kok <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 06, 2007 at 10:26:28AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon, 5 Mar 2007 10:18:26 -0800
-> Mark Gross <mgross@linux.intel.com> wrote:
+On Mon, 2007-03-05 at 11:11 +0100, Ingo Molnar wrote:
+> the spin-up takes a few seconds here under suspend/resume simulation:
 > =
 
-> > It implements a convention on the 4 bytes of "Proximity Domain ID"
-> > within the SRAT memory affinity structure as defined in ACPI3.0a.  If
-> > bit 31 is set, then the memory range represented by that PXM is assumed
-> > to be power managed.  We are working on defining a "standard" for
-> > identifying such memory areas as power manageable and progress committee
-> > based.  =
-
-> > =
-
+>  | ata1: waiting for device to spin up (7 secs)
+>  | Restarting tasks ... done.
 > =
 
-> This usage of bit 31 surprized me ;)
-It was not my first choice but, adding a new flag bit takes the ACPI
-standards committee to rubber stamp the notion.  That is a work in
-progress.  The "architects" are pondering the nuances and implications
-of this subject as we speak.  I'm sure something wonderful is forth
-coming.
+>  [5-10 seconds pass]
+> =
 
-We are trying to get this code out there to enable OSV support for a
-product with a first generation of power managed memory coming out this
-summer in the ATCA form factor, the MPCBL0050.
+>  | ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>  | ata1.00: configured for UDMA/100
+>  | SCSI device sda: 156301488 512-byte hdwr sectors (80026 MB)
+>  | sda: Write Protect is off
+>  | sda: Mode Sense: 00 3a 00 00
+>  | SCSI device sda: write cache: enabled, read cache: enabled, doesn't su=
+pport DPO or FUA
+> =
 
-Its my hope that this convention will not be disruptive or create too
-much legacy once the ACPI committee catches up with this technology.
-Its not expected to be a problem, as there is only one publicly
-available platform rolling out this year with it.
+> with real resume it takes even longer time - but i dont see where the =
 
-> I think some vendor(sgi?) now using 4byte pxm...
+> delays come from in that case - i suspect it's SATA.
 
-I don't know if SGI has any system that use all 4 bytes of PXM.  I did
-notice that until recently the ACPI code in Linux only used the first
-byte of that field calling the upper bytes as reserved.  This should be
-the first code in Linux to overload the meeting of this bit.
+SATA has another nice feature. Somehow there is an interrupt pending on
+the SATA controller, which comes in somewhere in the middle of resume.
+If it happens before the SATA code resumed, the SATA code ignores the
+interrupt and the interrupt is disabled due to "nobody cared", which in
+turn prevents SATA to ever become functional again.
 
+Any idea on that one ?
 
-> no problem ? and othre OSs will handle this ?
->
-I hope there is no problem. I posted this RFC to find out ;)
-
-I don't know if any other OS's know about this type of memory.  =
-
-
---mgross
+	tglx
