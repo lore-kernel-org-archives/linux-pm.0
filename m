@@ -1,40 +1,33 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Tue, 6 Mar 2007 10:06:12 +0100
-Message-ID: <20070306090612.GA25791@elte.hu>
-References: <20070227100202.GV3822@kernel.dk>
-	<20070227102109.GG6745@elf.ucw.cz>
-	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	<20070305084257.GA4464@mellanox.co.il>
-	<20070305101120.GA23032@elte.hu>
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
+Date: Tue, 6 Mar 2007 20:03:58 +0800
+Message-ID: <b6a2187b0703060403o48130853m9393df70160303c1@mail.gmail.com>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <20070226220152.GA29575@stusta.de>
+	 <20070228211318.GB4301@mellanox.co.il>
+	 <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
+	 <20070305000421.GF3441@stusta.de>
+	 <b6a2187b0703051732v79a532f6mbf0d3da857a914e6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <b6a2187b0703051732v79a532f6mbf0d3da857a914e6@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20070305101120.GA23032@elte.hu>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Auke Kok <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Jeff Garzik <jgarzik@pobox.com>, Andrew Morton <akpm@linux-foundation.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 3/6/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+> On 3/5/07, Adrian Bunk <bunk@stusta.de> wrote:
+>
+> > > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
+> > > from RAM, can't suspend to disk. It is possible to revert all the
+> > > changes to ACPI and test it?
+> >
+> > This is with CONFIG_KVM=n?
+>
+> Yes.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> with real resume it takes even longer time - but i dont see where the =
-
-> delays come from in that case - i suspect it's SATA.
-
-update: Thomas' PIT/HPET resume-fix patch fixed the delay for me.
-
-	Ingo
+I've tried with CONFIG_KVM=n and CONFIG_KVM=y and both does not suspend.
