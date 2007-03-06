@@ -1,33 +1,74 @@
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Tue, 06 Mar 2007 07:34:42 -0800
-Message-ID: <45ED8A12.5040803@intel.com>
-References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk> <20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz> <20070305084257.GA4464@mellanox.co.il> <20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org> <45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: Re: [RFC] [PATCH] Power Managed memory base enabling
+Date: Tue, 6 Mar 2007 07:54:04 -0800
+Message-ID: <20070306155404.GA22725@linux.intel.com>
+References: <20070305181826.GA21515@linux.intel.com>
+	<20070306102628.4c32fc65.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965148AbXCFPew@vger.kernel.org>
-In-Reply-To: <20070306090444.GA25409@elte.hu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <20070306102628.4c32fc65.kamezawa.hiroyu@jp.fujitsu.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, mark.gross@intel.com, linux-pm@lists.osdl.org, akpm@linux-foundation.org, torvalds@linux-foundation.org, neelam.chandwani@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
-> 
->>>> BUG: at drivers/pci/msi.c:611 pci_enable_msi()
-> 
->>> I would poke Eric Biederman(sp?) about this one.  Maybe its even 
->>> solved by the MSI-enable-related patch he posted in the past 24-48 
->>> hours.
->> I tried the 3-patch series "[PATCH 0/3] Basic msi bug fixes.." and 
->> they fix this problem for me. Were you expecting the OOPS in the first 
->> place? [...]
-> 
-> the bug was the warning message (a WARN_ON()) above - not an oops. So 
-> that warning message is gone in your testing?
+On Tue, Mar 06, 2007 at 10:26:28AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Mon, 5 Mar 2007 10:18:26 -0800
+> Mark Gross <mgross@linux.intel.com> wrote:
+> =
 
-yes.
+> > It implements a convention on the 4 bytes of "Proximity Domain ID"
+> > within the SRAT memory affinity structure as defined in ACPI3.0a.  If
+> > bit 31 is set, then the memory range represented by that PXM is assumed
+> > to be power managed.  We are working on defining a "standard" for
+> > identifying such memory areas as power manageable and progress committee
+> > based.  =
 
-Auke
+> > =
+
+> =
+
+> This usage of bit 31 surprized me ;)
+It was not my first choice but, adding a new flag bit takes the ACPI
+standards committee to rubber stamp the notion.  That is a work in
+progress.  The "architects" are pondering the nuances and implications
+of this subject as we speak.  I'm sure something wonderful is forth
+coming.
+
+We are trying to get this code out there to enable OSV support for a
+product with a first generation of power managed memory coming out this
+summer in the ATCA form factor, the MPCBL0050.
+
+Its my hope that this convention will not be disruptive or create too
+much legacy once the ACPI committee catches up with this technology.
+Its not expected to be a problem, as there is only one publicly
+available platform rolling out this year with it.
+
+> I think some vendor(sgi?) now using 4byte pxm...
+
+I don't know if SGI has any system that use all 4 bytes of PXM.  I did
+notice that until recently the ACPI code in Linux only used the first
+byte of that field calling the upper bytes as reserved.  This should be
+the first code in Linux to overload the meeting of this bit.
+
+
+> no problem ? and othre OSs will handle this ?
+>
+I hope there is no problem. I posted this RFC to find out ;)
+
+I don't know if any other OS's know about this type of memory.  =
+
+
+--mgross
