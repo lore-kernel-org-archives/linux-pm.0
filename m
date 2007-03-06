@@ -1,46 +1,77 @@
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Tue, 6 Mar 2007 20:12:20 +0800
-Message-ID: <b6a2187b0703060412l66fe8db8l12e5403821d1438b@mail.gmail.com>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <20070226220152.GA29575@stusta.de>
-	 <20070228211318.GB4301@mellanox.co.il>
-	 <b6a2187b0702281945n5f62a6b5w1c535de3ef9aaa8f@mail.gmail.com>
-	 <20070305000421.GF3441@stusta.de>
-	 <b6a2187b0703051732v79a532f6mbf0d3da857a914e6@mail.gmail.com>
-	 <b6a2187b0703060403o48130853m9393df70160303c1@mail.gmail.com>
-	 <20070306120808.GA9537@mellanox.co.il>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [1/6] 2.6.21-rc2: known regressions
+Date: Tue, 06 Mar 2007 01:55:46 +0100
+Message-ID: <1173142546.15891.63.camel@johannes.berg>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	<20070305015031.GF3441@stusta.de>  <20070305033533.GA28319@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070306120808.GA9537@mellanox.co.il>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Adrian Bunk <bunk@stusta.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============1304735898=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20070305033533.GA28319@kroah.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Greg KH <greg@kroah.com>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, bluez-devel@lists.sourceforge.net, maxk@qualcomm.com, Matt Mackall <mpm@selenic.com>, Mark Lord <lkml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Albert Hopkins <kernel@marduk.letterboxes.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/6/07, Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> > Quoting Jeff Chua <jeff.chua.linux@gmail.com>:
-> > Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-> >
-> > On 3/6/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> > > On 3/5/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > >
-> > > > > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> > > > > from RAM, can't suspend to disk. It is possible to revert all the
-> > > > > changes to ACPI and test it?
-> > > >
-> > > > This is with CONFIG_KVM=n?
-> > >
-> > > Yes.
-> >
-> > I've tried with CONFIG_KVM=n and CONFIG_KVM=y and both does not suspend.
->
-> Do you mean that they "do not resume after suspend"?
 
-I can't even suspend to disk/ram. It just hangs and the lights just
-blink and everything else hangs. With 2.6.20, it works fine.
+--===============1304735898==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-i3jBLRY+r3mxA0BLoyxz"
 
-Jeff.
+
+--=-i3jBLRY+r3mxA0BLoyxz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, 2007-03-04 at 19:35 -0800, Greg KH wrote:
+
+> > Subject    : wireless breakage (ipw2200, iwconfig, NetworkManager)
+> > References : http://lkml.org/lkml/2007/3/4/135
+> > Submitter  : Matt Mackall <mpm@selenic.com>
+> > Caused-By  : Greg Kroah-Hartman <gregkh@suse.de> (?)
+> >              commit 43cb76d91ee85f579a69d42bc8efc08bac560278 (?)
+> > Handled-By : Johannes Berg <johannes@sipsolutions.net>
+> > Status     : unknown
+>=20
+> I really think this is a CONFIG_SYSFS_DEPRECATED issue (not being set),
+> but want to get Matt confirm either way before saying this is a real
+> issue or not.
+
+I just tested on my quad powermac that also runs a stock Debian/unstable
+and changing that option makes all the difference. Nevermind that it
+defaults to yes and one needs to turn it off explicitly...
+
+johannes
+
+--=-i3jBLRY+r3mxA0BLoyxz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF7LwS/ETPhpq3jKURAuGuAJ90d8Ucs+DvKGONqv3pqz5OhbORZACgqE1G
+9nOJkgdgY15qW65IIDjPV60=
+=8EIz
+-----END PGP SIGNATURE-----
+
+--=-i3jBLRY+r3mxA0BLoyxz--
+
+
+--===============1304735898==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1304735898==--
