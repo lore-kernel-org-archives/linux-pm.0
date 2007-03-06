@@ -1,22 +1,15 @@
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Tue, 06 Mar 2007 09:09:30 -0800
-Message-ID: <45EDA04A.1060500@intel.com>
-References: <20070225175559.GC12392@stusta.de>
-	<20070227100202.GV3822@kernel.dk>
-	<20070227102109.GG6745@elf.ucw.cz>
-	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	<20070305084257.GA4464@mellanox.co.il>
-	<20070305101120.GA23032@elte.hu>
-	<1173198401.24738.340.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
+From: David Rientjes <rientjes@google.com>
+Subject: Re: [RFC] [PATCH] Power Managed memory base enabling
+Date: Tue, 6 Mar 2007 09:12:06 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0703060904380.27341@chino.kir.corp.google.com>
+References: <20070305181826.GA21515@linux.intel.com>
+	<Pine.LNX.4.64.0703051941310.18703@chino.kir.corp.google.com>
+	<20070306164722.GB22725@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0703060845480.5963@woody.linux-foundation.org>
+In-Reply-To: <20070306164722.GB22725@linux.intel.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -26,41 +19,87 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: linux-mm@kvack.org, mark.gross@intel.com, linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, neelam.chandwani@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Linus Torvalds wrote:
+On Tue, 6 Mar 2007, Mark Gross wrote:
+
+> For the initial version of HW that can do this we are stuck with
+> allocation based decisions where a complete solution needs page
+> migration.
 > =
 
-> On Tue, 6 Mar 2007, Thomas Gleixner wrote:
->> SATA has another nice feature. Somehow there is an interrupt pending on
->> the SATA controller, which comes in somewhere in the middle of resume.
->> If it happens before the SATA code resumed, the SATA code ignores the
->> interrupt and the interrupt is disabled due to "nobody cared", which in
->> turn prevents SATA to ever become functional again. >
-
-> And if you don't want to do any of these things (or are unable to, becaus=
-e =
-
-> of some ordering constraint or bad design), then you simply need to =
-
-> unregister and re-register the interrupt handler over sleep.
+> Yes, a sysfs interface is being looked at to export the control to a
+> user mode daemon doing running some kind of policy manager, and if/when
+> page migration happens it will be hooked up to this interface.
 > =
 
->> Any idea on that one ?
+
+Is do_migrate_pages() currently unsatisfactory for this?
+
+> > > diff -urN -X linux-2.6.20-mm2/Documentation/dontdiff linux-2.6.20-mm2=
+/mm/memory.c linux-2.6.20-mm2-monroe/mm/memory.c
+> > > --- linux-2.6.20-mm2/mm/memory.c	2007-02-23 11:20:40.000000000 -0800
+> > > +++ linux-2.6.20-mm2-monroe/mm/memory.c	2007-03-02 15:15:53.000000000=
+ -0800
+> > > @@ -2882,3 +2882,29 @@
+> > >  	return buf - old_buf;
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(access_process_vm);
+> > > +
+> > > +#ifdef __x86_64__
+> > > +extern int __power_managed_memory_present(void);
+> > > +extern int __power_managed_node(int srat_node);
+> > > +extern int __find_closest_non_pm_node(int nodeid);
+> > > +#else
+> > > +inline int __power_managed_memory_present(void) { return 0};
+> > > +inline int __power_managed_node(int srat_node) { return 0};
+> > > +inline int __find_closest_non_pm_node(int nodeid) { return nodeid};
+> > > +#endif
+> > > +
+> > > +int power_managed_memory_present(void)
+> > > +{
+> > > +	return __power_managed_memory_present();
+> > > +}
+> > > +
+> > > +int power_managed_node(int srat_node)
+> > > +{
+> > > +	return __power_managed_node(srat_node);
+> > > +}
+> > > +
+> > > +int find_closest_non_pm_node(int nodeid)
+> > > +{
+> > > +	return __find_closest_non_pm_node(nodeid);
+> > > +}
+> > > +
+> > =
+
+> > Probably should reconsider extern declarations in .c files.
+> >
 > =
 
-> Jeff, Auke, does this ring any bells?
+> Yeah, but I couldn't think of a better place to put this code or how to
+> make it portable to non x86_64 architectures.  Recommendations gratefully
+> accepted.
+> =
 
-For the e1000 issue, the problem is solved with Eric Biederman's 3-patch ms=
-i =
 
-cleanups. You should have another message in your mailbox confirming that I =
+I would add this to include/asm-x86_64/topology.h:
 
-tested his patches and the MSI warning for e1000 suspend-resume is gone wit=
-h them.
+	extern int __power_managed_memory_present(void);
+	extern int __power_managed_node(int);
+	extern int __find_closest_non_pm_node(int);
+	#define power_managed_memory_present()	__power_managed_memory_present()
+	#define power_managed_node(nid)		__power_managed_node(nid)
+	#define find_closest_non_pm_node(nid)	__find_closest_non_pm_node(nid)
 
-Cheers,
+and then put the actual functions in arch/x86_64/numa.c.  Then something =
 
-Auke
+like this in include/linux/topology.h would probably suffice:
+
+	#ifndef find_closest_non_pm_node
+	#define find_closest_non_pm_node(nid)	do {} while(0)
+	#endif
+
+etc.
