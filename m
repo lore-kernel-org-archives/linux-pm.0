@@ -1,20 +1,22 @@
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
 Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Wed, 07 Mar 2007 08:45:32 -0800
-Message-ID: <45EEEC2C.5090609@intel.com>
-References: <20070227103021.GA2250@kernel.dk>
-	<20070227103407.GA17819@elte.hu>	<20070227105922.GD2250@kernel.dk>
-	<20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu>
-	<20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu>
-	<45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com>
-	<20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com>
+Date: Wed, 07 Mar 2007 12:28:11 -0700
+Message-ID: <m1649cdfas.fsf@ebiederm.dsl.xmission.com>
+References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	<20070305084257.GA4464@mellanox.co.il>
+	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>
+	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
+	<45ED8A12.5040803@intel.com>
 	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
-	<45EEE8CF.1060803@intel.com>
+	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <45EEE8CF.1060803@intel.com>
+In-Reply-To: <45EEEC2C.5090609@intel.com> (Auke Kok's message of "Wed, 07 Mar
+	2007 08:45:32 -0800")
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,107 +26,135 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Kok, Auke wrote:
-> Eric W. Biederman wrote:
->> "Kok, Auke" <auke-jan.h.kok@intel.com> writes:
+"Kok, Auke" <auke-jan.h.kok@intel.com> writes:
+
+> Kok, Auke wrote:
+>> Eric W. Biederman wrote:
+
+>>> This leaves with some basic questions.
+>>> - Does it make sense for suspend/resume methods to request/free irqs?
+>>> - Does it make sense for suspend/resume methods to allocate/free msi ir=
+qs?
+>>> - Do we want pci_save/restore_cap to save/restore msi state?
+>>>
+>>> The path of least resistance is to just free the extra state and we
+>>> are good.  I'm just not quite certain that is sane and it has been a
+>>> long day.
 >>
->>> Ingo Molnar wrote:
->>>> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
->>>>
->>>>>>> BUG: at drivers/pci/msi.c:611 pci_enable_msi()
->>>>>> I would poke Eric Biederman(sp?) about this one.  Maybe its even sol=
-ved by
->>>>>> the MSI-enable-related patch he posted in the past 24-48 hours.
->>>>> I tried the 3-patch series "[PATCH 0/3] Basic msi bug fixes.." and th=
-ey fix
->>>>> this problem for me. Were you expecting the OOPS in the first place? =
-[...]
->>>> the bug was the warning message (a WARN_ON()) above - not an oops. So =
-that
->>>> warning message is gone in your testing?
->>> yes.
->> Sorry for the slow delay.  I was out of town for my brothers wedding the=
- last few
->> days.
->>
->> I wasn't exactly expecting the WARN_ON to trigger.  What I fixed was
->> an inconsistency in handling our state bits.  Fixing that
->> inconsistency appears to have fixed the e1000 usage scenario mostly by
->> accident.
->>
->> The basic issue is that pci_save_state saves the current msi state
->> along with other registers, and then the e1000 driver goes and
->> disables the msi irq after we have saved the irq state as on.
->>
->> My code notices that the msi irq was disabled before restore time, so
->> it skips the restore.  However we now have a leak of the msi saved cap
->> because we are not freeing it. =
+>> we used to have a lengthy e1000_pci_save|restore_state in our code, whic=
+h is
+>> now gone, so I'm all for that. A separate pci_save_pxie|msi(x)_state for=
+ every
+>> driver seems completely unnecessary. I can't think of a use case where
+>> saving+restoring everything hurts. That's what you want I presume.
 
->>
->> This leaves with some basic questions.
->> - Does it make sense for suspend/resume methods to request/free irqs?
->> - Does it make sense for suspend/resume methods to allocate/free msi irq=
-s?
->> - Do we want pci_save/restore_cap to save/restore msi state?
->>
->> The path of least resistance is to just free the extra state and we
->> are good.  I'm just not quite certain that is sane and it has been a
->> long day.
-> =
+I just want to understand why we have issues and to see if how we have
+organized the suspend/resume path for dealing with msi irqs makes sense.
 
-> we used to have a lengthy e1000_pci_save|restore_state in our code, which=
- is now =
+That is I haven't looked much at the suspend/resume path so I don't know it
+well and I am afraid that your problem might be a symptom of a deeper
+problem.
 
-> gone, so I'm all for that. A separate pci_save_pxie|msi(x)_state for ever=
-y =
+>> We currently free all irq's and msi before going into suspend in e1000, =
+and I
+>> think that is probably a good thing, somehow I can think of bad things
+>> happening if we dont, but I admit that I haven't tried it without
+>> alloc/free. We do this in e100 as well and it works.
 
-> driver seems completely unnecessary. I can't think of a use case where =
+Currently the irq code supports operation without the
+free_irq/request_irq.  Since the numbers given are pure linux
+abstractions things should it is really a matter of just
+saving/restoring the appropriate state.
 
-> saving+restoring everything hurts. That's what you want I presume.
-> =
+>> Another motivation would be to leave this up to the driver: if the driver
+>> chooses to free/alloc interrupts because it makes sense, you probably wo=
+uld
+>> want to keep that choice available. Devices that don't need this can ski=
+p the
+>> alloc/free, but leave the choice open for others.
+>
+> ah, looking at the code in e1000 we do:
+>
+> _suspend:
+> 	pci_save_state();
+> 	free_irq()
+>
+> _resume:
+> 	pci_restore_state();
+> 	alloc_irq();
+>
+> I suppose that's not good either, and the major cause of the warning in t=
+he
+> first place.
 
-> We currently free all irq's and msi before going into suspend in e1000, a=
-nd I =
+Yep. =
 
-> think that is probably a good thing, somehow I can think of bad things ha=
-ppening =
 
-> if we dont, but I admit that I haven't tried it without alloc/free. We do=
- this =
+> Maybe I can rollback your latest patches and try to fix that mess by post=
+poning
+> the pci_save_state until after we free'd the irq's.
 
-> in e100 as well and it works.
-> =
+Below is an additional set of warnings that should help debug this.
+The old code just got lucky that it triggered a warning when this happens.
 
-> Another motivation would be to leave this up to the driver: if the driver =
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 01869b1..5113913 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -613,6 +613,7 @@ int pci_enable_msi(struct pci_dev* dev)
+ 		return -EINVAL;
+ =
 
-> chooses to free/alloc interrupts because it makes sense, you probably wou=
-ld want =
+ 	WARN_ON(!!dev->msi_enabled);
++	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+ =
 
-> to keep that choice available. Devices that don't need this can skip the =
+ 	/* Check whether driver already requested for MSI-X irqs */
+ 	if (dev->msix_enabled) {
+@@ -638,6 +639,8 @@ void pci_disable_msi(struct pci_dev* dev)
+ 	if (!dev->msi_enabled)
+ 		return;
+ =
 
-> alloc/free, but leave the choice open for others.
++	WARN_ON(!hlist_empty(&dev->saved_cap_space));
++
+ 	msi_set_enable(dev, 0);
+ 	pci_intx(dev, 1);		/* enable intx */
+ 	dev->msi_enabled =3D 0;
+@@ -739,6 +742,7 @@ int pci_enable_msix(struct pci_dev* dev, struct msix_en=
+try *entries, int nvec)
+ 		}
+ 	}
+ 	WARN_ON(!!dev->msix_enabled);
++	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+ =
 
-ah, looking at the code in e1000 we do:
+ 	/* Check whether driver already requested for MSI irq */
+    	if (dev->msi_enabled) {
+@@ -763,6 +767,8 @@ void pci_disable_msix(struct pci_dev* dev)
+ 	if (!dev->msix_enabled)
+ 		return;
+ =
 
-_suspend:
-	pci_save_state();
-	free_irq()
++	WARN_ON(!hlist_empty(&dev->saved_cap_space));
++
+ 	msix_set_enable(dev, 0);
+ 	pci_intx(dev, 1);		/* enable intx */
+ 	dev->msix_enabled =3D 0;
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index bd44a48..4418839 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -677,6 +677,7 @@ pci_restore_state(struct pci_dev *dev)
+ 	}
+ 	pci_restore_pcix_state(dev);
+ 	pci_restore_msi_state(dev);
++	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+ =
 
-_resume:
-	pci_restore_state();
-	alloc_irq();
-
-I suppose that's not good either, and the major cause of the warning in the =
-
-first place.
-
-Maybe I can rollback your latest patches and try to fix that mess by postpo=
-ning =
-
-the pci_save_state until after we free'd the irq's.
-
-Auke
+ 	return 0;
+ }
