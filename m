@@ -1,83 +1,114 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Date: Wed, 7 Mar 2007 08:10:45 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0703070746150.5963@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
- <20070305015034.GG3441@stusta.de> <45EE9D52.9060807@garzik.org>
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+Date: Wed, 07 Mar 2007 08:31:11 -0800
+Message-ID: <45EEE8CF.1060803@intel.com>
+References: <20070227103021.GA2250@kernel.dk>
+	<20070227103407.GA17819@elte.hu>	<20070227105922.GD2250@kernel.dk>
+	<20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu>
+	<20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu>
+	<45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com>
+	<20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com>
+	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <45EE9D52.9060807@garzik.org>
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
-To: Jeff Garzik <jeff@garzik.org>, Ash Milsted <thatistosayiseenem@gawab.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+Eric W. Biederman wrote:
+> "Kok, Auke" <auke-jan.h.kok@intel.com> writes:
+> =
 
+>> Ingo Molnar wrote:
+>>> * Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+>>>
+>>>>>> BUG: at drivers/pci/msi.c:611 pci_enable_msi()
+>>>>> I would poke Eric Biederman(sp?) about this one.  Maybe its even solv=
+ed by
+>>>>> the MSI-enable-related patch he posted in the past 24-48 hours.
+>>>> I tried the 3-patch series "[PATCH 0/3] Basic msi bug fixes.." and the=
+y fix
+>>>> this problem for me. Were you expecting the OOPS in the first place? [=
+...]
+>>> the bug was the warning message (a WARN_ON()) above - not an oops. So t=
+hat
+>>> warning message is gone in your testing?
+>> yes.
+> =
 
-On Wed, 7 Mar 2007, Jeff Garzik wrote:
->
-> Adrian Bunk wrote:
-> > Subject    : AT keyboard only works with pci=noacpi
-> > References : http://lkml.org/lkml/2007/3/3/68
-> > Submitter  : Ash Milsted <thatistosayiseenem@gawab.com>
-> > Status     : unknown
-> 
-> sounds like a BIOS bug, even though it appears to be a regression?
+> Sorry for the slow delay.  I was out of town for my brothers wedding the =
+last few
+> days.
+> =
 
-So?
+> I wasn't exactly expecting the WARN_ON to trigger.  What I fixed was
+> an inconsistency in handling our state bits.  Fixing that
+> inconsistency appears to have fixed the e1000 usage scenario mostly by
+> accident.
+> =
 
-BIOS bugs are not bugs we can fix, they are things we have to work around. 
-They are like hardware bugs in a network chip: a "driver" that doesn't 
-work around a BIOS bug is simply a *buggy* driver, exactly the same way a 
-network driver has to work around errata in the hardware.
+> The basic issue is that pci_save_state saves the current msi state
+> along with other registers, and then the e1000 driver goes and
+> disables the msi irq after we have saved the irq state as on.
+> =
 
-So it doesn't really matter if something is a BIOS bug or not. It's not 
-reasonable to expect people to upgrade their BIOS'es - even if such an 
-upgrade were to exist (which is fairly rare in itself). 
+> My code notices that the msi irq was disabled before restore time, so
+> it skips the restore.  However we now have a leak of the msi saved cap
+> because we are not freeing it. =
 
-If it used to work, that just makes it (a) doubly important to try to fix 
-it, since regressions are BAD BAD BAD and (b) a fair amount *easier* to 
-fix, since we can hopefully get an idea of what broke it.
+> =
 
-Ash, can you try to use "git bisect" to figure where it started? But 
-perhaps just try -rc3 first to see if it's been fixed?
+> This leaves with some basic questions.
+> - Does it make sense for suspend/resume methods to request/free irqs?
+> - Does it make sense for suspend/resume methods to allocate/free msi irqs?
+> - Do we want pci_save/restore_cap to save/restore msi state?
+> =
 
-The working setups (whether with irqfixup or with pci=noacpi seem to both 
-have a nice
+> The path of least resistance is to just free the extra state and we
+> are good.  I'm just not quite certain that is sane and it has been a
+> long day.
 
-	input: AT Translated Set 2 keyboard as /class/input/inputX
+we used to have a lengthy e1000_pci_save|restore_state in our code, which i=
+s now =
 
-but the nonworking one does not. But even the nonworking one actually 
-*found* the controller:
+gone, so I'm all for that. A separate pci_save_pxie|msi(x)_state for every =
 
-	PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
-	PNP: PS/2 controller doesn't have AUX irq; using default 12
-	serio: i8042 KBD port at 0x60,0x64 irq 1
-	serio: i8042 AUX port at 0x60,0x64 irq 12
-	mice: PS/2 mouse device common for all mice
+driver seems completely unnecessary. I can't think of a use case where =
 
-which probably means that the "atkbd_probe()" function fails (probably 
-because it never gets a reply, which in turn is probably because the 
-interrupt routing is broken).
+saving+restoring everything hurts. That's what you want I presume.
 
-If you use "atkbd.reset=1" on the kernel command line, you would probably 
-get a message like "keyboard reset failed"..
+We currently free all irq's and msi before going into suspend in e1000, and=
+ I =
 
-Now, the most likely cause is obviously just the ACPI changes that mess up 
-irq routing somehow, but it would be important to figure out *what* makes 
-it happen, which is why "git bisect" would be wonderful to try.
+think that is probably a good thing, somehow I can think of bad things happ=
+ening =
 
-So Ash, if you get the git tree, just start with
+if we dont, but I admit that I haven't tried it without alloc/free. We do t=
+his =
 
-	git bisect start
-	git bisect good v2.6.20
-	git bisect bad v2.6.21-rc1
+in e100 as well and it works.
 
-and off you go.. git isn't really that hard to use any more.
+Another motivation would be to leave this up to the driver: if the driver =
 
-		Linus
+chooses to free/alloc interrupts because it makes sense, you probably would=
+ want =
+
+to keep that choice available. Devices that don't need this can skip the =
+
+alloc/free, but leave the choice open for others.
+
+hth
+
+Auke
