@@ -1,18 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
-	Re: Remove page flags for software suspend)
-Date: Fri, 9 Mar 2007 00:36:18 +0100
-Message-ID: <20070308233618.GE2793@elf.ucw.cz>
-References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
-	<20070308231512.GB1977@elf.ucw.cz>
-	<1173396094.3831.42.camel@johannes.berg>
-	<200703090034.57978.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Date: Thu, 8 Mar 2007 15:49:17 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	<20070305015034.GG3441@stusta.de>
+	<20070308123143.GF5149@mellanox.co.il>
+	<Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+	<20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <200703090034.57978.rjw@sisk.pl>
+In-Reply-To: <20070308230705.GA4611@elte.hu>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,30 +21,43 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.osdl.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Jens Axboe <jens.axboe@oracle.com>, linux-input@atrey.karlin.mff.cuni.cz, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-usb-devel@lists.sourceforge.net, Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > That's a no-no. ATOMIC alocations can fail, and no, WARN_ON is not
-> > > enough. It is not a bug, they just fail.
-> > =
 
-> > But like I said in my post, there's no way we can disable suspend to
-> > disk when they do, right now anyway. Also, this can't be called any
-> > later than a late initcall or such since it's __init, and thus there
-> > shouldn't be memory pressure yet that would cause this to fail.
+On Fri, 9 Mar 2007, Ingo Molnar wrote:
 > =
 
-> Exactly.  If an atomic allocation fails at this stage, there is a bug IMHO
-> (although not necessarily in our code).
+> disabling the following radeonfb options in the .config made resume work =
 
-Ok, so just do a BUG().	 WARN_ON(), then do something subtly wrong
-during suspend is evil.
-								Pavel
--- =
+> again:
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+In general, don't even *try* to use radeonfb for suspend/resume.
+
+I don't think it has ever worked, except on some very rare laptops =
+
+(largely PPC Macs) where people had enough information to set up the =
+
+PLL's.
+
+I don't think the other framebuffer drivers are much better.
+
+You're better off using the VGA console, and lettign X re-initialize the =
+
+graphics device. That generally at least has a reasonably good chance of =
+
+working.
+
+Re-initializing graphics modes really is very hard. You can try with the =
+
+BIOS video hack (I forget the kernel command line to turn it on), but we =
+
+really do end up depending on X doing it better.
+
+Some day we may have modesetting support in the kernel for some graphics =
+
+hw, right now it's pretty damn spotty.
+
+		Linus
