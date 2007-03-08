@@ -1,78 +1,53 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Thu, 08 Mar 2007 10:27:28 -0700
-Message-ID: <m1abyn7iin.fsf@ebiederm.dsl.xmission.com>
-References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	<20070305084257.GA4464@mellanox.co.il>
-	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>
-	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
-	<45ED8A12.5040803@intel.com>
-	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
-	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
-	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
-	<20070307185317.5601d452.akpm@linux-foundation.org>
-	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
-	<45EFDD8C.3070702@garzik.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Date: Thu, 8 Mar 2007 10:01:45 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+ <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <45EFDD8C.3070702@garzik.org> (Jeff Garzik's message of "Thu, 08
-	Mar 2007 04:55:24 -0500")
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20070308123143.GF5149@mellanox.co.il>
+Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
+List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
+List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
+List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
+List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
 
-> Eric W. Biederman wrote:
->> Until I get the best scenario I can come up with is a tg3 hardware bug
->> that doesn't renable the pci-X capability after a restore of power state.
->
->
-> Speaking of tg3, make sure you are aware that the number of calls to save=
--state
-> functions may not match the number of calls to the restore-state function=
-s.
-> ISTR seeing some memleak bugs in PCI related to this.
+[ Eric, Ingo, can you double-check the timer initialization after resume? 
+  We appear to have several reports of date not advancing, and while this 
+  could be some SATA issue, it could easily be a timer tick issue too ]
 
-Thanks that looks like the problem, multiple calls to save before one
-call to restore when you have a pci-x capability would easily trigger
-this problem.  I just surveyed a bunch of the pci_save_state and
-pci_restore_state users and this appears to be a common idiom not just
-a tg3 thing....
+On Thu, 8 Mar 2007, Michael S. Tsirkin wrote:
+> 
+> Here's the status with -rc3: better, but still does not work as well as 2.6.20.
 
-It looks like when code was added to save/restore the msi capability
-was added to pci_save/restore_state that an assumption was added that
-pci_save_state and pci_restore state were only used for suspend and
-only used in pairs.  There is even a partial bug fix that removed the
-worst of the symptoms of that assumption from the msi code but failed
-to recognize the core problem.
+Ok. I think we mostly solved the irq-related stuff, but you might want to 
+check whether you have CONFIG_NOHZ on or off and whether that makes a 
+difference.
 
-Now that we have code to work with pcie and pcix capabilities as well
-as msi this problem is much easier to hit.
+> 2. First disk access after resume takes a couple of minutes
+>    (seemed instant with 2.6.20) during this time no new messages show on console
 
-All of pci_save_state and pci_restore_state is going to have to be
-restructured to fix this, and it is late in the game.  Ugh.
-Oh well, better to fix it now =
+Yeah, there is some problem with SATA resume. It would be beautiful if the 
+people who actually see this could narrow it down with bisection. "It 
+works for me" is clearly the case for many people, but not all.
 
+But before blaming SATA, check if you have NO_HZ enabled and whether 
+disabling that makes it work ok. If timeouts don't work right (or are 
+*extremely* slow) things that should be instant won't be.
 
-At least I get my answer about if what pci_save_state is doing
-is reasonable. It is not.  pci_save_state no longer supports being
-used in conjunction with hardware reset and has become a
-suspend/resume specific function.
+> 3. When I switch to X (CTRL-ALT-F7), X hangs after drawing a couple of windows
+>    after waiting for some 10 min, I rebooted.
+>    no new messages showed up in /var/log/messages
 
-Now I'm off to wite some patches to fix this.
+I think this is likely just more of the disk being buggered, but it could 
+again be related to NO_HZ (people report time not advancing, and that 
+would make any X timeout taking forever, and you'd see exactly your 
+behaviour).
 
-Eric
+		Linus
