@@ -1,13 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
 	Re:	Remove page flags for software suspend)
-Date: Thu, 08 Mar 2007 16:09:03 +0100
-Message-ID: <1173366543.3248.1.camel@johannes.berg>
+Date: Thu, 08 Mar 2007 16:53:45 +0100
+Message-ID: <1173369225.9438.32.camel@twins>
 References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
 	<45E6EEC5.4060902@yahoo.com.au> <200703011633.54625.rjw@sisk.pl>
 	<200703041450.02178.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0099494036=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
 In-Reply-To: <200703041450.02178.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
@@ -20,53 +21,25 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, pm list <linux-pm@lists.osdl.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---===============0099494036==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-tg6Y6JTKtqyyHRYuNFvM"
-
-
---=-tg6Y6JTKtqyyHRYuNFvM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
+On Sun, 2007-03-04 at 14:50 +0100, Rafael J. Wysocki wrote:
 
 > Okay, the next three messages contain patches that should do the trick.
->=20
+> =
+
 > They have been tested on x86_64, but not very thoroughly.
 
-Works on my powerbook as well. Never mind that usb is broken again with
-suspend to disk. And my own patches break both str and std right now.
+They look good to me, but what do I know about swsusp :-) =
 
-But these (on top of wireless-dev which is currently about 2.6.21-rc2)
-work fine as long as I assume they don't break usb ;)
+I'll stick them in my laptop's kernel (boring i386-UP) and see what
+happens.
 
-johannes
+I did notice you don't stick KERN_ prio markers in your printk()s not
+sure what to think of that (or if its common practise and I'm just not
+aware of it).
 
---=-tg6Y6JTKtqyyHRYuNFvM
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Thanks for doing this.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF8CcP/ETPhpq3jKURArA5AKCxPQpBgmSav9hwcHE+NRb4WAWJYQCfW6Cl
-zASVP9lneXImRQUyn+hlQOc=
-=s9WX
------END PGP SIGNATURE-----
-
---=-tg6Y6JTKtqyyHRYuNFvM--
-
-
---===============0099494036==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0099494036==--
+Peter
