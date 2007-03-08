@@ -1,73 +1,46 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
-	Re:	Remove page flags for software suspend)
-Date: Thu, 08 Mar 2007 23:54:51 +0100
-Message-ID: <1173394491.3831.38.camel@johannes.berg>
-References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
-	<200703082333.06679.rjw@sisk.pl>
-	<1173393815.3831.29.camel@johannes.berg>
-	<200703082354.46001.rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Date: Fri, 9 Mar 2007 00:07:05 +0100
+Message-ID: <20070308230705.GA4611@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0640339465=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200703082354.46001.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, pm list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
+Content-Disposition: inline
+In-Reply-To: <20070308192554.GA2999@elte.hu>
+Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
+List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
+List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
+List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
+List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0640339465==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-tNuwlaBOX2/ObDPm8lFC"
+* Ingo Molnar <mingo@elte.hu> wrote:
 
+> Thomas found a new twist to this today: applying the patch below 
+> (which turns on ATA_DEBUG) made the SATA problem go away on his 
+> laptop. Michael, could you try this patch, does it change the behavior 
+> of your laptop in any way?
 
---=-tNuwlaBOX2/ObDPm8lFC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Here's another suspend/resume artifact: one of my boxes wouldnt resume, 
+it hangs at:
 
-On Thu, 2007-03-08 at 23:54 +0100, Rafael J. Wysocki wrote:
+[    1.456633] pci 0000:00:18.2: resuming
+[    1.456641] pci 0000:00:18.3: resuming
+[    1.456648] 8139too 0000:05:07.0: resuming
+[    1.456667] radeonfb 0000:01:00.0: resuming
 
-> In that case your patch seems to be the simplest one and I think it shoul=
-d go
-> along with some code that will actually use it.
+the box is pingable but otherwise no console and it's hung as well. [I 
+got the log above via netconsole]
 
-Right. So if anyone else needs it feel free to pick up my patch, if not
-I'll submit it again as part of my "suspend on powermac G5" patchset
-when that is properly reviewed by the appropriate people. Assuming, of
-course, that this (yours) patchset is picked up.
+disabling the following radeonfb options in the .config made resume work 
+again:
 
-johannes
+ CONFIG_FB_RADEON=y
+ CONFIG_FB_RADEON_I2C=y
+ CONFIG_FB_RADEON_BACKLIGHT=y
 
---=-tNuwlaBOX2/ObDPm8lFC
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF8JQ7/ETPhpq3jKURAkoQAKCaJVVg20dqWF+ddLHt0tSsbO7y/ACfSyya
-TXNhhznkb0ygzgV1oxwF/aU=
-=h+Kv
------END PGP SIGNATURE-----
-
---=-tNuwlaBOX2/ObDPm8lFC--
-
-
---===============0640339465==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0640339465==--
+	Ingo
