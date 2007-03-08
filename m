@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
-	Re: Remove page flags for software suspend)
-Date: Thu, 8 Mar 2007 23:54:45 +0100
-Message-ID: <200703082354.46001.rjw@sisk.pl>
+	Re:	Remove page flags for software suspend)
+Date: Thu, 08 Mar 2007 23:54:51 +0100
+Message-ID: <1173394491.3831.38.camel@johannes.berg>
 References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
 	<200703082333.06679.rjw@sisk.pl>
 	<1173393815.3831.29.camel@johannes.berg>
+	<200703082354.46001.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0640339465=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <1173393815.3831.29.camel@johannes.berg>
-Content-Disposition: inline
+In-Reply-To: <200703082354.46001.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,49 +20,54 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 8 March 2007 23:43, Johannes Berg wrote:
-> On Thu, 2007-03-08 at 23:33 +0100, Rafael J. Wysocki wrote:
-> =
 
-> > > Unfortunately I won't be able to actually try this on hardware until =
-the
-> > > 20th or so.
-> > =
+--===============0640339465==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-tNuwlaBOX2/ObDPm8lFC"
 
-> > OK, it's not an urgent thing. ;-)
-> =
 
-> True :)
-> =
+--=-tNuwlaBOX2/ObDPm8lFC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > Well, I don't think so.  If I understand the definition of system_state
-> > correctly, it is initially equal to SYSTEM_BOOTING.  Then, it's changed=
- to
-> > SYSTEM_RUNNING in init/main.c after the bootmem has been freed.
-> =
+On Thu, 2007-03-08 at 23:54 +0100, Rafael J. Wysocki wrote:
 
-> No, I think you're confusing bootmem with initmem right now.
+> In that case your patch seems to be the simplest one and I think it shoul=
+d go
+> along with some code that will actually use it.
 
-Yes, you're right, sorry.
+Right. So if anyone else needs it feel free to pick up my patch, if not
+I'll submit it again as part of my "suspend on powermac G5" patchset
+when that is properly reviewed by the appropriate people. Assuming, of
+course, that this (yours) patchset is picked up.
 
-> If you actually look at the code then free_all_bootmem is called as part =
-of
-> mem_init() on powerpc, which is called from start_kernel() a long time
-> before initcalls are done and system state is set.
-> =
+johannes
 
-> Put it this way. By the time initcalls are done, I can no longer use
-> bootmem. I tested this and it panics. But if you look at the code in
-> init/main.c, system_state is only changed after initcalls are done.
+--=-tNuwlaBOX2/ObDPm8lFC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-That's true.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-In that case your patch seems to be the simplest one and I think it should =
-go
-along with some code that will actually use it.
+iD8DBQBF8JQ7/ETPhpq3jKURAkoQAKCaJVVg20dqWF+ddLHt0tSsbO7y/ACfSyya
+TXNhhznkb0ygzgV1oxwF/aU=
+=h+Kv
+-----END PGP SIGNATURE-----
 
-Rafael
+--=-tNuwlaBOX2/ObDPm8lFC--
+
+
+--===============0640339465==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0640339465==--
