@@ -1,19 +1,15 @@
-From: Jeff Garzik <jeff@garzik.org>
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
 Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Thu, 08 Mar 2007 04:55:24 -0500
-Message-ID: <45EFDD8C.3070702@garzik.org>
+Date: Thu, 8 Mar 2007 12:23:54 +0200
+Message-ID: <20070308102354.GC5149@mellanox.co.il>
 References: <20070227103021.GA2250@kernel.dk>
-	<20070227103407.GA17819@elte.hu>	<20070227105922.GD2250@kernel.dk>
-	<20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu>
-	<20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu>
-	<45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com>
-	<20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com>	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>	<45EEE8CF.1060803@intel.com>
-	<45EEEC2C.5090609@intel.com>	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>	<20070307185317.5601d452.akpm@linux-foundation.org>
 	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
 In-Reply-To: <m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -25,20 +21,92 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Until I get the best scenario I can come up with is a tg3 hardware bug
-> that doesn't renable the pci-X capability after a restore of power state.
+> The only case I can see which might trigger this is if we saved
+> pci-X state and then didn't restore it because we could not find
+> the capability on restore.
+
+Hmm. pci_save_pcix_state/pci_restore_pcix_state seem to only handle
+regular devices and seem to ignore the fact that for bridge PCI-X
+capability has a different structure.
+
+Is this intentional? If not, here's a patch to fix this.
+Warning: completely untested.
 
 
-Speaking of tg3, make sure you are aware that the number of calls to =
+PCI: restore bridge PCI-X capability registers after PM event
 
-save-state functions may not match the number of calls to the =
+Restore PCI-X bridge up/downstream capability registers
+after PM event.  This includes maxumum split transaction
+commitment limit which might be vital for PCI X.
 
-restore-state functions.  ISTR seeing some memleak bugs in PCI related =
+Signed-off-by: Michael S. Tsirkin <mst@mellanox.co.il>
 
-to this.
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index df49530..4b788ef 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -597,14 +597,19 @@ static int pci_save_pcix_state(struct pci_dev *dev)
+ 	if (pos <=3D 0)
+ 		return 0;
+ =
 
-	Jeff
+-	save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
++	save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16) * 2, GFP_KERNEL);
+ 	if (!save_state) {
+-		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
++		dev_err(&dev->dev, "Out of memory in pci_save_pcix_state\n");
+ 		return -ENOMEM;
+ 	}
+ 	cap =3D (u16 *)&save_state->data[0];
+ =
+
+-	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
++	if (dev->hdr_type =3D=3D PCI_HEADER_TYPE_BRIDGE) {
++		pci_read_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, &cap[i++]);
++		pci_read_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, &cap[i++]);
++	} else
++		pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
++
+ 	pci_add_saved_cap(dev, save_state);
+ 	return 0;
+ }
+@@ -621,7 +626,11 @@ static void pci_restore_pcix_state(struct pci_dev *dev)
+ 		return;
+ 	cap =3D (u16 *)&save_state->data[0];
+ =
+
+-	pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
++	if (dev->hdr_type =3D=3D PCI_HEADER_TYPE_BRIDGE) {
++		pci_write_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, cap[i++]);
++		pci_write_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, cap[i++]);
++	} else
++		pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
+ 	pci_remove_saved_cap(save_state);
+ 	kfree(save_state);
+ }
+diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
+index f09cce2..fb7eefd 100644
+--- a/include/linux/pci_regs.h
++++ b/include/linux/pci_regs.h
+@@ -332,6 +332,8 @@
+ #define  PCI_X_STATUS_SPL_ERR	0x20000000	/* Rcvd Split Completion Error Ms=
+g */
+ #define  PCI_X_STATUS_266MHZ	0x40000000	/* 266 MHz capable */
+ #define  PCI_X_STATUS_533MHZ	0x80000000	/* 533 MHz capable */
++#define PCI_X_BRIDGE_UP_SPL_CTL 10	/* PCI-X upstream split transaction lim=
+it */
++#define PCI_X_BRIDGE_DN_SPL_CTL 14	/* PCI-X downstream split transaction l=
+imit */
+ =
+
+ /* PCI Express capability registers */
+ =
+
+
+
+-- =
+
+MST
