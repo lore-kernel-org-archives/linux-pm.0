@@ -1,46 +1,52 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Date: Fri, 9 Mar 2007 00:28:57 +0100
-Message-ID: <20070308232857.GA8347@elte.hu>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <20070308231246.GA6267@elte.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
+	Re: Remove page flags for software suspend)
+Date: Fri, 9 Mar 2007 00:34:57 +0100
+Message-ID: <200703090034.57978.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
+	<20070308231512.GB1977@elf.ucw.cz>
+	<1173396094.3831.42.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <1173396094.3831.42.camel@johannes.berg>
 Content-Disposition: inline
-In-Reply-To: <20070308231246.GA6267@elte.hu>
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, 9 March 2007 00:21, Johannes Berg wrote:
+> On Fri, 2007-03-09 at 00:15 +0100, Pavel Machek wrote:
+> =
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> > That's a no-no. ATOMIC alocations can fail, and no, WARN_ON is not
+> > enough. It is not a bug, they just fail.
+> =
 
-> > Here's another suspend/resume artifact: one of my boxes wouldnt 
-> > resume, it hangs at:
-> > 
-> > [    1.456633] pci 0000:00:18.2: resuming
-> > [    1.456641] pci 0000:00:18.3: resuming
-> > [    1.456648] 8139too 0000:05:07.0: resuming
-> > [    1.456667] radeonfb 0000:01:00.0: resuming
-> > 
-> > the box is pingable but otherwise no console and it's hung as well. [I 
-> > got the log above via netconsole]
-> 
-> unfortunately there's no way to get any backtrace out of the system at 
-> this point - the timer interrupts are not active yet here, so i cannot 
-> use the softlockup_tick patch to sample the lockup. Since it's 
-> pingable i'll try to hack a dump_stack() into icmp_reply() ;-)
+> But like I said in my post, there's no way we can disable suspend to
+> disk when they do, right now anyway. Also, this can't be called any
+> later than a late initcall or such since it's __init, and thus there
+> shouldn't be memory pressure yet that would cause this to fail.
 
-didnt succeed at that - no netconsole output during the hang. But the 
-RADEON_FB .config options definitely make the difference. The video card 
-in question is:
+Exactly.  If an atomic allocation fails at this stage, there is a bug IMHO
+(although not necessarily in our code).
 
-01:00.0 VGA compatible controller: ATI Technologies Inc RV370 5B60 [Radeon X300 (PCIE)]
-01:00.1 Display controller: ATI Technologies Inc RV370 [Radeon X300SE]
+Still, the patch is not sufficient, so that's just a theoretical thing.
 
-	Ingo
+> In any case, I'd be much happier with having a "disable suspend"
+> variable so we could print a big warning and set that flag.
+
+Well, I think that if we can't get so little memory at this early stage, the
+kernel will have much more trouble anyway. ;-)
+
+Rafael
