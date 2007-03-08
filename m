@@ -1,45 +1,148 @@
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Date: Thu, 8 Mar 2007 23:11:58 +0800
-Message-ID: <b6a2187b0703080711g47fe734dmfe5d6b03e13275d6@mail.gmail.com>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015034.GG3441@stusta.de>
-	 <20070308123143.GF5149@mellanox.co.il>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
+	Re:	Remove page flags for software suspend)
+Date: Thu, 08 Mar 2007 02:00:25 +0100
+Message-ID: <1173315625.3546.32.camel@johannes.berg>
+References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
+	<45E6EEC5.4060902@yahoo.com.au> <200703011633.54625.rjw@sisk.pl>
+	<200703041450.02178.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20070308123143.GF5149@mellanox.co.il>
-Content-Disposition: inline
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, greg@kroah.com, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200703041450.02178.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/8/07, Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> > Quoting Adrian Bunk <bunk@stusta.de>:
-> > Subject: [2/6] 2.6.21-rc2: known regressions
-> >
-> > Subject    : ThinkPad T60: no screen after suspend to RAM
-> > References : http://lkml.org/lkml/2007/2/22/391
-> > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> > Status     : unknown
->
-> Here's the status with -rc3: better, but still does not work as well as 2.6.20.
+On Sun, 2007-03-04 at 14:50 +0100, Rafael J. Wysocki wrote:
 
-> 3. When I switch to X (CTRL-ALT-F7), X hangs after drawing a couple of windows
->    after waiting for some 10 min, I rebooted.
->    no new messages showed up in /var/log/messages
+> Okay, the next three messages contain patches that should do the trick.
+> =
 
-In my case, I can "suspend" and "resume", but seems the clock died
-after resume. "date" always returns the same time! I had to disable
-CONFIG_NO_HZ and CONFIG_SYSFS_DEPRECATED in order to suspend.
+> They have been tested on x86_64, but not very thoroughly.
 
-Try to execute "date" and see if it changes after resume.
+Looks nice, but I'm having some trouble with it. Solved too though :)
 
-Thanks,
-Jeff.
+Thing is that I need to call register_nosave_region for a region
+reserved for the IOMMU. Because the region is reserved so early during
+boot I cannot call register_nosave_region at that time. However, I also
+can't call register_nosave_region during a late initcall because at that
+point bootmem can no longer be allocated. I could of course put a hook
+somewhere into the arch code to do the marking, but I'd prefer not to.
+
+The easiest solution I came up with is below. Of course, the suspend
+patches for powerpc64 are still very much work in progress and I might
+end up changing the whole reservation scheme after some feedback... If
+nobody else needs this then don't think about it now.
+
+However, would that patch be acceptable to you? What about error
+handling? Printing a message and setting a "suspend not permitted"
+variable would be great but I don't think such a variable exists. Also,
+maybe passing in a gfp mask would be better (and we could use 0 to mean
+bootmem too, I'd think)
+
+Actually... I'd never have noticed this if register_nosave_region merged
+regions. I have these two regions:
+[    0.000000] swsusp: Registered nosave memory region: 0000000080000000 - =
+0000000100000000
+[...]
+[   19.406116] swsusp: Registered nosave memory region: 000000007f000000 - =
+0000000080000000
+But they aren't merged, if they were the latter call wouldn't need to do
+any allocations. Not that I'd want to rely on these positions!
+
+With this patch and appropriate changes to my suspend code, it works.
+
+johannes
+
+---
+Subject: [PATCH] swsusp: introduce register_nosave_region_late
+From: Johannes Berg <johannes@sipsolutions.net>
+
+This patch introduces a new register_nosave_region_late function that
+can be called from initcalls when register_nosave_region can no longer
+be used because it uses bootmem.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+
+---
+ include/linux/suspend.h |   11 ++++++++++-
+ kernel/power/snapshot.c |   12 +++++++++---
+ 2 files changed, 19 insertions(+), 4 deletions(-)
+
+--- linux-2.6-git.orig/include/linux/suspend.h	2007-03-08 01:25:37.24870150=
+0 +0100
++++ linux-2.6-git/include/linux/suspend.h	2007-03-08 01:41:49.967826495 +01=
+00
+@@ -36,7 +36,15 @@ static inline void pm_restore_console(vo
+ /* kernel/power/swsusp.c */
+ extern int software_suspend(void);
+ /* kernel/power/snapshot.c */
+-extern void __init register_nosave_region(unsigned long, unsigned long);
++extern void __register_nosave_region(unsigned long b, unsigned long e, int=
+ km);
++static inline void register_nosave_region(unsigned long b, unsigned long e)
++{
++	__register_nosave_region(b, e, 0);
++}
++static inline void register_nosave_region_late(unsigned long b, unsigned l=
+ong e)
++{
++	__register_nosave_region(b, e, 1);
++}
+ extern int swsusp_page_is_forbidden(struct page *);
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+@@ -49,6 +57,7 @@ static inline int software_suspend(void)
+ }
+ =
+
+ static inline void register_nosave_region(unsigned long b, unsigned long e=
+) {}
++static inline void register_nosave_region_late(unsigned long b, unsigned l=
+ong e) {}
+ static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
+ static inline void swsusp_set_page_free(struct page *p) {}
+ static inline void swsusp_unset_page_free(struct page *p) {}
+--- linux-2.6-git.orig/kernel/power/snapshot.c	2007-03-08 01:26:17.68070150=
+0 +0100
++++ linux-2.6-git/kernel/power/snapshot.c	2007-03-08 01:42:35.385826495 +01=
+00
+@@ -608,7 +608,8 @@ static LIST_HEAD(nosave_regions);
+  */
+ =
+
+ void __init
+-register_nosave_region(unsigned long start_pfn, unsigned long end_pfn)
++__register_nosave_region(unsigned long start_pfn, unsigned long end_pfn,
++			 int use_kmalloc)
+ {
+ 	struct nosave_region *region;
+ =
+
+@@ -624,8 +625,13 @@ register_nosave_region(unsigned long sta
+ 			goto Report;
+ 		}
+ 	}
+-	/* This allocation cannot fail */
+-	region =3D alloc_bootmem_low(sizeof(struct nosave_region));
++	if (use_kmalloc) {
++		/* during init, this shouldn't fail */
++		region =3D kmalloc(sizeof(struct nosave_region), GFP_KERNEL);
++		BUG_ON(!region);
++	} else
++		/* This allocation cannot fail */
++		region =3D alloc_bootmem_low(sizeof(struct nosave_region));
+ 	region->start_pfn =3D start_pfn;
+ 	region->end_pfn =3D end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
