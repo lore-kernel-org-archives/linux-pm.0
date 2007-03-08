@@ -1,24 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: [PATCH 0/2] Repair pci_restore_state when used with
-	device resets
-Date: Thu, 08 Mar 2007 13:26:12 -0700
-Message-ID: <m1ejnz5vob.fsf@ebiederm.dsl.xmission.com>
-References: <45ED8A12.5040803@intel.com>
-	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
-	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
-	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
-	<20070307185317.5601d452.akpm@linux-foundation.org>
-	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
-	<45EFDD8C.3070702@garzik.org>
-	<m1abyn7iin.fsf@ebiederm.dsl.xmission.com>
-	<m1tzwv5wz9.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070308200809.GA10088@elte.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/3] swsusp: Do not use page flags (was:
+	Re: Remove page flags for software suspend)
+Date: Thu, 8 Mar 2007 23:05:42 +0100
+Message-ID: <200703082305.43513.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
+	<200703041450.02178.rjw@sisk.pl>
+	<1173315625.3546.32.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070308200809.GA10088@elte.hu> (Ingo Molnar's message of "Thu,
-	8 Mar 2007 21:08:09 +0100")
+In-Reply-To: <1173315625.3546.32.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -28,29 +21,100 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, michael@ellerman.id.au, linux-pci@atrey.karlin.mff.cuni.cz, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org, Christoph Lameter <clameter@engr.sgi.com>, pm list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Thursday, 8 March 2007 02:00, Johannes Berg wrote:
+> On Sun, 2007-03-04 at 14:50 +0100, Rafael J. Wysocki wrote:
+> =
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> I have never have figured out how to get suspend/resume actually =
+> > Okay, the next three messages contain patches that should do the trick.
+> > =
 
->> working on any of my machines [...]
->
-> ouch! Are you interested in getting it work?
+> > They have been tested on x86_64, but not very thoroughly.
+> =
 
-I haven't even seriously tried. I don't yet have a laptop and I like
-staying logged.  The first time I rolled the jiffie counter it was a
-happened after I had realized that if I kept my machine up for another
-couple of months my jiffie counter would roll and I said why not  So
-basically suspend hasn't been a feature I'm been interested in using.
-I get more annoyed at my UPS failing..
+> Looks nice, but I'm having some trouble with it. Solved too though :)
+> =
 
-I will probably get around to figuring out the whole suspend/resume
-thing one of these days and it will probably take me a day or two.
-But that doesn't result in bug fixes being delivered in a timely manner.
+> Thing is that I need to call register_nosave_region for a region
+> reserved for the IOMMU. Because the region is reserved so early during
+> boot I cannot call register_nosave_region at that time. However, I also
+> can't call register_nosave_region during a late initcall because at that
+> point bootmem can no longer be allocated. I could of course put a hook
+> somewhere into the arch code to do the marking, but I'd prefer not to.
+> =
 
-Eric
+> The easiest solution I came up with is below. Of course, the suspend
+> patches for powerpc64 are still very much work in progress and I might
+> end up changing the whole reservation scheme after some feedback... If
+> nobody else needs this then don't think about it now.
+
+Well, it may be needed for other things too.
+
+> However, would that patch be acceptable to you? What about error
+> handling? Printing a message and setting a "suspend not permitted"
+> variable would be great but I don't think such a variable exists.
+
+You're right, there's nothing like that.
+
+> Also, maybe passing in a gfp mask would be better (and we could use 0 to =
+mean
+> bootmem too, I'd think)
+
+I think we should pass a mask.  BTW, can you please check if the appended p=
+atch
+is sufficient?
+
+> Actually... I'd never have noticed this if register_nosave_region merged
+> regions. I have these two regions:
+> [    0.000000] swsusp: Registered nosave memory region: 0000000080000000 =
+- 0000000100000000
+> [...]
+> [   19.406116] swsusp: Registered nosave memory region: 000000007f000000 =
+- 0000000080000000
+> But they aren't merged, if they were the latter call wouldn't need to do
+> any allocations. Not that I'd want to rely on these positions!
+
+It only merges regions passed in the right order (ie. sorted).
+
+> With this patch and appropriate changes to my suspend code, it works.
+
+OK, thanks for testing!
+
+Greetings,
+Rafael
+
+
+---
+ kernel/power/snapshot.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.21-rc3/kernel/power/snapshot.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.21-rc3.orig/kernel/power/snapshot.c
++++ linux-2.6.21-rc3/kernel/power/snapshot.c
+@@ -624,8 +624,18 @@ register_nosave_region(unsigned long sta
+ 			goto Report;
+ 		}
+ 	}
+-	/* This allocation cannot fail */
+-	region =3D alloc_bootmem_low(sizeof(struct nosave_region));
++	if (system_state =3D=3D SYSTEM_BOOTING) {
++		/* This allocation cannot fail */
++		region =3D alloc_bootmem_low(sizeof(struct nosave_region));
++	} else {
++		region =3D kzalloc(sizeof(struct nosave_region), GFP_ATOMIC);
++		if (!region) {
++			printk(KERN_WARNING "swsusp: Not enough memory "
++				"to register a nosave region!\n");
++			WARN_ON(1);
++			return;
++		}
++	}
+ 	region->start_pfn =3D start_pfn;
+ 	region->end_pfn =3D end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
