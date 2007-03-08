@@ -1,36 +1,132 @@
-From: Albert Hopkins <kernel@marduk.letterboxes.org>
-Subject: Re: [1/6] 2.6.21-rc2: known regressions
-Date: Wed, 07 Mar 2007 16:17:05 -0600
-Message-ID: <1173305825.6462.4.camel@blackwidow.nbk>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015031.GF3441@stusta.de>  <45EE9CBD.9040807@garzik.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: SATA resume slowness, e1000 MSI warning
+Date: Wed, 7 Mar 2007 18:53:17 -0800
+Message-ID: <20070307185317.5601d452.akpm@linux-foundation.org>
+References: <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	<20070305084257.GA4464@mellanox.co.il>
+	<20070305101120.GA23032@elte.hu> <45ECFC5F.7000102@garzik.org>
+	<45ED0BBF.1050000@intel.com> <20070306090444.GA25409@elte.hu>
+	<45ED8A12.5040803@intel.com>
+	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>
+	<45EEE8CF.1060803@intel.com> <45EEEC2C.5090609@intel.com>
+	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <45EE9CBD.9040807@garzik.org>
-Sender: netdev-owner@vger.kernel.org
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Ayaz Abdulla <aabdulla@nvidia.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sid Boyce <g3vbv@blueyonder.co.uk>, Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>, linux-pm@lists.osdl.org, maxk@qualcomm.com, bluez-devel@lists.sf.net, Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>, Matt Mackall <mpm@selenic.com>, Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <m1649cdfas.fsf@ebiederm.dsl.xmission.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jeff Garzik <jeff@garzik.org>, Adrian@smtp.osdl.org, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2007-03-07 at 06:06 -0500, Jeff Garzik wrote:
-> Adrian Bunk wrote:
-> > Subject    : forcedeth: skb_over_panic
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-> > Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
-> > Status     : unknown
-> 
-> 
-> I think this is fixed by the recent forcedeth 3-patch patchset?  Can 
-> Albert or others confirm?
-> 
-> 	Jeff
-> 
+On Wed, 07 Mar 2007 12:28:11 -0700 ebiederm@xmission.com (Eric W. Biederman=
+) wrote:
 
-I'll reflect this in th bug report, but I recently tried the forcedeth
-driver in 2.6.21-rc3 and still get an oops.
+> Below is an additional set of warnings that should help debug this.
+> The old code just got lucky that it triggered a warning when this happens.
+> =
 
---
-Albert W. Hopkins
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index 01869b1..5113913 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -613,6 +613,7 @@ int pci_enable_msi(struct pci_dev* dev)
+>  		return -EINVAL;
+>  =
 
+>  	WARN_ON(!!dev->msi_enabled);
+> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+>  =
+
+>  	/* Check whether driver already requested for MSI-X irqs */
+>  	if (dev->msix_enabled) {
+> @@ -638,6 +639,8 @@ void pci_disable_msi(struct pci_dev* dev)
+>  	if (!dev->msi_enabled)
+>  		return;
+>  =
+
+> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+> +
+>  	msi_set_enable(dev, 0);
+>  	pci_intx(dev, 1);		/* enable intx */
+>  	dev->msi_enabled =3D 0;
+> @@ -739,6 +742,7 @@ int pci_enable_msix(struct pci_dev* dev, struct msix_=
+entry *entries, int nvec)
+>  		}
+>  	}
+>  	WARN_ON(!!dev->msix_enabled);
+> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+>  =
+
+>  	/* Check whether driver already requested for MSI irq */
+>     	if (dev->msi_enabled) {
+> @@ -763,6 +767,8 @@ void pci_disable_msix(struct pci_dev* dev)
+>  	if (!dev->msix_enabled)
+>  		return;
+>  =
+
+> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+> +
+>  	msix_set_enable(dev, 0);
+>  	pci_intx(dev, 1);		/* enable intx */
+>  	dev->msix_enabled =3D 0;
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index bd44a48..4418839 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -677,6 +677,7 @@ pci_restore_state(struct pci_dev *dev)
+>  	}
+>  	pci_restore_pcix_state(dev);
+>  	pci_restore_msi_state(dev);
+> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
+>  =
+
+>  	return 0;
+>  }
+
+Got a hit on a powerpc g5:
+
+PM: Writing back config space on device 0001:05:04.0 at offset 1 (was 2b000=
+00, writing 2b00006)
+------------[ cut here ]------------
+Badness at drivers/pci/pci.c:679
+Call Trace:
+[C0000000080F7410] [C000000000011EFC] .show_stack+0x50/0x1cc (unreliable)
+[C0000000080F74C0] [C0000000001AD610] .report_bug+0xa0/0x110
+[C0000000080F7550] [C0000000000256E4] .program_check_exception+0xb4/0x670
+[C0000000080F7630] [C0000000000046F4] program_check_common+0xf4/0x100
+--- Exception: 700 at .pci_restore_state+0x310/0x340
+    LR =3D .pci_restore_state+0x2e0/0x340
+[C0000000080F79D0] [C00000000026A174] .tg3_chip_reset+0x19c/0xa04
+[C0000000080F7A90] [C00000000026D948] .tg3_reset_hw+0xa4/0x2718
+[C0000000080F7BA0] [C000000000270030] .tg3_init_hw+0x74/0x94
+[C0000000080F7C30] [C000000000270BE0] .tg3_open+0x4c8/0x854
+[C0000000080F7CF0] [C0000000003A74A4] .dev_open+0x100/0x12c
+[C0000000080F7D90] [C0000000003BAEA8] .netpoll_setup+0x2dc/0x3ec
+[C0000000080F7E40] [C000000000283450] .init_netconsole+0x64/0x8c
+[C0000000080F7EC0] [C0000000005C0BE4] .init+0x1d0/0x390
+[C0000000080F7F90] [C0000000000271F8] .kernel_thread+0x4c/0x68
+tg3: eth0: Link is up at 1000 Mbps, full duplex.
+tg3: eth0: Flow control is on for TX and on for RX.
+Scheduler bitmap error - bitmap being reconstructed..
+netconsole: network logging started
+Calling initcall 0xc0000000006bd180: .macio_module_init+0x0/0x3c()
+
+That's:
+
+        pci_restore_pcix_state(dev);
+        pci_restore_msi_state(dev);
+        WARN_ON(!hlist_empty(&dev->saved_cap_space));
+
+        return 0;
