@@ -1,44 +1,152 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Date: Fri, 9 Mar 2007 10:00:49 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0703090949140.10832@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
- <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
- <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
- <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
- <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
- <20070309105635.GA11635@elte.hu>
+From: "DR. BISI OMOYENI" <wbnplclb@yahoo.com>
+Subject: WE ARE WAITING TO HEAR FROM YOU CONCERNING YOUR
+	PAYMENT/FROM WEMA BANK PLC.
+Date: Fri, 9 Mar 2007 20:40:04 GMT
+Message-ID: <200703092040.l29Ke4ia087083@web0.fast.net.uk>
+Reply-To: wbnplclb@yahoo.com
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20070309105635.GA11635@elte.hu>
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: multipart/mixed; boundary="----------=_1173472821-4069-189"
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format...
+
+------------=_1173472821-4069-189
+Content-Type: text/plain
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l29KeSo4015353
+
+OFFICE OF THE MANAGING DIRECTOR/CHIEF EXECUTIVE=20
+WEMA BANK PLC
+INTERNATIONAL PAYMENTS AUTHORITY
+PLOT 1669, OYIN JOLAYEMI STREET,
+P.O.BOX 75455, VICTORIA ISLAND LAGOS.
+Swift Address: WBINGLA XXX.
+TEL/FAX:+234-1-8539820
 
 
-On Fri, 9 Mar 2007, Ingo Molnar wrote:
-> > Some day we may have modesetting support in the kernel for some 
-> > graphics hw, right now it's pretty damn spotty.
-> 
-> having no video is what i'd have expected - but getting a /hang/ is not 
-> what i'd have expected.
 
-I debugged a case exactly like this (with the TRACE_RESUME() thing) back 
-last November on my laptop.
+ATTENTION OF: BENEFICIARY,
 
-The problem is that radeonfb actually *tries* to re-initialize the 
-graphics chips, but because it doesn't know all the details, it does it 
-wrong, and hangs the whole chip.
 
-I forget exactly where it happened, and it might well be different for 
-you. But this is exactly what TRACE_RESUME can be used to pinpoint if you 
-want to try to debug it. 
+THE ABOVE SUBJECT MATTER REFERS.
 
-			Linus
+THIS IS TO INFORM YOU THAT I HAVE GONE THROUGH YOUR PAYMENT FILE AND CONF=
+IRMED WHY YOU ARE YET TO RECEIVE YOUR PAYMENT UP TILL NOW AND IT IS IMPOS=
+SIBLE FOR YOU TO RECEIVE IT FROM THE PEOPLE YOU HAVE BEEN COMMUNICATING/D=
+EALING WITH NO MATTER HOW MUCH YOU PAID.
+
+AS A MATTER OF FACT, THERE IS LOT OF ERRORS IN YOUR PAYMENT FILE THAT WIL=
+L MAKE YOU TO SPEND ALL THAT YOU HAVE WITHOUT GETTING PAID AND THE DUBIOU=
+S OFFICIALS OF THIS COUNTRY ARE NOT READY TO TELL YOU THE TRUTH RATHER EX=
+TORTING YOUR HARD EARNED MONEY.=20
+
+I HAVE A SOLUTION TO YOUR PROBLEM BECAUSE THIS IS EXACTLY WHAT HAPPENED T=
+O MRS. EDWARD=92S WILLIAMS AND SHE ADHERES TO MY DIRECTIVES AND GET PAID =
+WITHIN 5 BANKING DAYS.
+
+THE SOLUTION IS THAT I WILL TRANSFER YOUR SAID FUND THROUGH ATM SWIFT CRE=
+DIT CARD SYSTEM TO SAVE YOU FROM DOCUMENTATIONS, PAYMENT OF TAXES AND ETC=
+. AND IN ACCORDING WITH SERIES OF PETITION RECEIVED FROM INTERNATIONAL BO=
+DY ON HOW YOUR FUND WAS HANDLED BY OUR CORRESPONDENCE OFFICE. AFTER EXTEN=
+SIVE MEETING WITH BOARD OF DIRECTORS AND OTHER STAKE HOLDERS IN THE GOVER=
+NMENT INCLUDING SUBCOMMITTEES OF THE HOUSE OF ASSEMBLY AND THE HOUSE OF R=
+EP FEDERAL REPUBLIC OF NIGERIA.=20
+
+IT WAS RESOLVED AND AGREED UPON THAT YOUR FUND WOULD BE RELEASED ON A SPE=
+CIAL METHOD OF PAYMENT, BY TAG NAME READS SWIFT CREDIT CARD. THIS METHOD =
+OF PAYMENT IS DESIGNED BY THE GOVERNMENT TO AVERT FRAUD PERPETRATION OR S=
+TOPPAGE OF FUND BY SOME AGENCIES. EITHER THROUGH ANTI TERRORIST CERTIFICA=
+TE OR OTHER CERTIFICATES. THIS SWIFT CREDIT CARD WOULD BE ISSUED TO YOU U=
+PON MEETING WITH THE BANK REQUIREMENT.
+
+THIS OFFICE HAS BEEN MANDATED TO TAKE CHARGE OF THE ISSUANCE OF THE SWIFT=
+ CREDIT CARD AND YOUR PAYMENT FILE SHOULD BE PASSED TO MY DESK FOR CLARIF=
+ICATION. UPON CERTIFICATION THAT YOUR PAYMENT FILE IS OK, THIS OFFICE WIL=
+L DIRECT YOU ON HOW TO RECEIVE YOUR OVER DUE FUND VIA ATM SWIFT CREDIT CA=
+RD.
+
+IN THE LIGHT OF THIS AFOREMENTIONED, YOU ARE REQUIRED TO FURNISH THIS OFF=
+ICE WITH THE FOLLOWING INFORMATION:
+
+YOUR NAME:
+ADDRESS:
+YOUR=20
+NEXT OF KIN NAME AND YOUR DATE OF BIRTH:
+YOUR TELEPHONE NUMBER AND FAX:
+
+THIS INFORMATION=92S WOULD BE USED TO OPEN AN ACCOUNT HERE, AND FROM HERE=
+ THE ATM WOULD BE USED IN ISSUANCE OF THE SWIFT CREDITS CARD IN YOUR FAVO=
+R, AND WITH THE CREDIT CARD NUMBER ALL YOUR INFORMATION WILL BE INSERTED =
+INTO THE CARD. UPON COMPLETION OF THIS ISSUANCE OF THE CREDIT CARD, IT WO=
+ULD BE SEND TO YOU VIA COURIER TO YOUR RESIDENTIAL ADDRESS.
+
+BE INFORMED THAT YOUR FUND HAS BEEN CALLED BACK AND IT=92S NOW IN A SUSPE=
+NSE ACCOUNT HERE. AND A NEW ACCOUNT HAS TO BE OPENED IN YOUR NAME BEFORE =
+THE SWIFT CREDIT CARD WILL BE ISSUED.
+
+LOOKING FORWARD TO YOUR SWIFT REPLY.=20
+
+
+THANKS,
+
+YOURS FAITHFULLY,
+DR. BISI OMOYENI
+MANAGING DIRECTOR/CHIEF EXECUTIVE (WBN).
+
+
+
+
+
+------------=_1173472821-4069-189
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+Content-Transfer-Encoding: 7bit
+
+Spam detection software, running on the system "daredevil.osdl.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  OFFICE OF THE MANAGING DIRECTOR/CHIEF EXECUTIVE WEMA
+  BANK PLC INTERNATIONAL PAYMENTS AUTHORITY PLOT 1669, OYIN JOLAYEMI
+  STREET, P.O.BOX 75455, VICTORIA ISLAND LAGOS. Swift Address: WBINGLA
+  XXX. TEL/FAX:+234-1-8539820 [...] 
+
+Content analysis details:   (6.4 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 2.9 FROM_LOCAL_NOVOWEL     From: localpart has series of non-vowel letters
+ 0.5 SUBJ_ALL_CAPS          Subject is all capitals
+ 1.8 FORGED_YAHOO_RCVD      'From' yahoo.com does not match 'Received' headers
+ 0.1 OSDL_NIGERIAN_FUNDS    BODY: "fun*ds"
+ 0.7 GET_PAID               BODY: Get Paid
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.5000]
+ 0.5 UPPERCASE_75_100       message body is 75-100% uppercase
+
+
+
+------------=_1173472821-4069-189
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
+------------=_1173472821-4069-189--
