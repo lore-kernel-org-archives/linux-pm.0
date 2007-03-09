@@ -1,12 +1,18 @@
-From: "DR. BISI OMOYENI" <wbnplclb@yahoo.com>
-Subject: WE ARE WAITING TO HEAR FROM YOU CONCERNING YOUR
-	PAYMENT/FROM WEMA BANK PLC.
-Date: Fri, 9 Mar 2007 20:40:04 GMT
-Message-ID: <200703092040.l29Ke4ia087083@web0.fast.net.uk>
-Reply-To: wbnplclb@yahoo.com
+From: Mark Gross <mgross@linux.intel.com>
+Subject: Re: [RFC] [PATCH] Power Managed memory base enabling
+Date: Fri, 9 Mar 2007 12:53:44 -0800
+Message-ID: <20070309205344.GA16777@linux.intel.com>
+References: <20070305181826.GA21515@linux.intel.com>
+	<Pine.LNX.4.64.0703051941310.18703@chino.kir.corp.google.com>
+	<20070306164722.GB22725@linux.intel.com>
+	<Pine.LNX.4.64.0703061838390.13314@chino.kir.corp.google.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1173472821-4069-189"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703061838390.13314@chino.kir.corp.google.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,137 +22,449 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@osdl.org
+To: David Rientjes <rientjes@google.com>
+Cc: linux-mm@kvack.org, mark.gross@intel.com, linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, neelam.chandwani@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Tue, Mar 06, 2007 at 06:40:36PM -0800, David Rientjes wrote:
+> On Tue, 6 Mar 2007, Mark Gross wrote:
+> =
 
-------------=_1173472821-4069-189
-Content-Type: text/plain
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l29KeSo4015353
+> > Let me give your idea a spin and get back to you. =
 
-OFFICE OF THE MANAGING DIRECTOR/CHIEF EXECUTIVE=20
-WEMA BANK PLC
-INTERNATIONAL PAYMENTS AUTHORITY
-PLOT 1669, OYIN JOLAYEMI STREET,
-P.O.BOX 75455, VICTORIA ISLAND LAGOS.
-Swift Address: WBINGLA XXX.
-TEL/FAX:+234-1-8539820
+> > =
 
+> =
 
+> Something like the following might be a little better.
 
-ATTENTION OF: BENEFICIARY,
+Thanks!  I've got things cleaned up and working with as many of your
+ideas as I could get working.  I liked many of the changes you offered
+in the patch you sent to me off list.  =
 
 
-THE ABOVE SUBJECT MATTER REFERS.
+One thing I found was your patch didn't use the SLIT data in computing
+the nearest non PM node, and I had to be careful about the difference
+between the PM memory PXM bitmap and node id's.  After I accounted for
+the not_to_pxm mapping things started working for me.
 
-THIS IS TO INFORM YOU THAT I HAVE GONE THROUGH YOUR PAYMENT FILE AND CONF=
-IRMED WHY YOU ARE YET TO RECEIVE YOUR PAYMENT UP TILL NOW AND IT IS IMPOS=
-SIBLE FOR YOU TO RECEIVE IT FROM THE PEOPLE YOU HAVE BEEN COMMUNICATING/D=
-EALING WITH NO MATTER HOW MUCH YOU PAID.
+BTW re basing to 2.6.21rc3mm2, resulted in one 4k allocation in my
+PM-zones.  I'll be looking for where that allocation is coming from
+after I get this post finished.
 
-AS A MATTER OF FACT, THERE IS LOT OF ERRORS IN YOUR PAYMENT FILE THAT WIL=
-L MAKE YOU TO SPEND ALL THAT YOU HAVE WITHOUT GETTING PAID AND THE DUBIOU=
-S OFFICIALS OF THIS COUNTRY ARE NOT READY TO TELL YOU THE TRUTH RATHER EX=
-TORTING YOUR HARD EARNED MONEY.=20
+--mgross
 
-I HAVE A SOLUTION TO YOUR PROBLEM BECAUSE THIS IS EXACTLY WHAT HAPPENED T=
-O MRS. EDWARD=92S WILLIAMS AND SHE ADHERES TO MY DIRECTIVES AND GET PAID =
-WITHIN 5 BANKING DAYS.
+Singed-off-by: Mark Gross <mark.gross@intel.com>
 
-THE SOLUTION IS THAT I WILL TRANSFER YOUR SAID FUND THROUGH ATM SWIFT CRE=
-DIT CARD SYSTEM TO SAVE YOU FROM DOCUMENTATIONS, PAYMENT OF TAXES AND ETC=
-. AND IN ACCORDING WITH SERIES OF PETITION RECEIVED FROM INTERNATIONAL BO=
-DY ON HOW YOUR FUND WAS HANDLED BY OUR CORRESPONDENCE OFFICE. AFTER EXTEN=
-SIVE MEETING WITH BOARD OF DIRECTORS AND OTHER STAKE HOLDERS IN THE GOVER=
-NMENT INCLUDING SUBCOMMITTEES OF THE HOUSE OF ASSEMBLY AND THE HOUSE OF R=
-EP FEDERAL REPUBLIC OF NIGERIA.=20
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/a=
+rch/x86_64/mm/numa.c linux-2.6.21rc3mm2-monroe/arch/x86_64/mm/numa.c
+--- linux-2.6.21rc3mm2/arch/x86_64/mm/numa.c	2007-03-08 11:14:19.000000000 =
+-0800
++++ linux-2.6.21rc3mm2-monroe/arch/x86_64/mm/numa.c	2007-03-09 10:23:25.000=
+000000 -0800
+@@ -155,19 +155,47 @@
+ }
+ #endif
+ =
 
-IT WAS RESOLVED AND AGREED UPON THAT YOUR FUND WOULD BE RELEASED ON A SPE=
-CIAL METHOD OF PAYMENT, BY TAG NAME READS SWIFT CREDIT CARD. THIS METHOD =
-OF PAYMENT IS DESIGNED BY THE GOVERNMENT TO AVERT FRAUD PERPETRATION OR S=
-TOPPAGE OF FUND BY SOME AGENCIES. EITHER THROUGH ANTI TERRORIST CERTIFICA=
-TE OR OTHER CERTIFICATES. THIS SWIFT CREDIT CARD WOULD BE ISSUED TO YOU U=
-PON MEETING WITH THE BANK REQUIREMENT.
++/* we need a place to save the next start address to use for each node bec=
+ause
++ * we need to allocate the pgdata and bootmem for power managed memory in
++ * non-power managed nodes.  We do this by saving off where we can start
++ * allocating in the nodes and updating them as the boot up proceeds.
++ */
++static unsigned long bootmem_start[MAX_NUMNODES];
++
++
+ static void * __init
+ early_node_mem(int nodeid, unsigned long start, unsigned long end,
+ 	      unsigned long size)
+ {
+-	unsigned long mem =3D find_e820_area(start, end, size);
++	unsigned long mem;
+ 	void *ptr;
+-	if (mem !=3D -1L)
++	int nid;
++	=
 
-THIS OFFICE HAS BEEN MANDATED TO TAKE CHARGE OF THE ISSUANCE OF THE SWIFT=
- CREDIT CARD AND YOUR PAYMENT FILE SHOULD BE PASSED TO MY DESK FOR CLARIF=
-ICATION. UPON CERTIFICATION THAT YOUR PAYMENT FILE IS OK, THIS OFFICE WIL=
-L DIRECT YOU ON HOW TO RECEIVE YOUR OVER DUE FUND VIA ATM SWIFT CREDIT CA=
-RD.
++	if (bootmem_start[nodeid] < start) {
++		bootmem_start[nodeid] =3D start;
++	}
++
++	mem =3D -1L;
++	nid =3D nearest_non_pm_node(nodeid);
++	if (nid !=3D nodeid) {
++		if (!node_online(nid))
++			return NULL;
++
++		end =3D (NODE_DATA(nid)->node_start_pfn +
++			NODE_DATA(nid)->node_spanned_pages)
++				<< PAGE_SHIFT;
++	}
++	mem =3D find_e820_area(bootmem_start[nid], end, size);
++	if (mem!=3D -1L) {
++		/* now increment bootmem_start for next call */
++		bootmem_start[nid] =3D round_up(mem + size, PAGE_SIZE);
+ 		return __va(mem);
++	}
+ 	ptr =3D __alloc_bootmem_nopanic(size,
+ 				SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS));
+ 	if (ptr =3D=3D 0) {
+ 		printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
+-			size, nodeid);
++			size, nid);
+ 		return NULL;
+ 	}
+ 	return ptr;
+@@ -179,6 +207,7 @@
+ 	unsigned long start_pfn, end_pfn, bootmap_pages, bootmap_size, bootmap_st=
+art; =
 
-IN THE LIGHT OF THIS AFOREMENTIONED, YOU ARE REQUIRED TO FURNISH THIS OFF=
-ICE WITH THE FOLLOWING INFORMATION:
+ 	unsigned long nodedata_phys;
+ 	void *bootmap;
++	int non_pm_node =3D nearest_non_pm_node(nodeid);
+ 	const int pgdat_size =3D round_up(sizeof(pg_data_t), PAGE_SIZE);
+ =
 
-YOUR NAME:
-ADDRESS:
-YOUR=20
-NEXT OF KIN NAME AND YOUR DATE OF BIRTH:
-YOUR TELEPHONE NUMBER AND FAX:
+ 	start =3D round_up(start, ZONE_ALIGN); =
 
-THIS INFORMATION=92S WOULD BE USED TO OPEN AN ACCOUNT HERE, AND FROM HERE=
- THE ATM WOULD BE USED IN ISSUANCE OF THE SWIFT CREDITS CARD IN YOUR FAVO=
-R, AND WITH THE CREDIT CARD NUMBER ALL YOUR INFORMATION WILL BE INSERTED =
-INTO THE CARD. UPON COMPLETION OF THIS ISSUANCE OF THE CREDIT CARD, IT WO=
-ULD BE SEND TO YOU VIA COURIER TO YOUR RESIDENTIAL ADDRESS.
+@@ -218,8 +247,8 @@
+ =
 
-BE INFORMED THAT YOUR FUND HAS BEEN CALLED BACK AND IT=92S NOW IN A SUSPE=
-NSE ACCOUNT HERE. AND A NEW ACCOUNT HAS TO BE OPENED IN YOUR NAME BEFORE =
-THE SWIFT CREDIT CARD WILL BE ISSUED.
+ 	free_bootmem_with_active_regions(nodeid, end);
+ =
 
-LOOKING FORWARD TO YOUR SWIFT REPLY.=20
+-	reserve_bootmem_node(NODE_DATA(nodeid), nodedata_phys, pgdat_size); =
 
+-	reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start, bootmap_pages<<PAG=
+E_SHIFT);
++	reserve_bootmem_node(NODE_DATA(non_pm_node), nodedata_phys, pgdat_size);
++	reserve_bootmem_node(NODE_DATA(non_pm_node), bootmap_start, bootmap_pages=
+<<PAGE_SHIFT);
+ #ifdef CONFIG_ACPI_NUMA
+ 	srat_reserve_add_area(nodeid);
+ #endif
+@@ -230,8 +259,9 @@
+ void __init setup_node_zones(int nodeid)
+ { =
 
-THANKS,
+ 	unsigned long start_pfn, end_pfn, memmapsize, limit;
++	int non_pm_node =3D nearest_non_pm_node(nodeid);
+ =
 
-YOURS FAITHFULLY,
-DR. BISI OMOYENI
-MANAGING DIRECTOR/CHIEF EXECUTIVE (WBN).
+- 	start_pfn =3D node_start_pfn(nodeid);
++	start_pfn =3D node_start_pfn(nodeid);
+  	end_pfn =3D node_end_pfn(nodeid);
+ =
 
+ 	Dprintk(KERN_INFO "Setting up memmap for node %d %lx-%lx\n",
+@@ -242,11 +272,11 @@
+ 	memmapsize =3D sizeof(struct page) * (end_pfn-start_pfn);
+ 	limit =3D end_pfn << PAGE_SHIFT;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP
+-	NODE_DATA(nodeid)->node_mem_map =3D =
 
+-		__alloc_bootmem_core(NODE_DATA(nodeid)->bdata, =
 
+-				memmapsize, SMP_CACHE_BYTES, =
 
+-				round_down(limit - memmapsize, PAGE_SIZE), =
 
-------------=_1173472821-4069-189
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-Content-Transfer-Encoding: 7bit
+-				limit);
++	NODE_DATA(nodeid)->node_mem_map =3D
++		__alloc_bootmem_core(NODE_DATA(non_pm_node)->bdata,
++			memmapsize, SMP_CACHE_BYTES,
++			round_down(limit - memmapsize, PAGE_SIZE),
++			limit);
+ 	printk(KERN_DEBUG "Node %d memmap at 0x%p size %lu first pfn 0x%p\n",
+ 			nodeid, NODE_DATA(nodeid)->node_mem_map,
+ 			memmapsize, NODE_DATA(nodeid)->node_mem_map);
+@@ -265,7 +295,8 @@
+ 	for (i =3D 0; i < NR_CPUS; i++) {
+ 		if (cpu_to_node[i] !=3D NUMA_NO_NODE)
+ 			continue;
+- 		numa_set_node(i, rr);
++		numa_set_node(i,nearest_non_pm_node(rr));
++		//numa_set_node(i, rr);
+ 		rr =3D next_node(rr, node_online_map);
+ 		if (rr =3D=3D MAX_NUMNODES)
+ 			rr =3D first_node(node_online_map);
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/a=
+rch/x86_64/mm/srat.c linux-2.6.21rc3mm2-monroe/arch/x86_64/mm/srat.c
+--- linux-2.6.21rc3mm2/arch/x86_64/mm/srat.c	2007-03-08 11:14:19.000000000 =
+-0800
++++ linux-2.6.21rc3mm2-monroe/arch/x86_64/mm/srat.c	2007-03-09 11:00:51.000=
+000000 -0800
+@@ -27,6 +27,7 @@
+ =
 
-Spam detection software, running on the system "daredevil.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
+ static nodemask_t nodes_parsed __initdata;
+ static struct bootnode nodes_add[MAX_NUMNODES];
++static nodemask_t pm_nodes __read_mostly;
+ static int found_add_area __initdata;
+ int hotadd_percent __initdata =3D 0;
+ =
 
-Content preview:  OFFICE OF THE MANAGING DIRECTOR/CHIEF EXECUTIVE WEMA
-  BANK PLC INTERNATIONAL PAYMENTS AUTHORITY PLOT 1669, OYIN JOLAYEMI
-  STREET, P.O.BOX 75455, VICTORIA ISLAND LAGOS. Swift Address: WBINGLA
-  XXX. TEL/FAX:+234-1-8539820 [...] 
+@@ -34,6 +35,9 @@
+    from BIOS bugs. */
+ #define NODE_MIN_SIZE (4*1024*1024)
+ =
 
-Content analysis details:   (6.4 points, 5.0 required)
++/* ACPI bit to represent power management node */
++#define POWER_MANAGEMENT_ACPI_BIT	(1 << 31)
++
+ static __init int setup_node(int pxm)
+ {
+ 	return acpi_map_pxm_to_node(pxm);
+@@ -298,7 +302,10 @@
+ 		return;
+ 	start =3D ma->base_address;
+ 	end =3D start + ma->length;
+-	pxm =3D ma->proximity_domain;
++	pxm =3D ma->proximity_domain & ~POWER_MANAGEMENT_ACPI_BIT;
++	if (ma->proximity_domain & POWER_MANAGEMENT_ACPI_BIT)
++		node_set(pxm, pm_nodes);
++
+ 	node =3D setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
+@@ -486,3 +493,35 @@
+ }
+ EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
+ =
 
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 2.9 FROM_LOCAL_NOVOWEL     From: localpart has series of non-vowel letters
- 0.5 SUBJ_ALL_CAPS          Subject is all capitals
- 1.8 FORGED_YAHOO_RCVD      'From' yahoo.com does not match 'Received' headers
- 0.1 OSDL_NIGERIAN_FUNDS    BODY: "fun*ds"
- 0.7 GET_PAID               BODY: Get Paid
- 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-                            [score: 0.5000]
- 0.5 UPPERCASE_75_100       message body is 75-100% uppercase
++int __power_managed_node(int nid)
++{
++	return node_isset(node_to_pxm(nid), pm_nodes);
++}
++
++int __power_managed_memory_present(void)
++{
++	return !nodes_empty(pm_nodes);
++}
++
++int __nearest_non_pm_node(int nid)
++{
++	int i, dist, closest, temp;
++	=
 
++	if (!__power_managed_node(nid))
++		return nid;
++	dist =3D closest=3D 255;
++	for_each_node(i) {
++		if (__power_managed_node(i))
++			continue;
++
++		if (i !=3D nid) {
++			temp =3D __node_distance(nid, i );
++			if (temp < dist) {
++				closest =3D i;
++				dist =3D temp;
++			}
++		}
++	}
++	BUG_ON(closest =3D=3D 255);
++	return closest;
++}
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/i=
+nclude/asm-x86_64/topology.h linux-2.6.21rc3mm2-monroe/include/asm-x86_64/t=
+opology.h
+--- linux-2.6.21rc3mm2/include/asm-x86_64/topology.h	2007-03-08 11:14:20.00=
+0000000 -0800
++++ linux-2.6.21rc3mm2-monroe/include/asm-x86_64/topology.h	2007-03-09 10:2=
+3:25.000000000 -0800
+@@ -18,6 +18,13 @@
+ /* #else fallback version */
+ #endif
+ =
 
++extern int __power_managed_node(int);
++extern int __power_managed_memory_present(void);
++extern int __nearest_non_pm_node(int);
++#define power_managed_node(nid)		__power_managed_node(nid)
++#define power_managed_memory_present()	__power_managed_memory_present()
++#define nearest_non_pm_node(nid)	__nearest_non_pm_node(nid)
++
+ #define cpu_to_node(cpu)		(cpu_to_node[cpu])
+ #define parent_node(node)		(node)
+ #define node_to_first_cpu(node) 	(first_cpu(node_to_cpumask[node]))
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/i=
+nclude/linux/topology.h linux-2.6.21rc3mm2-monroe/include/linux/topology.h
+--- linux-2.6.21rc3mm2/include/linux/topology.h	2007-03-08 11:14:08.0000000=
+00 -0800
++++ linux-2.6.21rc3mm2-monroe/include/linux/topology.h	2007-03-09 10:23:25.=
+000000000 -0800
+@@ -67,6 +67,24 @@
+ #ifndef PENALTY_FOR_NODE_WITH_CPUS
+ #define PENALTY_FOR_NODE_WITH_CPUS	(1)
+ #endif
++#ifndef power_managed_node
++static inline int power_managed_node(int nid)
++{
++	return 0;
++}
++#endif
++#ifndef power_managed_memory_present
++static inline int power_managed_memory_present(void)
++{
++	return 0;
++}
++#endif
++#ifndef nearest_non_pm_node
++static inline int nearest_non_pm_node(int nid)
++{
++	return nid;
++}
++#endif
+ =
 
-------------=_1173472821-4069-189
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ /*
+  * Below are the 3 major initializers used in building sched_domains:
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/m=
+m/bootmem.c linux-2.6.21rc3mm2-monroe/mm/bootmem.c
+--- linux-2.6.21rc3mm2/mm/bootmem.c	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.21rc3mm2-monroe/mm/bootmem.c	2007-03-09 10:23:25.000000000 -0=
+800
+@@ -417,11 +417,14 @@
+ void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long al=
+ign,
+ 				      unsigned long goal)
+ {
+-	bootmem_data_t *bdata;
+ 	void *ptr;
++	int i;
+ =
 
+-	list_for_each_entry(bdata, &bdata_list, list) {
+-		ptr =3D __alloc_bootmem_core(bdata, size, align, goal, 0);
++	for_each_online_node(i) {
++		if (power_managed_node(i))
++			continue;
++		ptr =3D __alloc_bootmem_core(NODE_DATA(i)->bdata, size,
++					align, goal, 0);
+ 		if (ptr)
+ 			return ptr;
+ 	}
+@@ -463,12 +466,14 @@
+ void * __init __alloc_bootmem_low(unsigned long size, unsigned long align,
+ 				  unsigned long goal)
+ {
+-	bootmem_data_t *bdata;
+ 	void *ptr;
++	int i;
+ =
 
-------------=_1173472821-4069-189--
+-	list_for_each_entry(bdata, &bdata_list, list) {
+-		ptr =3D __alloc_bootmem_core(bdata, size, align, goal,
+-						ARCH_LOW_ADDRESS_LIMIT);
++	for_each_online_node(i) {
++		if (power_managed_node(i))
++			continue;
++		ptr =3D __alloc_bootmem_core(NODE_DATA(i)->bdata, size, align,
++					goal, ARCH_LOW_ADDRESS_LIMIT);
+ 		if (ptr)
+ 			return ptr;
+ 	}
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/m=
+m/mempolicy.c linux-2.6.21rc3mm2-monroe/mm/mempolicy.c
+--- linux-2.6.21rc3mm2/mm/mempolicy.c	2007-03-08 11:14:20.000000000 -0800
++++ linux-2.6.21rc3mm2-monroe/mm/mempolicy.c	2007-03-09 10:23:25.000000000 =
+-0800
+@@ -1609,8 +1609,13 @@
+ 	/* Set interleaving policy for system init. This way not all
+ 	   the data structures allocated at system boot end up in node zero. */
+ =
+
+-	if (do_set_mempolicy(MPOL_INTERLEAVE, &node_online_map))
+-		printk("numa_policy_init: interleaving failed\n");
++	if (power_managed_memory_present()) {
++		if (do_set_mempolicy(MPOL_DEFAULT, &node_online_map))
++			printk("numa_policy_init: default failed\n");
++	} else {
++		if (do_set_mempolicy(MPOL_INTERLEAVE, &node_online_map))
++			printk("numa_policy_init: interleaving failed\n");
++	}
+ }
+ =
+
+ /* Reset policy of current process to default */
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/m=
+m/page_alloc.c linux-2.6.21rc3mm2-monroe/mm/page_alloc.c
+--- linux-2.6.21rc3mm2/mm/page_alloc.c	2007-03-08 11:14:20.000000000 -0800
++++ linux-2.6.21rc3mm2-monroe/mm/page_alloc.c	2007-03-09 10:23:25.000000000=
+ -0800
+@@ -2600,8 +2600,10 @@
+ 					* sizeof(wait_queue_head_t);
+ =
+
+  	if (system_state =3D=3D SYSTEM_BOOTING) {
++		int nid =3D nearest_non_pm_node(pgdat->node_id);
++		=
+
+ 		zone->wait_table =3D (wait_queue_head_t *)
+-			alloc_bootmem_node(pgdat, alloc_size);
++			alloc_bootmem_node(NODE_DATA(nid), alloc_size);
+ 	} else {
+ 		/*
+ 		 * This case means that a zone whose size was 0 gets new memory
+@@ -3215,8 +3217,11 @@
+ 		end =3D ALIGN(end, MAX_ORDER_NR_PAGES);
+ 		size =3D  (end - start) * sizeof(struct page);
+ 		map =3D alloc_remap(pgdat->node_id, size);
+-		if (!map)
+-			map =3D alloc_bootmem_node(pgdat, size);
++		if (!map) {
++			int nid =3D nearest_non_pm_node(pgdat->node_id);
++
++			map =3D alloc_bootmem_node(NODE_DATA(nid), size);
++		}
+ 		pgdat->node_mem_map =3D map + (pgdat->node_start_pfn - start);
+ 		printk(KERN_DEBUG
+ 			"Node %d memmap at 0x%p size %lu first pfn 0x%p\n",
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/m=
+m/slab.c linux-2.6.21rc3mm2-monroe/mm/slab.c
+--- linux-2.6.21rc3mm2/mm/slab.c	2007-03-08 11:14:20.000000000 -0800
++++ linux-2.6.21rc3mm2-monroe/mm/slab.c	2007-03-09 10:23:25.000000000 -0800
+@@ -3399,6 +3399,7 @@
+ 	if (unlikely(nodeid =3D=3D -1))
+ 		nodeid =3D numa_node_id();
+ =
+
++	nodeid =3D nearest_non_pm_node(nodeid);
+ 	if (unlikely(!cachep->nodelists[nodeid])) {
+ 		/* Node not bootstrapped yet */
+ 		ptr =3D fallback_alloc(cachep, flags);
+@@ -3672,6 +3673,7 @@
+ #ifdef CONFIG_NUMA
+ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int no=
+deid)
+ {
++	nodeid =3D nearest_non_pm_node(nodeid);
+ 	return __cache_alloc_node(cachep, flags, nodeid,
+ 			__builtin_return_address(0));
+ }
+diff -urN -X linux-2.6.21rc3mm2/Documentation/dontdiff linux-2.6.21rc3mm2/m=
+m/sparse.c linux-2.6.21rc3mm2-monroe/mm/sparse.c
+--- linux-2.6.21rc3mm2/mm/sparse.c	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.21rc3mm2-monroe/mm/sparse.c	2007-03-09 10:23:25.000000000 -08=
+00
+@@ -49,7 +49,8 @@
+ 	struct mem_section *section =3D NULL;
+ 	unsigned long array_size =3D SECTIONS_PER_ROOT *
+ 				   sizeof(struct mem_section);
+-
++	=
+
++	nid =3D nearest_non_pm_node(nid);
+ 	if (slab_is_available())
+ 		section =3D kmalloc_node(array_size, GFP_KERNEL, nid);
+ 	else
+@@ -215,6 +216,7 @@
+ 	struct mem_section *ms =3D __nr_to_section(pnum);
+ 	int nid =3D sparse_early_nid(ms);
+ =
+
++	nid =3D nearest_non_pm_node(nid);
+ 	map =3D alloc_remap(nid, sizeof(struct page) * PAGES_PER_SECTION);
+ 	if (map)
+ 		return map;
