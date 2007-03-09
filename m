@@ -1,73 +1,51 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Date: Fri, 9 Mar 2007 07:44:40 +0100
-Message-ID: <20070309064440.GD1983@elf.ucw.cz>
-References: <20070225175559.GC12392@stusta.de>
-	<20070227100202.GV3822@kernel.dk>
-	<20070227102109.GG6745@elf.ucw.cz>
-	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
-	<20070305084257.GA4464@mellanox.co.il>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Date: Fri, 9 Mar 2007 11:56:35 +0100
+Message-ID: <20070309105635.GA11635@elte.hu>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
 Content-Disposition: inline
-In-Reply-To: <20070305084257.GA4464@mellanox.co.il>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
+Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
+List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
+List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
+List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
+List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> Pavel, I tried with your .config, and indeed the system came back to life=
- after
-> 2-3 minutes after I press Fn/F4, indeed the issue seems to be with the di=
-sk.
-> It could be that the same takes place with my original .config - maybe
-> I just wasn't patient enough. I'll need to re-test that.
-> =
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> However, I noticed that, after resume, when the system is presumably func=
-tional,
-> if I try to suspend to ram again, this second suspend hangs, displaying
-> the following on screen:
-> =
+> > disabling the following radeonfb options in the .config made resume 
+> > work again:
+> 
+> In general, don't even *try* to use radeonfb for suspend/resume.
+> 
+> I don't think it has ever worked, except on some very rare laptops 
+> (largely PPC Macs) where people had enough information to set up the 
+> PLL's.
+> 
+> I don't think the other framebuffer drivers are much better.
+> 
+> You're better off using the VGA console, and lettign X re-initialize 
+> the graphics device. That generally at least has a reasonably good 
+> chance of working.
+> 
+> Re-initializing graphics modes really is very hard. You can try with 
+> the BIOS video hack (I forget the kernel command line to turn it on), 
+> but we really do end up depending on X doing it better.
 
-> [   17.170000] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low)=
- -> IRQ 20
-> [   17.170000] PCI: Setting latency timer of device 0000:02:00.0 to 64
-> [   17.250000] e1000: 0000:02:00.0: e1000_probe: (PCI Express:2.5Gb/s:Wid=
-th x1) 00:16:41:5
-> 4:6c:47
-> [   17.330000] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connec=
-tion
-> =
+it's the s3_sleep boot option and /proc/sys/kernel/acpi_video_mode, but 
+that didnt make a difference.
 
-> the crescent LED starts blinking and does not seem to stop for at lest 10=
- min,
-> I've run out of patience after that. It could be that it's just very slow=
- again.
-> =
+> Some day we may have modesetting support in the kernel for some 
+> graphics hw, right now it's pretty damn spotty.
 
-> Pavel, did you try suspend to RAM after a successfull resume from
-> RAM?
+having no video is what i'd have expected - but getting a /hang/ is not 
+what i'd have expected.
 
-Seems to work ok in -rc3... as long as I do not mix s2ram with s2disk.
-
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+	Ingo
