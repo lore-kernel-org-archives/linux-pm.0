@@ -1,17 +1,20 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Date: Thu, 8 Mar 2007 15:49:17 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	<20070305015034.GG3441@stusta.de>
-	<20070308123143.GF5149@mellanox.co.il>
-	<Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-	<20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Date: Fri, 9 Mar 2007 07:44:40 +0100
+Message-ID: <20070309064440.GD1983@elf.ucw.cz>
+References: <20070225175559.GC12392@stusta.de>
+	<20070227100202.GV3822@kernel.dk>
+	<20070227102109.GG6745@elf.ucw.cz>
+	<20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
+	<20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
+	<20070301093450.GA8508@elte.hu> <20070302100704.GB2293@elf.ucw.cz>
+	<20070305084257.GA4464@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070308230705.GA4611@elte.hu>
+Content-Disposition: inline
+In-Reply-To: <20070305084257.GA4464@mellanox.co.il>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -21,43 +24,50 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Jens Axboe <jens.axboe@oracle.com>, linux-input@atrey.karlin.mff.cuni.cz, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-usb-devel@lists.sourceforge.net, Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Daniel Walker <dwalker@mvista.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jens Axboe <jens.axboe@oracle.com>, Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-
-On Fri, 9 Mar 2007, Ingo Molnar wrote:
+> Pavel, I tried with your .config, and indeed the system came back to life=
+ after
+> 2-3 minutes after I press Fn/F4, indeed the issue seems to be with the di=
+sk.
+> It could be that the same takes place with my original .config - maybe
+> I just wasn't patient enough. I'll need to re-test that.
 > =
 
-> disabling the following radeonfb options in the .config made resume work =
+> However, I noticed that, after resume, when the system is presumably func=
+tional,
+> if I try to suspend to ram again, this second suspend hangs, displaying
+> the following on screen:
+> =
 
-> again:
+> [   17.170000] ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 16 (level, low)=
+ -> IRQ 20
+> [   17.170000] PCI: Setting latency timer of device 0000:02:00.0 to 64
+> [   17.250000] e1000: 0000:02:00.0: e1000_probe: (PCI Express:2.5Gb/s:Wid=
+th x1) 00:16:41:5
+> 4:6c:47
+> [   17.330000] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connec=
+tion
+> =
 
-In general, don't even *try* to use radeonfb for suspend/resume.
+> the crescent LED starts blinking and does not seem to stop for at lest 10=
+ min,
+> I've run out of patience after that. It could be that it's just very slow=
+ again.
+> =
 
-I don't think it has ever worked, except on some very rare laptops =
+> Pavel, did you try suspend to RAM after a successfull resume from
+> RAM?
 
-(largely PPC Macs) where people had enough information to set up the =
+Seems to work ok in -rc3... as long as I do not mix s2ram with s2disk.
 
-PLL's.
+									Pavel
+-- =
 
-I don't think the other framebuffer drivers are much better.
-
-You're better off using the VGA console, and lettign X re-initialize the =
-
-graphics device. That generally at least has a reasonably good chance of =
-
-working.
-
-Re-initializing graphics modes really is very hard. You can try with the =
-
-BIOS video hack (I forget the kernel command line to turn it on), but we =
-
-really do end up depending on X doing it better.
-
-Some day we may have modesetting support in the kernel for some graphics =
-
-hw, right now it's pretty damn spotty.
-
-		Linus
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
