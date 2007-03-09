@@ -1,123 +1,44 @@
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Fri, 09 Mar 2007 15:06:30 -0800
-Message-ID: <45F1E876.5090102@intel.com>
-References: <20070227103021.GA2250@kernel.dk>
-	<20070227103407.GA17819@elte.hu>	<20070227105922.GD2250@kernel.dk>
-	<20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu>
-	<20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu>
-	<45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com>
-	<20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com>	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>	<45EEE8CF.1060803@intel.com>
-	<45EEEC2C.5090609@intel.com>
-	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Date: Sat, 10 Mar 2007 00:35:08 +0100
+Message-ID: <20070309233508.GB2197@elf.ucw.cz>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org> <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il> <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org> <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org> <20070309174821.GA31754@linuxtv.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <m1649cdfas.fsf@ebiederm.dsl.xmission.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
+Content-Disposition: inline
+In-Reply-To: <20070309174821.GA31754@linuxtv.org>
+Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
+List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
+List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
+List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
+List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+To: Johannes Stezenbach <js@linuxtv.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.
 List-Id: linux-pm@vger.kernel.org
 
-Eric W. Biederman wrote:
+Hi!
 
-[CHOP]
-
-> Below is an additional set of warnings that should help debug this.
-> The old code just got lucky that it triggered a warning when this happens.
-
-
-I'm trying this patch together with the other 2 that you sent out a few day=
-s =
-
-ago. I'm seeing some minor issues with this and lots of bogus warnings as f=
-ar as =
-
-I can see.
-
-If I suspend/resume and unload e1000, then reinsert e1000.ko, I immediately=
- hit =
-
-the WARN_ON at `msi.c:516: WARN_ON(!hlist_empty(&dev->saved_cap_space));`
-
-I'm not sure that's useful debugging information. even though saved state e=
-xists =
-
-the module has been removed, so you might want to purge the state table whe=
-n the =
-
-driver gets removed?
+> > You're better off using the VGA console, and lettign X re-initialize the 
+> > graphics device. That generally at least has a reasonably good chance of 
+> > working.
+> > 
+> > Re-initializing graphics modes really is very hard. You can try with the 
+> > BIOS video hack (I forget the kernel command line to turn it on), but we 
+> > really do end up depending on X doing it better.
+> 
+> acpi_sleep=s3_bios has always worked for me on my ThinkPad T42p.
+> 
+> Even if one doesn't use the fb console at all, radeonfb apparently
+> is still required on some ThinkPad models to work around BIOS bugs:
+> 
+> http://www.thinkwiki.org/wiki/Problem_with_high_power_drain_in_ACPI_sleep#Radeon_GPU_not_powered_off
 
 
-anyway, back to testing.
+s2ram should be able to work around this, it has parts from
+radeontool. (suspend.sf.net).
 
-Auke
 
-> =
-
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index 01869b1..5113913 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -613,6 +613,7 @@ int pci_enable_msi(struct pci_dev* dev)
->  		return -EINVAL;
->  =
-
->  	WARN_ON(!!dev->msi_enabled);
-> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
->  =
-
->  	/* Check whether driver already requested for MSI-X irqs */
->  	if (dev->msix_enabled) {
-> @@ -638,6 +639,8 @@ void pci_disable_msi(struct pci_dev* dev)
->  	if (!dev->msi_enabled)
->  		return;
->  =
-
-> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
-> +
->  	msi_set_enable(dev, 0);
->  	pci_intx(dev, 1);		/* enable intx */
->  	dev->msi_enabled =3D 0;
-> @@ -739,6 +742,7 @@ int pci_enable_msix(struct pci_dev* dev, struct msix_=
-entry *entries, int nvec)
->  		}
->  	}
->  	WARN_ON(!!dev->msix_enabled);
-> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
->  =
-
->  	/* Check whether driver already requested for MSI irq */
->     	if (dev->msi_enabled) {
-> @@ -763,6 +767,8 @@ void pci_disable_msix(struct pci_dev* dev)
->  	if (!dev->msix_enabled)
->  		return;
->  =
-
-> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
-> +
->  	msix_set_enable(dev, 0);
->  	pci_intx(dev, 1);		/* enable intx */
->  	dev->msix_enabled =3D 0;
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index bd44a48..4418839 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -677,6 +677,7 @@ pci_restore_state(struct pci_dev *dev)
->  	}
->  	pci_restore_pcix_state(dev);
->  	pci_restore_msi_state(dev);
-> +	WARN_ON(!hlist_empty(&dev->saved_cap_space));
->  =
-
->  	return 0;
->  }
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
