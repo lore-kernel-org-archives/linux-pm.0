@@ -1,10 +1,10 @@
 From: Sridhar Rao V <sridharraov@tataelxsi.co.in>
-Subject: [Power Management]:How do I move the system to idle mode
-Date: Sat, 10 Mar 2007 17:16:37 +0530
-Message-ID: <200703101145.CGX92985@tataelxsi.co.in>
+Subject: :How do I move the system to idle mode
+Date: Sat, 10 Mar 2007 17:25:22 +0530
+Message-ID: <200703101154.CGX93234@tataelxsi.co.in>
 Reply-To: Sridhar Rao V <sridharraov@tataelxsi.co.in>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0101550326=="
+Content-Type: multipart/mixed; boundary="===============1270080870=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -20,16 +20,16 @@ List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
---===============0101550326==
+--===============1270080870==
 Content-Type: multipart/alternative;
-    boundary="----------=_1173527216-27327-275"
+    boundary="----------=_1173527708-27327-292"
 Content-Transfer-Encoding: binary
 MIME-Version: 1.0
 X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
 This is a multi-part message in MIME format...
 
-------------=_1173527216-27327-275
+------------=_1173527708-27327-292
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -70,7 +70,7 @@ Sridhar.
  
 
 
-------------=_1173527216-27327-275
+------------=_1173527708-27327-292
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -81,7 +81,7 @@ _xmlns:w=3D"urn:schemas-microsoft-com:office:word" DEFANGED_xmlns=3D"http:/=
 /www.w3.org/TR/REC-html40">
 
 <head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii">
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
 <meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
 <DEFANGED_style>
 <!--
@@ -102,9 +102,16 @@ a:visited, span.MsoHyperlinkFollowed
 	{color:purple;
 	text-decoration:underline;}
 span.EmailStyle17
-	{mso-style-type:personal-compose;
+	{mso-style-type:personal;
 	font-family:Garamond;
 	color:windowtext;
+	font-weight:normal;
+	font-style:normal;
+	text-decoration:none none;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Garamond;
+	color:navy;
 	font-weight:normal;
 	font-style:normal;
 	text-decoration:none none;}
@@ -204,13 +211,13 @@ font-family:Garamond"><o:p>&nbsp;</o:p></span></font></p>
 
 </html>
 
-------------=_1173527216-27327-275--
+------------=_1173527708-27327-292--
 
---===============0101550326==
+--===============1270080870==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============0101550326==--
+--===============1270080870==--
