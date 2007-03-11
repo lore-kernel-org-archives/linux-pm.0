@@ -1,20 +1,16 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2/6] 2.6.21-rc2: known regressions
-Date: Sun, 11 Mar 2007 09:20:02 +0100
-Message-ID: <20070311082002.GA4013@elte.hu>
-References: <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-	<20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
-	<Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
-	<20070309174821.GA31754@linuxtv.org>
-	<20070309233508.GB2197@elf.ucw.cz> <20070310090121.GB15647@elte.hu>
-	<20070310114301.GA30554@suse.de> <20070310151804.GA10627@elte.hu>
-	<20070310220810.GF2758@elf.ucw.cz>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: Re: SATA resume slowness, e1000 MSI warning
+Date: Sun, 11 Mar 2007 05:11:59 -0600
+Message-ID: <m1wt1oyqyo.fsf@ebiederm.dsl.xmission.com>
+References: <20070227103021.GA2250@kernel.dk>
+	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>
+	<20070308102354.GC5149@mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20070310220810.GF2758@elf.ucw.cz>
+In-Reply-To: <20070308102354.GC5149@mellanox.co.il> (Michael S. Tsirkin's
+	message of "Thu, 8 Mar 2007 12:23:54 +0200")
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -24,56 +20,108 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: Ash Milsted <thatistosayiseenem@gawab.com>, Johannes Stezenbach <js@linuxtv.org>, Arkadiusz Miskiewicz <arekm@maven.pl>, linux-pm@lists.osdl.org, Jens Axboe <jens.axboe@oracle.com>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, dmitry.torokhov@gmail.com, Stefan Seyfried <seife@suse.de>, linux-usb-devel@lists.sourceforge.net, Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+"Michael S. Tsirkin" <mst@mellanox.co.il> writes:
 
-* Pavel Machek <pavel@suse.cz> wrote:
+>> The only case I can see which might trigger this is if we saved
+>> pci-X state and then didn't restore it because we could not find
+>> the capability on restore.
+>
+> Hmm. pci_save_pcix_state/pci_restore_pcix_state seem to only handle
+> regular devices and seem to ignore the fact that for bridge PCI-X
+> capability has a different structure.
+>
+> Is this intentional? =
 
-> > Probably tweaking the webpage doesnt help because people dont get =
 
-> > there - as the results plainly show it. Maybe some more automation =
+Probably not a such.  I don't think we have any drivers for bridge
+devices so I don't think it matters.  It likely wouldn't hurt to fix
+it just in case though.
 
-> > would be useful too, a tool that detects failed resume and tries all =
+Do any of the mellanox cards do anything with the bridge on the card?
 
-> > those options that makes sense on that box or something? It's not =
+> If not, here's a patch to fix this. Warning: completely untested.
 
-> > like that
-> =
+If you fix the offsets and diff this against my last fix (to never
+free the buffer) I think your patch makes sense.
 
-> Unfortunately, these tend to crash the box when you pass wrong =
+> PCI: restore bridge PCI-X capability registers after PM event
+>
+> Restore PCI-X bridge up/downstream capability registers
+> after PM event.  This includes maxumum split transaction
+> commitment limit which might be vital for PCI X.
+>
+> Signed-off-by: Michael S. Tsirkin <mst@mellanox.co.il>
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index df49530..4b788ef 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -597,14 +597,19 @@ static int pci_save_pcix_state(struct pci_dev *dev)
+>  	if (pos <=3D 0)
+>  		return 0;
+>  =
 
-> options, and I do not see easy way to test "can user see whats on =
+> -	save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
+> + save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16) * 2, GFP_KERNE=
+L);
+>  	if (!save_state) {
+> -		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
+> +		dev_err(&dev->dev, "Out of memory in pci_save_pcix_state\n");
+>  		return -ENOMEM;
+>  	}
+>  	cap =3D (u16 *)&save_state->data[0];
+>  =
 
-> display" automatically.
+> -	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
+> +	if (dev->hdr_type =3D=3D PCI_HEADER_TYPE_BRIDGE) {
 
-you could perhaps try what X's modesetting utility does: display a =
+This appears to be the proper test.
 
-dialog box that times out if it does not get clicked on, and reboot if =
+> + pci_read_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, &cap[i++]);
+> + pci_read_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, &cap[i++]);
+> +	} else
+> +		pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
+> +
+>  	pci_add_saved_cap(dev, save_state);
+>  	return 0;
+>  }
+> @@ -621,7 +626,11 @@ static void pci_restore_pcix_state(struct pci_dev *d=
+ev)
+>  		return;
+>  	cap =3D (u16 *)&save_state->data[0];
+>  =
 
-it did not get clicked on. Likewise, detect upon the next bootup that a =
+> -	pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
+> +	if (dev->hdr_type =3D=3D PCI_HEADER_TYPE_BRIDGE) {
+> + pci_write_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, cap[i++]);
+> + pci_write_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, cap[i++]);
 
-suspend-test was in progress (and didnt get back via normal resume), via =
+These look like the proper two registers to save.
 
-some temporary file. That way both the 'did not resume and i had to =
+> +	} else
+> +		pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
+>  	pci_remove_saved_cap(save_state);
+>  	kfree(save_state);
+>  }
+> diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
+> index f09cce2..fb7eefd 100644
+> --- a/include/linux/pci_regs.h
+> +++ b/include/linux/pci_regs.h
+> @@ -332,6 +332,8 @@
+>  #define PCI_X_STATUS_SPL_ERR 0x20000000 /* Rcvd Split Completion Error M=
+sg */
+>  #define  PCI_X_STATUS_266MHZ	0x40000000	/* 266 MHz capable */
+>  #define  PCI_X_STATUS_533MHZ	0x80000000	/* 533 MHz capable */
+> +#define PCI_X_BRIDGE_UP_SPL_CTL 10 /* PCI-X upstream split transaction l=
+imit */
+> +#define PCI_X_BRIDGE_DN_SPL_CTL 14 /* PCI-X downstream split transaction=
+ limit */
 
-power-cycle' and the 'resume did not restore my X' problems can be =
+Unless I am completely misreading the spec. While you have picked the
+right register to save the offsets should be 0x08 and 0x0c or 8 and 12....
 
-handled.
-
-Finally, when the correct options have been established (worse-case with =
-
-a small number of reboots and "yes, indeed the resume did not work fine" =
-
-clicks done upon bootup by the user), automatically fill in a webform in =
-
-firefox and ask the user to do a single click to submit that form.
-
-techniques like that have more chance i think to get Linux =
-
-suspend/resume anywhere near to working. The current 'rely on the =
-
-developer' technique apparently does not work.
-
-	Ingo
+Eric
