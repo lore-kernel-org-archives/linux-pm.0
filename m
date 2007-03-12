@@ -1,18 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re:
-	=?iso-8859-1?q?SMP_suspend_broken_due_to_=22swsusp=3A_?=
-	=?iso-8859-1?q?Change_code=09ordering_in_disk=2Ec=22_et_al=2E?=
-Date: Mon, 12 Mar 2007 19:14:16 +0100
-Message-ID: <200703121914.16625.rjw@sisk.pl>
-References: <1172201385.15769.32.camel@johannes.berg>
-	<200702242154.27167.rjw@sisk.pl>
-	<loom.20070312T173052-675@post.gmane.org>
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH 2/2] pci: Repair pci_save/restore_state so we
+ can restore one save many times.
+Date: Mon, 12 Mar 2007 15:46:44 -0700
+Message-ID: <45F5D854.5020100@intel.com>
+References: <20070227103021.GA2250@kernel.dk>	<20070227105922.GD2250@kernel.dk>
+	<20070227111515.GA4271@kernel.dk>	<20070301093450.GA8508@elte.hu>
+	<20070302100704.GB2293@elf.ucw.cz>	<20070305084257.GA4464@mellanox.co.il>	<20070305101120.GA23032@elte.hu>
+	<45ECFC5F.7000102@garzik.org>	<45ED0BBF.1050000@intel.com>
+	<20070306090444.GA25409@elte.hu>	<45ED8A12.5040803@intel.com>	<m1ejo1elj6.fsf@ebiederm.dsl.xmission.com>	<45EEE8CF.1060803@intel.com>
+	<45EEEC2C.5090609@intel.com>	<m1649cdfas.fsf@ebiederm.dsl.xmission.com>	<20070307185317.5601d452.akpm@linux-foundation.org>	<m1wt1s6x2p.fsf@ebiederm.dsl.xmission.com>	<45EFDD8C.3070702@garzik.org>	<m1abyn7iin.fsf@ebiederm.dsl.xmission.com>	<m1tzwv5wz9.fsf_-_@ebiederm.dsl.xmission.com>	<m1ps7j5wnq.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1lki75wlm.fsf_-_@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <loom.20070312T173052-675@post.gmane.org>
-Content-Disposition: inline
+In-Reply-To: <m1lki75wlm.fsf_-_@ebiederm.dsl.xmission.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,91 +24,125 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: linux-pm@lists.osdl.org
-Cc: Roman Jarosz <kedgedev@centrum.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, michael@ellerman.id.au, linux-pci@atrey.karlin.mff.cuni.cz, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Monday, 12 March 2007 17:57, Roman Jarosz wrote:
-> Rafael J. Wysocki <rjw <at> sisk.pl> writes:
+Eric W. Biederman wrote:
+> Because we do not reserve space for the pci-x and pci-e state in struct
+> pci dev we need to dynamically allocate it.  However because we need
+> to support restore being called multiple times after a single save
+> it is never safe to free the buffers we have allocated to hold the
+> state.
 > =
 
-> > =
-
-> > On Saturday, 24 February 2007 09:57, Rafael J. Wysocki wrote:
-> > > On Saturday, 24 February 2007 01:31, Johannes Berg wrote:
-> > > > Hi,
-> > > > =
-
-> > > > > Could you please try the appended patch?  It's somewhat hackish, =
-but =
-
-> may work.
-> > > > =
-
-> > > > Not before Monday or Tuesday unfortunately, I'm away from the machi=
-ne.
-> > > =
-
-> > > Okay, no big deal.  I think I'll be able to reproduce the problem her=
-e. =
-
-> > > =
-
-> > > > Maybe I can find someone else willing to test who has the same box.
-> > > > =
-
-> > > > > The idea is to do nothing on CPU unplug if the CPU's worker threa=
-d is =
-
-> frozen
-> > > > > and later check in the thread itself if it has been replaced by a=
-nother =
-
-> one.
-> > > > =
-
-> > > > Yeah that should work. That patch won't apply to my tree though unl=
-ess I
-> > > > actually go to -mm2 as well :)
-> > > =
-
-> > > Ah, sorry.  I'll prepare a version against 2.6.21-rc1.  Apart from th=
-is, I
-> > > think there's a better solution, but I have to verify that.
-> > =
-
-> > No, this one is better IMO.
-> > =
-
-> > Appended is the version against 2.6.21-rc1.  It seems to work for me, b=
-ut I'd
-> > like someone else to confirm it.
-> > =
-
+> So this patch modifies the save routines to first check to see
+> if we have already allocated a state buffer before allocating
+> a new one.  Then the restore routines are modified to not free
+> the state after restoring it.  Simple and it fixes some subtle
+> error path handling bugs, that are hard to test for.
 > =
 
-> I had the same problem as Johannes and I can confirm that your patch work=
-s.
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-Thanks for testing, but I'm afraid it won't be merged.  Instead, we have
-decided to make the XFS workqueues nonfreezable again, but the patch for
-that hasn't made it to the mainline yet (it was sent to the XFS maintainers
-some time ago).
 
-> Though I'm not sure if it's caused by XFS because I don't have any XFS =
+I tested this patch and the other 2 in this series:
 
-> partitions, but I have XFS support compiled in kernel.
+[PATCH 0/2] Repair pci_restore_state when used with device resets
+[PATCH 1/2] msi: Safer state caching.
 
-This probably is enough to trigger the problem.
+against e1000 with suspend/resume functionality. Apart from a minor symmetr=
+y =
 
-> My root partition is reiserfs.
+violation in e1000 for which I will send a patch later, these patches appea=
+r to =
+
+work fine on my ich8 with 5 msi capable e1000 ports.
+
+Feel free to add my Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+
+Cheers,
+
+Auke
+
+
+
+> ---
+>  drivers/pci/pci.c   |   12 ++++++------
+>  include/linux/pci.h |    5 -----
+>  2 files changed, 6 insertions(+), 11 deletions(-)
 > =
 
-> Tested with suspend to ram on:
-> kernel 2.6.21-rc3-git7
-> Notebook ASUS A6JC, Intel Core Duo
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 6fb78df..b292c9a 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -551,7 +551,9 @@ static int pci_save_pcie_state(struct pci_dev *dev)
+>  	if (pos <=3D 0)
+>  		return 0;
+>  =
 
-Greetings,
-Rafael
+> -	save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERNE=
+L);
+> +	save_state =3D pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
+> +	if (!save_state)
+> +		save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16) * 4, GFP_KERN=
+EL);
+>  	if (!save_state) {
+>  		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
+>  		return -ENOMEM;
+> @@ -582,8 +584,6 @@ static void pci_restore_pcie_state(struct pci_dev *de=
+v)
+>  	pci_write_config_word(dev, pos + PCI_EXP_LNKCTL, cap[i++]);
+>  	pci_write_config_word(dev, pos + PCI_EXP_SLTCTL, cap[i++]);
+>  	pci_write_config_word(dev, pos + PCI_EXP_RTCTL, cap[i++]);
+> -	pci_remove_saved_cap(save_state);
+> -	kfree(save_state);
+>  }
+>  =
+
+>  =
+
+> @@ -597,7 +597,9 @@ static int pci_save_pcix_state(struct pci_dev *dev)
+>  	if (pos <=3D 0)
+>  		return 0;
+>  =
+
+> -	save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
+> +	save_state =3D pci_find_saved_cap(dev, PCI_CAP_ID_EXP);
+> +	if (!save_state)
+> +		save_state =3D kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
+>  	if (!save_state) {
+>  		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
+>  		return -ENOMEM;
+> @@ -622,8 +624,6 @@ static void pci_restore_pcix_state(struct pci_dev *de=
+v)
+>  	cap =3D (u16 *)&save_state->data[0];
+>  =
+
+>  	pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
+> -	pci_remove_saved_cap(save_state);
+> -	kfree(save_state);
+>  }
+>  =
+
+>  =
+
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 78417e4..481ea06 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -209,11 +209,6 @@ static inline void pci_add_saved_cap(struct pci_dev =
+*pci_dev,
+>  	hlist_add_head(&new_cap->next, &pci_dev->saved_cap_space);
+>  }
+>  =
+
+> -static inline void pci_remove_saved_cap(struct pci_cap_saved_state *cap)
+> -{
+> -	hlist_del(&cap->next);
+> -}
+> -
+>  /*
+>   *  For PCI devices, the region numbers are assigned this way:
+>   *
