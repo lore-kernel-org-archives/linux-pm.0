@@ -1,71 +1,66 @@
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Date: Mon, 12 Mar 2007 06:35:09 +0200
-Message-ID: <20070312043509.GC19601@mellanox.co.il>
-References: <20070311183709.GB19601@mellanox.co.il>
-	<m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [2/6] 2.6.21-rc2: known regressions
+Date: Mon, 12 Mar 2007 07:34:09 +0100
+Message-ID: <20070312063409.GA30551@suse.de>
+References: <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu> <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org> <20070309174821.GA31754@linuxtv.org> <20070309233508.GB2197@elf.ucw.cz> <20070310090121.GB15647@elte.hu> <20070310114301.GA30554@suse.de> <20070310151804.GA10627@elte.hu> <20070310220810.GF2758@elf.ucw.cz> <20070311082002.GA4013@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <m1mz2jv9ue.fsf@ebiederm.dsl.xmission.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070311082002.GA4013@elte.hu>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@suse.cz>, Johannes Stezenbach <js@linuxtv.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-pm@lists.osdl.org, lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com, Arkadiusz Miskiewicz <arekm@maven.pl>, Konstantin Karasyov <konstantin.a.karasyov@intel.com>, Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>, Meelis Roos <mroos@linux.ee>, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, Janosch Machowinski <jmachowinski@gmx.de>, vladimir.p.lebedev@intel.com, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail
 List-Id: linux-pm@vger.kernel.org
 
-> Quoting Eric W. Biederman <ebiederm@xmission.com>:
-> Subject: Re: SATA resume slowness, e1000 MSI warning
-> =
+On Sun, Mar 11, 2007 at 09:20:02AM +0100, Ingo Molnar wrote:
+> 
+> * Pavel Machek <pavel@suse.cz> wrote:
+> > Unfortunately, these tend to crash the box when you pass wrong 
+> > options, and I do not see easy way to test "can user see whats on 
+> > display" automatically.
+> 
+> you could perhaps try what X's modesetting utility does: display a 
+> dialog box that times out if it does not get clicked on, and reboot if 
+> it did not get clicked on. Likewise, detect upon the next bootup that a 
+> suspend-test was in progress (and didnt get back via normal resume), via 
+> some temporary file. That way both the 'did not resume and i had to 
+> power-cycle' and the 'resume did not restore my X' problems can be 
+> handled.
+> 
+> Finally, when the correct options have been established (worse-case with 
+> a small number of reboots and "yes, indeed the resume did not work fine" 
+> clicks done upon bootup by the user), automatically fill in a webform in 
+> firefox and ask the user to do a single click to submit that form.
 
-> "Michael S. Tsirkin" <mst@mellanox.co.il> writes:
-> =
+There is ongoing work to make something like this happen, but it will
+take some time (very probably the whitelist will end up in a HAL fdi-file
+which gives the additional advantage that interested vendors can supply a
+linux-"driver" for their notebooks which makes suspend "just work" (the
+"driver" simply being a .fdi-file that lists the workaround for this
+particular machine)
 
-> > OK I guess. I gather we assume writing read-only registers has no side =
-effects?
-> > Are there rumors circulating wrt to these?
-> =
+> techniques like that have more chance i think to get Linux 
+> suspend/resume anywhere near to working. The current 'rely on the 
+> developer' technique apparently does not work.
 
-> I haven't heard anything about that, and if we are writing the same value=
- back
-> it should be pretty safe.
-> =
+It is not too bad actually, i seem to be getting lots of whitelist
+entries from people that are first time shell users, and i usually
+walk them through the process in just one or two mails. But yes, it
+does not scale well ;-)
 
-> I have heard it asserted that at least one version of the pci spec
-> only required 32bit accesses to be supported by the hardware.  One of
-> these days I will have to look that and see if it is true.
+I was already thinking about some more sophisticated "wildcard" matching,
+something like "if it is a HP and it has an ATI gfx chip, and we do
+not have an exact match, then do VBE_POST|VBE_MODE" or similar, which
+would probably get many machines working fine (it turns out that almost
+all new machines from a vendor with similar hardware need similar
+workarounds, but for example the hp's with ATI need different quirks
+than the hp's with intel. Only thinkpads seem to almost universally work
+with s3_bios,s3_mode, with some x86_64 models being the exception).
+Something like that should be pretty easy once the whitelist is kept
+in HAL.
+-- 
+Stefan Seyfried
 
-Maybe. But surely before the PCI-X days.
-
-> I do know
-> it can be weird for hardware developers to support multiple kinds of
-> decode.
-
-Is this the only place where Linux uses pci_read_config_word/pci_read_confi=
-g_dword?
-I think such hardware will be pretty much DOA on all OS-es.  Why don't we w=
-ait
-and see whether someone reports a broken config?
-
-> As I recall for pci and pci-x at the hardware level the only
-> difference in between 32bit transactions and smaller ones is the state
-> of the byte-enable lines.
-
-True, and same holds for PCI-Express.
-
-So let's assume hardware implements RO correctly but ignores the BE bits -
-nothing bad happens then, right?
-
--- =
-
-MST
+"Any ideas, John?"
+"Well, surrounding them's out." 
