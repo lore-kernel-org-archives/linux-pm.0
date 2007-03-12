@@ -1,89 +1,92 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 21:45:14 +0100
-Message-ID: <20070320204514.GH3545@elf.ucw.cz>
-References: <200703182104.27555.david-b@pacbell.net>
-	<45FF24C3.1000203@gmail.com>
-	<200703200107.17290.david-b@pacbell.net>
-	<45FFAD39.1000302@gmail.com>
-	<1174386620.25744.23.camel@Dogbert.NOE.nokia.com>
-	<45FFDCA3.5060007@gmail.com>
-	<1174398759.25744.69.camel@Dogbert.NOE.nokia.com>
-	<45FFF697.8080101@gmail.com> <20070320153603.GB5533@elf.ucw.cz>
-	<46003329.6050808@gmail.com>
+From: Roman Jarosz <kedgedev@centrum.cz>
+Subject: Re:
+	=?utf-8?q?SMP_suspend_broken_due_to_=22swsusp=3A_Chang?=
+	=?utf-8?q?e_code=09ordering_in_disk=2Ec=22_et_al=2E?=
+Date: Mon, 12 Mar 2007 16:57:43 +0000 (UTC)
+Message-ID: <loom.20070312T173052-675@post.gmane.org>
+References: <1172201385.15769.32.camel@johannes.berg>
+	<1172277080.3870.108.camel@johannes.berg>
+	<200702240957.22636.rjw@sisk.pl> <200702242154.27167.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <46003329.6050808@gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org
+Return-path: <linux-pm-bounces@lists.osdl.org>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> >> Ok, seems you are happy with current clock framework and advocating it
-> >> to be as is.
-> >> Are you against addition some features to it, such as enable/disable =
-
-> >> "turn the unused clock off"
-> >
-> > What kind of debate is this?!
-> >
-> > Of course I and everyone else is against adding features without
-> > _really good_ explanation why this is needed. And no, you should not
-> > even ask unless you have patch ready, =
+Rafael J. Wysocki <rjw <at> sisk.pl> writes:
 
 > =
 
-> If I understand you correctly, you are against big debates unless a
-> patch is ready,
+> On Saturday, 24 February 2007 09:57, Rafael J. Wysocki wrote:
+> > On Saturday, 24 February 2007 01:31, Johannes Berg wrote:
+> > > Hi,
+> > > =
 
-You understood it well.
+> > > > Could you please try the appended patch?  It's somewhat hackish, bu=
+t =
 
-> I agree to that if someone tries to speculate on adding some feature
-> which is easily
+may work.
+> > > =
 
-But we do not want new subsystem. We want power management to
-work. Take a look how Alan added pm to usb... and just do it like
-him. If some code makes sense to be shared, share it. But start with
-support for platform you care about and don't overdesign it.
+> > > Not before Monday or Tuesday unfortunately, I'm away from the machine.
+> > =
 
-> can be shown as a patch, but before doing something more complex, say
-> new subsystem,
-> it is worth to make sure whether your intention makes sense at all, and
-> if it does
+> > Okay, no big deal.  I think I'll be able to reproduce the problem here. =
 
-No, your intention of adding subsystems does not make any
-sense. Satisfied?
+> > =
 
-> the first question would be:
+> > > Maybe I can find someone else willing to test who has the same box.
+> > > =
+
+> > > > The idea is to do nothing on CPU unplug if the CPU's worker thread =
+is =
+
+frozen
+> > > > and later check in the thread itself if it has been replaced by ano=
+ther =
+
+one.
+> > > =
+
+> > > Yeah that should work. That patch won't apply to my tree though unles=
+s I
+> > > actually go to -mm2 as well :)
+> > =
+
+> > Ah, sorry.  I'll prepare a version against 2.6.21-rc1.  Apart from this=
+, I
+> > think there's a better solution, but I have to verify that.
 > =
 
-> Q: Does Linux Power management take care about personal computers only?
-> A: ????
+> No, this one is better IMO.
+> =
 
-Linux Power management is not person, it is piece of code. Me, I care
-about arm, too.
+> Appended is the version against 2.6.21-rc1.  It seems to work for me, but=
+ I'd
+> like someone else to confirm it.
+> =
 
-> P.S. Are there special Etiquette notes for the list?
 
-I guess linux-kernel has nice set of rules, and they should apply
-here, too. Expect to defend your design on l-k sooner or later. =
+I had the same problem as Johannes and I can confirm that your patch works.
 
-								Pavel
--- =
+Though I'm not sure if it's caused by XFS because I don't have any XFS =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+partitions, but I have XFS support compiled in kernel.
+My root partition is reiserfs.
+
+Tested with suspend to ram on:
+kernel 2.6.21-rc3-git7
+Notebook ASUS A6JC, Intel Core Duo
+
+Thanks,
+Roman Jarosz
