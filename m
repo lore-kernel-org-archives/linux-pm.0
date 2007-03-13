@@ -1,15 +1,15 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [6/6] 2.6.21-rc3: known regressions
-Date: Tue, 13 Mar 2007 21:46:17 +0100
-Message-ID: <1173818777.13341.128.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
-	<20070313125025.GW18731@stusta.de>
-Reply-To: tglx@linutronix.de
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 2/3] swsusp: Do not use page flags
+Date: Tue, 13 Mar 2007 22:20:34 +0100
+Message-ID: <200703132220.35534.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
+	<200703131117.43818.rjw@sisk.pl> <45F67D9A.8020202@yahoo.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070313125025.GW18731@stusta.de>
+In-Reply-To: <45F67D9A.8020202@yahoo.com.au>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,28 +19,86 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Emil Karlson <jkarlson@cc.hut.fi>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephane Casset <sept@logidee.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>, Johannes Berg <johannes@sipsolutions.net>, Christoph Lameter <clameter@engr.sgi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-03-13 at 13:50 +0100, Adrian Bunk wrote:
-> This email lists some known regressions in Linus' tree compared to 2.6.20.
+On Tuesday, 13 March 2007 11:31, Nick Piggin wrote:
+> Rafael J. Wysocki wrote:
+> > On Tuesday, 13 March 2007 10:23, Nick Piggin wrote:
+> > =
+
 > =
 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way
-> possibly involved with one or more of these issues.
+> >>I wouldn't say that. You're creating an interface here that is going to=
+ be
+> >>used outside swsusp. Users of that interface may not need locking now, =
+but
+> >>that could cause problems down the line.
+> > =
+
+> > =
+
+> > I think we can add the locking when it's necessary.  For now, IMHO, it =
+could be
+> > confusing to someone who doesn't know the locking is not needed.
 > =
 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> Subject    : Clocksource tsc unstable (delta =3D -154983451 ns)
-> References : http://lkml.org/lkml/2007/3/9/271
-> Submitter  : Jiri Slaby <jirislaby@gmail.com>
-> Status     : unknown
+> I don't know why it would confuse them. We just define the API to
+> guarantee the correct locking, and that means the locking _is_ needed.
 
-That's not a regression. That's an informal message, when the TSC
-watchdog detects that the TSC is unreliable. =
+Even if there are no users that actually need the locking and probably never
+will be?
 
+For now, register_nosave_region() is to be called by architecture
+initialization code _only_ and there's no reason whatsoever why any
+architecture would need to call it concurrently from many places.
 
-	tglx
+> You don't have to care what the callers are doing. That's the beauty
+> of a sane API.
+
+Well, I don't think adding unneded infrastructure is a good thing.
+
+> >>Sure you don't _need_ an rbtree, but our implementation makes it so sim=
+ple
+> >>that there isn't much downside.
+> > =
+
+> > =
+
+> > Not much, but the code is more complicated.
+> =
+
+> But it's in its own file and has a contained API, so it is very easy
+> to review, test and verify.
+
+I'm still thinking that register_nosave_region() in its current form is sim=
+pler
+and easier to review than the code using rbtrees.  Still, of course this on=
+ly
+is my personal opinion. :-)
+
+> >>>mark_nosave_pages() refers to a function that's invisible outside snap=
+shot.c
+> >>>and I didn't think it was a good idea to separate mark_nosave_pages()
+> >>>from register_nosave_region().
+> >>
+> >>But that's because you even use mark_nosave_pages in your implementatio=
+n.
+> >>Mine uses the nosave regions directly.
+> > =
+
+> > =
+
+> > Well, I think we need two bits per page anyway, to mark free pages and
+> > pages allocated by swsusp, so using the nosave regions directly won't s=
+ave us
+> > much.
+> =
+
+> Well I think it is a cleaner though.
+
+This is a matter of opinion, too ...
+
+Greetings,
+Rafael
