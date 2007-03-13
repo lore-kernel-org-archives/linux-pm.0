@@ -1,15 +1,16 @@
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH 2/3] swsusp: Do not use page flags
-Date: Tue, 13 Mar 2007 21:31:54 +1100
-Message-ID: <45F67D9A.8020202@yahoo.com.au>
-References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
-	<200703131016.12935.rjw@sisk.pl> <45F66D9B.7000301@yahoo.com.au>
-	<200703131117.43818.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Alternative Concept
+Date: Tue, 13 Mar 2007 12:08:51 +0100
+Message-ID: <20070313110851.GB10702@elf.ucw.cz>
+References: <44ECFF94.3030506@gmail.com>
+	<20061007023620.GD30380@dominikbrodowski.de>
+	<CFF99858-3B0C-4492-807E-B61E9CA891E5@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200703131117.43818.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <CFF99858-3B0C-4492-807E-B61E9CA891E5@nomadgs.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -19,64 +20,32 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-mm@kvack.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>, Johannes Berg <johannes@sipsolutions.net>, Christoph Lameter <clameter@engr.sgi.com>
+To: Matthew Locke <matt@nomadgs.com>
+Cc: Eugeny Mints <eugeny@nomadgs.com>, pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday, 13 March 2007 10:23, Nick Piggin wrote:
-> =
+Hi!
 
+> I believe this power parameter framework should solve many (if not  =
 
->>I wouldn't say that. You're creating an interface here that is going to be
->>used outside swsusp. Users of that interface may not need locking now, but
->>that could cause problems down the line.
-> =
+> all) of the issues raised by using operating points as the base  =
 
-> =
+> abstraction and provide a common layer across architectures.  Eugeny  =
 
-> I think we can add the locking when it's necessary.  For now, IMHO, it co=
-uld be
-> confusing to someone who doesn't know the locking is not needed.
+> and I have the beginnings of an API proposal for this framework, but  =
 
-I don't know why it would confuse them. We just define the API to
-guarantee the correct locking, and that means the locking _is_ needed.
+> we wanted to get some high level feedback on the concepts so we can  =
 
-You don't have to care what the callers are doing. That's the beauty
-of a sane API.
+> adjust the API if necessary.  So, comments?
 
+Looks better than powerop certainly.
 
->>Sure you don't _need_ an rbtree, but our implementation makes it so simple
->>that there isn't much downside.
-> =
+Perhaps first step would be to convert cpufreq to this new framework?
 
-> =
-
-> Not much, but the code is more complicated.
-
-But it's in its own file and has a contained API, so it is very easy
-to review, test and verify.
-
-
->>>mark_nosave_pages() refers to a function that's invisible outside snapsh=
-ot.c
->>>and I didn't think it was a good idea to separate mark_nosave_pages()
->>>from register_nosave_region().
->>
->>But that's because you even use mark_nosave_pages in your implementation.
->>Mine uses the nosave regions directly.
-> =
-
-> =
-
-> Well, I think we need two bits per page anyway, to mark free pages and
-> pages allocated by swsusp, so using the nosave regions directly won't sav=
-e us
-> much.
-
-Well I think it is a cleaner though.
+								Pavel
 
 -- =
 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com =
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
