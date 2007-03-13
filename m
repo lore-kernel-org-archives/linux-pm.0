@@ -1,18 +1,15 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: Alternative Concept
-Date: Tue, 13 Mar 2007 13:34:58 -0700
-Message-ID: <20070313203458.GA1213@linux.intel.com>
-References: <44ECFF94.3030506@gmail.com>
-	<20061007023620.GD30380@dominikbrodowski.de>
-	<CFF99858-3B0C-4492-807E-B61E9CA891E5@nomadgs.com>
-	<20070313110851.GB10702@elf.ucw.cz>
-Reply-To: mgross@linux.intel.com
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [6/6] 2.6.21-rc3: known regressions
+Date: Tue, 13 Mar 2007 21:46:17 +0100
+Message-ID: <1173818777.13341.128.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0703062050570.5963@woody.linux-foundation.org>
+	<20070313125025.GW18731@stusta.de>
+Reply-To: tglx@linutronix.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-Content-Disposition: inline
-In-Reply-To: <20070313110851.GB10702@elf.ucw.cz>
+In-Reply-To: <20070313125025.GW18731@stusta.de>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -22,42 +19,28 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eugeny Mints <eugeny@nomadgs.com>, pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Emil Karlson <jkarlson@cc.hut.fi>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephane Casset <sept@logidee.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 13, 2007 at 12:08:51PM +0100, Pavel Machek wrote:
-> Hi!
+On Tue, 2007-03-13 at 13:50 +0100, Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
 > =
 
-> > I believe this power parameter framework should solve many (if not  =
-
-> > all) of the issues raised by using operating points as the base  =
-
-> > abstraction and provide a common layer across architectures.  Eugeny  =
-
-> > and I have the beginnings of an API proposal for this framework, but  =
-
-> > we wanted to get some high level feedback on the concepts so we can  =
-
-> > adjust the API if necessary.  So, comments?
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
 > =
 
-> Looks better than powerop certainly.
-> =
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> Subject    : Clocksource tsc unstable (delta =3D -154983451 ns)
+> References : http://lkml.org/lkml/2007/3/9/271
+> Submitter  : Jiri Slaby <jirislaby@gmail.com>
+> Status     : unknown
 
-> Perhaps first step would be to convert cpufreq to this new framework?
-
-The first step is to get a parameter framework in upstream.  =
-
-
-It will take some time for the applications of this proposed framework
-to materialize and drive the maturing of the implementation.  These
-won't get written unless a framework is upstream. =
+That's not a regression. That's an informal message, when the TSC
+watchdog detects that the TSC is unreliable. =
 
 
-I don't know if having cpufreq plug into this framework will ever make a
-lot of sense.  However; it would be simple to create a cpufreq driver
-that access the parameter layer for some selected platforms.  (N800?)
-
---mgross
+	tglx
