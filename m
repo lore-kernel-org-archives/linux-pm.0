@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 2/3] swsusp: Do not use page flags
-Date: Tue, 13 Mar 2007 22:20:34 +0100
-Message-ID: <200703132220.35534.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0702160212150.21862@schroedinger.engr.sgi.com>
-	<200703131117.43818.rjw@sisk.pl> <45F67D9A.8020202@yahoo.com.au>
+From: "Ikhwan Lee" <dlrghks@gmail.com>
+Subject: Re: Alternative Concept
+Date: Wed, 14 Mar 2007 11:30:02 +0900
+Message-ID: <484380240703131930n5e64a8fu9b935b0b513f0731@mail.gmail.com>
+References: <44ECFF94.3030506@gmail.com>
+	<20061007023620.GD30380@dominikbrodowski.de>
+	<CFF99858-3B0C-4492-807E-B61E9CA891E5@nomadgs.com>
+	<20070313110851.GB10702@elf.ucw.cz>
+	<20070313203458.GA1213@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <45F67D9A.8020202@yahoo.com.au>
+In-Reply-To: <20070313203458.GA1213@linux.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -19,86 +22,53 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-mm@kvack.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.osdl.org>, Johannes Berg <johannes@sipsolutions.net>, Christoph Lameter <clameter@engr.sgi.com>
+To: mgross@linux.intel.com
+Cc: Eugeny Mints <eugeny@nomadgs.com>, pm list <linux-pm@lists.osdl.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 13 March 2007 11:31, Nick Piggin wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday, 13 March 2007 10:23, Nick Piggin wrote:
-> > =
+Hi,
 
-> =
+On 3/14/07, Mark Gross <mgross@linux.intel.com> wrote:
+> On Tue, Mar 13, 2007 at 12:08:51PM +0100, Pavel Machek wrote:
+> > Hi!
+> >
+> > > I believe this power parameter framework should solve many (if not
+> > > all) of the issues raised by using operating points as the base
+> > > abstraction and provide a common layer across architectures.  Eugeny
+> > > and I have the beginnings of an API proposal for this framework, but
+> > > we wanted to get some high level feedback on the concepts so we can
+> > > adjust the API if necessary.  So, comments?
+> >
+> > Looks better than powerop certainly.
 
-> >>I wouldn't say that. You're creating an interface here that is going to=
- be
-> >>used outside swsusp. Users of that interface may not need locking now, =
-but
-> >>that could cause problems down the line.
-> > =
+I also think this power parameter framework is a lot easier to adopt.
+PowerOp ideas can be built on top of this framework later.
 
-> > =
+> > Perhaps first step would be to convert cpufreq to this new framework?
+>
+> The first step is to get a parameter framework in upstream.
 
-> > I think we can add the locking when it's necessary.  For now, IMHO, it =
-could be
-> > confusing to someone who doesn't know the locking is not needed.
-> =
+Would this involve replacing the clock framework, or are they going to coex=
+ist?
 
-> I don't know why it would confuse them. We just define the API to
-> guarantee the correct locking, and that means the locking _is_ needed.
+> It will take some time for the applications of this proposed framework
+> to materialize and drive the maturing of the implementation.  These
+> won't get written unless a framework is upstream.
+>
+> I don't know if having cpufreq plug into this framework will ever make a
+> lot of sense.  However; it would be simple to create a cpufreq driver
+> that access the parameter layer for some selected platforms.  (N800?)
+>
+> --mgross
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/linux-pm
+>
 
-Even if there are no users that actually need the locking and probably never
-will be?
+It seems that this power parameter framework is more toward dynamic
+(or runtime) power management of various devices on a platform. We
+should make sure it does not break (and is not broken by) system
+suspend/resume operations.
 
-For now, register_nosave_region() is to be called by architecture
-initialization code _only_ and there's no reason whatsoever why any
-architecture would need to call it concurrently from many places.
-
-> You don't have to care what the callers are doing. That's the beauty
-> of a sane API.
-
-Well, I don't think adding unneded infrastructure is a good thing.
-
-> >>Sure you don't _need_ an rbtree, but our implementation makes it so sim=
-ple
-> >>that there isn't much downside.
-> > =
-
-> > =
-
-> > Not much, but the code is more complicated.
-> =
-
-> But it's in its own file and has a contained API, so it is very easy
-> to review, test and verify.
-
-I'm still thinking that register_nosave_region() in its current form is sim=
-pler
-and easier to review than the code using rbtrees.  Still, of course this on=
-ly
-is my personal opinion. :-)
-
-> >>>mark_nosave_pages() refers to a function that's invisible outside snap=
-shot.c
-> >>>and I didn't think it was a good idea to separate mark_nosave_pages()
-> >>>from register_nosave_region().
-> >>
-> >>But that's because you even use mark_nosave_pages in your implementatio=
-n.
-> >>Mine uses the nosave regions directly.
-> > =
-
-> > =
-
-> > Well, I think we need two bits per page anyway, to mark free pages and
-> > pages allocated by swsusp, so using the nosave regions directly won't s=
-ave us
-> > much.
-> =
-
-> Well I think it is a cleaner though.
-
-This is a matter of opinion, too ...
-
-Greetings,
-Rafael
+ikhwan
