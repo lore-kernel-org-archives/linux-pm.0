@@ -1,25 +1,71 @@
-From: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ
- storm and rogue DMA access
-Date: Wed, 14 Mar 2007 19:16:47 -0400
-Message-ID: <45F8825F.3030904@garzik.org>
-References: <20070314152302.GB15600@htj.dyndns.org> <20070314215605.GA7194@flint.arm.linux.org.uk> <45F87863.9040408@garzik.org> <20070314225818.GB7194@flint.arm.linux.org.uk>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Alternative Concept
+Date: Wed, 14 Mar 2007 16:23:16 -0700
+Message-ID: <200703141623.16643.david-b@pacbell.net>
+References: <200703142208.l2EM8uoV007606@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <20070314225818.GB7194@flint.arm.linux.org.uk>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org, tglx@linutronix.de, shemminger@linux-foundation.org, mlord@pobox.com, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <200703142208.l2EM8uoV007606@olwen.urbana.css.mot.com>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: linux-pm@lists.osdl.org, linux@dominikbrodowski.net, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-Russell King wrote:
-> In any case, relying on such a new control bit to implement this kind
-> of functionality would result in a very hit and miss result; Linux
+On Wednesday 14 March 2007 3:08 pm, Scott E. Preece wrote:
+> | > =
 
-How does Tejun's patch or thesis rely on this new control bit?  He 
-explicitly mentions DISABLE_INTX variability...
+> | > But shouldn't it be useful on every platform? ..
+> | =
 
-	Jeff
+> | I couldn't know.  This "alternative concept" hasn't gotten very far
+> | into the hand-waving stage, much less beyond it into proposed interface
+> | or (gasp!) implementations.  Platforms that don't *have* those particul=
+ar
+> | interdependencies should not of course incur costs to implement them...
+> ---
+> =
+
+> Well, that's fine if the platform you use is the current design
+> center.
+
+So you think that platforms which don't have such interdependencies
+should incur costs and complexity to address problems they don't have.
+Why?
 
 
+> For the rest of us, though, all the stuff you're currently =
+
+> doing for power management is wasted effort and why should we incur
+> costs to work around them? =
+
+
+Me personally?  What specifically are you referring to, and
+in what respects would that be "wasted" effort?
+
+
+> Today, we just configure it all out and put =
+
+> in our own stuff. We would prefer to have a mainstream framework that
+> could be used to meet both Intel laptop needs and embedded device needs...
+
+I don't think I ever said anything against that notion of having PM
+infrastructure capable of handling both PC and embedded configs.  Not
+that I've seen a framework that handles either one well -- yet! -- so
+such notions haven't yet progressed to being testable theories.
+
+Against the notion of infrastructure (PM or otherwise) that's not
+well designed or defined -- certainly I've argued.  That includes
+much current PM infrastructure, and most recent proposals.
+
+- Dave
