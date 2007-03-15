@@ -1,71 +1,75 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Alternative Concept
-Date: Wed, 14 Mar 2007 16:23:16 -0700
-Message-ID: <200703141623.16643.david-b@pacbell.net>
-References: <200703142208.l2EM8uoV007606@olwen.urbana.css.mot.com>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ
+ storm and rogue DMA access
+Date: Thu, 15 Mar 2007 11:37:20 +0900
+Message-ID: <45F8B160.6010603@gmail.com>
+References: <20070314152302.GB15600@htj.dyndns.org> <20070314100716.5965dca1@freekitty>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200703142208.l2EM8uoV007606@olwen.urbana.css.mot.com>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org, linux@dominikbrodowski.net, pavel@ucw.cz
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20070314100716.5965dca1@freekitty>
+Sender: linux-ide-owner@vger.kernel.org
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: gregkh@suse.de, Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org, tglx@linutronix.de, mlord@pobox.com, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 14 March 2007 3:08 pm, Scott E. Preece wrote:
-> | > =
+Stephen Hemminger wrote:
+> The problem is the BIOS is busted on these machines. How much effort
+> do we want to put into dealing with systems with broken BIOS?
+> I would rather have the root cause fixed than creating a bandaid that
+> has to be maintained for all the other architectures and platforms.
 
-> | > But shouldn't it be useful on every platform? ..
-> | =
+For sky2/skge, it might be caused by broken BIOS.  For some ATA devices, 
+it's just the hardware which is designed that way.  Also, under non-x86 
+machines and during resume, there's no BIOS to nudge chips into sane 
+state.  This is an existing problem which has to be solved.  How much 
+effort we are gonna put into it is certainly debatable.
 
-> | I couldn't know.  This "alternative concept" hasn't gotten very far
-> | into the hand-waving stage, much less beyond it into proposed interface
-> | or (gasp!) implementations.  Platforms that don't *have* those particul=
-ar
-> | interdependencies should not of course incur costs to implement them...
-> ---
-> =
+Also, the current implementation doesn't have any arch independent part. 
+  It's wholly contained in arch independent PCI layer, but it might be 
+beneficial to have arch dependent hooks (IRQ line enable/disable?) in 
+the future.
 
-> Well, that's fine if the platform you use is the current design
-> center.
+> What if the device with the IRQ problem is never loaded? Sometimes
+> devices aren't loaded until after boot.
 
-So you think that platforms which don't have such interdependencies
-should incur costs and complexity to address problems they don't have.
-Why?
+What do you mean by loading a device?  Do you mean loading driver for 
+the device?  The patch as posted is probably not a complete solution. 
+We probably need to make sure during early boot and resume that all IRQ 
+/ bus master are turned off where possible and let low level drivers 
+enable them as needed and after certain amount of initialization is 
+performed.
 
+> If you use MSI interrupts, they aren't shared so there isn't a problem.
+> Maybe the root cause of this is bad MSI emulation handling in BIOS.
 
-> For the rest of us, though, all the stuff you're currently =
+Yes, if MSI is used things are better.
 
-> doing for power management is wasted effort and why should we incur
-> costs to work around them? =
+> Any change like this has to be done without changing device drivers.
+> Changing the skge/sky2 drivers as special case is not acceptable.
 
+I dunno about that.  What I'm proposing is alternative two-step PCI 
+initialization step - the first step enables the device just enough for 
+initialization/reset and the second one enables full access.  We're 
+doing part of it already for bus master.  I'm proposing to expand that 
+approach and make them handled by generic PCI layer.  As you can see, it 
+doesn't add noticeable complexity to drivers.  I think it's even clearer 
+than doing pci_set_master() explicitly.
 
-Me personally?  What specifically are you referring to, and
-in what respects would that be "wasted" effort?
+If this way of solving the problem is chosen, eventually most drivers 
+should be converted to new initialization steps.  And there is no way to 
+do this without modifying low level driver.  Only low level driver knows 
+when full blown access can be enabled and such thing must happen before 
+registering the device to upper layer (e.g. ATA/SCSI, netif).
 
+sky2/skge aren't exceptions.  If this way of solving the problem is 
+chosen, eventually most if not all drivers should be converted to new 
+model.  It may take two years, maybe five, but as a start just 
+converting ATA and network drivers shouldn't take too long and that 
+would help a lot of cases.
 
-> Today, we just configure it all out and put =
+Thanks.
 
-> in our own stuff. We would prefer to have a mainstream framework that
-> could be used to meet both Intel laptop needs and embedded device needs...
-
-I don't think I ever said anything against that notion of having PM
-infrastructure capable of handling both PC and embedded configs.  Not
-that I've seen a framework that handles either one well -- yet! -- so
-such notions haven't yet progressed to being testable theories.
-
-Against the notion of infrastructure (PM or otherwise) that's not
-well designed or defined -- certainly I've argued.  That includes
-much current PM infrastructure, and most recent proposals.
-
-- Dave
+-- 
+tejun
