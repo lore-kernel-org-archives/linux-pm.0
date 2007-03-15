@@ -1,12 +1,16 @@
-From: "abrar momin" <abrar.momin@gmail.com>
-Subject: Re: :How do I move the system to idle mode
-Date: Thu, 15 Mar 2007 13:45:25 +0530
-Message-ID: <91a2c5d50703150115o57d0695fm305496a77daa25e5@mail.gmail.com>
-References: <200703101154.CGX93234@tataelxsi.co.in>
+From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
+Subject: Re: Alternative Concept
+Date: Thu, 15 Mar 2007 12:53:33 +0300
+Message-ID: <45F9179D.2090706@gmail.com>
+References: <44ECFF94.3030506@gmail.com>
+	<484380240703131930n5e64a8fu9b935b0b513f0731@mail.gmail.com>
+	<45F7D1BC.2000700@gmail.com>
+	<200703141019.06641.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1416861605=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <200703101154.CGX93234@tataelxsi.co.in>
+In-Reply-To: <200703141019.06641.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,163 +20,215 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Sridhar Rao V <sridharraov@tataelxsi.co.in>
-Cc: linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.osdl.org, Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+David Brownell wrote:
+> This alternative "concept" would seem to be missing a few essential
+> aspects.  Like proposed interfaces, for starters ...
 
---===============1416861605==
-Content-Type: multipart/alternative;
-    boundary="----------=_1173946529-11203-680"
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.411 (Entity 5.404)
+stay tuned - it follows ;)
 
-This is a multi-part message in MIME format...
+> =
 
-------------=_1173946529-11203-680
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> =
 
-On 3/10/07, Sridhar Rao V <sridharraov@tataelxsi.co.in> wrote:
->
->  HI,
->
->
->
-> I am working on optimizing the power consumption on the system.
->
->
->
-> I need to detect when the system is idle and move it to standby state.
->
+> On Wednesday 14 March 2007 3:43 am, Eugeny S. Mints wrote:
+>>> Would this involve replacing the clock framework, or are they going to =
+coexist?
+>> parameter framework would eventually replace clock framework.
+> =
 
- u define the system states and cause a transition acordingly
+> That seems to be the wrong answer.  Especially since nothing has
+> been shown to be wrong with the clock interface; much less to be
+> unfixably wrong (hence justifying replacement).
 
-i do not know ur board details
+a cherry-picking on clk fw API:
 
-do
-cat /sys/power/state
-to know the current supported states
-and an
-echo standby > /sys/power/state
-to trigger a transition
+- clk_set_rate() sticks to an individual clock - no way to set rates for nu=
+mber =
 
-And when there is an interrupt, it needs to be brought back to run state.
->
+of clocks at once instead of having series of clk_set_rate() calls. The for=
+mer =
 
- for that u need to configure the required  gpio's  to be able to cause a
-wakeup
-before u go to idle or sleep
+for example is required for clocks which have required predefined ratio =
 
-I have an application which is waiting on a message. When it gets idle
-> message, it needs to move the system to idle state.
->
->
->
-> I have two questions:
->
-> 1. How do we detect the idle mode.
->
-> 2. Can I call the acpi_suspend() function from my driver to move the
-> system to different states. If not what is the preferred way.
->
->
->
-> Sridhar.
->
->
->
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
->
->
+dependency though: two clocks always have to be n:2n and any other ratio le=
+ads =
 
+to hardware misbehavior. So, you can't go from 100:200 to 300:600 via serie=
+s of =
 
--- 
-abrarahmed
+clk_set_rate() for such clocks, i.e. 100:200 -> 300:200 -> 300:600 or 100:2=
+00 -> =
 
-------------=_1173946529-11203-680
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+100:600 -> 300:600 (see SH7722 hw for reference)
 
-<br><br><div><span class="gmail_quote">On 3/10/07, <b class="gmail_sendername">Sridhar Rao V</b> &lt;<a href="mailto:sridharraov@tataelxsi.co.in">sridharraov@tataelxsi.co.in</a>&gt; wrote:</span><blockquote class="gmail_quote" DEFANGED_style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div><span class="q" id="q_1113bb4d39c11db0_0">
+- only a rate can be set up via clk_set_rate() while for a PLL I want to se=
+t up =
 
+a desired idle state as well (btw there can be more than one idle state)
 
+- current API does not provide support for clock domains
 
+a cherry-picking on clk fw implementation:
 
+- clock tree structure and traversing clock tree code are duplicated in eve=
+ry =
 
+architecture while can be done in arch independent way and just once (hint:=
+ what =
 
+indeed is an arch specific thing it's a clock tree configuration)
 
+> =
 
+> =
 
+>> Separate clock and  =
 
-<div DEFANGED_link="blue" DEFANGED_vlink="purple" lang="EN-US">
+>> voltage frameworks lead to code and functionality duplication and do not=
+ address =
 
-<div>
+>> such things as relationship between clocks and voltages, clock/voltage/p=
+ower =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">HI,</span></font></p>
+>> domains, etc needed for aggressive power management.
+> =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">&nbsp;</span></font></p>
+> Most clocks don't have those issues.  Why penalize all clocks for
+> issues which only relate to a few?  Better to only do that for the
+> few cocks which have such additional constraints.
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">I am working on optimizing the power consumption on the
-system.</span></font></p>
+parameter fw would give exactly this behavior: relationship between clocks =
+and =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">&nbsp;</span></font></p>
+voltages, clock/voltage/power domains implementation would be just addition=
+al =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">I need to detect when the system is idle and move it to
-standby state.</span></font></p></div></div></span></div></blockquote><div><br>&nbsp;u define the system states and cause a transition acordingly<br>
-<br>
-i do not know ur board details<br>
-<br>
-do<br>
-cat /sys/power/state <br>
-to know the current supported states<br>
-and an <br>
-echo standby &gt; /sys/power/state <br>
-to trigger a transition</div><br><blockquote class="gmail_quote" DEFANGED_style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><div><span class="q" id="q_1113bb4d39c11db0_0"><div DEFANGED_link="blue" DEFANGED_vlink="purple" lang="EN-US">
-<div><p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">And when there is an interrupt, it needs to be brought
-back to run state.</span></font></p></div></div></span></div></blockquote><div><br>&nbsp;for that u need to configure the required&nbsp; gpio&#39;s&nbsp; to be able to cause a wakeup<br>before u go to idle or sleep</div><br><blockquote class="gmail_quote" DEFANGED_style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div><span class="q" id="q_1113bb4d39c11db0_0"><div DEFANGED_link="blue" DEFANGED_vlink="purple" lang="EN-US"><div><p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">I have an application which is waiting on a message. When
-it gets idle message, it needs to move the system to idle state.</span></font></p>
+arcs between nodes for clock and voltages. Nowadays clk fw has only one typ=
+e of =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">&nbsp;</span></font></p>
+arcs - parent-child type. parameter fw would bring additional types. But cl=
+ock =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">I have two questions:</span></font></p>
+nodes would be linked just with required arcs (of required type; both are a=
+rch =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">1. How do we detect the idle mode.</span></font></p>
+specific things) so for an arch without any additional dependencies between =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">2. Can I call the acpi_suspend() function from my driver
-to move the system to different states. If not what is the preferred way.</span></font></p>
+clocks (and voltages) parameter fw would end up with exactly equivalent clo=
+ck =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">&nbsp;</span></font></p>
+tree as clk fw for the arch has today.
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">Sridhar.</span></font></p>
+> =
 
-<p><font face="Garamond" size="3"><span DEFANGED_style="font-size: 12pt; font-family: Garamond;">&nbsp;</span></font></p>
+> Plus, remember that the clock framework is an interface ... so by
+> definition, it has no code associated with it.  Hence no duplication
+> of code is possible... at least at this hand-wavey "concept" level.
+> Possibly a given implementation has scope for code sharing; but I
+> doubt it.  Code behind a given implementation of the clock interface
+> is invariably quite slim.
 
-</div>
+and invariably looks like a hack and still duplicate clock tree building an=
+d =
 
-</div>
+traversing code. Dependencies which exist in modern hw between clocks, cloc=
+ks =
 
+and voltages require a more straight and standard technique to be set up fo=
+r =
 
-</span></div><br>_______________________________________________<br>linux-pm mailing list<br><a DEFANGED_onclick="return top.js.OpenExtLink(window,event,this)" href="mailto:linux-pm@lists.osdl.org">linux-pm@lists.osdl.org</a><br>
-<a DEFANGED_onclick="return top.js.OpenExtLink(window,event,this)" href="https://lists.osdl.org/mailman/listinfo/linux-pm" target="_blank">https://lists.osdl.org/mailman/listinfo/linux-pm</a><br><br></blockquote></div><br><br clear="all">
-<br>-- <br>abrarahmed
+implementing clk/vltg/name_it framework. Moving most of the code to be arch =
 
-------------=_1173946529-11203-680--
+independent and setting a clear rules on how a clock/vltg tree configuratio=
+n =
 
---===============1416861605==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+would look like while just looking at a hw manual would help.
+
+> =
+
+> If a clock being enabled implies a power or voltage domain being active,
+> there's no reason that constraint shouldn't be enforced by whatever
+> implementation a given platform uses.
+
+true. but it's the same functionality required on different arches. and it =
+can =
+
+be done in arch independent way without penalties for arches which do not =
+
+require the functionality. What's the rationale to move it down to arch spe=
+cific =
+
+code then?
+
+> =
+
+> And having a generic -- basically untyped -- notion of "parameter"
+> seems significantly less good than having a typed notion, with
+> type-specific operations.  =
 
 
---===============1416861605==--
+there is no type-specific operations. clk_set_rate() and vltg_set() basical=
+ly do =
+
+the same thing - set a value for a pm resource provided by clock or voltage =
+
+device (regulator). The difference is that output of clock regulator is mea=
+sured =
+
+in Hz and named 'frequesncy' and output of voltage regulator os measured in=
+ mV =
+
+and named 'voltage' which actually does not matter from API POV. So, i see =
+more =
+
+sense in having param_set(), parame_set_state() (set_state primitive for id=
+le =
+
+states) rather than in
+
+clk_set_rate(), clk_set_state()
+vltg_set(), vltg_set_state()
+and, our analysis shows that you would end up with a separate type for doma=
+ins, =
+
+so it would be at least
+domain_set_state() as well.
+
+> Typed notions are easier to understand,
+> read, and maintain.
+
+common, after tricks with spinlocks in [merged!] RT patches? ;)
+
+Eugeny
+> =
+
+> =
+
+>> Basically a good way of thinking about parameter framework is that param=
+eter =
+
+>> framework would start from existed clock framework and gradually evolve =
+by =
+
+>> addressing voltages, relationship between clocks and voltages, domains. =
+
+>> Eventually clock framework functionality would be a part of power parame=
+ter =
+
+>> framework.
+> =
+
+> A better way would be to say that implementions of the clock interface
+> on a given platform can build on whatever they need to build.  That might
+> include a "parameter" framework, if such a thing were defined in such
+> a way that it became useful to such implementations.
+> =
+
+> - Dave
+> =
+
+> =
