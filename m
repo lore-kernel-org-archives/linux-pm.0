@@ -1,13 +1,12 @@
 From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: Alternative Concept
-Date: Thu, 15 Mar 2007 08:21:28 -0500 (CDT)
-Message-ID: <200703151321.l2FDLSWX029751@olwen.urbana.css.mot.com>
+Date: Thu, 15 Mar 2007 08:29:43 -0500 (CDT)
+Message-ID: <200703151329.l2FDTh3B000785@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: "Scott E. Preece"'s message of Wed, 14 Mar 2007 17:08:56 -0500
-	(CDT)
+In-reply-to: David Brownell's message of Wed, 14 Mar 2007 16:23:16 -0700
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -17,67 +16,89 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: preece@motorola.com
+To: david-b@pacbell.net
 Cc: linux-pm@lists.osdl.org, linux@dominikbrodowski.net, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
 
-| From: "Scott E. Preece" <preece@motorola.com>
+| From: David Brownell<david-b@pacbell.net>
 | =
 
-| | From: David Brownell<david-b@pacbell.net>
-| | =
+| On Wednesday 14 March 2007 3:08 pm, Scott E. Preece wrote:
+| > | > =
 
-| | I couldn't know.  This "alternative concept" hasn't gotten very far
-| | into the hand-waving stage, much less beyond it into proposed interface
-| | or (gasp!) implementations.  Platforms that don't *have* those particul=
-ar
-| | interdependencies should not of course incur costs to implement them...
-| ---
+| > | > But shouldn't it be useful on every platform? ..
+| > | =
+
+| > | I couldn't know.  This "alternative concept" hasn't gotten very far
+| > | into the hand-waving stage, much less beyond it into proposed interfa=
+ce
+| > | or (gasp!) implementations.  Platforms that don't *have* those partic=
+ular
+| > | interdependencies should not of course incur costs to implement them.=
+..
+| > ---
+| > =
+
+| > Well, that's fine if the platform you use is the current design
+| > center.
 | =
 
-| Well, that's fine if the platform you use is the current design
-| center. For the rest of us, though, all the stuff you're currently
-| doing for power management is wasted effort and why should we incur
-| costs to work around them?  Today, we just configure it all out and put
-| in our own stuff. We would prefer to have a mainstream framework that
-| could be used to meet both Intel laptop needs and embedded device needs...
+| So you think that platforms which don't have such interdependencies
+| should incur costs and complexity to address problems they don't have.
+| Why?
 ---
 
-I have to apologize for this comment. I wrote it in a hurry as I left
-for a meeting and tried to condense too many thoughts and not enough
-thinking into the number of words I had time to type.
+Well, yes. That's part of having a solution that addresses the whole
+community and not a subset. Linux is already full of things that trade
+off benefits for one platform against costs for another platform.
 
-The clock framework is reasonably inoffensive, and I think it might be
-reasonable to retain the current interfaces for clock-like devices while
-adding on support for dependency modeling.  Today the dependencies
-behind the clocks aren't modeled anywhere visible (in our implementation
-they are managed by low-level assembler interfaces). We would like to be
-able to have a power management system that WAS aware of the
-interdependencies and able to make decisions based on concerns deeper
-than the current clock frequency. Part of the reson for this is to
-enable portability of at least some parts of our PM code (we build
-products on a number of platforms, each with different parts in similar
-roles).
+---
+| =
 
-I agree with David that typed interfaces are highly preferable.  Moving
-the typing to data (having a type field associated with nodes in a
-network) is more dangerous and less readable, at least in the absence of
-a language with first-class classes and inheritance. So, I would prefer
-to see the model have different kinds of nodes for different kinds of
-devices; that should be possible while using common mechanisms for
-implementing the dependencies between them.
+| > For the rest of us, though, all the stuff you're currently =
 
-However, I think it would be more appropriate to debate that when there
-is a proposal for interfaces and at least a little bit of code. It is
-possible that the current clock framework would appear broken in
-comparison to something that was clearly superior. We don't know, yet,
-whether what is proposed will look clearly superior, so it's probably
-too early to argue about that aspect. The goal at this point was just to
-surface the underlying concepts and see if people thought they
-adequately model the problem space.
+| > doing for power management is wasted effort and why should we incur
+| > costs to work around them? =
 
-scott
+| =
+
+| Me personally?  What specifically are you referring to, and
+| in what respects would that be "wasted" effort?
+---
+
+As noted in previous apology, I was speaking over-broadly. However, as I
+said, we currently configure out cpufreq and ACPI support, among other
+things, so they represent wasted effort from the particular perspective
+of our products. I was speaking rhetorically - just saying that the work
+done on cpufreq and ACPI was "wasted effort" in exactly the same sense
+that work spent on supporting the PM needs of embedded devices would be.
+
+---
+| =
+
+| > Today, we just configure it all out and put =
+
+| > in our own stuff. We would prefer to have a mainstream framework that
+| > could be used to meet both Intel laptop needs and embedded device needs=
+...
+| =
+
+| I don't think I ever said anything against that notion of having PM
+| infrastructure capable of handling both PC and embedded configs.  Not
+| that I've seen a framework that handles either one well -- yet! -- so
+| such notions haven't yet progressed to being testable theories.
+| =
+
+| Against the notion of infrastructure (PM or otherwise) that's not
+| well designed or defined -- certainly I've argued.  That includes
+| much current PM infrastructure, and most recent proposals.
+---
+
+Thanks - I can agree with that!
+
+scott =
+
 
 -- =
 
