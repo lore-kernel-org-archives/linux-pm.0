@@ -1,64 +1,39 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: Alternative Concept
-Date: Thu, 15 Mar 2007 13:55:02 +0300
-Message-ID: <45F92606.8080903@gmail.com>
-References: <200703142208.l2EM8uoV007606@olwen.urbana.css.mot.com>	<200703141623.16643.david-b@pacbell.net>	<484380240703150025r45f09635o261d42bd4f2b06dc@mail.gmail.com>
-	<52d486620703150114w2981705eo7f3403721614b0e5@mail.gmail.com>
+From: Vivek Goyal <vgoyal@in.ibm.com>
+Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ storm and rogue DMA access
+Date: Thu, 15 Mar 2007 17:11:41 +0530
+Message-ID: <20070315114141.GA10753@in.ibm.com>
+References: <20070314152302.GB15600@htj.dyndns.org> <p73fy878pmg.fsf@bingen.suse.de>
+Reply-To: vgoyal@in.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <52d486620703150114w2981705eo7f3403721614b0e5@mail.gmail.com>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Amit Kucheria <kucheria.amit@gmail.com>
-Cc: linux-pm@lists.osdl.org, pavel@ucw.cz, linux@dominikbrodowski.net
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <p73fy878pmg.fsf@bingen.suse.de>
+Sender: linux-ide-owner@vger.kernel.org
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Tejun Heo <htejun@gmail.com>, gregkh@suse.de, Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org, tglx@linutronix.de, shemminger@linux-foundation.org, mlord@pobox.com, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Amit Kucheria wrote:
-> On 3/15/07, Ikhwan Lee <dlrghks@gmail.com> wrote:
->> Hi,
->>
->> On 3/15/07, David Brownell <david-b@pacbell.net> wrote:
->>> So you think that platforms which don't have such interdependencies
->>> should incur costs and complexity to address problems they don't have.
->>> Why?
->> Not every platform implements the clock interface. I think same can be
->> done with the proposed power parameter framework. The basic codes
->> defining the power parameter interface need not be costly and complex.
-> =
+On Wed, Mar 14, 2007 at 10:46:47PM +0100, Andi Kleen wrote:
+> Tejun Heo <htejun@gmail.com> writes:
+> > 
+> > Let's assume there's a device which shares its INTX IRQ line with
+> > another device and the other one is already initialized.  During boot,
+> > due to BIOS's fault, bad hardware design or sheer bad luck, the device
+> > has got a pending IRQ.
+> 
+> This seems to be also common after kexec during kexec crashdumps
+> where the device just continues doing what it did before the crash.
+> 
 
-> Exactly! Maybe once we get to the stage of interface discussion, Matt
-> and Eugeny could provide a roadmap on the evolution of the PM
-> framework. Personally, I don't see clock framework disappearing
-> overnight for platforms that do use it.
+That's true. It happens very frequently in kdump case where underlying device
+can very well have pending interrupts while second kernel is booting.
+Currently we allow the kernel to disable that irq line and we boot the kernel
+with "irqpoll" so that device still operates in polling mode.
 
-dissolving might be a better wording in the sense that for a platform which =
+But getting this fixed will help. If device interrupts are enabled only after
+driver has had a chance to reset the device, things will be better, at least
+from kdump perspective.
 
-would not gain from adding any node and arc to the clock nodes and arcs alr=
-eady =
-
-exited in the current clock tree for the platform would stick with exactly =
-the =
-
-same tree(graph) without incurring any additional costs and complexity.
-
-Eugeny
-
-> =
-
-> /Amit
-> --
-> Amit Kucheria, Nokia
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/linux-pm
-> =
+Thanks
+Vivek
