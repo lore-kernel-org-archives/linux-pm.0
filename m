@@ -1,12 +1,12 @@
 From: "Scott E. Preece" <preece@motorola.com>
 Subject: Re: Alternative Concept
-Date: Thu, 15 Mar 2007 08:29:43 -0500 (CDT)
-Message-ID: <200703151329.l2FDTh3B000785@olwen.urbana.css.mot.com>
+Date: Thu, 15 Mar 2007 09:00:16 -0500 (CDT)
+Message-ID: <200703151400.l2FE0GhR004563@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-reply-to: David Brownell's message of Wed, 14 Mar 2007 16:23:16 -0700
+In-reply-to: Igor Stoppa's message of Thu, 15 Mar 2007 15:04:49 +0200
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -16,89 +16,49 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: david-b@pacbell.net
+To: igor.stoppa@nokia.com
 Cc: linux-pm@lists.osdl.org, linux@dominikbrodowski.net, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
 
-| From: David Brownell<david-b@pacbell.net>
+| From: Igor Stoppa<igor.stoppa@nokia.com>
 | =
 
-| On Wednesday 14 March 2007 3:08 pm, Scott E. Preece wrote:
-| > | > =
-
-| > | > But shouldn't it be useful on every platform? ..
-| > | =
-
-| > | I couldn't know.  This "alternative concept" hasn't gotten very far
-| > | into the hand-waving stage, much less beyond it into proposed interfa=
-ce
-| > | or (gasp!) implementations.  Platforms that don't *have* those partic=
-ular
-| > | interdependencies should not of course incur costs to implement them.=
-..
-| > ---
-| > =
-
-| > Well, that's fine if the platform you use is the current design
-| > center.
+| What's wrong with expanding the clk_fw?
+| All is needed is:
+| clk_set_rate_buffered(clk1, 300);
+| clk_set_rate_buffered(clk2, 600);
+| clk_rate_flush(); /* can include validation of the set */
 | =
 
-| So you think that platforms which don't have such interdependencies
-| should incur costs and complexity to address problems they don't have.
-| Why?
+| Which is, incidentally, what OMAP2 does in hw for all the relevant clk
+| dividers and it also provides validation for the new set of values.
+| =
+
+| Furthermore if the original assumption that complex transitions are
+| allowed only atomically (p1A, p1B) =3D> (p2A, p2B), hw support is
+| mandatory, otherwise the transition is impossible, no matter what fancy
+| sw fw is performing it.
 ---
 
-Well, yes. That's part of having a solution that addresses the whole
-community and not a subset. Linux is already full of things that trade
-off benefits for one platform against costs for another platform.
+If you did it this way:
 
----
-| =
+tid1 =3D power_transaction_start();
+clk_set_rate_pending(clk1, 300, tid1);
+clk_set_rate_pending(clk1, 600, tid1);
+power_transaction_commit(tid1);
 
-| > For the rest of us, though, all the stuff you're currently =
+Then you can conveniently be constructing more than one transaction at a
+time and would have a little more information for debugging and for
+canceling partial transactions.
 
-| > doing for power management is wasted effort and why should we incur
-| > costs to work around them? =
+I agree that there needs to be some use of hardware magic underneath to
+make the changes truly atomic; the flush/commit operation would have to
+use that magic. That has the advantage of putting all the complexity of
+undedstanding that magic in one place, at the cost of making that one
+place possibly arbitrarily complex.
 
-| =
-
-| Me personally?  What specifically are you referring to, and
-| in what respects would that be "wasted" effort?
----
-
-As noted in previous apology, I was speaking over-broadly. However, as I
-said, we currently configure out cpufreq and ACPI support, among other
-things, so they represent wasted effort from the particular perspective
-of our products. I was speaking rhetorically - just saying that the work
-done on cpufreq and ACPI was "wasted effort" in exactly the same sense
-that work spent on supporting the PM needs of embedded devices would be.
-
----
-| =
-
-| > Today, we just configure it all out and put =
-
-| > in our own stuff. We would prefer to have a mainstream framework that
-| > could be used to meet both Intel laptop needs and embedded device needs=
-...
-| =
-
-| I don't think I ever said anything against that notion of having PM
-| infrastructure capable of handling both PC and embedded configs.  Not
-| that I've seen a framework that handles either one well -- yet! -- so
-| such notions haven't yet progressed to being testable theories.
-| =
-
-| Against the notion of infrastructure (PM or otherwise) that's not
-| well designed or defined -- certainly I've argued.  That includes
-| much current PM infrastructure, and most recent proposals.
----
-
-Thanks - I can agree with that!
-
-scott =
-
+scott
 
 -- =
 
