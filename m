@@ -1,16 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
 Subject: Re: Alternative Concept
-Date: Thu, 15 Mar 2007 23:17:12 -0700
-Message-ID: <200703152317.13398.david-b@pacbell.net>
+Date: Fri, 16 Mar 2007 16:06:38 +0300
+Message-ID: <45FA965E.80503@gmail.com>
 References: <44ECFF94.3030506@gmail.com>
+	<45F9179D.2090706@gmail.com>	<1173963890.12614.27.camel@Dogbert.NOE.nokia.com>
 	<200703151921.55310.david-b@pacbell.net>
-	<484380240703152056w44d14c71tff4457c07c6bdbbc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <484380240703152056w44d14c71tff4457c07c6bdbbc@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <200703151921.55310.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -20,41 +19,78 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Ikhwan Lee <dlrghks@gmail.com>
+To: David Brownell <david-b@pacbell.net>
 Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 15 March 2007 8:56 pm, Ikhwan Lee wrote:
-> Hi,
-> =
+David Brownell wrote:
+> On Thursday 15 March 2007 6:04 am, Igor Stoppa wrote:
+>> On Thu, 2007-03-15 at 12:53 +0300, ext Eugeny S. Mints wrote:
+>>>> On Wednesday 14 March 2007 3:43 am, Eugeny S. Mints wrote:
+>>>>>> Would this involve replacing the clock framework, or are they going =
+to coexist?
+>>>>> parameter framework would eventually replace clock framework.
+>>>> That seems to be the wrong answer.  Especially since nothing has
+>>>> been shown to be wrong with the clock interface; much less to be
+>>>> unfixably wrong (hence justifying replacement).
+>>> a cherry-picking on clk fw API:
+>>>
+>>> - clk_set_rate() sticks to an individual clock - no way to set rates fo=
+r number =
 
-> Although I agree that the current clock framework can handle power or
-> voltage domains in many platforms, having something like (struct clk
-> powerdomain1, powerdomain2;) does not seem like a good implementation,
-> a struct for clocks representing a power domain.
+>>>   of clocks at once instead of having series of clk_set_rate() calls.
+>
+> This isn't "wrong", it's a "lack of feature".  The normal process for
+> addressing such things is to improve working/deployed software interfaces,
+> not throw them out and try to create and deploy something new.  :)
+David,
 
-Good thing that's not what I suggested then, right?  :)
+Eugeny didn't say he suggest deploying something new just to address
+only this issue. Also, the key word in his sentence is "eventually" that
+assumes
+"evolutionary", if you read all Eugeny's responses you've seen he suggest
+starting with existing clock framework.
 
-The point was that in the examples I've seen, the power domains
-are associated with clock domains, so that each clock is tied
-to one power domain.  And since you can't use the power domain
-without having a clock ... the implementation can tell if it's
-got to activate a power domain by looking at the clock.
+The actual reason to deploy something new is to organize a mess around
+Power Management in Linux kernel... and not only in kernel. I bet you
+are also
+thinking on how to make order in this area, and I surprised you didn't
+comment
+on original Matthew's post since it contains so many points to discuss.
 
-There may be other models of power domain, but that's the one
-I've had reason to look at (which isn't synonymous with a straight
-voltage/current supply).
+For example,
+
+> - PM resource representation
+>   Similar to the device abstraction available today. =
 
 
-> If a new framework is more straighforward and introduces a negligible
-> overhead to the current kernel, I think it is worthwhile to have a
-> look at it. Plus this new framework might be able to take care of
-> those platforms that are not nicely supported by the current clock
-> framework.
+IIUC, the framework will use some platform-independent entities to
+represent
+clock and voltage subsystems of a platform, entities similar for 'struct
+device'
+which is used to represent normal devices in the system. I.e. one entity
+(node) corresponds
+to one real clock(voltage) device. What's the worth of
+platform-independent representing?
+Perhaps it will help to organize clock and voltage subsystems of various
+platforms.
+The elementary entity (a node),
+may store information of clock/voltage device state (active, idle,
+off...), a value of
+provided frequency/voltage(MHz/mV), a latency needed for transitioning
+from one state
+for another(ms), also the node may store lists of dependent devices,
+info of dependencies
+the node is involved to, also the node may contain platform-specific info.
+Considering clock framework, it means 'struct clk' becomes
+arch-independent but having
+a pointer to platform-specific data.
+Also, the node may have a dedicated driver which performs
+hardware-specific operations
+(programms PLL or just sets dividers), some of
+this operations may be the same among some platforms or even among
+different archs.
 
-Perhaps when we see one, we could discuss that as somethong other
-than pure handwaving.  But that still won't address the basic point
-that it's wrong to assume the clock framework should be written out
-of the picture.
 
-- Dave
+Thanks,
+Dmitry
