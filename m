@@ -1,36 +1,24 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Alternative Concept
-Date: Fri, 16 Mar 2007 11:03:11 -0700
-Message-ID: <200703161103.12333.david-b@pacbell.net>
-References: <44ECFF94.3030506@gmail.com>
-	<200703151921.55310.david-b@pacbell.net> <45FA965E.80503@gmail.com>
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH/RFC] PCI prepare/activate instead of enable to avoid IRQ
+ storm and rogue DMA access
+Date: Fri, 16 Mar 2007 14:21:31 -0700
+Message-ID: <20070316142131.0a4cc953@freekitty>
+References: <20070314152302.GB15600@htj.dyndns.org>
+	<20070314100716.5965dca1@freekitty>
+	<45F8B160.6010603@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <45FA965E.80503@gmail.com>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <45F8B160.6010603@gmail.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: gregkh@suse.de, Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, michal.k.k.piotrowski@gmail.com, linux-ide@vger.kernel.org, tglx@linutronix.de, mlord@pobox.com, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 16 March 2007 6:06 am, Dmitry Krivoschekov wrote:
+All this discussion is well and good, but I suspect there is a driver setup
+problem where the interrupt isn't being handled properly. Please retest with
+the latest version of skge driver (I just pushed patches to netdev about 2min ago).
+One patch changes to disable IRQ's from device for packets until device
+is brought up.
 
-> 	 I surprised you didn't comment
-> on original Matthew's post since it contains so many points to discuss.
-
-As a direction, it sounded better than many notions I've seen here.
-
-But there was a certain lack of ... detail ... making discussion
-impractical, except as speculation.
-
-- Dave
