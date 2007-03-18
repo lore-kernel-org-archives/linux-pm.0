@@ -1,13 +1,15 @@
-From: Marcus Better <marcus@better.se>
-Subject: Re: [3/6] 2.6.21-rc4: known regressions
-Date: Sun, 18 Mar 2007 20:38:05 +0100
-Message-ID: <200703182038.08374.marcus@better.se>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<20070318184919.GW752@stusta.de>
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Subject: Re: Alternative Concept
+Date: Sun, 18 Mar 2007 23:25:36 +0300
+Message-ID: <45FDA040.4020502@gmail.com>
+References: <44ECFF94.3030506@gmail.com>
+	<200703151921.55310.david-b@pacbell.net> <45FA965E.80503@gmail.com>
+	<200703161103.12333.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0982148553=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070318184919.GW752@stusta.de>
+In-Reply-To: <200703161103.12333.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,53 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============0982148553==
-Content-Type: multipart/signed; boundary="nextPart3340993.n2nKbGebX1";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+David Brownell wrote:
+> On Friday 16 March 2007 6:06 am, Dmitry Krivoschekov wrote:
+>
+>> 	 I surprised you didn't comment
+>> on original Matthew's post since it contains so many points to discuss.
+>
+> As a direction, it sounded better than many notions I've seen here.
+>
+> But there was a certain lack of ... detail ... making discussion
+> impractical, except as speculation.
+I believe  details  was intentionally omitted to receive some feedback
+regarding
+concept basics only, this may help to adjust (or change) implementation
+details
+from the beginning.
 
---nextPart3340993.n2nKbGebX1
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+But ok, as you aren't arguing against those basics and intentions then
+seems you
+agree to them.
 
-> Subject    : ThinkPad R60: suspend broken
-> References : http://lkml.org/lkml/2007/3/16/57
-> Submitter  : Marcus Better <marcus@better.se>
-> Status     : unknown
+For me, there is a point that seems debatable already at the starting stage:
 
-=46WIW, it's still broken as of commit cd05a1f818073a623455a58e756c5b419fc9=
-8db9.
+> The goal of this parameter framework is to expose the resources in  a  =
 
-The in-kernel suspend to disk or RAM both hang after "Suspending consoles",=
-=20
-with the fan stopped.
+> way that allows other s/w (governors, policy mangers, etc) to control  =
 
---nextPart3340993.n2nKbGebX1
-Content-Type: application/pgp-signature
+> the resources while keeping the system operational.  One of the main  =
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> requirements in our thinking is that we want this layer to represent  =
 
-iD8DBQBF/ZUgXjXn6TzcAQkRAsVjAJsFa1jZRFH1X5q9L80VivQluNkeZgCggzQf
-EWtxmhQH5WFCaAEmY2niYhA=
-=FZMB
------END PGP SIGNATURE-----
+> the h/w and not include policy or decision making.  Meaning the =
 
---nextPart3340993.n2nKbGebX1--
+> software using the parameter framework would be responsible for  =
 
-
-
---===============0982148553==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> deciding the appropriate value for the parameters.   =
 
 
---===============0982148553==--
+
+Sometimes it's quite reasonable to make decisions (or policy)
+at the low level, without exposing events to higher layers,
+e.g. turning a clock off when reference counter gets zero, this is
+what OMAP's clock framework currently does.
+
+
+Thanks,
+Dmitry
