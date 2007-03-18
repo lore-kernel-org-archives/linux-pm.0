@@ -1,68 +1,70 @@
-From: Jim Gettys <jg@laptop.org>
-Subject: Re: [linux-pm] [2/6] 2.6.21-rc2: known regressions
-Date: Sun, 18 Mar 2007 12:40:45 -0400
-Message-ID: <1174236045.6832.9.camel@localhost>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-	 <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
-	 <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
-	 <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
-	 <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
-	 <20070309111957.GA3928@elf.ucw.cz>  <20070318160707.GC12673@elte.hu>
-Reply-To: jg@laptop.org
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [4/6] 2.6.21-rc4: known regressions
+Date: Sun, 18 Mar 2007 19:49:23 +0100
+Message-ID: <20070318184923.GX752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20070318160707.GC12673@elte.hu>
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, Arkadiusz Miskiewicz <arekm@maven.pl>, linux-pm@lists.osdl.org, Jens Axboe <jens.axboe@oracle.com>, linux-input@atrey.karlin.mff.cuni.cz, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-usb-devel@lists.sourceforge.net, Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomas Janousek <tomi@nomi.cz>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Thomas Meyer <thomas@m3y3r.de>, Milan Broz <mbroz@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2007-03-18 at 17:07 +0100, Ingo Molnar wrote:
-> * Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > > Some day we may have modesetting support in the kernel for some 
-> > > graphics hw, right now it's pretty damn spotty.
-> > 
-> > Yep, that's the way to go.
-> 
-> hey, i wildly supported this approach ever since 1996, when GGI came up
-> :-/
-> 
+This email lists some known regressions in Linus' tree compared to 2.6.20.
 
-So wildly you wrote tons of code.... ;-).
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-More seriously, at the time, XFree86 would have spat in your face for
-any such thing.  Thankfully, times are changing.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-Also more seriously, a somewhat hybrid approach is in order for mode
-setting: simple mode setting isn't much code and is required for sane
-behavior on crash (it is nice to get oopses onto a screen); but the full
-blown mode setting/configuration problem is so large that on some
-hardware, it is likely left best left to a helper process (not the X
-server).
 
-Also key to get sane behavior out of the scheduler is to get the X
-server to yield (sleep in the kernel) rather than busy waiting when the
-GPU is busy; a standardized interface for this for both fbdev and dri is
-in order.  Right now, X is a misbehaving compute bound process rather
-than the properly interactive process it can/should/will be, releasing
-the CPU whenever the hardware is busy. Needless to say, this wastes
-cycles and hurts interactivity with just about any scheduler you can
-devise. It isn't as if this is hard; on UNIX systems we did it in 1984
-or thereabouts.
+Subject    : suspend/resume hangs (until keypress)  (CONFIG_NO_HZ)
+References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8181
+             http://lkml.org/lkml/2007/3/11/112
+Submitter  : Tomas Janousek <tomi@nomi.cz>
+             Thomas Meyer <thomas@m3y3r.de>
+             Milan Broz <mbroz@redhat.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Patch      : http://lkml.org/lkml/2007/3/16/406
+Status     : patch available
 
-Of course, in 1996, XFree86 would have ignored any such interfaces, in
-its insane quest for operating system independent user space drivers
-requiring no standard kernel interfaces.... (it is the second part of
-this where the true insanity lay).
-                                  - Jim
 
--- 
-Jim Gettys
-One Laptop Per Child
+Subject    : system doesn't come out of suspend  (CONFIG_NO_HZ)
+References : http://lkml.org/lkml/2007/2/22/391
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+             Soeren Sonnenburg <kernel@nn7.de>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+             Ingo Molnar <mingo@elte.hu>
+             Tejun Heo <htejun@gmail.com>
+             Rafael J. Wysocki <rjw@sisk.pl>
+Status     : problem is being debugged
+
+
+Subject    : first disk access after resume takes several minutes
+             ('date' does not advance after resume from RAM, CONFIG_NO_HZ=
+=3Dn)
+References : http://lkml.org/lkml/2007/3/8/117
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+             Ingo Molnar <mingo@elte.hu>
+Status     : problem is being debugged
+
+
+Subject    : after resume: X hangs after drawing a couple of windows
+References : http://lkml.org/lkml/2007/3/8/117
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Status     : unknown
