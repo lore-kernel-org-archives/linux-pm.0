@@ -1,41 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Date: Mon, 19 Mar 2007 22:23:29 +0100
-Message-ID: <200703192223.31222.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <b6a2187b0703060412l66fe8db8l12e5403821d1438b@mail.gmail.com> <20070319153222.GF1915@elf.ucw.cz>
+From: Jim Gettys <jg@laptop.org>
+Subject: Re: [linux-pm] [2/6] 2.6.21-rc2: known regressions
+Date: Mon, 19 Mar 2007 18:08:21 -0400
+Message-ID: <1174342101.6832.173.camel@localhost>
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
+	 <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>
+	 <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>
+	 <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>
+	 <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>
+	 <20070309111957.GA3928@elf.ucw.cz>  <20070318160707.GC12673@elte.hu>
+	 <1174236045.6832.9.camel@localhost>  <45FEF395.9050409@tmr.com>
+Reply-To: jg@laptop.org
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070319153222.GF1915@elf.ucw.cz>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Adrian Bunk <bunk@stusta.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, linux-acpi@vger.kernel.org
+Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <45FEF395.9050409@tmr.com>
+Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
+List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
+List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
+List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
+List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, Arkadiusz Miskiewicz <arekm@maven.pl>, linux-pm@lists.osdl.org, Jens Axboe <jens.axboe@oracle.com>, linux-input@atrey.karlin.mff.cuni.cz, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-usb-devel@lists.sourceforge.net, Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 19 March 2007 16:32, Pavel Machek wrote:
+On Mon, 2007-03-19 at 16:33 -0400, Bill Davidsen wrote:
+
 > 
-> > >> > > > I have the same problem on my IBM X60s on rc1 and rc2. Can't resume
-> > >> > > > from RAM, can't suspend to disk. It is possible to revert all the
-> > >> > > > changes to ACPI and test it?
-> > >> > >
-> > >> > > This is with CONFIG_KVM=n?
-> > >> >
-> > >> > Yes.
-> > >>
-> > >> I've tried with CONFIG_KVM=n and CONFIG_KVM=y and both does not suspend.
-> > >
-> > >Do you mean that they "do not resume after suspend"?
+> What you say sounds good, assuming that the cost of a sleep is less than 
+> the cost of the busy wait. But this may be hardware, the waits may be 
+> very small and frequent, and if it's hitting a small hardware window 
+> like retrace, delays in response will cause the time period to be missed 
+> completely. This probably less critical with very smart cards, many of 
+> us don't run them.
 > > 
-> > I can't even suspend to disk/ram. It just hangs and the lights just
-> > blink and everything else hangs. With 2.6.20, it works fine.
-> 
-> Turn up console loglevel, and see where it hangs...
 
-I think CONFIG_DISABLE_CONSOLE_SUSPEND would have to be set for this purpose
-too.
+Actually, various strategies involving short busy waiting, or looking at
+DMA address registers before sleeping were commonplace.  But a
+syscall/sleep/wakeup is/was pretty fast.  If you have an operation
+blitting the screen (e.g. scrolling), it takes a bit of time for the GPU
+to execute the command.  I see this right now on OLPC, where a wonderful
+music application needs to scroll (most of) the screen left),
+periodically, and we're losing samples sometimes at those operation.
 
-Greetings,
-Rafael
+Remember also, that being nice to everyone else by sleeping, there are
+more cycles to go around, and the scheduler can nicely boost the X
+server's priority as it will for "interactive" processes that are being
+cooperative.
+                                - Jim
+
+-- 
+Jim Gettys
+One Laptop Per Child
