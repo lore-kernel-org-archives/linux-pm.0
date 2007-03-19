@@ -1,13 +1,10 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Mon, 19 Mar 2007 11:44:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
-References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+From: Trudy <lca@my-deja.com>
+Subject: quake
+Date: Mon, 19 Mar 2007 18:05:53 +0100
+Message-ID: <45FEC2F1.9000001@my-deja.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="----------=_1174323962-4069-44"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,127 +14,451 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 19 Mar 2007, Shaohua Li wrote:
+This is a multi-part message in MIME format...
 
-> Runtime device power management or dynamic device power management
-> (dpm).
-> =
+------------=_1174323962-4069-44
+Content-Type: multipart/related; boundary="----------=_1174323982-18571-628"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
 
-> Why dpm: =
+This is a multi-part message in MIME format...
 
->      1. put an idle device into low power state to save power =
+------------=_1174323982-18571-628
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->      2. speed up S3/S4. In resume time, we could resume devices only as
->         the devices are used. In suspend time, we could skip suspended
->         devices. (suspend/resume a device equals to change device state)
-> =
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<img alt="pressure" DEFANGED_src="cid:part1.08090505.03060207@my-deja.com"
+ height="326" width="486"><br>
+And welcome back to the blogging world Impact!<br>
+They do their hunting at these times because their prey is most active.
+What must have it been like to be alive in Roman Britain? Voluntary
+organisations, she said, "have to realise that they are engaged in a
+business, and they are actually competing for sponsorships. Kill the
+first one, and the other will die with it.<br>
+Points are another variety of feline coat pattern. If that doesn't fix
+it I try restarting the router, then setting it back to factory defaults
+and then reconfiguring it.<br>
+This release improves Most Popular Solitaire's compatibility with Vista
+(previous versions work on Vista, but the help file would not be
+accessible, and this fixes some minor issues). More details in the
+official announcement. Yes it's a hassle to have to do reinstalls and
+drop data back into place.<br>
+Instead, the  other one, the second intruder that had bounded his body
+to the seat and  rendered him senseless in sleep, disturbed him.<br>
+</body>
+</html>
 
-> Basically we need device driver support, a kernel framework and a policy
-> (determine when to change a device=E2=80=99s power state).
+------------=_1174323982-18571-628
+Content-Type: image/gif;
+ name="striking.gif"
+Content-Transfer-Encoding: base64
+Content-ID: <part1.08090505.03060207@my-deja.com>
+Content-Disposition: inline; filename="striking.gif"
 
-A lot of development along these lines has already been going on in the =
+R0lGODdhDAJfAfMMAOj/2P3a24BNh39DJQOAYBIbZca+bR4CA1H+nAb/Iq1x
+/xOL95z/CfYI3vYLQf+XAywAAAAACwJfAQAE/zDISesEOOvNu/9gKGZWaY2b
+eYlqiaJtLHuy9AVv5+Z8/9bAGKsCCBqPNl/qJkQ6n6nnSkmtWkdS5NU63dJw
+GHAI6PW1wllVMX0uu83s+E4jfetwSXo+uufJ/3YkRhxiaFddf0R6XYJCTDVV
+hYFlJjAriW1fmJt1OUeTmk6NnKSidqR+jmilrJWgXGwgrK89ppGAj5m0u2+M
+vEqtaWsUiyfFwXO/vIlFo7GHisNjvkPGzpCpZITWyqvIfXdtM1rX35tb5umq
+VOrPnuCWTWq1Qdkzp1mykt77oZXt0X606lZOGzMsANflogasHhx4/voVNPfr
+0zZ1/FxIJMiRT7tdCf+pMexIMlxIh7A2TtT18KQ4bvRcNVTp0V3GkTddolzJ
+8uawgyVb2qoGsWbChbOC9sIpkCI+ixdxIdUp81g+e9iMBuvWKWdRfeuohjQq
+SBkxpaCc8vyK9pU2hGfbLoVLTi7RfVKtDkQXUG9WsBinJV32aSfft4Cv2vVS
+FZqvvGsxMe4bOdlUZHc5mS2M+PDfy3UXO97qFapftQR7Lh1EC0pT1W3FdtYq
+e6hoN6g1G4otbPQFmJM3Mr1N3IxJhQsFG57pOh7b02KP946p0nbx1vcEZ/4M
+urlnoEPg/KTcfbby2pY3o97etfTy69DRz4tqvTg51sNph05M2n16/6h8553/
+dO9h1xiAAeV3DU+U7AcfVwqWJ19czgGnX4TFlHaeZBGNRR9yFcZBoIgXUsgV
+f8YciBt3skjolXrmjYjhh/O9w1p8/0wHkokuPtghcjRJCOJTFq6WjGJBDZgW
+bCWqCONeP34jo5PO8cOfjxv+F2WQkyg5lY1wjQeZTrfsB2J0dGk54ZArSunW
+cyieZNdAM4pZoDMh7nFjmQsauWZfPNoZ6JylNAncn/fseUOWTDYYIZuGwrlk
+jGGsVGaAyb1WHzuqneHgjlTmiagcNp5JBpSAxfnRKu6lNuqrg4YYqaQI1ghW
+ZZhhaVJDuMbq6jk4UrqlblP+eWkfijJ6Jx+9oqrr/yi81uorhMA2ayt7hSoL
+q0HuZCcoeZtiagmr+gnFYnCNLiEqic86mu6TvZlWLGRidtSekOzCuC55aFmz
+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
+oaWG8ZtHWl5XpQtObqnEdg0O8qudAkAEAAA7
 
-USB subsystem.  It isn't complete yet, but a lot of the ideas you raise =
+------------=_1174323982-18571-628--
 
-have already been implemented.
+------------=_1174323962-4069-44
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
 
-> I think we need answer below questions:
-> 1. How to present device=E2=80=99s power info/control interface to policy.
-> Unlike ACPI Dx state, a device=E2=80=99s power state might depend on seve=
-ral
-> parameters, like voltage/clock. We must change several parameters in the
-> meantime to switch device=E2=80=99s power state.
-> 2. How to handle devices dependences. For example, for a PCI endpoint
-> and a pci bridge above the pci endpoint, we should suspend pci endpoint
-> device first and then suspend pci bridge and vice versa in resume. On
-> the other hand, two devices might not have such relationship. Two
-> devices might haven=E2=80=99t any bus relationship. Eg, in embedded syste=
-m, a
-> clock might drive several devices under different buses.
-> 3. How to detect if a device is idle.
+Spam detection software, running on the system "daredevil.osdl.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
 
-These issues are where you are liable to run into trouble.  There are =
+Content preview:  And welcome back to the blogging world Impact! They do
+  their hunting at these times because their prey is most active. What
+  must have it been like to be alive in Roman Britain? Voluntary
+  organisations, she said, "have to realise that they are engaged in a
+  business, and they are actually competing for sponsorships. Kill the
+  first one, and the other will die with it. Points are another variety of
+  feline coat pattern. If that doesn't fix it I try restarting the router,
+  then setting it back to factory defaults and then reconfiguring it. This
+  release improves Most Popular Solitaire's compatibility with Vista
+  (previous versions work on Vista, but the help file would not be
+  accessible, and this fixes some minor issues). More details in the
+  official announcement. Yes it's a hassle to have to do reinstalls and
+  drop data back into place. Instead, the other one, the second intruder
+  that had bounded his body to the seat and rendered him senseless in
+  sleep, disturbed him. [...] 
 
-extremely dependent on the type of platform, bus, and device.  USB is =
+Content analysis details:   (7.5 points, 5.0 required)
 
-particularly simple in this respect.
-
-> 4. where should policy be, kernel/userspace. Userspace policy is
-> flexible, but userspace policy has some limitations like being swapped
-> out. The limitations don=E2=80=99t impact suspend device, but resume devi=
-ce
-> should be quick, eg suspended device should be resumed quickly soon
-> after new service request is coming.
-> =
-
-> My proposal: =
-
->      1. device=E2=80=99s power parameters. If a device=E2=80=99s power st=
-ate depends on
->         several parameters, we can map different parameters combining
->          to a single index, which looks like ACPI Dx state. In this way,
->         dpm framework and policy have a generic interface to get/set
->         device=E2=80=99s state. Each state exports some info, including t=
-his
->         state=E2=80=99s power consumption/latency. Device driver can expo=
-rt
->         extra info to policy, dpm framework doesn=E2=80=99t handle the ex=
-tra
->         info, but policy can. =
-
->      2. The device dependence varies from different systems especially
->         for embedded system. The idea is dpm framework handles device
->         dependence (like, resume a device=E2=80=99s parent before resume =
-the
->         device itself), and policy inputs the dependence data to dpm
->         framework. As device dependence exists, device driver shouldn=E2=
-=80=99t
->         directly resume a device. Instead, let dpm framework resumes the
->         device and handle dependence in the meantime. To input
->         dependence data, policy should know device=E2=80=99s unique name =
-and dpm
->         framework can get corresponding dpm device from the name.
->         Different buses have different device naming methods. To assign
->         a unified name to each device, I just give each device an id
->         regardless which bus the device is on. =
-
->      3. detect if a device is idle. The idea is each device has a busy
->         timestamp. Every time the driver wants to handle the device,
->         driver will update the timestamp. Policy can poll the timestamp
->         to determine if the device is idle. =
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 0.1 HTML_IMAGE_RATIO_06    BODY: HTML has a low ratio of text to image area
+ 1.1 HTML_20_30             BODY: Message is 20% to 30% HTML
+ 2.0 CONTENT_TYPE_NAME_GIF  BODY: Gif Attachment
+ 2.0 CONTENT_TYPE_IMAGE_GIF BODY: Gif Attachment
+ 0.0 HTML_MESSAGE           BODY: HTML included in message
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.4998]
+ 2.0 MIME_HTML_ONLY         BODY: Message only has text/html MIME parts
+ 0.3 HTML_IMAGE_ONLY_16     BODY: HTML: images with 1200-1600 bytes of words
 
 
-That's not how the USB implementation works.  Although a timestamp like =
 
-the one you describe is going to be added.
+------------=_1174323962-4069-44
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
->      4. policy position. The idea is policy resides on userspace. Dpm
->         framework exports device=E2=80=99s busy timestamp, state info,
->         dependence setting to userspace. According to the info, policy
->         suspends a device in specific time. Resuming a device is
->         directly done by dpm framework in kernel.
 
-In USB, we export the idle-time delay value (device is autosuspended =
-
-when it has been idle longer than this) and an administrative power-level =
-
-atttribute: on, auto, or suspend.  When set to "on" the device will not =
-
-autosuspend; when set to "auto" the device will autosuspend and autoresume =
-
-according to the delay setting; when set to "suspend" the device will be =
-
-suspended and will not autoresume.
-
-(This is cutting-edge stuff, not all present even in the development
-trees.  But we're getting there.)
-
-The API design is documented, so far as it exists, by the kerneldoc in =
-
-drivers/usb/core/driver.c.
-
-Alan Stern
+------------=_1174323962-4069-44--
