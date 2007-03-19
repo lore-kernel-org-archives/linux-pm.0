@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: Alternative Concept
-Date: Sun, 18 Mar 2007 21:04:26 -0700
-Message-ID: <200703182104.27555.david-b@pacbell.net>
+Date: Sun, 18 Mar 2007 23:07:24 -0700
+Message-ID: <200703182307.25177.david-b@pacbell.net>
 References: <44ECFF94.3030506@gmail.com>
-	<200703161103.12333.david-b@pacbell.net>
-	<45FDA040.4020502@gmail.com>
+	<200703152317.13398.david-b@pacbell.net>
+	<484380240703181927l12c80583pa54046e7a9fcdb67@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <45FDA040.4020502@gmail.com>
+In-Reply-To: <484380240703181927l12c80583pa54046e7a9fcdb67@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,58 +20,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+To: Ikhwan Lee <dlrghks@gmail.com>
 Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 18 March 2007 1:25 pm, Dmitry Krivoschekov wrote:
+On Sunday 18 March 2007 7:27 pm, Ikhwan Lee wrote:
+> Hi,
 > =
 
-> For me, there is a point that seems debatable already at the starting sta=
-ge:
+> On 3/16/07, David Brownell <david-b@pacbell.net> wrote:
+> > On Thursday 15 March 2007 8:56 pm, Ikhwan Lee wrote:
+> > > Hi,
+> > >
+> > > Although I agree that the current clock framework can handle power or
+> > > voltage domains in many platforms, having something like (struct clk
+> > > powerdomain1, powerdomain2;) does not seem like a good implementation,
+> > > a struct for clocks representing a power domain.
+> >
+> > Good thing that's not what I suggested then, right?  :)
+> >
+> > The point was that in the examples I've seen, the power domains
+> > are associated with clock domains, so that each clock is tied
+> > to one power domain.  And since you can't use the power domain
+> > without having a clock ... the implementation can tell if it's
+> > got to activate a power domain by looking at the clock.
 > =
 
-> > The goal of this parameter framework is to expose the resources in  a  =
+> True, although sometimes it gets dirty because multiple clock sources
+> are associated with one power domain
 
-> > way that allows other s/w (governors, policy mangers, etc) to control  =
+As clearly allowed for in what I wrote.  clock->power_domain.
 
-> > the resources while keeping the system operational.  One of the main  =
+> at the same time multiple power =
 
-> > requirements in our thinking is that we want this layer to represent  =
+> domains are associated with one clock source.
 
-> > the h/w and not include policy or decision making.  Meaning the =
+As also allowed for in what I wrote originally.  clock->power_domains[].
 
-> > software using the parameter framework would be responsible for  =
+> Simple parent and child =
 
-> > deciding the appropriate value for the parameters.   =
+> relationship provided by the clock framework is not always enough.
 
+Not implied in what I wrote.
+
+
+> > There may be other models of power domain, but that's the one
+> > I've had reason to look at (which isn't synonymous with a straight
+> > voltage/current supply).
+> >
+> >
+> > > If a new framework is more straighforward and introduces a negligible
+> > > overhead to the current kernel, I think it is worthwhile to have a
+> > > look at it. Plus this new framework might be able to take care of
+> > > those platforms that are not nicely supported by the current clock
+> > > framework.
+> >
+> > Perhaps when we see one, we could discuss that as somethong other
+> > than pure handwaving.  But that still won't address the basic point
+> > that it's wrong to assume the clock framework should be written out
+> > of the picture.
 > =
 
-> =
+> I think we can reach an agreement. The clock framework does not need
+> to be replaced with a new one since it is serving its purpose well
+> enough. If extra functionalities are needed for clocks, we can extend
+> the existing clock framework. Such extensions will include functions
+> like clk_set_rate_pending() and power_transaction_commit(). However,
+> since clocks and voltages (or power domains) have different
+> characteristics, it is desirable to have a separate framework for
+> power domains and associate that framework with the existing clock
+> framework.
 
-> Sometimes it's quite reasonable to make decisions (or policy)
-> at the low level, without exposing events to higher layers,
-
-Of course.  Any layer can incorporate a degree of policy.
-
-It's only when that's badly done -- or the problem is so complex
-that multiple policies need to be supported -- that you need to
-pull out that old "mechanism not policy" chestnut, and support
-some kind of policy switching mechanism (governors, userspace
-agents, etc) for different application domains.
+If the platform needs power domains to be exposed, yes.  But I gave
+examples where it does NOT need to be exposed, since each clock was
+in a single power domain.
 
 
-> e.g. turning a clock off when reference counter gets zero, this is
-> what OMAP's clock framework currently does.
+> I am not sure if this is the direction that the original PowerOp
+> people suggested. If we can agree on this, however, I think we can
+> proceed to look at the code.
 
-There are no choices to be made in that layer; it's no more "policy"
-than following the laws of arithmetic is "policy".  Software clock
-gating is what the clock framework is defined as doing; there's
-nothing OMAP-specific about that.
-
-The interesting bit for OMAP is that clock gating will often be done
-in hardware, not just in software.  There are other low-power SOC
-designs that do such things, but the ones I'm most aware of are for
-microcontrollers (MSP430, picoAVR, etc) that can't run Linux.
+I'm not sure why such agreement should be necessary before showing
+interface definitions.
 
 - Dave
