@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.21-rc4-mm1
-Date: Tue, 20 Mar 2007 21:21:41 +0100
-Message-ID: <20070320202141.GA3604@elf.ucw.cz>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<45FFF026.4030502@gmail.com>
-	<20070320080944.9cb3c765.akpm@linux-foundation.org>
-	<20070320183821.GD2670@elf.ucw.cz> <4600389E.6030901@gmail.com>
-	<20070320195659.GA3545@elf.ucw.cz> <46004080.6080202@gmail.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Alternative Concept
+Date: Tue, 20 Mar 2007 13:17:45 -0700
+Message-ID: <200703201317.46550.david-b@pacbell.net>
+References: <44ECFF94.3030506@gmail.com> <45FFF697.8080101@gmail.com>
+	<1174405005.25744.108.camel@Dogbert.NOE.nokia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1174405005.25744.108.camel@Dogbert.NOE.nokia.com>
 Content-Disposition: inline
-In-Reply-To: <46004080.6080202@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,39 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: Igor Stoppa <igor.stoppa@nokia.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tuesday 20 March 2007 8:36 am, Igor Stoppa wrote:
 
-> >>>> Also, it might be useful to add a temporary /proc/freeze-unfreeze th=
-ing
-> >>>> which will simply do a freeze/unfreeze cycle.  Then we can apply var=
-ious
-> >>>> workloads to the machine while madly stressing the freezer code.  =
+> Your approach is to just label policy what you want to kick out of the
+> driver =3D) Nice one!
 
-> >>> echo testproc > /sys/power/disk; echo disk > /sys/power/state ... is
-> >>> pretty much what you want.
-> >> Ok, I'll try this.
-> > =
+I had a similar reaction ... although, I was also wondering exactly
+what benefit would come from kicking that stuff out of drivers, and
+thus needing to rewrite/retest a lot of them.
 
-> > It will not help you -- probably -- it is equivalent to just running
-> > s2ram. But it should make "successful" testing easier, because you no
-> > longer need machine with working suspend to test refrigerator.
-> =
 
-> Aha, I didn't read it carefully. Suspend is working, but not in this kern=
-el.
-> I haven't tried s2ram in this version. Should I (I'm away from it) -- wou=
-ld
-> it show something?
+> > Ok, seems you are happy with current clock framework and advocating it
+> > to be as is.
+>
+> As I wrote several times i haven't seen yet a reason to replace it;
+> certainly there is space for improvement but so far this proposal has
+> not been on the lines of: how to improve the clk fw
 
-No, probably not. git bisect would help, but I guess it is easier to
-let Rafael sort it out.
-									Pavel
--- =
+Yes.  This thread is unfortunately very much a "where's the beef".
+I was afraid that was what would happen, given the complete lack
+of interface proposal.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+I suspect that until some non-troll content is provided, I'll tune out.
+
+
+> > Are you against addition some features to it, such as enable/disable =
+
+> > "turn the unused clock off" rule,
+
+That'd be what we call a "misfeature", or "bug".  Are you suggesting
+this be done to the IRQ subsystem too?  It has a rule that unused
+IRQs must be turned off.  Likewise that IRQs not used as wake events
+shouldn't be enabled as wake events.  I hope you're not restricting
+your addition of misfeatures to just the clock framework!
+
+
+> > Besides that it is meaningless for you, do you have any technical
+> > objections for that?
+>
+> Do you mean apart from the fact that it means hijacking the fw?
+> Noooo, not at all.
+
+I take it that was meant to be sarcasm...
+
+Me, yes I have already presented technical objections, all of which
+appear to have been ignored.
+
+
+> But why is it meaningful to you? Why can't you interact with the entity
+> that is actually controlling a certain clock, rather than with the clock
+> itself?
+
+Good question.  I hope that one doesn't get ignored, too.
+
+- Dave
