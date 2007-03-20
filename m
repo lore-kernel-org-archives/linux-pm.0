@@ -1,57 +1,66 @@
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [linux-pm] [2/6] 2.6.21-rc2: known regressions
-Date: Tue, 20 Mar 2007 10:44:44 -0400
-Message-ID: <45FFF35C.20003@tmr.com>
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>	 <20070305015034.GG3441@stusta.de> <20070308123143.GF5149@mellanox.co.il>	 <Pine.LNX.4.64.0703080954220.10832@woody.linux-foundation.org>	 <20070308192554.GA2999@elte.hu> <20070308230705.GA4611@elte.hu>	 <Pine.LNX.4.64.0703081545110.10832@woody.linux-foundation.org>	 <20070309111957.GA3928@elf.ucw.cz>  <20070318160707.GC12673@elte.hu>	 <1174236045.6832.9.camel@localhost>  <45FEF395.9050409@tmr.com> <1174342101.6832.173.camel@localhost>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Tue, 20 Mar 2007 10:58:31 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0703201049460.2772-100000@iolanthe.rowland.org>
+References: <1174352775.1665.4.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-input@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <1174342101.6832.173.camel@localhost>
-Sender: owner-linux-input@atrey.karlin.mff.cuni.cz
-List-Help: <mailto:majordomo@atrey.karlin.mff.cuni.cz?body=help>
-List-Owner: <mailto:owner-linux-input@atrey.karlin.mff.cuni.cz>
-List-Post: <mailto:linux-input@atrey.karlin.mff.cuni.cz>
-List-Unsubscribe: <mailto:linux-input-request@atrey.karlin.mff.cuni.cz?body=unsubscribe>
-To: jg@laptop.org
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>, Ash Milsted <thatistosayiseenem@gawab.com>, dmitry.torokhov@gmail.com, Arkadiusz Miskiewicz <arekm@maven.pl>, linux-pm@lists.osdl.org, Jens Axboe <jens.axboe@oracle.com>, linux-input@atrey.karlin.mff.cuni.cz, Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>, linux-usb-devel@lists.sourceforge.net, Jeff Chua <jeff.chua.linux@gmail.com>, Meelis Roos <mroos@linux.ee>, Janosch Machowinski <jmachowinski@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Thomas Meyer <thomas.mey@web.de>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1174352775.1665.4.camel@sli10-conroe.sh.intel.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Jim Gettys wrote:
-> On Mon, 2007-03-19 at 16:33 -0400, Bill Davidsen wrote:
->
->   
->> What you say sounds good, assuming that the cost of a sleep is less than 
->> the cost of the busy wait. But this may be hardware, the waits may be 
->> very small and frequent, and if it's hitting a small hardware window 
->> like retrace, delays in response will cause the time period to be missed 
->> completely. This probably less critical with very smart cards, many of 
->> us don't run them.
->>     
->
-> Actually, various strategies involving short busy waiting, or looking at
-> DMA address registers before sleeping were commonplace.  But a
-> syscall/sleep/wakeup is/was pretty fast.  If you have an operation
-> blitting the screen (e.g. scrolling), it takes a bit of time for the GPU
-> to execute the command.  I see this right now on OLPC, where a wonderful
-> music application needs to scroll (most of) the screen left),
-> periodically, and we're losing samples sometimes at those operation.
->   
-None of that conflicts with what I said, but what works on an LCD may 
-not be appropriate for a CRT. With even moderate 1024x768@70 timing the 
-horizontal retrace happens ~50k/sec, and that's not an appropriate 
-syscall rate. I'm just pointing out that some things a video interface 
-does with simple hardware involve lots of very small windows. Don't read 
-that as "don't do it," just "be careful HOW you do it."
-> Remember also, that being nice to everyone else by sleeping, there are
-> more cycles to go around, and the scheduler can nicely boost the X
-> server's priority as it will for "interactive" processes that are being
-> cooperative.
-I'm going to cautiously guess that the problem might be not "how much" 
-but "how soon." That is, latency might be more important than giving the 
-server a lot of CPU.
+On Tue, 20 Mar 2007, Shaohua Li wrote:
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+> > A lot of development along these lines has already been going on in
+> > the
+> > USB subsystem.  It isn't complete yet, but a lot of the ideas you
+> > raise
+> > have already been implemented.
+> Ok, I'll look at the USB implementation. On the other hand, I think
+> there should be a generic framework for all bus types.
+
+I agree, but only to the extent that the concepts can usefully be shared.  =
+
+What works for USB might very well not work for a different subsystem.  =
+
+
+My approach has been first to get something that does work in one
+subsystem, and then to see about moving it into other subsystems or the PM
+core.  I haven't finished the first step yet.  :-)  So it may be a little =
+
+premature to try defining a full-blown dynamic power management solution =
+
+that can apply to everything.
+
+> Doing suspend in the driver level isn't flexible. See in the case 'close
+> console if keyboard/mouse hasn't input', it's hard to do in a driver.
+
+I'm a little confused by this.  If you want to suspend a device, surely =
+
+you have to ask the device's driver to do the actual work?
+
+Maybe you mean that the _decision_ to suspend a device sometimes must be =
+
+made by code other than the device's driver.  I agree; nothing I said =
+
+before was meant to rule out such things.  In fact, USB already contains =
+
+several instances where non-driver code decides to suspend a device.  For =
+
+example, when a device's file in the usbfs filesystem is closed, the =
+
+filesystem code attempts to suspend the device.
+
+Alan Stern
