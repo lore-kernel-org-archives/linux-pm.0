@@ -1,16 +1,13 @@
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 12:45:29 +0300
-Message-ID: <45FFAD39.1000302@gmail.com>
-References: <44ECFF94.3030506@gmail.com>
-	<200703182104.27555.david-b@pacbell.net>
-	<45FF24C3.1000203@gmail.com>
-	<200703200107.17290.david-b@pacbell.net>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: suspend to disk modes, default mode
+Date: Tue, 20 Mar 2007 10:44:07 +0100
+Message-ID: <1174383848.3770.8.camel@johannes.berg>
+References: <1174351671.3645.8.camel@johannes.berg>
+	<20070320093322.GE3922@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0434366809=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703200107.17290.david-b@pacbell.net>
+In-Reply-To: <20070320093322.GE3922@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,79 +17,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-David Brownell wrote:
-> On Monday 19 March 2007 5:03 pm, Dmitry Krivoschekov wrote:
->> David Brownell wrote:
->>> On Sunday 18 March 2007 1:25 pm, Dmitry Krivoschekov wrote:
->>>> Sometimes it's quite reasonable to make decisions (or policy)
->>>> at the low level, without exposing events to higher layers,
->>> Of course.  Any layer can incorporate a degree of policy.
->> But users should be able to choose to use or do not use the incorporated
->> policy, shouldn't they?
->
-> Sometimes.  What's a user? =
 
-It's a user of a kernel subsystem that (subsystem ) keeps a policy,
-i.e. a user it's another kernel subsystem or userspace application,
-it depends on implementation of a system.
->  Do you really expect every single
-> algorithm choice to be packaged as a pluggable policy?  =
-
-I didn't say pluggable policy, I just said there are must be
-an alternative - "use" or "do not use" a predefined policy.
-For example, in USB you are able to enable/disable autosuspend rule,
-don't know if it's possible to disable it at runtime though.
-> Any
-> time I've seen systems designed that way, those pluggabilty
-> hooks have been a major drag on performance and maintainability.
->
-> Most components don't actually _need_ a choice of policies.
->
->
-Yes, but they at least need a mechanism to disable an associated policy,
-upper layers should be able to decide where the policy well be kept,
-they may delegate the keeping to lower layers but also may want to
-keep the policy themselves for some reason.
-
-Also, in some cases it is reasonable to adjust rules of a policy
-(without changing the policy). For example if you define a policy
-"keep an output frequency always for 33 MHz (an input frequency may vary)",
-you may want to change the base frequency to 66 MHz sometimes.
+--===============0434366809==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-sYDdFSV+B629OFnIq+z2"
 
 
->>> It's only when that's badly done -- or the problem is so complex
->>> that multiple policies need to be supported -- that you need to
->>> pull out that old "mechanism not policy" chestnut, and support
->>> some kind of policy switching mechanism (governors, userspace
->>> agents, etc) for different application domains.
->>>
->>>
->>>> e.g. turning a clock off when reference counter gets zero, this is
->>>> what OMAP's clock framework currently does.
->>> There are no choices to be made in that layer; it's no more "policy"
->>> than following the laws of arithmetic is "policy".  Software clock
->> there is some principle: "turn the clock off when use counter reaches
->> zero", so it is a policy, and a choice is to disable or not to disable
->> an output clock, it is the simplest case but it's certainly a policy. =
+--=-sYDdFSV+B629OFnIq+z2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->
-> That's not a choice; it's how the API is defined.  It's not "policy".
->
-> Arithmetic is defined so that 2 + 2 =3D=3D 4.  Should we have a "policy"
-> allowing it to =3D=3D 5 instead?  Or should we just accept that as how
-> things are defined, and move on?
-We should accept this if we agree that benefit of using the rule always
-exist,
-but if the rule constrain some functionality we may want to disable the
-rule.
-Considering the case with clocks,  we may want  to leave the clock running
-even if there is no users of the clock, but there is a timing constraint
-for readiness  of  a clock device  (PLLs can't be started immediately).
+Hi,
+
+> > I also used to think this was for implementing suspend-to-both, is that
+> > wrong? In any case, I can't live with it being platform by default
+>=20
+> No, it is to get ACPI working after resume.
+
+Yeah, I noticed later on. Sorry for the misunderstanding.
+
+> > Maybe we just need a pm_disk_modes bitmap and a default_pm_disk_mode
+> > member in struct pm_ops instead? What's firmware vs. platform anyway?
+>=20
+> bitmap would be nice. Firmware used to mean "let the bios do the whole
+> suspend", platform means "linux does the suspend, but we tell bios we
+> are doing it", shutdown means "linux does the suspend, does not tell
+> anyone".
+
+Well, actually, "let the bios do the whole suspend" should be
+implemented by a new PM_SUSPEND_FIRMWAREDISK mode that can be used
+instead of "disk" and is invoked through pm_ops directly w/o hitting the
+disk.c code. That would be the right way to invoke such a mode, however,
+currently, no platforms even have such a mode as far as I can tell.
+
+johannes
+
+--=-sYDdFSV+B629OFnIq+z2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF/6zm/ETPhpq3jKURAmJ2AKCUXhqqgKuoPMT6quIgvhNpC+DPpwCgtMyE
+6DxVen5c3P2R/qGcEQdQXTo=
+=xTcF
+-----END PGP SIGNATURE-----
+
+--=-sYDdFSV+B629OFnIq+z2--
 
 
-Thanks,
-Dmitry
+--===============0434366809==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0434366809==--
