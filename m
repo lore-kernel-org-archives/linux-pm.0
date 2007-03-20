@@ -1,15 +1,14 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 13:21:17 -0700
-Message-ID: <200703201321.18317.david-b@pacbell.net>
-References: <44ECFF94.3030506@gmail.com>
-	<1174386620.25744.23.camel@Dogbert.NOE.nokia.com>
-	<45FFDCA3.5060007@gmail.com>
+Subject: Re: what can we do with frozen processes (or: calling
+	sync with	processes frozen)
+Date: Tue, 20 Mar 2007 14:14:08 -0700
+Message-ID: <200703201414.08589.david-b@pacbell.net>
+References: <1174173718.13027.0.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <45FFDCA3.5060007@gmail.com>
+In-Reply-To: <1174173718.13027.0.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,15 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Igor Stoppa <igor.stoppa@Nokia.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 March 2007 6:07 am, Dmitry Krivoschekov wrote:
+On Saturday 17 March 2007 4:21 pm, Johannes Berg wrote:
+> The real thing we should be doing is think about a whole range of things
+> you can do in the kernel and then think about whether they should be
+> allowed to be done in the various stages. =
 
-> And you should definitely read the first chapter of the "Linux Device
-> drivers" book, see "The Role of the Device Driver" section.
 
-While it's a fine book for beginners, I wouldn't treat anything
-it says as being "the final word" even for the kernel version
-that it was written against.
+ISTR making this point before.  Defining "stages" will be tricky too;
+the early boot stuff (initramfs running programs while drivers init)
+will be slippery, and the other key transitions -- suspend, resume,
+shutdown, kexec -- aren't much better.
+
+Plus, the "freezer" thing always seemed to me like a bit of a punt;
+as in your XFS example, there are tasks that should be able to do
+suspend related work before freezing random stuff, and likewise
+afterward.  And I'm not sure that anyone pushing on this issue won't
+find arch-specific differences...
+
+Anyway, I agree with the point of yours which I quioted above.  :)
+
+- dave
