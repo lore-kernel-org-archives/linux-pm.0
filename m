@@ -1,13 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 00:56:59 -0700
-Message-ID: <200703200057.00110.david-b@pacbell.net>
-References: <200703191412.l2JECLsP021909@olwen.urbana.css.mot.com>
+Date: Tue, 20 Mar 2007 01:07:16 -0700
+Message-ID: <200703200107.17290.david-b@pacbell.net>
+References: <44ECFF94.3030506@gmail.com>
+	<200703182104.27555.david-b@pacbell.net>
+	<45FF24C3.1000203@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703191412.l2JECLsP021909@olwen.urbana.css.mot.com>
+In-Reply-To: <45FF24C3.1000203@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,39 +20,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org, pavel@ucw.cz, linux@dominikbrodowski.net
+To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 19 March 2007 7:12 am, Scott E. Preece wrote:
-> =
+On Monday 19 March 2007 5:03 pm, Dmitry Krivoschekov wrote:
+> David Brownell wrote:
+> > On Sunday 18 March 2007 1:25 pm, Dmitry Krivoschekov wrote:
+> >>
+> >> Sometimes it's quite reasonable to make decisions (or policy)
+> >> at the low level, without exposing events to higher layers,
+> >
+> > Of course.  Any layer can incorporate a degree of policy.
+>
+> But users should be able to choose to use or do not use the incorporated
+> policy, shouldn't they?
 
-> Could you guys present a clear definition of exactly what you mean by
-> "clock domain" and "power domain"? I can think of several different ways
-> to interpret the phrases, and I'd like to end up with the same meaning
-> that you are arguing from...
+Sometimes.  What's a user?  Do you really expect every single
+algorithm choice to be packaged as a pluggable policy?  Any
+time I've seen systems designed that way, those pluggabilty
+hooks have been a major drag on performance and maintainability.
 
-A set of devices that use the same power supply or clock are
-in the same "power domain" or "clock domain" (respectively).
+Most components don't actually _need_ a choice of policies.
 
-The domains will often be hierarchical, e.g. a base clock
-rooting other clocks, derived from it by dividers, PLL,
-or clock gates.
 
-Sometimes domains overlap ... e.g. a controller that needs
-to use one logic level for on-chip logic and another for the
-external interface; or similarly, different clock rates.
+> > It's only when that's badly done -- or the problem is so complex
+> > that multiple policies need to be supported -- that you need to
+> > pull out that old "mechanism not policy" chestnut, and support
+> > some kind of policy switching mechanism (governors, userspace
+> > agents, etc) for different application domains.
+> >
+> >
+> >> e.g. turning a clock off when reference counter gets zero, this is
+> >> what OMAP's clock framework currently does.
+> >
+> > There are no choices to be made in that layer; it's no more "policy"
+> > than following the laws of arithmetic is "policy".  Software clock
+>
+> there is some principle: "turn the clock off when use counter reaches
+> zero", so it is a policy, and a choice is to disable or not to disable
+> an output clock, it is the simplest case but it's certainly a policy. =
 
-Simple chips may not have many domains.  Nowadays I think
-most SOCs have at least a decent selection of clock domains,
-to eliminate the power drain involved in driving transistors
-through clock ticks.  I understand it's more complicated to
-have multiple power domains, but the incentive to shrink the
-leakage current is strong.  (So adding on-chip power domains
-involves tricks to constrain leakage, and not just an ability
-to operate without a given power rail.)
 
-I think that captures the basics... from a software perspective.
-I'm sure a hardware guy could provide a more advanced course.
+That's not a choice; it's how the API is defined.  It's not "policy".
+
+Arithmetic is defined so that 2 + 2 =3D=3D 4.  Should we have a "policy"
+allowing it to =3D=3D 5 instead?  Or should we just accept that as how
+things are defined, and move on?
+
+At some point, decisions are just ground rules, and not policy.
 
 - Dave
