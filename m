@@ -1,16 +1,21 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.21-rc4-mm1
-Date: Tue, 20 Mar 2007 19:38:21 +0100
-Message-ID: <20070320183821.GD2670@elf.ucw.cz>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<45FFF026.4030502@gmail.com>
-	<20070320080944.9cb3c765.akpm@linux-foundation.org>
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Subject: Re: Alternative Concept
+Date: Tue, 20 Mar 2007 22:16:57 +0300
+Message-ID: <46003329.6050808@gmail.com>
+References: <44ECFF94.3030506@gmail.com>
+	<200703182104.27555.david-b@pacbell.net>
+	<45FF24C3.1000203@gmail.com>
+	<200703200107.17290.david-b@pacbell.net>
+	<45FFAD39.1000302@gmail.com>
+	<1174386620.25744.23.camel@Dogbert.NOE.nokia.com>
+	<45FFDCA3.5060007@gmail.com>
+	<1174398759.25744.69.camel@Dogbert.NOE.nokia.com>
+	<45FFF697.8080101@gmail.com> <20070320153603.GB5533@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070320080944.9cb3c765.akpm@linux-foundation.org>
+In-Reply-To: <20070320153603.GB5533@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +25,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi Pavel,
 
-> > Andrew Morton napsal(a):
-> > >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
-> > =
+Pavel Machek wrote:
+> Hi!
+>
+>>> when not needed. Based on this default behavior, there might be certain
+>>> cases when a system-level manager can interact with them by making the
+>> the system-level manager has to be arch-dependent in this case
+>>> _localised_ power saving less aggressive, thus optimiising the global
+>>> saves/performance. So if others than you are happy with just the
+>>> distributed approach, they can avoid using the framework, while you can
+>>> just put it on top and achive the same power saving that you would get
+>>> in case 1
+>> Ok, seems you are happy with current clock framework and advocating it
+>> to be as is.
+>> Are you against addition some features to it, such as enable/disable =
 
-> > I'm getting this while trying to swsusp:
-> > Stopping tasks ...
-> > Stopping kernel threads timed out after 20 seconds (1 tasks refusing to=
- freeze):
-> >  swapper
-> >  Restarting tasks ... done.
-> > =
-
-> > What to test? Enable PM_DEBUG?
-
-Is it repeatable? Freezer normally works better than that.
-
-> hm, OK.  Rafael has been working on fixing the process freezer and it'll
-> take some time to get it to where we want it to be, I expect.
-
-> Rafael, I think that we could afford to add heaps of debug in there at th=
-is
-> stage to help us track down problems like this.
-> =
-
-> Also, it might be useful to add a temporary /proc/freeze-unfreeze thing
-> which will simply do a freeze/unfreeze cycle.  Then we can apply various
-> workloads to the machine while madly stressing the freezer code.  =
+>> "turn the unused clock off"
+>
+> What kind of debate is this?!
+>
+> Of course I and everyone else is against adding features without
+> _really good_ explanation why this is needed. And no, you should not
+> even ask unless you have patch ready, =
 
 
-echo testproc > /sys/power/disk; echo disk > /sys/power/state ... is
-pretty much what you want.
-								Pavel
--- =
+If I understand you correctly, you are against big debates unless a
+patch is ready,
+I agree to that if someone tries to speculate on adding some feature
+which is easily
+can be shown as a patch, but before doing something more complex, say
+new subsystem,
+it is worth to make sure whether your intention makes sense at all, and
+if it does
+make sense, to discuss possible design details. I think it's better then
+reviewing
+of a patch set, then get an agreement the patches is ok and eventually
+decide
+the thing the patches are adding is unneeded.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+If you feel people ask and discuss the same things again and again
+perhaps it is time
+to create some FAQ list.
+
+
+the first question would be:
+
+Q: Does Linux Power management take care about personal computers only?
+A: ????
+ =
+
+
+
+Thanks,
+Dmitry
+
+
+P.S. Are there special Etiquette notes for the list?
