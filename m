@@ -1,12 +1,13 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend to disk modes, default mode
-Date: Tue, 20 Mar 2007 02:03:49 +0100
-Message-ID: <1174352630.3645.14.camel@johannes.berg>
-References: <1174351671.3645.8.camel@johannes.berg>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Tue, 20 Mar 2007 09:06:15 +0800
+Message-ID: <1174352775.1665.4.camel@sli10-conroe.sh.intel.com>
+References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1469063013=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174351671.3645.8.camel@johannes.berg>
+In-Reply-To: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,50 +17,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---===============1469063013==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-hhl6EifGmNGwu504+jy6"
-
-
---=-hhl6EifGmNGwu504+jy6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2007-03-20 at 01:47 +0100, Johannes Berg wrote:
-
-> I also used to think this was for implementing suspend-to-both, is that
-> wrong?
-
-Yup, this must be wrong.
-
-johannes
-
---=-hhl6EifGmNGwu504+jy6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF/zL1/ETPhpq3jKURAgzxAKCH0ibh6qoWp2IbekxXvVsz/VgH5gCdH1NH
-OgQk+cY4y6ZhyytYA8kUghY=
-=61lc
------END PGP SIGNATURE-----
-
---=-hhl6EifGmNGwu504+jy6--
-
-
---===============1469063013==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1469063013==--
+T24gTW9uLCAyMDA3LTAzLTE5IGF0IDIzOjQ0ICswODAwLCBBbGFuIFN0ZXJuIHdyb3RlOgo+IE9u
+IE1vbiwgMTkgTWFyIDIwMDcsIFNoYW9odWEgTGkgd3JvdGU6Cj4gCj4gPiBSdW50aW1lIGRldmlj
+ZSBwb3dlciBtYW5hZ2VtZW50IG9yIGR5bmFtaWMgZGV2aWNlIHBvd2VyIG1hbmFnZW1lbnQKPiA+
+IChkcG0pLgo+ID4KPiA+IFdoeSBkcG06Cj4gPiAgICAgIDEuIHB1dCBhbiBpZGxlIGRldmljZSBp
+bnRvIGxvdyBwb3dlciBzdGF0ZSB0byBzYXZlIHBvd2VyCj4gPiAgICAgIDIuIHNwZWVkIHVwIFMz
+L1M0LiBJbiByZXN1bWUgdGltZSwgd2UgY291bGQgcmVzdW1lIGRldmljZXMgb25seQo+IGFzCj4g
+PiAgICAgICAgIHRoZSBkZXZpY2VzIGFyZSB1c2VkLiBJbiBzdXNwZW5kIHRpbWUsIHdlIGNvdWxk
+IHNraXAKPiBzdXNwZW5kZWQKPiA+ICAgICAgICAgZGV2aWNlcy4gKHN1c3BlbmQvcmVzdW1lIGEg
+ZGV2aWNlIGVxdWFscyB0byBjaGFuZ2UgZGV2aWNlCj4gc3RhdGUpCj4gPgo+ID4gQmFzaWNhbGx5
+IHdlIG5lZWQgZGV2aWNlIGRyaXZlciBzdXBwb3J0LCBhIGtlcm5lbCBmcmFtZXdvcmsgYW5kIGEK
+PiBwb2xpY3kKPiA+IChkZXRlcm1pbmUgd2hlbiB0byBjaGFuZ2UgYSBkZXZpY2XDouKCrOKEonMg
+cG93ZXIgc3RhdGUpLgo+IAo+IEEgbG90IG9mIGRldmVsb3BtZW50IGFsb25nIHRoZXNlIGxpbmVz
+IGhhcyBhbHJlYWR5IGJlZW4gZ29pbmcgb24gaW4KPiB0aGUKPiBVU0Igc3Vic3lzdGVtLiAgSXQg
+aXNuJ3QgY29tcGxldGUgeWV0LCBidXQgYSBsb3Qgb2YgdGhlIGlkZWFzIHlvdQo+IHJhaXNlCj4g
+aGF2ZSBhbHJlYWR5IGJlZW4gaW1wbGVtZW50ZWQuCk9rLCBJJ2xsIGxvb2sgYXQgdGhlIFVTQiBp
+bXBsZW1lbnRhdGlvbi4gT24gdGhlIG90aGVyIGhhbmQsIEkgdGhpbmsKdGhlcmUgc2hvdWxkIGJl
+IGEgZ2VuZXJpYyBmcmFtZXdvcmsgZm9yIGFsbCBidXMgdHlwZXMuCgo+ID4gICAgICA0LiBwb2xp
+Y3kgcG9zaXRpb24uIFRoZSBpZGVhIGlzIHBvbGljeSByZXNpZGVzIG9uIHVzZXJzcGFjZS4KPiBE
+cG0KPiA+ICAgICAgICAgZnJhbWV3b3JrIGV4cG9ydHMgZGV2aWNlw6LigqzihKJzIGJ1c3kgdGlt
+ZXN0YW1wLCBzdGF0ZSBpbmZvLAo+ID4gICAgICAgICBkZXBlbmRlbmNlIHNldHRpbmcgdG8gdXNl
+cnNwYWNlLiBBY2NvcmRpbmcgdG8gdGhlIGluZm8sCj4gcG9saWN5Cj4gPiAgICAgICAgIHN1c3Bl
+bmRzIGEgZGV2aWNlIGluIHNwZWNpZmljIHRpbWUuIFJlc3VtaW5nIGEgZGV2aWNlIGlzCj4gPiAg
+ICAgICAgIGRpcmVjdGx5IGRvbmUgYnkgZHBtIGZyYW1ld29yayBpbiBrZXJuZWwuCj4gCj4gSW4g
+VVNCLCB3ZSBleHBvcnQgdGhlIGlkbGUtdGltZSBkZWxheSB2YWx1ZSAoZGV2aWNlIGlzIGF1dG9z
+dXNwZW5kZWQKPiB3aGVuIGl0IGhhcyBiZWVuIGlkbGUgbG9uZ2VyIHRoYW4gdGhpcykgYW5kIGFu
+IGFkbWluaXN0cmF0aXZlCj4gcG93ZXItbGV2ZWwKPiBhdHR0cmlidXRlOiBvbiwgYXV0bywgb3Ig
+c3VzcGVuZC4gIFdoZW4gc2V0IHRvICJvbiIgdGhlIGRldmljZSB3aWxsCj4gbm90Cj4gYXV0b3N1
+c3BlbmQ7IHdoZW4gc2V0IHRvICJhdXRvIiB0aGUgZGV2aWNlIHdpbGwgYXV0b3N1c3BlbmQgYW5k
+Cj4gYXV0b3Jlc3VtZQo+IGFjY29yZGluZyB0byB0aGUgZGVsYXkgc2V0dGluZzsgd2hlbiBzZXQg
+dG8gInN1c3BlbmQiIHRoZSBkZXZpY2Ugd2lsbAo+IGJlCj4gc3VzcGVuZGVkIGFuZCB3aWxsIG5v
+dCBhdXRvcmVzdW1lLgpEb2luZyBzdXNwZW5kIGluIHRoZSBkcml2ZXIgbGV2ZWwgaXNuJ3QgZmxl
+eGlibGUuIFNlZSBpbiB0aGUgY2FzZSAnY2xvc2UKY29uc29sZSBpZiBrZXlib2FyZC9tb3VzZSBo
+YXNuJ3QgaW5wdXQnLCBpdCdzIGhhcmQgdG8gZG8gaW4gYSBkcml2ZXIuCgpUaGFua3MsClNoYW9o
+dWEKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
+cG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
+Oi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQo=
