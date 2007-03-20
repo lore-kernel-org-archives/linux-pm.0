@@ -1,19 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] add firmware disk state and clean up
-Date: Tue, 20 Mar 2007 11:25:51 +0100
-Message-ID: <20070320102551.GB19283@elf.ucw.cz>
-References: <20070320015846.636692000@sipsolutions.net>
-	<20070320084744.984025000@sipsolutions.net>
-	<20070320093105.GD3922@elf.ucw.cz>
-	<1174383407.3770.3.camel@johannes.berg>
-	<20070320094352.GF3922@elf.ucw.cz>
-	<1174385865.3770.20.camel@johannes.berg>
+From: Igor Stoppa <igor.stoppa@Nokia.com>
+Subject: Re: Alternative Concept
+Date: Tue, 20 Mar 2007 12:30:20 +0200
+Message-ID: <1174386620.25744.23.camel@Dogbert.NOE.nokia.com>
+References: <44ECFF94.3030506@gmail.com>
+	<200703182104.27555.david-b@pacbell.net> <45FF24C3.1000203@gmail.com>
+	<200703200107.17290.david-b@pacbell.net> <45FFAD39.1000302@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1174385865.3770.20.camel@johannes.berg>
+In-Reply-To: <45FFAD39.1000302@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,66 +19,124 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, Dirk Behme <dirk.behme@de.bosch.com>, linux-pm@lists.osdl.org, Nicolas Pitre <nico@cam.org>
+To: ext Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Cc: linux-pm@lists.osdl.org, Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 2007-03-20 at 12:45 +0300, ext Dmitry Krivoschekov wrote:
+> David Brownell wrote:
+> > On Monday 19 March 2007 5:03 pm, Dmitry Krivoschekov wrote:
+> >> David Brownell wrote:
+> >>> On Sunday 18 March 2007 1:25 pm, Dmitry Krivoschekov wrote:
+> >>>> Sometimes it's quite reasonable to make decisions (or policy)
+> >>>> at the low level, without exposing events to higher layers,
+> >>> Of course.  Any layer can incorporate a degree of policy.
+> >> But users should be able to choose to use or do not use the incorporat=
+ed
+> >> policy, shouldn't they?
+> >
+> > Sometimes.  What's a user? =
 
-> This patch adds a new state PM_SUSPEND_FIRMWAREDISK state and cleans up
-> all pm_ops users to include a .valid callback which in most cases allows
-> only mem suspend since except ACPI they all don't differentiate between
-> standby/mem which are currently allowed.
+> It's a user of a kernel subsystem that (subsystem ) keeps a policy,
+> i.e. a user it's another kernel subsystem or userspace application,
+> it depends on implementation of a system.
+> >  Do you really expect every single
+> > algorithm choice to be packaged as a pluggable policy?  =
 
-> This new state has no users yet but I think APM could be converted
+> I didn't say pluggable policy, I just said there are must be
+> an alternative - "use" or "do not use" a predefined policy.
+> For example, in USB you are able to enable/disable autosuspend rule,
+> don't know if it's possible to disable it at runtime though.
+> > Any
+> > time I've seen systems designed that way, those pluggabilty
+> > hooks have been a major drag on performance and maintainability.
+> >
+> > Most components don't actually _need_ a choice of policies.
+> >
+> >
+> Yes, but they at least need a mechanism to disable an associated policy,
+> upper layers should be able to decide where the policy well be kept,
+> they may delegate the keeping to lower layers but also may want to
+> keep the policy themselves for some reason.
+That sounds more like it's driven by IP than by technical reasons.
+Anyway in the USB example mentioned the rule is very high level, while
+here the proposal is to meddle with the internals of a driver.
+It seems more logical to implement policies/rules at driver level,
+rather than going straight for the resources of the driver.
 
-The person doing the conversion should add the state,
-sorry... ... actually it makes sense, but I'd prefer not to have it,
-yet.
+Why can't the driver itself be able to translate whatever high-level
+command/hint it receives into the platform/arch/board specific actions?
 
-> --- linux-2.6.orig/arch/arm/common/sharpsl_pm.c	2007-03-20 10:51:02.05321=
-4909 +0100
-> +++ linux-2.6/arch/arm/common/sharpsl_pm.c	2007-03-20 10:51:58.963214909 =
-+0100
-> @@ -765,10 +765,16 @@ static void sharpsl_apm_get_power_status
->  	info->battery_life =3D sharpsl_pm.battstat.mainbat_percent;
->  }
->  =
 
-> +static int pxa_pm_valid(suspend_state_t state)
-> +{
-> +	return state =3D=3D PM_SUSPEND_MEM;
-> +}
+> Also, in some cases it is reasonable to adjust rules of a policy
+> (without changing the policy). For example if you define a policy
+> "keep an output frequency always for 33 MHz (an input frequency may vary)=
+",
+> you may want to change the base frequency to 66 MHz sometimes.
+> =
 
-create static inline pm_valid_only_mem() somewhere in header, then
-share it around the code?
+> =
 
-> --- linux-2.6.orig/kernel/power/main.c	2007-03-20 11:13:31.173214909 +0100
-> +++ linux-2.6/kernel/power/main.c	2007-03-20 11:15:30.153214909 +0100
-> @@ -157,11 +157,14 @@ static void suspend_finish(suspend_state
->  =
+> >>> It's only when that's badly done -- or the problem is so complex
+> >>> that multiple policies need to be supported -- that you need to
+> >>> pull out that old "mechanism not policy" chestnut, and support
+> >>> some kind of policy switching mechanism (governors, userspace
+> >>> agents, etc) for different application domains.
+> >>>
+> >>>
+> >>>> e.g. turning a clock off when reference counter gets zero, this is
+> >>>> what OMAP's clock framework currently does.
+> >>> There are no choices to be made in that layer; it's no more "policy"
+> >>> than following the laws of arithmetic is "policy".  Software clock
+> >> there is some principle: "turn the clock off when use counter reaches
+> >> zero", so it is a policy, and a choice is to disable or not to disable
+> >> an output clock, it is the simplest case but it's certainly a policy. =
 
->  =
+> >
+> > That's not a choice; it's how the API is defined.  It's not "policy".
+> >
+> > Arithmetic is defined so that 2 + 2 =3D=3D 4.  Should we have a "policy"
+> > allowing it to =3D=3D 5 instead?  Or should we just accept that as how
+> > things are defined, and move on?
+> We should accept this if we agree that benefit of using the rule always
+> exist,
+> but if the rule constrain some functionality we may want to disable the
+> rule.
+> Considering the case with clocks,  we may want  to leave the clock running
+> even if there is no users of the clock, but there is a timing constraint
+> for readiness  of  a clock device  (PLLs can't be started immediately).
 
->  static const char * const pm_states[PM_SUSPEND_MAX] =3D {
-> -	[PM_SUSPEND_STANDBY]	=3D "standby",
-> -	[PM_SUSPEND_MEM]	=3D "mem",
-> +	"standby",
-> +	"mem",
->  #ifdef CONFIG_SOFTWARE_SUSPEND
-> -	[PM_SUSPEND_DISK]	=3D "disk",
-> +	"disk",
-> +#else
-> +	NULL,
->  #endif
-> +	"firmware-disk",
->  };
+I find that a bogus example.
+It seems like you are generalising clock handling based on PLLs.
+The PLL is actually the exception, having a penalty in commuting between
+states, while all the children can be toggled on/off without any delay.
+And that's easy to deal with: if a driver is going to do something that
+could be affected by the PLL automatically going off, the driver can
+avoid releasing its clock. That will effectively keep the PLL on.
 
-I'd keep the c99 syntax here. (And we do not need firmware-disk just
-yet).
-									Pavel
+The PLL per se is not really significant, apart from the fact that it
+tatkes power and it's desirable to keep it off for as long as possible,
+but the important bit is that the drivers must have the clock ready and
+available when needed.
+
+A similar approach can be used for frequencies: if a driver periodically
+needs a certain high frequency, it might be impacted by the system
+automatically scaling voltage/frequence.
+
+Possible solutions?
+-keep the request for high frequency
+  if a pll relock is involved in the scaling
+
+-keep the request for high voltage
+  if there is no significant delay from a possible pll relock or no
+relock at all, but significant ramp-up time for the voltage regulator
+
+These actions could be performed by the driver either autonomously or
+based on hints/commands receivied from upper layers, in the form of
+driver specific commands.
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Cheers, Igor
+
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
