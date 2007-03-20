@@ -1,14 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Tue, 20 Mar 2007 19:30:22 +0100
-Message-ID: <20070320183022.GC2670@elf.ucw.cz>
-References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+Subject: Re: 2.6.21-rc4-mm1
+Date: Tue, 20 Mar 2007 19:38:21 +0100
+Message-ID: <20070320183821.GD2670@elf.ucw.cz>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<45FFF026.4030502@gmail.com>
+	<20070320080944.9cb3c765.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+In-Reply-To: <20070320080944.9cb3c765.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,88 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Runtime device power management or dynamic device power management
-> (dpm).
+> > Andrew Morton napsal(a):
+> > >   http://userweb.kernel.org/~akpm/2.6.21-rc4-mm1/
+> > =
+
+> > I'm getting this while trying to swsusp:
+> > Stopping tasks ...
+> > Stopping kernel threads timed out after 20 seconds (1 tasks refusing to=
+ freeze):
+> >  swapper
+> >  Restarting tasks ... done.
+> > =
+
+> > What to test? Enable PM_DEBUG?
+
+Is it repeatable? Freezer normally works better than that.
+
+> hm, OK.  Rafael has been working on fixing the process freezer and it'll
+> take some time to get it to where we want it to be, I expect.
+
+> Rafael, I think that we could afford to add heaps of debug in there at th=
+is
+> stage to help us track down problems like this.
 > =
 
-> Why dpm: =
-
->      1. put an idle device into low power state to save power =
-
->      2. speed up S3/S4. In resume time, we could resume devices only as
->         the devices are used. In suspend time, we could skip suspended
->         devices. (suspend/resume a device equals to change device state)
-> =
-
-> Basically we need device driver support, a kernel framework and a policy
-> (determine when to change a device???s power state).
-
-So far so good, but please use ascii ' for '.
-
-> I think we need answer below questions:
-> 1. How to present device???s power info/control interface to policy.
-...
-
-Depends on bus, I'm afraid. We do not want to do this in generic code.
-
-> 2. How to handle devices dependences. For example, for a PCI endpoint
-...
-
-USB gets the dependencies right, just copy that.
-
-> 3. How to detect if a device is idle.
-
-USB gets this right. It is driver specific, but core can provide some
-helpers.
-
-> int foo() //all service routines of the driver should do
-> { =
-
->             //wakeup the device if it???s suspended
->             dpm_active_device();
-
-No, we do not want this kind of interface. It should be something like
-mod_timer(my_timer, HZ+10);
-
-We can talk about generic device attribute "powerdown_timeout" in
-sysfs... but I'd prefer few more drivers that do powersave before we
-do that.
-
-> We consider two type devices:
-> 1. for soundcard, policy does:
-> a. Setup a timer, the timer polls soundcard???s busy_timestamp sysfs file.
-> b. if the timer found soundcard is idle for a long time, write the
-> device???s state sysfs file, and sound card to low power state.
-> c. policy does nothing to resume soundcard. Soundcard driver???s service
-> routine will call ???dpm_active_device??? to resume the device
-
-No, that's not how it works; look at hda_audio, it already has
-powersave. Just power down audio card 5 seconds after its control file
-is closed.
-
-> 2. For keyboard or mouse, policy does:
-> a. setup a timer, the timer polls keyboard???s busy_timestamp sysfs file.
-> b. if the timer found keyboard is idle for a long time, write LCD???s
-> state sysfs file to close LCD.
-> c. After LCD is closed, policy polls keyboard???s busy_timestamp sysfs
-> file.
-> d. if the content changed of the file (maybe using inotify), policy will
-> open LCD
-
-This already works for usb keyboard/mice.
-
-> This is my preliminary design, and I???d like to listen to your opinions.
-
-"Seriously overdesigned".
-									Pavel
+> Also, it might be useful to add a temporary /proc/freeze-unfreeze thing
+> which will simply do a freeze/unfreeze cycle.  Then we can apply various
+> workloads to the machine while madly stressing the freezer code.  =
 
 
+echo testproc > /sys/power/disk; echo disk > /sys/power/state ... is
+pretty much what you want.
+								Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
