@@ -1,16 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] add firmware disk state and clean up
-Date: Tue, 20 Mar 2007 15:59:32 -0700
-Message-ID: <200703201559.33065.david-b@pacbell.net>
-References: <20070320015846.636692000@sipsolutions.net>
-	<20070320094352.GF3922@elf.ucw.cz>
-	<1174385865.3770.20.camel@johannes.berg>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Alternative Concept
+Date: Tue, 20 Mar 2007 23:06:32 +0100
+Message-ID: <20070320220632.GK3545@elf.ucw.cz>
+References: <200703182104.27555.david-b@pacbell.net>
+	<46003329.6050808@gmail.com> <20070320204514.GH3545@elf.ucw.cz>
+	<200703201504.47956.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174385865.3770.20.camel@johannes.berg>
 Content-Disposition: inline
+In-Reply-To: <200703201504.47956.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,37 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Dirk Behme <dirk.behme@de.bosch.com>, linux-pm@lists.osdl.org, Ben Dooks <ben@simtec.co.uk>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@cam.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 March 2007 3:17 am, Johannes Berg wrote:
+Hi!
 
-> --- linux-2.6.orig/arch/arm/mach-at91/pm.c	2007-03-20 10:55:35.433214909 =
-+0100
-> +++ linux-2.6/arch/arm/mach-at91/pm.c	2007-03-20 10:56:02.243214909 +0100
-> @@ -199,11 +199,16 @@ error:
->  	return 0;
->  }
->  =
+> > But we do not want new subsystem. We want power management to
+> > work. Take a look how Alan added pm to usb... and just do it like
+> > him. If some code makes sense to be shared, share it. But start with
+> > support for platform you care about and don't overdesign it.
+> =
 
-> +static int at91_pm_valid(suspend_state_t state)
-> +{
-> +	return state =3D=3D PM_SUSPEND_MEM;
-> +}
->  =
+> Note, Alan didn't do it by himself.  The autosuspend stuff built on
+> previous work in USB PM, and this DID get discussed -- as concrete
+> proposals -- before he did all that good stuff.
 
->  static struct pm_ops at91_pm_ops =3D{
->  	.valid		=3D at91_pm_valid_state,
->  	.prepare	=3D at91_pm_prepare,
->  	.enter		=3D at91_pm_enter,
-> +	.valid		=3D at91_pm_valid,
->  };
->  =
+Okay, you are right. But I do not remember any "handwaving"
+phase... (And sorry for not giving credit where it was due, obviously
+Alan did not do it all by himself).
 
->  static int __init at91_pm_init(void)
+									Pavel
+-- =
 
-Clearly bogus.  The STR support isn't upstream yet, true, but
-you shouldn't modify that code at all.
-
-- Dave
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
