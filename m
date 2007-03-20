@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 16:29:33 -0700
-Message-ID: <200703201629.34032.david-b@pacbell.net>
-References: <200703182104.27555.david-b@pacbell.net>
-	<200703201504.47956.david-b@pacbell.net>
-	<20070320220632.GK3545@elf.ucw.cz>
+Subject: Re: [PATCH] add firmware disk state and clean up
+Date: Tue, 20 Mar 2007 16:31:13 -0700
+Message-ID: <200703201631.14245.david-b@pacbell.net>
+References: <20070320015846.636692000@sipsolutions.net>
+	<200703201559.33065.david-b@pacbell.net>
+	<20070320220946.GL3545@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070320220632.GK3545@elf.ucw.cz>
+In-Reply-To: <20070320220946.GL3545@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,50 +21,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org
+Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Dirk Behme <dirk.behme@de.bosch.com>, linux-pm@lists.osdl.org, Ben Dooks <ben@simtec.co.uk>, Johannes Berg <johannes@sipsolutions.net>, Nicolas Pitre <nico@cam.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 March 2007 3:06 pm, Pavel Machek wrote:
+On Tuesday 20 March 2007 3:09 pm, Pavel Machek wrote:
 > Hi!
 > =
 
-> > > But we do not want new subsystem. We want power management to
-> > > work. Take a look how Alan added pm to usb... and just do it like
-> > > him. If some code makes sense to be shared, share it. But start with
-> > > support for platform you care about and don't overdesign it.
+> > > +static int at91_pm_valid(suspend_state_t state)
+> > > +{
+> > > +	return state =3D=3D PM_SUSPEND_MEM;
+> > > +}
+> > >  =
+
+> > >  static struct pm_ops at91_pm_ops =3D{
+> > >  	.valid		=3D at91_pm_valid_state,
+         ^^^^^
+
+> > >  	.prepare	=3D at91_pm_prepare,
+> > >  	.enter		=3D at91_pm_enter,
+> > > +	.valid		=3D at91_pm_valid,
+         ^^^^^
+
+> > >  };
+> > >  =
+
+> > >  static int __init at91_pm_init(void)
 > > =
 
-> > Note, Alan didn't do it by himself.  The autosuspend stuff built on
-> > previous work in USB PM, and this DID get discussed -- as concrete
-> > proposals -- before he did all that good stuff.
+> > Clearly bogus.  The STR support isn't upstream yet, true, but
 > =
 
-> Okay, you are right. But I do not remember any "handwaving"
-> phase... (And sorry for not giving credit where it was due, obviously
-> Alan did not do it all by himself).
-
-No, I don't think there was a handwaving phase there either.
-
-There were specific problems to be addressed, and specific solutions
-came out of discussions of how to address them.  (Which is not at all
-the way these "concept" discusions have gone.)
-
-I think the canonical example was one I first heard from Len Brown a
-few years back:  laptop with USB mouse.  If that mouse can (auto)suspend,
-with remote wakeup to kick it out of that state, then the USB host
-controller doesn't need be active.  If that controller isn't doing DMA
-every millisecond, the CPU can enter C3.  So the savings cascade in a
-very clean way, once all the parts are present.
-
-To get there, first we needed USB suspend, and remote wakeup, to work.
-That was a bunch of work.  Then we needed proper "runtime suspend" to
-behave for the host controller drivers too.  More work ... they all
-had to act the same.  (I'd say that work first started around the time
-of the 2.6.9 kernels...)  Once all that was stable, the autosuspend
-work could begin.
+> No... look again. =
 
 
-All this "alternative concept" stuff seems to be starting from the
-"big piece of blank paper, and dreams" school of design.
+No, YOU look again.  If that compiles, it's a GCC bug.
 
-- Dave
+
+> This tries to disable suspend-to-disk on ARM, so =
+
+> that only suspend-to-RAM is enabled. I'd not call it bogus.
+> =
+
+> The series is needed to stop pm from reporting "platform" on ARM;
+> "platform" only makes sense on ACPI systems.
+> =
+
+> 								Pavel
