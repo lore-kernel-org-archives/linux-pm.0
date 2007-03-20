@@ -1,16 +1,10 @@
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 03:03:15 +0300
-Message-ID: <45FF24C3.1000203@gmail.com>
-References: <44ECFF94.3030506@gmail.com>
-	<200703161103.12333.david-b@pacbell.net>
-	<45FDA040.4020502@gmail.com>
-	<200703182104.27555.david-b@pacbell.net>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: suspend to disk modes, default mode
+Date: Tue, 20 Mar 2007 01:47:51 +0100
+Message-ID: <1174351671.3645.8.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0337254566=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703182104.27555.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,55 +14,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-David Brownell wrote:
-> On Sunday 18 March 2007 1:25 pm, Dmitry Krivoschekov wrote:
->>
->> Sometimes it's quite reasonable to make decisions (or policy)
->> at the low level, without exposing events to higher layers,
->
-> Of course.  Any layer can incorporate a degree of policy.
-But users should be able to choose to use or do not use the incorporated
-policy, shouldn't they?
->
-> It's only when that's badly done -- or the problem is so complex
-> that multiple policies need to be supported -- that you need to
-> pull out that old "mechanism not policy" chestnut, and support
-> some kind of policy switching mechanism (governors, userspace
-> agents, etc) for different application domains.
->
->
->> e.g. turning a clock off when reference counter gets zero, this is
->> what OMAP's clock framework currently does.
->
-> There are no choices to be made in that layer; it's no more "policy"
-> than following the laws of arithmetic is "policy".  Software clock
-there is some principle: "turn the clock off when use counter reaches
-zero",
-so it is a policy, and a choice is to disable or not to disable an
-output clock,
-it is the simplest case but it's certainly a policy.  And there is no API
-to enable/disable the policy that could be useful in some cases.
-> gating is what the clock framework is defined as doing; there's
-> nothing OMAP-specific about that.
-Yes, OMAP's code just a pioneer with that.
->
-> The interesting bit for OMAP is that clock gating will often be done
-> in hardware, not just in software.  =
 
-Yes, but you are free to disable the feature.
-> There are other low-power SOC
-> designs that do such things, =
+--===============0337254566==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-FwhnzPlzxbtzoPwhTP2j"
 
-Recent PXAs, i.MX31 are capable for  that. There are also more exotic
-examples of hardware PM awareness,  e.g.  i.MX31 chip supports
-DVFS that can totally be performed  in hardware i.e.
-processor adjusts its clock and voltage basing on current processor
-workload.
 
+--=-FwhnzPlzxbtzoPwhTP2j
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+This suspend to disk modes stuff really sucks. The last time I looked
+must have been a long time ago because then shutdown was default. Now I
+find that in November 06 you changed it to be platform by default.
+
+The problem with this is that not all platforms support the "platform"
+mode.
+
+I have a pm_ops struct for PMU-based Apple powerpc machines that doesn't
+set pm_disk_mode in order not to allow the platform mode because that
+currently fails.
+
+I also used to think this was for implementing suspend-to-both, is that
+wrong? In any case, I can't live with it being platform by default
+because that goes into really weird behaviour, or I need to special-case
+the ->enter callback for suspend to disk to just shut down again.
+
+Could you please post a patch to change the documentation in pm.h to
+indicate what the pm_disk_mode is intended for? It also doesn't help my
+willingness to work on and with the generic suspend to disk stuff that
+the patch I'm referring to was posted as if it was ACPI specific...
+
+Maybe we just need a pm_disk_modes bitmap and a default_pm_disk_mode
+member in struct pm_ops instead? What's firmware vs. platform anyway?
 
 Thanks,
-Dmitry
+johannes
+
+--=-FwhnzPlzxbtzoPwhTP2j
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF/y83/ETPhpq3jKURAnTVAKCdhmB62z9Ty3KI2Ah7+nIrIeb7pwCgqAVP
+rpYEcLcfgSGEHMqAM6JY0Z4=
+=SLb9
+-----END PGP SIGNATURE-----
+
+--=-FwhnzPlzxbtzoPwhTP2j--
+
+
+--===============0337254566==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0337254566==--
