@@ -1,15 +1,22 @@
-From: David Brownell <david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Alternative Concept
-Date: Tue, 20 Mar 2007 14:03:10 -0700
-Message-ID: <200703201403.11846.david-b@pacbell.net>
-References: <44ECFF94.3030506@gmail.com> <45FFD004.9030507@gmail.com>
-	<1174394360.25744.45.camel@Dogbert.NOE.nokia.com>
+Date: Tue, 20 Mar 2007 21:45:14 +0100
+Message-ID: <20070320204514.GH3545@elf.ucw.cz>
+References: <200703182104.27555.david-b@pacbell.net>
+	<45FF24C3.1000203@gmail.com>
+	<200703200107.17290.david-b@pacbell.net>
+	<45FFAD39.1000302@gmail.com>
+	<1174386620.25744.23.camel@Dogbert.NOE.nokia.com>
+	<45FFDCA3.5060007@gmail.com>
+	<1174398759.25744.69.camel@Dogbert.NOE.nokia.com>
+	<45FFF697.8080101@gmail.com> <20070320153603.GB5533@elf.ucw.cz>
+	<46003329.6050808@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174394360.25744.45.camel@Dogbert.NOE.nokia.com>
 Content-Disposition: inline
+In-Reply-To: <46003329.6050808@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +26,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Igor Stoppa <igor.stoppa@nokia.com>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 March 2007 5:39 am, Igor Stoppa wrote:
+Hi!
 
-> No, the point is that by default every driver would try to go to the
-> lowest power state autonomously.
+> >> Ok, seems you are happy with current clock framework and advocating it
+> >> to be as is.
+> >> Are you against addition some features to it, such as enable/disable =
 
-Yes.  Anyone assuming otherwise should go back to the drawing board,
-since so much of the most relevant information will BY DESIGN never
-be exposed outside that driver.  And must not be, since each version
-of silicon will generally have its own localized quirks.
+> >> "turn the unused clock off"
+> >
+> > What kind of debate is this?!
+> >
+> > Of course I and everyone else is against adding features without
+> > _really good_ explanation why this is needed. And no, you should not
+> > even ask unless you have patch ready, =
 
+> =
 
-Plus there may be groups of drivers that work together.  SOC audio
-is probably a decent example:  the high level driver presents just
-playback and record interfaces, but internally there will be several
-busses involved, a SOC-specific serial data stream controller (AC97,
-McBSP, I2S, etc), an external codec, and control interfaces which
-manage each of those.  That means a couple drivers collaborating...
-(I have no idea if this new ALSA SOC support stuff is sanely design
-from a PM perspective...)
+> If I understand you correctly, you are against big debates unless a
+> patch is ready,
 
-The same thing comes up with some USB OTG configurations too.
-For example, on OMAP1 or PXA27x chips, there are three on-chip
-controllers (OHCI, UDC, OTG) plus an external (I2C) transceiver.
-That's three or four drivers which must work together to make
-sure power isn't needlessly wasted.
+You understood it well.
 
-But in all those cases, all the PM-relevant information is local
-to those drivers, and all they need is private interfaces to sort
-things out.  No new "system-wide" component (policy or otherewise)
-is needed.
+> I agree to that if someone tries to speculate on adding some feature
+> which is easily
 
+But we do not want new subsystem. We want power management to
+work. Take a look how Alan added pm to usb... and just do it like
+him. If some code makes sense to be shared, share it. But start with
+support for platform you care about and don't overdesign it.
 
-> 	The policy layer (or whatever would =
+> can be shown as a patch, but before doing something more complex, say
+> new subsystem,
+> it is worth to make sure whether your intention makes sense at all, and
+> if it does
 
-> take care of the system point of view, in case the decentralised
-> approach is not enough) would _prevent_ temporarily certain deeper power
-> saving states.
+No, your intention of adding subsystems does not make any
+sense. Satisfied?
 
-Yes, but ...
+> the first question would be:
+> =
 
-There are two "power management" models.  I think you are talking
-about the one most relevant to low power operation:  "runtime PM".
-Something like an N770 or N800 tablet needs that(*), and of course
-a Linux laptop would benefit from it quite nicely too.
+> Q: Does Linux Power management take care about personal computers only?
+> A: ????
 
-The "system suspend" model works the other way around:  when the
-system is forced into a specific low power state, that prevents
-certain drivers from working.  For example, it's common that USB
-must in effect be powered off, unable to serve as a wakeup event
-source (or maintain power sessions) because a key clock must be
-turned off in order to enter that state.
+Linux Power management is not person, it is piece of code. Me, I care
+about arm, too.
 
-- Dave
+> P.S. Are there special Etiquette notes for the list?
 
-(*) Plus a smart idle loop ... using NO_IDLE_HZ and entering into
-    SOC-wide deep sleep states rather than just CPU idle.  A partial
-    PC analogue would be using the new NO_HZ and C3 or deeper.
+I guess linux-kernel has nice set of rules, and they should apply
+here, too. Expect to defend your design on l-k sooner or later. =
 
-    To me, it's suggestive that all this discussion about power
-    frameworks has mentioned neither that, nor several other
-    essential mechanisms, like the "run from SRAM" case that I
-    mentioned earlier.  Without addressing a few such real
-    problems, the email discussions can't produce good results.
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
