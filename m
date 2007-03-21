@@ -1,16 +1,18 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Wed, 21 Mar 2007 23:36:55 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0703212325560.7211@poirot.grange>
-References: <20070320015846.636692000@sipsolutions.net>
-	<200703201644.59046.david-b@pacbell.net>
-	<Pine.LNX.4.60.0703212153350.7211@poirot.grange>
-	<200703211507.55125.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Wed, 21 Mar 2007 23:54:29 +0100
+Message-ID: <20070321225429.GK6057@elf.ucw.cz>
+References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+	<20070320183022.GC2670@elf.ucw.cz>
+	<1174440888.29722.15.camel@sli10-conroe.sh.intel.com>
+	<52d486620703210821h3e26b167kb12a197d7b46e04d@mail.gmail.com>
+	<4601A87F.6040608@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703211507.55125.david-b@pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <4601A87F.6040608@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,57 +22,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, linux-arm@lists.arm.linux.org.uk, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 21 Mar 2007, David Brownell wrote:
-
-> On Wednesday 21 March 2007 2:01 pm, Guennadi Liakhovetski wrote:
+On Thu 2007-03-22 00:49:51, Dmitry Krivoschekov wrote:
+> Amit Kucheria wrote:
+> > On 3/21/07, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
+> >
+> >>> No, that's not how it works; look at hda_audio, it already has
+> >>> powersave. Just power down audio card 5 seconds after its control file
+> >>> is closed.
+> >> It's another case of doing policy in a driver.
+> >>
+> >
+> > IMHO, this kind of policy is best handled inside the driver because it
+> > is specific to the hardware. This will ensure that the driver will
+> > just work on every distro without some userspace policy being present
+> > and setup _correctly_.
 > =
 
-> > May we agree on some "simple" criteria, like "CPU power on, i.e.,  =
+> It some circumstances this policy may increase power consumption
+> but not decrease it. Consider the case of repeatable operation,
 
-> > CPU registers preserved"? If yes - standby, CPU off, registers lost - S=
-tR? =
+And what... that happens. Lets not break our design because you can
+think of very contrieved corner case.
 
-> =
+> something like periodic sound beep, with period of 5s.
+> In this case, a driver implementing the policy will periodically
+> suspend/resume a number of devices - audio controller, codec, ADC,
+> but the operation  itself (suspending/resuming) will consume
+> more power than power consumed by these devices in case they
+> left running for a 5s. In such a case you may want to change
+> the predefined  value or  just  disable the policy.
 
-> The ACPI spec has some verbiage on those things, which uses
-> roughly that distinction.
-> =
+> Yes, we may just not close a sound device file, but phone
+> applications I've seen, do close the file.
 
-> Which is very much an indication of how weak ACPI is.  It
-> doesn't contemplate typical SOC behavior, which have a wide
-> variety of system sleep states that leave the CPU on ... and
-> which may not even *have* (or need!) a "cpu off" state.
-> =
+Fix the app, then.
 
-> My own definition would be more like:  the minimal RAM-based
-> power-saving system state is "standby".  If the system
-> implements a deeper RAM-based system sleep state, that's "STR".
+								Pavel
 
-Hmmm, this leaves the decision how to call each state COMPLETELY to the =
+-- =
 
-implementor, doesn't it? For example, in my suspend above, I do put the =
-
-peripheral controller to sleep too, whereas a "minimal RAM-based" suspend =
-
-could leave it on. So, does it mean I already qualify for StR?:-) I am =
-
-sure you have more experience with power management and a better =
-
-understanding of it too, maybe that's the reason why your definition makes =
-
-a good sense to you and not to me. But "suspend to RAM" - I think it would =
-
-be logical to interpret it as "only system RAM contents is preserved. All =
-
-other volatile storage (CPU registers, peripheral internal registers and =
-
-RAM, etc.) contents is lost."
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
