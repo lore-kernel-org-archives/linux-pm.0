@@ -1,16 +1,14 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: Re: 2.6.21-rc4-mm1: freezing of processes broken
-Date: Tue, 20 Mar 2007 19:23:10 -0600
-Message-ID: <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<46004B02.7020407@gmail.com> <200703202206.38168.rjw@sisk.pl>
-	<200703210149.33240.rjw@sisk.pl>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Wed, 21 Mar 2007 09:34:48 +0800
+Message-ID: <1174440888.29722.15.camel@sli10-conroe.sh.intel.com>
+References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+	<20070320183022.GC2670@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703210149.33240.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 21 Mar 2007 01:49:32 +0100")
+In-Reply-To: <20070320183022.GC2670@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +18,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
+> Hi!
+> =
 
-> On Tuesday, 20 March 2007 22:06, Rafael J. Wysocki wrote:
->> On Tuesday, 20 March 2007 21:58, Jiri Slaby wrote:
->> > Rafael J. Wysocki napsal(a):
->> > > Actually, the problem is 100% reproducible on my system too and I do=
-ubt
-> it's
->> > > caused by the recent freezer patches.
->> > =
+> > Runtime device power management or dynamic device power management
+> > (dpm).
+> >
+> > Why dpm:
+> >      1. put an idle device into low power state to save power
+> >      2. speed up S3/S4. In resume time, we could resume devices only
+> as
+> >         the devices are used. In suspend time, we could skip
+> suspended
+> >         devices. (suspend/resume a device equals to change device
+> state)
+> >
+> > Basically we need device driver support, a kernel framework and a
+> policy
+> > (determine when to change a device???s power state).
+> =
 
->> > I don't know what exactly do you mean by recent, but 2.6.21-rc3-mm2 wo=
-rks
->> > for me.
->> =
+> So far so good, but please use ascii ' for '.
+> =
 
->> Thanks for the confirmation.
->> =
+> > I think we need answer below questions:
+> > 1. How to present device???s power info/control interface to policy.
+> ...
+> =
 
->> The patches I was talking about had already been in 2.6.21-rc3-mm2, so t=
-he
->> reason of this failure must be different.
->
-> Bisection shows that the freezing of processes has been broken by one of =
-the
-> patches:
->
-> remove-the-likelypid-check-in-copy_process.patch
+> Depends on bus, I'm afraid. We do not want to do this in generic code.
+Agree it depends on bus. But it's better a framework can abstract the
+interface
 
-Grr.  Oleg's review of remove-the-likelypid-check-in-copy-process
-showed it to be questionable (and it was just an optimization)
-so we can get rid of that one easily. =
+> > 2. How to handle devices dependences. For example, for a PCI
+> endpoint
+> ...
+> =
 
+> USB gets the dependencies right, just copy that.
+Does USB include all kinds of dependence, eg non parent-children
+dependence?
 
-Although all it did that was really questionable was add
-the idle process to the global process list and bump a process
-count when we forked the idle process.  Not dramatically dangerous
-things.
+> > 3. How to detect if a device is idle.
+> =
 
-> use-task_pgrp-task_session-in-copy_process.patch
+> USB gets this right. It is driver specific, but core can provide some
+> helpers.
+Sure, this doesn't conflict with my idea.
 
-As I recall that patch was pretty trivial, and shouldn't have
-anything to do with the freezer.   The process freezer doesn't care
-about pids does it?
+> > int foo() //all service routines of the driver should do
+> > {
+> >             //wakeup the device if it???s suspended
+> >             dpm_active_device();
+> =
 
-Eric
+> No, we do not want this kind of interface. It should be something like
+> mod_timer(my_timer, HZ+10);
+1. the device might suspend already here, we should resume it.
+2. mod_timer is a bad idea. It's too heavy, if the routine is called
+very frequently, mod_timer will be a big overload. That's why I use a
+timestamp. Updating a timestamp hasn't any overload.
+
+> We can talk about generic device attribute "powerdown_timeout" in
+> sysfs... but I'd prefer few more drivers that do powersave before we
+> do that.
+Using this you will have a timer in the driver, and the timer's callback
+will suspend the device. This approach has some issues. 1. it's better
+driver doesn't handle device dependence. This approach requires driver
+handle dependence. 2. It's better a userspace policy to directly suspend
+a device and driver just provides control interface. A userspace is
+definitely flexible and make driver simpler.
+
+> > We consider two type devices:
+> > 1. for soundcard, policy does:
+> > a. Setup a timer, the timer polls soundcard???s busy_timestamp sysfs
+> file.
+> > b. if the timer found soundcard is idle for a long time, write the
+> > device???s state sysfs file, and sound card to low power state.
+> > c. policy does nothing to resume soundcard. Soundcard driver???s
+> service
+> > routine will call ???dpm_active_device??? to resume the device
+> =
+
+> No, that's not how it works; look at hda_audio, it already has
+> powersave. Just power down audio card 5 seconds after its control file
+> is closed.
+It's another case of doing policy in a driver.
+
+Thanks,
+Shaohua
