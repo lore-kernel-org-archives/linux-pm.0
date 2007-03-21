@@ -1,18 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] introduce /sys/power/disk_powerdown_mode
-Date: Wed, 21 Mar 2007 14:17:09 +0100
-Message-ID: <20070321131709.GA5788@elf.ucw.cz>
+Date: Wed, 21 Mar 2007 15:01:36 +0100
+Message-ID: <200703211501.37164.rjw@sisk.pl>
 References: <1174468981.3769.8.camel@johannes.berg>
-	<20070321122954.GO4520@elf.ucw.cz>
-	<1174480375.4230.12.camel@johannes.berg>
-	<20070321131128.GB4523@elf.ucw.cz>
 	<1174482773.4230.19.camel@johannes.berg>
+	<20070321131709.GA5788@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070321131709.GA5788@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <1174482773.4230.19.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > > Does it really need to be this complex? Maybe we can disply change
-> > > > /sys/power/disk format? Is the change required at all?
-> > > =
-
-> > > Dunno. Does anything ever read it? Maybe the whole change isn't
-> > > necessary since this thing exists only as a hack for ACPI anyway, but=
- if
-> > > anybody starts using it with an actual choice being able to see the
-> > > choices would imho be useful.
-> > =
-
-> > I believe we can just show the list of choices, without changing the
-> > name.
+On Wednesday, 21 March 2007 14:17, Pavel Machek wrote:
+> Hi!
 > =
 
-> Ok, I can simplify the patch down to that, the only thing about that is
-> that it breaks userspace ABI. Dunno how people react to that with
-> suspend though :)
+> > > > > Does it really need to be this complex? Maybe we can disply change
+> > > > > /sys/power/disk format? Is the change required at all?
+> > > > =
 
-I do not know... maybe you can just ask akpm first. I believe we can
-do that.
-									Pavel
+> > > > Dunno. Does anything ever read it? Maybe the whole change isn't
+> > > > necessary since this thing exists only as a hack for ACPI anyway, b=
+ut if
+> > > > anybody starts using it with an actual choice being able to see the
+> > > > choices would imho be useful.
+> > > =
+
+> > > I believe we can just show the list of choices, without changing the
+> > > name.
+> > =
+
+> > Ok, I can simplify the patch down to that, the only thing about that is
+> > that it breaks userspace ABI. Dunno how people react to that with
+> > suspend though :)
+> =
+
+> I do not know... maybe you can just ask akpm first. I believe we can
+> do that.
+
+I agree, but _all_ of the doocumentation will have to be updated in the same
+patch (or patch series), IMHO.
+
+Greetings,
+Rafael
+
+
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
