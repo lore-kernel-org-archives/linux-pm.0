@@ -1,17 +1,16 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 2.6.21-rc4-mm1: freezing of processes broken
-Date: Wed, 21 Mar 2007 14:13:54 +1100
-Message-ID: <1174446834.6665.3.camel@nigel.suspend2.net>
+Date: Wed, 21 Mar 2007 13:08:32 +0100
+Message-ID: <200703211308.33295.rjw@sisk.pl>
 References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<46004B02.7020407@gmail.com> <200703202206.38168.rjw@sisk.pl>
 	<200703210149.33240.rjw@sisk.pl>
 	<m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
-Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <m1lkhre6f5.fsf@ebiederm.dsl.xmission.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,12 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Nigel Cunningham <ncunningham@linuxmail.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On Tue, 2007-03-20 at 19:23 -0600, Eric W. Biederman wrote:
+On Wednesday, 21 March 2007 02:23, Eric W. Biederman wrote:
 > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > =
 
@@ -69,7 +66,11 @@ f the
 > the idle process to the global process list and bump a process
 > count when we forked the idle process.  Not dramatically dangerous
 > things.
-> =
+
+I think this patch is the culprit, though, as it seems that the freezer tri=
+es
+to freeze the idle process and fails.  Yesterday I didn't have the time to
+figure out the exact reason, I'll try to look at it later today.
 
 > > use-task_pgrp-task_session-in-copy_process.patch
 > =
@@ -78,8 +79,8 @@ f the
 > anything to do with the freezer.   The process freezer doesn't care
 > about pids does it?
 
-Could the freezer code be trying to freeze the idle thread as a result?
+No, it doesn't, at least not directly.  I'll try to run the kernel with this
+change and without remove-the-likelypid-check-in-copy_process.patch .
 
-Regards,
-
-Nigel
+Greetings,
+Rafael
