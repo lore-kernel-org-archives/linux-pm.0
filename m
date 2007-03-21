@@ -1,13 +1,14 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH 2/3] power management: remove firmware disk mode
-Date: Wed, 21 Mar 2007 15:53:30 +0100
-Message-ID: <20070321145421.528048000@sipsolutions.net>
+Subject: [PATCH 3/3] power management: implement pm_ops.valid for
+	everybody
+Date: Wed, 21 Mar 2007 15:53:31 +0100
+Message-ID: <20070321145421.918490000@sipsolutions.net>
 References: <20070321145328.496614000@sipsolutions.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=012-remove-firmware-disk-mode.patch
+Content-Disposition: inline; filename=013-implement-valid.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,250 +22,261 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This patch removes the firmware disk suspend mode which is the wrong
-approach, it is supposed to be used for implementing firmware-based disk
-suspend but cannot actually be used for that.
+Almost all users of pm_ops only support mem sleep, don't check in .valid
+and don't reject any others in .prepare so users can be confused if they
+check /sys/power/state, especially when new states are added (these would
+then result in s-t-r although they're supposed to be something different).
+
+This patch implements a generic pm_valid_only_mem function that is then
+exported for users and puts it to use in almost all existing pm_ops.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: David Brownell <david-b@pacbell.net>
 Cc: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.linux-foundation.org
 
 ---
- Documentation/power/interface.txt |   21 +++++----------------
- Documentation/power/states.txt    |   13 +++++++------
- Documentation/power/swsusp.txt    |   14 +++++---------
- include/linux/pm.h                |   13 ++++++-------
- kernel/power/disk.c               |   27 +++++++++++----------------
- 5 files changed, 34 insertions(+), 54 deletions(-)
+ arch/arm/common/sharpsl_pm.c |    1 +
+ arch/arm/mach-omap1/pm.c     |    1 +
+ arch/arm/mach-omap2/pm.c     |    1 +
+ arch/arm/mach-pnx4008/pm.c   |   35 +----------------------------------
+ arch/arm/mach-pxa/pm.c       |    1 +
+ arch/arm/mach-sa1100/pm.c    |    1 +
+ arch/arm/plat-s3c24xx/pm.c   |   19 +------------------
+ arch/sh/boards/hp6xx/pm.c    |    1 +
+ drivers/acpi/sleep/main.c    |   13 +++++++++++--
+ include/linux/pm.h           |    4 ++++
+ kernel/power/main.c          |   13 +++++++++++++
+ 11 files changed, 36 insertions(+), 54 deletions(-)
 
---- linux-2.6.orig/include/linux/pm.h	2007-03-21 15:44:54.663148946 +0100
-+++ linux-2.6/include/linux/pm.h	2007-03-21 15:45:04.403148946 +0100
-@@ -114,13 +114,12 @@ typedef int __bitwise suspend_disk_metho
- =
-
- /* invalid must be 0 so struct pm_ops initialisers can leave it out */
- #define PM_DISK_INVALID		((__force suspend_disk_method_t) 0)
--#define	PM_DISK_FIRMWARE	((__force suspend_disk_method_t) 1)
--#define	PM_DISK_PLATFORM	((__force suspend_disk_method_t) 2)
--#define	PM_DISK_SHUTDOWN	((__force suspend_disk_method_t) 3)
--#define	PM_DISK_REBOOT		((__force suspend_disk_method_t) 4)
--#define	PM_DISK_TEST		((__force suspend_disk_method_t) 5)
--#define	PM_DISK_TESTPROC	((__force suspend_disk_method_t) 6)
--#define	PM_DISK_MAX		((__force suspend_disk_method_t) 7)
-+#define	PM_DISK_PLATFORM	((__force suspend_disk_method_t) 1)
-+#define	PM_DISK_SHUTDOWN	((__force suspend_disk_method_t) 2)
-+#define	PM_DISK_REBOOT		((__force suspend_disk_method_t) 3)
-+#define	PM_DISK_TEST		((__force suspend_disk_method_t) 4)
-+#define	PM_DISK_TESTPROC	((__force suspend_disk_method_t) 5)
-+#define	PM_DISK_MAX		((__force suspend_disk_method_t) 6)
- =
-
- /**
-  * struct pm_ops - Callbacks for managing platform dependent suspend state=
-s.
---- linux-2.6.orig/kernel/power/disk.c	2007-03-21 15:44:54.693148946 +0100
-+++ linux-2.6/kernel/power/disk.c	2007-03-21 15:48:06.073148946 +0100
-@@ -123,8 +123,6 @@ static int prepare_processes(void)
- /**
-  *	pm_suspend_disk - The granpappy of hibernation power management.
+--- linux-2.6.orig/include/linux/pm.h	2007-03-20 12:42:04.813214909 +0100
++++ linux-2.6/include/linux/pm.h	2007-03-20 12:42:05.693214909 +0100
+@@ -128,6 +128,9 @@ typedef int __bitwise suspend_disk_metho
+  *	always valid and never passed to this call.
+  *	If not assigned, all suspend states are advertised as valid
+  *	in /sys/power/state (but can still be rejected by prepare or enter.)
++ *	Since new states can be added for other platforms, you should
++ *	assign this callback. There is a %pm_valid_only_mem function
++ *	available if you only implemented mem sleep.
   *
-- *	If we're going through the firmware, then get it over with quickly.
-- *
-  *	If not, then call swsusp to do its thing, then figure out how
-  *	to power down the system.
-  */
-@@ -301,7 +299,6 @@ late_initcall(software_resume);
+  * @prepare: Prepare the platform for the given suspend state. Can return a
+  *	negative error code if necessary.
+@@ -165,6 +168,7 @@ extern void pm_set_ops(struct pm_ops *pm
+ extern struct pm_ops *pm_ops;
+ extern int pm_suspend(suspend_state_t state);
  =
 
++extern int pm_valid_only_mem(suspend_state_t state);
  =
 
- static const char * const pm_disk_modes[] =3D {
--	[PM_DISK_FIRMWARE]	=3D "firmware",
- 	[PM_DISK_PLATFORM]	=3D "platform",
- 	[PM_DISK_SHUTDOWN]	=3D "shutdown",
- 	[PM_DISK_REBOOT]	=3D "reboot",
-@@ -312,27 +309,25 @@ static const char * const pm_disk_modes[
- /**
-  *	disk - Control suspend-to-disk mode
-  *
-- *	Suspend-to-disk can be handled in several ways. The greatest
-- *	distinction is who writes memory to disk - the firmware or the OS.
-- *	If the firmware does it, we assume that it also handles suspending
-- *	the system.
-- *	If the OS does it, then we have three options for putting the system
-- *	to sleep - using the platform driver (e.g. ACPI or other PM registers),
-- *	powering off the system or rebooting the system (for testing).
-+ *	Suspend-to-disk can be handled in several ways. We have a few options
-+ *	for putting the system to sleep - using the platform driver (e.g. ACPI
-+ *	or other pm_ops), powering off the system or rebooting the system
-+ *	(for testing) as well as the two test modes.
-  *
-- *	The system will support either 'firmware' or 'platform', and that is
-- *	known a priori (and encoded in pm_ops). But, the user may choose
-- *	'shutdown' or 'reboot' as alternatives.
-+ *	The system can support 'platform', and that is known a priori (and
-+ *	encoded in pm_ops). However, the user may choose 'shutdown' or 'reboot'
-+ *	as alternatives, as well as the test modes 'test' and 'testproc'.
-  *
-  *	show() will display what the mode is currently set to.
-  *	store() will accept one of
-  *
-- *	'firmware'
-  *	'platform'
-  *	'shutdown'
-  *	'reboot'
-+ *	'test'
-+ *	'testproc'
-  *
-- *	It will only change to 'firmware' or 'platform' if the system
-+ *	It will only change to 'platform' if the system
-  *	supports it (as determined from pm_ops->pm_disk_mode).
-  */
+ /*
+  * Device power management
+--- linux-2.6.orig/arch/arm/common/sharpsl_pm.c	2007-03-20 12:42:02.2632149=
+09 +0100
++++ linux-2.6/arch/arm/common/sharpsl_pm.c	2007-03-20 12:42:05.693214909 +0=
+100
+@@ -769,6 +769,7 @@ static struct pm_ops sharpsl_pm_ops =3D {
+ 	.prepare	=3D pxa_pm_prepare,
+ 	.enter		=3D corgi_pxa_pm_enter,
+ 	.finish		=3D pxa_pm_finish,
++	.valid		=3D pm_valid_only_mem,
+ };
  =
 
-@@ -354,7 +349,7 @@ static ssize_t disk_store(struct subsyst
- 	len =3D p ? p - buf : n;
+ static int __init sharpsl_pm_probe(struct platform_device *pdev)
+--- linux-2.6.orig/arch/arm/mach-omap1/pm.c	2007-03-20 12:42:02.263214909 +=
+0100
++++ linux-2.6/arch/arm/mach-omap1/pm.c	2007-03-20 12:42:05.703214909 +0100
+@@ -701,6 +701,7 @@ static struct pm_ops omap_pm_ops =3D{
+ 	.prepare	=3D omap_pm_prepare,
+ 	.enter		=3D omap_pm_enter,
+ 	.finish		=3D omap_pm_finish,
++	.valid		=3D pm_valid_only_mem,
+ };
  =
 
- 	mutex_lock(&pm_mutex);
--	for (i =3D PM_DISK_FIRMWARE; i < PM_DISK_MAX; i++) {
-+	for (i =3D PM_DISK_PLATFORM; i < PM_DISK_MAX; i++) {
- 		if (!strncmp(buf, pm_disk_modes[i], len)) {
- 			mode =3D i;
- 			break;
---- linux-2.6.orig/Documentation/power/interface.txt	2007-03-21 15:45:17.87=
-3148946 +0100
-+++ linux-2.6/Documentation/power/interface.txt	2007-03-21 15:49:26.6731489=
-46 +0100
-@@ -18,17 +18,10 @@ states.
+ static int __init omap_pm_init(void)
+--- linux-2.6.orig/arch/arm/mach-omap2/pm.c	2007-03-20 12:42:02.263214909 +=
+0100
++++ linux-2.6/arch/arm/mach-omap2/pm.c	2007-03-20 12:42:05.703214909 +0100
+@@ -373,6 +373,7 @@ static struct pm_ops omap_pm_ops =3D {
+ 	.prepare	=3D omap2_pm_prepare,
+ 	.enter		=3D omap2_pm_enter,
+ 	.finish		=3D omap2_pm_finish,
++	.valid		=3D pm_valid_only_mem,
+ };
  =
 
+ int __init omap2_pm_init(void)
+--- linux-2.6.orig/arch/arm/mach-pnx4008/pm.c	2007-03-20 12:41:36.133214909=
+ +0100
++++ linux-2.6/arch/arm/mach-pnx4008/pm.c	2007-03-20 12:42:05.703214909 +0100
+@@ -115,42 +115,9 @@ static int pnx4008_pm_enter(suspend_stat
+ 	return 0;
+ }
  =
 
- /sys/power/disk controls the operating mode of the suspend-to-disk
--mechanism. Suspend-to-disk can be handled in several ways. The
--greatest distinction is who writes memory to disk - the firmware or
--the kernel. If the firmware does it, we assume that it also handles
--suspending the system. =
-
+-/*
+- * Called after processes are frozen, but before we shut down devices.
+- */
+-static int pnx4008_pm_prepare(suspend_state_t state)
+-{
+-	switch (state) {
+-	case PM_SUSPEND_STANDBY:
+-	case PM_SUSPEND_MEM:
+-		break;
 -
--If the kernel does it, then we have three options for putting the system
--to sleep - using the platform driver (e.g. ACPI or other PM
--registers), powering off the system or rebooting the system (for
--testing). The system will support either 'firmware' or 'platform', and
--that is known a priori. But, the user may choose 'shutdown' or
--'reboot' as alternatives. =
-
-+mechanism. Suspend-to-disk can be handled in several ways. We have a
-+few options for putting the system to sleep - using the platform driver
-+(e.g. ACPI or other pm_ops), powering off the system or rebooting the
-+system (for testing).
- =
-
- Additionally, /sys/power/disk can be used to turn on one of the two testing
- modes of the suspend-to-disk mechanism: 'testproc' or 'test'.  If the
-@@ -44,16 +37,12 @@ is being slow and which device drivers a
- Reading from this file will display what the mode is currently set
- to. Writing to this file will accept one of
- =
-
--       'firmware'
--       'platform'
-+       'platform' (only if the platform supports it)
-        'shutdown'
-        'reboot'
-        'testproc'
-        'test'
- =
-
--It will only change to 'firmware' or 'platform' if the system supports
--it. =
-
+-	case PM_SUSPEND_DISK:
+-		return -ENOTSUPP;
+-		break;
 -
- /sys/power/image_size controls the size of the image created by
- the suspend-to-disk mechanism.  It can be written a string
- representing a non-negative integer that will be used as an upper
---- linux-2.6.orig/Documentation/power/states.txt	2007-03-21 15:45:17.99314=
-8946 +0100
-+++ linux-2.6/Documentation/power/states.txt	2007-03-21 15:51:18.763148946 =
+-	default:
+-		return -EINVAL;
+-		break;
+-	}
+-	return 0;
+-}
+-
+-/*
+- * Called after devices are re-setup, but before processes are thawed.
+- */
+-static int pnx4008_pm_finish(suspend_state_t state)
+-{
+-	return 0;
+-}
+-
+-/*
+- * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
+- */
+ static struct pm_ops pnx4008_pm_ops =3D {
+-	.prepare =3D pnx4008_pm_prepare,
+ 	.enter =3D pnx4008_pm_enter,
+-	.finish =3D pnx4008_pm_finish,
++	.valid =3D pm_valid_only_mem,
+ };
+ =
+
+ static int __init pnx4008_pm_init(void)
+--- linux-2.6.orig/arch/arm/mach-pxa/pm.c	2007-03-20 12:42:02.263214909 +01=
+00
++++ linux-2.6/arch/arm/mach-pxa/pm.c	2007-03-20 12:42:05.703214909 +0100
+@@ -227,6 +227,7 @@ static struct pm_ops pxa_pm_ops =3D {
+ 	.prepare	=3D pxa_pm_prepare,
+ 	.enter		=3D pxa_pm_enter,
+ 	.finish		=3D pxa_pm_finish,
++	.valid		=3D pm_valid_only_mem,
+ };
+ =
+
+ static int __init pxa_pm_init(void)
+--- linux-2.6.orig/arch/arm/mach-sa1100/pm.c	2007-03-20 12:42:02.273214909 =
 +0100
-@@ -62,17 +62,18 @@ setup via another operating system for i
- inconvenience, this method requires minimal work by the kernel, since
- the firmware will also handle restoring memory contents on resume. =
-
++++ linux-2.6/arch/arm/mach-sa1100/pm.c	2007-03-20 12:42:05.703214909 +0100
+@@ -133,6 +133,7 @@ unsigned long sleep_phys_sp(void *sp)
  =
 
--If the kernel is responsible for persistently saving state, a mechanism
--called 'swsusp' (Swap Suspend) is used to write memory contents to
--free swap space. swsusp has some restrictive requirements, but should
--work in most cases. Some, albeit outdated, documentation can be found
--in Documentation/power/swsusp.txt. =
-
-+For suspend-to-disk, a mechanism called swsusp called 'swsusp' (Swap
-+Suspend) is used to write memory contents to free swap space.
-+swsusp has some restrictive requirements, but should work in most
-+cases. Some, albeit outdated, documentation can be found in
-+Documentation/power/swsusp.txt. Alternatively, userspace can do most
-+of the actual suspend to disk work, see userland-swsusp.txt.
+ static struct pm_ops sa11x0_pm_ops =3D {
+ 	.enter		=3D sa11x0_pm_enter,
++	.valid		=3D pm_valid_only_mem,
+ };
  =
 
- Once memory state is written to disk, the system may either enter a
- low-power state (like ACPI S4), or it may simply power down. Powering
- down offers greater savings, and allows this mechanism to work on any
- system. However, entering a real low-power state allows the user to
--trigger wake up events (e.g. pressing a key or opening a laptop lid). =
-
-+trigger wake up events (e.g. pressing a key or opening a laptop lid).
+ static int __init sa11x0_pm_init(void)
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/pm.c	2007-03-20 12:42:02.273214909=
+ +0100
++++ linux-2.6/arch/arm/plat-s3c24xx/pm.c	2007-03-20 12:42:05.703214909 +0100
+@@ -612,26 +612,9 @@ static int s3c2410_pm_enter(suspend_stat
+ 	return 0;
+ }
  =
 
- A transition from Suspend-to-Disk to the On state should take about 30
- seconds, though it's typically a bit more with the current
---- linux-2.6.orig/Documentation/power/swsusp.txt	2007-03-21 15:45:18.13314=
-8946 +0100
-+++ linux-2.6/Documentation/power/swsusp.txt	2007-03-21 15:52:20.423148946 =
-+0100
-@@ -156,8 +156,7 @@ instead set the PF_NOFREEZE process flag
- be very careful).
- =
-
- =
-
--Q: What is the difference between "platform", "shutdown" and
--"firmware" in /sys/power/disk?
-+Q: What is the difference between "platform" and "shutdown"?
- =
-
- A:
- =
-
-@@ -166,11 +165,8 @@ shutdown: save state in linux, then tell
- platform: save state in linux, then tell bios to powerdown and blink
-           "suspended led"
- =
-
--firmware: tell bios to save state itself [needs BIOS-specific suspend
--	  partition, and has very little to do with swsusp]
+-/*
+- * Called after processes are frozen, but before we shut down devices.
+- */
+-static int s3c2410_pm_prepare(suspend_state_t state)
+-{
+-	return 0;
+-}
 -
--"platform" is actually right thing to do, but "shutdown" is most
--reliable.
-+"platform" is actually right thing to do where supported, but
-+"shutdown" is most reliable (except on ACPI systems).
+-/*
+- * Called after devices are re-setup, but before processes are thawed.
+- */
+-static int s3c2410_pm_finish(suspend_state_t state)
+-{
+-	return 0;
+-}
+-
+ static struct pm_ops s3c2410_pm_ops =3D {
+-	.prepare	=3D s3c2410_pm_prepare,
+ 	.enter		=3D s3c2410_pm_enter,
+-	.finish		=3D s3c2410_pm_finish,
++	.valid		=3D pm_valid_only_mem,
+ };
  =
 
- Q: I do not understand why you have such strong objections to idea of
- selective suspend.
-@@ -388,8 +384,8 @@ while the system is asleep, maintaining =
-
- modes like "suspend-to-RAM" or "standby".  (Don't write "disk" to the
- /sys/power/state file; write "standby" or "mem".)  We've not seen any
- hardware that can use these modes through software suspend, although in
--theory some systems might support "platform" or "firmware" modes that
--won't break the USB connections.
-+theory some systems might support "platform" modes that won't break the
-+USB connections.
+ /* s3c2410_pm_init
+--- linux-2.6.orig/arch/sh/boards/hp6xx/pm.c	2007-03-20 12:42:02.273214909 =
++0100
++++ linux-2.6/arch/sh/boards/hp6xx/pm.c	2007-03-20 12:42:05.713214909 +0100
+@@ -69,6 +69,7 @@ static int hp6x0_pm_enter(suspend_state_
  =
 
- Remember that it's always a bad idea to unplug a disk drive containing a
- mounted filesystem.  That's true even when your system is asleep!  The
+ static struct pm_ops hp6x0_pm_ops =3D {
+ 	.enter		=3D hp6x0_pm_enter,
++	.valid		=3D pm_valid_only_mem,
+ };
+ =
+
+ static int __init hp6x0_pm_init(void)
+--- linux-2.6.orig/drivers/acpi/sleep/main.c	2007-03-20 12:41:36.863214909 =
++0100
++++ linux-2.6/drivers/acpi/sleep/main.c	2007-03-20 12:42:05.713214909 +0100
+@@ -168,9 +168,18 @@ int acpi_suspend(u32 acpi_state)
+ =
+
+ static int acpi_pm_state_valid(suspend_state_t pm_state)
+ {
+-	u32 acpi_state =3D acpi_suspend_states[pm_state];
++	u32 acpi_state;
+ =
+
+-	return sleep_states[acpi_state];
++	switch (pm_state) {
++	case PM_SUSPEND_ON:
++	case PM_SUSPEND_STANDBY:
++	case PM_SUSPEND_MEM:
++		acpi_state =3D acpi_suspend_states[pm_state];
++
++		return sleep_states[acpi_state];
++	default:
++		return 0;
++	}
+ }
+ =
+
+ static struct pm_ops acpi_pm_ops =3D {
+--- linux-2.6.orig/kernel/power/main.c	2007-03-20 12:42:02.263214909 +0100
++++ linux-2.6/kernel/power/main.c	2007-03-20 12:42:05.713214909 +0100
+@@ -48,6 +48,19 @@ void pm_set_ops(struct pm_ops * ops)
+ 	mutex_unlock(&pm_mutex);
+ }
+ =
+
++/**
++ * pm_valid_only_mem - generic memory-only valid callback
++ *
++ * pm_ops drivers that implement mem suspend only and only need
++ * to check for that in their .valid callback can use this instead
++ * of rolling their own .valid callback.
++ */
++int pm_valid_only_mem(suspend_state_t state)
++{
++	return state =3D=3D PM_SUSPEND_MEM;
++}
++
++
+ static inline void pm_finish(suspend_state_t state)
+ {
+ 	if (pm_ops->finish)
 
 --
