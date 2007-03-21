@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] introduce /sys/power/disk_powerdown_mode
-Date: Wed, 21 Mar 2007 15:01:36 +0100
-Message-ID: <200703211501.37164.rjw@sisk.pl>
-References: <1174468981.3769.8.camel@johannes.berg>
-	<1174482773.4230.19.camel@johannes.berg>
-	<20070321131709.GA5788@elf.ucw.cz>
+Subject: Re: 32-bit user suspend program on 64-bit kernel?
+Date: Wed, 21 Mar 2007 15:05:52 +0100
+Message-ID: <200703211505.52812.rjw@sisk.pl>
+References: <1174468281.3769.7.camel@johannes.berg>
+	<20070321122820.GA4523@elf.ucw.cz>
+	<1174480277.4230.9.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070321131709.GA5788@elf.ucw.cz>
+In-Reply-To: <1174480277.4230.9.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,45 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 21 March 2007 14:17, Pavel Machek wrote:
-> Hi!
+On Wednesday, 21 March 2007 13:31, Johannes Berg wrote:
+> On Wed, 2007-03-21 at 13:28 +0100, Pavel Machek wrote:
 > =
 
-> > > > > Does it really need to be this complex? Maybe we can disply change
-> > > > > /sys/power/disk format? Is the change required at all?
-> > > > =
-
-> > > > Dunno. Does anything ever read it? Maybe the whole change isn't
-> > > > necessary since this thing exists only as a hack for ACPI anyway, b=
-ut if
-> > > > anybody starts using it with an actual choice being able to see the
-> > > > choices would imho be useful.
-> > > =
-
-> > > I believe we can just show the list of choices, without changing the
-> > > name.
+> > > compat code for the ioctl which shares pointers and structs, is there
+> > > any way to make it possible?
 > > =
 
-> > Ok, I can simplify the patch down to that, the only thing about that is
-> > that it breaks userspace ABI. Dunno how people react to that with
-> > suspend though :)
+> > That means that either ioctl is very hw-specific, or you've found a
+> > bug.
 > =
 
-> I do not know... maybe you can just ask akpm first. I believe we can
-> do that.
+> I think I'll just have to give it a try.
 
-I agree, but _all_ of the doocumentation will have to be updated in the same
-patch (or patch series), IMHO.
+Unfortunately the numbers of ioctls are not portable due to my rookie mista=
+ke
+in the beginning (using void * in _IOW() and friends which passed with no
+objections).
+
+I'm ashamed of that, but it's probably too late to fix it. :-(
 
 Greetings,
 Rafael
-
-
--- =
-
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
