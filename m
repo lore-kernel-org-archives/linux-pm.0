@@ -1,16 +1,16 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Wed, 21 Mar 2007 22:01:15 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0703212153350.7211@poirot.grange>
-References: <20070320015846.636692000@sipsolutions.net>
-	<20070320102551.GB19283@elf.ucw.cz>
-	<1174388812.3770.29.camel@johannes.berg>
-	<200703201644.59046.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Wed, 21 Mar 2007 22:39:09 +0100
+Message-ID: <20070321213909.GB6057@elf.ucw.cz>
+References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+	<20070320183022.GC2670@elf.ucw.cz>
+	<1174440888.29722.15.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703201644.59046.david-b@pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <1174440888.29722.15.camel@sli10-conroe.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,48 +20,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, linux-arm@lists.arm.linux.org.uk, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 20 Mar 2007, David Brownell wrote:
+Hi!
 
-> On Tuesday 20 March 2007 4:06 am, Johannes Berg wrote:
-> > Almost all users of pm_ops only support mem sleep, don't check in .valid
-> > and don't reject any others in .prepare so users can be confused if they
-> > check /sys/power/state, especially when new states are ever added.
-> =
+> > So far so good, but please use ascii ' for '.
+> > =
 
-> By the way ... as a note to implementors, it should be trivial to
-> implement a basic "standby" state that suspends drivers, disables
-> many clocks, and probably puts DRAM into self-refresh mode, but
-> uses only the wait-for-interrupt CPU lowpower mode.
-> =
+> > > I think we need answer below questions:
+> > > 1. How to present device???s power info/control interface to policy.
+> > ...
+> > =
 
-> A key difference between that and STR would then be that STR does
-> extra magic, like switching the CPU to a slow clock and then turning
-> off all the clocks that drive the chip "fast".  Also, that because
-> it disables so many clocks, the SOC probably can't support as many
-> types of wakeup events in STR.
+> > Depends on bus, I'm afraid. We do not want to do this in generic code.
+> Agree it depends on bus. But it's better a framework can abstract the
+> interface
 
-Hm, interesting. What you described above is very similar to what I've =
+Parse error. Anyway, feel free to suggest framework to improve USB.
 
-just implemented for a 8241 based system (linkstation: =
+> > > 2. How to handle devices dependences. For example, for a PCI
+> > endpoint
+> > ...
+> > =
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-March/thread.html#33203).
-But Paul Mackerras suggested to consider it a StR, whereas Johannes Berg =
+> > USB gets the dependencies right, just copy that.
+> Does USB include all kinds of dependence, eg non parent-children
+> dependence?
 
-proposed to call it a standby, which is also what seems to be more logical =
+No, probably not, as USB was designed properly. How common are those
+cross dependencies? Do we really want to solve them generically?
 
-to me. May we agree on some "simple" criteria, like "CPU power on, i.e., =
+> > > int foo() //all service routines of the driver should do
+> > > {
+> > >             //wakeup the device if it???s suspended
+> > >             dpm_active_device();
+> > =
 
-CPU registers preserved"? If yes - standby, CPU off, registers lost - StR? =
+> > No, we do not want this kind of interface. It should be something like
+> > mod_timer(my_timer, HZ+10);
+> 1. the device might suspend already here, we should resume it.
+> 2. mod_timer is a bad idea. It's too heavy, if the routine is called
+> very frequently, mod_timer will be a big overload. That's why I use a
+> timestamp. Updating a timestamp hasn't any overload.
 
-I can imagine CPUs with multiple power sources allowing to switch some of =
+Heh, if mod_timer is bad idea, we'll fix mod_timer. Anyway, if you use
+timestamp, you'll have to add polling, and that means overhead even
+when idle.
 
-them on and off respectively losing / keeping some register sets...
+Anyway, we do not have to decide that at this point.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> > We can talk about generic device attribute "powerdown_timeout" in
+> > sysfs... but I'd prefer few more drivers that do powersave before we
+> > do that.
+> Using this you will have a timer in the driver, and the timer's callback
+> will suspend the device. This approach has some issues. 1. it's better
+> driver doesn't handle device dependence. This approach requires driver
+> handle dependence. =
+
+
+Why not?
+
+> 2. It's better a userspace policy to directly suspend
+> a device and driver just provides control interface. A userspace is
+> definitely flexible and make driver simpler.
+
+No.
+
+> > No, that's not how it works; look at hda_audio, it already has
+> > powersave. Just power down audio card 5 seconds after its control file
+> > is closed.
+> It's another case of doing policy in a driver.
+
+Yes, but in this case we want it there, as someone already explained.
+
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
