@@ -1,14 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH 3/3] power management: implement pm_ops.valid for
-	everybody
-Date: Wed, 21 Mar 2007 15:53:31 +0100
-Message-ID: <20070321145421.918490000@sipsolutions.net>
+Subject: [PATCH 1/3] rework pm_ops pm_disk_mode, kill misuse
+Date: Wed, 21 Mar 2007 15:53:29 +0100
+Message-ID: <20070321145420.910171000@sipsolutions.net>
 References: <20070321145328.496614000@sipsolutions.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline; filename=013-implement-valid.patch
+Content-Disposition: inline; filename=011-pm-ops-diskmode.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,13 +21,22 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Almost all users of pm_ops only support mem sleep, don't check in .valid
-and don't reject any others in .prepare so users can be confused if they
-check /sys/power/state, especially when new states are added (these would
-then result in s-t-r although they're supposed to be something different).
+The pm_ops.pm_disk_mode is used in totally bogus ways since
+nobody really seems to understand what it actually does.
 
-This patch implements a generic pm_valid_only_mem function that is then
-exported for users and puts it to use in almost all existing pm_ops.
+This patch clarifies the pm_disk_mode description.
+
+It also removes all the arm and sh users that think they can veto
+suspend to disk via pm_ops; not so since the user can always
+do echo shutdown > /sys/power/disk, they need to find a better
+way involving Kconfig or such.
+
+ACPI is the only user left with a non-zero pm_disk_mode.
+
+The patch also sets the default mode to shutdown again, but
+when a new pm_ops is registered its pm_disk_mode is selected
+as default, that way the default stays for ACPI where it is
+apparently required.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Cc: David Brownell <david-b@pacbell.net>
@@ -36,247 +44,357 @@ Cc: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.linux-foundation.org
 
 ---
- arch/arm/common/sharpsl_pm.c |    1 +
- arch/arm/mach-omap1/pm.c     |    1 +
- arch/arm/mach-omap2/pm.c     |    1 +
- arch/arm/mach-pnx4008/pm.c   |   35 +----------------------------------
- arch/arm/mach-pxa/pm.c       |    1 +
- arch/arm/mach-sa1100/pm.c    |    1 +
- arch/arm/plat-s3c24xx/pm.c   |   19 +------------------
- arch/sh/boards/hp6xx/pm.c    |    1 +
- drivers/acpi/sleep/main.c    |   13 +++++++++++--
- include/linux/pm.h           |    4 ++++
- kernel/power/main.c          |   13 +++++++++++++
- 11 files changed, 36 insertions(+), 54 deletions(-)
+ arch/arm/common/sharpsl_pm.c |    1 =
 
---- linux-2.6.orig/include/linux/pm.h	2007-03-20 12:42:04.813214909 +0100
-+++ linux-2.6/include/linux/pm.h	2007-03-20 12:42:05.693214909 +0100
-@@ -128,6 +128,9 @@ typedef int __bitwise suspend_disk_metho
-  *	always valid and never passed to this call.
-  *	If not assigned, all suspend states are advertised as valid
-  *	in /sys/power/state (but can still be rejected by prepare or enter.)
-+ *	Since new states can be added for other platforms, you should
-+ *	assign this callback. There is a %pm_valid_only_mem function
-+ *	available if you only implemented mem sleep.
+ arch/arm/mach-at91/pm.c      |    1 =
+
+ arch/arm/mach-omap1/pm.c     |    1 =
+
+ arch/arm/mach-omap2/pm.c     |    1 =
+
+ arch/arm/mach-pxa/pm.c       |    4 ---
+ arch/arm/mach-sa1100/pm.c    |    7 -----
+ arch/arm/plat-s3c24xx/pm.c   |    9 ------
+ arch/sh/boards/hp6xx/pm.c    |    7 -----
+ include/linux/pm.h           |   23 +++++++++--------
+ kernel/power/disk.c          |   56 ++++++++++++++++++++++++++++----------=
+-----
+ kernel/power/main.c          |    6 +++-
+ 11 files changed, 54 insertions(+), 62 deletions(-)
+
+--- linux-2.6.orig/include/linux/pm.h	2007-03-20 12:41:38.423214909 +0100
++++ linux-2.6/include/linux/pm.h	2007-03-20 12:42:02.253214909 +0100
+@@ -112,6 +112,8 @@ typedef int __bitwise suspend_state_t;
+ =
+
+ typedef int __bitwise suspend_disk_method_t;
+ =
+
++/* invalid must be 0 so struct pm_ops initialisers can leave it out */
++#define PM_DISK_INVALID		((__force suspend_disk_method_t) 0)
+ #define	PM_DISK_FIRMWARE	((__force suspend_disk_method_t) 1)
+ #define	PM_DISK_PLATFORM	((__force suspend_disk_method_t) 2)
+ #define	PM_DISK_SHUTDOWN	((__force suspend_disk_method_t) 3)
+@@ -137,17 +139,16 @@ typedef int __bitwise suspend_disk_metho
+  * @finish: Called when the system has left the given state and all devices
+  *	are resumed. The return value is ignored.
   *
-  * @prepare: Prepare the platform for the given suspend state. Can return a
-  *	negative error code if necessary.
-@@ -165,6 +168,7 @@ extern void pm_set_ops(struct pm_ops *pm
- extern struct pm_ops *pm_ops;
- extern int pm_suspend(suspend_state_t state);
- =
-
-+extern int pm_valid_only_mem(suspend_state_t state);
- =
-
- /*
-  * Device power management
---- linux-2.6.orig/arch/arm/common/sharpsl_pm.c	2007-03-20 12:42:02.2632149=
-09 +0100
-+++ linux-2.6/arch/arm/common/sharpsl_pm.c	2007-03-20 12:42:05.693214909 +0=
-100
-@@ -769,6 +769,7 @@ static struct pm_ops sharpsl_pm_ops =3D {
- 	.prepare	=3D pxa_pm_prepare,
- 	.enter		=3D corgi_pxa_pm_enter,
- 	.finish		=3D pxa_pm_finish,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- static int __init sharpsl_pm_probe(struct platform_device *pdev)
---- linux-2.6.orig/arch/arm/mach-omap1/pm.c	2007-03-20 12:42:02.263214909 +=
-0100
-+++ linux-2.6/arch/arm/mach-omap1/pm.c	2007-03-20 12:42:05.703214909 +0100
-@@ -701,6 +701,7 @@ static struct pm_ops omap_pm_ops =3D{
- 	.prepare	=3D omap_pm_prepare,
- 	.enter		=3D omap_pm_enter,
- 	.finish		=3D omap_pm_finish,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- static int __init omap_pm_init(void)
---- linux-2.6.orig/arch/arm/mach-omap2/pm.c	2007-03-20 12:42:02.263214909 +=
-0100
-+++ linux-2.6/arch/arm/mach-omap2/pm.c	2007-03-20 12:42:05.703214909 +0100
-@@ -373,6 +373,7 @@ static struct pm_ops omap_pm_ops =3D {
- 	.prepare	=3D omap2_pm_prepare,
- 	.enter		=3D omap2_pm_enter,
- 	.finish		=3D omap2_pm_finish,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- int __init omap2_pm_init(void)
---- linux-2.6.orig/arch/arm/mach-pnx4008/pm.c	2007-03-20 12:41:36.133214909=
- +0100
-+++ linux-2.6/arch/arm/mach-pnx4008/pm.c	2007-03-20 12:42:05.703214909 +0100
-@@ -115,42 +115,9 @@ static int pnx4008_pm_enter(suspend_stat
- 	return 0;
- }
- =
-
--/*
-- * Called after processes are frozen, but before we shut down devices.
-- */
--static int pnx4008_pm_prepare(suspend_state_t state)
--{
--	switch (state) {
--	case PM_SUSPEND_STANDBY:
--	case PM_SUSPEND_MEM:
--		break;
--
--	case PM_SUSPEND_DISK:
--		return -ENOTSUPP;
--		break;
--
--	default:
--		return -EINVAL;
--		break;
--	}
--	return 0;
--}
--
--/*
-- * Called after devices are re-setup, but before processes are thawed.
-- */
--static int pnx4008_pm_finish(suspend_state_t state)
--{
--	return 0;
--}
--
--/*
-- * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
-- */
- static struct pm_ops pnx4008_pm_ops =3D {
--	.prepare =3D pnx4008_pm_prepare,
- 	.enter =3D pnx4008_pm_enter,
--	.finish =3D pnx4008_pm_finish,
-+	.valid =3D pm_valid_only_mem,
- };
- =
-
- static int __init pnx4008_pm_init(void)
---- linux-2.6.orig/arch/arm/mach-pxa/pm.c	2007-03-20 12:42:02.263214909 +01=
-00
-+++ linux-2.6/arch/arm/mach-pxa/pm.c	2007-03-20 12:42:05.703214909 +0100
-@@ -227,6 +227,7 @@ static struct pm_ops pxa_pm_ops =3D {
- 	.prepare	=3D pxa_pm_prepare,
- 	.enter		=3D pxa_pm_enter,
- 	.finish		=3D pxa_pm_finish,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- static int __init pxa_pm_init(void)
---- linux-2.6.orig/arch/arm/mach-sa1100/pm.c	2007-03-20 12:42:02.273214909 =
-+0100
-+++ linux-2.6/arch/arm/mach-sa1100/pm.c	2007-03-20 12:42:05.703214909 +0100
-@@ -133,6 +133,7 @@ unsigned long sleep_phys_sp(void *sp)
- =
-
- static struct pm_ops sa11x0_pm_ops =3D {
- 	.enter		=3D sa11x0_pm_enter,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- static int __init sa11x0_pm_init(void)
---- linux-2.6.orig/arch/arm/plat-s3c24xx/pm.c	2007-03-20 12:42:02.273214909=
- +0100
-+++ linux-2.6/arch/arm/plat-s3c24xx/pm.c	2007-03-20 12:42:05.703214909 +0100
-@@ -612,26 +612,9 @@ static int s3c2410_pm_enter(suspend_stat
- 	return 0;
- }
- =
-
--/*
-- * Called after processes are frozen, but before we shut down devices.
-- */
--static int s3c2410_pm_prepare(suspend_state_t state)
--{
--	return 0;
--}
--
--/*
-- * Called after devices are re-setup, but before processes are thawed.
-- */
--static int s3c2410_pm_finish(suspend_state_t state)
--{
--	return 0;
--}
--
- static struct pm_ops s3c2410_pm_ops =3D {
--	.prepare	=3D s3c2410_pm_prepare,
- 	.enter		=3D s3c2410_pm_enter,
--	.finish		=3D s3c2410_pm_finish,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- /* s3c2410_pm_init
---- linux-2.6.orig/arch/sh/boards/hp6xx/pm.c	2007-03-20 12:42:02.273214909 =
-+0100
-+++ linux-2.6/arch/sh/boards/hp6xx/pm.c	2007-03-20 12:42:05.713214909 +0100
-@@ -69,6 +69,7 @@ static int hp6x0_pm_enter(suspend_state_
- =
-
- static struct pm_ops hp6x0_pm_ops =3D {
- 	.enter		=3D hp6x0_pm_enter,
-+	.valid		=3D pm_valid_only_mem,
- };
- =
-
- static int __init hp6x0_pm_init(void)
---- linux-2.6.orig/drivers/acpi/sleep/main.c	2007-03-20 12:41:36.863214909 =
-+0100
-+++ linux-2.6/drivers/acpi/sleep/main.c	2007-03-20 12:42:05.713214909 +0100
-@@ -168,9 +168,18 @@ int acpi_suspend(u32 acpi_state)
- =
-
- static int acpi_pm_state_valid(suspend_state_t pm_state)
+- * @pm_disk_mode: Set to the disk method that the user should be able to
+- *	configure for suspend-to-disk. Since %PM_DISK_SHUTDOWN,
+- *	%PM_DISK_REBOOT, %PM_DISK_TEST and %PM_DISK_TESTPROC
+- *	are always allowed, currently only %PM_DISK_PLATFORM
+- *	makes sense. If the user then choses %PM_DISK_PLATFORM,
+- *	the @prepare call will be called before suspending to disk
+- *	(if present), the @enter call should be present and will
+- *	be called after all state has been saved and the machine
+- *	is ready to be shut down/suspended/..., and the @finish
+- *	callback is called after state has been restored. All
+- *	these calls are called with %PM_SUSPEND_DISK as the state.
++ * @pm_disk_mode: The generic code always allows one of the shutdown metho=
+ds
++ *	%PM_DISK_SHUTDOWN, %PM_DISK_REBOOT, %PM_DISK_TEST and
++ *	%PM_DISK_TESTPROC. If this variable is set, the mode it is set
++ *	to is allowed in addition to those modes and is also made default.
++ *	When this mode is sent selected, the @prepare call will be called
++ *	before suspending to disk (if present), the @enter call should be
++ *	present and will be called after all state has been saved and the
++ *	machine is ready to be powered off; the @finish callback is called
++ *	after state has been restored. All these calls are called with
++ *	%PM_SUSPEND_DISK as the state.
+  */
+ struct pm_ops {
+ 	int (*valid)(suspend_state_t state);
+--- linux-2.6.orig/kernel/power/disk.c	2007-03-20 12:41:38.463214909 +0100
++++ linux-2.6/kernel/power/disk.c	2007-03-20 12:42:02.263214909 +0100
+@@ -39,7 +39,13 @@ static inline int platform_prepare(void)
  {
--	u32 acpi_state =3D acpi_suspend_states[pm_state];
-+	u32 acpi_state;
+ 	int error =3D 0;
  =
 
--	return sleep_states[acpi_state];
-+	switch (pm_state) {
-+	case PM_SUSPEND_ON:
-+	case PM_SUSPEND_STANDBY:
-+	case PM_SUSPEND_MEM:
-+		acpi_state =3D acpi_suspend_states[pm_state];
-+
-+		return sleep_states[acpi_state];
+-	if (pm_disk_mode =3D=3D PM_DISK_PLATFORM) {
++	switch (pm_disk_mode) {
++	case PM_DISK_TEST:
++	case PM_DISK_TESTPROC:
++	case PM_DISK_SHUTDOWN:
++	case PM_DISK_REBOOT:
++		break;
 +	default:
-+		return 0;
-+	}
- }
+ 		if (pm_ops && pm_ops->prepare)
+ 			error =3D pm_ops->prepare(PM_SUSPEND_DISK);
+ 	}
+@@ -48,31 +54,33 @@ static inline int platform_prepare(void)
  =
 
- static struct pm_ops acpi_pm_ops =3D {
---- linux-2.6.orig/kernel/power/main.c	2007-03-20 12:42:02.263214909 +0100
-+++ linux-2.6/kernel/power/main.c	2007-03-20 12:42:05.713214909 +0100
-@@ -48,6 +48,19 @@ void pm_set_ops(struct pm_ops * ops)
+ /**
+  *	power_down - Shut machine down for hibernate.
+- *	@mode:		Suspend-to-disk mode
+  *
+- *	Use the platform driver, if configured so, and return gracefully if it
+- *	fails.
+- *	Otherwise, try to power off and reboot. If they fail, halt the machine,
+- *	there ain't no turning back.
++ *	Use the platform driver, if configured so; otherwise try
++ *	to power off or reboot.
+  */
+ =
+
+-static void power_down(suspend_disk_method_t mode)
++static void power_down(void)
+ {
+ 	disable_nonboot_cpus();
+-	switch(mode) {
+-	case PM_DISK_PLATFORM:
+-		if (pm_ops && pm_ops->enter) {
+-			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+-			pm_ops->enter(PM_SUSPEND_DISK);
+-			break;
+-		}
++
++	switch (pm_disk_mode) {
++	case PM_DISK_TEST:
++	case PM_DISK_TESTPROC:
++		break;
+ 	case PM_DISK_SHUTDOWN:
+ 		kernel_power_off();
+ 		break;
+ 	case PM_DISK_REBOOT:
+ 		kernel_restart(NULL);
+ 		break;
++	default:
++		if (pm_ops && pm_ops->enter) {
++			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
++			pm_ops->enter(PM_SUSPEND_DISK);
++			break;
++		}
+ 	}
++
+ 	kernel_halt();
+ 	/* Valid image is on the disk, if we continue we risk serious data corrup=
+tion
+ 	   after resume. */
+@@ -82,7 +90,13 @@ static void power_down(suspend_disk_meth
+ =
+
+ static inline void platform_finish(void)
+ {
+-	if (pm_disk_mode =3D=3D PM_DISK_PLATFORM) {
++	switch (pm_disk_mode) {
++	case PM_DISK_TEST:
++	case PM_DISK_TESTPROC:
++	case PM_DISK_SHUTDOWN:
++	case PM_DISK_REBOOT:
++		break;
++	default:
+ 		if (pm_ops && pm_ops->finish)
+ 			pm_ops->finish(PM_SUSPEND_DISK);
+ 	}
+@@ -167,7 +181,7 @@ int pm_suspend_disk(void)
+ 		pr_debug("PM: writing image.\n");
+ 		error =3D swsusp_write();
+ 		if (!error)
+-			power_down(pm_disk_mode);
++			power_down();
+ 		else {
+ 			swsusp_free();
+ 			goto Thaw;
+@@ -347,10 +361,14 @@ static ssize_t disk_store(struct subsyst
+ 		}
+ 	}
+ 	if (mode) {
+-		if (mode =3D=3D PM_DISK_SHUTDOWN || mode =3D=3D PM_DISK_REBOOT ||
+-		     mode =3D=3D PM_DISK_TEST || mode =3D=3D PM_DISK_TESTPROC) {
++		switch (mode) {
++		case PM_DISK_SHUTDOWN:
++		case PM_DISK_REBOOT:
++		case PM_DISK_TEST:
++		case PM_DISK_TESTPROC:
+ 			pm_disk_mode =3D mode;
+-		} else {
++			break;
++		default:
+ 			if (pm_ops && pm_ops->enter &&
+ 			    (mode =3D=3D pm_ops->pm_disk_mode))
+ 				pm_disk_mode =3D mode;
+--- linux-2.6.orig/kernel/power/main.c	2007-03-20 12:41:38.543214909 +0100
++++ linux-2.6/kernel/power/main.c	2007-03-20 12:42:02.263214909 +0100
+@@ -30,7 +30,7 @@
+ DEFINE_MUTEX(pm_mutex);
+ =
+
+ struct pm_ops *pm_ops;
+-suspend_disk_method_t pm_disk_mode =3D PM_DISK_PLATFORM;
++suspend_disk_method_t pm_disk_mode =3D PM_DISK_SHUTDOWN;
+ =
+
+ /**
+  *	pm_set_ops - Set the global power method table. =
+
+@@ -41,6 +41,10 @@ void pm_set_ops(struct pm_ops * ops)
+ {
+ 	mutex_lock(&pm_mutex);
+ 	pm_ops =3D ops;
++	if (ops && ops->pm_disk_mode !=3D PM_DISK_INVALID) {
++		pm_disk_mode =3D ops->pm_disk_mode;
++	} else
++		pm_disk_mode =3D PM_DISK_SHUTDOWN;
  	mutex_unlock(&pm_mutex);
  }
  =
 
-+/**
-+ * pm_valid_only_mem - generic memory-only valid callback
-+ *
-+ * pm_ops drivers that implement mem suspend only and only need
-+ * to check for that in their .valid callback can use this instead
-+ * of rolling their own .valid callback.
-+ */
-+int pm_valid_only_mem(suspend_state_t state)
-+{
-+	return state =3D=3D PM_SUSPEND_MEM;
-+}
-+
-+
- static inline void pm_finish(suspend_state_t state)
- {
- 	if (pm_ops->finish)
+--- linux-2.6.orig/arch/arm/common/sharpsl_pm.c	2007-03-20 12:41:38.6732149=
+09 +0100
++++ linux-2.6/arch/arm/common/sharpsl_pm.c	2007-03-20 12:42:02.263214909 +0=
+100
+@@ -766,7 +766,6 @@ static void sharpsl_apm_get_power_status
+ }
+ =
+
+ static struct pm_ops sharpsl_pm_ops =3D {
+-	.pm_disk_mode	=3D PM_DISK_FIRMWARE,
+ 	.prepare	=3D pxa_pm_prepare,
+ 	.enter		=3D corgi_pxa_pm_enter,
+ 	.finish		=3D pxa_pm_finish,
+--- linux-2.6.orig/arch/arm/mach-at91/pm.c	2007-03-20 12:41:38.743214909 +0=
+100
++++ linux-2.6/arch/arm/mach-at91/pm.c	2007-03-20 12:42:02.263214909 +0100
+@@ -201,7 +201,6 @@ error:
+ =
+
+ =
+
+ static struct pm_ops at91_pm_ops =3D{
+-	.pm_disk_mode	=3D 0,
+ 	.valid		=3D at91_pm_valid_state,
+ 	.prepare	=3D at91_pm_prepare,
+ 	.enter		=3D at91_pm_enter,
+--- linux-2.6.orig/arch/arm/mach-omap1/pm.c	2007-03-20 12:41:38.763214909 +=
+0100
++++ linux-2.6/arch/arm/mach-omap1/pm.c	2007-03-20 12:42:02.263214909 +0100
+@@ -698,7 +698,6 @@ static struct irqaction omap_wakeup_irq =
+
+ =
+
+ =
+
+ static struct pm_ops omap_pm_ops =3D{
+-	.pm_disk_mode	=3D 0,
+ 	.prepare	=3D omap_pm_prepare,
+ 	.enter		=3D omap_pm_enter,
+ 	.finish		=3D omap_pm_finish,
+--- linux-2.6.orig/arch/arm/mach-omap2/pm.c	2007-03-20 12:41:38.833214909 +=
+0100
++++ linux-2.6/arch/arm/mach-omap2/pm.c	2007-03-20 12:42:02.263214909 +0100
+@@ -370,7 +370,6 @@ static int omap2_pm_finish(suspend_state
+ }
+ =
+
+ static struct pm_ops omap_pm_ops =3D {
+-	.pm_disk_mode	=3D 0,
+ 	.prepare	=3D omap2_pm_prepare,
+ 	.enter		=3D omap2_pm_enter,
+ 	.finish		=3D omap2_pm_finish,
+--- linux-2.6.orig/arch/arm/mach-pxa/pm.c	2007-03-20 12:41:38.853214909 +01=
+00
++++ linux-2.6/arch/arm/mach-pxa/pm.c	2007-03-20 12:42:02.263214909 +0100
+@@ -223,11 +223,7 @@ int pxa_pm_finish(suspend_state_t state)
+ =
+
+ EXPORT_SYMBOL_GPL(pxa_pm_finish);
+ =
+
+-/*
+- * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
+- */
+ static struct pm_ops pxa_pm_ops =3D {
+-	.pm_disk_mode	=3D PM_DISK_FIRMWARE,
+ 	.prepare	=3D pxa_pm_prepare,
+ 	.enter		=3D pxa_pm_enter,
+ 	.finish		=3D pxa_pm_finish,
+--- linux-2.6.orig/arch/arm/mach-sa1100/pm.c	2007-03-20 12:41:38.903214909 =
++0100
++++ linux-2.6/arch/arm/mach-sa1100/pm.c	2007-03-20 12:42:02.273214909 +0100
+@@ -59,9 +59,6 @@ static int sa11x0_pm_enter(suspend_state
+ 	unsigned long gpio, sleep_save[SLEEP_SAVE_SIZE];
+ 	struct timespec delta, rtc;
+ =
+
+-	if (state !=3D PM_SUSPEND_MEM)
+-		return -EINVAL;
+-
+ 	/* preserve current time */
+ 	rtc.tv_sec =3D RCNR;
+ 	rtc.tv_nsec =3D 0;
+@@ -134,11 +131,7 @@ unsigned long sleep_phys_sp(void *sp)
+ 	return virt_to_phys(sp);
+ }
+ =
+
+-/*
+- * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
+- */
+ static struct pm_ops sa11x0_pm_ops =3D {
+-	.pm_disk_mode	=3D PM_DISK_FIRMWARE,
+ 	.enter		=3D sa11x0_pm_enter,
+ };
+ =
+
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/pm.c	2007-03-20 12:41:38.953214909=
+ +0100
++++ linux-2.6/arch/arm/plat-s3c24xx/pm.c	2007-03-20 12:42:02.273214909 +0100
+@@ -511,11 +511,6 @@ static int s3c2410_pm_enter(suspend_stat
+ 		return -EINVAL;
+ 	}
+ =
+
+-	if (state !=3D PM_SUSPEND_MEM) {
+-		printk(KERN_ERR PFX "error: only PM_SUSPEND_MEM supported\n");
+-		return -EINVAL;
+-	}
+-
+ 	/* check if we have anything to wake-up with... bad things seem
+ 	 * to happen if you suspend with no wakeup (system will often
+ 	 * require a full power-cycle)
+@@ -633,11 +628,7 @@ static int s3c2410_pm_finish(suspend_sta
+ 	return 0;
+ }
+ =
+
+-/*
+- * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
+- */
+ static struct pm_ops s3c2410_pm_ops =3D {
+-	.pm_disk_mode	=3D PM_DISK_FIRMWARE,
+ 	.prepare	=3D s3c2410_pm_prepare,
+ 	.enter		=3D s3c2410_pm_enter,
+ 	.finish		=3D s3c2410_pm_finish,
+--- linux-2.6.orig/arch/sh/boards/hp6xx/pm.c	2007-03-20 12:41:39.163214909 =
++0100
++++ linux-2.6/arch/sh/boards/hp6xx/pm.c	2007-03-20 12:42:02.273214909 +0100
+@@ -27,9 +27,6 @@ static int hp6x0_pm_enter(suspend_state_
+ 	u16 hd64461_stbcr;
+ #endif
+ =
+
+-	if (state !=3D PM_SUSPEND_MEM)
+-		return -EINVAL;
+-
+ #ifdef CONFIG_HD64461_ENABLER
+ 	outb(0, HD64461_PCC1CSCIER);
+ =
+
+@@ -70,11 +67,7 @@ static int hp6x0_pm_enter(suspend_state_
+ 	return 0;
+ }
+ =
+
+-/*
+- * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
+- */
+ static struct pm_ops hp6x0_pm_ops =3D {
+-	.pm_disk_mode	=3D PM_DISK_FIRMWARE,
+ 	.enter		=3D hp6x0_pm_enter,
+ };
+ =
+
 
 --
