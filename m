@@ -1,15 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 32-bit user suspend program on 64-bit kernel?
-Date: Wed, 21 Mar 2007 15:04:38 +0100
-Message-ID: <1174485879.4230.36.camel@johannes.berg>
+Date: Wed, 21 Mar 2007 15:17:19 +0100
+Message-ID: <200703211517.20297.rjw@sisk.pl>
 References: <1174468281.3769.7.camel@johannes.berg>
-	<20070321122820.GA4523@elf.ucw.cz>
-	<1174480277.4230.9.camel@johannes.berg>
 	<200703211505.52812.rjw@sisk.pl>
+	<1174485879.4230.36.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0449294344=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703211505.52812.rjw@sisk.pl>
+In-Reply-To: <1174485879.4230.36.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,60 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
 Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Wednesday, 21 March 2007 15:04, Johannes Berg wrote:
+> On Wed, 2007-03-21 at 15:05 +0100, Rafael J. Wysocki wrote:
+> =
 
---===============0449294344==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-TbhcPECzeD2kZeKf774h"
+> > Unfortunately the numbers of ioctls are not portable due to my rookie m=
+istake
+> > in the beginning (using void * in _IOW() and friends which passed with =
+no
+> > objections).
+> > =
 
+> > I'm ashamed of that, but it's probably too late to fix it. :-(
+> =
 
---=-TbhcPECzeD2kZeKf774h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Bugger. What would be required to fix it?
 
-On Wed, 2007-03-21 at 15:05 +0100, Rafael J. Wysocki wrote:
+Well, the change itself wouldn't be big (three #defines or so), but it would
+break all of the existing setups.
 
-> Unfortunately the numbers of ioctls are not portable due to my rookie mis=
-take
-> in the beginning (using void * in _IOW() and friends which passed with no
-> objections).
->=20
-> I'm ashamed of that, but it's probably too late to fix it. :-(
+Alternatively, we can add some ioctls that duplicate those with nonportable
+numbers and tell people to use the new ones in the future (documentation
+changes would be needed).
 
-Bugger. What would be required to fix it?
-
-Thing is, this is going to make powerpc distro's lives difficult since
-part of uswsusp needs to live in the initrd which usually just contains
-kernel modules + normal programs, and no powerpc distro I know of ships
-64-bit userspace on a 32-bit kernel since, well, it doesn't really have
-many advantages.
-
-johannes
-
---=-TbhcPECzeD2kZeKf774h
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGATt2/ETPhpq3jKURArXEAJ4n4sIXVmwFva7vKswhSvVrawVegwCfeZLV
-O0HqRs7zzhyMVeLf6A0DtQs=
-=U86T
------END PGP SIGNATURE-----
-
---=-TbhcPECzeD2kZeKf774h--
-
-
---===============0449294344==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0449294344==--
+Greetings,
+Rafael
