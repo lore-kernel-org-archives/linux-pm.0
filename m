@@ -1,15 +1,11 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc4-mm1: freezing of processes broken
-Date: Wed, 21 Mar 2007 08:20:29 -0800
-Message-ID: <20070321082029.2a38e09f.akpm@linux-foundation.org>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<1174446834.6665.3.camel@nigel.suspend2.net>
-	<20070321142350.GB78@tv-sign.ru> <200703211545.17919.rjw@sisk.pl>
+From: "Sheeba Wurtinger" <bestowtempter@kkp.pl>
+Subject: Sheeba wrote:
+Date: Wed, 21 Mar 2007 16:46:39 +0300
+Message-ID: <01c76bd8$7f18d3f0$6c822ecf@bestowtempter>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703211545.17919.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +15,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>, "Eric W. Biederman" <ebiederm@xmission.com>
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 21 Mar 2007 15:45:16 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Winner after Winner!  That's what we Bring to our Readers!
 
-> On Wednesday, 21 March 2007 15:23, Oleg Nesterov wrote:
-> > On 03/21, Nigel Cunningham wrote:
-> > > =
+What happens when that perfect small cap issue releases astounding news =
 
-> > > On Tue, 2007-03-20 at 19:23 -0600, Eric W. Biederman wrote:
-> > > > >> > Rafael J. Wysocki napsal(a):
-> > > > >
-> > > > > Bisection shows that the freezing of processes has been broken by=
- one of the
-> > > > > patches:
-> > > > >
-> > > > > remove-the-likelypid-check-in-copy_process.patch
-> > > > =
+and gets a massive PR campaign behind it?  It Takes Off!!!
 
-> > > > Grr.  Oleg's review of remove-the-likelypid-check-in-copy-process
-> > > > showed it to be questionable (and it was just an optimization)
-> > > > so we can get rid of that one easily. =
+Irwin Resources (IWRS)
+Last      $0.50
+Target  $1.50
 
-> > > > =
+Do not miss this one.  These small caps Really Fly when people take =
 
-> > > > Although all it did that was really questionable was add
-> > > > the idle process to the global process list and bump a process
-> > > > count when we forked the idle process.  Not dramatically dangerous
-> > > > things.
-> > > =
+notice, and Believe us they are going to take notice this Wednesday!
 
-> > > Could the freezer code be trying to freeze the idle thread as a resul=
-t?
-> > =
 
-> > Yes. remove-the-likelypid-check-in-copy_process.patch make idle threads
-> > visible to for_each_process/do_each_thread. Note also that idle threads
-> > have ->mm !=3D NULL. freezer, oom_kill, move_task_off_dead_cpu, etc, sh=
-ould
-> > not see idle threads, but they do now.
-> =
 
-> Well, I think this is a good enough reason for asking Andrew to drop this
-> patch.
 
-Or we change the freezer to skip pid=3D=3D0 tasks.
+
+(For example changing tables or some other behavior that causes a memory le=
+ak.)  =
+
+> Your site offends me by taking my money with big promises then delivering=
+ an inferior product. =
+
+Now my take on a customer explaining.  =
+
+Mike is on the payroll, he gets paid to take the heat.  =
+
+Memory leaks that might be caused by running larger tournaments.   =
+
+> Your site offends me by taking my money with big promises then delivering=
+ an inferior product. =
+
+Besides it feels better to rant on RGP than email customer support.  =
+
+> is very clearly the joke of the big online rooms.  =
+
+> RR =
+
+Besides it feels better to rant on RGP than email customer support.  =
+
+Memory leaks that might be caused by running larger tournaments.   =
+
+> Finally to top it all off, your marque event is a total washout after sev=
+eral hours of torture for the players.  =
