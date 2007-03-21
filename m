@@ -1,11 +1,17 @@
-From: "Sheeba Wurtinger" <bestowtempter@kkp.pl>
-Subject: Sheeba wrote:
-Date: Wed, 21 Mar 2007 16:46:39 +0300
-Message-ID: <01c76bd8$7f18d3f0$6c822ecf@bestowtempter>
+From: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.21-rc4-mm1: freezing of processes broken
+Date: Wed, 21 Mar 2007 19:55:34 +0300
+Message-ID: <20070321165534.GA476@tv-sign.ru>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	<1174446834.6665.3.camel@nigel.suspend2.net>
+	<20070321142350.GB78@tv-sign.ru> <200703211545.17919.rjw@sisk.pl>
+	<20070321082029.2a38e09f.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20070321082029.2a38e09f.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,51 +21,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linus@osdl.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Winner after Winner!  That's what we Bring to our Readers!
+On 03/21, Andrew Morton wrote:
+>
+> On Wed, 21 Mar 2007 15:45:16 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrot=
+e:
+> =
 
-What happens when that perfect small cap issue releases astounding news =
+> > On Wednesday, 21 March 2007 15:23, Oleg Nesterov wrote:
+> > > > =
 
-and gets a massive PR campaign behind it?  It Takes Off!!!
+> > > > Could the freezer code be trying to freeze the idle thread as a res=
+ult?
+> > > =
 
-Irwin Resources (IWRS)
-Last      $0.50
-Target  $1.50
+> > > Yes. remove-the-likelypid-check-in-copy_process.patch make idle threa=
+ds
+> > > visible to for_each_process/do_each_thread. Note also that idle threa=
+ds
+> > > have ->mm !=3D NULL. freezer, oom_kill, move_task_off_dead_cpu, etc, =
+should
+> > > not see idle threads, but they do now.
+> > =
 
-Do not miss this one.  These small caps Really Fly when people take =
+> > Well, I think this is a good enough reason for asking Andrew to drop th=
+is
+> > patch.
+> =
 
-notice, and Believe us they are going to take notice this Wednesday!
+> Or we change the freezer to skip pid=3D=3D0 tasks.
 
+I strongly disagree. In that case we should audit all users of for_each_pro=
+cess.
+Imho, this change is too dangerous. Actually, I personally think it is very=
+ good
+that idle threads are special and not visible, imho we should not change th=
+is.
 
+Btw. Rafael, Andrew, what about
 
+	[PATCH] Make XFS workqueues nonfreezable
+	http://marc.info/?l=3Dlinux-kernel&m=3D117270675922229
 
+, don't you think this should go to 2.6.21 ?
 
-(For example changing tables or some other behavior that causes a memory le=
-ak.)  =
-
-> Your site offends me by taking my money with big promises then delivering=
- an inferior product. =
-
-Now my take on a customer explaining.  =
-
-Mike is on the payroll, he gets paid to take the heat.  =
-
-Memory leaks that might be caused by running larger tournaments.   =
-
-> Your site offends me by taking my money with big promises then delivering=
- an inferior product. =
-
-Besides it feels better to rant on RGP than email customer support.  =
-
-> is very clearly the joke of the big online rooms.  =
-
-> RR =
-
-Besides it feels better to rant on RGP than email customer support.  =
-
-Memory leaks that might be caused by running larger tournaments.   =
-
-> Finally to top it all off, your marque event is a total washout after sev=
-eral hours of torture for the players.  =
+Oleg.
