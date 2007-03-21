@@ -1,21 +1,12 @@
-From: sukadev@us.ibm.com
-Subject: Re: 2.6.21-rc4-mm1: freezing of processes broken
-Date: Wed, 21 Mar 2007 11:23:37 -0700
-Message-ID: <20070321182337.GA28698@us.ibm.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	<1174446834.6665.3.camel@nigel.suspend2.net>
-	<20070321142350.GB78@tv-sign.ru> <200703211545.17919.rjw@sisk.pl>
-	<20070321082029.2a38e09f.akpm@linux-foundation.org>
-	<20070321165534.GA476@tv-sign.ru>
-	<20070321090824.38d67ce3.akpm@linux-foundation.org>
-	<20070321180713.GA27575@us.ibm.com>
-	<m1bqimbgy1.fsf@ebiederm.dsl.xmission.com>
+From: "Scott E. Preece" <preece@motorola.com>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Wed, 21 Mar 2007 15:19:39 -0500 (CDT)
+Message-ID: <200703212019.l2LKJdbj029831@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <m1bqimbgy1.fsf@ebiederm.dsl.xmission.com>
+In-reply-to: "Amit Kucheria"'s message of Wed, 21 Mar 2007 17:21:47 +0200
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,18 +16,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>, linux-pm@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+To: kucheria.amit@gmail.com
+Cc: linux-pm@lists.osdl.org, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-Eric W. Biederman [ebiederm@xmission.com] wrote:
+
+| From: "Amit Kucheria"<kucheria.amit@gmail.com>
 | =
 
-| While we are on the topic.  What became of the notion of zeroing the
-| session and process group values for the init_task?
-
-I just sent that patch a few minutes ago.
-
+| On 3/21/07, Shaohua Li <shaohua.li@intel.com> wrote:
+| > On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
 | =
 
-| Eric
+| > > No, that's not how it works; look at hda_audio, it already has
+| > > powersave. Just power down audio card 5 seconds after its control file
+| > > is closed.
+| > It's another case of doing policy in a driver.
+| >
+| =
+
+| IMHO, this kind of policy is best handled inside the driver because it
+| is specific to the hardware. This will ensure that the driver will
+| just work on every distro without some userspace policy being present
+| and setup _correctly_.
+---
+
+On an embedded device, the knowledge of when it makes sense to keep a
+disk spinning, to avoid latency when it's needed next, versus when it
+makes sense to spin it down to save power, probably fits better in user
+space than in the kernel. In such a case there's likely to be a "master"
+application (in our case, for instance, "the phone application") that
+owns a lot of knowledge about whole-system state and user interactions.
+Not, of course, that we have a disk to spin down.
+
+On the other hand, we also have devices that do their own power saving,
+largely in cases where they don't have latency issues large enough to
+worry about.
+
+scott
+-- =
+
+scott preece
+motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
+
+e-mail:	preece@motorola.com	fax:	+1-217-384-8550
+phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
