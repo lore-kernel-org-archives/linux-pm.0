@@ -1,12 +1,16 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Wed, 21 Mar 2007 15:19:39 -0500 (CDT)
-Message-ID: <200703212019.l2LKJdbj029831@olwen.urbana.css.mot.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] implement pm_ops.valid for everybody
+Date: Wed, 21 Mar 2007 22:01:15 +0100 (CET)
+Message-ID: <Pine.LNX.4.60.0703212153350.7211@poirot.grange>
+References: <20070320015846.636692000@sipsolutions.net>
+	<20070320102551.GB19283@elf.ucw.cz>
+	<1174388812.3770.29.camel@johannes.berg>
+	<200703201644.59046.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: "Amit Kucheria"'s message of Wed, 21 Mar 2007 17:21:47 +0200
+In-Reply-To: <200703201644.59046.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,48 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: kucheria.amit@gmail.com
-Cc: linux-pm@lists.osdl.org, pavel@ucw.cz
+To: David Brownell <david-b@pacbell.net>
+Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, linux-arm@lists.arm.linux.org.uk, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 20 Mar 2007, David Brownell wrote:
 
-| From: "Amit Kucheria"<kucheria.amit@gmail.com>
-| =
+> On Tuesday 20 March 2007 4:06 am, Johannes Berg wrote:
+> > Almost all users of pm_ops only support mem sleep, don't check in .valid
+> > and don't reject any others in .prepare so users can be confused if they
+> > check /sys/power/state, especially when new states are ever added.
+> =
 
-| On 3/21/07, Shaohua Li <shaohua.li@intel.com> wrote:
-| > On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
-| =
+> By the way ... as a note to implementors, it should be trivial to
+> implement a basic "standby" state that suspends drivers, disables
+> many clocks, and probably puts DRAM into self-refresh mode, but
+> uses only the wait-for-interrupt CPU lowpower mode.
+> =
 
-| > > No, that's not how it works; look at hda_audio, it already has
-| > > powersave. Just power down audio card 5 seconds after its control file
-| > > is closed.
-| > It's another case of doing policy in a driver.
-| >
-| =
+> A key difference between that and STR would then be that STR does
+> extra magic, like switching the CPU to a slow clock and then turning
+> off all the clocks that drive the chip "fast".  Also, that because
+> it disables so many clocks, the SOC probably can't support as many
+> types of wakeup events in STR.
 
-| IMHO, this kind of policy is best handled inside the driver because it
-| is specific to the hardware. This will ensure that the driver will
-| just work on every distro without some userspace policy being present
-| and setup _correctly_.
+Hm, interesting. What you described above is very similar to what I've =
+
+just implemented for a 8241 based system (linkstation: =
+
+http://ozlabs.org/pipermail/linuxppc-dev/2007-March/thread.html#33203).
+But Paul Mackerras suggested to consider it a StR, whereas Johannes Berg =
+
+proposed to call it a standby, which is also what seems to be more logical =
+
+to me. May we agree on some "simple" criteria, like "CPU power on, i.e., =
+
+CPU registers preserved"? If yes - standby, CPU off, registers lost - StR? =
+
+I can imagine CPUs with multiple power sources allowing to switch some of =
+
+them on and off respectively losing / keeping some register sets...
+
+Thanks
+Guennadi
 ---
-
-On an embedded device, the knowledge of when it makes sense to keep a
-disk spinning, to avoid latency when it's needed next, versus when it
-makes sense to spin it down to save power, probably fits better in user
-space than in the kernel. In such a case there's likely to be a "master"
-application (in our case, for instance, "the phone application") that
-owns a lot of knowledge about whole-system state and user interactions.
-Not, of course, that we have a disk to spin down.
-
-On the other hand, we also have devices that do their own power saving,
-largely in cases where they don't have latency issues large enough to
-worry about.
-
-scott
--- =
-
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+Guennadi Liakhovetski
