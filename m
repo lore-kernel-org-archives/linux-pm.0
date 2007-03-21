@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Wed, 21 Mar 2007 10:44:39 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0703211042400.3249-100000@iolanthe.rowland.org>
-References: <1174441439.29722.18.camel@sli10-conroe.sh.intel.com>
+From: "Tarrah Sonnenburg" <saloongob@staszow.com>
+Subject: Tarrah wrote:
+Date: Wed, 21 Mar 2007 14:55:27 -0420
+Message-ID: <01c76bc8$f6af8e00$6c822ecf@saloongob>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174441439.29722.18.camel@sli10-conroe.sh.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +15,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 21 Mar 2007, Shaohua Li wrote:
+Winner after Winner!  That's what we Bring to our Readers!
 
-> > I agree; nothing I said
-> > before was meant to rule out such things.  In fact, USB already
-> > contains
-> > several instances where non-driver code decides to suspend a device.
-> > For
-> > example, when a device's file in the usbfs filesystem is closed, the
-> > filesystem code attempts to suspend the device.
-> This is another question. Should we make decision in kernel layer?
+What happens when that perfect small cap issue releases astounding news =
 
-Why not?  If the only reason the device is in use is because the kernel =
+and gets a massive PR campaign behind it?  It Takes Off!!!
 
-layer has opened its device file, then when the kernel layer closes the =
+Irwin Resources (IWRS)
+Last      $0.50
+Target  $1.50
 
-file the device will be idle and so it should be suspended.
+Do not miss this one.  These small caps Really Fly when people take =
 
-Alan Stern
+notice, and Believe us they are going to take notice this Wednesday!
+
+
+
+
+
+> Your site offends me by taking my money with big promises then delivering=
+ an inferior product. =
+
+Also, I am sure Mike can handle the heat.  =
+
+There you want to catch your defects before they go into the field.  =
+
+The only question is whether that testing occurs in a test environment or i=
+n the field.  =
+
+I provided very specific PC configuration  details and even explained that =
+my swap file could grow to over 2GB and yet a condition  occurred in which =
+software exhausted all the system resources.  =
+
+> Let me give you a little advice about running your site.   =
+
+They are very busy right now.  =
+
+He is also apparently the unoffiicial or official RGP liaison.  =
+
+> Multiple, multiple upgrades that don't do anything.  =
+
+Besides it feels better to rant on RGP than email customer support.  =
+
+Where do I get my experience to make such suggestions?  =
+
+All software gets tested.  =
