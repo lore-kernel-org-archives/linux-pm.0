@@ -1,14 +1,16 @@
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 00:49:51 +0300
-Message-ID: <4601A87F.6040608@gmail.com>
-References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>	<20070320183022.GC2670@elf.ucw.cz>	<1174440888.29722.15.camel@sli10-conroe.sh.intel.com>
-	<52d486620703210821h3e26b167kb12a197d7b46e04d@mail.gmail.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] implement pm_ops.valid for everybody
+Date: Wed, 21 Mar 2007 15:07:54 -0700
+Message-ID: <200703211507.55125.david-b@pacbell.net>
+References: <20070320015846.636692000@sipsolutions.net>
+	<200703201644.59046.david-b@pacbell.net>
+	<Pine.LNX.4.60.0703212153350.7211@poirot.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <52d486620703210821h3e26b167kb12a197d7b46e04d@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.60.0703212153350.7211@poirot.grange>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +20,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Amit Kucheria <kucheria.amit@gmail.com>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, linux-arm@lists.arm.linux.org.uk, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Amit Kucheria wrote:
-> On 3/21/07, Shaohua Li <shaohua.li@intel.com> wrote:
->> On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
->
->>> No, that's not how it works; look at hda_audio, it already has
->>> powersave. Just power down audio card 5 seconds after its control file
->>> is closed.
->> It's another case of doing policy in a driver.
->>
->
-> IMHO, this kind of policy is best handled inside the driver because it
-> is specific to the hardware. This will ensure that the driver will
-> just work on every distro without some userspace policy being present
-> and setup _correctly_.
+On Wednesday 21 March 2007 2:01 pm, Guennadi Liakhovetski wrote:
+> On Tue, 20 Mar 2007, David Brownell wrote:
+> > =
 
-It some circumstances this policy may increase power consumption
-but not decrease it. Consider the case of repeatable operation,
-something like periodic sound beep, with period of 5s.
-In this case, a driver implementing the policy will periodically
-suspend/resume a number of devices - audio controller, codec, ADC,
-but the operation  itself (suspending/resuming) will consume
-more power than power consumed by these devices in case they
-left running for a 5s. In such a case you may want to change
-the predefined  value or  just  disable the policy.
+> > By the way ... as a note to implementors, it should be trivial to
+> > implement a basic "standby" state that suspends drivers, disables
+> > many clocks, and probably puts DRAM into self-refresh mode, but
+> > uses only the wait-for-interrupt CPU lowpower mode.
+> > =
 
-Yes, we may just not close a sound device file, but phone
-applications I've seen, do close the file.
+> > A key difference between that and STR would then be that STR does
+> > extra magic, like switching the CPU to a slow clock and then turning
+> > off all the clocks that drive the chip "fast".  Also, that because
+> > it disables so many clocks, the SOC probably can't support as many
+> > types of wakeup events in STR.
+> =
 
-And, my example is applicable not for audio drivers only,
-keep the file opened may be impossible for some reason.
+> Hm, interesting. What you described above is very similar to what I've =
 
- =
+> just implemented for a 8241 based system (linkstation: =
+
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-March/thread.html#33203).
+
+Just the other day.  :)
 
 
-Thanks,
-Dmitry
+> But Paul Mackerras suggested to consider it a StR, whereas Johannes Berg =
+
+> proposed to call it a standby, which is also what seems to be more logica=
+l =
+
+> to me. =
+
+
+Seems more like a "standby" to me too -- at least by comparison to
+APM and ACPI definitions of "standby", vs what STR involves.
+
+
+> May we agree on some "simple" criteria, like "CPU power on, i.e.,  =
+
+> CPU registers preserved"? If yes - standby, CPU off, registers lost - StR=
+? =
+
+
+The ACPI spec has some verbiage on those things, which uses
+roughly that distinction.
+
+Which is very much an indication of how weak ACPI is.  It
+doesn't contemplate typical SOC behavior, which have a wide
+variety of system sleep states that leave the CPU on ... and
+which may not even *have* (or need!) a "cpu off" state.
+
+My own definition would be more like:  the minimal RAM-based
+power-saving system state is "standby".  If the system
+implements a deeper RAM-based system sleep state, that's "STR".
+
+If Linux eventually allows more system sleep states than
+just "standby", "mem", and "disk", then most of the new
+states will probably fit between "standby" (ACPI S1) and
+"mem" (ACPI S3).
+
+
+> I can imagine CPUs with multiple power sources allowing to switch some of =
+
+> them on and off respectively losing / keeping some register sets...
+
+I can see that more readily with SOC designs that have multiple
+power domains.  Consider:  CPU, Peripherals-1, Peripherals-2.
+That implies several sleep states:
+
+  - all domains powered
+  - only peripherals-1 off
+  - only peripherals-2 off
+  - both peripheral domains off
+  - ...
+  - all three domains off
+
+Now, I'm not sure that it would be useful to expose all those
+states to userspace, but surely an implementor might find it
+useful to implement more than one.  In which case, one would
+be called "standby", the next "STR", and ... well, Linux PM
+can't handle anything else yet.
+
+- Dave
