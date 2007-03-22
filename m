@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
-	to -mm tree
-Date: Thu, 22 Mar 2007 11:03:55 +0100
-Message-ID: <20070322100355.GA6834@elf.ucw.cz>
-References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
-	<20070322094825.GA29627@flint.arm.linux.org.uk>
-	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] implement pm_ops.valid for everybody
+Date: Thu, 22 Mar 2007 11:03:05 +0100
+Message-ID: <1174557785.3944.74.camel@johannes.berg>
+References: <20070320015846.636692000@sipsolutions.net>
+	<Pine.LNX.4.60.0703212325560.7211@poirot.grange>
+	<20070321225730.GL6057@elf.ucw.cz>
+	<200703211625.23253.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1418194690=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070322015614.dafa1ed7.akpm@linux-foundation.org>
+In-Reply-To: <200703211625.23253.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +19,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2007-03-22 01:56:14, Andrew Morton wrote:
-> On Thu, 22 Mar 2007 09:48:26 +0000 Russell King <rmk@arm.linux.org.uk> wr=
-ote:
-> =
 
-> > On Wed, Mar 21, 2007 at 04:34:13PM -0700, akpm@linux-foundation.org wro=
-te:
-> > > It also removes all the arm and sh users that think they can veto sus=
-pend to
-> > > disk via pm_ops; not so since the user can always do echo shutdown >
-> > > /sys/power/disk, they need to find a better way involving Kconfig or =
-such.
-> > =
+--===============1418194690==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-b1azxHY+jV4E455YpsEq"
 
-> > NAK.  There are ARM platforms where suspend to disk doesn't make any
-> > sense what so ever.
-> =
 
-> So they shouldn't offer it in Kconfig?
+--=-b1azxHY+jV4E455YpsEq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-(I thought this was a mistake, when rmk acked all three in next mail,
-but maybe I'm mistaken now?)
+On Wed, 2007-03-21 at 16:25 -0700, David Brownell wrote:
+> [ removed crosspost to linux-arm, members-only ]
 
-Anyway, this patch is good, as it allows interested ARM machines to
-really disable suspend-to-disk. What they were doing previously was
-not effective.
-								Pavel
--- =
+My mistake, sorry about that.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+> And remember that the implementor must make various decisions in
+> any case, since the SOC probably has half a dozen distinct
+> low power states, but Linux can only name two of them.
+
+Actually, now that we have everybody using .valid we can add an
+arbitrary amount of them if we wish :>
+
+johannes
+
+--=-b1azxHY+jV4E455YpsEq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGAlRZ/ETPhpq3jKURApn1AKCFpcxR2X+IcIi4rUIuJ/yL9irKGACePcnB
+8/ArRhqYXNsHLXPMUXp7RUQ=
+=bAxH
+-----END PGP SIGNATURE-----
+
+--=-b1azxHY+jV4E455YpsEq--
+
+
+--===============1418194690==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1418194690==--
