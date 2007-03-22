@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] remove software_suspend() and fix compile w/
-	SOFTWARE_SUSPEND disabled
-Date: Thu, 22 Mar 2007 22:12:44 +0100
-Message-ID: <200703222212.45050.rjw@sisk.pl>
-References: <1174571192.32051.5.camel@johannes.berg>
+Subject: Re: [PATCH] power management: force pm_ops.valid
+	callback to be assigned
+Date: Thu, 22 Mar 2007 22:15:21 +0100
+Message-ID: <200703222215.22040.rjw@sisk.pl>
+References: <1174571042.32051.2.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174571192.32051.5.camel@johannes.berg>
+In-Reply-To: <1174571042.32051.2.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,32 +20,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 22 March 2007 14:46, Johannes Berg wrote:
-> This patch kills off software_suspend() and all it's users,
-> pm_suspend(PM_SUSPEND_DISK) is much cleaner anyway. Also, this
-> makes the kernel compile again w/o CONFIG_SOFTWARE_SUSPEND after
-> Rafael's patches to kill the suspend pageflags broke it.
-
-The patches have been reworked after Andrew rejected them due to this break=
-age.
-The current versions are in the -mm tree (http://lkml.org/lkml/2007/3/20/32=
-7).
-
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+On Thursday, 22 March 2007 14:44, Johannes Berg wrote:
+> This patch changes the docs and behaviour from "all states valid" to
+> "no states valid" if no .valid callback is assigned. Users of pm_ops
+> that only need mem sleep can assign pm_valid_only_mem without any
+> overhead, others will require more elaborate callbacks.
 > =
 
-> ---
-> Have the pageflags removal patches been applied anywhere already? If so
-> please just apply this on top. If not, could you (Rafael) then fix your
-> patches to compile w/o software suspend and then I'll post the removal
-> of software_suspend() as an extra patch.
+> Now that all users of pm_ops have a .valid callback this is a safe
+> thing to do and prevents things from getting messy again as they
+> were before.
 
-See above. :-)
-
-As far as the rest of the patch is concerned, I have no objections.
+Looks okay to me.
 
 Rafael
