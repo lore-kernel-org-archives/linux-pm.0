@@ -1,12 +1,17 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] remove software_suspend() and fix compile
-	w/	SOFTWARE_SUSPEND disabled
-Date: Thu, 22 Mar 2007 14:46:32 +0100
-Message-ID: <1174571192.32051.5.camel@johannes.berg>
+Subject: [PATCH] power management: change /sys/power/disk display
+Date: Thu, 22 Mar 2007 15:34:11 +0100
+Message-ID: <1174574051.3588.5.camel@johannes.berg>
+References: <1174468981.3769.8.camel@johannes.berg>
+	<20070321122954.GO4520@elf.ucw.cz>
+	<1174480375.4230.12.camel@johannes.berg>
+	<20070321131128.GB4523@elf.ucw.cz>
+	<1174482773.4230.19.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1174482773.4230.19.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,163 +21,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch kills off software_suspend() and all it's users,
-pm_suspend(PM_SUSPEND_DISK) is much cleaner anyway. Also, this
-makes the kernel compile again w/o CONFIG_SOFTWARE_SUSPEND after
-Rafael's patches to kill the suspend pageflags broke it.
+This patch changes /sys/power/disk to display all valid modes
+as well as the currently selected one in a fashion known from
+the LED subsystem.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
 
 ---
-Have the pageflags removal patches been applied anywhere already? If so
-please just apply this on top. If not, could you (Rafael) then fix your
-patches to compile w/o software suspend and then I'll post the removal
-of software_suspend() as an extra patch.
+This patch is the simplified version that just changes the attribute
+instead of introducing a new on. It also contains the relevant updates
+to the documentation.
 
-Alternatively we can just change the order of these patches, i.e. do the
-removal of software_suspend() first and then your patches (since the
-compile error your patches introduce is related to software_suspend()).
+Good to push for .22?
 
- drivers/acpi/sleep/proc.c    |    2 +-
- drivers/i2c/chips/tps65010.c |    4 +++-
- include/linux/init.h         |    2 +-
- include/linux/suspend.h      |    8 --------
- kernel/power/main.c          |   21 ++++++++-------------
- kernel/sys.c                 |    2 +-
- 6 files changed, 14 insertions(+), 25 deletions(-)
+ Documentation/power/interface.txt |    8 ++++++--
+ kernel/power/disk.c               |   34 +++++++++++++++++++++++++++++++---
+ 2 files changed, 37 insertions(+), 5 deletions(-)
 
---- linux-2.6.orig/kernel/power/main.c	2007-03-22 14:37:07.564654656 +0100
-+++ linux-2.6/kernel/power/main.c	2007-03-22 14:37:30.714654656 +0100
-@@ -172,17 +172,22 @@ static void suspend_finish(suspend_state
- static const char * const pm_states[PM_SUSPEND_MAX] =3D {
- 	[PM_SUSPEND_STANDBY]	=3D "standby",
- 	[PM_SUSPEND_MEM]	=3D "mem",
--#ifdef CONFIG_SOFTWARE_SUSPEND
- 	[PM_SUSPEND_DISK]	=3D "disk",
--#endif
- };
+--- linux-2.6.orig/kernel/power/disk.c	2007-03-22 13:56:20.184654656 +0100
++++ linux-2.6/kernel/power/disk.c	2007-03-22 14:00:18.754654656 +0100
+@@ -333,7 +333,34 @@ static const char * const pm_disk_modes[
  =
 
- static inline int valid_state(suspend_state_t state)
+ static ssize_t disk_show(struct subsystem * subsys, char * buf)
  {
- 	/* Suspend-to-disk does not really need low-level support.
--	 * It can work with reboot if needed. */
-+	 * It can work with shutdown/reboot if needed. If it isn't
-+	 * configured, then it cannot be supported (this prevents
-+	 * rogue pm_ops from marking it valid which would cause it
-+	 * to show up in /sys/power/state.) */
- 	if (state =3D=3D PM_SUSPEND_DISK)
-+#ifdef CONFIG_SOFTWARE_SUSPEND
- 		return 1;
-+#else
-+		return 0;
-+#endif
- =
-
- 	/* all other states need lowlevel support and need to be
- 	 * valid to the lowlevel implementation, no valid callback
-@@ -232,16 +237,6 @@ static int enter_state(suspend_state_t s
- 	return error;
+-	return sprintf(buf, "%s\n", pm_disk_modes[pm_disk_mode]);
++	int i;
++	char *start =3D buf;
++
++	for (i =3D PM_DISK_PLATFORM; i < PM_DISK_MAX; i++) {
++		if (!pm_disk_modes[i])
++			continue;
++		switch (i) {
++		case PM_DISK_SHUTDOWN:
++		case PM_DISK_REBOOT:
++		case PM_DISK_TEST:
++		case PM_DISK_TESTPROC:
++			break;
++		default:
++			if (pm_ops && pm_ops->enter &&
++			    (i =3D=3D pm_ops->pm_disk_mode))
++				break;
++			/* not a valid mode, continue with loop */
++			continue;
++		}
++		if (i =3D=3D pm_disk_mode)
++			buf +=3D sprintf(buf, "[%s]", pm_disk_modes[i]);
++		else
++			buf +=3D sprintf(buf, "%s", pm_disk_modes[i]);
++		if (i+1 !=3D PM_DISK_MAX)
++			buf +=3D sprintf(buf, " ");
++	}
++	buf +=3D sprintf(buf, "\n");
++	return buf-start;
  }
  =
 
--/*
-- * This is main interface to the outside world. It needs to be
-- * called from process context.
-- */
--int software_suspend(void)
--{
--	return enter_state(PM_SUSPEND_DISK);
--}
--
--
- /**
-  *	pm_suspend - Externally visible function for suspending system.
-  *	@state:		Enumarted value of state to enter.
---- linux-2.6.orig/include/linux/suspend.h	2007-03-22 14:34:58.344654656 +0=
-100
-+++ linux-2.6/include/linux/suspend.h	2007-03-22 14:37:30.714654656 +0100
-@@ -33,8 +33,6 @@ static inline void pm_restore_console(vo
- #endif
  =
 
- #if defined(CONFIG_PM) && defined(CONFIG_SOFTWARE_SUSPEND)
--/* kernel/power/swsusp.c */
--extern int software_suspend(void);
- /* kernel/power/snapshot.c */
- extern void __register_nosave_region(unsigned long b, unsigned long e, int=
- km);
- static inline void register_nosave_region(unsigned long b, unsigned long e)
-@@ -50,12 +48,6 @@ extern void swsusp_set_page_free(struct =
-
- extern void swsusp_unset_page_free(struct page *);
- extern unsigned long get_safe_page(gfp_t gfp_mask);
- #else
--static inline int software_suspend(void)
--{
--	printk("Warning: fake suspend called\n");
--	return -ENOSYS;
--}
--
- static inline void register_nosave_region(unsigned long b, unsigned long e=
-) {}
- static inline void register_nosave_region_late(unsigned long b, unsigned l=
-ong e) {}
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
---- linux-2.6.orig/drivers/acpi/sleep/proc.c	2007-03-22 14:34:58.444654656 =
-+0100
-+++ linux-2.6/drivers/acpi/sleep/proc.c	2007-03-22 14:37:30.724654656 +0100
-@@ -60,7 +60,7 @@ acpi_system_write_sleep(struct file *fil
- 	state =3D simple_strtoul(str, NULL, 0);
- #ifdef CONFIG_SOFTWARE_SUSPEND
- 	if (state =3D=3D 4) {
--		error =3D software_suspend();
-+		error =3D pm_suspend(PM_SUSPEND_DISK);
- 		goto Done;
+@@ -374,8 +401,9 @@ static ssize_t disk_store(struct subsyst
+ 		error =3D -EINVAL;
  	}
- #endif
---- linux-2.6.orig/drivers/i2c/chips/tps65010.c	2007-03-22 14:34:58.7446546=
+ =
+
+-	pr_debug("PM: suspend-to-disk mode set to '%s'\n",
+-		 pm_disk_modes[mode]);
++	if (!error)
++		pr_debug("PM: suspend-to-disk mode set to '%s'\n",
++			 pm_disk_modes[mode]);
+ 	mutex_unlock(&pm_mutex);
+ 	return error ? error : n;
+ }
+--- linux-2.6.orig/Documentation/power/interface.txt	2007-03-22 14:01:09.68=
+4654656 +0100
++++ linux-2.6/Documentation/power/interface.txt	2007-03-22 14:02:22.9846546=
 56 +0100
-+++ linux-2.6/drivers/i2c/chips/tps65010.c	2007-03-22 14:37:30.724654656 +0=
-100
-@@ -351,8 +351,10 @@ static void tps65010_interrupt(struct tp
- #if 0
- 			/* REVISIT:  this might need its own workqueue
- 			 * plus tweaks including deadlock avoidance ...
-+			 * also needs to get error handling and probably
-+			 * an #ifdef CONFIG_SOFTWARE_SUSPEND
- 			 */
--			software_suspend();
-+			pm_suspend(PM_SUSPEND_DISK);
- #endif
- 			poll =3D 1;
- 		}
---- linux-2.6.orig/include/linux/init.h	2007-03-22 14:34:58.414654656 +0100
-+++ linux-2.6/include/linux/init.h	2007-03-22 14:37:30.724654656 +0100
-@@ -228,7 +228,7 @@ void __init parse_early_param(void);
- #define __obsolete_setup(str) 			/* nothing */
- #endif
+@@ -34,8 +34,12 @@ for 5 seconds, resume devices, unfreeze =
+
+ we are able to look in the log messages and work out, for example, which c=
+ode
+ is being slow and which device drivers are misbehaving.
  =
 
--/* Data marked not to be saved by software_suspend() */
-+/* Data marked not to be saved by software suspend */
- #define __nosavedata __attribute__ ((__section__ (".data.nosave")))
+-Reading from this file will display what the mode is currently set
+-to. Writing to this file will accept one of
++Reading from this file will display all supported modes and the currently
++selected one in brackets, for example
++
++	[shutdown] reboot test testproc
++
++Writing to this file will accept one of
  =
 
- /* This means "can be init if no module support, otherwise module load
---- linux-2.6.orig/kernel/sys.c	2007-03-22 14:34:58.304654656 +0100
-+++ linux-2.6/kernel/sys.c	2007-03-22 14:37:30.734654656 +0100
-@@ -881,7 +881,7 @@ asmlinkage long sys_reboot(int magic1, i
- #ifdef CONFIG_SOFTWARE_SUSPEND
- 	case LINUX_REBOOT_CMD_SW_SUSPEND:
- 		{
--			int ret =3D software_suspend();
-+			int ret =3D pm_suspend(PM_SUSPEND_DISK);
- 			unlock_kernel();
- 			return ret;
- 		}
+        'platform' (only if the platform supports it)
+        'shutdown'
