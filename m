@@ -1,12 +1,16 @@
-From: "Scott E. Preece" <preece@motorola.com>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Thu, 22 Mar 2007 08:44:02 -0500 (CDT)
-Message-ID: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Thu, 22 Mar 2007 14:44:51 +0100
+Message-ID: <200703221444.52065.oneukum@suse.de>
+References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
+	<200703220042.20471.lenb@kernel.org>
+	<20070322132052.GA7221@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: "Rafael J. Wysocki"'s message of Thu, 22 Mar 2007 00:32:24 +0100
+In-Reply-To: <20070322132052.GA7221@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,69 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, linux-arm@lists.arm.linux.org.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+Am Donnerstag, 22. M=E4rz 2007 14:20 schrieb Pavel Machek:
+> > > That's not how the USB implementation works. =A0Although a timestamp =
+like =
 
-| From: "Rafael J. Wysocki" <rjw@sisk.pl>
-| =
+> > > the one you describe is going to be added.
+> > =
 
-| On Wednesday, 21 March 2007 23:57, Pavel Machek wrote:
-| > Hi!
-| > =
+> > I sort of like this idea -- it seems that it is low overhead.
+> > Of course it requires every device driver to be changed.
+> > Instead we could maybe hook the generic driver entry points
+> > and do this in the framework -- dunno if that is viable.
+> =
 
-| > > > Which is very much an indication of how weak ACPI is.  It
-| > > > doesn't contemplate typical SOC behavior, which have a wide
-| > > > variety of system sleep states that leave the CPU on ... and
-| > > > which may not even *have* (or need!) a "cpu off" state.
-| > > > =
+> No, you can't get around changing all the drivers.
+> =
 
-| > > > My own definition would be more like:  the minimal RAM-based
-| > > > power-saving system state is "standby".  If the system
-| > > > implements a deeper RAM-based system sleep state, that's "STR".
-| > > =
+> Generic entry points are for _system_ suspend, and if you try to abuse
+> them for runtime PM, you'll have to audit/change all the drivers.
 
-| > > Hmmm, this leaves the decision how to call each state COMPLETELY to t=
-he =
+Is this your position regarding USB autosuspend, too? Should we use
+other methods than suspend/resume?
 
-| > > implementor, doesn't it?
-| > =
+	Regards
+		Oliver
 
-| > Is that a problem? If someone is clever enough to implement suspend, I
-| > think we can trust them to name their states right.
-| > =
-
-| > (And trust me, we can flame them if not).
-| > =
-
-| > (Anyway, my definition would be "mem" =3D=3D RAM is powered, everything
-| > else is down, except for devices needed for wakeup; "standby" =3D=3D
-| > something is powered that can be powered down, we'll fix that in next v=
-ersion).
-| =
-
-| I think we can define "standby" a bit more precisely.  Something like:
-| - processes are frozen,
-| - devices are suspended,
-| - nonboot CPUs are down (and in low powered states, if possible),
-| - "system" devices may or may not be suspended, depending on the platform,
-| - the boot CPU may or may not be in a low power state, depending on the p=
-latform,
-| - RAM is powered
-| - wake up need not be BIOS-driven (main difference from "mem")
----
-
-I would be tempted to say that that last bullet is the distinguishing
-characteristic - that you come back from standby by just continuing
-where you left off, but you come back from StR by something akin to
-booting.
-
-scott
--- =
-
-scott preece
-motorola mobile devices, il67, 1800 s. oak st., champaign, il  61820  =
-
-e-mail:	preece@motorola.com	fax:	+1-217-384-8550
-phone:	+1-217-384-8589	cell: +1-217-433-6114	pager: 2174336114@vtext.com
+PS: Do we have _two_ pm lists?
