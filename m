@@ -1,23 +1,12 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
-	to -mm tree
-Date: Thu, 22 Mar 2007 23:35:56 +0900
-Message-ID: <20070322143556.GA22798@linux-sh.org>
-References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
-	<20070322094825.GA29627@flint.arm.linux.org.uk>
-	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
-	<20070322100355.GA6834@elf.ucw.cz>
-	<1174558128.3944.78.camel@johannes.berg>
-	<20070322132622.GD29627@flint.arm.linux.org.uk>
-	<20070322133117.GC6050@elf.ucw.cz>
-	<20070322142437.GB21954@linux-sh.org>
-	<20070322143313.GA7963@elf.ucw.cz>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] power management: force pm_ops.valid callback to
+	be	assigned
+Date: Thu, 22 Mar 2007 14:44:02 +0100
+Message-ID: <1174571042.32051.2.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070322143313.GA7963@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,40 +16,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 22, 2007 at 03:33:13PM +0100, Pavel Machek wrote:
-> On Thu 2007-03-22 23:24:37, Paul Mundt wrote:
-> > On Thu, Mar 22, 2007 at 02:31:17PM +0100, Pavel Machek wrote:
-> > > Hohum, perhaps it can suspend to SD card? Or perhaps it can suspend
-> > > over network?
-> > > =
+This patch changes the docs and behaviour from "all states valid" to
+"no states valid" if no .valid callback is assigned. Users of pm_ops
+that only need mem sleep can assign pm_valid_only_mem without any
+overhead, others will require more elaborate callbacks.
 
-> > > Suspend code will properly fail if there's not enough swap space.
-> > > =
+Now that all users of pm_ops have a .valid callback this is a safe
+thing to do and prevents things from getting messy again as they
+were before.
 
-> > > ...plus you are allowed to return -EINVAL from arch_prepare_suspend()
-> > > or how is it called.
-> > =
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 
-> > So then how exactly is this helping anything? It's pointless to have the
-> > sysfs file visible for platforms that are never going to support suspend
-> > to disk, and -EINVAL'ing out in another path is simply moving the
-> > problem.
-> =
+---
+ include/linux/pm.h  |   12 ++++++------
+ kernel/power/main.c |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-> Platforms that are never going to support s2disk =
+--- linux-2.6.orig/include/linux/pm.h	2007-03-22 14:35:14.764654656 +0100
++++ linux-2.6/include/linux/pm.h	2007-03-22 14:36:38.784654656 +0100
+@@ -125,12 +125,12 @@ typedef int __bitwise suspend_disk_metho
+  * struct pm_ops - Callbacks for managing platform dependent suspend state=
+s.
+  * @valid: Callback to determine whether the given state can be entered.
+  * 	If %CONFIG_SOFTWARE_SUSPEND is set then %PM_SUSPEND_DISK is
+- *	always valid and never passed to this call.
+- *	If not assigned, all suspend states are advertised as valid
+- *	in /sys/power/state (but can still be rejected by prepare or enter.)
+- *	Since new states can be added for other platforms, you should
+- *	assign this callback. There is a %pm_valid_only_mem function
+- *	available if you only implemented mem sleep.
++ *	always valid and never passed to this call. If not assigned,
++ *	no suspend states are valid.
++ *	Valid states are advertised in /sys/power/state but can still
++ *	be rejected by prepare or enter if the conditions aren't right.
++ *	There is a %pm_valid_only_mem function available that can be assigned
++ *	to this if you only implement mem sleep.
+  *
+  * @prepare: Prepare the platform for the given suspend state. Can return a
+  *	negative error code if necessary.
+--- linux-2.6.orig/kernel/power/main.c	2007-03-22 14:36:46.044654656 +0100
++++ linux-2.6/kernel/power/main.c	2007-03-22 14:40:29.664654656 +0100
+@@ -186,8 +186,8 @@ static inline int valid_state(suspend_st
+ =
 
-> =
-
-> a) should be fixed
-> =
-
-> b) do not have CONFIG_SOFTWARE_SUSPEND.
-
-Ah, that's the part I was missing. Ok, As long as the memory-only thing
-is explicit, then I don't see any problem with these.
-
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+ 	/* all other states need lowlevel support and need to be
+ 	 * valid to the lowlevel implementation, no valid callback
+-	 * implies that all are valid. */
+-	if (!pm_ops || (pm_ops->valid && !pm_ops->valid(state)))
++	 * implies that none are valid. */
++	if (!pm_ops || !pm_ops->valid || !pm_ops->valid(state))
+ 		return 0;
+ 	return 1;
+ }
