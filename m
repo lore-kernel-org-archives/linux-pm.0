@@ -1,14 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 12:41:19 -0700
-Message-ID: <200703221241.20166.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
-	<200703220042.20471.lenb@kernel.org>
+Date: Thu, 22 Mar 2007 11:53:51 -0700
+Message-ID: <200703221153.52227.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0703221039001.3605-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703220042.20471.lenb@kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0703221039001.3605-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,48 +19,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: linux-pm <linux-pm@lists.osdl.org>
+Cc: pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 21 March 2007 9:42 pm, Len Brown wrote:
+On Thursday 22 March 2007 7:45 am, Alan Stern wrote:
+> On Thu, 22 Mar 2007, Scott E. Preece wrote:
+> =
 
-> > >      2. The device dependence varies from different systems especially
-> > >         for embedded system. The idea is dpm framework handles device
-> > >         dependence (like, resume a device=E2=80=99s parent before res=
-ume the
-> > >         device itself),
+> > I would normally call designs that expect important functions (like
+> > power on/power off) to happen as side effects of other operations (like
+> > opening and closing files) broken to begin with. It's still a bad idea
+> > to hide policy inside the driver.
+> =
 
-The driver model PM framework **ALREADY DOES THAT** so nothing new
-is required ...
+> Even though other people have already answered this, I'd like to add my =
 
+> own comments.
+> =
 
-> I'm skeptical about an additional framework in the kernel to track
-> dependencies,
+> Firstly, doing power on/power off as side effects of other operations is =
 
-The clock framework and driver model tree already handle a big chunk
-of those dependencies.  Of course, they're also not an "additional"
-framework (except maybe from the x86 perspective, where the clock
-framework isn't available).
+> _not_ a policy choice.  It is a design principle:
 
-
-> as I don't think we should even try to track embedded system =
-
-> dependencies in the kernel.
-
-That approach seems unlikely to work, unless one wants to make it
-even harder to use Linux on embedded systems.  On the other hand,
-I'd hate to see a "dependency tracking API" rather than something
-focussed on solving specific problems.  (Solve first, then maybe
-generalize later.)
+Yes ... and one that's widely used in other contexts:  deallocate
+resources when they're not in active use.
 
 
-> This is the "intelligent device driver" model -- the driver actually has =
-a clue
-> and can do the work internally.  Probably we need some combination of this
-> plus the simple timeout/user-policy-manager for dumber drivers if we are =
-to
-> cover the whole system.
+> 	When device D has been idle for more than N ms, it should be
+> 	put in a low-power state (unless such state changes have been
+> 	disabled for D by userspace).
 
-Yes, those two approaches should cover large chunks of the driver space.
+THAT is however something I would call a heuristic.  It's a widely
+used one -- disk spindown uses one value for N, displays enter their
+lowpower states using other values for N, etc -- but it's still not
+as definitive as for example "if the device isn't opened, it can't
+possibly be in use".
+
+Not that I see a way around having such a heuristic for things like mice,
+or anything wrong with that one ... I just want to call a spade a spade
+here, and not confuse (a) the design principle, with (b) a heuristic that's
+used to implement that principle in certain cases.
+
+ =
+
+> Of course N will vary for different D's, and the exact choice of N _is_
+> policy.  Thus N should be exposed and configurable by userspace.  So
+> should the ability to disable the state changes.  But the principle
+> above isn't a policy, it is part of the design.
+> =
+
+> Secondly, this principle _requires_ that power on/power off occur as side =
+
+> effects of other operations, since those other operations affect whether =
+
+> or not the device is idle.
+> =
+
+> If anybody wants to argue against the principle itself, then go ahead and
+> say so.  I, for one, don't see anything objectionable about it.
+
+Me either -- for either principle or, in general, that heuristic.
+
+Of course, choosing to apply that heuristic to a given device is
+a different kettle of fish.  That's why it's got an "off" switch.  :)
 
 - Dave
