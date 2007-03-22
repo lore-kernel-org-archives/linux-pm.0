@@ -1,51 +1,49 @@
-From: Jim Gettys <jg@laptop.org>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 07:56:46 -0400
-Message-ID: <1174564606.4935.6.camel@localhost>
-References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
-	<200703220042.20471.lenb@kernel.org>
-Reply-To: jg@laptop.org
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: [linux-pm] [PATCH] introduce
+	/sys/power/disk_powerdown_mode
+Date: Thu, 22 Mar 2007 14:13:01 +0100
+Message-ID: <20070322131301.GD11160@suse.de>
+References: <1174468981.3769.8.camel@johannes.berg>
+	<1174482773.4230.19.camel@johannes.berg>
+	<20070321131709.GA5788@elf.ucw.cz> <200703211501.37164.rjw@sisk.pl>
+	<20070321220858.GE6057@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703220042.20471.lenb@kernel.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+Content-Disposition: inline
+In-Reply-To: <20070321220858.GE6057@elf.ucw.cz>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
+List-Post: <mailto:suspend-devel@lists.sourceforge.net>
+List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: suspend-devel-bounces@lists.sourceforge.net
+Errors-To: suspend-devel-bounces@lists.sourceforge.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Suspend-devel list <suspend-devel@lists.sourceforge.net>, linux-pm <linux-pm@lists.osdl.org>, seife@novell.com, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-03-22 at 00:42 -0400, Len Brown wrote:
+On Wed, Mar 21, 2007 at 11:08:58PM +0100, Pavel Machek wrote:
+ 
+> (Stefan, we are talking about changing /sys/power/disk during _read_
+> so it shows list of available options as well as current one. I do not
+> expect that to break anything, but... if I'm wrong, just shout).
 
-> Today on system suspend we suspend all devices.
-> Today on system resume, we resume all devices.
-> In the future we need to recognize that upon system suspend,
-> some devices are already suspended.
-> We need to remember that, so upon resume we can restove
-> them to their suspended state, rather than blindly resuming everything.
+I don't think it will break anything for me, and if it does, it should
+be pretty easy to fix. So just go ahead.
 
-On system suspend, we may not want to suspend all devices; we may need
-to leave certain devices alone, and only power down the host interface
-to them.
+But thanks for the warning in advance anyway :-)
+-- 
+Stefan Seyfried
 
-Upon system resume, therefore, devices may also *not* need to be
-resumed; only the host interface to them powered up again.
+"Any ideas, John?"
+"Well, surrounding them's out." 
 
-We have two devices in the OLPC machine in this class: our screen, and
-our wireless, both of which will often/usually be left on while the rest
-of the sysetm is suspended.
-                                          - Jim
-
-
--- =
-
-Jim Gettys
-One Laptop Per Child
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
