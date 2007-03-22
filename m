@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Thu, 22 Mar 2007 22:37:48 +0100
-Message-ID: <200703222237.49801.rjw@sisk.pl>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221129.28722.david-b@pacbell.net>
-	<20070322192647.GB20605@atomide.com>
+Subject: Re: [PATCH] power management: change /sys/power/disk
+	display
+Date: Thu, 22 Mar 2007 22:45:00 +0100
+Message-ID: <200703222245.01300.rjw@sisk.pl>
+References: <1174468981.3769.8.camel@johannes.berg>
+	<1174482773.4230.19.camel@johannes.berg>
+	<1174574051.3588.5.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070322192647.GB20605@atomide.com>
+In-Reply-To: <1174574051.3588.5.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,49 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: alexey.y.starikovskiy@intel.com, linux-arm@lists.arm.linux.org.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, ben@simtec.co.uk, g.liakhovetski@gmx.de
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 22 March 2007 20:26, Tony Lindgren wrote:
-> Hi,
+On Thursday, 22 March 2007 15:34, Johannes Berg wrote:
+> This patch changes /sys/power/disk to display all valid modes
+> as well as the currently selected one in a fashion known from
+> the LED subsystem.
 > =
 
-> * David Brownell <david-b@pacbell.net> [070322 14:30]:
-> > On Thursday 22 March 2007 6:44 am, Scott E. Preece wrote:
-> > > | From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > > | =
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-> > > | I think we can define "standby" a bit more precisely.  Something li=
-ke:
-> > > | - processes are frozen,
-> > > | - devices are suspended,
-> > =
+No objections from me.
 
-> > True of all sleep states, although one wants "suspended" to
-> > allow different levels of device functionality.  (Maybe it
-> > can wake up, maybe its firmware is monitoring the WLAN, etc.)
+> ---
+> This patch is the simplified version that just changes the attribute
+> instead of introducing a new on. It also contains the relevant updates
+> to the documentation.
 > =
 
-> In addition to offering wakeup events for individual devices,
-> the device suspend states should be something like retention
-> and suspend, where:
-> =
+> Good to push for .22?
 
-> Retention is where clocks are off for a device, but power is on.
-> In this case the device registers are maintained in hardware.
-> =
-
-> Suspend is where clocks and power are off. In this state the
-> device registers are maintained in software.
-> =
-
-> Laptops mostly have suspend, while socs allow both retention
-> and suspend in many cases.
-
-I think there can be more low-power states that just "standby",
-"STR", "STD", etc., but for example "standby" should be at least comparable
-between different platforms.
+Well, I think it can go to -mm for now (if Pavel agrees with it).  Later we=
+'ll
+decide whether it should go into .22 or .23.
 
 Greetings,
 Rafael
