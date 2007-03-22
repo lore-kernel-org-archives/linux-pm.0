@@ -1,15 +1,11 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Thu, 22 Mar 2007 11:13:04 -0700
-Message-ID: <200703221113.05518.david-b@pacbell.net>
-References: <20070320015846.636692000@sipsolutions.net>
-	<200703221010.59040.david-b@pacbell.net>
-	<1174583912.3588.25.camel@johannes.berg>
+Subject: [patch 1/2] clk_must_disable() interface
+Date: Thu, 22 Mar 2007 11:03:10 -0700
+Message-ID: <200703221103.11367.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174583912.3588.25.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,37 +16,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linux-pm@lists.linux-foundation.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Andrew Victor <andrew@sanpeople.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 22 March 2007 10:18 am, Johannes Berg wrote:
-> On Thu, 2007-03-22 at 10:10 -0700, David Brownell wrote:
-> =
+This patch adds a clk_must_disable() operation, exposing the clock constrai=
+nts
+which often distinguish system power states.  Systems with such constraints
+include ones using ARM-based AT91, OMAP, and PXA chips.  The new operation
+lets driver methods check those constraints.
 
-> > especially the way suspend() methods
-> > have no way to determine the semantics of the target state.
-> =
+(Note that because of its APM/ACPI legacy, Linux can't currently handle more
+then two of those state through the /sys/power/state infrastructure; they
+are called "standby" and suspend-to-"mem", regardless of what the underlying
+hardware calls them.)
 
-> I can't parse that.
+A common benefit to leaving some device clocks enabled is that a suspended
+device may then be able to issue system wakeup events.  RS232, USB, Etherne=
+t,
+and other drivers can use driver model wakeup flags as userspace directions
+about how to trade off between the lowest power "full off" driver states and
+the more functional wakeup-enabled ones.
 
-Look at docs for most any SOC processor and you'll see that
-not only does it have a variety of lowpower states, but that
-each of them has various rules about what works there and
-what doesn't.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+Seems appropriate for 2.6.22 merge ... last time this came up, there
+were no real objections, but the sample implementation (AT91) was a
+bit messy.
 
-So long as driver suspend() methods have no some way to see
-how far they "must" shut down for a given target sleep state,
-there is only limited utility to defining such states.
+ include/linux/clk.h |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+)
 
-That's because the state would only really apply to the cpu
-specific code ... drivers must assume the worst case, precluding
-the primary reasons to use those less-deep system states.
+Index: at91/include/linux/clk.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- at91.orig/include/linux/clk.h	2007-02-16 08:47:11.000000000 -0800
++++ at91/include/linux/clk.h	2007-02-16 08:47:17.000000000 -0800
+@@ -121,4 +121,24 @@ int clk_set_parent(struct clk *clk, stru
+  */
+ struct clk *clk_get_parent(struct clk *clk);
+ =
 
-I just reposted my clk_must_disable() patches; I think it's time
-to merge them.  They address that issue for one of the most
-common type of rule for system sleep states ... at least, in
-terms of interface.  Platform support will still be an issue,
-but at least the issue won't be "crippled by bad design".
-
-- Dave
++/**
++ * clk_must_disable - report whether a clock's users must disable it
++ * @clk: one node in the clock tree
++ *
++ * This routine returns true only if the upcoming system state requires
++ * disabling the specified clock.
++ *
++ * It's common for platform power states to constrain certain clocks (and
++ * their descendants) to be unavailable, while other states allow that
++ * clock to be active.  A platform's power states often include an "all on"
++ * mode; system wide sleep states like "standby" or "suspend-to-RAM"; and
++ * operating states which sacrifice functionality for lower power usage.
++ *
++ * The constraint value is commonly tested in device driver suspend(), to
++ * leave clocks active if they are needed for features like wakeup events.
++ * On platforms that support reduced functionality operating states, the
++ * constraint may also need to be tested during resume() and probe() calls.
++ */
++int clk_must_disable(struct clk *clk);
++
+ #endif
