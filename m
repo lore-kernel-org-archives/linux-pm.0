@@ -1,22 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
-	to -mm tree
-Date: Thu, 22 Mar 2007 15:03:05 +0100
-Message-ID: <20070322140305.GC7693@elf.ucw.cz>
-References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
-	<20070322094825.GA29627@flint.arm.linux.org.uk>
-	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
-	<20070322100355.GA6834@elf.ucw.cz>
-	<1174558128.3944.78.camel@johannes.berg>
-	<20070322132622.GD29627@flint.arm.linux.org.uk>
-	<20070322133117.GC6050@elf.ucw.cz>
-	<acd2a5930703220641p6bd02f5dk433232093a331772@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Thu, 22 Mar 2007 15:18:34 +0100
+Message-ID: <200703221518.35286.oneukum@suse.de>
+References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
+	<200703221444.52065.oneukum@suse.de>
+	<20070322135653.GA7693@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070322135653.GA7693@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <acd2a5930703220641p6bd02f5dk433232093a331772@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,39 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Russell King <rmk@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2007-03-22 16:41:40, Vitaly Wool wrote:
-> On 3/22/07, Pavel Machek <pavel@ucw.cz> wrote:
-> >Hi!
-> >
-> >> > No, once SOFTWARE_SUSPEND is configured there's *no way* to disable =
-it
-> >> > after the fact via pm_ops. Read valid_state() in kernel/power/main.c.
-> >>
-> >> So how does a platform with only flash (and an insufficient amount of
-> >> flash at that) tell the suspend code that suspend-to-disk is not
-> >> supported?
-> >
-> >Hohum, perhaps it can suspend to SD card? Or perhaps it can suspend
-> >over network?
+Am Donnerstag, 22. M=E4rz 2007 14:56 schrieb Pavel Machek:
+> > > Generic entry points are for _system_ suspend, and if you try to abuse
+> > > them for runtime PM, you'll have to audit/change all the drivers.
+> > =
+
+> > Is this your position regarding USB autosuspend, too? Should we use
+> > other methods than suspend/resume?
 > =
 
-> Cool, imagine your MP3 player suspending over network... Or suspending
-> to SD card and switching off in the middle of the process leaving the
-> SD card filesystem broken. Congratulations, you've bought a nice
-> device...
+> Well, you should have audited USB drivers when enabling autosuspend...
+> But I believe you did that so you are pretty much okay.
 
-Then why did you ask it to suspend, and why did its manufacturer
-enable SOFTWARE_SUSPEND?
+We audited them. Respectively, are auditing them.
 
-Unix lets you shoot yourself into the foot. If you do not like that,
-go use something else.
-									Pavel
--- =
+> (With autosuspend, you can get situation when request from userland
+> comes in even when device is suspended; some devices will need
+> fixing).
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Currently, such requests are ignored. Is there any problem with that?
+
+	Regards
+		Oliver
