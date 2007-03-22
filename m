@@ -1,15 +1,16 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Thu, 22 Mar 2007 11:03:05 +0100
-Message-ID: <1174557785.3944.74.camel@johannes.berg>
-References: <20070320015846.636692000@sipsolutions.net>
-	<Pine.LNX.4.60.0703212325560.7211@poirot.grange>
-	<20070321225730.GL6057@elf.ucw.cz>
-	<200703211625.23253.david-b@pacbell.net>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+	to -mm	tree
+Date: Thu, 22 Mar 2007 11:08:48 +0100
+Message-ID: <1174558128.3944.78.camel@johannes.berg>
+References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
+	<20070322094825.GA29627@flint.arm.linux.org.uk>
+	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
+	<20070322100355.GA6834@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1418194690=="
+Content-Type: multipart/mixed; boundary="===============0377336903=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703211625.23253.david-b@pacbell.net>
+In-Reply-To: <20070322100355.GA6834@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>, Ben Dooks <ben@simtec.co.uk>, Dirk Behme <dirk.behme@de.bosch.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Nicolas Pitre <nico@cam.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1418194690==
+--===============0377336903==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-b1azxHY+jV4E455YpsEq"
+	boundary="=-FlL2ViHsmZMwXXl24xWT"
 
 
---=-b1azxHY+jV4E455YpsEq
+--=-FlL2ViHsmZMwXXl24xWT
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-03-21 at 16:25 -0700, David Brownell wrote:
-> [ removed crosspost to linux-arm, members-only ]
+On Thu, 2007-03-22 at 11:03 +0100, Pavel Machek wrote:
 
-My mistake, sorry about that.
+> > So they shouldn't offer it in Kconfig?
 
-> And remember that the implementor must make various decisions in
-> any case, since the SOC probably has half a dozen distinct
-> low power states, but Linux can only name two of them.
+I agree with that.
 
-Actually, now that we have everybody using .valid we can add an
-arbitrary amount of them if we wish :>
+> Anyway, this patch is good, as it allows interested ARM machines to
+> really disable suspend-to-disk. What they were doing previously was
+> not effective.
+
+I thought you just said you understood pm_ops now :->
+
+No, once SOFTWARE_SUSPEND is configured there's *no way* to disable it
+after the fact via pm_ops. Read valid_state() in kernel/power/main.c.
+
+But that's a design decision, once the kernel config allows suspend to
+disk runtime pm_ops have no say in it. And what they previously did by
+nack'ing suspend to disk for platform mode is broken and just papers
+over the problem in the default case, once the user puts shutdown
+> /sys/power/disk the problem shows up again (if there is any).
 
 johannes
 
---=-b1azxHY+jV4E455YpsEq
+--=-FlL2ViHsmZMwXXl24xWT
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGAlRZ/ETPhpq3jKURApn1AKCFpcxR2X+IcIi4rUIuJ/yL9irKGACePcnB
-8/ArRhqYXNsHLXPMUXp7RUQ=
-=bAxH
+iD8DBQBGAlWw/ETPhpq3jKURAiweAJ9bY/L/GmRvnIT5/XvmCASaLPZI4wCdEhaz
+hEu3iECKAiW1qYpoRNZH3is=
+=TJY+
 -----END PGP SIGNATURE-----
 
---=-b1azxHY+jV4E455YpsEq--
+--=-FlL2ViHsmZMwXXl24xWT--
 
 
---===============1418194690==
+--===============0377336903==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============1418194690==--
+--===============0377336903==--
