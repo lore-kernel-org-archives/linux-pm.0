@@ -1,15 +1,22 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 15:26:06 +0100
-Message-ID: <200703221526.07006.oneukum@suse.de>
-References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
-	<200703221518.35286.oneukum@suse.de>
-	<20070322142213.GF7693@elf.ucw.cz>
+From: "Vitaly Wool" <vitalywool@gmail.com>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+	to -mm tree
+Date: Thu, 22 Mar 2007 17:27:16 +0300
+Message-ID: <acd2a5930703220727u631236c2vbd755ce67968b39c@mail.gmail.com>
+References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
+	<20070322094825.GA29627@flint.arm.linux.org.uk>
+	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
+	<20070322100355.GA6834@elf.ucw.cz>
+	<1174558128.3944.78.camel@johannes.berg>
+	<20070322132622.GD29627@flint.arm.linux.org.uk>
+	<20070322133117.GC6050@elf.ucw.cz>
+	<acd2a5930703220641p6bd02f5dk433232093a331772@mail.gmail.com>
+	<20070322140305.GC7693@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070322142213.GF7693@elf.ucw.cz>
+In-Reply-To: <20070322140305.GC7693@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,37 +28,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.osdl.org>, linux-pm@lists.linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 22. M=E4rz 2007 15:22 schrieb Pavel Machek:
-> On Thu 2007-03-22 15:18:34, Oliver Neukum wrote:
-> > Am Donnerstag, 22. M=E4rz 2007 14:56 schrieb Pavel Machek:
+On 3/22/07, Pavel Machek <pavel@ucw.cz> wrote:
+> > Cool, imagine your MP3 player suspending over network... Or suspending
+> > to SD card and switching off in the middle of the process leaving the
+> > SD card filesystem broken. Congratulations, you've bought a nice
+> > device...
+>
+> Then why did you ask it to suspend, and why did its manufacturer
+> enable SOFTWARE_SUSPEND?
 
-> > > Well, you should have audited USB drivers when enabling autosuspend...
-> > > But I believe you did that so you are pretty much okay.
-> > =
+Well, the suspend for instance might mean suspend to SRAM, turn clocks
+off, put RAM into self-refresh and so on... Sounds familiar?
 
-> > We audited them. Respectively, are auditing them.
-> =
+> Unix lets you shoot yourself into the foot. If you do not like that,
+> go use something else.
 
-> Ok. (It would be nice to document 'USB suspend/resume routines are
-> called during runtime, too' somewhere.
+May I ask you to avoid such generalizations? Thanks!
 
-OK.
-
-> > > (With autosuspend, you can get situation when request from userland
-> > > comes in even when device is suspended; some devices will need
-> > > fixing).
-> > =
-
-> > Currently, such requests are ignored. Is there any problem with that?
-> =
-
-> You should probably autowake such device, no?
-
-Sorry, I misunderstood. IO requests wake an autosuspended device.
-A system wide suspend is ignored, if the device is already suspended.
-
-	Regards
-		Oliver
+Vitaly
