@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 16:32:28 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0703221626540.4990-100000@iolanthe.rowland.org>
-References: <200703221220.09679.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] remove software_suspend() and fix compile w/
+	SOFTWARE_SUSPEND disabled
+Date: Thu, 22 Mar 2007 22:12:44 +0100
+Message-ID: <200703222212.45050.rjw@sisk.pl>
+References: <1174571192.32051.5.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703221220.09679.david-b@pacbell.net>
+In-Reply-To: <1174571192.32051.5.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,38 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Mar 2007, David Brownell wrote:
+On Thursday, 22 March 2007 14:46, Johannes Berg wrote:
+> This patch kills off software_suspend() and all it's users,
+> pm_suspend(PM_SUSPEND_DISK) is much cleaner anyway. Also, this
+> makes the kernel compile again w/o CONFIG_SOFTWARE_SUSPEND after
+> Rafael's patches to kill the suspend pageflags broke it.
 
-> On Wednesday 21 March 2007 2:39 pm, Pavel Machek wrote:
+The patches have been reworked after Andrew rejected them due to this break=
+age.
+The current versions are in the -mm tree (http://lkml.org/lkml/2007/3/20/32=
+7).
+
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
 > =
 
-> > > > USB gets the dependencies right, just copy that.
-> > > Does USB include all kinds of dependence, eg non parent-children
-> > > dependence?
-> > =
+> ---
+> Have the pageflags removal patches been applied anywhere already? If so
+> please just apply this on top. If not, could you (Rafael) then fix your
+> patches to compile w/o software suspend and then I'll post the removal
+> of software_suspend() as an extra patch.
 
-> > No, probably not, as USB was designed properly.
-> =
+See above. :-)
 
-> It was designed to work with as few wires as possible:  "minimalist"
-> design.  That's not the same as "proper"; not everything works with
-> the same design constraints.
+As far as the rest of the patch is concerned, I have no objections.
 
-Sort of an off-topic side issue:  One of the aspects of USB that I have
-found surprisingly "improper" is the way it handles remote wakeup.  =
-
-According to the USB spec, when a device sends a remote wakeup request to
-its parent hub, the hub _has_ to resume the device -- or if the hub is
-also suspended, it has to pass the wakeup request on up to its own parent,
-all the way back to the host computer if necessary.
-
-The point is, the wakeup request must be honored (and fairly quickly,
-too); the spec doesn't allow the parent to keep the device suspended.  =
-
-Although presumably nothing terribly bad would happen if it did.
-
-Alan Stern
+Rafael
