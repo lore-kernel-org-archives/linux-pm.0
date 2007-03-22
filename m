@@ -1,13 +1,23 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 10:45:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0703221039001.3605-100000@iolanthe.rowland.org>
-References: <200703221339.l2MDdejg007459@olwen.urbana.css.mot.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+	to -mm tree
+Date: Thu, 22 Mar 2007 23:35:56 +0900
+Message-ID: <20070322143556.GA22798@linux-sh.org>
+References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
+	<20070322094825.GA29627@flint.arm.linux.org.uk>
+	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
+	<20070322100355.GA6834@elf.ucw.cz>
+	<1174558128.3944.78.camel@johannes.berg>
+	<20070322132622.GD29627@flint.arm.linux.org.uk>
+	<20070322133117.GC6050@elf.ucw.cz>
+	<20070322142437.GB21954@linux-sh.org>
+	<20070322143313.GA7963@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703221339.l2MDdejg007459@olwen.urbana.css.mot.com>
+Content-Disposition: inline
+In-Reply-To: <20070322143313.GA7963@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +27,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org, pavel@ucw.cz
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Mar 2007, Scott E. Preece wrote:
+On Thu, Mar 22, 2007 at 03:33:13PM +0100, Pavel Machek wrote:
+> On Thu 2007-03-22 23:24:37, Paul Mundt wrote:
+> > On Thu, Mar 22, 2007 at 02:31:17PM +0100, Pavel Machek wrote:
+> > > Hohum, perhaps it can suspend to SD card? Or perhaps it can suspend
+> > > over network?
+> > > =
 
-> I would normally call designs that expect important functions (like
-> power on/power off) to happen as side effects of other operations (like
-> opening and closing files) broken to begin with. It's still a bad idea
-> to hide policy inside the driver.
+> > > Suspend code will properly fail if there's not enough swap space.
+> > > =
 
-Even though other people have already answered this, I'd like to add my =
+> > > ...plus you are allowed to return -EINVAL from arch_prepare_suspend()
+> > > or how is it called.
+> > =
 
-own comments.
+> > So then how exactly is this helping anything? It's pointless to have the
+> > sysfs file visible for platforms that are never going to support suspend
+> > to disk, and -EINVAL'ing out in another path is simply moving the
+> > problem.
+> =
 
-Firstly, doing power on/power off as side effects of other operations is =
+> Platforms that are never going to support s2disk =
 
-_not_ a policy choice.  It is a design principle:
+> =
 
-	When device D has been idle for more than N ms, it should be
-	put in a low-power state (unless such state changes have been
-	disabled for D by userspace).
+> a) should be fixed
+> =
 
-Of course N will vary for different D's, and the exact choice of N _is_
-policy.  Thus N should be exposed and configurable by userspace.  So
-should the ability to disable the state changes.  But the principle
-above isn't a policy, it is part of the design.
+> b) do not have CONFIG_SOFTWARE_SUSPEND.
 
-Secondly, this principle _requires_ that power on/power off occur as side =
+Ah, that's the part I was missing. Ok, As long as the memory-only thing
+is explicit, then I don't see any problem with these.
 
-effects of other operations, since those other operations affect whether =
-
-or not the device is idle.
-
-If anybody wants to argue against the principle itself, then go ahead and
-say so.  I, for one, don't see anything objectionable about it.
-
-Alan Stern
+Acked-by: Paul Mundt <lethal@linux-sh.org>
