@@ -1,17 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC] dynamic device power management proposal
-Date: Thu, 22 Mar 2007 14:56:53 +0100
-Message-ID: <20070322135653.GA7693@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0703191135360.14222-100000@iolanthe.rowland.org>
-	<200703220042.20471.lenb@kernel.org>
-	<20070322132052.GA7221@elf.ucw.cz>
-	<200703221444.52065.oneukum@suse.de>
+Date: Thu, 22 Mar 2007 15:01:38 +0100
+Message-ID: <20070322140138.GB7693@elf.ucw.cz>
+References: <200703221339.l2MDdejg007459@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200703221444.52065.oneukum@suse.de>
+In-Reply-To: <200703221339.l2MDdejg007459@olwen.urbana.css.mot.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm <linux-pm@lists.osdl.org>
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > > That's not how the USB implementation works. =A0Although a timestam=
-p like =
+> | > Yes, we may just not close a sound device file, but phone
+> | > applications I've seen, do close the file.
+> | =
 
-> > > > the one you describe is going to be added.
-> > > =
-
-> > > I sort of like this idea -- it seems that it is low overhead.
-> > > Of course it requires every device driver to be changed.
-> > > Instead we could maybe hook the generic driver entry points
-> > > and do this in the framework -- dunno if that is viable.
-> > =
-
-> > No, you can't get around changing all the drivers.
-> > =
-
-> > Generic entry points are for _system_ suspend, and if you try to abuse
-> > them for runtime PM, you'll have to audit/change all the drivers.
+> | Fix the app, then.
+> ---
 > =
 
-> Is this your position regarding USB autosuspend, too? Should we use
-> other methods than suspend/resume?
+> I would normally call designs that expect important functions (like
+> power on/power off) to happen as side effects of other operations (like
+> opening and closing files) broken to begin with. It's still a bad idea
+> to hide policy inside the driver.
 
-Well, you should have audited USB drivers when enabling autosuspend...
-But I believe you did that so you are pretty much okay.
+Then you are welcome to go design your own operating system.
 
-(With autosuspend, you can get situation when request from userland
-comes in even when device is suspended; some devices will need
-fixing).
+I certinaly do not want open() on powered down /dev/dsp to succeed
+with /dev/dsp powered down.
 
+> There's nothing contrived or corner-case-ish about cyclic operations in
+> a world where media players, animations, etc., are utterly
+> commonplace.
+
+Yep? And you close your sound device between those?
+
+> And latency may be ignorable in a laptop environment, but it absolutely
+> isn't in embedded devices, which users expect to operate immediately, as
+> though they were gear-driven rather than computer-driven.
+
+What latency are you talking about? Powering up piece of hw takes one
+milisecond or something. If your /dev/dsp takes 3 seconds to power up,
+you probably need userspace policy daemon. But that is not the case,
+hw takes few miliseconds to wake up.
 								Pavel
+				thinking about "don't feed the Trolls" label
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
