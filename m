@@ -1,17 +1,20 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] power management: change /sys/power/disk display
-Date: Thu, 22 Mar 2007 15:34:11 +0100
-Message-ID: <1174574051.3588.5.camel@johannes.berg>
-References: <1174468981.3769.8.camel@johannes.berg>
-	<20070321122954.GO4520@elf.ucw.cz>
-	<1174480375.4230.12.camel@johannes.berg>
-	<20070321131128.GB4523@elf.ucw.cz>
-	<1174482773.4230.19.camel@johannes.berg>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+	to -mm	tree
+Date: Thu, 22 Mar 2007 16:05:45 +0100
+Message-ID: <1174575945.3588.7.camel@johannes.berg>
+References: <200703212334.l2LNYDjj007030@shell0.pdx.osdl.net>
+	<20070322094825.GA29627@flint.arm.linux.org.uk>
+	<20070322015614.dafa1ed7.akpm@linux-foundation.org>
+	<20070322100355.GA6834@elf.ucw.cz>
+	<1174558128.3944.78.camel@johannes.berg>
+	<20070322132622.GD29627@flint.arm.linux.org.uk>
+	<20070322133117.GC6050@elf.ucw.cz>
+	<20070322142437.GB21954@linux-sh.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1869926935=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174482773.4230.19.camel@johannes.berg>
+In-Reply-To: <20070322142437.GB21954@linux-sh.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,101 +24,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-This patch changes /sys/power/disk to display all valid modes
-as well as the currently selected one in a fashion known from
-the LED subsystem.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+--===============1869926935==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Q/758C8OfGg/8pjsQXpi"
 
----
-This patch is the simplified version that just changes the attribute
-instead of introducing a new on. It also contains the relevant updates
-to the documentation.
 
-Good to push for .22?
+--=-Q/758C8OfGg/8pjsQXpi
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- Documentation/power/interface.txt |    8 ++++++--
- kernel/power/disk.c               |   34 +++++++++++++++++++++++++++++++---
- 2 files changed, 37 insertions(+), 5 deletions(-)
+On Thu, 2007-03-22 at 23:24 +0900, Paul Mundt wrote:
 
---- linux-2.6.orig/kernel/power/disk.c	2007-03-22 13:56:20.184654656 +0100
-+++ linux-2.6/kernel/power/disk.c	2007-03-22 14:00:18.754654656 +0100
-@@ -333,7 +333,34 @@ static const char * const pm_disk_modes[
- =
+> So then how exactly is this helping anything? It's pointless to have the
+> sysfs file visible for platforms that are never going to support suspend
+> to disk, and -EINVAL'ing out in another path is simply moving the
+> problem.
 
- static ssize_t disk_show(struct subsystem * subsys, char * buf)
- {
--	return sprintf(buf, "%s\n", pm_disk_modes[pm_disk_mode]);
-+	int i;
-+	char *start =3D buf;
-+
-+	for (i =3D PM_DISK_PLATFORM; i < PM_DISK_MAX; i++) {
-+		if (!pm_disk_modes[i])
-+			continue;
-+		switch (i) {
-+		case PM_DISK_SHUTDOWN:
-+		case PM_DISK_REBOOT:
-+		case PM_DISK_TEST:
-+		case PM_DISK_TESTPROC:
-+			break;
-+		default:
-+			if (pm_ops && pm_ops->enter &&
-+			    (i =3D=3D pm_ops->pm_disk_mode))
-+				break;
-+			/* not a valid mode, continue with loop */
-+			continue;
-+		}
-+		if (i =3D=3D pm_disk_mode)
-+			buf +=3D sprintf(buf, "[%s]", pm_disk_modes[i]);
-+		else
-+			buf +=3D sprintf(buf, "%s", pm_disk_modes[i]);
-+		if (i+1 !=3D PM_DISK_MAX)
-+			buf +=3D sprintf(buf, " ");
-+	}
-+	buf +=3D sprintf(buf, "\n");
-+	return buf-start;
- }
- =
+Just another data point as Pavel has replied to all the points raised
+already as far as I can tell...
 
- =
+If you have a platform that doesn't allow CONFIG_SOFTWARE_SUSPEND (which
+is only suspend to disk) and doesn't have pm_ops either, then you end up
+with an empty /sys/power/state file.
 
-@@ -374,8 +401,9 @@ static ssize_t disk_store(struct subsyst
- 		error =3D -EINVAL;
- 	}
- =
+johannes
 
--	pr_debug("PM: suspend-to-disk mode set to '%s'\n",
--		 pm_disk_modes[mode]);
-+	if (!error)
-+		pr_debug("PM: suspend-to-disk mode set to '%s'\n",
-+			 pm_disk_modes[mode]);
- 	mutex_unlock(&pm_mutex);
- 	return error ? error : n;
- }
---- linux-2.6.orig/Documentation/power/interface.txt	2007-03-22 14:01:09.68=
-4654656 +0100
-+++ linux-2.6/Documentation/power/interface.txt	2007-03-22 14:02:22.9846546=
-56 +0100
-@@ -34,8 +34,12 @@ for 5 seconds, resume devices, unfreeze =
+--=-Q/758C8OfGg/8pjsQXpi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
- we are able to look in the log messages and work out, for example, which c=
-ode
- is being slow and which device drivers are misbehaving.
- =
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
--Reading from this file will display what the mode is currently set
--to. Writing to this file will accept one of
-+Reading from this file will display all supported modes and the currently
-+selected one in brackets, for example
-+
-+	[shutdown] reboot test testproc
-+
-+Writing to this file will accept one of
- =
+iD8DBQBGAptJ/ETPhpq3jKURAl0AAKCVXA7AwLllF0tJWqXaCDKSasn3aACgjJDy
+VzB1iFSL+lN1f8z8HkIV/UA=
+=YYqK
+-----END PGP SIGNATURE-----
 
-        'platform' (only if the platform supports it)
-        'shutdown'
+--=-Q/758C8OfGg/8pjsQXpi--
+
+
+--===============1869926935==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1869926935==--
