@@ -1,15 +1,16 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Thu, 22 Mar 2007 15:26:49 -0400
-Message-ID: <20070322192647.GB20605@atomide.com>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221129.28722.david-b@pacbell.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Thu, 22 Mar 2007 12:20:09 -0700
+Message-ID: <200703221220.09679.david-b@pacbell.net>
+References: <1174295302.31250.1.camel@sli10-conroe.sh.intel.com>
+	<1174440888.29722.15.camel@sli10-conroe.sh.intel.com>
+	<20070321213909.GB6057@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070321213909.GB6057@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200703221129.28722.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +20,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, linux-arm@lists.arm.linux.org.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wednesday 21 March 2007 2:39 pm, Pavel Machek wrote:
 
-* David Brownell <david-b@pacbell.net> [070322 14:30]:
-> On Thursday 22 March 2007 6:44 am, Scott E. Preece wrote:
-> > | From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > | =
-
-> > | I think we can define "standby" a bit more precisely.  Something like:
-> > | - processes are frozen,
-> > | - devices are suspended,
+> > > USB gets the dependencies right, just copy that.
+> > Does USB include all kinds of dependence, eg non parent-children
+> > dependence?
 > =
 
-> True of all sleep states, although one wants "suspended" to
-> allow different levels of device functionality.  (Maybe it
-> can wake up, maybe its firmware is monitoring the WLAN, etc.)
+> No, probably not, as USB was designed properly.
 
-In addition to offering wakeup events for individual devices,
-the device suspend states should be something like retention
-and suspend, where:
+It was designed to work with as few wires as possible:  "minimalist"
+design.  That's not the same as "proper"; not everything works with
+the same design constraints.
 
-Retention is where clocks are off for a device, but power is on.
-In this case the device registers are maintained in hardware.
 
-Suspend is where clocks and power are off. In this state the
-device registers are maintained in software.
+> How common are those cross dependencies?
 
-Laptops mostly have suspend, while socs allow both retention
-and suspend in many cases.
+Common.  SOC audio setups are relatively simple examples, which
+I know have been making trouble on Linux for some time.  One hopes
+that the new ALSA SOC stuff helps sort this out:
 
-Regards,
+  - SOC serial controller (I2S, AC97, McBSP, SII, etc) manages
+    encoded data bitsteams (e.g. N channels, PCM or uLaw, etc)
+    for input, output, or both.
 
-Tony
+  - External codec interprets those bitstreams.
+
+  - That codec is controlled using I2C, SPI, or some other bus
+    for control, e.g. "set volume", "enter stereo mode".
+
+  - The codec and serial controllers have separate power controls.
+
+Think of this as separate control, data, and power channels;
+which are not multiplexed like USB.
+
+At the hardware level it probably looks like two different driver
+model devices (I2S/etc, and codec) that could have semi-generic
+drivers (I think this is what the ALSA SOC stuff is aiming for),
+plus board-specific "power codec on/off" interfaces.  Then there
+are the /dev interfaces ALSA creates for each functionality.
+
+
+> Do we really want to solve them generically? =
+
+
+What we need to be generic is:  PM not preventing good solutions.
+I'm not sure we're there yet.
+
+- Dave
