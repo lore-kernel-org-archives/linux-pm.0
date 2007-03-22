@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] power management: change /sys/power/disk
-	display
-Date: Thu, 22 Mar 2007 22:45:00 +0100
-Message-ID: <200703222245.01300.rjw@sisk.pl>
-References: <1174468981.3769.8.camel@johannes.berg>
-	<1174482773.4230.19.camel@johannes.berg>
-	<1174574051.3588.5.camel@johannes.berg>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] implement pm_ops.valid for everybody
+Date: Thu, 22 Mar 2007 14:43:59 -0700
+Message-ID: <200703221444.00905.david-b@pacbell.net>
+References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
+	<200703221129.28722.david-b@pacbell.net>
+	<200703222227.06473.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174574051.3588.5.camel@johannes.berg>
+In-Reply-To: <200703222227.06473.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,31 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net, nico@cam.org, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 22 March 2007 15:34, Johannes Berg wrote:
-> This patch changes /sys/power/disk to display all valid modes
-> as well as the currently selected one in a fashion known from
-> the LED subsystem.
+On Thursday 22 March 2007 2:27 pm, Rafael J. Wysocki wrote:
+> On Thursday, 22 March 2007 19:29, David Brownell wrote:
+> > =
+
+> > ... but I guess I don't see why one would want to try to nail down
+> > a definition of either "standby" or "STR".
 > =
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> So that the meaning of "standby" and "STR" is known, more or less.
 
-No objections from me.
+But "more or less" !=3D "nailed down (so tightly it's not always appicable)"
 
-> ---
-> This patch is the simplified version that just changes the attribute
-> instead of introducing a new on. It also contains the relevant updates
-> to the documentation.
-> =
 
-> Good to push for .22?
+> If you say "I'd like platforms to implement standby", you should say what
+> you mean by "standby", IMHO.
 
-Well, I think it can go to -mm for now (if Pavel agrees with it).  Later we=
-'ll
-decide whether it should go into .22 or .23.
+I thought my original note described that, as well as describing how
+it differs from STR.
 
-Greetings,
-Rafael
+STR shuts down a lot more.  Not necessarily powering down the CPU
+(which is what would cause the need for boot/BIOS code to have the
+"this is really a resume" cases, and isn't always possible), but at
+least being more agressive about powering down clocks and such.
+
+- Dave
