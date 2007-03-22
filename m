@@ -1,17 +1,16 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 00:45:31 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0703230044390.11411@poirot.grange>
+Date: Thu, 22 Mar 2007 16:55:16 -0700
+Message-ID: <200703221655.17693.david-b@pacbell.net>
 References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221444.00905.david-b@pacbell.net>
-	<200703222310.39623.rjw@sisk.pl>
 	<200703221556.08948.david-b@pacbell.net>
-	<Pine.LNX.4.60.0703230026500.11411@poirot.grange>
+	<200703230021.04470.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.60.0703230026500.11411@poirot.grange>
+In-Reply-To: <200703230021.04470.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, nico@cam.org, johannes@sipsolutions.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net, nico@cam.org, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 23 Mar 2007, Guennadi Liakhovetski wrote:
+On Thursday 22 March 2007 4:21 pm, Rafael J. Wysocki wrote:
 
-> On Thu, 22 Mar 2007, David Brownell wrote:
+> > My answer:  there is NO value to such an arbitrary restriction.
 > =
 
-> > On Thursday 22 March 2007 3:10 pm, Rafael J. Wysocki wrote:
-> > =
+> I'm not talking on restrictions.
 
-> > > Well, I think the only clear distinction between the STR and "standby=
-" is the
-> > > necessity to go through a boot-like procedure in order to resume from=
- the
-> > > former.
-> > =
+You most certainly did talk about them.  You said that if the =
 
-> > So what's a "boot-like procedure"?   Ten instructions?  A hundred?
-> > A thousand?  Ten thousand?  Does it take a certain amount of time?
-> > Does it perform certain operations?  Does it involve going through
-> > ACPI (or APM)?  If so, what about the fact that ACPI (or APM) are
-> > involved in "standby" resumes too (on platforms using them)?
-> =
+hardware doesn't support a "turn CPU off" mode, then you'd
+define that as being incapable of implementing suspend-to-RAM.
+That's a restriction ... a very arbitrary one.
 
-> Ok, on ARM / (at least embedded) ppc I would say - going through reset =
 
-> vector / toggling reset pin. Do these terms still make sense on =
+> I'm talking on being able to define =
 
-> hyper-threaded-cored-celled CPUs?
+> _anything_ more precisely then just a low-power system-wide state.
 
-Maybe "taking a reset exception" is a slightly better wording for this.
+Me too.  And I'm trying to convey to you the results of the
+investigations I did on that topic.  You don't seem to like
+those results though ...
 
-Thanks
----
-Guennadi Liakhovetski
+
+> And let's start from just something, please.  Like STR and "standby" to b=
+egin
+> with?  At least on ACPI systems we can distinguish one from the other qui=
+te
+> clearly, so why can't we start from that and _then_ generalize?
+
+That's exactly what I did.  Looked also at APM, and several
+different SOC designs (AT91, OMAP1, PXA25x, SA1100, more).
+
+The generalization I came up with is what I've described.
+Namely, that coming up with one definition of those states
+that can usefully be mapped all platforms is impractical.
+They're just labels.  The platform implementor can choose
+two states to implement, but non-x86 hardware states rarely
+match the expectations of ACPI.
+
+So the fundamental definition needs to be in relative terms,
+because platform-specific differences otherwise make trouble.
+
+- Dave
