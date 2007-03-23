@@ -1,113 +1,124 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 11:29:25 -0700
-Message-ID: <200703231129.26643.david-b@pacbell.net>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221655.17693.david-b@pacbell.net>
-	<C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [3/5] 2.6.21-rc4: known regressions (v2)
+Date: Fri, 23 Mar 2007 19:50:22 +0100
+Message-ID: <20070323185022.GQ752@stusta.de>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Locke <matt@nomadgs.com>
-Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, johannes@sipsolutions.net, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, nico@cam.org, ben@simtec.co.uk, g.liakhovetski@gmx.de
+In-Reply-To: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.c, pavel@suse.cz, linux-pm@lists.osdl.org, =?utf-8?B?RnLDqWTDqXJpYw==?= RISS <frederic.riss@gmail.com>, Tino Keitel <tino.keitel@gmx.de>, Bob Moore <robert.moore@intel.com>, lenb@kernel.org, linux-acpi@vger.kernel.org, Tobias Doerffel <tobias.doerffel@gmail.com>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Maxim Levitsky <maximlevitsky@gmail.com>, Mike Harris <atarimike@wavecable.com>, Marcus Better <marcus@better.se>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Meyer <thomas@m3y3r.de>, Thomas Gleixner <tglx@linutronix.de>, Soeren Sonnenburg <kernel@nn7.de>, jgarzik@pobox.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 22 March 2007 6:14 pm, Matthew Locke wrote:
-> >
-> > So the fundamental definition needs to be in relative terms,
-> > because platform-specific differences otherwise make trouble.
-> =
+This email lists some known regressions in Linus' tree compared to 2.6.=
+20.
 
-> The problem is that a 1:1 mapping between system low power state and  =
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-> a processor low power state is trying to be forced on every  =
-
-> platform.
-
-Sort of.  There are only two labels available for "system" states,
-and the platform-specific code entering those states will probably
-kick in a processor low power state.  But there'd be no point in
-preventing that code from kicking in deeper power save states.
-
-Consider the PXA 255, which has an "idle" mode that's natural for
-the idle loop, a "33 MHz idle" mode that saves more power but
-means most peripherals can't be clocked, and a "sleep" mode that
-turns the CPU off.  A "standby" might normally use "idle", but
-might likewise use "33 MHz idle" if all the peripheral clocks
-happen to be gated off after the drivers suspend().  That wouldn't
-be a one-to-one mapping ... and smarter hardware might do very
-similar stuff automatically, too.
+Due to the huge amount of recipients, please trim the Cc when answering=
+=2E
 
 
-> As Dave pointed out, embedded SoC's provide multiple low   =
-
-> power states that qualify for the suspend-to-ram definition.  The  =
-
-> only reasonable platform independent definition is that in STR memory  =
-
-> is powered and contents preserved.  The rest is platform specific.
-
-That definition also applies to "standby" of course ... there may
-be a LOT of states where the "standby" label can usefully apply.
-
-
-> I think the right answer is that a mechanism for mapping platform  =
-
-> specific states to the system states is needed. =
+Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+References : http://lkml.org/lkml/2007/3/13/3
+Submitter  : Dave Jones <davej@redhat.com>
+             Jeremy Fitzhardinge <jeremy@goop.org>
+Caused-By  : PCI merge
+             commit 78149df6d565c36675463352d0bfe0000b02b7a7
+Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+             Rafael J. Wysocki <rjw@sisk.pl>
+Status     : problem is being debugged
 
 
-That could be done, but in practice not all platform states will
-necessarily be implemented by the platform code.
+Subject    : MacMini: doesn't come out of suspend to ram
+References : http://lkml.org/lkml/2007/3/21/374
+Submitter  : Fr=C3=A9d=C3=A9ric RISS <frederic.riss@gmail.com>
+             Tino Keitel <tino.keitel@gmx.de>
+Caused-By  : Bob Moore <robert.moore@intel.com>
+             commit c5a7156959e89b32260ad6072bbf5077bcdfbeee
+Status     : unknown
 
 
-> Platforms define   =
-
-> their low power states and define the default for each system  =
-
-> state .  On x86 platforms, the default just works and is probably  =
-
-> never changed. =
-
-
-That's the way it works today on all Linux platforms.  The x86
-ones actually don't "just work" in my observation ... when either
-"standby" or "STR" actually work, I've been quite surprised; the
-basic issue seems to be that ACPI resume paths often misbehave.
+Subject    : Suspend to RAM doesn't work anymore  (ACPI?)
+References : http://lkml.org/lkml/2007/3/19/128
+             http://bugzilla.kernel.org/show_bug.cgi?id=3D8247
+Submitter  : Tobias Doerffel <tobias.doerffel@gmail.com>
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+Status     : problem is being debugged
 
 
-> On embedded platforms, a policy manager can change   =
+Subject    : s2ram autowake regression  (ACPI?)
+References : http://lkml.org/lkml/2007/3/20/96
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Handled-By : Len Brown <lenb@kernel.org>
+Status     : submitter was asked to test a patch
 
-> the other low power states according to its latency and operational  =
 
-> requirements.
+Subject    : ThinkPad doesn't resume from suspend to RAM
+References : http://lkml.org/lkml/2007/2/27/80
+             http://lkml.org/lkml/2007/2/28/348
+Submitter  : Jens Axboe <jens.axboe@oracle.com>
+             Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
 
-That's not yet a proposal to change things; no details.  :)
 
-If I were to want to change things in that area, I'd likely want
-to let platforms define their own states and names (*), but in
-fact I think it's probably a lot more imporant for embedded cases
-to support top notch *runtime* PM rather than /sys/power/state
-kinds of transitions.
+Subject    : suspend to disk hangs
+References : http://lkml.org/lkml/2007/3/6/142
+Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
 
-- Dave
 
-(*) For example, predefine more suspend_state_t values -- maybe
-    PM_SUSPEND_PLATFORM_{0-9}, to start with -- and then add a
-    label-that-state callback to "struct pm_ops".  Then make
-    /sys/power/state do the obvious stuff to read and write
-    additional states ... voila, platforms can now add new low
-    power states with their own names.  Their clk_must_disable()
-    could let drivers see some of the state differences; there
-    might need to be similar mechanisms for other PM resources.
+Subject    : suspend to disk hangs
+References : http://lkml.org/lkml/2007/3/16/126
+Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+             commit e3c7db621bed4afb8e231cb005057f2feb5db557
+             commit ed746e3b18f4df18afa3763155972c5835f284c5
+             commit 259130526c267550bc365d3015917d90667732f1
+Status     : unknown
+
+
+Subject    : suspend to disk hangs
+References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8224
+Submitter  : Mike Harris <atarimike@wavecable.com>
+Status     : unknown
+
+
+Subject    : ThinkPad R60: suspend to disk broken
+References : http://lkml.org/lkml/2007/3/23/74
+Submitter  : Marcus Better <marcus@better.se>
+Status     : submitter tries to bisect
+
+
+Subject    : after resume: X hangs after drawing a couple of windows
+References : http://lkml.org/lkml/2007/3/8/117
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Status     : unknown
+
+
+Subject    : second suspend to disk in a row results in an oops  (libat=
+a?)
+References : http://lkml.org/lkml/2007/3/17/43
+Submitter  : Thomas Meyer <thomas@m3y3r.de>
+Status     : unknown
+
+
+Subject    : SATA breakage on resume
+References : http://lkml.org/lkml/2007/3/7/233
+Submitter  : Thomas Gleixner <tglx@linutronix.de>
+             Soeren Sonnenburg <kernel@nn7.de>
+Status     : unknown
+
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
