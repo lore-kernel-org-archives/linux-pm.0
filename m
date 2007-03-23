@@ -1,221 +1,50 @@
-From: Matthew Locke <matt@nomadgs.com>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 11:51:13 -0700
-Message-ID: <D72CCDBA-7D0E-41FA-9ABD-761D5B8409BC@nomadgs.com>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221556.08948.david-b@pacbell.net>
-	<200703230021.04470.rjw@sisk.pl>
-	<200703221655.17693.david-b@pacbell.net>
-	<C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
-	<20070323131746.GB12226@atomide.com>
-	<1174656902.20521.134.camel@Dogbert.NOE.nokia.com>
-	<20070323145235.GG12226@atomide.com>
-	<1174663030.20521.183.camel@Dogbert.NOE.nokia.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174663030.20521.183.camel@Dogbert.NOE.nokia.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Igor Stoppa <igor.stoppa@nokia.com>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+From: Maxim <maximlevitsky@gmail.com>
+Subject: Re: [3/5] 2.6.21-rc4: known regressions (v2)
+Date: Fri, 23 Mar 2007 21:07:33 +0200
+Message-ID: <200703232107.34020.maximlevitsky@gmail.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <20070323185022.GQ752@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20070323185022.GQ752@stusta.de>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.c, pavel@suse.cz, linux-pm@lists.osdl.org, =?utf-8?q?Fr=C3=A9d=C3=A9ric_RISS?= <frederic.riss@gmail.com>, Tino Keitel <tino.keitel@gmx.de>, Bob Moore <robert.moore@intel.com>, lenb@kernel.org, linux-acpi@vger.kernel.org, Tobias Doerffel <tobias.doerffel@gmail.com>, Jens Axboe <jens.axboe@oracle.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Mike Harris <atarimike@wavecable.com>, Marcus Better <marcus@better.se>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Meyer <thomas@m3y3r.de>, Thomas Gleixner <tglx@linutronix.de>S
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 23 March 2007 20:50:22 Adrian Bunk wrote:
 
-On Mar 23, 2007, at 8:17 AM, Igor Stoppa wrote:
+> Subject    : suspend to disk hangs
+> References : http://lkml.org/lkml/2007/3/16/126
+> Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+> Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+>              commit e3c7db621bed4afb8e231cb005057f2feb5db557
+>              commit ed746e3b18f4df18afa3763155972c5835f284c5
+>              commit 259130526c267550bc365d3015917d90667732f1
+> Status     : unknown
+> 
+> 
 
-> On Fri, 2007-03-23 at 10:52 -0400, ext tony@atomide.com wrote:
->> * Igor Stoppa <igor.stoppa@nokia.com> [070323 09:37]:
->>> On Fri, 2007-03-23 at 09:17 -0400, ext
->>> linux-pm-bounces@lists.linux-foundation.org wrote:
->>>> * Matthew Locke <matt@nomadgs.com> [070322 21:15]:
->>>>>
->>>>> On Mar 22, 2007, at 4:55 PM, David Brownell wrote:
->>>>>
->>>>>> On Thursday 22 March 2007 4:21 pm, Rafael J. Wysocki wrote:
->>>>>>
->>>>>>>> My answer:  there is NO value to such an arbitrary restriction.
->>>>>>>
->>>>>>> I'm not talking on restrictions.
->>>>>>
->>>>>> You most certainly did talk about them.  You said that if the
->>>>>> hardware doesn't support a "turn CPU off" mode, then you'd
->>>>>> define that as being incapable of implementing suspend-to-RAM.
->>>>>> That's a restriction ... a very arbitrary one.
->>>>>>
->>>>>>
->>>>>>> I'm talking on being able to define
->>>>>>> _anything_ more precisely then just a low-power system-wide  =
+Hello, 
+	It is fixed
 
->>>>>>> state.
->>>>>>
->>>>>> Me too.  And I'm trying to convey to you the results of the
->>>>>> investigations I did on that topic.  You don't seem to like
->>>>>> those results though ...
->>>>>>
->>>>>>
->>>>>>> And let's start from just something, please.  Like STR and
->>>>>>> "standby" to begin
->>>>>>> with?  At least on ACPI systems we can distinguish one from the
->>>>>>> other quite
->>>>>>> clearly, so why can't we start from that and _then_ generalize?
->>>>>>
->>>>>> That's exactly what I did.  Looked also at APM, and several
->>>>>> different SOC designs (AT91, OMAP1, PXA25x, SA1100, more).
->>>>>>
->>>>>> The generalization I came up with is what I've described.
->>>>>> Namely, that coming up with one definition of those states
->>>>>> that can usefully be mapped all platforms is impractical.
->>>>>> They're just labels.  The platform implementor can choose
->>>>>> two states to implement, but non-x86 hardware states rarely
->>>>>> match the expectations of ACPI.
->>>>>>
->>>>>> So the fundamental definition needs to be in relative terms,
->>>>>> because platform-specific differences otherwise make trouble.
->>>>>
->>>>> The problem is that a 1:1 mapping between system low power  =
+	The problem is that now cpu_up/cpu_down is called with tasks frozen,
+	and this can lead to deadlock if some driver that registered cpu up/down notifier, sleeps,
 
->>>>> state and
->>>>> a processor low power state is trying to be forced on every
->>>>> platform.  As Dave pointed out, embedded SoC's provide multiple  =
+	On my system it froze in two places, one in XFS due to freezable workqueues, and in
+	microcode update driver that ask the "frozen" userspace for firmware.
 
->>>>> low
->>>>> power states that qualify for the suspend-to-ram definition.  The
->>>>> only reasonable platform independent definition is that in STR  =
+	Fix for XFS is already in mainline, and Rafael J. Wysocki. already posted a patch that fixes microcode issue,
+	I will test it.
 
->>>>> memory
->>>>> is powered and contents preserved.  The rest is platform specific.
->>>>>
->>>>> I think the right answer is that a mechanism for mapping platform
->>>>> specific states to the system states is needed. Platforms define
->>>>> their low power states and define the default for each system
->>>>> state .  On x86 platforms, the default just works and is probably
->>>>> never changed.  On embedded platforms, a policy manager can change
->>>>> the other low power states according to its latency and  =
+	But I feel that there are more drivers that can deadlock system in same way, on my system S3/S4 works perfect :-)
+	Even the weird  hang i had disappeared.
 
->>>>> operational
->>>>> requirements.
->>>>
->>>> Plus the states should be distributed. Trying to force the whole
->>>> system into certain state turns things messy.
->>>>
->>>> Some devices may be active while some are in retention or suspend.
->>>>
->>>> Basically everything should idle itself automatically whenever
->>>> possible based on a idle timer or some other policy, such as
->>>> suspending a device from user space via sysfs.
->>>
->>> The timer sound like a reasonable idea, as long as there is one  =
+	Big thanks to Rafael J. Wysocki.
 
->>> timer
->>> for each shared resource, not user.
->>>
->>> Example:
->>>
->>> Devices A & B share the same voltage domain.
->>>
->>> Device A has timeout period Timeout(A)
->>> Device B has timeout period Timeout(B)
->>>
->>> One timer is associated to the voltage regulator/switch and will  =
 
->>> expire
->>> at t=3DTIM
->>>
->>> Every time the device d (either A or B) performs some activity, then
->>>
->>> TIM =3D max(TIM, now + Timeout(d))
->>>
->>> When t=3DTIM (timer expired), then the suspend() function for each  =
-
->>> device
->>> is called.
->>
->> What problem do you see with with device specific idle timers?
->
-> That the number of idle timers grows linearly with the number of
-> resources consumers rather than _providers_
->
-> See also my comment below.
->
->> For example, what's wrong with the following:
->>
->> When the device specific idle timer expires, the driver's suspend
->> function would get called, and the device would release it's clock
->> and voltage.
->
-> We might end up doing extra useless activity by saving the state of a
-> device that is re-enabled without even going off.
->
-> Of course the restoring can be optimised so that it doesn't happen
-> unless the voltage has actually been removed (this implies that the
-> state saving happens in such a way that doesn't compromise the current
-> settings of the device).
->
->> Then when a shared voltage domain has 0 users, that voltage domain
->> can be shut off.
->
-> Both your and my approaches have drawbacks: in your case the system  =
-
-> will
-> probably end up doing extra state saving, but will be ready to perform
-> immediately the transition to off; in my case there will be the  =
-
-> overhead
-> of saving the state of the peripherals.
-
-I think we again have the problem that the behavior is very device  =
-
-specific.  Some i/o devices have internal low power states that may  =
-
-or may not require saving state.  Others have no notion of low power  =
-
-states. And on some platforms register contents are preserved even  =
-
-when a device is "off".
-
-How about something like:
-
-  - When idle timer pops,  driver releases pm resources (clock,  =
-
-voltage, whatever).
-  - Then driver does device specific stuff which may or may not  =
-
-include going into a low power state and saving state.
-  - If a pm resource (clock, voltage, whatever) reference count goes  =
-
-to zero, something will decide to turn it off.
-  - Users of the pm resource are told they are going to lose power.
-  - Then driver does device specific stuff.  If the device driver  =
-
-already saved state, then ignore.  Otherwise do what the device needs  =
-
-done.
-
->
-> However saving state in a preemptive way is decoupled by having idle
-> timers associated to resources providers rather than consumers.
->
->> Same thing with clock domains.
->
-> Clocks is fine, since no saving/restoring is needed, albeit we might
-> consider PLL relock time to fall in this "costy" class of activities.
->
-> -- =
-
-> Cheers, Igor
->
-> Igor Stoppa <igor.stoppa@nokia.com>
-> (Nokia Multimedia - CP - OSSO / Helsinki, Finland)
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+	Best regards,
+		Maxim Levitsky
