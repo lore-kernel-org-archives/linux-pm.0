@@ -1,20 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] power management: change /sys/power/disk
-	display
-Date: Fri, 23 Mar 2007 01:05:12 +0100
-Message-ID: <20070323000512.GA8182@elf.ucw.cz>
-References: <1174468981.3769.8.camel@johannes.berg>
-	<20070321122954.GO4520@elf.ucw.cz>
-	<1174480375.4230.12.camel@johannes.berg>
-	<20070321131128.GB4523@elf.ucw.cz>
-	<1174482773.4230.19.camel@johannes.berg>
-	<1174574051.3588.5.camel@johannes.berg>
-Mime-Version: 1.0
+From: Matthew Locke <matt@nomadgs.com>
+Subject: Re: [PATCH] implement pm_ops.valid for everybody
+Date: Thu, 22 Mar 2007 18:14:20 -0700
+Message-ID: <C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
+References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
+	<200703221556.08948.david-b@pacbell.net>
+	<200703230021.04470.rjw@sisk.pl>
+	<200703221655.17693.david-b@pacbell.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1174574051.3588.5.camel@johannes.berg>
+In-Reply-To: <200703221655.17693.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,35 +20,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, johannes@sipsolutions.net, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, nico@cam.org, ben@simtec.co.uk, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2007-03-22 15:34:11, Johannes Berg wrote:
-> This patch changes /sys/power/disk to display all valid modes
-> as well as the currently selected one in a fashion known from
-> the LED subsystem.
 
-looks ok to me. It changes userland interface, but I believe noone
-uses this particular detail.
+On Mar 22, 2007, at 4:55 PM, David Brownell wrote:
+
+> On Thursday 22 March 2007 4:21 pm, Rafael J. Wysocki wrote:
+>
+>>> My answer:  there is NO value to such an arbitrary restriction.
+>>
+>> I'm not talking on restrictions.
+>
+> You most certainly did talk about them.  You said that if the
+> hardware doesn't support a "turn CPU off" mode, then you'd
+> define that as being incapable of implementing suspend-to-RAM.
+> That's a restriction ... a very arbitrary one.
+>
+>
+>> I'm talking on being able to define
+>> _anything_ more precisely then just a low-power system-wide state.
+>
+> Me too.  And I'm trying to convey to you the results of the
+> investigations I did on that topic.  You don't seem to like
+> those results though ...
+>
+>
+>> And let's start from just something, please.  Like STR and  =
+
+>> "standby" to begin
+>> with?  At least on ACPI systems we can distinguish one from the  =
+
+>> other quite
+>> clearly, so why can't we start from that and _then_ generalize?
+>
+> That's exactly what I did.  Looked also at APM, and several
+> different SOC designs (AT91, OMAP1, PXA25x, SA1100, more).
+>
+> The generalization I came up with is what I've described.
+> Namely, that coming up with one definition of those states
+> that can usefully be mapped all platforms is impractical.
+> They're just labels.  The platform implementor can choose
+> two states to implement, but non-x86 hardware states rarely
+> match the expectations of ACPI.
+>
+> So the fundamental definition needs to be in relative terms,
+> because platform-specific differences otherwise make trouble.
+
+The problem is that a 1:1 mapping between system low power state and  =
+
+a processor low power state is trying to be forced on every  =
+
+platform.  As Dave pointed out, embedded SoC's provide multiple low  =
+
+power states that qualify for the suspend-to-ram definition.  The  =
+
+only reasonable platform independent definition is that in STR memory  =
+
+is powered and contents preserved.  The rest is platform specific.
+
+I think the right answer is that a mechanism for mapping platform  =
+
+specific states to the system states is needed. Platforms define  =
+
+their low power states and define the default for each system  =
+
+state .  On x86 platforms, the default just works and is probably  =
+
+never changed.  On embedded platforms, a policy manager can change  =
+
+the other low power states according to its latency and operational  =
+
+requirements.
 
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-
-ack.
-
-> ---
-> This patch is the simplified version that just changes the attribute
-> instead of introducing a new on. It also contains the relevant updates
-> to the documentation.
-> =
-
-> Good to push for .22?
-
-Actually, this may even be .23 material.
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+>
+> - Dave
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
