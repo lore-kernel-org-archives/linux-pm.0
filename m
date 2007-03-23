@@ -1,17 +1,18 @@
 From: tony@atomide.com
 Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 09:15:17 -0400
-Message-ID: <20070323131515.GA12226@atomide.com>
+Date: Fri, 23 Mar 2007 09:17:48 -0400
+Message-ID: <20070323131746.GB12226@atomide.com>
 References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221129.28722.david-b@pacbell.net>
-	<20070322192647.GB20605@atomide.com>
-	<200703221416.27103.david-b@pacbell.net>
+	<200703221556.08948.david-b@pacbell.net>
+	<200703230021.04470.rjw@sisk.pl>
+	<200703221655.17693.david-b@pacbell.net>
+	<C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200703221416.27103.david-b@pacbell.net>
+In-Reply-To: <C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,77 +22,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, linux-arm@lists.arm.linux.org.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: Matthew Locke <matt@nomadgs.com>
+Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, pavel@ucw.cz, ben@simtec.co.uk, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-* David Brownell <david-b@pacbell.net> [070322 17:29]:
-> On Thursday 22 March 2007 12:26 pm, Tony Lindgren wrote:
-> > =
-
-> > In addition to offering wakeup events for individual devices,
-> > the device suspend states should be something like retention
-> > and suspend, where:
+* Matthew Locke <matt@nomadgs.com> [070322 21:15]:
 > =
 
-> Maybe ... worth discussing.  Most PCI drivers don't make
-> that distinction, although they could (see below).
+> On Mar 22, 2007, at 4:55 PM, David Brownell wrote:
 > =
 
-> What they do instead is assume the lowest device power state
-> ("suspend"), and re-initialize in resume().  If Linux starts to
-> support standby and STR modes properly ... then it'd make sense
-> to teach more PCI drivers to try using "retention" states.  But
-> those drivers would still need to be prepared to re-init.
+> > On Thursday 22 March 2007 4:21 pm, Rafael J. Wysocki wrote:
+> >
+> >>> My answer:  there is NO value to such an arbitrary restriction.
+> >>
+> >> I'm not talking on restrictions.
+> >
+> > You most certainly did talk about them.  You said that if the
+> > hardware doesn't support a "turn CPU off" mode, then you'd
+> > define that as being incapable of implementing suspend-to-RAM.
+> > That's a restriction ... a very arbitrary one.
+> >
+> >
+> >> I'm talking on being able to define
+> >> _anything_ more precisely then just a low-power system-wide state.
+> >
+> > Me too.  And I'm trying to convey to you the results of the
+> > investigations I did on that topic.  You don't seem to like
+> > those results though ...
+> >
+> >
+> >> And let's start from just something, please.  Like STR and  =
 
-I agree, in general we should start taking advantage of the
-device power states. =
+> >> "standby" to begin
+> >> with?  At least on ACPI systems we can distinguish one from the  =
 
- =
-
-> > Retention is where clocks are off for a device, but power is on.
-> > In this case the device registers are maintained in hardware.
+> >> other quite
+> >> clearly, so why can't we start from that and _then_ generalize?
+> >
+> > That's exactly what I did.  Looked also at APM, and several
+> > different SOC designs (AT91, OMAP1, PXA25x, SA1100, more).
+> >
+> > The generalization I came up with is what I've described.
+> > Namely, that coming up with one definition of those states
+> > that can usefully be mapped all platforms is impractical.
+> > They're just labels.  The platform implementor can choose
+> > two states to implement, but non-x86 hardware states rarely
+> > match the expectations of ACPI.
+> >
+> > So the fundamental definition needs to be in relative terms,
+> > because platform-specific differences otherwise make trouble.
 > =
 
-> Analagous to PCI D1 or D2.
+> The problem is that a 1:1 mapping between system low power state and  =
 
-Hmmm, I think with PCI it's just numbering where the power
-consumption decreases as the nuber increases except for D3hot
-and D3cold.
- =
+> a processor low power state is trying to be forced on every  =
 
-> > Suspend is where clocks and power are off. In this state the
-> > device registers are maintained in software.
+> platform.  As Dave pointed out, embedded SoC's provide multiple low  =
+
+> power states that qualify for the suspend-to-ram definition.  The  =
+
+> only reasonable platform independent definition is that in STR memory  =
+
+> is powered and contents preserved.  The rest is platform specific.
 > =
 
-> Analagous to PCI D3, especially D3cold ... although PCI D3
-> certainly allows the Vaux "power well" to power some parts
-> of the device, so that not all register values get reset.
+> I think the right answer is that a mechanism for mapping platform  =
 
-Maybe actually D3hot =3D retention and D3cold =3D suspend? =
+> specific states to the system states is needed. Platforms define  =
 
+> their low power states and define the default for each system  =
 
-PCI	SOCs		CLOCKS	POWER
-D3hot	retention	off	on
-D3cold	suspend		off	off
- =
+> state .  On x86 platforms, the default just works and is probably  =
 
-> > Laptops mostly have suspend, while socs allow both retention
-> > and suspend in many cases.
-> =
+> never changed.  On embedded platforms, a policy manager can change  =
 
-> Not quite true, as noted above.  There are differences in how
-> things are factored, but those mechanisms exist in both x86
-> and SOC worlds.  One key difference from a Linux perspective
-> is probably that without ACPI in the way, a SOC design can
-> make much better use of the hardware PM capabilities.
-> =
+> the other low power states according to its latency and operational  =
 
-> Very few non-USB drivers address "retention" modes on laptops;
-> USB host controller drivers need it to handle "remote wakeup",
-> which one expects to work from "standby" and suspend-to-RAM.
-> (Plus potentialy suspend-to-disk, but that's uncommon.)
+> requirements.
 
-Yeah, OK.
+Plus the states should be distributed. Trying to force the whole
+system into certain state turns things messy.
 
-Tony
+Some devices may be active while some are in retention or suspend.
+
+Basically everything should idle itself automatically whenever
+possible based on a idle timer or some other policy, such as
+suspending a device from user space via sysfs.
+
+Regards,
+
+Tony =
