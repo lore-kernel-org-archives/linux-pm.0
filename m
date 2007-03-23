@@ -1,16 +1,22 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 22:08:04 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0703232158090.5971@poirot.grange>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221655.17693.david-b@pacbell.net>
-	<Pine.LNX.4.60.0703230745070.4651@poirot.grange>
-	<200703230915.12117.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power management: change /sys/power/disk
+	display
+Date: Sat, 24 Mar 2007 00:46:34 +0100
+Message-ID: <20070323234634.GB14427@elf.ucw.cz>
+References: <1174468981.3769.8.camel@johannes.berg>
+	<20070321122954.GO4520@elf.ucw.cz>
+	<1174480375.4230.12.camel@johannes.berg>
+	<20070321131128.GB4523@elf.ucw.cz>
+	<1174482773.4230.19.camel@johannes.berg>
+	<1174574051.3588.5.camel@johannes.berg>
+	<20070323000512.GA8182@elf.ucw.cz>
+	<1174657727.3366.13.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703230915.12117.david-b@pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <1174657727.3366.13.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +26,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net, nico@cam.org, ben@simtec.co.uk
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 23 Mar 2007, David Brownell wrote:
-
-> On Thursday 22 March 2007 11:46 pm, Guennadi Liakhovetski wrote:
-> > On Thu, 22 Mar 2007, David Brownell wrote:
-> > =
-
-> > > So the fundamental definition needs to be in relative terms,
-> > > because platform-specific differences otherwise make trouble.
-> > =
-
-> > What if we define system-wide and per device power states in terms of =
-
-> > time? Time needed for the system / device to become fully operational =
-
-> > again? And you'd need a user-space calibration daemon...
+On Fri 2007-03-23 14:48:47, Johannes Berg wrote:
+> On Fri, 2007-03-23 at 01:05 +0100, Pavel Machek wrote:
 > =
 
-> So if you take two otherwise identical systems and clock one slower
-> than the other, then "standby" may become "suspend-to-RAM"?
+> > Actually, this may even be .23 material.
 > =
 
-> Yuck.  No.  Speed is only a factor in that STR is likely slower.
+> Fine with me, I have no particular need for this. Just don't want to
+> track the patch forever ;)
 
-I'm just trying to think about it from the user perspective. As a user I =
+Send it to akpm, he's good at tracking :).
+								Pavel
+-- =
 
-want - save the system save some power but be ready again when I need it =
-
-_not_ _later_ than, 10 sec after wakeup. I don't care how it is called. I =
-
-want to save as much power as possible and I want a certain wakeup time. =
-
-Yes, if one system in your example is clocked slower, then yes, saying "I =
-
-want it back up and running 5 seconds after wakeup" will for one of them =
-
-mean "standby" for another one "str". As a user I don't care whatsoever =
-
-what PCI state you drive my eth card into. I want it back in 5 seconds.
-
-Similarly for single devices: I don't need wlan now, but when I need it I =
-
-want it to be available in less than 2 seconds.
-
-And if I say 10 minutes hibernate it.
-
-If I say "don't care about time, save maximum power" - similarly.
-
-And I may say "I want it wakeable from eth" or "from modem" take that into =
-
-account too.
-
-Those would be policies to be implemented in the user space. The kernel =
-
-might just present a single numerical per-device parameter "wakeup =
-
-responsiveness", and a way to do this system-wide.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
