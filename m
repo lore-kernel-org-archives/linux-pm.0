@@ -1,15 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 13:11:34 -0700
-Message-ID: <200703231311.36149.david-b@pacbell.net>
+Date: Fri, 23 Mar 2007 21:39:37 +0100
+Message-ID: <200703232139.38721.rjw@sisk.pl>
 References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703231129.26643.david-b@pacbell.net>
-	<C0893D0E-60E9-4F0F-A731-FCA92C9368DA@nomadgs.com>
+	<200703231443.19536.rjw@sisk.pl>
+	<200703231057.16539.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <C0893D0E-60E9-4F0F-A731-FCA92C9368DA@nomadgs.com>
+In-Reply-To: <200703231057.16539.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,104 +20,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Locke <matt@nomadgs.com>
-Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, johannes@sipsolutions.net, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, nico@cam.org, ben@simtec.co.uk, g.liakhovetski@gmx.de
+To: David Brownell <david-b@pacbell.net>
+Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net, nico@cam.org, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 March 2007 12:21 pm, Matthew Locke wrote:
+On Friday, 23 March 2007 18:57, David Brownell wrote:
+> On Friday 23 March 2007 6:43 am, Rafael J. Wysocki wrote:
+> > On Friday, 23 March 2007 00:55, David Brownell wrote:
 > =
 
-> Unless I've misread something, it is exactly a 1:1 mapping between  =
+> > > You said that if the hardware doesn't support a "turn CPU off" mode, =
+then
+> > > you'd define that as being incapable of implementing suspend-to-RAM.
+> > =
 
-> the system state and the cpu state.  There is no code to support  =
+> > That's _if_ the suspend-to-RAM is defined as the state in which the CPU
+> > is off, which I _think_ would be a reasonable definition.  =
 
-> mapping multiple cpu states to the system state and then selecting  =
-
-> the cpu state that is entered for a system state at runtime.
-
-Platform hardware and software can do whatever it wants when
-it gets the pm_ops.enter() request.
-
-There's no formal notion of CPU state (or current need for one!),
-so of course there's no code doing what you sketched.
-
-
-> > Consider the PXA 255, which has an "idle" mode that's natural for
-> > the idle loop, a "33 MHz idle" mode that saves more power but
-> > means most peripherals can't be clocked, and a "sleep" mode that
-> > turns the CPU off.  A "standby" might normally use "idle", but
-> > might likewise use "33 MHz idle" if all the peripheral clocks
-> > happen to be gated off after the drivers suspend().  That wouldn't
-> > be a one-to-one mapping ... and smarter hardware might do very
-> > similar stuff automatically, too.
 > =
 
-> You are saying existing code handles this case?
+> I disagree.
 
-Not at all.  It only handles an STR mode.  I'm pointing out
-that would be a valid implementation of a "standby" mode,
-with lower resume latency (other than device resume) than
-the current STR.
+Fine, this only is a matter of opinion. :-)
+ =
 
+> > I don't mean the =
 
-> >> I think the right answer is that a mechanism for mapping platform
-> >> specific states to the system states is needed.
-> >
-> > That could be done, but in practice not all platform states will
-> > necessarily be implemented by the platform code.
+> > platforms incapable of doing this should be restricted from entering any
+> > system-wide low-power states, but perhaps we can call these states
+> > differently.
 > =
 
-> Ok, does this matter?  Certainly more than two will be implemented.   =
-
-> The latest pxa's have much more than that.
-
-It matters in the pragmatic sense that if you're assuming every
-possible hardware PM state documented in the chip manual will be
-implemented, tested, and used in Linux ... I'm highly skeptical.
+> Well, we have ** ONLY TWO LABELS TO APPLY ** and you're saying that
+> one of them should be restricted to systems where the CPU can go into
+> an "off" state.  =
 
 
+As long as you insist on using two lables only and these two labels in
+particular, then fine.  [Well, in such a case I'd change them to something
+different (like "suspend level 1", "suspend level 2").]
 
-> 	 My point is that platforms that don't  =
+Still, technically it doesn't really matter.  What matters is that we need =
+to
+tell drivers what we expect them to do with the devices when we're
+transitioning from one state to another system-wide.  And that, IMO, should
+be defined.
 
-> need to change mappings don't have to do anything different. =
+> > > That's a restriction ... a very arbitrary one.
+> > > =
 
-
-But ... we don't currently have a need for "mappings", or to
-change them.  What problem would be solved by adding "mappings"?
-Especially since the $SUBJECT patches highlighted the fact that
-most platforms only support one of the N possible state?  :)
-
-
-> > If I were to want to change things in that area, I'd likely want
-> > to let platforms define their own states and names (*),
+> > My point is that _if_ we use lables like "standby", "STR", "STD", etc.,
 > =
 
-> Sure.  Much of the behavior is platform specific.  It really depends  =
+> That is, the strings in /sys/power/state.  That's a given for now...
 
-> on who is going to use /sys/power/state.  Will it be a general pm  =
+Okay, I see your point now.
+ =
 
-> daemon that can be used on every platform or will it be specific to  =
+> > then they shouldn't mean different things on different platforms. =
 
-> the platform.
-
-I don't think platforms should gratuitously break the code that knows
-how to use /sys/power/state ... and by "code" I include not just the
-tools and their GUIs, but also documentation and the user training.
-
-
-> > but in
-> > fact I think it's probably a lot more imporant for embedded cases
-> > to support top notch *runtime* PM rather than /sys/power/state
-> > kinds of transitions.
 > =
 
-> Then why bother contributing to this thread.   Since someone is  =
+> Unreasonable.  The platforms are different.  And moreover the
+> specifics DO NOT MATTER to userspace.  Plus, they can differ
+> even on two x86 systems:  different D-states, different wakeup
+> events.  So nobody has any valid expectation that STR on one
+> box has exactly the same behavior on a different box.  And if
+> users are trained to expect anything, it's that platforms will
+> differ in those details.
+> =
 
-> changing code in this area already and discussing definitions, its  =
+> > So, either =
 
-> good to let everyone what works for other platforms.
+> > we don't use labels at all, or we should know what they mean regardless
+> > of what platform we're talking about.
+> =
 
-Because I believe bad ideas should not prosper ... and accordingly
-that pm_ops should make as much sense as practical.
+> That's a false choice, when you "mean" anything more than
+> fairly broad behavioral expectations:  STR saves more power
+> than "standby", and transitions to/from STR take more
+> time than to/from "standby".
 
-- Dave
+So be it.
+
+Assume that the user does 'echo standby > /sys/power/state'.  I think he can
+expect that in such a case we'll freeze tasks and put devices into low-power
+states and when he wakes up the system (BTW, I think the method of waking
+up can be treated as a differentiating factor) he should be able to continue
+from where he stopped after a little time.  Fine.
+
+Now, we have to make that happen.  After we have frozen tasks, we need to
+call something like device_suspend(some_argument) where the argument should
+tell drivers what to do.  Say we use something like PMSG_STANDBY and now
+do you think the meaning of it can change from one platform to another?  An=
+d if
+it can, how can the drivers figure out the meaning?
+
+Rafael
