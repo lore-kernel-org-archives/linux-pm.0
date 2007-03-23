@@ -1,22 +1,16 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
+From: Matthew Locke <matt@nomadgs.com>
 Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 21:19:30 +0200
-Message-ID: <1174677570.20521.283.camel@Dogbert.NOE.nokia.com>
+Date: Fri, 23 Mar 2007 12:21:37 -0700
+Message-ID: <C0893D0E-60E9-4F0F-A731-FCA92C9368DA@nomadgs.com>
 References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221556.08948.david-b@pacbell.net>
-	<200703230021.04470.rjw@sisk.pl>
 	<200703221655.17693.david-b@pacbell.net>
 	<C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
-	<20070323131746.GB12226@atomide.com>
-	<1174656902.20521.134.camel@Dogbert.NOE.nokia.com>
-	<20070323145235.GG12226@atomide.com>
-	<1174663030.20521.183.camel@Dogbert.NOE.nokia.com>
-	<D72CCDBA-7D0E-41FA-9ABD-761D5B8409BC@nomadgs.com>
-Mime-Version: 1.0
+	<200703231129.26643.david-b@pacbell.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <D72CCDBA-7D0E-41FA-9ABD-761D5B8409BC@nomadgs.com>
+In-Reply-To: <200703231129.26643.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,221 +20,141 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Matthew Locke <matt@nomadgs.com>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: David Brownell <david-b@pacbell.net>
+Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, johannes@sipsolutions.net, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, nico@cam.org, ben@simtec.co.uk, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-03-23 at 11:51 -0700, ext Matthew Locke wrote:
-> On Mar 23, 2007, at 8:17 AM, Igor Stoppa wrote:
-> =
 
-> > On Fri, 2007-03-23 at 10:52 -0400, ext tony@atomide.com wrote:
-> >> * Igor Stoppa <igor.stoppa@nokia.com> [070323 09:37]:
-> >>> On Fri, 2007-03-23 at 09:17 -0400, ext
-> >>> linux-pm-bounces@lists.linux-foundation.org wrote:
-> >>>> * Matthew Locke <matt@nomadgs.com> [070322 21:15]:
-> >>>>>
-> >>>>> On Mar 22, 2007, at 4:55 PM, David Brownell wrote:
-> >>>>>
-> >>>>>> On Thursday 22 March 2007 4:21 pm, Rafael J. Wysocki wrote:
-> >>>>>>
-> >>>>>>>> My answer:  there is NO value to such an arbitrary restriction.
-> >>>>>>>
-> >>>>>>> I'm not talking on restrictions.
-> >>>>>>
-> >>>>>> You most certainly did talk about them.  You said that if the
-> >>>>>> hardware doesn't support a "turn CPU off" mode, then you'd
-> >>>>>> define that as being incapable of implementing suspend-to-RAM.
-> >>>>>> That's a restriction ... a very arbitrary one.
-> >>>>>>
-> >>>>>>
-> >>>>>>> I'm talking on being able to define
-> >>>>>>> _anything_ more precisely then just a low-power system-wide  =
+On Mar 23, 2007, at 11:29 AM, David Brownell wrote:
 
-> >>>>>>> state.
-> >>>>>>
-> >>>>>> Me too.  And I'm trying to convey to you the results of the
-> >>>>>> investigations I did on that topic.  You don't seem to like
-> >>>>>> those results though ...
-> >>>>>>
-> >>>>>>
-> >>>>>>> And let's start from just something, please.  Like STR and
-> >>>>>>> "standby" to begin
-> >>>>>>> with?  At least on ACPI systems we can distinguish one from the
-> >>>>>>> other quite
-> >>>>>>> clearly, so why can't we start from that and _then_ generalize?
-> >>>>>>
-> >>>>>> That's exactly what I did.  Looked also at APM, and several
-> >>>>>> different SOC designs (AT91, OMAP1, PXA25x, SA1100, more).
-> >>>>>>
-> >>>>>> The generalization I came up with is what I've described.
-> >>>>>> Namely, that coming up with one definition of those states
-> >>>>>> that can usefully be mapped all platforms is impractical.
-> >>>>>> They're just labels.  The platform implementor can choose
-> >>>>>> two states to implement, but non-x86 hardware states rarely
-> >>>>>> match the expectations of ACPI.
-> >>>>>>
-> >>>>>> So the fundamental definition needs to be in relative terms,
-> >>>>>> because platform-specific differences otherwise make trouble.
-> >>>>>
-> >>>>> The problem is that a 1:1 mapping between system low power  =
+> On Thursday 22 March 2007 6:14 pm, Matthew Locke wrote:
+>>>
+>>> So the fundamental definition needs to be in relative terms,
+>>> because platform-specific differences otherwise make trouble.
+>>
+>> The problem is that a 1:1 mapping between system low power state and
+>> a processor low power state is trying to be forced on every
+>> platform.
+>
+> Sort of.  There are only two labels available for "system" states,
+> and the platform-specific code entering those states will probably
+> kick in a processor low power state.  But there'd be no point in
+> preventing that code from kicking in deeper power save states.
 
-> >>>>> state and
-> >>>>> a processor low power state is trying to be forced on every
-> >>>>> platform.  As Dave pointed out, embedded SoC's provide multiple  =
+Unless I've misread something, it is exactly a 1:1 mapping between  =
 
-> >>>>> low
-> >>>>> power states that qualify for the suspend-to-ram definition.  The
-> >>>>> only reasonable platform independent definition is that in STR  =
+the system state and the cpu state.  There is no code to support  =
 
-> >>>>> memory
-> >>>>> is powered and contents preserved.  The rest is platform specific.
-> >>>>>
-> >>>>> I think the right answer is that a mechanism for mapping platform
-> >>>>> specific states to the system states is needed. Platforms define
-> >>>>> their low power states and define the default for each system
-> >>>>> state .  On x86 platforms, the default just works and is probably
-> >>>>> never changed.  On embedded platforms, a policy manager can change
-> >>>>> the other low power states according to its latency and  =
+mapping multiple cpu states to the system state and then selecting  =
 
-> >>>>> operational
-> >>>>> requirements.
-> >>>>
-> >>>> Plus the states should be distributed. Trying to force the whole
-> >>>> system into certain state turns things messy.
-> >>>>
-> >>>> Some devices may be active while some are in retention or suspend.
-> >>>>
-> >>>> Basically everything should idle itself automatically whenever
-> >>>> possible based on a idle timer or some other policy, such as
-> >>>> suspending a device from user space via sysfs.
-> >>>
-> >>> The timer sound like a reasonable idea, as long as there is one  =
+the cpu state that is entered for a system state at runtime.
 
-> >>> timer
-> >>> for each shared resource, not user.
-> >>>
-> >>> Example:
-> >>>
-> >>> Devices A & B share the same voltage domain.
-> >>>
-> >>> Device A has timeout period Timeout(A)
-> >>> Device B has timeout period Timeout(B)
-> >>>
-> >>> One timer is associated to the voltage regulator/switch and will  =
-
-> >>> expire
-> >>> at t=3DTIM
-> >>>
-> >>> Every time the device d (either A or B) performs some activity, then
-> >>>
-> >>> TIM =3D max(TIM, now + Timeout(d))
-> >>>
-> >>> When t=3DTIM (timer expired), then the suspend() function for each  =
-
-> >>> device
-> >>> is called.
-> >>
-> >> What problem do you see with with device specific idle timers?
-> >
-> > That the number of idle timers grows linearly with the number of
-> > resources consumers rather than _providers_
-> >
-> > See also my comment below.
-> >
-> >> For example, what's wrong with the following:
-> >>
-> >> When the device specific idle timer expires, the driver's suspend
-> >> function would get called, and the device would release it's clock
-> >> and voltage.
-> >
-> > We might end up doing extra useless activity by saving the state of a
-> > device that is re-enabled without even going off.
-> >
-> > Of course the restoring can be optimised so that it doesn't happen
-> > unless the voltage has actually been removed (this implies that the
-> > state saving happens in such a way that doesn't compromise the current
-> > settings of the device).
-> >
-> >> Then when a shared voltage domain has 0 users, that voltage domain
-> >> can be shut off.
-> >
-> > Both your and my approaches have drawbacks: in your case the system  =
-
-> > will
-> > probably end up doing extra state saving, but will be ready to perform
-> > immediately the transition to off; in my case there will be the  =
-
-> > overhead
-> > of saving the state of the peripherals.
-> =
-
-> I think we again have the problem that the behavior is very device  =
-
-> specific.  =
+>
+> Consider the PXA 255, which has an "idle" mode that's natural for
+> the idle loop, a "33 MHz idle" mode that saves more power but
+> means most peripherals can't be clocked, and a "sleep" mode that
+> turns the CPU off.  A "standby" might normally use "idle", but
+> might likewise use "33 MHz idle" if all the peripheral clocks
+> happen to be gated off after the drivers suspend().  That wouldn't
+> be a one-to-one mapping ... and smarter hardware might do very
+> similar stuff automatically, too.
+>
 
 
-It's not really a problem.
+You are saying existing code handles this case?
 
-> Some i/o devices have internal low power states that may  =
+>
+>> As Dave pointed out, embedded SoC's provide multiple low
+>> power states that qualify for the suspend-to-ram definition.  The
+>> only reasonable platform independent definition is that in STR memory
+>> is powered and contents preserved.  The rest is platform specific.
+>
+> That definition also applies to "standby" of course ... there may
+> be a LOT of states where the "standby" label can usefully apply.
 
-> or may not require saving state.  Others have no notion of low power  =
+Sure, but its easier to start with one thing at time.  Frankly I  =
 
-> states. And on some platforms register contents are preserved even  =
+don't know what do with standby, but if have this ability to change  =
 
-> when a device is "off".
+the mapping to the platform state at runtime, then it doesn't really  =
 
-So???? Each ofthem will take care of itself, that's expected.
+matter.
 
-> How about something like:
-> =
+>
+>
+>> I think the right answer is that a mechanism for mapping platform
+>> specific states to the system states is needed.
+>
+> That could be done, but in practice not all platform states will
+> necessarily be implemented by the platform code.
 
->   - When idle timer pops,  driver releases pm resources (clock,  =
+Ok, does this matter?  Certainly more than two will be implemented.   =
 
-> voltage, whatever).
-No: it's still using one timer for each driver.
+The latest pxa's have much more than that.
 
->   - Then driver does device specific stuff which may or may not  =
+>
+>
+>> Platforms define
+>> their low power states and define the default for each system
+>> state .  On x86 platforms, the default just works and is probably
+>> never changed.
+>
+> That's the way it works today on all Linux platforms.  The x86
+> ones actually don't "just work" in my observation ... when either
+> "standby" or "STR" actually work, I've been quite surprised; the
+> basic issue seems to be that ACPI resume paths often misbehave.
 
-> include going into a low power state and saving state.
-Sure, that's the device-specific part.
+That is a different problem.  My point is that platforms that don't  =
 
->   - If a pm resource (clock, voltage, whatever) reference count goes  =
+need to change mappings don't have to do anything different.   Of  =
 
-> to zero, something will decide to turn it off.
+course there is no  magic that will make them work if they didn't  =
 
-Something? I see a manager lurking here.
+already.
 
-Why can't the corresponding framework (clock or voltage, let's drop the
-whatever_framework till it gets integrated) switch off the resource when
-the usecount drops to zero?
+>
+>
+>> On embedded platforms, a policy manager can change
+>> the other low power states according to its latency and operational
+>> requirements.
+>
+> That's not yet a proposal to change things; no details.  :)
 
->   - Users of the pm resource are told they are going to lose power.
+Funny.   The details on changing the mapping should be simple enough.
 
-ok
+>
+> If I were to want to change things in that area, I'd likely want
+> to let platforms define their own states and names (*),
 
->   - Then driver does device specific stuff.  If the device driver  =
+Sure.  Much of the behavior is platform specific.  It really depends  =
 
-> already saved state, then ignore.  Otherwise do what the device needs  =
+on who is going to use /sys/power/state.  Will it be a general pm  =
 
-> done.
+daemon that can be used on every platform or will it be specific to  =
 
-I'd rather do everything here, but this is probably a decision that
-depends on the specific device. So maybe a device-based behavior is the
-best option: sort of PRE and POST.
+the platform.
 
-> >
-> > However saving state in a preemptive way is decoupled by having idle
-> > timers associated to resources providers rather than consumers.
-> >
-> >> Same thing with clock domains.
-> >
-> > Clocks is fine, since no saving/restoring is needed, albeit we might
-> > consider PLL relock time to fall in this "costy" class of activities.
+> but in
+> fact I think it's probably a lot more imporant for embedded cases
+> to support top notch *runtime* PM rather than /sys/power/state
+> kinds of transitions.
 
--- =
+Then why bother contributing to this thread.   Since someone is  =
 
-Cheers, Igor
+changing code in this area already and discussing definitions, its  =
 
-Igor Stoppa <igor.stoppa@nokia.com>
-(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
+good to let everyone what works for other platforms.
+
+>
+> - Dave
+>
+> (*) For example, predefine more suspend_state_t values -- maybe
+>     PM_SUSPEND_PLATFORM_{0-9}, to start with -- and then add a
+>     label-that-state callback to "struct pm_ops".  Then make
+>     /sys/power/state do the obvious stuff to read and write
+>     additional states ... voila, platforms can now add new low
+>     power states with their own names.  Their clk_must_disable()
+>     could let drivers see some of the state differences; there
+>     might need to be similar mechanisms for other PM resources.
+>
+>
