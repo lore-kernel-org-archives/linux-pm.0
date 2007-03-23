@@ -1,19 +1,20 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] power management: change /sys/power/disk
-	display
-Date: Fri, 23 Mar 2007 14:48:47 +0100
-Message-ID: <1174657727.3366.13.camel@johannes.berg>
-References: <1174468981.3769.8.camel@johannes.berg>
-	<20070321122954.GO4520@elf.ucw.cz>
-	<1174480375.4230.12.camel@johannes.berg>
-	<20070321131128.GB4523@elf.ucw.cz>
-	<1174482773.4230.19.camel@johannes.berg>
-	<1174574051.3588.5.camel@johannes.berg>
-	<20070323000512.GA8182@elf.ucw.cz>
+From: tony@atomide.com
+Subject: Re: [PATCH] implement pm_ops.valid for everybody
+Date: Fri, 23 Mar 2007 10:52:37 -0400
+Message-ID: <20070323145235.GG12226@atomide.com>
+References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
+	<200703221556.08948.david-b@pacbell.net>
+	<200703230021.04470.rjw@sisk.pl>
+	<200703221655.17693.david-b@pacbell.net>
+	<C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
+	<20070323131746.GB12226@atomide.com>
+	<1174656902.20521.134.camel@Dogbert.NOE.nokia.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1405326963=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070323000512.GA8182@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1174656902.20521.134.camel@Dogbert.NOE.nokia.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,50 +24,141 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Igor Stoppa <igor.stoppa@nokia.com>
+Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, "ext linux-pm-bounces@lists.linux-foundation.org" <linux-pm-bounces@lists.linux-foundation.org>, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
+* Igor Stoppa <igor.stoppa@nokia.com> [070323 09:37]:
+> On Fri, 2007-03-23 at 09:17 -0400, ext
+> linux-pm-bounces@lists.linux-foundation.org wrote:
+> > * Matthew Locke <matt@nomadgs.com> [070322 21:15]:
+> > > =
 
---===============1405326963==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-GBGKIv2VAvNnrLEH8Zgd"
+> > > On Mar 22, 2007, at 4:55 PM, David Brownell wrote:
+> > > =
 
+> > > > On Thursday 22 March 2007 4:21 pm, Rafael J. Wysocki wrote:
+> > > >
+> > > >>> My answer:  there is NO value to such an arbitrary restriction.
+> > > >>
+> > > >> I'm not talking on restrictions.
+> > > >
+> > > > You most certainly did talk about them.  You said that if the
+> > > > hardware doesn't support a "turn CPU off" mode, then you'd
+> > > > define that as being incapable of implementing suspend-to-RAM.
+> > > > That's a restriction ... a very arbitrary one.
+> > > >
+> > > >
+> > > >> I'm talking on being able to define
+> > > >> _anything_ more precisely then just a low-power system-wide state.
+> > > >
+> > > > Me too.  And I'm trying to convey to you the results of the
+> > > > investigations I did on that topic.  You don't seem to like
+> > > > those results though ...
+> > > >
+> > > >
+> > > >> And let's start from just something, please.  Like STR and  =
 
---=-GBGKIv2VAvNnrLEH8Zgd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > >> "standby" to begin
+> > > >> with?  At least on ACPI systems we can distinguish one from the  =
 
-On Fri, 2007-03-23 at 01:05 +0100, Pavel Machek wrote:
+> > > >> other quite
+> > > >> clearly, so why can't we start from that and _then_ generalize?
+> > > >
+> > > > That's exactly what I did.  Looked also at APM, and several
+> > > > different SOC designs (AT91, OMAP1, PXA25x, SA1100, more).
+> > > >
+> > > > The generalization I came up with is what I've described.
+> > > > Namely, that coming up with one definition of those states
+> > > > that can usefully be mapped all platforms is impractical.
+> > > > They're just labels.  The platform implementor can choose
+> > > > two states to implement, but non-x86 hardware states rarely
+> > > > match the expectations of ACPI.
+> > > >
+> > > > So the fundamental definition needs to be in relative terms,
+> > > > because platform-specific differences otherwise make trouble.
+> > > =
 
-> Actually, this may even be .23 material.
+> > > The problem is that a 1:1 mapping between system low power state and  =
 
-Fine with me, I have no particular need for this. Just don't want to
-track the patch forever ;)
+> > > a processor low power state is trying to be forced on every  =
 
-johannes
+> > > platform.  As Dave pointed out, embedded SoC's provide multiple low  =
 
---=-GBGKIv2VAvNnrLEH8Zgd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> > > power states that qualify for the suspend-to-ram definition.  The  =
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> > > only reasonable platform independent definition is that in STR memory=
+  =
 
-iD8DBQBGA9q//ETPhpq3jKURAmD/AJ9hQsUPeCstkhfUSZt+dLIr3suvRwCeNEMm
-pf0tjZOiEXH6CjTLc9Q3L6w=
-=emRI
------END PGP SIGNATURE-----
+> > > is powered and contents preserved.  The rest is platform specific.
+> > > =
 
---=-GBGKIv2VAvNnrLEH8Zgd--
+> > > I think the right answer is that a mechanism for mapping platform  =
 
+> > > specific states to the system states is needed. Platforms define  =
 
---===============1405326963==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > > their low power states and define the default for each system  =
 
+> > > state .  On x86 platforms, the default just works and is probably  =
 
---===============1405326963==--
+> > > never changed.  On embedded platforms, a policy manager can change  =
+
+> > > the other low power states according to its latency and operational  =
+
+> > > requirements.
+> > =
+
+> > Plus the states should be distributed. Trying to force the whole
+> > system into certain state turns things messy.
+> > =
+
+> > Some devices may be active while some are in retention or suspend.
+> > =
+
+> > Basically everything should idle itself automatically whenever
+> > possible based on a idle timer or some other policy, such as
+> > suspending a device from user space via sysfs.
+> =
+
+> The timer sound like a reasonable idea, as long as there is one timer
+> for each shared resource, not user.
+> =
+
+> Example:
+> =
+
+> Devices A & B share the same voltage domain.
+> =
+
+> Device A has timeout period Timeout(A)
+> Device B has timeout period Timeout(B)
+> =
+
+> One timer is associated to the voltage regulator/switch and will expire
+> at t=3DTIM
+> =
+
+> Every time the device d (either A or B) performs some activity, then =
+
+> =
+
+> TIM =3D max(TIM, now + Timeout(d))
+> =
+
+> When t=3DTIM (timer expired), then the suspend() function for each device
+> is called.
+
+What problem do you see with with device specific idle timers?
+
+For example, what's wrong with the following:
+
+When the device specific idle timer expires, the driver's suspend
+function would get called, and the device would release it's clock
+and voltage.
+
+Then when a shared voltage domain has 0 users, that voltage domain
+can be shut off. Same thing with clock domains.
+
+Regards,
+
+Tony
