@@ -1,8 +1,8 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH] power management: change /sys/power/disk
 	display
-Date: Sat, 24 Mar 2007 00:46:34 +0100
-Message-ID: <20070323234634.GB14427@elf.ucw.cz>
+Date: Sat, 24 Mar 2007 00:53:41 +0100
+Message-ID: <1174694021.7414.9.camel@johannes.berg>
 References: <1174468981.3769.8.camel@johannes.berg>
 	<20070321122954.GO4520@elf.ucw.cz>
 	<1174480375.4230.12.camel@johannes.berg>
@@ -11,12 +11,11 @@ References: <1174468981.3769.8.camel@johannes.berg>
 	<1174574051.3588.5.camel@johannes.berg>
 	<20070323000512.GA8182@elf.ucw.cz>
 	<1174657727.3366.13.camel@johannes.berg>
+	<20070323234634.GB14427@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1605901733=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1174657727.3366.13.camel@johannes.berg>
+In-Reply-To: <20070323234634.GB14427@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,24 +25,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2007-03-23 14:48:47, Johannes Berg wrote:
-> On Fri, 2007-03-23 at 01:05 +0100, Pavel Machek wrote:
-> =
 
-> > Actually, this may even be .23 material.
-> =
+--===============1605901733==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-QlThJX4kW58UmobKjcQC"
 
-> Fine with me, I have no particular need for this. Just don't want to
-> track the patch forever ;)
 
-Send it to akpm, he's good at tracking :).
-								Pavel
--- =
+--=-QlThJX4kW58UmobKjcQC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+On Sat, 2007-03-24 at 00:46 +0100, Pavel Machek wrote:
+
+> Send it to akpm, he's good at tracking :).
+
+Heh. But then I'd have to know what kernel we want it in ;)
+
+johannes
+
+--=-QlThJX4kW58UmobKjcQC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGBGiF/ETPhpq3jKURAuiwAKCYs7V4PuARLXCbhe7ox6gvxr1NNQCaA0yr
+d4wqRuw4ebDbwSKfVQwAkv8=
+=vlNj
+-----END PGP SIGNATURE-----
+
+--=-QlThJX4kW58UmobKjcQC--
+
+
+--===============1605901733==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1605901733==--
