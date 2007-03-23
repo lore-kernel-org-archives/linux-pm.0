@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 11:25:23 -0700
-Message-ID: <200703231125.25180.david-b@pacbell.net>
+Date: Fri, 23 Mar 2007 11:29:25 -0700
+Message-ID: <200703231129.26643.david-b@pacbell.net>
 References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221416.27103.david-b@pacbell.net>
-	<20070323131515.GA12226@atomide.com>
+	<200703221655.17693.david-b@pacbell.net>
+	<C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070323131515.GA12226@atomide.com>
+In-Reply-To: <C336656C-88D7-4B34-8464-09FEEF9FD57E@nomadgs.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,78 +20,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tony@atomide.com
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, linux-arm@lists.arm.linux.org.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: Matthew Locke <matt@nomadgs.com>
+Cc: alexey.y.starikovskiy@intel.com, dirk.behme@de.bosch.com, johannes@sipsolutions.net, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, nico@cam.org, ben@simtec.co.uk, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 March 2007 6:15 am, tony@atomide.com wrote:
-> * David Brownell <david-b@pacbell.net> [070322 17:29]:
-> > On Thursday 22 March 2007 12:26 pm, Tony Lindgren wrote:
-
-> > > Retention is where clocks are off for a device, but power is on.
-> > > In this case the device registers are maintained in hardware.
-> > =
-
-> > Analagous to PCI D1 or D2.
+On Thursday 22 March 2007 6:14 pm, Matthew Locke wrote:
+> >
+> > So the fundamental definition needs to be in relative terms,
+> > because platform-specific differences otherwise make trouble.
 > =
 
-> Hmmm, I think with PCI it's just numbering where the power
-> consumption decreases as the nuber increases except for D3hot
-> and D3cold.
+> The problem is that a 1:1 mapping between system low power state and  =
 
-There are additional constraints ... as the number increases,
-more device state can be discarded (significant!), and there
-are longer latencies to return to D0 (almost noise).
+> a processor low power state is trying to be forced on every  =
+
+> platform.
+
+Sort of.  There are only two labels available for "system" states,
+and the platform-specific code entering those states will probably
+kick in a processor low power state.  But there'd be no point in
+preventing that code from kicking in deeper power save states.
+
+Consider the PXA 255, which has an "idle" mode that's natural for
+the idle loop, a "33 MHz idle" mode that saves more power but
+means most peripherals can't be clocked, and a "sleep" mode that
+turns the CPU off.  A "standby" might normally use "idle", but
+might likewise use "33 MHz idle" if all the peripheral clocks
+happen to be gated off after the drivers suspend().  That wouldn't
+be a one-to-one mapping ... and smarter hardware might do very
+similar stuff automatically, too.
 
 
-> > > Suspend is where clocks and power are off. In this state the
-> > > device registers are maintained in software.
-> > =
+> As Dave pointed out, embedded SoC's provide multiple low   =
 
-> > Analagous to PCI D3, especially D3cold ... although PCI D3
-> > certainly allows the Vaux "power well" to power some parts
-> > of the device, so that not all register values get reset.
-> =
+> power states that qualify for the suspend-to-ram definition.  The  =
 
-> Maybe actually D3hot =3D retention and D3cold =3D suspend? =
+> only reasonable platform independent definition is that in STR memory  =
 
-> =
+> is powered and contents preserved.  The rest is platform specific.
 
-> PCI       SOCs        CLOCKS	POWER
-> D3hot     retention   off	on
-> D3cold    suspend     off	off
+That definition also applies to "standby" of course ... there may
+be a LOT of states where the "standby" label can usefully apply.
 
-That's why I said "especially", but there's other funkiness
-beyond the fact that the PCI spec leaves out "clocks" and
-other such implementation details.
 
-In particular, ISTR transition D3hot->D0 can optionally add
-some level of device reset, so it's not quite as direct a
-mapping as D3cold.  Plus there's Vaux letting PCI devices
-live in two overlapping power domains.
+> I think the right answer is that a mechanism for mapping platform  =
+
+> specific states to the system states is needed. =
+
+
+That could be done, but in practice not all platform states will
+necessarily be implemented by the platform code.
+
+
+> Platforms define   =
+
+> their low power states and define the default for each system  =
+
+> state .  On x86 platforms, the default just works and is probably  =
+
+> never changed. =
+
+
+That's the way it works today on all Linux platforms.  The x86
+ones actually don't "just work" in my observation ... when either
+"standby" or "STR" actually work, I've been quite surprised; the
+basic issue seems to be that ACPI resume paths often misbehave.
+
+
+> On embedded platforms, a policy manager can change   =
+
+> the other low power states according to its latency and operational  =
+
+> requirements.
+
+That's not yet a proposal to change things; no details.  :)
+
+If I were to want to change things in that area, I'd likely want
+to let platforms define their own states and names (*), but in
+fact I think it's probably a lot more imporant for embedded cases
+to support top notch *runtime* PM rather than /sys/power/state
+kinds of transitions.
 
 - Dave
 
-
-> > > Laptops mostly have suspend, while socs allow both retention
-> > > and suspend in many cases.
-> > =
-
-> > Not quite true, as noted above.  There are differences in how
-> > things are factored, but those mechanisms exist in both x86
-> > and SOC worlds.  One key difference from a Linux perspective
-> > is probably that without ACPI in the way, a SOC design can
-> > make much better use of the hardware PM capabilities.
-> > =
-
-> > Very few non-USB drivers address "retention" modes on laptops;
-> > USB host controller drivers need it to handle "remote wakeup",
-> > which one expects to work from "standby" and suspend-to-RAM.
-> > (Plus potentialy suspend-to-disk, but that's uncommon.)
-> =
-
-> Yeah, OK.
-> =
-
-> Tony
-> =
+(*) For example, predefine more suspend_state_t values -- maybe
+    PM_SUSPEND_PLATFORM_{0-9}, to start with -- and then add a
+    label-that-state callback to "struct pm_ops".  Then make
+    /sys/power/state do the obvious stuff to read and write
+    additional states ... voila, platforms can now add new low
+    power states with their own names.  Their clk_must_disable()
+    could let drivers see some of the state differences; there
+    might need to be similar mechanisms for other PM resources.
