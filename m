@@ -1,15 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Fri, 23 Mar 2007 10:57:15 -0700
-Message-ID: <200703231057.16539.david-b@pacbell.net>
+Date: Fri, 23 Mar 2007 11:25:23 -0700
+Message-ID: <200703231125.25180.david-b@pacbell.net>
 References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703221655.17693.david-b@pacbell.net>
-	<200703231443.19536.rjw@sisk.pl>
+	<200703221416.27103.david-b@pacbell.net>
+	<20070323131515.GA12226@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703231443.19536.rjw@sisk.pl>
+In-Reply-To: <20070323131515.GA12226@atomide.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,69 +20,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net, nico@cam.org, g.liakhovetski@gmx.de
+To: tony@atomide.com
+Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, linux-arm@lists.arm.linux.org.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 23 March 2007 6:43 am, Rafael J. Wysocki wrote:
-> On Friday, 23 March 2007 00:55, David Brownell wrote:
+On Friday 23 March 2007 6:15 am, tony@atomide.com wrote:
+> * David Brownell <david-b@pacbell.net> [070322 17:29]:
+> > On Thursday 22 March 2007 12:26 pm, Tony Lindgren wrote:
 
-> > You said that if the hardware doesn't support a "turn CPU off" mode, th=
-en
-> > you'd define that as being incapable of implementing suspend-to-RAM.
+> > > Retention is where clocks are off for a device, but power is on.
+> > > In this case the device registers are maintained in hardware.
+> > =
+
+> > Analagous to PCI D1 or D2.
 > =
 
-> That's _if_ the suspend-to-RAM is defined as the state in which the CPU
-> is off, which I _think_ would be a reasonable definition.  =
+> Hmmm, I think with PCI it's just numbering where the power
+> consumption decreases as the nuber increases except for D3hot
+> and D3cold.
+
+There are additional constraints ... as the number increases,
+more device state can be discarded (significant!), and there
+are longer latencies to return to D0 (almost noise).
 
 
-I disagree.
-
-
-> I don't mean the =
-
-> platforms incapable of doing this should be restricted from entering any
-> system-wide low-power states, but perhaps we can call these states
-> differently.
-
-Well, we have ** ONLY TWO LABELS TO APPLY ** and you're saying that
-one of them should be restricted to systems where the CPU can go into
-an "off" state.  =
-
-
-
-> > That's a restriction ... a very arbitrary one.
+> > > Suspend is where clocks and power are off. In this state the
+> > > device registers are maintained in software.
 > > =
 
-> > =
+> > Analagous to PCI D3, especially D3cold ... although PCI D3
+> > certainly allows the Vaux "power well" to power some parts
+> > of the device, so that not all register values get reset.
+> =
 
-> > ...
->
-> My point is that _if_ we use lables like "standby", "STR", "STD", etc.,
+> Maybe actually D3hot =3D retention and D3cold =3D suspend? =
 
-That is, the strings in /sys/power/state.  That's a given for now...
+> =
 
+> PCI       SOCs        CLOCKS	POWER
+> D3hot     retention   off	on
+> D3cold    suspend     off	off
 
-> then they shouldn't mean different things on different platforms. =
+That's why I said "especially", but there's other funkiness
+beyond the fact that the PCI spec leaves out "clocks" and
+other such implementation details.
 
-
-Unreasonable.  The platforms are different.  And moreover the
-specifics DO NOT MATTER to userspace.  Plus, they can differ
-even on two x86 systems:  different D-states, different wakeup
-events.  So nobody has any valid expectation that STR on one
-box has exactly the same behavior on a different box.  And if
-users are trained to expect anything, it's that platforms will
-differ in those details.
-
-
-> So, either =
-
-> we don't use labels at all, or we should know what they mean regardless
-> of what platform we're talking about.
-
-That's a false choice, when you "mean" anything more than
-fairly broad behavioral expectations:  STR saves more power
-than "standby", and transitions to/from STR take more
-time than to/from "standby".
+In particular, ISTR transition D3hot->D0 can optionally add
+some level of device reset, so it's not quite as direct a
+mapping as D3cold.  Plus there's Vaux letting PCI devices
+live in two overlapping power domains.
 
 - Dave
+
+
+> > > Laptops mostly have suspend, while socs allow both retention
+> > > and suspend in many cases.
+> > =
+
+> > Not quite true, as noted above.  There are differences in how
+> > things are factored, but those mechanisms exist in both x86
+> > and SOC worlds.  One key difference from a Linux perspective
+> > is probably that without ACPI in the way, a SOC design can
+> > make much better use of the hardware PM capabilities.
+> > =
+
+> > Very few non-USB drivers address "retention" modes on laptops;
+> > USB host controller drivers need it to handle "remote wakeup",
+> > which one expects to work from "standby" and suspend-to-RAM.
+> > (Plus potentialy suspend-to-disk, but that's uncommon.)
+> =
+
+> Yeah, OK.
+> =
+
+> Tony
+> =
