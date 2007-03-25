@@ -1,16 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Sun, 25 Mar 2007 09:55:04 -0700
-Message-ID: <200703250955.04947.david-b@pacbell.net>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703250820.18095.david-b@pacbell.net>
-	<1174839814.5695.5.camel@localhost>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] remove software_suspend() and fix compile
+	w/	SOFTWARE_SUSPEND disabled
+Date: Sun, 25 Mar 2007 20:18:32 +0200
+Message-ID: <1174846713.20440.32.camel@johannes.berg>
+References: <1174571192.32051.5.camel@johannes.berg>
+	<20070325163417.GB9958@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0193598627=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1174839814.5695.5.camel@localhost>
-Content-Disposition: inline
+In-Reply-To: <20070325163417.GB9958@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,92 +18,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jg@laptop.org
-Cc: ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 25 March 2007 9:23 am, Jim Gettys wrote:
-> Just to prove that all generalizations have exceptions:
-> =
 
-> On the OLPC system, we want the wireless (which, unfortunately, is USB
-> based), to be able to wake the system from suspend to RAM.
-> =
-
-> Of course, we have arranged there be an out of band signal from the USB
-> wireless to wake up the system.  So we don't use USB wakeup for that.
-
-That would be a case of a USB _peripheral_ waking the system,
-albeit through agency of the host controller.
-
-You imply that on OLPC, USB remote wakeup doesn't work from
-STR ... which isn't the most common setup, though I've seen
-it on systems that are particularly aggressive about power
-savings.  Turning off VBUS power on USB ports shrinks the
-power budget by at least the 0.5 mA per port most suspended
-devices may draw, on top of whatever the transceivers draw
-and whatever the system needs to monitor the relevant
-transceiver state change events ... GPIOs might suffice.
-
-Doesn't seem like much of an exception to me.  The USB stack
-still follows USB rules.  The driver for that WLAN adapter can
-have platform-specific extensions, no problem; if that's the
-usual sort of wakeup irq signal, it's just a case of that
-suspend() method having a bit more work to do.
-
-And of course, it's not running on an AT91 system, so those
-AT91-specific rules couldn't apply in any case! :)
-
-- Dave
+--===============0193598627==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-KygkxdLXs/GhrVmbA0jN"
 
 
-> 			- Jim
-> =
+--=-KygkxdLXs/GhrVmbA0jN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, 2007-03-25 at 08:20 -0700, David Brownell wrote:
-> > =
+On Sun, 2007-03-25 at 16:34 +0000, Pavel Machek wrote:
 
-> > If userspace wants the USB host to be able to wake the
-> > system from sleep, then the simple rule is:  don't use
-> > the suspend-to-RAM mode.  Nothing software does can ever
-> > change that restriction; "slow clock mode" doesn't run
-> > the 48 MHz clock, wakeup doesn't work without that clock.
+> > @@ -60,7 +60,7 @@ acpi_system_write_sleep(struct file *fil
+> >  	state =3D simple_strtoul(str, NULL, 0);
+> >  #ifdef CONFIG_SOFTWARE_SUSPEND
+> >  	if (state =3D=3D 4) {
+> > -		error =3D software_suspend();
+> > +		error =3D pm_suspend(PM_SUSPEND_DISK);
+> >  		goto Done;
+> >  	}
+>=20
+> Is enter_state and pm_suspend equivalent? Why the change?
 
-That was with reference to the at91_udc driver, although the
-same rule also applies to its USB host (OHCI) too.
+Yeah, except that enter_state() has more argument checking. The change
+was just because I didn't see much point in having two entry points for
+the same thing and killed off software_suspend() completely. Don't
+really care.
 
-Most x86 systems don't have a USB peripheral mode, so they
-couldn't be woken up by an external USB host in any case.
-The x86 systems generally have a USB host controller, and
-it's usually wired so it can be used as a wakeup source by
-an external USB peripheral.
+johannes
+
+--=-KygkxdLXs/GhrVmbA0jN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGBrz4/ETPhpq3jKURArF3AJsEMax890HeorXVOYu/UHHLAH8KrgCeLbhX
+eXBrDdKgdkii0gNKKE/8EuU=
+=v4ov
+-----END PGP SIGNATURE-----
+
+--=-KygkxdLXs/GhrVmbA0jN--
 
 
-> > By forcing the system into suspend-to-RAM mode, rather
-> > than using runtime PM to minimize power usage, userspace
-> > has already said that being fully functional isn't the
-> > top issue just then.
-> > =
+--===============0193598627==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > Keep in mind that most users are already trained in that
-> > model.  Even if it didn't already make sense, that's what
-> > MS-Windows has done forever.  Those little checkboxes in
-> > each driver's GUI properties, saying "let it wake up the
-> > system"?  They're boolean, and only reflect the details
-> > of the ACPI tables in so far not having the checkbox if
-> > that device is known to ACPI and isn't in that table.
-> > It's a simple model, easily understood and generalized.
-> > =
 
-> > - Dave
-> > _______________________________________________
-> > linux-pm mailing list
-> > linux-pm@lists.linux-foundation.org
-> > https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> -- =
-
-> Jim Gettys
-> One Laptop Per Child
-> =
-
-> =
+--===============0193598627==--
