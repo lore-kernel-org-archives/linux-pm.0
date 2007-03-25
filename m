@@ -1,16 +1,15 @@
-From: Jim Gettys <jg@laptop.org>
-Subject: Re: [PATCH] implement pm_ops.valid for everybody
-Date: Sun, 25 Mar 2007 12:23:34 -0400
-Message-ID: <1174839814.5695.5.camel@localhost>
-References: <200703221344.l2MDi2Q9007989@olwen.urbana.css.mot.com>
-	<200703241349.19964.david-b@pacbell.net> <46064E68.8030302@gmail.com>
-	<200703250820.18095.david-b@pacbell.net>
-Reply-To: jg@laptop.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power management: force pm_ops.valid
+	callback to be assigned
+Date: Sun, 25 Mar 2007 16:30:58 +0000
+Message-ID: <20070325163058.GA9958@ucw.cz>
+References: <1174571042.32051.2.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703250820.18095.david-b@pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <1174571042.32051.2.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: alexey.y.starikovskiy@intel.com, ben@simtec.co.uk, dirk.behme@de.bosch.com, pavel@ucw.cz, johannes@sipsolutions.net, nico@cam.org, linux-pm@lists.linux-foundation.org, g.liakhovetski@gmx.de
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Just to prove that all generalizations have exceptions:
+Hi!
 
-On the OLPC system, we want the wireless (which, unfortunately, is USB
-based), to be able to wake the system from suspend to RAM.
-
-Of course, we have arranged there be an out of band signal from the USB
-wireless to wake up the system.  So we don't use USB wakeup for that.
-			- Jim
-
-On Sun, 2007-03-25 at 08:20 -0700, David Brownell wrote:
+> This patch changes the docs and behaviour from "all states valid" to
+> "no states valid" if no .valid callback is assigned. Users of pm_ops
+> that only need mem sleep can assign pm_valid_only_mem without any
+> overhead, others will require more elaborate callbacks.
 > =
 
-> If userspace wants the USB host to be able to wake the
-> system from sleep, then the simple rule is:  don't use
-> the suspend-to-RAM mode.  Nothing software does can ever
-> change that restriction; "slow clock mode" doesn't run
-> the 48 MHz clock, wakeup doesn't work without that clock.
+> Now that all users of pm_ops have a .valid callback this is a safe
+> thing to do and prevents things from getting messy again as they
+> were before.
 > =
 
-> By forcing the system into suspend-to-RAM mode, rather
-> than using runtime PM to minimize power usage, userspace
-> has already said that being fully functional isn't the
-> top issue just then.
-> =
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: linux-pm@lists.linux-foundation.org
 
-> Keep in mind that most users are already trained in that
-> model.  Even if it didn't already make sense, that's what
-> MS-Windows has done forever.  Those little checkboxes in
-> each driver's GUI properties, saying "let it wake up the
-> system"?  They're boolean, and only reflect the details
-> of the ACPI tables in so far not having the checkbox if
-> that device is known to ACPI and isn't in that table.
-> It's a simple model, easily understood and generalized.
-> =
-
-> - Dave
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+ACK.
+						Pavel
 -- =
 
-Jim Gettys
-One Laptop Per Child
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
