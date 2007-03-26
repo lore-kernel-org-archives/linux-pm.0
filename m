@@ -1,15 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Linux-pm][standby mode - S0/D2/C4] Wake up sources
-	in standby
-Date: Mon, 26 Mar 2007 09:57:35 +0200
-Message-ID: <20070326075735.GA2178@elf.ucw.cz>
-References: <200703250934.CHL31961@tataelxsi.co.in>
+Subject: Re: [RFC] [PATCH] Power Managed memory base enabling
+Date: Mon, 26 Mar 2007 12:48:46 +0000
+Message-ID: <20070326124846.GC11088@ucw.cz>
+References: <20070305181826.GA21515@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200703250934.CHL31961@tataelxsi.co.in>
+In-Reply-To: <20070305181826.GA21515@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sridhar Rao V <sridharraov@tataelxsi.co.in>
-Cc: linux-pm@lists.osdl.org
+To: Mark Gross <mgross@linux.intel.com>
+Cc: linux-mm@kvack.org, mark.gross@intel.com, linux-pm@lists.osdl.org, akpm@linux-foundation.org, torvalds@linux-foundation.org, neelam.chandwani@intel.com
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
->    In standby mode, my understanding is that, the processor is in state
->    retaining mode.
+> It implements a convention on the 4 bytes of "Proximity Domain ID"
+> within the SRAT memory affinity structure as defined in ACPI3.0a.  If
+> bit 31 is set, then the memory range represented by that PXM is assumed
+> to be power managed.  We are working on defining a "standard" for
+> identifying such memory areas as power manageable and progress committee
+> based.  =
 
-Yes.
+...
+> More will be done, but for now we would like to get this base enabling
+> into the upstream kernel as an initial step.
 
->    The context need not be saved for retaining the state prior to
->    entering standby mode.
-
-yes.
-
->    I have set up the wake up source as external wake up (power on/off
->    switch).
-
-Sounds like broken hw to me.
-
->    Is there any difference between Idle mode and standby mode.
-
-Yes.
-								Pavel
+I'm not sure if the hack above does not disqualify it from
+mainstream...
 
 -- =
 
