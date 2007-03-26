@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] [PATCH] Power Managed memory base enabling
-Date: Mon, 26 Mar 2007 12:48:46 +0000
-Message-ID: <20070326124846.GC11088@ucw.cz>
-References: <20070305181826.GA21515@linux.intel.com>
+From: "Amit Kucheria" <kucheria.amit@gmail.com>
+Subject: Re: [RFC] dynamic device power management proposal
+Date: Mon, 26 Mar 2007 16:53:16 +0300
+Message-ID: <52d486620703260653l73ffde92we68b413cc61a9144@mail.gmail.com>
+References: <200703212019.l2LKJdbj029831@olwen.urbana.css.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200703212019.l2LKJdbj029831@olwen.urbana.css.mot.com>
 Content-Disposition: inline
-In-Reply-To: <20070305181826.GA21515@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,28 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Gross <mgross@linux.intel.com>
-Cc: linux-mm@kvack.org, mark.gross@intel.com, linux-pm@lists.osdl.org, akpm@linux-foundation.org, torvalds@linux-foundation.org, neelam.chandwani@intel.com
+To: "Scott E. Preece" <preece@motorola.com>
+Cc: linux-pm@lists.osdl.org, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On 3/21/07, Scott E. Preece <preece@motorola.com> wrote:
+>
+> | From: "Amit Kucheria"<kucheria.amit@gmail.com>
+> |
+> | On 3/21/07, Shaohua Li <shaohua.li@intel.com> wrote:
+> | > On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
+> |
+> | > > No, that's not how it works; look at hda_audio, it already has
+> | > > powersave. Just power down audio card 5 seconds after its control f=
+ile
+> | > > is closed.
+> | > It's another case of doing policy in a driver.
+> | >
+> |
+> | IMHO, this kind of policy is best handled inside the driver because it
+> | is specific to the hardware. This will ensure that the driver will
+> | just work on every distro without some userspace policy being present
+> | and setup _correctly_.
+> ---
 
-> It implements a convention on the 4 bytes of "Proximity Domain ID"
-> within the SRAT memory affinity structure as defined in ACPI3.0a.  If
-> bit 31 is set, then the memory range represented by that PXM is assumed
-> to be power managed.  We are working on defining a "standard" for
-> identifying such memory areas as power manageable and progress committee
-> based.  =
+I was playing devil's advocate here. Considering who I work for, we
+definitely have cases where having all these settings configurable
+from userspace sounds like a very good idea. But after thinking some
+more, I am worried about having too many things exported to userspace
+and increasing the complexity of the policy manager. Combined with
+poorly chosen default values, it would mean that one could never
+compile and flash a kernel that would give good battery life without
+also running the vendor-shipped user-space policy manager that might
+be binary only.
 
-...
-> More will be done, but for now we would like to get this base enabling
-> into the upstream kernel as an initial step.
+> On an embedded device, the knowledge of when it makes sense to keep a
+> disk spinning, to avoid latency when it's needed next, versus when it
+> makes sense to spin it down to save power, probably fits better in user
+> space than in the kernel. In such a case there's likely to be a "master"
+> application (in our case, for instance, "the phone application") that
+> owns a lot of knowledge about whole-system state and user interactions.
+> Not, of course, that we have a disk to spin down.
+>
+> On the other hand, we also have devices that do their own power saving,
+> largely in cases where they don't have latency issues large enough to
+> worry about.
 
-I'm not sure if the hack above does not disqualify it from
-mainstream...
+I believe we do need something along the lines of what USB has as
+pointed out by Alan - an 'idle time' value and a 'allowed target
+state' entry.
 
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Regards,
+Amit
+--
+Amit Kucheria, NOKIA
