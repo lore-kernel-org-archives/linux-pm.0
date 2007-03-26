@@ -1,74 +1,64 @@
-From: "Amit Kucheria" <kucheria.amit@gmail.com>
-Subject: Re: [RFC] dynamic device power management proposal
-Date: Mon, 26 Mar 2007 16:53:16 +0300
-Message-ID: <52d486620703260653l73ffde92we68b413cc61a9144@mail.gmail.com>
-References: <200703212019.l2LKJdbj029831@olwen.urbana.css.mot.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Date: Mon, 26 Mar 2007 18:26:47 +0200
+Message-ID: <1174926407.7911.1.camel@chaos>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070318184919.GW752@stusta.de>
+	 <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
+	 <20070326040509.GU16477@stusta.de>
+	 <b6a2187b0703252237l4f662fb3n7f57dfb10360c4f6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703212019.l2LKJdbj029831@olwen.urbana.css.mot.com>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org, pavel@ucw.cz
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <b6a2187b0703252237l4f662fb3n7f57dfb10360c4f6@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/21/07, Scott E. Preece <preece@motorola.com> wrote:
->
-> | From: "Amit Kucheria"<kucheria.amit@gmail.com>
-> |
-> | On 3/21/07, Shaohua Li <shaohua.li@intel.com> wrote:
-> | > On Wed, 2007-03-21 at 02:30 +0800, Pavel Machek wrote:
-> |
-> | > > No, that's not how it works; look at hda_audio, it already has
-> | > > powersave. Just power down audio card 5 seconds after its control f=
-ile
-> | > > is closed.
-> | > It's another case of doing policy in a driver.
-> | >
-> |
-> | IMHO, this kind of policy is best handled inside the driver because it
-> | is specific to the hardware. This will ensure that the driver will
-> | just work on every distro without some userspace policy being present
-> | and setup _correctly_.
-> ---
+On Mon, 2007-03-26 at 13:37 +0800, Jeff Chua wrote:
+> On 3/26/07, Adrian Bunk <bunk@stusta.de> wrote:
+> 
+> > > Resume from RAM (s2ram) still broke (tried with or without
+> > > CONFIG_NO_HZ). Suspend to RAM seems ok, but upon resume, the screen
+> > > will only display "inu" and only after pressing the power button will
+> > > the system return to console. But "date" still doesn't advance.
+> >
+> > This might be related to the following regression:
+> >
+> > Subject    : first disk access after resume takes several minutes
+> >              ('date' does not advance after resume from RAM, CONFIG_NO_HZ=n)
+> > References : http://lkml.org/lkml/2007/3/8/117
+> >              http://lkml.org/lkml/2007/3/25/20
+> > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+> > Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> >              Ingo Molnar <mingo@elte.hu>
+> > Status     : problem is being debugged
+> 
+> Adrian,
+> 
+> It's related. I tested without CONFIG_HPET_TIMER, and now my X60 can
+> suspend and resume from RAM (s2ram). Even better, it works
+> with/without CONFIG_NO_HZ.
 
-I was playing devil's advocate here. Considering who I work for, we
-definitely have cases where having all these settings configurable
-from userspace sounds like a very good idea. But after thinking some
-more, I am worried about having too many things exported to userspace
-and increasing the complexity of the policy manager. Combined with
-poorly chosen default values, it would mean that one could never
-compile and flash a kernel that would give good battery life without
-also running the vendor-shipped user-space policy manager that might
-be binary only.
+Does the patch below fix the HPET_TIMER=y case ?
 
-> On an embedded device, the knowledge of when it makes sense to keep a
-> disk spinning, to avoid latency when it's needed next, versus when it
-> makes sense to spin it down to save power, probably fits better in user
-> space than in the kernel. In such a case there's likely to be a "master"
-> application (in our case, for instance, "the phone application") that
-> owns a lot of knowledge about whole-system state and user interactions.
-> Not, of course, that we have a disk to spin down.
->
-> On the other hand, we also have devices that do their own power saving,
-> largely in cases where they don't have latency issues large enough to
-> worry about.
+	tglx
 
-I believe we do need something along the lines of what USB has as
-pointed out by Alan - an 'idle time' value and a 'allowed target
-state' entry.
+diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+index f3ab61e..76afea6 100644
+--- a/arch/i386/kernel/hpet.c
++++ b/arch/i386/kernel/hpet.c
+@@ -197,7 +197,7 @@ static int hpet_next_event(unsigned long delta,
+ 	cnt += delta;
+ 	hpet_writel(cnt, HPET_T0_CMP);
+ 
+-	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0);
++	return ((long)(hpet_readl(HPET_COUNTER) - cnt ) > 0) ? -ETIME : 0;
+ }
+ 
+ /*
 
-Regards,
-Amit
---
-Amit Kucheria, NOKIA
+
+
