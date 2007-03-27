@@ -1,14 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Oliver Neukum <oneukum@suse.de>
 Subject: Re: [RFC] dynamic device power management proposal
-Date: Tue, 27 Mar 2007 14:05:43 +0200
-Message-ID: <20070327120543.GF5161@elf.ucw.cz>
+Date: Tue, 27 Mar 2007 14:19:53 +0200
+Message-ID: <200703271419.54341.oneukum@suse.de>
 References: <200703221905.l2MJ5VEU017196@olwen.urbana.css.mot.com>
+	<20070327120543.GF5161@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070327120543.GF5161@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200703221905.l2MJ5VEU017196@olwen.urbana.css.mot.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +19,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Scott E. Preece" <preece@motorola.com>
-Cc: linux-pm@lists.osdl.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Am Dienstag, 27. M=E4rz 2007 14:05 schrieb Pavel Machek:
+> High-latency devices indeed may be served better by separating the
+> semantics. Fortunately the high-latency (we are talking >50msec here,
 
-> | > And latency may be ignorable in a laptop environment, but it absolute=
-ly
-> | > isn't in embedded devices, which users expect to operate immediately,=
- as
-> | > though they were gear-driven rather than computer-driven.
-> | =
+USB takes a minimum of 30ms to resume a device.
 
-> | What latency are you talking about? Powering up piece of hw takes one
-> | milisecond or something. If your /dev/dsp takes 3 seconds to power up,
-> | you probably need userspace policy daemon. But that is not the case,
-> | hw takes few miliseconds to wake up.
-> =
-
-> Sure, but *some* devices take substantially longer to power up or
-> down.  If you insist that the driver should make the power down
-> decision, then you lump high-latency and low-latency devices together,
-> even though high-latency devices might be better served by separating
-> the semantics.
-
-High-latency devices indeed may be served better by separating the
-semantics. Fortunately the high-latency (we are talking >50msec here,
-right?) are rare enough... Like "none" in most embedded
-systems... Actually only common high-latency device is harddrive
-(spinup/spindown), and that's already handled specially with userspace
-hooks.
-
-									Pavel
-
+	Regards
+		Oliver
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG N=FCrnberg)
+This signature is a legal requirement
