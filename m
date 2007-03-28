@@ -1,56 +1,58 @@
-From: Maxim <maximlevitsky@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [3/6] 2.6.21-rc4: known regressions
-Date: Wed, 28 Mar 2007 17:01:23 +0200
-Message-ID: <200703281701.23876.maximlevitsky@gmail.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703281543.47049.maximlevitsky@gmail.com> <20070328144148.GA16244@elte.hu>
+Date: Wed, 28 Mar 2007 09:38:48 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0703280931520.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<200703281543.47049.maximlevitsky@gmail.com>
+	<20070328144148.GA16244@elte.hu>
+	<200703281701.23876.maximlevitsky@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <20070328144148.GA16244@elte.hu>
-Content-Disposition: inline
-Sender: linux-ide-owner@vger.kernel.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200703281701.23876.maximlevitsky@gmail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Maxim <maximlevitsky@gmail.com>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 28 March 2007 16:41:48 Ingo Molnar wrote:
-> 
-> * Maxim <maximlevitsky@gmail.com> wrote:
-> 
-> > I almost sure I know why this happens,
-> 
-> cool! Your patch is a definite improvement on my t60 (where 
-> suspend/resume never worked with hpet enabled). But it does not fix 
-> everything - for example the timings are way off after resume. Thomas?
-> 
-> 	Ingo
-> 
 
-The problem is that HPET  consists of two parts:
-	one is a main counter and second is a a timers.
 
-	To enable main counter one must set HPET_CFG_ENABLE.
-	It is set only on boot, and not on resume now.
+On Wed, 28 Mar 2007, Maxim wrote:
+> =
 
-	But on my system I think bios re-enables it.
+> 	Now I don't have a clue how to set those bits if only HPET is used as cl=
+ock source because now clocksources
+> 	don't have _any_ resume hook.
 
-	Secondary to enable HPET to act as a timer on IRQ0 and to make it replace RTC IRQ8 one must set
-	HPET_CFG_LEGACY
+One thing that drives me wild about that "clocksource resume" thing is =
 
-	This bit is definitely not set on resume, so on my system I get a hang if I use HPET as clockevents device,
-	and on other system where bios doesn't reenable HPET, then even if HPET is used as timing device 
-	'date won't advance'
+that it seems to think that clocksources are somehow different from any =
 
-	But I set those bits only in initialization of HPET clockevents device, and I set always, when it is turned on,
-	It is not that good,but works.
+other system devices..
 
-	Now I don't have a clue how to set those bits if only HPET is used as clock source because now clocksources
-	don't have _any_ resume hook.
+Why isn't the HPET considered a "device", and has it's own *device* =
 
-	The timing problem you mention I think isd connected to the fact that HPET is not enabled instantly after resume, but after some time when clockevents
-	core calls HPET to enable event timer.
+"suspend" and "resume"? Why do we seem to think that only "set_mode()" =
 
-	Best regards,
-		Maxim Levitsky
+etc should wake up clock sources?
+
+It's a *device*, dammit. It should save and resume like one (probably as a =
+
+system device). The "set_mode()" etc stuff is at a completely different =
+
+(higher) conceptual level.
+
+Thomas? It does seem like Maxim has hit the nail on the head (at least =
+
+partly) on the HPET timer resume problems..
+
+		Linus
