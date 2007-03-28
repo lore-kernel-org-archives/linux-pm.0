@@ -1,34 +1,41 @@
-From: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: [4/5] 2.6.21-rc5: known regressions
-Date: Wed, 28 Mar 2007 00:45:54 +0200
-Message-ID: <46099EA2.8080207@m3y3r.de>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	<20070327015949.GB16477@stusta.de> <200703271209.14447.rjw@sisk.pl>
-	<20070327222919.GI16477@stusta.de>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [3/6] 2.6.21-rc4: known regressions
+Date: Wed, 28 Mar 2007 09:04:28 +0200
+Message-ID: <1175065468.4017.1.camel@chaos>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <20070318184919.GW752@stusta.de>
+	 <b6a2187b0703251825l2b2ab9d3j43e17523cbca87ac@mail.gmail.com>
+	 <20070326040509.GU16477@stusta.de>
+	 <b6a2187b0703252237l4f662fb3n7f57dfb10360c4f6@mail.gmail.com>
+	 <1174926407.7911.1.camel@chaos>
+	 <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070327222919.GI16477@stusta.de>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <b6a2187b0703261046r46782eedv64464ceddb44bc27@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Adrian Bunk schrieb:
-> It's now in Linus' tree.
->
-> Thomas (Meyer), are there any regressions left with the latest -git tree =
+On Tue, 2007-03-27 at 01:46 +0800, Jeff Chua wrote:
+> On 3/27/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > > It's related. I tested without CONFIG_HPET_TIMER, and now my X60 can
+> > > suspend and resume from RAM (s2ram). Even better, it works
+> > > with/without CONFIG_NO_HZ.
+> >
+> > Does the patch below fix the HPET_TIMER=y case ?
+> 
+> Thomas, I tried, but it didn't help. Upon resume from ram, "date"
+> still didn't advance.
 
-> plus the MSI fix?
->   =
+Can you please issue a SysRq-Q in this situation and provide the dmesg
+output ?
 
-No, not for me.
+Thanks,
+
+	tglx
+
+
