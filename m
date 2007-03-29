@@ -1,11 +1,17 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Thu, 29 Mar 2007 09:44:11 +0200
-Message-ID: <460B6E4B.3060004@gmail.com>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6]
+ 2.6.21-rc4: known regressions
+Date: Thu, 29 Mar 2007 17:20:27 +0400
+Message-ID: <460BBD1B.4040308@ru.mvista.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<200703290641.20236.maximlevitsky@gmail.com>
+	<Pine.LNX.4.64.0703282203550.6730@woody.linux-foundation.org>
+	<200703290747.28929.maximlevitsky@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200703290747.28929.maximlevitsky@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,53 +21,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Cc: linux-pm@lists.osdl.org
+To: Maxim <maximlevitsky@gmail.com>
+Cc: gregkh@suse.de, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, jgarzik@pobox.com, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hello.
 
-I'm getting this while trying to swsups the machine in -rc5, -rc4 is fine:
+Maxim wrote:
 
-Disabling non-boot CPUs
-CPU 1 is now offline
-SMP alternatives: switching to UP code
-CPU1 is down
-swsusp: critical section:
-swsusp: Need to copy 131380 pages
-swsusp: Not enough free memory
-Error -12 suspending
-Enabling non-boot CPUs ...
+> ---
+> This adds support of suspend/resume on i386 for HPET
 
-# cat /sys/power/resume
-8:6
-# cat /proc/swaps
-Filename                                Type            Size    Used    Pri=
-ority
-/dev/sda6                               partition       1004020 0       -1
+   The part after usually "---" gets cut off, the patch description and =
 
-Any other info needed?
+signoff should actially *precede* it.
 
-BTW. is this OK on resume?
-PM: Writing back config space on device 0000:02:00.0 at offset 1 (was 10000=
-6, w
-iting 100002)
-pnp: Failed to activate device 00:04.
-pnp: Failed to activate device 00:05.
- usbdev5.3_ep00: PM: resume from 0, parent 5-4 still 2
+> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
-# ll /sys/bus/pnp/devices/00\:0{4,5}/driver
-lrwxrwxrwx 1 root root 0 2007-03-29 09:16 /sys/bus/pnp/devices/00:04/driver
--> ../../../bus/pnp/drivers/i8042 kbd
-lrwxrwxrwx 1 root root 0 2007-03-29 09:16 /sys/bus/pnp/devices/00:05/driver
--> ../../../bus/pnp/drivers/i8042 aux
+> diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+> index 0fd9fba..7c67780 100644
+> --- a/arch/i386/kernel/hpet.c
+> +++ b/arch/i386/kernel/hpet.c
+[...]
+> +static __init int hpet_register_sysfs(void)
+> +{
+> +	int err;
+> +
+> +	if (!is_hpet_capable())
+> +		return 0;
+> +
+> +	err =3D sysdev_class_register(&hpet_class);
+> +
+> +	if (!err) {
+> +		sysdev_register(&hpet_device);
+> +		if (err)
+> +			sysdev_class_unregister(&hpet_class);
 
-regards,
--- =
+    This doesn't make sense, err will always be 0.  Perhaps you actually =
 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+intended to check the result of sysdev_register()?
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+> +	}
+> +
+> +	return err;
+> +}
+> +
+> +device_initcall(hpet_register_sysfs);
+> +
+> +#endif
+
+WBR, Sergei
