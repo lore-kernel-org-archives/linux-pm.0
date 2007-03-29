@@ -1,17 +1,16 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [ PATCH] Add suspend/resume for HPET was: Re: [3/6]
-	2.6.21-rc4: known regressions
-Date: Thu, 29 Mar 2007 18:51:18 +0200
-Message-ID: <200703291851.19424.maximlevitsky@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+Date: Thu, 29 Mar 2007 09:53:37 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0703290949060.6730@woody.linux-foundation.org>
 References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<200703290747.28929.maximlevitsky@gmail.com>
-	<Pine.LNX.4.64.0703290930540.6730@woody.linux-foundation.org>
+	<460BBD1B.4040308@ru.mvista.com>
+	<200703291531.18253.maximlevitsky@gmail.com>
+	<200703291546.48996.maximlevitsky@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0703290930540.6730@woody.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200703291546.48996.maximlevitsky@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,84 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com, Andrew Morton <akpm@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 29 March 2007 18:35:21 Linus Torvalds wrote:
+
+
+On Thu, 29 Mar 2007, Maxim Levitsky wrote:
+>
+> Subject: Add suspend/resume for HPET
+>
+> This adds support of suspend/resume on i386 for HPET
+>
+> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 > =
 
-> On Thu, 29 Mar 2007, Maxim wrote:
-> =
+> ---
+>  arch/i386/kernel/hpet.c |   68 +++++++++++++++++++++++++++++++++++++++++=
+++++++
 
-> > On Thursday 29 March 2007 07:08:58 Linus Torvalds wrote:
-> > > =
+Btw, what about arch/x86_64/kernel/hpet.c?
 
-> > > (Or, better yet, shouldn't we set "boot_hpet_disable" when we decide =
-not =
+That thing seems totally broken. Lookie here:
 
-> > > to use the HPET, and set hpet_virt_address to NULL?)
-> > =
+  arch/x86_64/kernel/hpet.c:irqreturn_t hpet_rtc_interrupt(int irq, void *d=
+ev_id, struct pt_regs *regs)
+  drivers/char/rtc.c:extern irqreturn_t hpet_rtc_interrupt(int irq, void *d=
+ev_id);
 
-> > This is done here
-> > =
+anybody see a problem? The x86-64 version doesn't seem to be very well =
 
-> > out_nohpet:
-> > 	iounmap(hpet_virt_address);
-> > 	hpet_virt_address =3D NULL;
-> =
+maintained. Is there some fundamental reason why this file isn't shared =
 
-> No, that only clears hpet_virt_address, and thus makes all subsequent =
+across architectures?
 
-> "hpet_readl()" and "hpet_writel()" calls oops.
-> =
-
-> But it doesn't actually *tell* anybody that the HPET is disabled, so if =
-
-> you later on do
-> =
-
-> 	if (is_hpet_capable()) {
-> 		time =3D hpet_readl(..);
-> 		..
-> =
-
-> you will just Oops!
-> =
-
-> So as far as I can see, even with your latest patch, if hpet_enable() =
-
-> fails (and triggers the "goto out_nohpet" cases), you'll just oops =
-
-> immediately when you try to suspend/resume the HPET.
-> =
-
-> THAT was what I meant - when we clear hpet_virt_address, we should also =
-
-> tell all potential subsequent users that the HPET is not there!
-> =
-
-> 		Linus
-> =
-
-
-Hi,
-	I agree, and as you said I did exactly that:
-
-out_nohpet:
-	iounmap(hpet_virt_address);
-	hpet_virt_address =3D NULL;
-	boot_hpet_disable =3D 1; <<<--- this ensures that is_hpet_capable() will n=
-ever return positive value
-
-
-	I also sent an updated version on my patch with subject line "[PATCH v2] A=
-dd suspend/resume for HPET"
-
-	I forgot (a typo) to check error code in  hpet_register_sysfs
-	Thanks to Sergei Shtylyov for pointing me on that.
-
-	This patch should be ok.
-
-	Best regards,
-		Maxim Levitsky
+			Linus
