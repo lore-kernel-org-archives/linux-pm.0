@@ -1,71 +1,51 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [4/4] 2.6.21-rc5: known regressions (v2)
-Date: Fri, 30 Mar 2007 23:49:56 +0200
-Message-ID: <20070330214956.GQ14134@stusta.de>
-References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Power Mangement Interfaces
+Date: Fri, 30 Mar 2007 17:57:59 -0600
+Message-ID: <20070330235759.GC4252@cosmic.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>, =?utf-8?B?RnLDqWTDqXJpYw==?= Riss <frederic.riss@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tino Keitel <tino.keitel@gmx.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: devel@laptop.org
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-[ this time with a Cc... ]
+Hey all -
 
-This email lists some known regressions in Linus' tree compared to 2.6.20.
+I'm happy to report that the OLPC power management effort is proceeding
+nicely.  We have suspend to RAM functional, and the system is resuming
+back to the framebuffer console.  We have the usual blips (USB), but
+those will be resolved in the fullness of time.
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
-possibly involved with one or more of these issues.
+I am now turning my attention to handling wakeup events - in particular,
+events that we can set at run-time.  My thoughts on the matter are 
+detailed here:
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+http://wiki.laptop.org/go/Power_Management_Interface
 
+I use the ACPI wakeup infrastructure as an example because a) it exists,
+and b) it works.  However, it doesn't share nicely, and it is a /proc
+file, so I sat down and thought of a more /sysfs friendly and generic
+model.  I did keep APCI in mind, figuring that if a generic framework was
+designed well enough, they could slowly transition over as well (which is
+why the ACPI list is CCed).
 
-Subject    : MacMini doesn't come out of suspend to ram  (i386 clockevents)
-             (CONFIG_HPET_TIMER)
-References : http://lkml.org/lkml/2007/3/21/374
-Submitter  : Fr=E9d=E9ric Riss <frederic.riss@gmail.com>
-             Tino Keitel <tino.keitel@gmx.de>
-Caused-By  : Thomas Gleixner <tglx@linutronix.de>
-             commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-Status     : unknown
+Comments are welcome.
 
+Jordan
 
-Subject    : after resume: X hangs after drawing a couple of windows
-             workaround: clocksource=3Dacpi_pm
-References : http://lkml.org/lkml/2007/3/8/117
-             http://lkml.org/lkml/2007/3/25/20
-             http://lkml.org/lkml/2007/3/26/151
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Status     : problem is being debugged
+PS: If you have a XO machine, and you're interested in trying out power
+management for yourself, documentation and information is forthcoming.
+If you can't wait, pop in to #olpc on irc.freenode.net, and somebody 
+there will help you get started.
 
-
-Subject    : system doesn't come out of suspend  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/2/22/391
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-             Soeren Sonnenburg <kernel@nn7.de>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-             Ingo Molnar <mingo@elte.hu>
-             Tejun Heo <htejun@gmail.com>
-             Rafael J. Wysocki <rjw@sisk.pl>
-Status     : unknown
+-- 
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
 
 
-Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/3/25/217
-Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
-Status     : unknown
