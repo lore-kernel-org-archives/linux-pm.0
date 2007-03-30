@@ -1,16 +1,14 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [3/6] 2.6.21-rc4: known regressions
-Date: Fri, 30 Mar 2007 03:48:38 +0300
-Message-ID: <200703300348.38402.maximlevitsky@gmail.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<200703300129.27474.maximlevitsky@gmail.com>
-	<200703291709.17085.david-b@pacbell.net>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [3/4] 2.6.21-rc5: known regressions (v2)
+Date: Fri, 30 Mar 2007 23:32:20 +0200
+Message-ID: <20070330213220.GO14134@stusta.de>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703291709.17085.david-b@pacbell.net>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,142 +18,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-pm@lists.linux-foundation.org, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>, tigran@aivazian.fsnet.co.uk, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, adaplas@gmail.com, Soeren Sonnenburg <kernel@nn7.de>, Marcus Better <marcus@better.se>, linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>, Stephen Hemminger <shemminger@linux-foundation.org>, Maxim Levitsky <maximlevitsky@gmail.com>, Mike Harris <atarimike@wavecable.com>, Jeff Chua <jeff.chua.linux@gmail.com>, netdev@vger.kernel.org, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pci@atrey.karlin.mff.cuni.cz, jgarzik@pobox.com, Tobias Doerffel <tobias.doerffel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 30 March 2007 03:09:14 David Brownell wrote:
-> On Thursday 29 March 2007 4:29 pm, Maxim Levitsky wrote:
-> > On Friday 30 March 2007 00:33:35 David Brownell wrote:
-> > > On Wednesday 28 March 2007 2:27 pm, Maxim wrote:
-> =
+This email lists some known regressions in Linus' tree compared to 2.6.20.
 
-> > > > 	So the only way out is to emulate RTC using HPET,
-> > > > 	It is done this way in old rtc driver, rtc-cmos should do the same.
-> > > =
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-> > > No.  Patches like
-> > > =
-
-> > >   http://marc.info/?l=3Dlinux-kernel&m=3D117219531503973&w=3D2
-> =
-
-> also:   http://marc.info/?l=3Dlinux-kernel&m=3D117219531526317&w=3D2
-> =
-
-> > > should be merged (I hope they're in the 2.6.22 queue!), making
-> > > HPET run in "Standard Mode" so that HPET can stop sticking its
-> > > fingers in code where they don't belong.
-> > >
-> > > ...
-> >
-> > 	It is not that simple,
-> > =
-
-> > 	Only in legacy replacement mode HPET can be put on IRQ0 (and sadly  IR=
-Q8)
-> > 	At least this is true on some systems, on mine for example
-> =
-
-> Right, that's the entire point of legacy replacement mode.
-> =
-
-> But so what?  In standard mode, HPET just uses other IRQs.
-> Nothing would care about irq0, and irq8 would be used by
-> the RTC as necessary.
-> =
-
-> =
-
-> > 	this will make it difficult to use it as a clockevents source
-> =
-
-> Why?  It's not like the clockevent logic cares what IRQ a given
-> programmable timer uses.  So long as the HPET driver can receive
-> its IRQ, it'll make a fine clockevent.  There's no reason to have
-> HPET prevent other drivers from working, by insisting it use that
-> nasty "prevent other hardware from issuing IRQs" mode.
-> =
-
-> The patches from Venkatesh sure seem to have behaved for him.
-> And while he might have complained about difficulty, I think
-> that'd be more likely due to the SMP issues he also addressed
-> than because of some (historical?) attachment to irq0.
-> =
-
-> =
-
-> > 	Not to mention the fact that current code assumes that BIOS
-> > 	assigned IRQs to all timers which is not true on my system. =
-
-> =
-
-> Getting IRQ routing sorted out is a problem that's been solved
-> numerous times before.  And again, the patches referenced above
-> seem to have resolved any such issues.
-No they don't, =
+Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-First patch does that:
-
-                        hd.hd_irq[i] =3D (timer->hpet_config &
-                                        Tn_INT_ROUTE_CNF_MASK) >>          =
-                      =
-
-					Tn_INT_ROUTE_CNF_SHIFT;
-
-This just reads values assigned by BIOS.
-
-
-> =
-
-> =
-
-> > 	What is wrong with relying on HPET to provide RTC IRQ ?
-> =
-
-> For starters, it's not an RTC.  Why in the world would you want to
-> make the OS think it's an RTC ... unless you're Microsoft, and are
-> desperate to get another periodic timer (and don't much care about
-> the other RTC functionality?
-> =
-
-> =
-
-> ... that's all off-topic for 2.6.21 regressions though; it's too
-> late to merge x86_64 clockevent support, or fix HPET issues like
-> not using "standard mode".
-> =
-
-> - Dave
-> =
-
-> =
+Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+References : http://lkml.org/lkml/2007/3/13/3
+Submitter  : Dave Jones <davej@redhat.com>
+             Jeremy Fitzhardinge <jeremy@goop.org>
+Caused-By  : PCI merge
+             commit 78149df6d565c36675463352d0bfe0000b02b7a7
+Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+             Rafael J. Wysocki <rjw@sisk.pl>
+Status     : problem is being debugged
 
 
-Hi,
-	I feel that you are right,
+Subject    : Suspend to RAM doesn't work anymore  (ACPI?)
+References : http://lkml.org/lkml/2007/3/19/128
+             http://bugzilla.kernel.org/show_bug.cgi?id=3D8247
+Submitter  : Tobias Doerffel <tobias.doerffel@gmail.com>
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+             Len Brown <len.brown@intel.com>
+Status     : problem is being debugged
 
-	You meant that one of HPET timers will be used as clock source and will be=
- assigned some IRQ (not IRQ0)
-	=
 
-	Seems fine,
+Subject    : SATA breakage on resume
+References : http://lkml.org/lkml/2007/3/7/233
+Submitter  : Thomas Gleixner <tglx@linutronix.de>
+             Soeren Sonnenburg <kernel@nn7.de>
+Status     : unknown
 
-	Only one thing: the kernel must assign IRQs to HPETS , relying on bios is =
-not good,
-	Also the IRQ for clocksource should be not shared, but maybe I am wrong he=
-re =
 
-	(I am afraid that latencies might be a problem here)
+Subject    : resume from RAM corrupts vesafb console
+References : http://lkml.org/lkml/2007/3/26/76
+Submitter  : Marcus Better <marcus@better.se>
+Handled-By : Pavel Machek <pavel@ucw.cz>
+Status     : problem is being debugged
 
-	By the way I never thought about the fact that legacy replacement mode  is=
- a 'virtual legacy'
 
-	I mean that it is intended to simulate RTCs and PITs on systems that don't=
- have them, am I right here ?
-	HPET spec says that RTC is still requred to provide all its usial function=
-s except periodic freq.
+Subject    : ThinkPad doesn't resume from suspend to RAM
+References : http://lkml.org/lkml/2007/2/27/80
+             http://lkml.org/lkml/2007/2/28/348
+Submitter  : Jens Axboe <jens.axboe@oracle.com>
+             Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
 
-	Best regards,
-		Maxim Levitsky
+
+Subject    : MacBook Core Duo: suspend to memory wakeup hang
+References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8272
+Submitter  : Mike Harris <atarimike@wavecable.com>
+Status     : unknown
+
+
+Subject    : suspend to disk hangs  (skge)
+References : http://lkml.org/lkml/2007/3/27/212
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Caused-By  : Stephen Hemminger <shemminger@linux-foundation.org>
+             commit a504e64ab42bcc27074ea37405d06833ed6e0820
+Status     : unknown
+
+
+Subject    : suspend to disk hangs  (microcode driver)
+References : http://lkml.org/lkml/2007/3/16/126
+Submitter  : Maxim Levitsky <maximlevitsky@gmail.com>
+Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+             commit e3c7db621bed4afb8e231cb005057f2feb5db557
+             commit ed746e3b18f4df18afa3763155972c5835f284c5
+             commit 259130526c267550bc365d3015917d90667732f1
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+Patch      : http://lkml.org/lkml/2007/3/25/71
+Status     : patch available
