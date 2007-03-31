@@ -1,43 +1,69 @@
-From: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Sat, 31 Mar 2007 10:58:29 -0700
-Message-ID: <1175363910.12252.196.camel@imap.mvista.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	 <200703291546.48996.maximlevitsky@gmail.com>
-	 <1175356272.28263.27.camel@localhost.localdomain>
-	 <200703311956.35922.maximlevitsky@gmail.com>
-	 <Pine.LNX.4.64.0703311004310.6730@woody.linux-foundation.org>
-	 <20070331171740.GA11750@elte.hu>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: Power Mangement Interfaces
+Date: Sat, 31 Mar 2007 12:16:12 -0600
+Message-ID: <20070331181612.GD8091@cosmic.amd.com>
+References: <20070330235759.GC4252@cosmic.amd.com>
+ <200703310952.43696.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <20070331171740.GA11750@elte.hu>
-Sender: linux-ide-owner@vger.kernel.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Maxim Levitsky <maximlevitsky@gmail.com>, tglx@linutronix.de, Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200703310952.43696.david-b@pacbell.net>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2007-03-31 at 19:17 +0200, Ingo Molnar wrote:
+On 31/03/07 09:52 -0700, David Brownell wrote:
+> USB once worked fine (I spent more than enough time testing it in all
+> kinds of configs) but usbcore has changed a lot since then ... I hear
+> that some of the root hub stuff got broken.
 
-> yeah. There's some practical problems that need to be sorted out: much 
-> of the current GTOD code is irq-driven (and all GTOD locks are 
-> irq-safe), while the sysfs code needs to run in process-context level. 
+Marcelo is working hard on the USB.  I'm sure he wouldn't say no if you
+offered your particular expertise on the matter. :)
+
 > 
-> Clocksources 'arrive' and 'depart' in hardirq context (which is the 
-> primary place where we notice their breakage, determine that they are 
-> now verified to be usable, etc.). This came partly from legacy: the 
-> gradual conversion of the monolithic time code, and the need to preserve 
-> GTOD and non-GTOD architectures without too much duplication. It also 
-> came partly because there's also a fundamental need to have accurate 
-> time, which is better served from irq context.
+> > I am now turning my attention to handling wakeup events - in particular,
+> > events that we can set at run-time.  My thoughts on the matter are 
+> > detailed here:
+> > 
+> > http://wiki.laptop.org/go/Power_Management_Interface
 > 
+> You seem to be completely ignoring the /sys/devices/..../power/wakeup
+> event attributes.  Why?
 
-Is this in reference to the irq-context clocksource polling stuff? I
-don't see a dire reason to keep that code, and I agree removing that is
-a certainly a worth while cleanup .. I added this cleanup to one of my
-trees when you first suggested it , and there is some infrastructure
-that really should be added to facilitate it.
+Complete and total ignorance that they even existed.   I guess I should
+pay more attention to linux-pm then I do.. :(.    My impression is that
+this infrastructure allows the devices to configure themselves to wake
+up the system, but it doesn't seem to address enabling the system to
+allow those events to wake it.  It is the latter that I am concerned about.  
 
-Daniel
+The Geode (and most other platforms, I presume) allows us to configure
+which wakeup events are actually allowed to wake the system.  Currently,
+we are permanently enabling the power button as a wakeup source, but I
+want to eventually be able to pick and chose from any of our main wakeup
+sources:
+
+* Power button
+* RTC Alarm
+* LID event (GPIO26)
+* wake event from the EC (GPIO27) 
+
+Of the four, the only device that can actually be configured to do anything
+is the RTC alarm, and for that we would use the /sys/devices/../power/wakeup
+infrastructure, but we would still need something in place to allow the 
+software to tell the hardware to enable the RTC event to wake the system.
+
+I suppose we could just globally enable all sources, but that seems silly,
+seeing as though we do have very fine tuned control over the wake sources.
+I'm sure other platforms have this concern as well - what do they do?
+
+-- 
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
+
 
