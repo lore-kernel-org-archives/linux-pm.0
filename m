@@ -1,100 +1,78 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Sat, 31 Mar 2007 19:56:35 +0300
-Message-ID: <200703311956.35922.maximlevitsky@gmail.com>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <200703291546.48996.maximlevitsky@gmail.com> <1175356272.28263.27.camel@localhost.localdomain>
+Date: Sat, 31 Mar 2007 19:02:45 +0200
+Message-ID: <20070331170245.GA9244@elte.hu>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<460BBD1B.4040308@ru.mvista.com>
+	<200703291531.18253.maximlevitsky@gmail.com>
+	<200703291546.48996.maximlevitsky@gmail.com>
+	<1175356272.28263.27.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0703310908160.6730@woody.linux-foundation.org>
+	<1175358800.28263.36.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <1175356272.28263.27.camel@localhost.localdomain>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-Sender: linux-ide-owner@vger.kernel.org
-To: tglx@linutronix.de
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
+In-Reply-To: <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thomas Gleixner <tglx@linutronix.de>, jgarzik@pobox.com, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 31 March 2007 18:51:11 Thomas Gleixner wrote:
-> On Thu, 2007-03-29 at 15:46 +0200, Maxim Levitsky wrote:
-> > Subject: Add suspend/resume for HPET
-> > This adds support of suspend/resume on i386 for HPET
-> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> >
-> > +static struct sysdev_class hpet_class = {
-> > +	set_kset_name("hpet"),
-> > +	.suspend	= hpet_suspend,
-> > +	.resume		= hpet_resume,
-> > +};
-> > +
-> > +static struct sys_device hpet_device = {
-> > +	.id		= 0,
-> > +	.cls		= &hpet_class,
-> > +};
-> 
-> Sorry for being inresponsive. I was travelling and unexpectedly cut off
-> from the internet for some days.
-> 
-> While I agree in principle with the patch, I'm a bit uncomfortable. The
-> sys device suspend / resume ordering is not guaranteed and relies on the
-> registering order.
-> 
-> Jeff still seems to have problems with CONFIG_NO_HZ=n and it might be
-> caused by time keeping / tick management resume happening before the
-> HPET resume.
-> 
-> The required resume order is:
-> 
-> clocksources
-> timekeeping
-> clockevents
-> tick management
-> 
-> I'm not sure how to do this properly with the sys device facilities, but
-> I look into it.
-> 
-> /me goes off to understand the sys device magic.
-> 
-> 	tglx
-> 
-> 
-> 
 
-Hi,
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-So maybe I was right afrer all,
-Maybe it is better to add a suspend/resume hook to each clock source and call 
-it from timekeeping_resume() ?
+> On Sat, 31 Mar 2007, Thomas Gleixner wrote:
+> > =
 
-Or maybe even unite clocksources with clockevents, don't know 
+> > Right, but clock - sources/events need to be extremly late suspended and
+> > early resumed. How can we ensure this ?
 
-By the way I want to report maybe a bug / maybe a feature :-)  : 
-(sorry for long explanation)
+[...]
+> So the only thing that needs to be done is to make sure that we add =
 
-Basically I have two clockevent sources : PIT(HPET) and APIC
-(Actually I it seems that in next version of kernel HPET will be switched out 
-of 'legacy replacement mode' , so PIT and HPET and RTC could coexist of same system,
-But HPET won't be able to generate IRQ0, and it will be assigned some IRQ, possibly shared with other devices)
+> the timer devices early during bootup - something we have to do =
 
-APIC timer  is chosen by default and works fine, 
-since I don't have C2/C2 states on my system (ICH8 doesn't support them :-( )
+> *anyway*. If a device is added early in bootup, that automatically =
 
-But if I force it off (nolapic_timer) HPET or PIC is chosen and strangely they are
- put in _periodic_ mode although they are capable of one-shot mode
-Is this a bug ?
+> means that it will be suspended late, and resumed early - because we =
 
-Secondary I am getting a very strange behavior if I use CONFIG_NOHZ + !CONFIG_HIGH_RES_TIMERS
-and try to suspend to ram:
+> maintain that order all the way through..
 
-System resumes, but gets crazy:
-'top' shows that  ksoftirqd consumes 9999 % of cpu time (this is not a typo)
-And other 'normal' programs that are running show same 9999 too.
-System slows to crawl.
+IIRC hpet is particularly hard to initialize early on in the bootup =
 
-Also I found that one of APICS is in periodic mode,  and second is in one shoot mode.
-And I tested this with or without my patch (thank goodness it is not my fault)
+sequence. So the way the clockevents code works is that it will always =
 
-CONFIG_NOHZ + CONFIG_HIGH_RES_TIMERS work just fine.
+try to make the best out of all available devices, and dynamically =
 
-Best regards,
-	Maxim Levitsky
+adapts things as devices 'arrive' or 'depart' - no matter how late that =
+
+happens. (That way there's no dependency on how late a device gets =
+
+registered - it will only delay the switch to high-res mode for =
+
+example.) A given time device might 'depart' because for example the =
+
+watchdog mechanism finds that its quality is not good enough, or because =
+
+someone initiated cpufreq which breaks the TSC clocksource.
+
+i dont think there's any particular problem here because suspend/resume =
+
+wont be done during bootup - but we might need a way to move a device to =
+
+earlier spots in the device tree, even if they got registered later on - =
+
+instead of forcing the time devices to be registered very early?
+
+	Ingo
