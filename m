@@ -1,33 +1,65 @@
-From: Greg KH <gregkh@suse.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Sat, 31 Mar 2007 10:08:56 -0700
-Message-ID: <20070331170856.GA14959@suse.de>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <460BBD1B.4040308@ru.mvista.com> <200703291531.18253.maximlevitsky@gmail.com> <200703291546.48996.maximlevitsky@gmail.com> <1175356272.28263.27.camel@localhost.localdomain> <Pine.LNX.4.64.0703310908160.6730@woody.linux-foundation.org> <1175358800.28263.36.camel@localhost.localdomain> <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
+Date: Sat, 31 Mar 2007 10:09:15 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0703311004310.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<200703291546.48996.maximlevitsky@gmail.com>
+	<1175356272.28263.27.camel@localhost.localdomain>
+	<200703311956.35922.maximlevitsky@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Maxim Levitsky <maximlevitsky@gmail.com>, Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200703311956.35922.maximlevitsky@gmail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, tglx@linutronix.de, jgarzik@pobox.com, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Mar 31, 2007 at 09:53:43AM -0700, Linus Torvalds wrote:
-> Make them be at the top of the device tree by adding them early. That's 
-> the whole point of the device tree after all - we have an ordering that is 
-> enforced by its topology, and that we sort by when things were added.
-> 
-> Right now the way things work is (iirc - somebody like Greg should 
-> double-check me) is that we add all devices to the power list at 
-> device_add() time by traversing the devices fromt he root all the way out, 
-> and doing a device_add() which does a device_pm_add(), which in turn adds 
-> it to the power-management list - so that the list is always topologically 
-> sorted.
 
-Yes, this is how it works (or if not, then there's a bug that needs to
-be fixed, as that is how it _should_ work...)
 
-thanks,
+On Sat, 31 Mar 2007, Maxim Levitsky wrote:
+> =
 
-greg k-h
+> So maybe I was right afrer all,
+> Maybe it is better to add a suspend/resume hook to each clock source and =
+call =
+
+> it from timekeeping_resume() ?
+
+Umm.. WHy not make the device tree look like this:
+
+	    -- "clocksource" -- +-- HPET
+				|
+				+-- TSC
+				|
+				+-- i8259
+				|
+				+-- lapic timer
+				|
+				.. whatever else
+
+and use the "struct device" that we *have* for this? The whole "struct =
+
+device" is literally designed to do this, and to be embedded into whatever =
+
+bigger structures you have that describes higher-level behaviour. Ie you'd =
+
+put a "struct device" inside the "struct clocksource".
+
+That thingalready *has* the suspend/resume hooks, and it will mean that =
+
+people will see the clocks in the device tree rather than have a new =
+
+notion.
+
+
+			Linus
