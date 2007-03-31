@@ -1,94 +1,43 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [linux-pm] [PATCH v2] Add suspend/resume for HPET
-Date: Sat, 31 Mar 2007 10:55:42 -0700
-Message-ID: <200703311055.43407.david-b@pacbell.net>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org> <1175358800.28263.36.camel@localhost.localdomain> <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
+From: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+Date: Sat, 31 Mar 2007 10:58:29 -0700
+Message-ID: <1175363910.12252.196.camel@imap.mvista.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	 <200703291546.48996.maximlevitsky@gmail.com>
+	 <1175356272.28263.27.camel@localhost.localdomain>
+	 <200703311956.35922.maximlevitsky@gmail.com>
+	 <Pine.LNX.4.64.0703311004310.6730@woody.linux-foundation.org>
+	 <20070331171740.GA11750@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0703310943190.6730@woody.linux-foundation.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Maxim Levitsky <maximlevitsky@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, jgarzik@pobox.com, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20070331171740.GA11750@elte.hu>
+Sender: linux-ide-owner@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Maxim Levitsky <maximlevitsky@gmail.com>, tglx@linutronix.de, Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz, linux-pm@lists.osdl.org, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jens Axboe <jens.axboe@oracle.com>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 31 March 2007 9:53 am, Linus Torvalds wrote:
->=20
-> On Sat, 31 Mar 2007, Thomas Gleixner wrote:
-> >=20
-> > Right, but clock - sources/events need to be extremly late suspende=
-d and
-> > early resumed. How can we ensure this ?
->=20
-> Make them be at the top of the device tree by adding them early. That=
-'s=20
-> the whole point of the device tree after all - we have an ordering th=
-at is=20
-> enforced by its topology, and that we sort by when things were added.
+On Sat, 2007-03-31 at 19:17 +0200, Ingo Molnar wrote:
 
-Right, but "when things get added" doesn't correlate well to
-"when they should get suspended/resumed".  It's also in basic
-conflict with runtime PM models, where devices may be suspended
-at essentially any time.  And sysdevs are even stranger.
+> yeah. There's some practical problems that need to be sorted out: much 
+> of the current GTOD code is irq-driven (and all GTOD locks are 
+> irq-safe), while the sysfs code needs to run in process-context level. 
+> 
+> Clocksources 'arrive' and 'depart' in hardirq context (which is the 
+> primary place where we notice their breakage, determine that they are 
+> now verified to be usable, etc.). This came partly from legacy: the 
+> gradual conversion of the monolithic time code, and the need to preserve 
+> GTOD and non-GTOD architectures without too much duplication. It also 
+> came partly because there's also a fundamental need to have accurate 
+> time, which is better served from irq context.
+> 
 
+Is this in reference to the irq-context clocksource polling stuff? I
+don't see a dire reason to keep that code, and I agree removing that is
+a certainly a worth while cleanup .. I added this cleanup to one of my
+trees when you first suggested it , and there is some infrastructure
+that really should be added to facilitate it.
 
-One way out:  rather than constructing that list as devices get
-enumerated, it could be constructed by a (linear-time, non-recursive)
-walk of the device tree(s) before they get suspended.
+Daniel
 
-(Or equivalently:  construct lists at enumeration time, but just
-adding them *right after their parent* rather than at the end of
-the list.)
-
-Would that solve the problem here?  Potentially ... if the tree is
-structured to meet Thomas' rules:
-
-> > The required resume order is:
-> >=20
-> > clocksources
-> > timekeeping
-> > clockevents
-> > tick management
-
-> So the only thing that needs to be done is to make sure that we add t=
-he=20
-> timer devices early during bootup - something we have to do *anyway*.=
- If a=20
-> device is added early in bootup, that automatically means that it wil=
-l be=20
-> suspended late, and resumed early - because we maintain that order al=
-l the=20
-> way through..
-
-> =A0=A0=A0=A0=A0=A0=A0=A0 =A0 =A0-- "clocksource" -- +-- HPET
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0|
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0+-- TSC
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0|
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0+-- i8259
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0|
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0+-- lapic timer
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0|
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0.. whatever else
-
-If each of those were a device node, with "clocksource" suspend/resume
-methods handling Thomas' "timekeeping" item, and simlarly for "clockeve=
-nt"
-devices ... I could see that all working neatly.
-
-- Dave
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
