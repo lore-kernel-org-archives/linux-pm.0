@@ -1,16 +1,18 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Sat, 31 Mar 2007 10:09:15 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0703311004310.6730@woody.linux-foundation.org>
+Date: Sat, 31 Mar 2007 19:17:40 +0200
+Message-ID: <20070331171740.GA11750@elte.hu>
 References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
 	<200703291546.48996.maximlevitsky@gmail.com>
 	<1175356272.28263.27.camel@localhost.localdomain>
 	<200703311956.35922.maximlevitsky@gmail.com>
+	<Pine.LNX.4.64.0703311004310.6730@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200703311956.35922.maximlevitsky@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703311004310.6730@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +22,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, tglx@linutronix.de, jgarzik@pobox.com, Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, linux-ide@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, tglx@linutronix.de, jgarzik@pobox.com, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Sat, 31 Mar 2007, Maxim Levitsky wrote:
+> Umm.. WHy not make the device tree look like this:
 > =
 
-> So maybe I was right afrer all,
-> Maybe it is better to add a suspend/resume hook to each clock source and =
-call =
+> 	    -- "clocksource" -- +-- HPET
+> 				|
+> 				+-- TSC
+> 				|
+> 				+-- i8259
+> 				|
+> 				+-- lapic timer
+> 				|
+> 				.. whatever else
+> =
 
-> it from timekeeping_resume() ?
+> and use the "struct device" that we *have* for this? The whole "struct =
 
-Umm.. WHy not make the device tree look like this:
+> device" is literally designed to do this, and to be embedded into =
 
-	    -- "clocksource" -- +-- HPET
-				|
-				+-- TSC
-				|
-				+-- i8259
-				|
-				+-- lapic timer
-				|
-				.. whatever else
+> whatever bigger structures you have that describes higher-level =
 
-and use the "struct device" that we *have* for this? The whole "struct =
+> behaviour. Ie you'd put a "struct device" inside the "struct =
 
-device" is literally designed to do this, and to be embedded into whatever =
+> clocksource".
 
-bigger structures you have that describes higher-level behaviour. Ie you'd =
+yeah. There's some practical problems that need to be sorted out: much =
 
-put a "struct device" inside the "struct clocksource".
+of the current GTOD code is irq-driven (and all GTOD locks are =
 
-That thingalready *has* the suspend/resume hooks, and it will mean that =
-
-people will see the clocks in the device tree rather than have a new =
-
-notion.
+irq-safe), while the sysfs code needs to run in process-context level. =
 
 
-			Linus
+Clocksources 'arrive' and 'depart' in hardirq context (which is the =
+
+primary place where we notice their breakage, determine that they are =
+
+now verified to be usable, etc.). This came partly from legacy: the =
+
+gradual conversion of the monolithic time code, and the need to preserve =
+
+GTOD and non-GTOD architectures without too much duplication. It also =
+
+came partly because there's also a fundamental need to have accurate =
+
+time, which is better served from irq context.
+
+i very much agree that this should and must be cleaned up, but it needs =
+
+quite a bit more logistics than it might appear at first sight. =
+
+Clockevents basically just followed (and had to follow) the direction of =
+
+clocksources in this regard.
+
+	Ingo
