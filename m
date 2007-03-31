@@ -1,89 +1,75 @@
-From: uk national lottery <uknationallottery@yahoo.co.uk>
-Subject: your email have won!!
-Date: Sat, 31 Mar 2007 09:51:07 -0400
-Message-ID: <20070331095107.uob312d9328wow4s@webmail.coqui.net>
-Reply-To: uklottery_claimsoffice_07@yahoo.dk
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: Power Mangement Interfaces
+Date: Sat, 31 Mar 2007 09:16:13 -0600
+Message-ID: <20070331151613.GA8091@cosmic.amd.com>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<1175300283.23438.38.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <devel-bounces@laptop.org>
+In-Reply-To: <1175300283.23438.38.camel@johannes.berg>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+List-Unsubscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
+	<mailto:devel-request@laptop.org?subject=unsubscribe>
+List-Archive: <http://mailman.laptop.org/pipermail/devel>
+List-Post: <mailto:devel@laptop.org>
+List-Help: <mailto:devel-request@laptop.org?subject=help>
+List-Subscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
+	<mailto:devel-request@laptop.org?subject=subscribe>
+Sender: devel-bounces@laptop.org
+Errors-To: devel-bounces@laptop.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, devel@laptop.org
 List-Id: linux-pm@vger.kernel.org
 
+On 31/03/07 02:18 +0200, Johannes Berg wrote:
+> On Fri, 2007-03-30 at 17:57 -0600, Jordan Crouse wrote:
+> 
+> I think the sources file isn't really useful, a
+>   grep -l 1 /sys/power/wakeup/*
+> should do.
 
-ONLINE NOTIFICATION UNIT.
-UK NATIONAL ONLINE LOTTERY(HOME OFFICE).
-165 FULHAM PALACE ROAD W6 8JB
-UNITED KINGDOM.
-REFERENCE NUMBER: UKL/478593G9/19
-BATCH NUMBER: 01/209/AD16G
-OUR REF: 12190/14
-TICKET NUMBER: 112-4540-525-106
+I was just trying to be friendly to folks who may be used to the ACPI
+method. 
 
-                 WINNING NOTIFICATION: FINAL ANNONCEMENT
-This is to announce to you the detail of the selected  addresses of the
-annual international result of the UK NATIONAL LOTTERY ONLINE PROMOTION
-PROGRAMME held was conducted from an exclusive list of 25,000,000 e-mail
-addresses of individual and corporate bodies picked by an advanced automated
-random ballot search from the internet as part of our international release
-program 'NO TICKET WERE SOLD. After this automated ballot,your e-mail addre=
-ss
-attached to ticket number: 112-4540-525-106 with Serial number 0149-16
-drew the lucky numbers:19-37-06-13-29, and a bonus number of 24 which
-subsequently won you the lottery in the second category.
+> About different possible states: I think each of those can have
+> different possible wakeup sources, ACPI can afaik go to S4 and still be
+> able to configure the wakeup sources. So I suppose this really needs to
+> be something like /sys/power/wakeup/<state>/<event> then where <state>
+> is one of (currently) "mem", "disk" and "standby". And then change the
+> interface of pm_register_wakeup_source to include the state.
+> 
+> Also, I'm not sure I like the interface with the name of the wakeup
+> event set by the platform driver. That will probably lead to
+> inconsistencies, a centrally maintained file with items could be nicer.
 
-You have therefore been approved to claim a total of =A3480,152.00(Four
-hundred and eighty thousand one hundred and fifty-two Great Britain Pounds)=
- in
-cash credited to file UXL/03920462943/07. This is from a total cash prize of
-=A33,361,064.00 shared equally amongst the first seven (7) lucky winners
-in this category i.e Match 5 plus bonus.
+I considered that - but different platforms and PM methods may have 
+radically different events (will WLAN ever be an event that any other x86
+platform would use)?
 
-Please note that your lucky winning number falls within our European
-booklet representative office in the United Kingdom as indicated in your pl=
-ay
-coupon. In view of this, your =A3480,152.00 (Four hundred and eighty thousa=
-nd
-one hundred and fifty-two Great Britain Pounds) would be released to you by=
- any
-of
-our payment office in the United Kingdom.
+So I thought it best that we allow the platform driver to provide the
+name, and then enforce consistancy from the developers. 
 
-Your assigned claims agent will immediately commence the process to
-facilitate the release of your funds as soon as you contact him via electro=
-nic
-mail (email) or other options made available to you.
+> About test mode: there is such a thing for suspend to disk. In fact, if
+> you just want to test driver suspend you could use that. See
+> the /sys/power/disk file.
 
-Official: Mr. James Harry.
-Representative office.
-+44-704-571-4489
-10 Camelot close Thamesmead.
-London E280 ES United Kingdom.
-Email: uklottery_claimsoffice_07@yahoo.dk
+Yeah - I stole the idea from there.  That only works when you go down the
+suspend to disk path, though, and I wanted to make sure we were going down
+our own STR path. We go all the way into our sleep methods (in fact, I used
+it to catch an early bug where we were not restoring the stack correctly in
+the lowlevel resume function).  I think there are other uses for the test
+mode that even extend into the firmware - consider a clocks on test method
+that goes as far as setting up the wake events, but never actually turn
+off the power rails.
 
-Please remember to quote your reference number as the subject of your
-correspondences with your claims officer. Furthermore, should there be
-any change of your address, do inform your claims officer as soon as possib=
-le.
-Congratulations once more from all members and staffs of this program
-thank youfor being part of our online promotional lottery program.
+Thanks for your comments.
+Jordan
 
-Yours Truly,
-Sir. Stephen Smith.
-Co-ordinator(Online Promo Programme).
-
-
-
-
-
-----------------------------------------------------------------
-This message was sent using http://webmail.coqui.net
+-- 
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
