@@ -1,12 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: Power Mangement Interfaces
-Date: Sat, 31 Mar 2007 02:18:03 +0200
-Message-ID: <1175300283.23438.38.camel@johannes.berg>
+Date: Sat, 31 Mar 2007 02:21:30 +0200
+Message-ID: <1175300491.23438.40.camel@johannes.berg>
 References: <20070330235759.GC4252@cosmic.amd.com>
+	<1175300283.23438.38.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1190542818=="
+Content-Type: multipart/mixed; boundary="===============1336961554=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070330235759.GC4252@cosmic.amd.com>
+In-Reply-To: <1175300283.23438.38.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,71 +22,51 @@ Cc: linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, devel@laptop.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1190542818==
+--===============1336961554==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-Cgnjn1SY5pCPpk9OwP10"
+	boundary="=-gcT86/1Q4vviHgw/2LP7"
 
 
---=-Cgnjn1SY5pCPpk9OwP10
+--=-gcT86/1Q4vviHgw/2LP7
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-03-30 at 17:57 -0600, Jordan Crouse wrote:
+On Sat, 2007-03-31 at 02:18 +0200, Johannes Berg wrote:
 
-> I am now turning my attention to handling wakeup events - in particular,
-> events that we can set at run-time.  My thoughts on the matter are=20
-> detailed here:
->=20
-> http://wiki.laptop.org/go/Power_Management_Interface
+> > I am now turning my attention to handling wakeup events - in particular=
+,
+> > events that we can set at run-time.  My thoughts on the matter are=20
+> > detailed here:
+> >=20
+> > http://wiki.laptop.org/go/Power_Management_Interface
 
-Interesting. I thought about something like that a few days ago and it
-was pretty much identical to what you're saying there. Except I didn't
-write it down ;)
-
-A few comments:
-
-I think the sources file isn't really useful, a
-  grep -l 1 /sys/power/wakeup/*
-should do.
-
-About different possible states: I think each of those can have
-different possible wakeup sources, ACPI can afaik go to S4 and still be
-able to configure the wakeup sources. So I suppose this really needs to
-be something like /sys/power/wakeup/<state>/<event> then where <state>
-is one of (currently) "mem", "disk" and "standby". And then change the
-interface of pm_register_wakeup_source to include the state.
-
-Also, I'm not sure I like the interface with the name of the wakeup
-event set by the platform driver. That will probably lead to
-inconsistencies, a centrally maintained file with items could be nicer.
-
-About test mode: there is such a thing for suspend to disk. In fact, if
-you just want to test driver suspend you could use that. See
-the /sys/power/disk file.
+Hm, another thing. The RTC alarm wakeup event, wouldn't that require
+programming the time too? And if so, should that be done through the
+power interface to it?
 
 johannes
 
---=-Cgnjn1SY5pCPpk9OwP10
+--=-gcT86/1Q4vviHgw/2LP7
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGDai7/ETPhpq3jKURAotlAJ9QvDuTUQI9DspU990/2+AssEu+wQCfURes
-tcxxFUFlFiCRWtDPCg7rxy4=
-=iiZJ
+iD8DBQBGDamK/ETPhpq3jKURAnEYAJ4t1KdfPs5WTC/POvwrhgl/njDceQCbBx7d
+U+D0mODmC7xJFe0DIrfqclc=
+=7JuQ
 -----END PGP SIGNATURE-----
 
---=-Cgnjn1SY5pCPpk9OwP10--
+--=-gcT86/1Q4vviHgw/2LP7--
 
 
---===============1190542818==
+--===============1336961554==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============1190542818==--
+--===============1336961554==--
