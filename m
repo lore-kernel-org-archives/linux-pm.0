@@ -1,14 +1,16 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [3/4] 2.6.21-rc5: known regressions (v2)
-Date: Sat, 31 Mar 2007 22:39:02 -0700
-Message-ID: <460F4576.6010904@goop.org>
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: Re: [4/4] 2.6.21-rc5: known regressions (v2)
+Date: Sun, 1 Apr 2007 10:04:24 +0300
+Message-ID: <20070401070424.GB5436@mellanox.co.il>
 References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
-	<20070330213220.GO14134@stusta.de>
+	<20070330214956.GQ14134@stusta.de>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070330213220.GO14134@stusta.de>
+Content-Disposition: inline
+In-Reply-To: <20070330214956.GQ14134@stusta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Soeren Sonnenburg <kernel@nn7.de>, Tejun Heo <htejun@gmail.com>, Fr??d??ric Riss <frederic.riss@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tino Keitel <tino.keitel@gmx.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Maxim Levitsky <maximlevitsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Adrian Bunk wrote:
-> Subject    : ThinkPad X60: resume no longer works  (PCI related?)
-> References : http://lkml.org/lkml/2007/3/13/3
-> Submitter  : Dave Jones <davej@redhat.com>
->              Jeremy Fitzhardinge <jeremy@goop.org>
-> Caused-By  : PCI merge
->              commit 78149df6d565c36675463352d0bfe0000b02b7a7
-> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
->              Rafael J. Wysocki <rjw@sisk.pl>
+> Subject    : after resume: X hangs after drawing a couple of windows
+>              workaround: clocksource=3Dacpi_pm
+> References : http://lkml.org/lkml/2007/3/8/117
+>              http://lkml.org/lkml/2007/3/25/20
+>              http://lkml.org/lkml/2007/3/26/151
+> Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+> Handled-By : Thomas Gleixner <tglx@linutronix.de>
 > Status     : problem is being debugged
->   =
+
+Adrian,
+the bug was found by Maxim Levitsky and
+the following patch appears to have fixed the problem:
+http://lkml.org/lkml/2007/3/28/104
+
+the right way to fix it is still being discussed:
+http://lkml.org/lkml/2007/3/28/182
 
 
-I know this is currently a subject of discussion on lkml, but I wanted
-to confirm that booting with "hpet=3Ddisable" fixes this, and resume works
-for me.  It ends up using acpi_pm as the clocksource.
+-- =
 
-    J
+MST
