@@ -1,15 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Power Mangement Interfaces
-Date: Sat, 31 Mar 2007 20:01:54 -0700
-Message-ID: <200703312001.55231.david-b__10170.1715765104$1175396549$gmane$org@pacbell.net>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200703311157.03975.david-b@pacbell.net>
-	<20070401010155.GA10151@cosmic.amd.com>
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+Date: Sun, 1 Apr 2007 11:13:31 +0800
+Message-ID: <b6a2187b0703312013o6c305e00v829894f215812550@mail.gmail.com>
+References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
+	<20070331170245.GA9244@elte.hu>
+	<200703311118.55132.david-b@pacbell.net>
+	<200703311232.57505.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070401010155.GA10151@cosmic.amd.com>
+In-Reply-To: <200703311232.57505.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,135 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, jgarzik@pobox.com, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Maxim Levitsky <maximlevitsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 31 March 2007 6:01 pm, Jordan Crouse wrote:
-> On 31/03/07 11:57 -0700, David Brownell wrote:
-> > The other part is the platform code.  On embedded hardware that's usual=
-ly
-> > just calling device_init_wakeup() before registering the platform devic=
-es,
-> > and supporting enable_irq_wake().  On x86 that gets messy; ACPI is ther=
-e,
-> > and PCI initialization can't set device_init_wakeup() because of confli=
-cts
-> > with how PPC initializes PCI.
-> =
+On 4/1/07, David Brownell <david-b@pacbell.net> wrote:
+> for those will all get grouped together ... suspended "very late" and
+> resumed "very early", regardless of when they get registered.  Pretty
+> much the driver model parts of what Linus was suggesting; clockevent
+> bits would still be needed.
 
-> enable_irq_wake() looks like it integrates very well with the AT91, since
-> it seems that there is a 1:1 mapping of interrupts to wakeup sources. =
+I tested your patch with CONFIG_NO_HZ=3Dy, but it still hangs while
+suspending to disk (before the percent saving).
 
+But one discovery. I get tired of all these hangs, so I decided to
+press some keys and the power button. Accidentally, the suspend
+proceeded and successfully suspended!
 
-The same is true for every embedded CPU I've had reason to look at.
+I tried many more times, and discovered that to proceed with the
+suspend, hit any 4 keys slowly. (e.g. "F1 F2 F3 F4", or "1 2 3 4").
 
+My .config has CONFIG_NO_HZ=3Dy and CONFIG_HIGH_RES_TIMERS=3Dy, but I
+suppose CONFIG_HIGH_RES_TIMERS=3Dy gots nothing to do with the hang.
 
-> The =
+I went back with my vanilla 2.6.21-rc5 with Maxim's patch, and with
+hitting the keys, I could suspend to disk with CONFIG_NO_HZ=3Dy and
+CONFIG_HIGH_RES_TIMERS=3Dy.
 
-> story is much more muddled for x86 - there is no direct mapping of interr=
-upts
-> to wakeup sources, and the PIC has nothing to do with handling wake event=
-s.
-
-Right.  Plus there often seems to be an assumption that some "embedded
-(micro)controller" (EC) manages system bringup/wakeup/runtime.
-
-
-> On the Geode, we have 17 possible wake sources, all of which are ORed
-
-What are those?  You mentioned four before.  (RTC alarm, two GPIOs,
-and the power button.)  I'd guess various PCI devices can also issue
-wakeups.  (And if USB is one of them, up to 126 USB devices hooked
-up to each USB host controller!)
-
-
-> together to form the SCI interrupt. Some of the events, like the RTC,
-> UART, and USB wakeup sources are associated with devices that have their
-> own interrupts, but there is no correlation between the RTC interrupt, =
-
-> for example, and enabling it as a wakeup source.  It seems overly complex
-> to try to map these to individual interrupts, and certainly seems wasteful
-> to get the PIC involved in something it just doesn't understand.
-
-I concluded the same thing a while back:  x86 PC platforms seem to have
-been architected to isolate PM concerns from runtime concerns.  This is
-surely part of why "it only takes 35 Watts!!" counts as "low" power despite
-the decimal point being three or more digits left of where it should be!
-
-I wonder what a 35 Watt cell phone would look like?  :)
-
- =
-
-> > As in "echo enabled > /sys/devices/.../power/wakeup" (to get the defaul=
-t),
-> > or "echo disabled > ..." to disable it.  For PCs, with ACPI, that invol=
-ves
-> > two patches I just posted to the RTC list (and CC'd Len on), and replac=
-ing
-> > the ancient/legacy/ACPI-only /proc/acpi/alarm interface.
-> =
-
-> The link is here for the interested:
-> =
-
-> http://groups.google.com/group/rtc-linux/browse_thread/thread/ae7fe3436e0=
-1e7fa
-
-There are two other messages that may be of interest too, including the one
-defining and calling the hooks implemented in that message; click on the li=
-st
-name to get the archives.
-
-
-> This looks very good, and is pretty close to what I was proposing.  =
-
-> Replace the acpi_*_event() calls with a generic pm_ infrastructure, and
-
-Inside ACPI ... why?
-
-
-> add hooks to the pm_ops for each individual PM system to handle the wakeu=
-ps
-> in whatever way they see fit, and we're there.  It would be slightly more
-> complex for AT91 and friends to match this (since they have the advantage
-> of a 1:1 mapping right now), but in the long run, I think everybody would
-> benefit.
-
-I guess I don't see why this isn't already sufficiently generic ...
-
-As a rule, all those embedded drivers are platform-specific and have
-no need for more than a few enable_irq_wake() calls, in addition to
-whatever controller setup and clock management they do.  Since they
-can't be very portable, they don't need to generalize such stuff.
-
-And for PCI based things, pci_enable_wake() encapsulates everything
-that needs doing.  Not that ACPI actually *does* anything yet!  But
-the stuff that writing /proc/acpi/wakeup enables should happen in that
-routine ... and eventually PCI runtime wake events should work too.
-(So:  no drivers would ever call ACPI directly, and they already have
-the generic call that ACPI should hook.)
-
-That seems to cover most drivers in Linux, without a need for any
-new generic PM infrastructure.  Did I overlook something important?
-
-
-> The only other issue then, is how we could define and manage wakeup events
-> for events that aren't associated with specific devices, like power button
-> and lid events.  We'll need some way to control those somewhere in sysfs -
-> if not in /sys/power/wakeup like I had proposed, then somewhere under the
-> platform or system hierarchy .
-
-I see /sys/devices/acpi_system:00/button_power:00 on this system; and
-/sys/devices/acpi_system:00/device:00/PNP0C0D:00 has path \_SB_.LID_ ...
-such device nodes already exist, even though they're not really hooked
-up to anything much.  Notably, their "wakeup" state is not initialized.
-
-And while it seems that the three USB controllers on this system show up
-as /sys/devices/acpi_system:00/device:00/PNP0A03:00/device:{01,02,03} I
-have no idea which one is /sys/devices/pci0000:00/0000:00:02.2 versus
-0000:00:02.1 or 0000:00:02.0 ... I know that USB0 is device:01 and so
-on (by reading "path"), but associating one with a PCI device seems to
-involve pure guesswork.
-
-- Dave
+Jeff.
