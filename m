@@ -1,16 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Sat, 31 Mar 2007 21:13:51 -0700
-Message-ID: <200703312113.52789.david-b@pacbell.net>
-References: <Pine.LNX.4.64.0703160925270.26106@woody.linux-foundation.org>
-	<200703311232.57505.david-b@pacbell.net>
-	<b6a2187b0703312013o6c305e00v829894f215812550@mail.gmail.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [3/4] 2.6.21-rc5: known regressions (v2)
+Date: Sat, 31 Mar 2007 22:39:02 -0700
+Message-ID: <460F4576.6010904@goop.org>
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	<20070330213220.GO14134@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b6a2187b0703312013o6c305e00v829894f215812550@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <20070330213220.GO14134@stusta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,19 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>, jgarzik@pobox.com, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Jens Axboe <jens.axboe@oracle.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Maxim Levitsky <maximlevitsky@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 31 March 2007 8:13 pm, Jeff Chua wrote:
-> On 4/1/07, David Brownell <david-b@pacbell.net> wrote:
-> > for those will all get grouped together ... suspended "very late" and
-> > resumed "very early", regardless of when they get registered.  Pretty
-> > much the driver model parts of what Linus was suggesting; clockevent
-> > bits would still be needed.
-> =
+Adrian Bunk wrote:
+> Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+> References : http://lkml.org/lkml/2007/3/13/3
+> Submitter  : Dave Jones <davej@redhat.com>
+>              Jeremy Fitzhardinge <jeremy@goop.org>
+> Caused-By  : PCI merge
+>              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+>              Rafael J. Wysocki <rjw@sisk.pl>
+> Status     : problem is being debugged
+>   =
 
-> I tested your patch with CONFIG_NO_HZ=3Dy, but it still hangs while
-> suspending to disk (before the percent saving).
 
-Of course.  No clockevent updates...
+I know this is currently a subject of discussion on lkml, but I wanted
+to confirm that booting with "hpet=3Ddisable" fixes this, and resume works
+for me.  It ends up using acpi_pm as the clocksource.
+
+    J
