@@ -1,15 +1,13 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Power Mangement Interfaces
-Date: Mon, 2 Apr 2007 10:53:54 -0700
-Message-ID: <200704021053.55370.david-b__17281.9422711202$1175540926$gmane$org@pacbell.net>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200704011728.10966.david-b@pacbell.net>
-	<20070402165511.GD5024@cosmic.amd.com>
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+Date: Mon, 2 Apr 2007 12:16:21 -0700
+Message-ID: <200704021216.22280.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0704021000450.1743-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070402165511.GD5024@cosmic.amd.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704021000450.1743-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,93 +18,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 02 April 2007 9:55 am, Jordan Crouse wrote:
-> On 01/04/07 17:28 -0700, David Brownell wrote:
-
-> > > And so forth.  Like the AT91, we enable the wakeup events prior to
-> > > suspending. I'm willing to bet that other PM methods like ACPI
-> > > could pick this up pretty quickly too. =
-
-> > =
-
-> > With AT91 (and most ARMs) the wake events are normal IRQs, and the
-> > irq infrastructure already handles wake events cleanly.  So I'd
-> > claim they don't _want_ to change something that's inexpensive,
-> > already deployed (training, code, testing, etc), and working.
-> > =
-
-> > So I hope you'll tolerate me if I view this as less of a "how do
-> > we get a generic solution" and more of a "how does _this_ x86-ish
-> > issue get solved cleanly".
+On Monday 02 April 2007 7:16 am, Alan Stern wrote:
+> On Saturday March 31, 2007, David Brownell wrote:
 > =
 
-> Thats fair.  x86 does live in a different world then the other embedded
-> chips.  I think its reasonable for the x86 folks to get their story strai=
-ght
-> and then move on from there.
-
-And I think it's good that OLPC doesn't seem to be starved of the
-relevant lowlevel chip specs, so the "story" can be based on what
-the hardware needs, rather than only what ACPI allows.
-
-
-> > > Moving =
-
-> > > it into the PM infrastructure seems the best way to handle everybody
-> > > equally, regardless of the relative intelligence or stupidity of thei=
-r =
-
-> > > hardware implementation.
+> > Change how the PM list is constructed, so that devices are added right
+> > after their parents (when they have one) rather than at the end of the
+> > list.  ...
 > > =
 
-> > I guess that's where we disagree:  you're assuming "one call to rule
-> > them all", where I'm thinking that IRQ calls should manage IRQs,
-> > PCI calls should manage PME#, and so on.
->  =
+> > This patch has a potential downside for devices that have multiple
+> > power dependencies and which "just happened to work" before.
+> =
 
-> Thats fine - I am not sold on a "one call to rule them all", but I do
-> want to avoid any #ifdef CONFIG_PM_ACPI #elsif CONFIG_OLPC_PM #else
-> nonsense.  =
+> Dave:
+> =
 
+> Would you mind retracting this patch?  It will interfere with some work
+> I've been doing in USB, work that relies on exactly the sort of multiple =
 
-Right.  In terms of source code, per-device callbacks can encapsulate
-that neatly:  OLPC won't use ACPI files, and vice versa.  There may be
-cases where that approach isn't enough, but it should cover a bunch
-of the most important cases.  (Maybe OLPC won't need any more ...)
+> power dependency you mention.
 
+It's out there for discussion right now more than merging.
 
-> We are keenly aware that we're committing a minor sin by implementing
-> yet another PM interface for x86. =
-
-
-I couldn't call it a sin unless I thought that ACPI were a Goddess,
-to be worshipped at the altar of HP/Intel/Microsoft/Phoenix/Toshiba!
-Somehow, I don't think you'll find many people who think that ... ;)
+What the driver model does now is problematic.  Even if the clockevent
+stuff gets different fixes, those driver model issues still exist:  the
+existence of dependencies that are not part of the device tree.
 
 
-> But we believe that our heart is in the =
+> The problem is this: When a low- or full-speed USB device is resumed =
 
-> right place, and we are dedicated to doing the right thing, and trying
-> our hardest not to contribute further to fragmenting the PM subsystem with
-> implementation specific code. In many cases we're looking to help
-> bring the others into the fold, especially our fellow x86 implementations
-> that suffer from the same issues that we do.
-
-Implementation-specific stuff isn't really a problem except when sneaks
-out into general purpose code.  At that point you want some abstractions
-to hide those platform details.
-
-Yes, I suspect you could be a big help to non-ACPI implementors on x86.
+> following a power loss (this is part of the "persistent USB" patch), it's =
 
 
-> I appreciate your comments, and the rtc-cmos code will go to good use.
+Yeah, that "persistent USB" stuff that I don't like at all!   Power off
+is power off, and should be treated just like any other case of the USB
+circuit being broken.  (Offtopic here, of course.)
 
-Good!  RTCs are interesting to PM primarily because most platforms seem
-to offer some kind of "wake alarm" mechanism ... which means they're a fair
-test case for whether a cross-platform interface actually works!
+
+> necessary for the corresponding EHCI root hub to be resumed first so that =
+
+> the port's OWNER bit can be set properly.
+> =
+
+> It works fine as long as devices are resumed in order of registration,
+> because a low- or full-speed USB device can't be registered before the
+> high-speed root hub.  (If it was, it would be disconnected when the
+> high-speed root hub initialized and took control of the port.)  So this
+> isn't a "just happened to work" situation; it really is a critical
+> ordering dependency.
+
+No, it's a "just happened to work" because the only ordering promise
+that was explicitly made is that the parent/child relationships will
+be obeyed.  Any additional ordering dependency is out-of-scope of the
+current driver model -- and that's a proble that eventually needs to
+be fixed.
+
+This is the kind of thing that the pm_parent relationship was (AFAICT)
+originally supposed to handle.  Of course, it doesn't/can't, given the
+current implementation ... that relationship is never used.
+
+
+> The clock source problem can be solved in other ways.  For instance, righ=
+t =
+
+> now things are set up so that clock sources are registered at various =
+
+> random times and the clockevents code adapts to use the best available =
+
+> device, right?.
+
+Clocksource ~=3D counter, clockevent ~=3D timer irq ... you're mixing the
+two, they're different!  Both can be registered at various times; and
+the best available instance of both is used.  (Unfortunately "best" is
+not a static policy on x86 hardware.)
+
+
+> So simply arrange for a clock source to "depart" as it is  =
+
+> suspended; then clockevents can fall back to using other lower-precision =
+
+> sources.  As long as devices suspend in reverse order of discovery, the =
+
+> system should always function properly.
+
+It's not that simple though, especially with HPET.  The BIOS may expect
+the PIT to work, but Linux currently (and problematically!) uses HPET in
+"legacy replacement mode".  And ISTR the problems are coming up when the
+system is already in a low-functionality state:  IRQs off everywhere,
+even timer ticks have stopped.
 
 - Dave
