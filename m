@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] Add suspend/resume for HPET
-Date: Mon, 2 Apr 2007 16:04:44 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
-References: <200704021216.22280.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Mon, 2 Apr 2007 23:18:27 +0200
+Message-ID: <200704022318.28451.rjw@sisk.pl>
+References: <460B6E4B.3060004@gmail.com> <200704012123.54797.rjw@sisk.pl>
+	<4610BDD7.5070201@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704021216.22280.david-b@pacbell.net>
+In-Reply-To: <4610BDD7.5070201@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,53 +19,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2 Apr 2007, David Brownell wrote:
-
-> What the driver model does now is problematic.  Even if the clockevent
-> stuff gets different fixes, those driver model issues still exist:  the
-> existence of dependencies that are not part of the device tree.
-
-> No, it's a "just happened to work" because the only ordering promise
-> that was explicitly made is that the parent/child relationships will
-> be obeyed.  Any additional ordering dependency is out-of-scope of the
-> current driver model -- and that's a proble that eventually needs to
-> be fixed.
+On Monday, 2 April 2007 10:24, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> >>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
+> >>>> swsusp: critical section:
+> >>>> swsusp: Need to copy 131380 pages
+> >>>> swsusp: Not enough free memory
+> >>>> Error -12 suspending
+> >>>> Enabling non-boot CPUs ...
 > =
 
-> This is the kind of thing that the pm_parent relationship was (AFAICT)
-> originally supposed to handle.  Of course, it doesn't/can't, given the
-> current implementation ... that relationship is never used.
+> > As a workaround, you can try to change the initial image size so that i=
+t's
+> > smaller than a half of the RAM size.  If that works, I'd like to send y=
+ou a
+> > debug patch, if you don't mind. :-)
+> =
 
-Just so.  In fact, there almost certainly are other dependencies that =
+> Yes, post it.
 
-nobody is aware of, simply because they have never had a chance to bite.
+Appended.  Please send me the dmesg output from after a failing suspend
+(or in case it doesn't fail, from after the first one).
 
-Such things can be rather difficult to pin down when they occur.  I would
-be happy enough to leave matters as they are, with a strict LIFO approach.  =
+> # cat /sys/power/image_size
+> 524288000
+> # echo disk >/sys/power/state
+> error
+> # echo disk >/sys/power/state
+> error
+> # echo $((400*1024*1024)) > /sys/power/image_size
+> # echo disk >/sys/power/state
+> ok
+> # dmesg|grep Memory:
+> Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
+> 1114k data, 188k init)
+> =
 
-If someone ever tries to parallelize suspend/resume in multiple threads,
-they will have their work cut out for them -- even probing ran into
-trouble when attempts were made to parallelize it, and it's a lot simpler.
+> I don't undestand it too much, but can't be shared video memory involved
+> somehow?
 
+No, I don't think so.  There probably is a bug in swsusp_shrink_memory().
 
-> It's not that simple though, especially with HPET.  The BIOS may expect
-> the PIT to work, but Linux currently (and problematically!) uses HPET in
-> "legacy replacement mode".  And ISTR the problems are coming up when the
-> system is already in a low-functionality state:  IRQs off everywhere,
-> even timer ticks have stopped.
+Greetings,
+Rafael
 
-I know nothing about the workings of the HPET and other clock code.  My =
+---
+---
+ kernel/power/snapshot.c |    2 +-
+ kernel/power/swsusp.c   |   10 +++++++---
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-point was this: Suspend passes through various intermediate stages in =
+Index: linux-2.6.21-rc5/kernel/power/snapshot.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.21-rc5.orig/kernel/power/snapshot.c
++++ linux-2.6.21-rc5/kernel/power/snapshot.c
+@@ -1093,7 +1093,7 @@ static int enough_free_mem(unsigned int =
 
-which some devices are available and others aren't.  So long as those =
+ 	}
+ =
 
-stages are exact duplicates (in reverse order) of the stages that occurred =
+ 	nr_pages +=3D count_pages_for_highmem(nr_highmem);
+-	pr_debug("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\=
+n",
++	printk("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
+ 		nr_pages, PAGES_FOR_IO, meta, free);
+ =
 
-during startup, it should be possible to make them all work.
+ 	return free > nr_pages + PAGES_FOR_IO + meta;
+Index: linux-2.6.21-rc5/kernel/power/swsusp.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
++++ linux-2.6.21-rc5/kernel/power/swsusp.c
+@@ -227,22 +227,26 @@ int swsusp_shrink_memory(void)
+ 		size =3D count_data_pages() + PAGES_FOR_IO;
+ 		tmp =3D size;
+ 		size +=3D highmem_size;
+-		for_each_zone (zone)
++		for_each_zone (zone) {
++			printk("Normal pages needed: %lu\n", tmp);
++			printk("Highmem pages needed: %lu\n", highmem_size);
+ 			if (populated_zone(zone)) {
++				tmp +=3D snapshot_additional_pages(zone);
+ 				if (is_highmem(zone)) {
+ 					highmem_size -=3D
+ 					zone_page_state(zone, NR_FREE_PAGES);
+ 				} else {
+ 					tmp -=3D zone_page_state(zone, NR_FREE_PAGES);
+ 					tmp +=3D zone->lowmem_reserve[ZONE_NORMAL];
+-					tmp +=3D snapshot_additional_pages(zone);
+ 				}
+ 			}
++		}
+ =
 
-Alan Stern
+ 		if (highmem_size < 0)
+ 			highmem_size =3D 0;
+ =
+
+ 		tmp +=3D highmem_size;
++		printk("Pages needed (total): %lu\n", tmp);
+ 		if (tmp > 0) {
+ 			tmp =3D __shrink_memory(tmp);
+ 			if (!tmp)
+@@ -252,7 +256,7 @@ int swsusp_shrink_memory(void)
+ 			tmp =3D __shrink_memory(size - (image_size / PAGE_SIZE));
+ 			pages +=3D tmp;
+ 		}
+-		printk("\b%c", p[i++%4]);
++		/*printk("\b%c", p[i++%4]);*/
+ 	} while (tmp > 0);
+ 	do_gettimeofday(&stop);
+ 	printk("\bdone (%lu pages freed)\n", pages);
