@@ -1,52 +1,48 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: Power Mangement Interfaces
-Date: Mon, 02 Apr 2007 17:36:04 +0800
-Message-ID: <1175506564.5321.8.camel@localhost.localdomain>
+Date: Mon, 02 Apr 2007 18:07:01 +0800
+Message-ID: <1175508421.5321.22.camel@localhost.localdomain>
 References: <20070330235759.GC4252@cosmic.amd.com>
+	 <200703310952.43696.david-b@pacbell.net>
+	 <20070331181612.GD8091@cosmic.amd.com>
+	 <200703311157.03975.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20070330235759.GC4252@cosmic.amd.com>
+In-Reply-To: <200703311157.03975.david-b@pacbell.net>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Jordan Crouse <jordan.crouse@amd.com>, linux-pm@lists.linux-foundation.org, devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-03-30 at 17:57 -0600, Jordan Crouse wrote: 
-> Hey all -
+> > The Geode (and most other platforms, I presume) allows us to configure
+> > which wakeup events are actually allowed to wake the system.  Currently,
+> > we are permanently enabling the power button as a wakeup source, but I
+> > want to eventually be able to pick and chose from any of our main wakeup
+> > sources:
+> > 
+> > * Power button
+> > * RTC Alarm
+> > * LID event (GPIO26)
+> > * wake event from the EC (GPIO27) 
 > 
-> I'm happy to report that the OLPC power management effort is proceeding
-> nicely.  We have suspend to RAM functional, and the system is resuming
-> back to the framebuffer console.  We have the usual blips (USB), but
-> those will be resolved in the fullness of time.
+> Yes ...
 > 
-> I am now turning my attention to handling wakeup events - in particular,
-> events that we can set at run-time.  My thoughts on the matter are 
-> detailed here:
 > 
-> http://wiki.laptop.org/go/Power_Management_Interface
+> > Of the four, the only device that can actually be configured to do anything
+> > is the RTC alarm, and for that we would use the /sys/devices/../power/wakeup
+> > infrastructure, but we would still need something in place to allow the 
+> > software to tell the hardware to enable the RTC event to wake the system.
 > 
-> I use the ACPI wakeup infrastructure as an example because a) it exists,
-> and b) it works.  However, it doesn't share nicely, and it is a /proc
-> file, so I sat down and thought of a more /sysfs friendly and generic
-> model.  I did keep APCI in mind, figuring that if a generic framework was
-> designed well enough, they could slowly transition over as well (which is
-> why the ACPI list is CCed).
-
-The ACPI sysfs conversion work is on the way. :)
-And we'll develop a generic interface for wakeup events to
-replace /proc/acpi/wakeup.
-Now a device may have two nodes in sysfs, one is the physical device
-node and another is the ACPI devices node. Take a PCI device for
-example, it's shown under /sys/devices/pci0000:00/...,
-while /sys/devices/acpisystem:00/.../PNPOAO3:00/... stands for the same
-device. This is a mess.
-And we will map the ACPI device node to the physical one, so
-that /sys/devices/pci0000:00/.../power/wakeup is the only one that we
-should take care of.
-If we want to make it more friendly, we can add /sys/power/wakeup/ and
-create syslinks to all the devices that support wakeup attribute.
+> As in "echo enabled > /sys/devices/.../power/wakeup" (to get the default),
+> or "echo disabled > ..." to disable it.  For PCs, with ACPI, that involves
+> two patches I just posted to the RTC list (and CC'd Len on), and replacing
+> the ancient/legacy/ACPI-only /proc/acpi/alarm interface.
+> 
+That's great. :)
+It would be better if you added linux-acpi@vger.kernel.org to the cc
+list.
 
 Thanks,
 Rui
