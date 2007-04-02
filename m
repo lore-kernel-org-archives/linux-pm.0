@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Mon, 2 Apr 2007 23:18:27 +0200
-Message-ID: <200704022318.28451.rjw@sisk.pl>
-References: <460B6E4B.3060004@gmail.com> <200704012123.54797.rjw@sisk.pl>
-	<4610BDD7.5070201@gmail.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Power Mangement Interfaces
+Date: Mon, 2 Apr 2007 14:31:04 -0700
+Message-ID: <200704021431.05096.david-b__21626.3251183138$1175549495$gmane$org@pacbell.net>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200704021124.21926.david-b@pacbell.net>
+	<20070402194039.GA8044@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4610BDD7.5070201@gmail.com>
+In-Reply-To: <20070402194039.GA8044@srcf.ucam.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,122 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 2 April 2007 10:24, Jiri Slaby wrote:
-> Rafael J. Wysocki napsal(a):
-> >>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
-> >>>> swsusp: critical section:
-> >>>> swsusp: Need to copy 131380 pages
-> >>>> swsusp: Not enough free memory
-> >>>> Error -12 suspending
-> >>>> Enabling non-boot CPUs ...
+On Monday 02 April 2007 12:40 pm, Matthew Garrett wrote:
+> On Mon, Apr 02, 2007 at 11:24:21AM -0700, David Brownell wrote:
 > =
 
-> > As a workaround, you can try to change the initial image size so that i=
-t's
-> > smaller than a half of the RAM size.  If that works, I'd like to send y=
-ou a
-> > debug patch, if you don't mind. :-)
+> > I don't follow this at all.  Most of the relevant devices have a PCI
+> > device driver, not an ACPI device driver.  Surely you aren't proposing
+> > that PCI drivers should incorporate lots of ACPI-specific code (which
+> > won't be useful on non-ACPI platforms) before they start to work right?
 > =
 
-> Yes, post it.
+> PCI devices have a handle to their ACPI object in platform_data,
 
-Appended.  Please send me the dmesg output from after a failing suspend
-(or in case it doesn't fail, from after the first one).
+Good to know.  I was under the impression that was still in the
+planning stage, not yet the working/reliable stage.  But I do see
+some ACPI code doing that; maybe I'll take more of a look.
 
-> # cat /sys/power/image_size
-> 524288000
-> # echo disk >/sys/power/state
-> error
-> # echo disk >/sys/power/state
-> error
-> # echo $((400*1024*1024)) > /sys/power/image_size
-> # echo disk >/sys/power/state
-> ok
-> # dmesg|grep Memory:
-> Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
-> 1114k data, 188k init)
+
+> so it's  =
+
+> easy enough to have generic code that interacts with both objects.
+
+Well, not really "generic" if it knows about ACPI.
+But at least not device-specific.
+
+
+> > For a PCI device driver, pci_enable_wake() is all the hook that it shou=
+ld
+> > ever need.  If ACPI magic is needed, it should be called from inside th=
+at
+> > routine.
 > =
 
-> I don't undestand it too much, but can't be shared video memory involved
-> somehow?
+> Yeah, I don't see that being a problem.
 
-No, I don't think so.  There probably is a bug in swsusp_shrink_memory().
+Except for not yet working that way! ;)
 
-Greetings,
-Rafael
-
----
----
- kernel/power/snapshot.c |    2 +-
- kernel/power/swsusp.c   |   10 +++++++---
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.21-rc5/kernel/power/snapshot.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.21-rc5.orig/kernel/power/snapshot.c
-+++ linux-2.6.21-rc5/kernel/power/snapshot.c
-@@ -1093,7 +1093,7 @@ static int enough_free_mem(unsigned int =
-
- 	}
- =
-
- 	nr_pages +=3D count_pages_for_highmem(nr_highmem);
--	pr_debug("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\=
-n",
-+	printk("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
- 		nr_pages, PAGES_FOR_IO, meta, free);
- =
-
- 	return free > nr_pages + PAGES_FOR_IO + meta;
-Index: linux-2.6.21-rc5/kernel/power/swsusp.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-+++ linux-2.6.21-rc5/kernel/power/swsusp.c
-@@ -227,22 +227,26 @@ int swsusp_shrink_memory(void)
- 		size =3D count_data_pages() + PAGES_FOR_IO;
- 		tmp =3D size;
- 		size +=3D highmem_size;
--		for_each_zone (zone)
-+		for_each_zone (zone) {
-+			printk("Normal pages needed: %lu\n", tmp);
-+			printk("Highmem pages needed: %lu\n", highmem_size);
- 			if (populated_zone(zone)) {
-+				tmp +=3D snapshot_additional_pages(zone);
- 				if (is_highmem(zone)) {
- 					highmem_size -=3D
- 					zone_page_state(zone, NR_FREE_PAGES);
- 				} else {
- 					tmp -=3D zone_page_state(zone, NR_FREE_PAGES);
- 					tmp +=3D zone->lowmem_reserve[ZONE_NORMAL];
--					tmp +=3D snapshot_additional_pages(zone);
- 				}
- 			}
-+		}
- =
-
- 		if (highmem_size < 0)
- 			highmem_size =3D 0;
- =
-
- 		tmp +=3D highmem_size;
-+		printk("Pages needed (total): %lu\n", tmp);
- 		if (tmp > 0) {
- 			tmp =3D __shrink_memory(tmp);
- 			if (!tmp)
-@@ -252,7 +256,7 @@ int swsusp_shrink_memory(void)
- 			tmp =3D __shrink_memory(size - (image_size / PAGE_SIZE));
- 			pages +=3D tmp;
- 		}
--		printk("\b%c", p[i++%4]);
-+		/*printk("\b%c", p[i++%4]);*/
- 	} while (tmp > 0);
- 	do_gettimeofday(&stop);
- 	printk("\bdone (%lu pages freed)\n", pages);
+- Dave
