@@ -1,44 +1,53 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [linux-pm] Power Mangement Interfaces
-Date: Mon, 2 Apr 2007 09:38:55 +0200
-Message-ID: <20070402073855.GB13104@elf.ucw.cz>
-References: <20070330235759.GC4252@cosmic.amd.com> <1175300283.23438.38.camel@johannes.berg> <20070331151613.GA8091@cosmic.amd.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Mon, 02 Apr 2007 10:24:55 +0200
+Message-ID: <4610BDD7.5070201@gmail.com>
+References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl> <460FF726.7090601@gmail.com> <200704012123.54797.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070331151613.GA8091@cosmic.amd.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-acpi@vger.kernel.org, linux-pm@lists.osdl.org, devel@laptop.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752940AbXDBIZJ@vger.kernel.org>
+In-Reply-To: <200704012123.54797.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Rafael J. Wysocki napsal(a):
+>>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
+>>>> swsusp: critical section:
+>>>> swsusp: Need to copy 131380 pages
+>>>> swsusp: Not enough free memory
+>>>> Error -12 suspending
+>>>> Enabling non-boot CPUs ...
 
-> > I think the sources file isn't really useful, a
-> >   grep -l 1 /sys/power/wakeup/*
-> > should do.
-> 
-> I was just trying to be friendly to folks who may be used to the ACPI
-> method. 
+> As a workaround, you can try to change the initial image size so that it's
+> smaller than a half of the RAM size.  If that works, I'd like to send you a
+> debug patch, if you don't mind. :-)
 
-Kernel is not place to be friendly.
+Yes, post it.
 
-#echo PWRB > /proc/acpi/wakeup
-#
-#Which changes the PWRB line to this:
-#
-#PWRB       1            *disabled
-#
-#I like this interface - its clean and pretty intuitive. Two problems -
-#first, it is ACPI specific, so we can't share it, and secondly, it
-#doesn't fit in to the sysfs model (which is to return only one value
-#per file). An alternative would be something like this: 
+# cat /sys/power/image_size
+524288000
+# echo disk >/sys/power/state
+error
+# echo disk >/sys/power/state
+error
+# echo $((400*1024*1024)) > /sys/power/image_size
+# echo disk >/sys/power/state
+ok
+# dmesg|grep Memory:
+Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
+1114k data, 188k init)
 
-Was this april's fools joke? /proc/acpi/wakeup is a nightmare, not a
-clean interface.
-								Pavel
+I don't undestand it too much, but can't be shared video memory involved
+somehow?
 
+regards,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
