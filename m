@@ -1,17 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Power Mangement Interfaces
-Date: Mon, 2 Apr 2007 20:40:39 +0100
-Message-ID: <20070402194039.GA8044__6936.33263367719$1175542897$gmane$org@srcf.ucam.org>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200703312001.55231.david-b@pacbell.net>
-	<1175509422.5321.37.camel@localhost.localdomain>
-	<200704021124.21926.david-b@pacbell.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+Date: Mon, 2 Apr 2007 16:04:44 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
+References: <200704021216.22280.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200704021124.21926.david-b@pacbell.net>
+In-Reply-To: <200704021216.22280.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,26 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 02, 2007 at 11:24:21AM -0700, David Brownell wrote:
+On Mon, 2 Apr 2007, David Brownell wrote:
 
-> I don't follow this at all.  Most of the relevant devices have a PCI
-> device driver, not an ACPI device driver.  Surely you aren't proposing
-> that PCI drivers should incorporate lots of ACPI-specific code (which
-> won't be useful on non-ACPI platforms) before they start to work right?
+> What the driver model does now is problematic.  Even if the clockevent
+> stuff gets different fixes, those driver model issues still exist:  the
+> existence of dependencies that are not part of the device tree.
 
-PCI devices have a handle to their ACPI object in platform_data, so it's =
+> No, it's a "just happened to work" because the only ordering promise
+> that was explicitly made is that the parent/child relationships will
+> be obeyed.  Any additional ordering dependency is out-of-scope of the
+> current driver model -- and that's a proble that eventually needs to
+> be fixed.
+> =
 
-easy enough to have generic code that interacts with both objects.
+> This is the kind of thing that the pm_parent relationship was (AFAICT)
+> originally supposed to handle.  Of course, it doesn't/can't, given the
+> current implementation ... that relationship is never used.
 
-> For a PCI device driver, pci_enable_wake() is all the hook that it should
-> ever need.  If ACPI magic is needed, it should be called from inside that
-> routine.
+Just so.  In fact, there almost certainly are other dependencies that =
 
-Yeah, I don't see that being a problem.
+nobody is aware of, simply because they have never had a chance to bite.
 
--- =
+Such things can be rather difficult to pin down when they occur.  I would
+be happy enough to leave matters as they are, with a strict LIFO approach.  =
 
-Matthew Garrett | mjg59@srcf.ucam.org
+If someone ever tries to parallelize suspend/resume in multiple threads,
+they will have their work cut out for them -- even probing ran into
+trouble when attempts were made to parallelize it, and it's a lot simpler.
+
+
+> It's not that simple though, especially with HPET.  The BIOS may expect
+> the PIT to work, but Linux currently (and problematically!) uses HPET in
+> "legacy replacement mode".  And ISTR the problems are coming up when the
+> system is already in a low-functionality state:  IRQs off everywhere,
+> even timer ticks have stopped.
+
+I know nothing about the workings of the HPET and other clock code.  My =
+
+point was this: Suspend passes through various intermediate stages in =
+
+which some devices are available and others aren't.  So long as those =
+
+stages are exact duplicates (in reverse order) of the stages that occurred =
+
+during startup, it should be possible to make them all work.
+
+Alan Stern
