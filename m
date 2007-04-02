@@ -1,53 +1,52 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Mon, 02 Apr 2007 10:24:55 +0200
-Message-ID: <4610BDD7.5070201@gmail.com>
-References: <460B6E4B.3060004@gmail.com> <200703291639.41515.rjw@sisk.pl> <460FF726.7090601@gmail.com> <200704012123.54797.rjw@sisk.pl>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: Power Mangement Interfaces
+Date: Mon, 02 Apr 2007 17:36:04 +0800
+Message-ID: <1175506564.5321.8.camel@localhost.localdomain>
+References: <20070330235759.GC4252@cosmic.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752940AbXDBIZJ@vger.kernel.org>
-In-Reply-To: <200704012123.54797.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, pavel@suse.cz
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20070330235759.GC4252@cosmic.amd.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
->>> On Thursday, 29 March 2007 09:44, Jiri Slaby wrote:
->>>> swsusp: critical section:
->>>> swsusp: Need to copy 131380 pages
->>>> swsusp: Not enough free memory
->>>> Error -12 suspending
->>>> Enabling non-boot CPUs ...
+On Fri, 2007-03-30 at 17:57 -0600, Jordan Crouse wrote: 
+> Hey all -
+> 
+> I'm happy to report that the OLPC power management effort is proceeding
+> nicely.  We have suspend to RAM functional, and the system is resuming
+> back to the framebuffer console.  We have the usual blips (USB), but
+> those will be resolved in the fullness of time.
+> 
+> I am now turning my attention to handling wakeup events - in particular,
+> events that we can set at run-time.  My thoughts on the matter are 
+> detailed here:
+> 
+> http://wiki.laptop.org/go/Power_Management_Interface
+> 
+> I use the ACPI wakeup infrastructure as an example because a) it exists,
+> and b) it works.  However, it doesn't share nicely, and it is a /proc
+> file, so I sat down and thought of a more /sysfs friendly and generic
+> model.  I did keep APCI in mind, figuring that if a generic framework was
+> designed well enough, they could slowly transition over as well (which is
+> why the ACPI list is CCed).
 
-> As a workaround, you can try to change the initial image size so that it's
-> smaller than a half of the RAM size.  If that works, I'd like to send you a
-> debug patch, if you don't mind. :-)
+The ACPI sysfs conversion work is on the way. :)
+And we'll develop a generic interface for wakeup events to
+replace /proc/acpi/wakeup.
+Now a device may have two nodes in sysfs, one is the physical device
+node and another is the ACPI devices node. Take a PCI device for
+example, it's shown under /sys/devices/pci0000:00/...,
+while /sys/devices/acpisystem:00/.../PNPOAO3:00/... stands for the same
+device. This is a mess.
+And we will map the ACPI device node to the physical one, so
+that /sys/devices/pci0000:00/.../power/wakeup is the only one that we
+should take care of.
+If we want to make it more friendly, we can add /sys/power/wakeup/ and
+create syslinks to all the devices that support wakeup attribute.
 
-Yes, post it.
-
-# cat /sys/power/image_size
-524288000
-# echo disk >/sys/power/state
-error
-# echo disk >/sys/power/state
-error
-# echo $((400*1024*1024)) > /sys/power/image_size
-# echo disk >/sys/power/state
-ok
-# dmesg|grep Memory:
-Memory: 1027160k/1048256k available (2559k kernel code, 20348k reserved,
-1114k data, 188k init)
-
-I don't undestand it too much, but can't be shared video memory involved
-somehow?
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+Thanks,
+Rui
