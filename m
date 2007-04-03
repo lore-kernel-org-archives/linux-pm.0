@@ -1,16 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Power Mangement Interfaces
-Date: Mon, 2 Apr 2007 14:31:04 -0700
-Message-ID: <200704021431.05096.david-b__21626.3251183138$1175549495$gmane$org@pacbell.net>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200704021124.21926.david-b@pacbell.net>
-	<20070402194039.GA8044@srcf.ucam.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2] Add suspend/resume for HPET
+Date: Tue, 03 Apr 2007 07:54:45 +0200
+Message-ID: <1175579686.28263.204.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
+Reply-To: tglx@linutronix.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070402194039.GA8044@srcf.ucam.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0704021557270.29713-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,44 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, Maxim Levitsky <maximlevitsky@gmail.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 02 April 2007 12:40 pm, Matthew Garrett wrote:
-> On Mon, Apr 02, 2007 at 11:24:21AM -0700, David Brownell wrote:
+On Mon, 2007-04-02 at 16:04 -0400, Alan Stern wrote:
+> > It's not that simple though, especially with HPET.  The BIOS may expect
+> > the PIT to work, but Linux currently (and problematically!) uses HPET in
+> > "legacy replacement mode".  And ISTR the problems are coming up when the
+> > system is already in a low-functionality state:  IRQs off everywhere,
+> > even timer ticks have stopped.
 > =
 
-> > I don't follow this at all.  Most of the relevant devices have a PCI
-> > device driver, not an ACPI device driver.  Surely you aren't proposing
-> > that PCI drivers should incorporate lots of ACPI-specific code (which
-> > won't be useful on non-ACPI platforms) before they start to work right?
-> =
+> I know nothing about the workings of the HPET and other clock code.  My =
 
-> PCI devices have a handle to their ACPI object in platform_data,
+> point was this: Suspend passes through various intermediate stages in =
 
-Good to know.  I was under the impression that was still in the
-planning stage, not yet the working/reliable stage.  But I do see
-some ACPI code doing that; maybe I'll take more of a look.
+> which some devices are available and others aren't.  So long as those =
 
+> stages are exact duplicates (in reverse order) of the stages that occurre=
+d =
 
-> so it's  =
+> during startup, it should be possible to make them all work.
 
-> easy enough to have generic code that interacts with both objects.
+Unfortunately it is not a fully linear problem. Devices are initialized
+late and put the system into a more complex state (i.e. dynticks,
+highres) which needs to be suspended and resumed. If we want to do this
+completely linear we need to do a full reverse rollback of the system
+states, which moves even more complexity into such systems.
 
-Well, not really "generic" if it knows about ACPI.
-But at least not device-specific.
+Also the linear approach is not working with other devices, as one can
+see with the still unresolved "IRQ#X nobody cared" issues at resume,
+which break my laptop. It works nice on startup of the system, but
+breaks on resume.
 
-
-> > For a PCI device driver, pci_enable_wake() is all the hook that it shou=
-ld
-> > ever need.  If ACPI magic is needed, it should be called from inside th=
-at
-> > routine.
-> =
-
-> Yeah, I don't see that being a problem.
-
-Except for not yet working that way! ;)
-
-- Dave
+	tglx
