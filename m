@@ -1,58 +1,56 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Tue, 03 Apr 2007 21:59:33 +0200
-Message-ID: <4612B225.7060003@gmail.com>
-References: <460B6E4B.3060004@gmail.com> <200704022318.28451.rjw@sisk.pl>
-	<46120449.7070302@gmail.com> <200704031250.07307.rjw@sisk.pl>
+From: "Miles Lane" <miles.lane@gmail.com>
+Subject: 2.6.21-rc5-mm4 -- laptop lid button only triggers suspend on HP dv1240us every other time.
+Date: Wed, 4 Apr 2007 00:33:36 -0500
+Message-ID: <a44ae5cd0704032233sa893351le119152668557e72@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704031250.07307.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S966301AbXDDFdk@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> Okay, so I think the appended patch is needed.  Could you please revert t=
-he
-[...]
-> Index: linux-2.6.21-rc5/kernel/power/swsusp.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
-> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
->  		size +=3D highmem_size;
->  		for_each_zone (zone)
->  			if (populated_zone(zone)) {
-> +				tmp +=3D snapshot_additional_pages(zone);
->  				if (is_highmem(zone)) {
->  					highmem_size -=3D
->  					zone_page_state(zone, NR_FREE_PAGES);
->  				} else {
->  					tmp -=3D zone_page_state(zone, NR_FREE_PAGES);
->  					tmp +=3D zone->lowmem_reserve[ZONE_NORMAL];
-> -					tmp +=3D snapshot_additional_pages(zone);
+This is an old bug.  It has been happening forever, but I'd love to
+know how I can help get this tracked down and fixed.
 
-This seems to work.
-
-thanks,
--- =
-
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+00:00.0 Host bridge: Intel Corporation 82852/82855 GM/GME/PM/GMV
+Processor to I/O Controller (rev 02)
+00:00.1 System peripheral: Intel Corporation 82852/82855 GM/GME/PM/GMV
+Processor to I/O Controller (rev 02)
+00:00.3 System peripheral: Intel Corporation 82852/82855 GM/GME/PM/GMV
+Processor to I/O Controller (rev 02)
+00:02.0 VGA compatible controller: Intel Corporation 82852/855GM
+Integrated Graphics Device (rev 02)
+00:02.1 Display controller: Intel Corporation 82852/855GM Integrated
+Graphics Device (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 03)
+00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 03)
+00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 03)
+00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M)
+USB2 EHCI Controller (rev 03)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 83)
+00:1f.0 ISA bridge: Intel Corporation 82801DBM (ICH4-M) LPC Interface
+Bridge (rev 03)
+00:1f.1 IDE interface: Intel Corporation 82801DBM (ICH4-M) IDE
+Controller (rev 03)
+00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M)
+SMBus Controller (rev 03)
+00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 03)
+00:1f.6 Modem: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M)
+AC'97 Modem Controller (rev 03)
+01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL-8139/8139C/8139C+ (rev 10)
+01:06.0 Network controller: Intel Corporation PRO/Wireless 2200BG
+Network Connection (rev 05)
+01:09.0 CardBus bridge: Texas Instruments PCIxx21/x515 Cardbus Controller
+01:09.2 FireWire (IEEE 1394): Texas Instruments OHCI Compliant IEEE
+1394 Host Controller
+01:09.3 Mass storage controller: Texas Instruments PCIxx21 Integrated
+FlashMedia Controller
+01:09.4 Generic system peripheral [0805]: Texas Instruments
+PCI6411/6421/6611/6621/7411/7421/7611/7621 Secure Digital Controller
