@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] pm_ops: add irq enable/disable hooks
-Date: Fri, 6 Apr 2007 01:30:52 +0200
-Message-ID: <200704060130.52885.rjw@sisk.pl>
-References: <1175810054.3489.34.camel@johannes.berg>
+Subject: Re: Fwd: Re: [Suspend-devel] s2both on powerpc
+Date: Fri, 6 Apr 2007 01:32:18 +0200
+Message-ID: <200704060132.18897.rjw@sisk.pl>
+References: <200704011837.16014.rjw@sisk.pl>
+	<200704051438.50653.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1175810054.3489.34.camel@johannes.berg>
+In-Reply-To: <200704051438.50653.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,39 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: =?iso-8859-1?q?C=E9dric_Boutillier?= <cedric.boutillier@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 April 2007 23:54, Johannes Berg wrote:
-> For powermac, we need to do some things between suspending devices and
-> device_power_off, for example setting the decrementer. This patch
-> introduces pm_ops.irq_off and pm_ops.irq_on which will be called instead
-> of disabling/enabling irqs so platforms can do a bit more work there if
-> necessary.
+On Thursday, 5 April 2007 23:38, David Brownell wrote:
+> On Sunday 01 April 2007 9:37 am, Rafael J. Wysocki wrote:
+> > Alan, Dave, could you please have a look at this?
+> > =
+
+> > Rafael
+> > =
+
+> > =
+
+> > ----------  Forwarded Message  ----------
+> > =
+
+> > Subject: Re: [Suspend-devel] s2both on powerpc
+> > Date: Sunday, 1 April 2007 18:18
+> > From: "C=E9dric Boutillier" <cedric.boutillier@gmail.com>
+> > To: "Johannes Berg" <johannes@sipsolutions.net>
+> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Tim Dijkstra" <newsuser@famdijk=
+stra.org>,
+> >	 suspend-devel@lists.sourceforge.net =
+
+> > =
+
+> > Hi !
+> > On 4/1/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> > > Have you gotten it to resume?
+> > > I'd test s2both but I haven't gotten s2disk to resume yet... Need to
+> > > test that patch.
+> > =
+
+> > Yes it resumes, but I am stuck at some point because after the image
+> > is reloaded from swap, the system freezes when (usb) modules are
+> > reloaded.
 > =
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Which module?  I'm guessing just ehci-hcd, but you should try each
+> of the relevant HCDs by themselves.  (And if you have any external
+> USB devices connected, their drivers ... and also see whether the
+> connection of the external device is itself a factor.)
 > =
 
-> ---
-> My previous patches moving to the pm_ops interface for powermac were
-> buggy due to exactly this issue, but the bug never surfaced on my
-> machine, only on machines with an Apple Desktop Bus (or an emulation
-> thereof)
+> There's something platform-specific going on, and some clues will
+> be needed to sort it out.
 > =
 
-> Does this look ok to you? Would you want different names? Should I stick
-> in a BUG_ON(interrupts_enabled()) or such?
+> All this used to work, as I recall...
 
-Well is this possible to do something like
+This has already been handled by Alan (identified as a hardware bug, patch
+is available).
 
-if (pm_ops->do_something_before_disabling_irqs)
-	pm_ops->do_something_before_disabling_irqs()
-local_irq_save(flags);
-if (pm_ops->do_something_after_disabling_irqs)
-	pm_ops->do_something_after_disabling_irqs()
-
-and analogously for enabling the IRQs?
-
+Thanks,
 Rafael
