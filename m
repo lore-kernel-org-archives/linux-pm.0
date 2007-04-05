@@ -1,11 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] pm_ops: add irq enable/disable hooks
-Date: Thu, 05 Apr 2007 23:54:14 +0200
-Message-ID: <1175810054.3489.34.camel@johannes.berg>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Fwd: Re: [Suspend-devel] s2both on powerpc
+Date: Thu, 5 Apr 2007 14:38:50 -0700
+Message-ID: <200704051438.50653.david-b@pacbell.net>
+References: <200704011837.16014.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200704011837.16014.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,87 +18,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.osdl.org>
-Cc: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?iso-8859-1?q?C=E9dric_Boutillier?= <cedric.boutillier@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-For powermac, we need to do some things between suspending devices and
-device_power_off, for example setting the decrementer. This patch
-introduces pm_ops.irq_off and pm_ops.irq_on which will be called instead
-of disabling/enabling irqs so platforms can do a bit more work there if
-necessary.
+On Sunday 01 April 2007 9:37 am, Rafael J. Wysocki wrote:
+> Alan, Dave, could you please have a look at this?
+> =
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Rafael
+> =
 
----
-My previous patches moving to the pm_ops interface for powermac were
-buggy due to exactly this issue, but the bug never surfaced on my
-machine, only on machines with an Apple Desktop Bus (or an emulation
-thereof)
+> =
 
-Does this look ok to you? Would you want different names? Should I stick
-in a BUG_ON(interrupts_enabled()) or such?
+> ----------  Forwarded Message  ----------
+> =
 
- include/linux/pm.h  |   10 ++++++++++
- kernel/power/main.c |   10 ++++++++--
- 2 files changed, 18 insertions(+), 2 deletions(-)
+> Subject: Re: [Suspend-devel] s2both on powerpc
+> Date: Sunday, 1 April 2007 18:18
+> From: "C=E9dric Boutillier" <cedric.boutillier@gmail.com>
+> To: "Johannes Berg" <johannes@sipsolutions.net>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Tim Dijkstra" <newsuser@famdijkst=
+ra.org>,
+>	 suspend-devel@lists.sourceforge.net =
 
---- wireless-dev.orig/include/linux/pm.h	2007-04-05 18:14:07.948549941 +0200
-+++ wireless-dev/include/linux/pm.h	2007-04-05 23:15:29.934829459 +0200
-@@ -131,9 +131,17 @@ typedef int __bitwise suspend_disk_metho
-  * @prepare: Prepare the platform for the given suspend state. Can return a
-  *	negative error code if necessary.
-  *
-+ * @irq_off: If assigned, the generic suspend code does not turn off IRQs
-+ *	but relies on this callback instead. It is currently not called for
-+ *	%PM_SUSPEND_DISK.
-+ *
-  * @enter: Enter the given suspend state, must be assigned. Can return a
-  *	negative error code if necessary.
-  *
-+ * @irq_on: If assigned, the generic suspend code does not turn on IRQs
-+ *	but relies on this callback instead. It is currently not called for
-+ *	%PM_SUSPEND_DISK.
-+ *
-  * @finish: Called when the system has left the given state and all devices
-  *	are resumed. The return value is ignored.
-  *
-@@ -152,7 +160,9 @@ typedef int __bitwise suspend_disk_metho
- struct pm_ops {
- 	int (*valid)(suspend_state_t state);
- 	int (*prepare)(suspend_state_t state);
-+	void (*irq_off)(suspend_state_t state);
- 	int (*enter)(suspend_state_t state);
-+	void (*irq_on)(suspend_state_t state);
- 	int (*finish)(suspend_state_t state);
- 	suspend_disk_method_t pm_disk_mode;
- };
---- wireless-dev.orig/kernel/power/main.c	2007-04-05 18:14:07.988549941 +02=
-00
-+++ wireless-dev/kernel/power/main.c	2007-04-05 18:25:21.108549941 +0200
-@@ -117,7 +117,10 @@ int suspend_enter(suspend_state_t state)
- 	int error =3D 0;
- 	unsigned long flags;
- =
+> =
 
--	local_irq_save(flags);
-+	if (pm_ops->irq_off)
-+		pm_ops->irq_off(state);
-+	else
-+		local_irq_save(flags);
- =
+> Hi !
+> On 4/1/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> > Have you gotten it to resume?
+> > I'd test s2both but I haven't gotten s2disk to resume yet... Need to
+> > test that patch.
+> =
 
- 	if ((error =3D device_power_down(PMSG_SUSPEND))) {
- 		printk(KERN_ERR "Some devices failed to power down\n");
-@@ -126,7 +129,10 @@ int suspend_enter(suspend_state_t state)
- 	error =3D pm_ops->enter(state);
- 	device_power_up();
-  Done:
--	local_irq_restore(flags);
-+	if (pm_ops->irq_on)
-+		pm_ops->irq_on(state);
-+	else
-+		local_irq_restore(flags);
- 	return error;
- }
- =
+> Yes it resumes, but I am stuck at some point because after the image
+> is reloaded from swap, the system freezes when (usb) modules are
+> reloaded.
+
+Which module?  I'm guessing just ehci-hcd, but you should try each
+of the relevant HCDs by themselves.  (And if you have any external
+USB devices connected, their drivers ... and also see whether the
+connection of the external device is itself a factor.)
+
+There's something platform-specific going on, and some clues will
+be needed to sort it out.
+
+All this used to work, as I recall...
+
+- Dave
+
+
+
+
+> That is a problem I got with suspend-to-disk with recent =
+
+> kernels : 2.6.18 leads to oops, and 2.6.20 / 2.6.21-rc5 lead to
+> lockup.
+> =
+
+> If I unload usb modules before suspending, the system resumes and I
+> get a prompt, but I get also some errors from usb (root hub lost power
+> or was reset). (see
+> http://marc.info/?l=3Dlinux-usb-devel&m=3D117528005511118&w=3D2)
+> I would appreciate If you had an idea on that .
+> =
+
+> =
+
+> Cedric
+> =
