@@ -1,15 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: Power Mangement Interfaces
-Date: Thu, 05 Apr 2007 10:02:50 +0200
-Message-ID: <1175760170.7388.67.camel@johannes.berg>
+Date: Thu, 05 Apr 2007 16:20:05 +0800
+Message-ID: <1175761205.23121.28.camel__3680.06087742305$1175761303$gmane$org@localhost.localdomain>
 References: <20070330235759.GC4252@cosmic.amd.com>
-	<200704041144.15300.david-b@pacbell.net>
-	<1175723399.7388.47.camel@johannes.berg>
-	<200704042205.28200.david-b@pacbell.net>
+	<200703312001.55231.david-b@pacbell.net>
+	<1175509422.5321.37.camel@localhost.localdomain>
+	<200704021124.21926.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0130842041=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704042205.28200.david-b@pacbell.net>
+In-Reply-To: <200704021124.21926.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +21,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 2007-04-03 at 02:24 +0800, David Brownell wrote:
+> On Monday 02 April 2007 3:23 am, Zhang Rui wrote:
+> > If a device is also described in ACPI namespace, it should know its
+> ACPI
+> > device node in sysfs.
+> =
 
---===============0130842041==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-9mOZ16l0UNAf9l1Vn22P"
+> What about PCI or PNP devices that have "shadow" listings in ACPI?
+> =
 
+what do you mean "devices that have shadow listings in ACPI"? :)
+Sorry I'm not quite familiar with pci and pnp devices.
 
---=-9mOZ16l0UNAf9l1Vn22P
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > And while it seems that the three USB controllers on this system
+> show up
+> > > as /sys/devices/acpi_system:00/device:00/PNP0A03:00/device:
+> {01,02,03} I
+> > > have no idea which one is /sys/devices/pci0000:00/0000:00:02.2
+> versus
+> > > 0000:00:02.1 or 0000:00:02.0 ... I know that USB0 is device:01 and
+> so
+> > > on (by reading "path"), but associating one with a PCI device
+> seems to
+> > > involve pure guesswork.
+> >
+> > Sorry to make you confused.
+> > That's what we need to improve in the wish list. :)
+> =
 
-On Wed, 2007-04-04 at 22:05 -0700, David Brownell wrote:
+> Do you mean the "ACPI 4.0" wishlist?  Or the "Linux ACPI" wishlist?
+> =
 
-> > No, the thing is more: how would we represent the lid as a device in
-> > sysfs?=20
->=20
-> As a platform_device.
+No, as part of the ACPI sysfs conversion work, it's just the things that
+are not finished now and I wish to do in the near future.
 
-Ok. I think the bug in my original thinking is that all these things
-should be related somehow, but there's no reason the user needs to know
-that the lid and the power button are controlled by the same ASIC.
-
-johannes
-
---=-9mOZ16l0UNAf9l1Vn22P
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGFK0q/ETPhpq3jKURAknpAJ99oz2x5MR254gH4c3fhL9h7EmLggCfVc6L
-uQJgz72o+BYbq9K7PNfGXTU=
-=2BAL
------END PGP SIGNATURE-----
-
---=-9mOZ16l0UNAf9l1Vn22P--
-
-
---===============0130842041==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0130842041==--
+Thanks,
+Rui
