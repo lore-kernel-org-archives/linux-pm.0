@@ -1,16 +1,16 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: Power Mangement Interfaces
-Date: Thu, 05 Apr 2007 16:20:05 +0800
-Message-ID: <1175761205.23121.28.camel__3680.06087742305$1175761303$gmane$org@localhost.localdomain>
+Date: Thu, 05 Apr 2007 16:32:04 +0800
+Message-ID: <1175761924.23121.38.camel@localhost.localdomain>
 References: <20070330235759.GC4252@cosmic.amd.com>
-	<200703312001.55231.david-b@pacbell.net>
-	<1175509422.5321.37.camel@localhost.localdomain>
-	<200704021124.21926.david-b@pacbell.net>
+	<200703310957.49409.david-b@pacbell.net>
+	<1175703359.7388.10.camel@johannes.berg>
+	<200704041144.15300.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704021124.21926.david-b@pacbell.net>
+In-Reply-To: <200704041144.15300.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,43 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-04-03 at 02:24 +0800, David Brownell wrote:
-> On Monday 02 April 2007 3:23 am, Zhang Rui wrote:
-> > If a device is also described in ACPI namespace, it should know its
-> ACPI
-> > device node in sysfs.
+On Wed, 2007-04-04 at 11:44 -0700, David Brownell wrote:
+> On Wednesday 04 April 2007 9:15 am, Johannes Berg wrote:
+> > =
+
+> > How would I go about representing the lid as a device?  It's an honest
+> > question, I'd actually like to do and replace the /proc/pmu/options file
+> > it but don't know where I should put it etc.
 > =
 
-> What about PCI or PNP devices that have "shadow" listings in ACPI?
+> I'm not sure I understand the question.  ACPI has a special "acpi_device"
+> node (not backed by any "real" device, PNPACPI etc) with a driver that
+> hooks up to the input subsystem.  Same is true for a couple other fixed
+> function buttons.  I'd expect non-ACPI platforms would do something very
+> similar, except using platform_device and looking less cryptic.
 > =
 
-what do you mean "devices that have shadow listings in ACPI"? :)
-Sorry I'm not quite familiar with pci and pnp devices.
-
-> > > And while it seems that the three USB controllers on this system
-> show up
-> > > as /sys/devices/acpi_system:00/device:00/PNP0A03:00/device:
-> {01,02,03} I
-> > > have no idea which one is /sys/devices/pci0000:00/0000:00:02.2
-> versus
-> > > 0000:00:02.1 or 0000:00:02.0 ... I know that USB0 is device:01 and
-> so
-> > > on (by reading "path"), but associating one with a PCI device
-> seems to
-> > > involve pure guesswork.
-> >
-> > Sorry to make you confused.
-> > That's what we need to improve in the wish list. :)
-> =
-
-> Do you mean the "ACPI 4.0" wishlist?  Or the "Linux ACPI" wishlist?
-> =
-
-No, as part of the ACPI sysfs conversion work, it's just the things that
-are not finished now and I wish to do in the near future.
+> As for hooking things up to the driver model wakeup event stuff, ACPI
+> doesn't do that yet.  I've got some patches in the works;
+Good to know. Please add linux-acpi@vger.kernel.org to the cc list when
+you want to send them out. :>
 
 Thanks,
 Rui
