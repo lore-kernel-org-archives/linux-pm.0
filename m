@@ -1,15 +1,13 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] pm_ops: add irq enable/disable hooks
-Date: Fri, 06 Apr 2007 12:00:57 +0200
-Message-ID: <1175853657.3489.69.camel@johannes.berg>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<200704061141.31677.rjw@sisk.pl>
-	<1175852652.3489.67.camel@johannes.berg>
-	<200704061202.42069.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Fwd: Re: [Suspend-devel] s2both on powerpc
+Date: Fri, 6 Apr 2007 10:24:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0704061019080.4316-100000@iolanthe.rowland.org>
+References: <200704060132.18897.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0692277234=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704061202.42069.rjw@sisk.pl>
+In-Reply-To: <200704060132.18897.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,60 +17,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: =?iso-8859-1?q?C=E9dric_Boutillier?= <cedric.boutillier@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 6 Apr 2007, Rafael J. Wysocki wrote:
 
---===============0692277234==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-AlOhI7MyVeV/heIAsxMn"
+> On Thursday, 5 April 2007 23:38, David Brownell wrote:
+> > On Sunday 01 April 2007 9:37 am, Rafael J. Wysocki wrote:
+> > > Alan, Dave, could you please have a look at this?
+> > > =
 
+> > > Rafael
+> > > =
 
---=-AlOhI7MyVeV/heIAsxMn
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > =
 
-On Fri, 2007-04-06 at 12:02 +0200, Rafael J. Wysocki wrote:
+> > > ----------  Forwarded Message  ----------
+> > > =
 
-> That's why I said "it feels". :-)
+> > > Subject: Re: [Suspend-devel] s2both on powerpc
+> > > Date: Sunday, 1 April 2007 18:18
+> > > From: "C=E9dric Boutillier" <cedric.boutillier@gmail.com>
+> > > To: "Johannes Berg" <johannes@sipsolutions.net>
+> > > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Tim Dijkstra" <newsuser@famdi=
+jkstra.org>,
+> > >	 suspend-devel@lists.sourceforge.net =
 
-:)
+> > > =
 
-> Still, we can, for example, define default_quiesce() and default_activate=
-()
-> that will only call local_irq_save/restore() to be used by the architectu=
-res
-> that don't need anything more etc.
+> > > Hi !
+> > > On 4/1/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> > > > Have you gotten it to resume?
+> > > > I'd test s2both but I haven't gotten s2disk to resume yet... Need to
+> > > > test that patch.
+> > > =
 
-Like I did with pm_ops_only_mem or whatever it was...
+> > > Yes it resumes, but I am stuck at some point because after the image
+> > > is reloaded from swap, the system freezes when (usb) modules are
+> > > reloaded.
+> > =
 
-I don't feel strongly either way. But the last big discussion when I
-changed all pm_ops users sort of discouraged me ;)
+> > Which module?  I'm guessing just ehci-hcd, but you should try each
+> > of the relevant HCDs by themselves.  (And if you have any external
+> > USB devices connected, their drivers ... and also see whether the
+> > connection of the external device is itself a factor.)
+> > =
 
-johannes
+> > There's something platform-specific going on, and some clues will
+> > be needed to sort it out.
+> > =
 
---=-AlOhI7MyVeV/heIAsxMn
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> > All this used to work, as I recall...
+> =
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> This has already been handled by Alan (identified as a hardware bug, patch
+> is available).
 
-iD8DBQBGFhpZ/ETPhpq3jKURAocjAJ9DKkXlNTiE9p1juL+TpCKo7yq56QCfQz2i
-00dS0wK35S104x0jIz13Gq4=
-=6EMW
------END PGP SIGNATURE-----
+In case you're curious, the problem and the patch are here:
 
---=-AlOhI7MyVeV/heIAsxMn--
+http://marc.info/?l=3Dlinux-usb-devel&m=3D117545150508671&w=3D2
 
+I'm just about to submit it to Greg.  AFAICS, removing that code will =
 
---===============0692277234==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+never cause any problems.  Hubs should automatically clear the suspend =
 
+feature whenever a port is reset, which is the next thing to happen on =
 
---===============0692277234==--
+that pathway.
+
+Alan Stern
