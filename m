@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Fwd: Re: [Suspend-devel] s2both on powerpc
-Date: Fri, 6 Apr 2007 10:24:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0704061019080.4316-100000@iolanthe.rowland.org>
-References: <200704060132.18897.rjw@sisk.pl>
+From: dmitry pervushin <dpervushin@gmail.com>
+Subject: Re: [RFC] [0/4] Voltage Framework
+Date: Fri, 06 Apr 2007 22:05:40 +0400
+Message-ID: <1175882741.7820.7.camel@notebook>
+References: <1174469715.19019.65.camel@amit-laptop>
+	<20070406073159.GE4081@prithivi.gnumonks.org>
+	<46166A8E.8030602@dev.rtsoft.ru>
+Reply-To: dpervushin@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="koi8-r"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704060132.18897.rjw@sisk.pl>
+In-Reply-To: <46166A8E.8030602@dev.rtsoft.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,73 +20,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: =?iso-8859-1?q?C=E9dric_Boutillier?= <cedric.boutillier@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Dmitry Krivoschokov <dkrivoschokov@dev.rtsoft.ru>
+Cc: linux-pm@lists.osdl.org, ARM-kernel-linux <linux-arm-kernel@lists.arm.linux.org.uk>, Harald Welte <laforge@gnumonks.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 6 Apr 2007, Rafael J. Wysocki wrote:
-
-> On Thursday, 5 April 2007 23:38, David Brownell wrote:
-> > On Sunday 01 April 2007 9:37 am, Rafael J. Wysocki wrote:
-> > > Alan, Dave, could you please have a look at this?
-> > > =
-
-> > > Rafael
-> > > =
-
-> > > =
-
-> > > ----------  Forwarded Message  ----------
-> > > =
-
-> > > Subject: Re: [Suspend-devel] s2both on powerpc
-> > > Date: Sunday, 1 April 2007 18:18
-> > > From: "C=E9dric Boutillier" <cedric.boutillier@gmail.com>
-> > > To: "Johannes Berg" <johannes@sipsolutions.net>
-> > > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Tim Dijkstra" <newsuser@famdi=
-jkstra.org>,
-> > >	 suspend-devel@lists.sourceforge.net =
-
-> > > =
-
-> > > Hi !
-> > > On 4/1/07, Johannes Berg <johannes@sipsolutions.net> wrote:
-> > > > Have you gotten it to resume?
-> > > > I'd test s2both but I haven't gotten s2disk to resume yet... Need to
-> > > > test that patch.
-> > > =
-
-> > > Yes it resumes, but I am stuck at some point because after the image
-> > > is reloaded from swap, the system freezes when (usb) modules are
-> > > reloaded.
-> > =
-
-> > Which module?  I'm guessing just ehci-hcd, but you should try each
-> > of the relevant HCDs by themselves.  (And if you have any external
-> > USB devices connected, their drivers ... and also see whether the
-> > connection of the external device is itself a factor.)
-> > =
-
-> > There's something platform-specific going on, and some clues will
-> > be needed to sort it out.
-> > =
-
-> > All this used to work, as I recall...
-> =
-
-> This has already been handled by Alan (identified as a hardware bug, patch
-> is available).
-
-In case you're curious, the problem and the patch are here:
-
-http://marc.info/?l=3Dlinux-usb-devel&m=3D117545150508671&w=3D2
-
-I'm just about to submit it to Greg.  AFAICS, removing that code will =
-
-never cause any problems.  Hubs should automatically clear the suspend =
-
-feature whenever a port is reset, which is the next thing to happen on =
-
-that pathway.
-
-Alan Stern
+T24g8NTOLCAyMDA3LTA0LTA2IGF0IDE5OjQzICswNDAwLCBEbWl0cnkgS3Jpdm9zY2hva292IHdy
+b3RlOgpbc2tpcHBlZF0KPiBUaGUgc3RydWN0IHJlc291cmNlIHdhcyBpbml0aWFsbHkgaW50ZW5k
+ZWQgZm9yIElPIHJlc291cmNlcyBvbmx5LAo+ICh3aGljaCBsb29rcyB3cm9uZyB0byBtZSwgYXQg
+bGVhc3QgaXRzIG5hbWluZywgaXQgY291bGQgYmUgY2FsbGVkCj4gYXMgaW9fcmVzb3VyY2VzKS4g
+QnV0IHZvbHRhZ2UgaXMgbm90IGFuIElPIHJlc291cmNlLCBzbyBzdHJ1Y3QgcmVzb3VyY2UKPiBp
+cyBub3QgYXBwcm9wcmlhdGUgcGxhY2UgZm9yIHRoYXQKWW91IG9iamVjdCBvbiBuYW1pbmcgb2Yg
+dGhlIHN0cnVjdHVyZSAoaGF2ZSB5b3UgZXZlciB0cmllZCB0byBkbyBvdXRwdXQKb24gaW50ZXJy
+dXB0IGxpbmUgOikgKT8KClRoZSBzdHJ1Y3QgcmVzb3VyY2UgbGF5b3V0IGlzIG5vdCB3ZWxsIHN1
+aXRhYmxlIHRvIGtlZXAgaW5mb3JtYXRpb24KYWJvdXQgY2xvY2tzL3ZvbHRhZ2UgYW5kIGV2ZXIg
+Z3BpbyBsaW5lcywgYnV0IGFsbCBvZiB0aGVzZSB0aGluZ3MgYXJlCnJlc291cmNlcy4gUmVzb3Vy
+Y2VzIG9mIGRldmljZS4gV2VsbCwgcmVzb3VyY2VzIHRoYXQgYmVsb25ncyB0bwpwbGF0Zm9ybV9k
+ZXZpY2UuCgpJIGRvbid0IGxpa2UgaWRlYSB0byBrZWVwIHR3byBzZXBhcmF0ZSBsaXN0cyBvZiBy
+ZXNvdXJjZXMgLSBvbmUgZm9yIEkvTwpwb3J0cy9tZW1vcnkgd2luZG93cy9JUlEgbGluZXMgYW5k
+IHRoZSBhbm90aGVyIG9uZSB0byBrZWVwIHBtIHJlc291cmNlcy4KV2h5IHNob3VsZCB0aGV5IGJl
+IHNlcGFyYXRlZCA/CiAgCj4gPlRoaXMgbWlnaHQgc291bmQgb2RkLCBidXQgYWZ0ZXIgYWxsLCB3
+aHkgbm90IGxvb2sgYXQgcG93ZXIgW3ZvbHRhZ2VdIGFzCj4gPmEgcmVzb3VyY2UganVzdCBsb2tl
+IG1lbW9yeSwgSU8gcG9ydHMsIEdQSU8gb3IgSVJRIGxpbmVzPwo+ID4KPiBJJ2QgY29uc2lkZXIg
+dm9sdGFnZSBhbmQgY2xvY2tzIGFzIGEgcG93ZXIgcmVzb3VyY2VzLCBldmVyeSBjb21wdXRlcgo+
+IChzYXkgQ01PUykgc3lzdGVtIChvciBkZXZpY2UpIGNvbnN1bWVzIChyZXF1aXJlcyBmb3IpIHZv
+bHRhZ2UgYW5kIGNsb2NrcywKPiBzbyBpdCBsb29rcyBuYXR1cmFsIHRoYXQgZGV2aWNlIGRyaXZl
+ciB3aWxsIGNoZWNrIHdoYXQgcmVzb3VyY2VzCj4gYXJlIG5lZWRlZCBmb3IgZGV2aWNlIG9uIHRo
+aXMgcGFydGljdWxhciBwbGF0Zm9ybS4KPiAKPiA+Cj4gPlRoaXMga2VlcHMgdGhlIGRyaXZlcnMg
+Y2xlYW4gZnJvbSBoYXZpbmcgdG8ga25vdyBhbnkgZGV2aWNlIHNwZWNpZmljcy4KPiA+Cj4gPgo+
+IFllcC4KPiAKPiA+SXQgYWxzbyBrZWVwcyB0aGUgYWN0dWFsIGRldmljZSBkcml2ZXIgb2YgYW55
+IHBlcmlwaGVyYWwgaW5kZXBlbmRlbnQgb2YKPiA+dGhlIFBNVSBkcml2ZXIsIHNpbmNlIHRoZSBs
+YXR0ZXIgd291bGQgc2l0IGJlaGluZCB0aGUgJ3N0cnVjdCByZXNvdXJjZScKPiA+YWJzdHJhY3Rp
+b24uICAKPiA+QSBkZXZpY2UgZHJpdmVyIHdvdWxkIHRoZW4ganVzdCBjYWxsIHNvbWV0aGluZyBs
+aWtlCj4gPnJlcXVyZXN0X3Bvd2VyKHN0cnVjdCByZXNvdXJjZSAqKSB3aGljIGhpZGVzIGFsbCB0
+aGUgbWFnaWMgb2YKPiA+Y2FsbGluZyBiYWNrIGludG8gdGhlIGluZGl2aWR1YWwgUE1VIGRyaXZl
+ci4KPiA+Cj4gSXQgYXNzdW1lcyBzb21lIGluZnJhc3RydWN0dXJlIHRvIGRlYWwgd2l0aCBwb3dl
+ciByZXNvdXJjZXMsIGxpa2UKPiB3ZSBoYXZlIGZvciBpbnRlcnJ1cHRzIG5vdy4KPiAKPiBBY3R1
+YWxseSwgYWxsIExpbnV4IFBNLXJlbGF0ZWQgcHJvYmxlbXMgYXJlIGRpc2N1c3NlZCBvbgo+IGxp
+bnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnIGxpc3QsIGhlcmUgaXQncyBvZmZ0b3Bp
+Yy4KPiBDb250aW51ZSB0aGUgZGlzY2Fzc2lvbiBvbiBsaW51eC1wbSwgaWYgeW91IHdpbGwuCkkg
+YWRkZWQgbGludXgtcG0gdG8gQ2MsIHNvIGxldCdzIGNvbnRpbnVlIHRoZXJlLgo+IAo+IAo+IFRo
+YW5rcywKPiBEbWl0cnkKPiAKPiAKPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gTGlzdCBhZG1pbjogaHR0cDovL2xp
+c3RzLmFybS5saW51eC5vcmcudWsvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCj4g
+RkFROiAgICAgICAgaHR0cDovL3d3dy5hcm0ubGludXgub3JnLnVrL21haWxpbmdsaXN0cy9mYXEu
+cGhwCj4gRXRpcXVldHRlOiAgaHR0cDovL3d3dy5hcm0ubGludXgub3JnLnVrL21haWxpbmdsaXN0
+cy9ldGlxdWV0dGUucGhwCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2xpbnV4LXBtCg==
