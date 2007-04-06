@@ -1,16 +1,18 @@
-From: dmitry pervushin <dpervushin@gmail.com>
-Subject: Re: [RFC] [0/4] Voltage Framework
-Date: Fri, 06 Apr 2007 22:05:40 +0400
-Message-ID: <1175882741.7820.7.camel@notebook>
-References: <1174469715.19019.65.camel@amit-laptop>
-	<20070406073159.GE4081@prithivi.gnumonks.org>
-	<46166A8E.8030602@dev.rtsoft.ru>
-Reply-To: dpervushin@gmail.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] pm_ops: add irq enable/disable hooks
+Date: Fri, 6 Apr 2007 21:19:03 +0200
+Message-ID: <20070406191903.GD2583@elf.ucw.cz>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<200704060217.50560.rjw@sisk.pl>
+	<1175849322.3489.64.camel@johannes.berg>
+	<200704061141.31677.rjw@sisk.pl>
+	<1175852652.3489.67.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="koi8-r"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46166A8E.8030602@dev.rtsoft.ru>
+Content-Disposition: inline
+In-Reply-To: <1175852652.3489.67.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +22,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Krivoschokov <dkrivoschokov@dev.rtsoft.ru>
-Cc: linux-pm@lists.osdl.org, ARM-kernel-linux <linux-arm-kernel@lists.arm.linux.org.uk>, Harald Welte <laforge@gnumonks.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24g8NTOLCAyMDA3LTA0LTA2IGF0IDE5OjQzICswNDAwLCBEbWl0cnkgS3Jpdm9zY2hva292IHdy
-b3RlOgpbc2tpcHBlZF0KPiBUaGUgc3RydWN0IHJlc291cmNlIHdhcyBpbml0aWFsbHkgaW50ZW5k
-ZWQgZm9yIElPIHJlc291cmNlcyBvbmx5LAo+ICh3aGljaCBsb29rcyB3cm9uZyB0byBtZSwgYXQg
-bGVhc3QgaXRzIG5hbWluZywgaXQgY291bGQgYmUgY2FsbGVkCj4gYXMgaW9fcmVzb3VyY2VzKS4g
-QnV0IHZvbHRhZ2UgaXMgbm90IGFuIElPIHJlc291cmNlLCBzbyBzdHJ1Y3QgcmVzb3VyY2UKPiBp
-cyBub3QgYXBwcm9wcmlhdGUgcGxhY2UgZm9yIHRoYXQKWW91IG9iamVjdCBvbiBuYW1pbmcgb2Yg
-dGhlIHN0cnVjdHVyZSAoaGF2ZSB5b3UgZXZlciB0cmllZCB0byBkbyBvdXRwdXQKb24gaW50ZXJy
-dXB0IGxpbmUgOikgKT8KClRoZSBzdHJ1Y3QgcmVzb3VyY2UgbGF5b3V0IGlzIG5vdCB3ZWxsIHN1
-aXRhYmxlIHRvIGtlZXAgaW5mb3JtYXRpb24KYWJvdXQgY2xvY2tzL3ZvbHRhZ2UgYW5kIGV2ZXIg
-Z3BpbyBsaW5lcywgYnV0IGFsbCBvZiB0aGVzZSB0aGluZ3MgYXJlCnJlc291cmNlcy4gUmVzb3Vy
-Y2VzIG9mIGRldmljZS4gV2VsbCwgcmVzb3VyY2VzIHRoYXQgYmVsb25ncyB0bwpwbGF0Zm9ybV9k
-ZXZpY2UuCgpJIGRvbid0IGxpa2UgaWRlYSB0byBrZWVwIHR3byBzZXBhcmF0ZSBsaXN0cyBvZiBy
-ZXNvdXJjZXMgLSBvbmUgZm9yIEkvTwpwb3J0cy9tZW1vcnkgd2luZG93cy9JUlEgbGluZXMgYW5k
-IHRoZSBhbm90aGVyIG9uZSB0byBrZWVwIHBtIHJlc291cmNlcy4KV2h5IHNob3VsZCB0aGV5IGJl
-IHNlcGFyYXRlZCA/CiAgCj4gPlRoaXMgbWlnaHQgc291bmQgb2RkLCBidXQgYWZ0ZXIgYWxsLCB3
-aHkgbm90IGxvb2sgYXQgcG93ZXIgW3ZvbHRhZ2VdIGFzCj4gPmEgcmVzb3VyY2UganVzdCBsb2tl
-IG1lbW9yeSwgSU8gcG9ydHMsIEdQSU8gb3IgSVJRIGxpbmVzPwo+ID4KPiBJJ2QgY29uc2lkZXIg
-dm9sdGFnZSBhbmQgY2xvY2tzIGFzIGEgcG93ZXIgcmVzb3VyY2VzLCBldmVyeSBjb21wdXRlcgo+
-IChzYXkgQ01PUykgc3lzdGVtIChvciBkZXZpY2UpIGNvbnN1bWVzIChyZXF1aXJlcyBmb3IpIHZv
-bHRhZ2UgYW5kIGNsb2NrcywKPiBzbyBpdCBsb29rcyBuYXR1cmFsIHRoYXQgZGV2aWNlIGRyaXZl
-ciB3aWxsIGNoZWNrIHdoYXQgcmVzb3VyY2VzCj4gYXJlIG5lZWRlZCBmb3IgZGV2aWNlIG9uIHRo
-aXMgcGFydGljdWxhciBwbGF0Zm9ybS4KPiAKPiA+Cj4gPlRoaXMga2VlcHMgdGhlIGRyaXZlcnMg
-Y2xlYW4gZnJvbSBoYXZpbmcgdG8ga25vdyBhbnkgZGV2aWNlIHNwZWNpZmljcy4KPiA+Cj4gPgo+
-IFllcC4KPiAKPiA+SXQgYWxzbyBrZWVwcyB0aGUgYWN0dWFsIGRldmljZSBkcml2ZXIgb2YgYW55
-IHBlcmlwaGVyYWwgaW5kZXBlbmRlbnQgb2YKPiA+dGhlIFBNVSBkcml2ZXIsIHNpbmNlIHRoZSBs
-YXR0ZXIgd291bGQgc2l0IGJlaGluZCB0aGUgJ3N0cnVjdCByZXNvdXJjZScKPiA+YWJzdHJhY3Rp
-b24uICAKPiA+QSBkZXZpY2UgZHJpdmVyIHdvdWxkIHRoZW4ganVzdCBjYWxsIHNvbWV0aGluZyBs
-aWtlCj4gPnJlcXVyZXN0X3Bvd2VyKHN0cnVjdCByZXNvdXJjZSAqKSB3aGljIGhpZGVzIGFsbCB0
-aGUgbWFnaWMgb2YKPiA+Y2FsbGluZyBiYWNrIGludG8gdGhlIGluZGl2aWR1YWwgUE1VIGRyaXZl
-ci4KPiA+Cj4gSXQgYXNzdW1lcyBzb21lIGluZnJhc3RydWN0dXJlIHRvIGRlYWwgd2l0aCBwb3dl
-ciByZXNvdXJjZXMsIGxpa2UKPiB3ZSBoYXZlIGZvciBpbnRlcnJ1cHRzIG5vdy4KPiAKPiBBY3R1
-YWxseSwgYWxsIExpbnV4IFBNLXJlbGF0ZWQgcHJvYmxlbXMgYXJlIGRpc2N1c3NlZCBvbgo+IGxp
-bnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnIGxpc3QsIGhlcmUgaXQncyBvZmZ0b3Bp
-Yy4KPiBDb250aW51ZSB0aGUgZGlzY2Fzc2lvbiBvbiBsaW51eC1wbSwgaWYgeW91IHdpbGwuCkkg
-YWRkZWQgbGludXgtcG0gdG8gQ2MsIHNvIGxldCdzIGNvbnRpbnVlIHRoZXJlLgo+IAo+IAo+IFRo
-YW5rcywKPiBEbWl0cnkKPiAKPiAKPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gTGlzdCBhZG1pbjogaHR0cDovL2xp
-c3RzLmFybS5saW51eC5vcmcudWsvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCj4g
-RkFROiAgICAgICAgaHR0cDovL3d3dy5hcm0ubGludXgub3JnLnVrL21haWxpbmdsaXN0cy9mYXEu
-cGhwCj4gRXRpcXVldHRlOiAgaHR0cDovL3d3dy5hcm0ubGludXgub3JnLnVrL21haWxpbmdsaXN0
-cy9ldGlxdWV0dGUucGhwCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LXBtCg==
+Hi!
+
+> > Frankly, I'm not sure.
+> > =
+
+> > For practical purposes the BUG_ON() assertions will suffice, so I think=
+ you
+> > can keep the two handlers.  I'd change the names, though, to something
+> > like quiesce() and activate(), for example.
+> =
+
+> Sure.
+> =
+
+> > [Hm, it feels more appropriate to define them for all platforms and mak=
+e them
+> > call local_irq_save() on the platforms that don't need to do anything m=
+ore.]
+> =
+
+> Is there much point in that? It seems to make implementing new pm_ops a
+> bit more complex seeing that nobody but us seems to require such a thing
+> yet.
+
+And why do _you_ need it? Unfortunately I do not know what the
+decrementer is...?
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
