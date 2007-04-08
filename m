@@ -1,10 +1,15 @@
-From: "Maung Nadir Ali" <coldsinonu@panevezys.lt>
-Subject: Re: =?iso-8859-1?q?=28no_subject=29?=
-Date: Sun, 8 Apr 2007 09:20:49 -0120
-Message-ID: <01c779bf$325b30e0$6c822ecf@coldsinonu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: resume sometimes reboots or freezes Laptop,
+	trying to debug
+Date: Sun, 8 Apr 2007 18:28:27 +0200
+Message-ID: <200704081828.27704.rjw@sisk.pl>
+References: <1015f9200704071721y2599e571m6ef2a063478c2cc6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1278458804=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1015f9200704071721y2599e571m6ef2a063478c2cc6@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,57 +19,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============1278458804==
-Content-Type: text/plain;
-	charset="windows-1250"
-Content-Transfer-Encoding: 7bit
+On Sunday, 8 April 2007 02:21, Sascha Heid wrote:
+> Hello List!
+> =
 
-Have you seen how these sub-one-cent companies take off on 
-Good News?  For the past two months, every one we have 
-brought you has shown Amazing Appreciation. 
+> I have a pretty new Laptop with the following specs:
+> =
 
-At such a low price even the smallest Gain means a 
-Significant Percentage Return.
+> Lenovo X60T (Tablet)
+> Core Duo
+> SATA
+> Intel GMA Videocard
+> Gentoo-Linux running Kernel 2.6.20
+> =
 
-We called (P)(P)(T)(L) as one to watch on Friday because of a 
-Highly Anticipated Report from the Field.  It moved up 13% 
-on Friday and the news isn't even out yet.  Just wait till 
-word hits the street!
+> The issue is that about 1 of 10 resumes from RAM do not work by either
+> the Laptop rebooting or freezing.
+> What makes it more frustrating is that it is completely unpredictable
+> for me, sometimes i can resume 30 times in a row and when i start
+> working on something it will crash on the next resume.
+> =
 
-On second thought, Don't Wait!
+> After trying different kernels and configurations im now down to a
+> kernel with APIC and prefetching disabled and only 1 module in use
+> (WLAN).
+> I also tried both the suspend2ram that comes with the kernel and s2ram
+> from suspend.sf.net, the result being the same.
+> =
 
-Company (P)remium (P)e(T)ro(L)eum (P)(P)(T)(L)
+> I have pm-debugging and tracing enabled in the kernel but thats where im =
+stuck.
+> =
 
-Current  $0.0085 (+13%)
-Target    $0.0450 (a FIVE bagger!)
+> Most of the times i get something like this:
+> =
 
-At this time (P)(P)(T)(L)  has a number of Surveys and Drilling 
-projects in progress.  We have heard that a Major Discovery 
-has been made, and recommend our readers capitalize on this 
-Opportunity right away!
+>  Magic number: 0:351:236
+>  hash matches device ttyv6
+> =
 
-HEADLINES
----------------------
-Records: Smith drugs all prescribed by 1 doctor
-Bush appoints ambassador
-Ahmadinejad: Pardon for UK sailors
-Texans want Hold 'Em games legal ... and taxed 
-Woman charged with faking HIV, taking money Video
+> with various terminals
+> =
 
----------------------
+> and sometimes this
+> =
 
+>  Magic number: 0:798:378
+>  hash matches drivers/base/power/resume.c:46
+> =
 
+> (no further line mentioning any device here)
+> =
 
+> To suspend the laptop i run this:
+> =
 
+> chvt 1
+> echo 1 > /sys/power/pm_trace
+> #/home/sascha/suspend-0.5/s2ram -f -a3
+> echo mem > /sys/power/state
+> setserial /dev/ttyS0 port 0x0200 irq 5 autoconfig
+> chvt 7
+> =
 
---===============1278458804==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> I found 1 other Linux-user with a X60T that has the same (or more)
+> suspend/resume issues using standard ubuntu and suse configurations.
+> =
 
+> If anyone has any idea or advice i would appreciate it very much.
 
---===============1278458804==--
+Please try 2.6.21-rc6.  If it doesn't work, please file a bug report at bug=
+zilla.kernel.org .
+
+Greetings,
+Rafael
