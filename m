@@ -1,17 +1,13 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] pm_ops: add irq enable/disable hooks
-Date: Fri, 06 Apr 2007 23:59:27 +0200
-Message-ID: <1175896767.8459.6.camel@johannes.berg>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<200704060217.50560.rjw@sisk.pl>
-	<1175849322.3489.64.camel@johannes.berg>
-	<200704061141.31677.rjw@sisk.pl>
-	<1175852652.3489.67.camel@johannes.berg>
-	<20070406191903.GD2583@elf.ucw.cz>
+From: "Sascha Heid" <saschaheid@gmail.com>
+Subject: resume sometimes reboots or freezes Laptop,
+	trying to debug
+Date: Sun, 8 Apr 2007 02:21:09 +0200
+Message-ID: <1015f9200704071721y2599e571m6ef2a063478c2cc6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1017407030=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070406191903.GD2583@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,57 +17,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+Hello List!
 
---===============1017407030==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-4jg4AmeOPVs1iIz94Abz"
+I have a pretty new Laptop with the following specs:
 
+Lenovo X60T (Tablet)
+Core Duo
+SATA
+Intel GMA Videocard
+Gentoo-Linux running Kernel 2.6.20
 
---=-4jg4AmeOPVs1iIz94Abz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The issue is that about 1 of 10 resumes from RAM do not work by either
+the Laptop rebooting or freezing.
+What makes it more frustrating is that it is completely unpredictable
+for me, sometimes i can resume 30 times in a row and when i start
+working on something it will crash on the next resume.
 
-On Fri, 2007-04-06 at 21:19 +0200, Pavel Machek wrote:
+After trying different kernels and configurations im now down to a
+kernel with APIC and prefetching disabled and only 1 module in use
+(WLAN).
+I also tried both the suspend2ram that comes with the kernel and s2ram
+from suspend.sf.net, the result being the same.
 
-> And why do _you_ need it? Unfortunately I do not know what the
-> decrementer is...?
+I have pm-debugging and tracing enabled in the kernel but thats where im st=
+uck.
 
-The decrementer is a sort of timer that counts down and once it
-overflows raises an exception in the CPU. Like a timer interrupt, but
-not coming from anything external. We need to be able to make sure we
-don't get a decrementer exception at some spots.
+Most of the times i get something like this:
 
-Also, we need to call some platform function things at that point to
-prepare the system for suspend, and it needs to be done with interrupts
-enabled but after all devices are suspended.
+ Magic number: 0:351:236
+ hash matches device ttyv6
 
-johannes
+with various terminals
 
---=-4jg4AmeOPVs1iIz94Abz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+and sometimes this
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+ Magic number: 0:798:378
+ hash matches drivers/base/power/resume.c:46
 
-iD8DBQBGFsK//ETPhpq3jKURAmQRAKCQfIp1B5oIUA49yyuphSmccp4y6gCfeCOV
-f3hjkQzQykecNGxem+sExA0=
-=Qbfl
------END PGP SIGNATURE-----
+(no further line mentioning any device here)
 
---=-4jg4AmeOPVs1iIz94Abz--
+To suspend the laptop i run this:
 
+chvt 1
+echo 1 > /sys/power/pm_trace
+#/home/sascha/suspend-0.5/s2ram -f -a3
+echo mem > /sys/power/state
+setserial /dev/ttyS0 port 0x0200 irq 5 autoconfig
+chvt 7
 
---===============1017407030==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+I found 1 other Linux-user with a X60T that has the same (or more)
+suspend/resume issues using standard ubuntu and suse configurations.
 
+If anyone has any idea or advice i would appreciate it very much.
 
---===============1017407030==--
+Greetings from Germany
+Sascha
