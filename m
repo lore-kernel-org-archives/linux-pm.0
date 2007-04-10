@@ -1,7 +1,7 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: [PATCH] pm_ops: add irq enable/disable hooks
-Date: Tue, 10 Apr 2007 13:45:07 +0200
-Message-ID: <1176205508.8459.89.camel@johannes.berg>
+Date: Tue, 10 Apr 2007 14:00:28 +0200
+Message-ID: <20070410120028.GI8239@elf.ucw.cz>
 References: <1175810054.3489.34.camel@johannes.berg>
 	<200704060217.50560.rjw@sisk.pl>
 	<1175849322.3489.64.camel@johannes.berg>
@@ -10,10 +10,13 @@ References: <1175810054.3489.34.camel@johannes.berg>
 	<20070406191903.GD2583@elf.ucw.cz>
 	<1175896767.8459.6.camel@johannes.berg>
 	<20070410113623.GF8239@elf.ucw.cz>
+	<1176205508.8459.89.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1753274816=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070410113623.GF8239@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1176205508.8459.89.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,59 +26,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
 Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
---===============1753274816==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Odqj8S0ndhe3uayMy8/9"
+> > Hmm, and can't you simply create sysdev for decrementer and special
+> > platform handling? sysdevs should be suspended last...
+> =
 
+> In theory, yes.
+> =
 
---=-Odqj8S0ndhe3uayMy8/9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> In practise, however, it seems to be impossible to get a sysdev into the
+> queue that is suspended before any other sysdevs are suspended (i.e.
+> right after interrupts are disabled)
+> =
 
-On Tue, 2007-04-10 at 13:36 +0200, Pavel Machek wrote:
+> And then there are the platform functions. In theory, they could be done
+> with a regular struct device, but in practice they need to be the very
+> last thing before interrupts are disabled, and that again is impossible
+> to achieve.
 
-> Hmm, and can't you simply create sysdev for decrementer and special
-> platform handling? sysdevs should be suspended last...
+Is it feasible to improve sysdev handling to allow this?
 
-In theory, yes.
+-- =
 
-In practise, however, it seems to be impossible to get a sysdev into the
-queue that is suspended before any other sysdevs are suspended (i.e.
-right after interrupts are disabled)
-
-And then there are the platform functions. In theory, they could be done
-with a regular struct device, but in practice they need to be the very
-last thing before interrupts are disabled, and that again is impossible
-to achieve.
-
-johannes
-
---=-Odqj8S0ndhe3uayMy8/9
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGG3jD/ETPhpq3jKURArSkAJ9hyBhGJUZ/wotZ7oN0r7hF0rZTAwCffQrS
-bIVrfkuN+FNTTfCO/Yo3dc4=
-=LHYQ
------END PGP SIGNATURE-----
-
---=-Odqj8S0ndhe3uayMy8/9--
-
-
---===============1753274816==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1753274816==--
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
