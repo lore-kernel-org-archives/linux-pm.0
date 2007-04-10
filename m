@@ -1,20 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] pm_ops: add irq enable/disable hooks
-Date: Tue, 10 Apr 2007 13:36:24 +0200
-Message-ID: <20070410113623.GF8239@elf.ucw.cz>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<200704060217.50560.rjw@sisk.pl>
-	<1175849322.3489.64.camel@johannes.berg>
-	<200704061141.31677.rjw@sisk.pl>
-	<1175852652.3489.67.camel@johannes.berg>
-	<20070406191903.GD2583@elf.ucw.cz>
-	<1175896767.8459.6.camel@johannes.berg>
+From: "Sascha Heid" <saschaheid@gmail.com>
+Subject: Re: resume sometimes reboots or freezes Laptop,
+	trying to debug
+Date: Tue, 10 Apr 2007 16:30:13 +0200
+Message-ID: <1015f9200704100730g5f4798f9ia3f09187001f54c4@mail.gmail.com>
+References: <1015f9200704071721y2599e571m6ef2a063478c2cc6@mail.gmail.com>
+	<200704081828.27704.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200704081828.27704.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <1175896767.8459.6.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,31 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> Please try 2.6.21-rc6.  If it doesn't work, please file a bug report at >=
+bugzilla.kernel.org .
 
-> > And why do _you_ need it? Unfortunately I do not know what the
-> > decrementer is...?
-> =
+I just got my first frozen resume with 2.6.21rc6 and got nothing but
+this one line:
+Magic number: 0:692:668
 
-> The decrementer is a sort of timer that counts down and once it
-> overflows raises an exception in the CPU. Like a timer interrupt, but
-> not coming from anything external. We need to be able to make sure we
-> don't get a decrementer exception at some spots.
-> =
+I had other problems additionally, Xorg crashed twice on the resume
+and once it showed me funny ascii-art instead of my X Session.
 
-> Also, we need to call some platform function things at that point to
-> prepare the system for suspend, and it needs to be done with interrupts
-> enabled but after all devices are suspended.
+Regarding a bug-report, i dont think anybody would care about such a
+rare problem and on a rc-kernel.
+What information could i supply anyways? Not much.
 
-Hmm, and can't you simply create sysdev for decrementer and special
-platform handling? sysdevs should be suspended last...
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Looks like alot of acpi work is been done though, maybe in 2.6.22...
