@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] remove software_suspend()
-Date: Wed, 11 Apr 2007 22:18:28 +0200
-Message-ID: <200704112218.29433.rjw@sisk.pl>
-References: <1176306757.19348.1.camel@johannes.berg>
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
+Date: Thu, 12 Apr 2007 00:47:09 +0400
+Message-ID: <461D494D.3080808@gmail.com>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<1176306867.19348.4.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1176306757.19348.1.camel@johannes.berg>
-Content-Disposition: inline
+In-Reply-To: <1176306867.19348.4.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 11 April 2007 17:52, Johannes Berg wrote:
-> This patch removes software_suspend() and all it's users since
-> pm_suspend(PM_SUSPEND_DISK) should be equivalent and there's no
-> point in having two interfaces for the same thing.
-> =
+Hi Johannes,
 
-> The patch also changes the valid_state function to return 0
-> (false) for PM_SUSPEND_DISK when SOFTWARE_SUSPEND is not configured
-> instead of accepting it and having the whole thing fail later.
-> =
+Johannes Berg wrote:
+> For powermac, we need to do some things between suspending devices and
+> device_power_off, for example setting the decrementer. =
 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+I doubt your reasoning is cogent enough. If you add such a global thing,
+you should prove it, or clearly explain what is the thing for.
+I don't believe that it's not possible to solve that decrementer case
+without this change. Can't you add appropriate platform_device which
+would register early enough, to meet that timing requirement when it
+gets suspended?
 
-As far as I'm concerned, it's fine.
 
-Greetings,
-Rafael
+>
+>  =
+
+> --- wireless-dev.orig/arch/powerpc/platforms/powermac/setup.c	2007-04-11 =
+17:07:51.029481358 +0200
+> +++ wireless-dev/arch/powerpc/platforms/powermac/setup.c	2007-04-11 17:10=
+:53.659481358 +0200
+> @@ -475,7 +475,9 @@ static int pmac_pm_valid(suspend_state_t
+>  static struct pm_ops pmac_pm_ops =3D {
+>  	.pm_disk_mode	=3D PM_DISK_SHUTDOWN,
+>  	.prepare	=3D pmac_pm_prepare,
+> +	.quiesce	=3D pm_default_quiesce,
+>  	.enter		=3D pmac_pm_enter,
+> +	.activate	=3D pm_default_activate,
+>  	.finish		=3D pmac_pm_finish,
+>  	.valid		=3D pmac_pm_valid,
+>  };
+
+So, where is that callbacks that are so desirable for powermac?
+
+
+Thanks,
+Dmitry
