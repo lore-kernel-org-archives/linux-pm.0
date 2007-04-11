@@ -1,51 +1,79 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Wed, 11 Apr 2007 12:45:14 +0200
-Message-ID: <461CBC3A.5090607@gmail.com>
-References: <460B6E4B.3060004@gmail.com> <200704092220.10039.rjw@sisk.pl> <461C8FF4.80202@gmail.com> <200704111155.52455.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [atl1-devel] BUG? WOL from S3
+Date: Wed, 11 Apr 2007 11:51:31 +0200
+Message-ID: <200704111151.32166.rjw@sisk.pl>
+References: <65c8858e0704040223g6fd006e8o2a4e426b3dbad228@mail.gmail.com>
+	<002b01c777ec$b4364070$9927a8c0@shanghai.attansic.com>
+	<20070410223821.GA25453@dreamland.darkstar.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752093AbXDKKqh@vger.kernel.org>
-In-Reply-To: <200704111155.52455.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, pavel@suse.cz
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070410223821.GA25453@dreamland.darkstar.lan>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: 'Luca Tettamanti' <kronos.it@gmail.com>
+Cc: huang xiong <xiong.huang@atheros.com>, atl1-devel@lists.sourceforge.net, 'Tony Glader' <tony.glader@gmail.com>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
->> Rafael J. Wysocki napsal(a):
->>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
->>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
->>>> in -rc6 too.
->>> I guess you mean you're still seeing the 'not enough memory to suspend'
->>> problem?
->> Yes:
->> Disabling non-boot CPUs ...
->> kvm: disabling virtualization on CPU1
->> Breaking affinity for irq 9
->> CPU 1 is now offline
->> SMP alternatives: switching to UP code
->> CPU1 is down
->> swsusp: critical section:
->> swsusp: Need to copy 158309 pages
->> swsusp: Not enough free memory
->> Error -12 suspending
->> Enabling non-boot CPUs ...
->> SMP alternatives: switching to SMP code
->> Booting processor 1/2 APIC 0x1
->> Initializing CPU#1
-> 
-> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
+On Wednesday, 11 April 2007 00:38, 'Luca Tettamanti' wrote:
+> Il Fri, Apr 06, 2007 at 09:41:31AM +0800, huang xiong ha scritto: =
 
-My tip is one of three cases: after some work on fresh boot -- some
-consumers such as thunderbird, firefox, 10 or so terminals with
-gnome-session. Single xterm + gnome-session semms not to be a problem.
+> > > > I do the same test over Intel/Realtek PCIE gigabit Ethernet adapter.
+> > > >
+> > > > And found the .resume function is called before the system really g=
+o to
+> > > > sleep.
+> > > >
+> > > > And because some shared hardware circuit. Attansic's nic can't enab=
+le both
+> > > > normal tx/rx setting and WOL setting.
+> > > >
+> > > > So attansic's linux driver think the system wakeup when the .resume=
+ is
+> > > > called, and it clear all WOL setting and back to normal tx/rx setti=
+ng.
+> > =
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+> > > Hum, what you describe seems to be suspend-to-disk:
+> > > =
+
+> > > ->suspend(PMSG_FREEZE)
+> > > take snapshot
+> > > ->resume() for writing the image
+> > > write snapshot
+> > > ->suspend(PMSG_SUSPEND)
+> >
+> >      You are right. It's suspend-to-disk.
+> >      Could you explain calling sequence of .suspend and .resume when the
+> > system goes to sleep for me ? such as S3/S4/...
+> >      I confused what the driver should do when .resume is called.
+> =
+
+> It should restore the normal state of the device. The first suspend
+> (PMSG_FREEZED) puts the device into a quiescent state (e.g. DMA transfers
+> shall be stopped). The system is then resumed so that the image can be
+> written to the disk. The second and final suspend call (PMSG_SUSPEND) is
+> done before shutting down the system.
+
+Er, no.  The system is just shut down, without suspending devices.
+
+> > But It seems the system didn't called second .suspend.
+> =
+
+> Ouch. This is very strange. I'm adding a few of CC.
+
+Well, that's how it works now.  We have considered suspending devices before
+powering off for a while, but only theoretically.  If there's any additional
+reason to do it, I think we can.
+
+Greetings,
+Rafael
