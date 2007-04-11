@@ -1,12 +1,15 @@
-From: "Jojo Keiser" <triadpowerhouses@zip.netatlantic.com>
-Subject: Re: =?iso-8859-1?q?=28no_subject=29?=
-Date: Wed, 11 Apr 2007 13:13:29 +0000 (UTC)
-Message-ID: <01c77c16$71bc7790$6c822ecf@triadpowerhouses>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Wed, 11 Apr 2007 11:55:51 +0200
+Message-ID: <200704111155.52455.rjw@sisk.pl>
+References: <460B6E4B.3060004@gmail.com> <200704092220.10039.rjw@sisk.pl>
+	<461C8FF4.80202@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Date: Wed, 11 Apr 2007 08:50:24 -0060
+In-Reply-To: <461C8FF4.80202@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,53 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.osdl.org, Linux kernel mailing list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Have you seen how these sub-one-cent companies take off on =
+On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+> >> Rafael J. Wysocki napsal(a):
+> >>> Thanks for testing.
+> >> [...]
+> >>> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
+> >>> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
+> >>> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
+> >>>  		size +=3D highmem_size;
+> >>>  		for_each_zone (zone)
+> >>>  			if (populated_zone(zone)) {
+> >>> +				tmp +=3D snapshot_additional_pages(zone);
+> >>>  				if (is_highmem(zone)) {
+> >>>  					highmem_size -=3D
+> >>>  					zone_page_state(zone, NR_FREE_PAGES);
+> >>>  				} else {
+> >>>  					tmp -=3D zone_page_state(zone, NR_FREE_PAGES);
+> >>>  					tmp +=3D zone->lowmem_reserve[ZONE_NORMAL];
+> >>> -					tmp +=3D snapshot_additional_pages(zone);
+> >> I have bad news for you :(. I thought I had unpatched kernel, but it h=
+appens
+> >> in -rc6 too.
+> > =
 
-Good News?  For the past two months, every one we have =
+> > I guess you mean you're still seeing the 'not enough memory to suspend'
+> > problem?
+> =
 
-brought you has shown Amazing Appreciation. =
+> Yes:
+> Disabling non-boot CPUs ...
+> kvm: disabling virtualization on CPU1
+> Breaking affinity for irq 9
+> CPU 1 is now offline
+> SMP alternatives: switching to UP code
+> CPU1 is down
+> swsusp: critical section:
+> swsusp: Need to copy 158309 pages
+> swsusp: Not enough free memory
+> Error -12 suspending
+> Enabling non-boot CPUs ...
+> SMP alternatives: switching to SMP code
+> Booting processor 1/2 APIC 0x1
+> Initializing CPU#1
 
+How reproducible is it?  I'm going to try to reproduce it on one of my boxe=
+s.
 
-At such a low price even the smallest Gain means a =
+> >> Next, when this occurs, kernel CPU1 is not brought up and next suspend=
+ hangs
+> >> on "Suspending consoles".
+> > =
 
-Significant Percentage Return.
+> > Hm, there probably is a bug in an error path.  Do you use the built in =
+swsusp
+> > or s2disk?
+> =
 
-We called (P)(P)(T)(L) as one to watch on Friday because of a =
+> built-in. It happens only sometimes, here, as you can see, CPU1 was
+> successfully brought up.
 
-Highly Anticipated Report from the Field.  It moved up 13% =
+Sigh.  Then probably there's a problem with the CPU hotplugging and it'll be
+hard to find, I'm afraid.
 
-on Friday and the news isn't even out yet.  Just wait till =
-
-word hits the street!
-
-On second thought, Don't Wait!
-
-Company (P)remium (P)e(T)ro(L)eum (P)(P)(T)(L)
-
-Current  $0.0085 (+13%)
-Target    $0.0450 (a FIVE bagger!)
-
-At this time (P)(P)(T)(L)  has a number of Surveys and Drilling =
-
-projects in progress.  We have heard that a Major Discovery =
-
-has been made, and recommend our readers capitalize on this =
-
-Opportunity right away!
-
-HEADLINES
----------------------
-Coyote jumps in Quiznos drink cooler =
-
-CNN Wire: Latest updates on world's top stories =
-
-Congress bypassed to appoint Swift Boat donor
-Woman charged with faking HIV, taking money Video
-Records: Smith drugs all prescribed by 1 doctor
-Collins: Why this scientist believes in God =
-
-
----------------------
+Greetings,
+Rafael
