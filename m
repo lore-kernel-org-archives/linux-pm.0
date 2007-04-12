@@ -1,14 +1,16 @@
-From: Chris Snook <csnook@redhat.com>
-Subject: Re: [atl1-devel]
- =?GB2312?B?tPC4tDogW2F0bDEtZGV2ZWxdIEJVRz8gV09M?= =?GB2312?B?IGZyb20gUzM=?=
-Date: Thu, 12 Apr 2007 11:42:03 -0400
-Message-ID: <461E534B.3040309@redhat.com>
-References: <65c8858e0704040223g6fd006e8o2a4e426b3dbad228@mail.gmail.com>	<002b01c777ec$b4364070$9927a8c0@shanghai.attansic.com>	<20070410223821.GA25453@dreamland.darkstar.lan>	<200704111151.32166.rjw@sisk.pl>	<68676e00704111350v7b3bf127vafec621e56ab7ea8@mail.gmail.com>
-	<001601c77cb3$9811c4c0$9927a8c0@xhuangnb>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
+Date: Thu, 12 Apr 2007 09:32:41 -0700
+Message-ID: <200704120932.41497.david-b@pacbell.net>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<1176377017.5764.15.camel@localhost.localdomain>
+	<200704121703.16206.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1177837521=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <001601c77cb3$9811c4c0$9927a8c0@xhuangnb>
+In-Reply-To: <200704121703.16206.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,93 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: huang xiong <xiong.huang@atheros.com>
-Cc: 'Luca Tettamanti' <kronos.it@gmail.com>, atl1-devel@lists.sourceforge.net, 'Tony Glader' <tony.glader@gmail.com>, linux-pm@lists.osdl.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
---===============1177837521==
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l3CFgBIs015307
+On Thursday 12 April 2007 8:03 am, Rafael J. Wysocki wrote:
+> On Thursday, 12 April 2007 13:23, Benjamin Herrenschmidt wrote:
 
-huang xiong wrote:
->=20
-> -----=D3=CA=BC=FE=D4=AD=BC=FE-----
-> =B7=A2=BC=FE=C8=CB: Luca Tettamanti [mailto:kronos.it@gmail.com]=20
-> =B7=A2=CB=CD=CA=B1=BC=E4: =D0=C7=C6=DA=CB=C4 2007=C4=EA4=D4=C212=C8=D5 =
-4:51
-> =CA=D5=BC=FE=C8=CB: Rafael J. Wysocki
-> =B3=AD=CB=CD: huang xiong; Tony Glader; atl1-devel@lists.sourceforge.ne=
-t; Pavel
-> Machek; linux-pm@lists.osdl.org
-> =D6=F7=CC=E2: Re: [atl1-devel] BUG? WOL from S3
->=20
-> On 4/11/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> On Wednesday, 11 April 2007 00:38, 'Luca Tettamanti' wrote:
->>> Il Fri, Apr 06, 2007 at 09:41:31AM +0800, huang xiong ha scritto:
->>>>>> I do the same test over Intel/Realtek PCIE gigabit Ethernet
-> adapter.
->>>>>> And found the .resume function is called before the system really
-> go to
->>>>>> sleep.
->>>>>>
->>>>>> And because some shared hardware circuit. Attansic's nic can't
-> enable both
->>>>>> normal tx/rx setting and WOL setting.
->>>>>>
->>>>>> So attansic's linux driver think the system wakeup when the
-> .resume is
->>>>>> called, and it clear all WOL setting and back to normal tx/rx
-> setting.
->>>>> Hum, what you describe seems to be suspend-to-disk:
->>>>>
->>>>> ->suspend(PMSG_FREEZE)
->>>>> take snapshot
->>>>> ->resume() for writing the image
->>>>> write snapshot
->>>>> ->suspend(PMSG_SUSPEND)
->>>>      You are right. It's suspend-to-disk.
->>>>      Could you explain calling sequence of .suspend and .resume when
-> the
->>>> system goes to sleep for me ? such as S3/S4/...
->>>>      I confused what the driver should do when .resume is called.
->>> It should restore the normal state of the device. The first suspend
->>> (PMSG_FREEZED) puts the device into a quiescent state (e.g. DMA
-> transfers
->>> shall be stopped). The system is then resumed so that the image can b=
-e
->>> written to the disk. The second and final suspend call (PMSG_SUSPEND)=
- is
->>> done before shutting down the system.
->> Er, no.  The system is just shut down, without suspending devices.
->>
->>>> But It seems the system didn't called second .suspend.
->>> Ouch. This is very strange. I'm adding a few of CC.
->> Well, that's how it works now.  We have considered suspending devices
-> before
->> powering off for a while, but only theoretically.  If there's any
-> additional
->> reason to do it, I think we can.
->=20
-> There's a problem with atl1 driver: Huang Xiong says that the chip can
-> be either is normal rx/tx mode or in WOL mode. When .resume is called
-> the NIC goes back in normal mode and won't react to WOL packets.
->=20
-> Luca
->=20
->=20
-> ------------------------------
-> Yes, what Luca say is right.
+> > Why not give this added flexibility ? Archs who don't care don't need to
+> > bother and it will make us happy... it's not like we are about to -add-
+> > burden to other architectures.
+> =
 
-This may be related to the PCI_D3hot settings.  I'm investigating.
-
--- Chris
-
---===============1177837521==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Well, I think it would be reasonable to add the quiesce()/activate() hook=
+s for
+> all of the above reasons. =
 
 
---===============1177837521==--
+Makes sense to me.  Though I'd rather see pm_set_ops() patch the default
+hooks than expect all platforms to change ... that would shrink the size
+of the patch adding these, as well as the potential cost of removing them.
+
+
+> However, once we've done that, it'll be quite =
+
+> difficult to remove them, so we should better be sure they are really rea=
+lly
+> needed and there's no other way to implement what you need (or all of the
+> alternative ways are far worse).
+
+In general I think too much of the way PM "works" now is a bit more
+due to convenient side effects than by clear intent.  So while I agree
+that adding hooks should be done with care, this one certain seems to
+be a step in the right direction.
+
+- Dave
