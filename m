@@ -1,16 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
-Date: Thu, 12 Apr 2007 21:23:37 +1000
-Message-ID: <1176377017.5764.15.camel@localhost.localdomain>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<1176306867.19348.4.camel@johannes.berg> <461D494D.3080808@gmail.com>
-	<1176367352.5764.2.camel@localhost.localdomain>
-	<20070412101653.GB26473@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2] power management: change /sys/power/disk
+	display
+Date: Thu, 12 Apr 2007 16:56:36 +0200
+Message-ID: <200704121656.36924.rjw@sisk.pl>
+References: <1176338224.3579.2.camel@johannes.berg>
+	<1176374992.7052.49.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070412101653.GB26473@elf.ucw.cz>
+In-Reply-To: <1176374992.7052.49.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +20,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>
+To: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-04-12 at 12:16 +0200, Pavel Machek wrote:
-
-> Adding platform hook to disable interrupts just because we need one
-> platform device last is not nice, either. (And does decrementer even
-> need to come last?)
+On Thursday, 12 April 2007 12:49, Johannes Berg wrote:
+> This patch changes /sys/power/disk to display all valid modes
+> as well as the currently selected one in a fashion known from
+> the LED subsystem.
 > =
 
-> Anyway, platform devices may need specific ordering on more than power
-> pc, so perhaps we should just make ordering more stable so that
-> relying on it is no longer a hack?
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-It would be pretty hard to do cleanly without raping the core driver
-suspend/resume core.
+Looks OK to me.  Pavel?
 
-I have experience implementing suspend/resume in all sorts of
-environments, and I do strongly beleive that an arch hook right at this
-point will be useful to more than that anyway.
+> ---
+>  Documentation/power/interface.txt |    8 ++++++--
+>  kernel/power/disk.c               |   29 ++++++++++++++++++++++++++++-
+>  2 files changed, 34 insertions(+), 3 deletions(-)
+> =
 
-There are actions the arch code might need to take after drivers and
-before going to "atomic" mode (irqs off mean you can no longer sleep or
-take semaphores etc...), and in a similar vein, actions to take on
-resume just after interrupts are back and before all the drivers get
-woken up.
+> --- wireless-dev.orig/kernel/power/disk.c	2007-04-12 11:58:14.275366513 +=
+0200
+> +++ wireless-dev/kernel/power/disk.c	2007-04-12 12:49:07.965366513 +0200
+> @@ -322,7 +322,34 @@ static const char * const pm_disk_modes[
+>  =
 
-The decrementer is one example, there might be other processor specific
-bits or arch specific bits that are better done at that stage.
+>  static ssize_t disk_show(struct subsystem * subsys, char * buf)
+>  {
+> -	return sprintf(buf, "%s\n", pm_disk_modes[pm_disk_mode]);
+> +	int i;
+> +	char *start =3D buf;
+> +
+> +	for (i =3D PM_DISK_PLATFORM; i < PM_DISK_MAX; i++) {
+> +		if (!pm_disk_modes[i])
+> +			continue;
+> +		switch (i) {
+> +		case PM_DISK_SHUTDOWN:
+> +		case PM_DISK_REBOOT:
+> +		case PM_DISK_TEST:
+> +		case PM_DISK_TESTPROC:
+> +			break;
+> +		default:
+> +			if (pm_ops && pm_ops->enter &&
+> +			    (i =3D=3D pm_ops->pm_disk_mode))
+> +				break;
+> +			/* not a valid mode, continue with loop */
+> +			continue;
+> +		}
+> +		if (i =3D=3D pm_disk_mode)
+> +			buf +=3D sprintf(buf, "[%s]", pm_disk_modes[i]);
+> +		else
+> +			buf +=3D sprintf(buf, "%s", pm_disk_modes[i]);
+> +		if (i+1 !=3D PM_DISK_MAX)
+> +			buf +=3D sprintf(buf, " ");
+> +	}
+> +	buf +=3D sprintf(buf, "\n");
+> +	return buf-start;
+>  }
+>  =
 
-I think the way to go for 2.6.22 is to have that hook unless you can
-propose me a way to cleanly provide a platform device that is guaranteed
-to suspend last and resume first in all cases (and even then, I wouldn't
-be that happy since the proper decrementer stop procedure involves
-really wrapping the "irqs off" operation).
+>  =
 
-Why not give this added flexibility ? Archs who don't care don't need to
-bother and it will make us happy... it's not like we are about to -add-
-burden to other architectures.
+> --- wireless-dev.orig/Documentation/power/interface.txt	2007-04-12 11:58:=
+14.285366513 +0200
+> +++ wireless-dev/Documentation/power/interface.txt	2007-04-12 11:58:15.89=
+5366513 +0200
+> @@ -34,8 +34,12 @@ for 5 seconds, resume devices, unfreeze =
 
-Ben.
+>  we are able to look in the log messages and work out, for example, which=
+ code
+>  is being slow and which device drivers are misbehaving.
+>  =
+
+> -Reading from this file will display what the mode is currently set
+> -to. Writing to this file will accept one of
+> +Reading from this file will display all supported modes and the currently
+> +selected one in brackets, for example
+> +
+> +	[shutdown] reboot test testproc
+> +
+> +Writing to this file will accept one of
+>  =
+
+>         'platform' (only if the platform supports it)
+>         'shutdown'
