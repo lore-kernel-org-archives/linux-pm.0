@@ -1,16 +1,11 @@
-From: "huang xiong" <xiong.huang@atheros.com>
-Subject: =?gb2312?B?tPC4tDogW2F0bDEtZGV2ZWxdIEJVRz8gV09MIGZyb20gUzM=?=
-Date: Thu, 12 Apr 2007 11:35:16 +0800
-Message-ID: <001601c77cb3$9811c4c0$9927a8c0@xhuangnb>
-References: <65c8858e0704040223g6fd006e8o2a4e426b3dbad228@mail.gmail.com>
-	<002b01c777ec$b4364070$9927a8c0@shanghai.attansic.com>
-	<20070410223821.GA25453@dreamland.darkstar.lan>
-	<200704111151.32166.rjw@sisk.pl>
-	<68676e00704111350v7b3bf127vafec621e56ab7ea8@mail.gmail.com>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] power management: change /sys/power/disk display
+Date: Thu, 12 Apr 2007 02:37:04 +0200
+Message-ID: <1176338224.3579.2.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2113521297=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <68676e00704111350v7b3bf127vafec621e56ab7ea8@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,115 +15,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: 'Luca Tettamanti' <kronos.it@gmail.com>, "'Rafael J. Wysocki'" <rjw@sisk.pl>
-Cc: atl1-devel@lists.sourceforge.net, 'Tony Glader' <tony.glader@gmail.com>, linux-pm@lists.osdl.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============2113521297==
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id l3C3ZhVZ000307
+This patch changes /sys/power/disk to display all valid modes
+as well as the currently selected one in a fashion known from
+the LED subsystem.
 
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
+---
+This changes userspace API, but it is apparently not used much (we asked
+some userspace developers)
 
------=D3=CA=BC=FE=D4=AD=BC=FE-----
-=B7=A2=BC=FE=C8=CB: Luca Tettamanti [mailto:kronos.it@gmail.com]=20
-=B7=A2=CB=CD=CA=B1=BC=E4: =D0=C7=C6=DA=CB=C4 2007=C4=EA4=D4=C212=C8=D5 4:=
-51
-=CA=D5=BC=FE=C8=CB: Rafael J. Wysocki
-=B3=AD=CB=CD: huang xiong; Tony Glader; atl1-devel@lists.sourceforge.net;=
- Pavel
-Machek; linux-pm@lists.osdl.org
-=D6=F7=CC=E2: Re: [atl1-devel] BUG? WOL from S3
+ Documentation/power/interface.txt |    8 ++++++--
+ kernel/power/disk.c               |   34 +++++++++++++++++++++++++++++++---
+ 2 files changed, 37 insertions(+), 5 deletions(-)
 
-On 4/11/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, 11 April 2007 00:38, 'Luca Tettamanti' wrote:
-> > Il Fri, Apr 06, 2007 at 09:41:31AM +0800, huang xiong ha scritto:
-> > > > > I do the same test over Intel/Realtek PCIE gigabit Ethernet
-adapter.
-> > > > >
-> > > > > And found the .resume function is called before the system real=
-ly
-go to
-> > > > > sleep.
-> > > > >
-> > > > > And because some shared hardware circuit. Attansic's nic can't
-enable both
-> > > > > normal tx/rx setting and WOL setting.
-> > > > >
-> > > > > So attansic's linux driver think the system wakeup when the
-.resume is
-> > > > > called, and it clear all WOL setting and back to normal tx/rx
-setting.
-> > >
-> > > > Hum, what you describe seems to be suspend-to-disk:
-> > > >
-> > > > ->suspend(PMSG_FREEZE)
-> > > > take snapshot
-> > > > ->resume() for writing the image
-> > > > write snapshot
-> > > > ->suspend(PMSG_SUSPEND)
-> > >
-> > >      You are right. It's suspend-to-disk.
-> > >      Could you explain calling sequence of .suspend and .resume whe=
-n
-the
-> > > system goes to sleep for me ? such as S3/S4/...
-> > >      I confused what the driver should do when .resume is called.
-> >
-> > It should restore the normal state of the device. The first suspend
-> > (PMSG_FREEZED) puts the device into a quiescent state (e.g. DMA
-transfers
-> > shall be stopped). The system is then resumed so that the image can b=
-e
-> > written to the disk. The second and final suspend call (PMSG_SUSPEND)=
- is
-> > done before shutting down the system.
->
-> Er, no.  The system is just shut down, without suspending devices.
->
-> > > But It seems the system didn't called second .suspend.
-> >
-> > Ouch. This is very strange. I'm adding a few of CC.
->
-> Well, that's how it works now.  We have considered suspending devices
-before
-> powering off for a while, but only theoretically.  If there's any
-additional
-> reason to do it, I think we can.
+--- wireless-dev.orig/kernel/power/disk.c	2007-04-11 18:01:08.389481358 +02=
+00
++++ wireless-dev/kernel/power/disk.c	2007-04-11 18:01:10.109481358 +0200
+@@ -322,7 +322,34 @@ static const char * const pm_disk_modes[
+ =
 
-There's a problem with atl1 driver: Huang Xiong says that the chip can
-be either is normal rx/tx mode or in WOL mode. When .resume is called
-the NIC goes back in normal mode and won't react to WOL packets.
+ static ssize_t disk_show(struct subsystem * subsys, char * buf)
+ {
+-	return sprintf(buf, "%s\n", pm_disk_modes[pm_disk_mode]);
++	int i;
++	char *start =3D buf;
++
++	for (i =3D PM_DISK_PLATFORM; i < PM_DISK_MAX; i++) {
++		if (!pm_disk_modes[i])
++			continue;
++		switch (i) {
++		case PM_DISK_SHUTDOWN:
++		case PM_DISK_REBOOT:
++		case PM_DISK_TEST:
++		case PM_DISK_TESTPROC:
++			break;
++		default:
++			if (pm_ops && pm_ops->enter &&
++			    (i =3D=3D pm_ops->pm_disk_mode))
++				break;
++			/* not a valid mode, continue with loop */
++			continue;
++		}
++		if (i =3D=3D pm_disk_mode)
++			buf +=3D sprintf(buf, "[%s]", pm_disk_modes[i]);
++		else
++			buf +=3D sprintf(buf, "%s", pm_disk_modes[i]);
++		if (i+1 !=3D PM_DISK_MAX)
++			buf +=3D sprintf(buf, " ");
++	}
++	buf +=3D sprintf(buf, "\n");
++	return buf-start;
+ }
+ =
 
-Luca
+ =
 
+@@ -363,8 +390,9 @@ static ssize_t disk_store(struct subsyst
+ 		error =3D -EINVAL;
+ 	}
+ =
 
-------------------------------
-Yes, what Luca say is right.
+-	pr_debug("PM: suspend-to-disk mode set to '%s'\n",
+-		 pm_disk_modes[mode]);
++	if (!error)
++		pr_debug("PM: suspend-to-disk mode set to '%s'\n",
++			 pm_disk_modes[mode]);
+ 	mutex_unlock(&pm_mutex);
+ 	return error ? error : n;
+ }
+--- wireless-dev.orig/Documentation/power/interface.txt	2007-04-11 18:01:08=
+.389481358 +0200
++++ wireless-dev/Documentation/power/interface.txt	2007-04-11 18:01:10.1094=
+81358 +0200
+@@ -34,8 +34,12 @@ for 5 seconds, resume devices, unfreeze =
 
+ we are able to look in the log messages and work out, for example, which c=
+ode
+ is being slow and which device drivers are misbehaving.
+ =
 
+-Reading from this file will display what the mode is currently set
+-to. Writing to this file will accept one of
++Reading from this file will display all supported modes and the currently
++selected one in brackets, for example
++
++	[shutdown] reboot test testproc
++
++Writing to this file will accept one of
+ =
 
-
---=20
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-
-
---=20
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-
-
-
---===============2113521297==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
---===============2113521297==--
+        'platform' (only if the platform supports it)
+        'shutdown'
