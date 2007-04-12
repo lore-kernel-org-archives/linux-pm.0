@@ -1,43 +1,134 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
-Date: Fri, 13 Apr 2007 06:51:16 +1000
-Message-ID: <1176411076.5764.17.camel@localhost.localdomain>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<1176306867.19348.4.camel@johannes.berg> <461D494D.3080808@gmail.com>
-	<1176367352.5764.2.camel@localhost.localdomain>
-	<20070412101653.GB26473@elf.ucw.cz>
-	<1176377017.5764.15.camel@localhost.localdomain>
-	<461E6E07.5020408@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Thu, 12 Apr 2007 23:36:57 +0200
+Message-ID: <200704122336.57600.rjw@sisk.pl>
+References: <460B6E4B.3060004@gmail.com> <200704111640.47171.rjw@sisk.pl> <461CF87C.4060801@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <461E6E07.5020408@gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751908AbXDLVd3@vger.kernel.org>
+In-Reply-To: <461CF87C.4060801@gmail.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
+On Wednesday, 11 April 2007 17:02, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
+> >> Rafael J. Wysocki napsal(a):
+> >>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
+> >>>> Rafael J. Wysocki napsal(a):
+> >>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+> >>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
+> >>>>>> in -rc6 too.
+> >>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
+> >>>>> problem?
+> >>>> Yes:
+> >>>> Disabling non-boot CPUs ...
+> >>>> kvm: disabling virtualization on CPU1
+> >>>> Breaking affinity for irq 9
+> >>>> CPU 1 is now offline
+> >>>> SMP alternatives: switching to UP code
+> >>>> CPU1 is down
+> >>>> swsusp: critical section:
+> >>>> swsusp: Need to copy 158309 pages
+> >>>> swsusp: Not enough free memory
+> >>>> Error -12 suspending
+> >>>> Enabling non-boot CPUs ...
+> >>>> SMP alternatives: switching to SMP code
+> >>>> Booting processor 1/2 APIC 0x1
+> >>>> Initializing CPU#1
+> >>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
+> >> My tip is one of three cases: after some work on fresh boot -- some
+> >> consumers such as thunderbird, firefox, 10 or so terminals with
+> >> gnome-session. Single xterm + gnome-session semms not to be a problem.
+> > 
+> > Does the workaround with setting the image size below 1/2 of RAM work for you?
+> 
+> Yes. Yesterday I must set the value to 350M -- 400M was not enough.
 
-> Actually, I personally two hands up for  adding the flexibility,
-> but you should define what is supposed to do on this level and
-> what is don't, or not desirable.
-> =
+Well, I can't reproduce it.
 
-> For example, I'd like to enter back to suspend mode
-> right from "activate" stage, because I've woken up just
-> to update some data and I do not want to resume all devices
-> for that, is it ok for "activate"?
+Can you please try to reproduce it with the appended patch applied and send
+the output of dmesg to me?
 
-That's an interesting approach... might be something we can define via
-activate result code...
+Greetings,
+Rafael
 
-Ben.
+---
+ kernel/power/snapshot.c |    4 ++--
+ kernel/power/swsusp.c   |   16 ++++++++++++----
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.21-rc6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.21-rc6.orig/kernel/power/snapshot.c
++++ linux-2.6.21-rc6/kernel/power/snapshot.c
+@@ -871,9 +871,9 @@ static int enough_free_mem(unsigned int 
+ 		if (!is_highmem(zone))
+ 			free += zone_page_state(zone, NR_FREE_PAGES);
+ 	}
+-
++	printk("swsusp: Normal pages needed: %u\n", nr_pages);
+ 	nr_pages += count_pages_for_highmem(nr_highmem);
+-	pr_debug("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
++	printk("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
+ 		nr_pages, PAGES_FOR_IO, meta, free);
+ 
+ 	return free > nr_pages + PAGES_FOR_IO + meta;
+Index: linux-2.6.21-rc6/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.21-rc6.orig/kernel/power/swsusp.c
++++ linux-2.6.21-rc6/kernel/power/swsusp.c
+@@ -214,8 +214,8 @@ int swsusp_shrink_memory(void)
+ 	long tmp;
+ 	struct zone *zone;
+ 	unsigned long pages = 0;
+-	unsigned int i = 0;
+-	char *p = "-\\|/";
++	/*unsigned int i = 0;
++	char *p = "-\\|/";*/
+ 	struct timeval start, stop;
+ 
+ 	printk("Shrinking memory...  ");
+@@ -227,7 +227,9 @@ int swsusp_shrink_memory(void)
+ 		size = count_data_pages() + PAGES_FOR_IO;
+ 		tmp = size;
+ 		size += highmem_size;
+-		for_each_zone (zone)
++		printk("Pages needed: %ld normal, %ld highmem\n",
++			tmp, highmem_size);
++		for_each_zone (zone) {
+ 			if (populated_zone(zone)) {
+ 				tmp += snapshot_additional_pages(zone);
+ 				if (is_highmem(zone)) {
+@@ -238,11 +240,17 @@ int swsusp_shrink_memory(void)
+ 					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+ 				}
+ 			}
++			printk("Pages needed: %ld normal, %ld highmem\n",
++				tmp, highmem_size);
++		}
+ 
+ 		if (highmem_size < 0)
+ 			highmem_size = 0;
+ 
++		printk("Pages needed: %ld normal, %ld highmem\n",
++			tmp, highmem_size);
+ 		tmp += highmem_size;
++		printk("Pages needed: %ld\n", tmp);
+ 		if (tmp > 0) {
+ 			tmp = __shrink_memory(tmp);
+ 			if (!tmp)
+@@ -252,7 +260,7 @@ int swsusp_shrink_memory(void)
+ 			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
+ 			pages += tmp;
+ 		}
+-		printk("\b%c", p[i++%4]);
++		/*printk("\b%c", p[i++%4]);*/
+ 	} while (tmp > 0);
+ 	do_gettimeofday(&stop);
+ 	printk("\bdone (%lu pages freed)\n", pages);
