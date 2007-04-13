@@ -1,19 +1,16 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFD] swsusp problem: Drivers allocate much
-	memory	during	suspend (was: Re: 2.6.21-rc5: swsusp: Not
-	enough free memory)
-Date: Sat, 14 Apr 2007 08:43:30 +1000
-Message-ID: <1176504210.7112.204.camel@nigel.suspend2.net>
-References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl>
-	<1176466896.7112.159.camel@nigel.suspend2.net>
-	<200704132241.52725.rjw@sisk.pl> <20070413221016.GQ28264@elf.ucw.cz>
-	<1176503692.7112.189.camel@nigel.suspend2.net>
-	<20070413223841.GD28269@elf.ucw.cz>
-Reply-To: nigel@nigel.suspend2.net
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Sat, 14 Apr 2007 00:47:56 +0200
+Message-ID: <200704140047.56677.rjw@sisk.pl>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<200704140009.33298.rjw@sisk.pl>
+	<1176503122.5764.109.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1008807564=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413223841.GD28269@elf.ucw.cz>
+In-Reply-To: <1176503122.5764.109.camel@localhost.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,113 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Saturday, 14 April 2007 00:25, Benjamin Herrenschmidt wrote:
+> =
 
---===============1008807564==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-sytiPjWJdglYn/ivsfE6"
+> > Hmm, I missed that. :-(
+> > =
 
+> > I think we need to make things clear: Either we add the additional hook=
+s to
+> > pm_ops in which case they should be taken into account in the (u)swsusp=
+ code
+> > too, or we don't add them at all.
+> > =
 
---=-sytiPjWJdglYn/ivsfE6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > Well, there also is one more solution.  Namely, we can add the hooks to=
+ pm_ops
+> > and make (u)swsusp use something else instead of pm_ops, but that would=
+ require
+> > some more consideration.
+> =
 
-Hi.
+> Well, what would be nice would be if swsusp wasn't just such a gross
+> contraption completely bypassing the rest of the suspend/resume
+> framework...
 
-On Sat, 2007-04-14 at 00:38 +0200, Pavel Machek wrote:
-> Hi!
->=20
-> > > > > > Well, it looks like someone allocated about 6000 pages after we=
- had freed
-> > > > > > enough memory for suspending.
-> > > > >=20
-> > > > > We have a tunable allowance in Suspend2 for this, because fglrx
-> > > > > allocates a lot of pages in its suspend routine if DRI is enabled=
-. I
-> > > > > think some other drivers do too, but fglrx is the main one I know=
-.
-> > > >=20
-> > > > I wasn't aware of that, thanks for the information.
-> > > >=20
-> > > > I think this means we'll probably need to add a tunable, similar to=
- image_size,
-> > > > that will allow the users to specify how much spare memory they wan=
-t to reserve
-> > > > for suspending (instead of the constant PAGES_FOR_IO).  IMO we can =
-call it
-> > > > 'spare_memory'.
-> > >=20
-> > > Just increase PAGES_FOR_IO. This should not be tunable.
-> >=20
-> > If we don't have a means for drivers to pre-allocate or say how much
-> > memory they need, it should be tunable. Frankly, I'm startled that you
-> > guys haven't heard of this issue before now. I can't believe everyone
-> > who has ever wanted to hibernate with DRM enabled has been using
-> > Suspend2. Maybe this is one of the sources of complaints that swsusp
-> > isn't reliable?
->=20
-> We do not support closed-source drivers, and open-source drivers are
-> well behaved.
+IMHO, swsusp is a really special case, especially when it doesn't use pm_op=
+s.
 
-I didn't say fglrx was the only example. Any system using DRI (not DRM,
-sorry), would, I think, be expected. I just mention fglrx because I have
-a Radeon 200M that can only use fglrx for Beryl etc at the mo - it's the
-one I'm familiar with.
+On a PC it may look like a "typical" suspend/resume operation, but I think =
+it
+generally is not one.  Although we try to use as many pieces of the framewo=
+rk
+in swsusp as we can, we're still running into problems with that.  There are
+just too many _practical_ differences.
 
-> > > > IMO to really fix the problem, we should let the drivers that need =
-much memory
-> > > > for suspending allocate it _before_ the memory shrinker is called. =
- For this
-> > > > purpose we can use notifiers that will be called before we start th=
-e shrinking
-> > > > of memory.  Namely, if a driver needs to allocate substantial amoun=
-t
-> > > > of memory
-> > >=20
-> > > Yes please. Using that notifier without leaking the memory will be
-> > > "interesting" but if someone needs so much memory during suspend, let
-> > > them eat their own complexity.
-> >=20
-> > It doesn't need to be that complex. Add another (optional) function to
-> > the driver model to let drivers say how much they want and it becomes
-> > trivial. Maybe this idea should be preferred over the notifier chain.
->=20
-> Actually, it is trivial to prealocate during boot ;-). As the notifier
-> chain can be useful for other stuff, too, I'd go that way.
-
-Pavel! Talk sense! You're not seriously suggesting squirreling away 35
-megabytes of a user's memory at boot just because they might want to
-hibernate with DRI enabled later? Yes, 35 megabytes is a realistic
-amount.
-
-Regards,
-
-Nigel
-
---=-sytiPjWJdglYn/ivsfE6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGIAeSN0y+n1M3mo0RAp1dAKDhopOaaMNcRBGYC0FTpeDtSIu4vwCgxkxN
-cLeOLCFZSA64VEa67l6fBsc=
-=nFM4
------END PGP SIGNATURE-----
-
---=-sytiPjWJdglYn/ivsfE6--
-
-
---===============1008807564==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1008807564==--
+Greetings,
+Rafael
