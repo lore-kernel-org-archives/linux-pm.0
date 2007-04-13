@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 00:16:52 +0200
-Message-ID: <20070413221652.GR28264@elf.ucw.cz>
+Date: Sat, 14 Apr 2007 00:20:07 +0200
+Message-ID: <1176502807.7052.136.camel@johannes.berg>
 References: <1175810054.3489.34.camel@johannes.berg>
-	<1176499086.7052.124.camel@johannes.berg>
-	<20070413213349.GL28264@elf.ucw.cz>
-	<200704140009.33298.rjw@sisk.pl>
-	<1176502406.7052.134.camel@johannes.berg>
+	<20070413215241.GO28264@elf.ucw.cz>
+	<1176501547.7052.130.camel@johannes.berg>
+	<200704140018.07367.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0270950104=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1176502406.7052.134.camel@johannes.berg>
+In-Reply-To: <200704140018.07367.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,41 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2007-04-14 00:13:26, Johannes Berg wrote:
-> On Sat, 2007-04-14 at 00:09 +0200, Rafael J. Wysocki wrote:
-> =
 
-> > Hmm, I missed that. :-(
-> > =
+--===============0270950104==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-EmYLJkTdqn1UKafSEtfm"
 
-> > I think we need to make things clear: Either we add the additional hook=
-s to
-> > pm_ops in which case they should be taken into account in the (u)swsusp=
- code
-> > too, or we don't add them at all.
-> =
 
-> I can do that. I don't care one bit since I will never use pm_ops for
-> suspend to disk anyway.
+--=-EmYLJkTdqn1UKafSEtfm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Please don't do that just yet.
+On Sat, 2007-04-14 at 00:18 +0200, Rafael J. Wysocki wrote:
 
-I see ppc as being really special here.
+> Technically, they may be not needed by (u)swsusp, but since (u)swsusp alr=
+eady
+> uses pm_ops in the platform mode, it formally should use these new hooks =
+in
+> the platform mode too. =20
 
-Normally, preparation for s2ram and preparation for snapshot is really
-similar, but you have exception to that rule. I do think clean
-solution is redesigning plaform/sysdevs to have stable order.
+Sure. I'll do that.
 
-If you added one platform and one sysdev, would that _work_? AFAICT
-you say it would and Ben says it would not. (Lets leave uglyness
-debate for later).
-								Pavel
--- =
+> Otherwise it won't make sense to use pm_ops in
+> (u)swsusp at all, IMHO.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+IMHO it never has and never will be, it's just to make it all fit the
+ACPI model ;)
+
+johannes
+
+--=-EmYLJkTdqn1UKafSEtfm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGIAIX/ETPhpq3jKURAgvPAJsEmBNCTgzzlyCrNN1L4p63b7pZlQCgo4oQ
+gMH/NcRep5ZoEofbga7iAYQ=
+=+pdq
+-----END PGP SIGNATURE-----
+
+--=-EmYLJkTdqn1UKafSEtfm--
+
+
+--===============0270950104==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0270950104==--
