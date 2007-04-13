@@ -1,110 +1,48 @@
-From: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Fri, 13 Apr 2007 12:14:40 +0200
-Message-ID: <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
-References: <460B6E4B.3060004@gmail.com> <200704111640.47171.rjw@sisk.pl>
-	 <461CF87C.4060801@gmail.com> <200704122336.57600.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
+Date: Fri, 13 Apr 2007 13:47:29 +0200
+Message-ID: <200704131347.30001.rjw@sisk.pl>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<1176454756.7052.98.camel@johannes.berg>
+	<1176455273.5764.74.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752449AbXDMKOm@vger.kernel.org>
-In-Reply-To: <200704122336.57600.rjw@sisk.pl>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1176455273.5764.74.camel@localhost.localdomain>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, pavel@suse.cz
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On 4/12/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, 11 April 2007 17:02, Jiri Slaby wrote:
-> > Rafael J. Wysocki napsal(a):
-> > > On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
-> > >> Rafael J. Wysocki napsal(a):
-> > >>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
-> > >>>> Rafael J. Wysocki napsal(a):
-> > >>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
-> > >>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
-> > >>>>>> in -rc6 too.
-> > >>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
-> > >>>>> problem?
-> > >>>> Yes:
-> > >>>> Disabling non-boot CPUs ...
-> > >>>> kvm: disabling virtualization on CPU1
-> > >>>> Breaking affinity for irq 9
-> > >>>> CPU 1 is now offline
-> > >>>> SMP alternatives: switching to UP code
-> > >>>> CPU1 is down
-> > >>>> swsusp: critical section:
-> > >>>> swsusp: Need to copy 158309 pages
-> > >>>> swsusp: Not enough free memory
-> > >>>> Error -12 suspending
-> > >>>> Enabling non-boot CPUs ...
-> > >>>> SMP alternatives: switching to SMP code
-> > >>>> Booting processor 1/2 APIC 0x1
-> > >>>> Initializing CPU#1
-> > >>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
-> > >> My tip is one of three cases: after some work on fresh boot -- some
-> > >> consumers such as thunderbird, firefox, 10 or so terminals with
-> > >> gnome-session. Single xterm + gnome-session semms not to be a problem.
-> > >
-> > > Does the workaround with setting the image size below 1/2 of RAM work for you?
-> >
-> > Yes. Yesterday I must set the value to 350M -- 400M was not enough.
->
-> Well, I can't reproduce it.
->
-> Can you please try to reproduce it with the appended patch applied and send
-> the output of dmesg to me?
->
-> Greetings,
-> Rafael
->
-> ---
->  kernel/power/snapshot.c |    4 ++--
->  kernel/power/swsusp.c   |   16 ++++++++++++----
->  2 files changed, 14 insertions(+), 6 deletions(-)
+On Friday, 13 April 2007 11:07, Benjamin Herrenschmidt wrote:
+> =
 
-Shrinking memory...  Pages needed: 128103 normal, 0 highmem
-Pages needed: 125226 normal, 0 highmem
-Pages needed: -5757 normal, 0 highmem
-Pages needed: -5757 normal, 0 highmem
-Pages needed: -5757 normal, 0 highmem
-Pages needed: -5757
-Pages needed: 127953 normal, 0 highmem
-Pages needed: 125076 normal, 0 highmem
-Pages needed: -6043 normal, 0 highmem
-Pages needed: -6043 normal, 0 highmem
-Pages needed: -6043 normal, 0 highmem
-Pages needed: -6043
-done (200 pages freed)
-Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
-Suspending console(s)
-...
-CPU1 is down
-swsusp: critical section:
-swsusp: Need to copy 131358 pages
-swsusp: Normal pages needed: 131358
-swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 130607
-swsusp: Not enough free memory
-Error -12 suspending
-Enabling non-boot CPUs ...
-SMP alternatives: switching to SMP code
-Booting processor 1/2 APIC 0x1
-Not responding.
-Inquiring remote APIC #1...
-... APIC #1 ID: failed
-... APIC #1 VERSION: failed
-... APIC #1 SPIV: failed
-kvm: disabling virtualization on CPU1
-Error taking CPU1 up: -5
-PCI: Setting latency timer of device 0000:00:01.0 to 64
+> > The docs in the patch I posted should make it clear enough, but if
+> > somebody can come up with a better name for "activate" I'm all ears.
+> =
 
-Please note the CPU#1 bring up problem too. Whole dmesg at:
-http://www.fi.muni.cz/~xslaby/sklad/dmesg.nomem
+> I personally quite like your original irq_off/irq_on :-)
+> =
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+> But I won't put up a fight for it if others disagree..
+
+Well, I didn't like them, because they should refer to the local CPU only (=
+the
+other ones are supposed to be disabled at that point).  Also, since we are
+going to do some things apart from disabling the (local) IRQs in there, I
+thought some other names would be better.  Still, if that's confusing, I'm =
+not
+going to fight either. :-)
+
+Greetings,
+Rafael
