@@ -1,15 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 00:55:17 +0200
-Message-ID: <1176504918.7052.141.camel@johannes.berg>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<200704140018.07367.rjw@sisk.pl>
-	<1176502807.7052.136.camel@johannes.berg>
-	<200704140049.34981.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFD] swsusp problem: Drivers allocate much memory
+	during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
+Date: Sat, 14 Apr 2007 00:57:35 +0200
+Message-ID: <200704140057.35829.rjw@sisk.pl>
+References: <460B6E4B.3060004@gmail.com> <20070413224053.GT28264@elf.ucw.cz>
+	<1176504306.7112.206.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1308441614=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704140049.34981.rjw@sisk.pl>
+In-Reply-To: <1176504306.7112.206.camel@nigel.suspend2.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Saturday, 14 April 2007 00:45, Nigel Cunningham wrote:
+> Hi.
+> =
 
---===============1308441614==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-GUGGqWIuMMUXZ/1+Nw/z"
+> On Sat, 2007-04-14 at 00:40 +0200, Pavel Machek wrote:
+> > Hi!
+> > =
 
+> > > > > > > Well, it looks like someone allocated about 6000 pages after =
+we had freed
+> > > > > > > enough memory for suspending.
+> > > > > > =
 
---=-GUGGqWIuMMUXZ/1+Nw/z
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > > > > We have a tunable allowance in Suspend2 for this, because fglrx
+> > > > > > allocates a lot of pages in its suspend routine if DRI is enabl=
+ed. I
+> > > > > > think some other drivers do too, but fglrx is the main one I kn=
+ow.
+> > > > > =
 
-On Sat, 2007-04-14 at 00:49 +0200, Rafael J. Wysocki wrote:
+> > > > > I wasn't aware of that, thanks for the information.
+> > > > > =
 
-> > IMHO it never has and never will be, it's just to make it all fit the
-> > ACPI model ;)
->=20
-> I'm not against changing that, as you might have noticed. :-)
+> > > > > I think this means we'll probably need to add a tunable, similar =
+to image_size,
+> > > > > that will allow the users to specify how much spare memory they w=
+ant to reserve
+> > > > > for suspending (instead of the constant PAGES_FOR_IO).  IMO we ca=
+n call it
+> > > > > 'spare_memory'.
+> > > > =
 
-Yeah, but I can happily ignore it ;) Maybe if I really have a lot of
-time at some point...
+> > > > Just increase PAGES_FOR_IO. This should not be tunable.
+> > > =
 
-johannes
+> > > Well, I'm not sure.  First, we don't really know what the value of it=
+ should be
+> > > and this alone is a good enough reason for making it tunable, IMHO.  =
+Second, I
+> > > think different systems may need different PAGES_FOR_IO and taking ju=
+st the
+> > > maximum (even if we learn how much that actually is) seems to be wast=
+eful in
+> > =
 
---=-GUGGqWIuMMUXZ/1+Nw/z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> > Well,  it is wasteful as in "we save slightly smaller image than we
+> > could". That's okay with me.
+> =
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> No. If the driver can't allocate the memory, your call to device_suspend
+> will fail. This isn't about image size but about success or failure to
+> hibernate.
 
-iD8DBQBGIApV/ETPhpq3jKURAi7jAJ0cM/u3Xiy/JXfr5Z+GehLcLHXRQgCfUwx2
-zTAp4nSvyKQrA+xya8W4Aic=
-=DY1m
------END PGP SIGNATURE-----
+If we take PAGES_FOR_IO to be the maximum over all possible configurations
+that can hibernate, the majority of systems will just create smaller images=
+ than
+they could have created for smaller PAGES_FOR_IO, but all of them will be
+able to hibernate. :-)
 
---=-GUGGqWIuMMUXZ/1+Nw/z--
-
-
---===============1308441614==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============1308441614==--
+Greetings,
+Rafael
