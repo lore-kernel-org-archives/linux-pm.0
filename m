@@ -1,19 +1,19 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 07:11:31 +1000
-Message-ID: <17951.61955.914634.76914@cargo.ozlabs.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Fri, 13 Apr 2007 23:12:32 +0200
+Message-ID: <20070413211232.GJ28264@elf.ucw.cz>
 References: <1175810054.3489.34.camel@johannes.berg>
-	<1176306867.19348.4.camel@johannes.berg>
-	<461D494D.3080808@gmail.com>
-	<1176367352.5764.2.camel@localhost.localdomain>
-	<20070412101653.GB26473@elf.ucw.cz>
-	<1176374847.7052.47.camel@johannes.berg>
-	<20070413210023.GH28264@elf.ucw.cz>
+	<200704131347.30001.rjw@sisk.pl>
+	<1176470819.7052.108.camel@johannes.berg>
+	<200704132243.59618.rjw@sisk.pl>
+	<20070413205837.GG28264@elf.ucw.cz>
+	<1176498368.7052.117.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413210023.GH28264@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1176498368.7052.117.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,20 +23,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek writes:
+Hi!
 
-> > Besides, we can always rewrite it later when somebody introduces a foo
-> > device that fits above model. Since this patch essentially changes
-> > nothing, I'd been hoping to get it into .22 so we can finally start
+> > That it is same old hack it used to be. There's nothing magic about
+> > decrementer, and I do not think it is _neccessary_ to touch it just
+> > before cli. Just disable it from sysdev handler or something.
 > =
 
-> No. Hacks like this are impossible to get rid of.
+> No, you cannot disable it from sysdev handler because you have to be
+> able to take interrupts. Can we *please* move on to some more productive
+> discussion?
 
-OK, we'll just stick with our separate code path that does what we
-need, then.
+So what happens if you disable it as a platform device? There has to
+be better solution than this. What is so special about decrementer?
 
-Paul.
+We were able to handle MTRR registers on PC. Timer setup fit into the
+model too...
+
+> > > > @@ -135,9 +135,19 @@ typedef int __bitwise suspend_disk_metho
+> > > >   * @prepare: Prepare the platform for the given suspend state. Can=
+ return a
+> > > >   *	negative error code if necessary.
+> > > >   *
+> > > > + * @quiesce: This callback is called after devices are suspended b=
+ut before
+> > > > + *	they are powered down. If assigned, this callback must at least=
+ turn
+> > > > + *	off local IRQs. If left unassigned, a default callback that does
+> > > > + *	nothing but turn off local IRQs is assigned during pm_set_ops().
+> > =
+
+> > Is it called for s2ram? swsusp? uswsusp?
+> =
+
+> Whoops, I had that in an earlier version, it's not supposed to be called
+> for (u)swsusp because pm_ops involvement there is a hack anyway. I'll
+> fix the description.
+
+But (u)swsusp needs to shut down the devices, and it does both suspend
+and powerdown, too...?
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
