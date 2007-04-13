@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFD] swsusp problem: Drivers allocate much memory
-	during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
-Date: Fri, 13 Apr 2007 22:41:52 +0200
-Message-ID: <200704132241.52725.rjw@sisk.pl>
-References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl>
-	<1176466896.7112.159.camel@nigel.suspend2.net>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Fri, 13 Apr 2007 22:43:59 +0200
+Message-ID: <200704132243.59618.rjw@sisk.pl>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<200704131347.30001.rjw@sisk.pl>
+	<1176470819.7052.108.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1176466896.7112.159.camel@nigel.suspend2.net>
+In-Reply-To: <1176470819.7052.108.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,78 +20,138 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+To: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 13 April 2007 14:21, Nigel Cunningham wrote:
-> Hi.
+On Friday, 13 April 2007 15:26, Johannes Berg wrote:
+> For powermac, we need to do some things between suspending devices and
+> device_power_off, for example setting the decrementer. This patch
+> introduces pm_ops.quiesce and pm_ops.activate which will be called instead
+> of disabling/enabling irqs so platforms get control over this step.
 > =
 
-> On Fri, 2007-04-13 at 14:00 +0200, Rafael J. Wysocki wrote:
-> > > =
-
-> > > Shrinking memory...  Pages needed: 128103 normal, 0 highmem
-> > > Pages needed: 125226 normal, 0 highmem
-> > > Pages needed: -5757 normal, 0 highmem
-> > > Pages needed: -5757 normal, 0 highmem
-> > > Pages needed: -5757 normal, 0 highmem
-> > > Pages needed: -5757
-> > > Pages needed: 127953 normal, 0 highmem
-> > > Pages needed: 125076 normal, 0 highmem
-> > > Pages needed: -6043 normal, 0 highmem
-> > > Pages needed: -6043 normal, 0 highmem
-> > > Pages needed: -6043 normal, 0 highmem
-> > > Pages needed: -6043
-> > > done (200 pages freed)
-> > > Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
-> > > Suspending console(s)
-> > > ...
-> > > CPU1 is down
-> > > swsusp: critical section:
-> > > swsusp: Need to copy 131358 pages
-> > > swsusp: Normal pages needed: 131358
-> > > swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 130=
-607
-> > =
-
-> > Well, it looks like someone allocated about 6000 pages after we had fre=
-ed
-> > enough memory for suspending.
+> If not assigned, these two calls will be assigned with defaults during
+> set_pm_ops.
 > =
 
-> We have a tunable allowance in Suspend2 for this, because fglrx
-> allocates a lot of pages in its suspend routine if DRI is enabled. I
-> think some other drivers do too, but fglrx is the main one I know.
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-I wasn't aware of that, thanks for the information.
+I have no objections.  Pavel, what do you think?
 
-I think this means we'll probably need to add a tunable, similar to image_s=
-ize,
-that will allow the users to specify how much spare memory they want to res=
-erve
-for suspending (instead of the constant PAGES_FOR_IO).  IMO we can call it
-'spare_memory'.
-
-Still, this doesn't look like a real solution, because it would require the
-users affected by this problem to experiment with suspending in order to
-figure out how much spare memory they will need.
-
-IMO to really fix the problem, we should let the drivers that need much mem=
-ory
-for suspending allocate it _before_ the memory shrinker is called.  For this
-purpose we can use notifiers that will be called before we start the shrink=
-ing
-of memory.  Namely, if a driver needs to allocate substantial amount of mem=
-ory
-for suspending, it can register a notifier that will be called before we tr=
-y to
-shrink memory.  Then, the memory needed by the driver may be allocated in
-this notifier (of course, in that case it will also have to be called if the
-shrinking of memory fails, so that the memory allocated by the driver for
-suspending can be freed) and used in the driver's .suspend() routine.
-
-Comments welcome.
-
-Greetings,
 Rafael
+
+
+> ---
+>  include/linux/pm.h  |   12 ++++++++++++
+>  kernel/power/main.c |   35 ++++++++++++++++++++++++++++++++---
+>  2 files changed, 44 insertions(+), 3 deletions(-)
+> =
+
+> --- wireless-dev.orig/include/linux/pm.h	2007-04-13 10:09:17.835356880 +0=
+200
+> +++ wireless-dev/include/linux/pm.h	2007-04-13 14:57:01.525356880 +0200
+> @@ -135,9 +135,19 @@ typedef int __bitwise suspend_disk_metho
+>   * @prepare: Prepare the platform for the given suspend state. Can retur=
+n a
+>   *	negative error code if necessary.
+>   *
+> + * @quiesce: This callback is called after devices are suspended but bef=
+ore
+> + *	they are powered down. If assigned, this callback must at least turn
+> + *	off local IRQs. If left unassigned, a default callback that does
+> + *	nothing but turn off local IRQs is assigned during pm_set_ops().
+> + *
+>   * @enter: Enter the given suspend state, must be assigned. Can return a
+>   *	negative error code if necessary.
+>   *
+> + * @activate: This callback is called after devices are powered up but
+> + *	before they resume. If assigned, this callback must at least turn
+> + *	on local IRQs. If left unassigned, a default callback that does
+> + *	nothing but turn on local IRQs is assigned during pm_set_ops().
+> + *
+>   * @finish: Called when the system has left the given state and all devi=
+ces
+>   *	are resumed. The return value is ignored.
+>   *
+> @@ -155,7 +165,9 @@ typedef int __bitwise suspend_disk_metho
+>  struct pm_ops {
+>  	int (*valid)(suspend_state_t state);
+>  	int (*prepare)(suspend_state_t state);
+> +	void (*quiesce)(suspend_state_t state);
+>  	int (*enter)(suspend_state_t state);
+> +	void (*activate)(suspend_state_t state);
+>  	int (*finish)(suspend_state_t state);
+>  	suspend_disk_method_t pm_disk_mode;
+>  };
+> --- wireless-dev.orig/kernel/power/main.c	2007-04-13 10:09:17.835356880 +=
+0200
+> +++ wireless-dev/kernel/power/main.c	2007-04-13 14:53:44.975356880 +0200
+> @@ -33,6 +33,28 @@ struct pm_ops *pm_ops;
+>  suspend_disk_method_t pm_disk_mode =3D PM_DISK_SHUTDOWN;
+>  =
+
+>  /**
+> + * pm_default_quiesce - default quiesce callback
+> + *
+> + * pm_ops drivers that need to do nothing but disable IRQs
+> + * leave .quiesce unassigned and pm_set_ops() assigns this.
+> + */
+> +static void pm_default_quiesce(suspend_state_t state)
+> +{
+> +	local_irq_disable();
+> +}
+> +
+> +/**
+> + * pm_default_activate - default activate callback
+> + *
+> + * pm_ops drivers that need to do nothing but enable IRQs
+> + * leave .activate unassigned and pm_set_ops assigns this.
+> + */
+> +static void pm_default_activate(suspend_state_t state)
+> +{
+> +	local_irq_enable();
+> +}
+> +
+> +/**
+>   *	pm_set_ops - Set the global power method table. =
+
+>   *	@ops:	Pointer to ops structure.
+>   */
+> @@ -45,6 +67,12 @@ void pm_set_ops(struct pm_ops * ops)
+>  		pm_disk_mode =3D ops->pm_disk_mode;
+>  	} else
+>  		pm_disk_mode =3D PM_DISK_SHUTDOWN;
+> +
+> +	if (!ops->quiesce)
+> +		ops->quiesce =3D pm_default_quiesce;
+> +	if (!ops->activate)
+> +		ops->activate =3D pm_default_activate;
+> +
+>  	mutex_unlock(&pm_mutex);
+>  }
+>  =
+
+> @@ -132,9 +160,9 @@ static int suspend_prepare(suspend_state
+>  int suspend_enter(suspend_state_t state)
+>  {
+>  	int error =3D 0;
+> -	unsigned long flags;
+>  =
+
+> -	local_irq_save(flags);
+> +	pm_ops->quiesce(state);
+> +	BUG_ON(!irqs_disabled());
+>  =
+
+>  	if ((error =3D device_power_down(PMSG_SUSPEND))) {
+>  		printk(KERN_ERR "Some devices failed to power down\n");
+> @@ -143,7 +171,8 @@ int suspend_enter(suspend_state_t state)
+>  	error =3D pm_ops->enter(state);
+>  	device_power_up();
+>   Done:
+> -	local_irq_restore(flags);
+> +	pm_ops->activate(state);
+> +	BUG_ON(irqs_disabled());
+>  	return error;
+>  }
