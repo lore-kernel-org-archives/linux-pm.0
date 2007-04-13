@@ -1,19 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 00:01:47 +0200
-Message-ID: <1176501707.7052.132.camel@johannes.berg>
+Date: Sat, 14 Apr 2007 00:09:32 +0200
+Message-ID: <200704140009.33298.rjw@sisk.pl>
 References: <1175810054.3489.34.camel@johannes.berg>
-	<200704131347.30001.rjw@sisk.pl>
-	<1176470819.7052.108.camel@johannes.berg>
-	<200704132243.59618.rjw@sisk.pl> <20070413205837.GG28264@elf.ucw.cz>
-	<1176498368.7052.117.camel@johannes.berg>
-	<20070413211232.GJ28264@elf.ucw.cz>
-	<1176499130.5764.94.camel@localhost.localdomain>
-	<20070413215609.GP28264@elf.ucw.cz>
+	<1176499086.7052.124.camel@johannes.berg>
+	<20070413213349.GL28264@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0581049259=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413215609.GP28264@elf.ucw.cz>
+In-Reply-To: <20070413213349.GL28264@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,60 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, 13 April 2007 23:33, Pavel Machek wrote:
+> On Fri 2007-04-13 23:18:05, Johannes Berg wrote:
+> > On Fri, 2007-04-13 at 23:12 +0200, Pavel Machek wrote:
+> > =
 
---===============0581049259==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ubGJKnPe+h3mRF6MF7aH"
+> > =
 
+> > > > Whoops, I had that in an earlier version, it's not supposed to be c=
+alled
+> > > > for (u)swsusp because pm_ops involvement there is a hack anyway. I'=
+ll
+> > > > fix the description.
+> > > =
 
---=-ubGJKnPe+h3mRF6MF7aH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > > But (u)swsusp needs to shut down the devices, and it does both suspend
+> > > and powerdown, too...?
+> > =
 
-On Fri, 2007-04-13 at 23:56 +0200, Pavel Machek wrote:
+> > Yes, but the special S4 state is just hacked onto pm_ops, nothing but
+> > ACPI S4 will ever sanely use pm_ops. If I'd invented pm_ops I'd made
+> > pm_ops solely for suspend to ram/standby/... and added a *separate* hook
+> > for pm_disk_mode and S4 because logically that really doesn't belong to
+> > pm_ops which does almost exclusively things for suspend to ram/standby.
+> =
 
-> There are about 7 places where we do stop_platform_devices()
-> local_irq_disable() stop_sysdevs().
+> Still, swsusp shuts down the devices:
+> =
 
-I can only find three of those.
+>         if ((error =3D arch_prepare_suspend()))
+>                 return error;
+> =
 
-> You call your hook from one of
-> them and I suspect you need to call it from more than one. Plus, the
-> hook needs to have documented semantics, so people know if they should
-> do local_irq_disable() or if they should call your hook.
+>         local_irq_disable();
+>         /* At this point, device_suspend() has been called, but *not*
+>          * device_power_down(). We *must* device_power_down() now.
+>          * Otherwise, drivers for some devices (e.g. interrupt
+> controllers)
+>          * become desynchronized with the actual state of the hardware
+>          * at resume time, and evil weirdness ensues.
+>          */
+>         if ((error =3D device_power_down(PMSG_FREEZE))) {
+>                 printk(KERN_ERR "Some devices failed to power down, abort=
+ing suspend\n");
+>                 goto Enable_irqs;
+>         }
+> =
 
-All but one are related to suspend to disk. I don't see anybody
-inventing yet another entry point to the kernel that actually uses
-pm_ops internally, but if they do surely they'll follow the code that is
-there.
+> This local_irq_disable() is very similar to the one you are doing in
+> suspend-to-RAM. According to your description, it needs to play with
+> the decrementor, too. But I'd really prefer not to have pm_ops call
+> here -- exactly because swsusp has nothing to do with pm_ops in
+> shutdown mode.
 
-johannes
+Hmm, I missed that. :-(
 
---=-ubGJKnPe+h3mRF6MF7aH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I think we need to make things clear: Either we add the additional hooks to
+pm_ops in which case they should be taken into account in the (u)swsusp code
+too, or we don't add them at all.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Well, there also is one more solution.  Namely, we can add the hooks to pm_=
+ops
+and make (u)swsusp use something else instead of pm_ops, but that would req=
+uire
+some more consideration.
 
-iD8DBQBGH/3K/ETPhpq3jKURAtouAJ90bqaOyTmTMYci2sModjGY14CAKQCgnTkn
-kQZcky0exiAyvdqnETzywuY=
-=NOOJ
------END PGP SIGNATURE-----
-
---=-ubGJKnPe+h3mRF6MF7aH--
-
-
---===============0581049259==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0581049259==--
+Greetings,
+Rafael
