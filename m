@@ -1,18 +1,17 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 07:15:41 +1000
-Message-ID: <1176498941.5764.91.camel@localhost.localdomain>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Fri, 13 Apr 2007 23:18:05 +0200
+Message-ID: <1176499086.7052.124.camel@johannes.berg>
 References: <1175810054.3489.34.camel@johannes.berg>
-	<1176306867.19348.4.camel@johannes.berg> <461D494D.3080808@gmail.com>
-	<1176367352.5764.2.camel@localhost.localdomain>
-	<20070412101653.GB26473@elf.ucw.cz>
-	<1176374847.7052.47.camel@johannes.berg>
-	<20070413210023.GH28264@elf.ucw.cz>
+	<200704131347.30001.rjw@sisk.pl>
+	<1176470819.7052.108.camel@johannes.berg>
+	<200704132243.59618.rjw@sisk.pl> <20070413205837.GG28264@elf.ucw.cz>
+	<1176498368.7052.117.camel@johannes.berg>
+	<20070413211232.GJ28264@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0090621921=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413210023.GH28264@elf.ucw.cz>
+In-Reply-To: <20070413211232.GJ28264@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,18 +22,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-04-13 at 23:00 +0200, Pavel Machek wrote:
 
-> > Besides, we can always rewrite it later when somebody introduces a foo
-> > device that fits above model. Since this patch essentially changes
-> > nothing, I'd been hoping to get it into .22 so we can finally start
-> =
+--===============0090621921==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-B0CUdbgbIhAvnJ9WN7gC"
 
-> No. Hacks like this are impossible to get rid of.
 
-it's the cleanest solution, it's you who is a hack
+--=-B0CUdbgbIhAvnJ9WN7gC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ben.
+On Fri, 2007-04-13 at 23:12 +0200, Pavel Machek wrote:
+
+
+> > Whoops, I had that in an earlier version, it's not supposed to be calle=
+d
+> > for (u)swsusp because pm_ops involvement there is a hack anyway. I'll
+> > fix the description.
+>=20
+> But (u)swsusp needs to shut down the devices, and it does both suspend
+> and powerdown, too...?
+
+Yes, but the special S4 state is just hacked onto pm_ops, nothing but
+ACPI S4 will ever sanely use pm_ops. If I'd invented pm_ops I'd made
+pm_ops solely for suspend to ram/standby/... and added a *separate* hook
+for pm_disk_mode and S4 because logically that really doesn't belong to
+pm_ops which does almost exclusively things for suspend to ram/standby.
+
+johannes
+
+--=-B0CUdbgbIhAvnJ9WN7gC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGH/ON/ETPhpq3jKURAkWlAJ9U3XtcdXmdMuDpIQ1H5XXMg1eijwCdE+Nm
+rqYyqsVZQ5Qbv9ifaSwDIKo=
+=m0gx
+-----END PGP SIGNATURE-----
+
+--=-B0CUdbgbIhAvnJ9WN7gC--
+
+
+--===============0090621921==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============0090621921==--
