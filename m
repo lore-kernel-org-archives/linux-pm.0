@@ -1,58 +1,110 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
-Date: Fri, 13 Apr 2007 02:51:50 -0700
-Message-ID: <200704130251.50655.david-b@pacbell.net>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
-	<200704131022.45315.rjw@sisk.pl>
+From: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Fri, 13 Apr 2007 12:14:40 +0200
+Message-ID: <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
+References: <460B6E4B.3060004@gmail.com> <200704111640.47171.rjw@sisk.pl>
+	 <461CF87C.4060801@gmail.com> <200704122336.57600.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704131022.45315.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752449AbXDMKOm@vger.kernel.org>
+In-Reply-To: <200704122336.57600.rjw@sisk.pl>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>, Pavel Machek <pavel@ucw.cz>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, pavel@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 13 April 2007 1:22 am, Rafael J. Wysocki wrote:
-> [appropriate CCs added]
-> =
+On 4/12/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, 11 April 2007 17:02, Jiri Slaby wrote:
+> > Rafael J. Wysocki napsal(a):
+> > > On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
+> > >> Rafael J. Wysocki napsal(a):
+> > >>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
+> > >>>> Rafael J. Wysocki napsal(a):
+> > >>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+> > >>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
+> > >>>>>> in -rc6 too.
+> > >>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
+> > >>>>> problem?
+> > >>>> Yes:
+> > >>>> Disabling non-boot CPUs ...
+> > >>>> kvm: disabling virtualization on CPU1
+> > >>>> Breaking affinity for irq 9
+> > >>>> CPU 1 is now offline
+> > >>>> SMP alternatives: switching to UP code
+> > >>>> CPU1 is down
+> > >>>> swsusp: critical section:
+> > >>>> swsusp: Need to copy 158309 pages
+> > >>>> swsusp: Not enough free memory
+> > >>>> Error -12 suspending
+> > >>>> Enabling non-boot CPUs ...
+> > >>>> SMP alternatives: switching to SMP code
+> > >>>> Booting processor 1/2 APIC 0x1
+> > >>>> Initializing CPU#1
+> > >>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
+> > >> My tip is one of three cases: after some work on fresh boot -- some
+> > >> consumers such as thunderbird, firefox, 10 or so terminals with
+> > >> gnome-session. Single xterm + gnome-session semms not to be a problem.
+> > >
+> > > Does the workaround with setting the image size below 1/2 of RAM work for you?
+> >
+> > Yes. Yesterday I must set the value to 350M -- 400M was not enough.
+>
+> Well, I can't reproduce it.
+>
+> Can you please try to reproduce it with the appended patch applied and send
+> the output of dmesg to me?
+>
+> Greetings,
+> Rafael
+>
+> ---
+>  kernel/power/snapshot.c |    4 ++--
+>  kernel/power/swsusp.c   |   16 ++++++++++++----
+>  2 files changed, 14 insertions(+), 6 deletions(-)
 
-> On Friday, 13 April 2007 02:33, Robert P. J. Day wrote:
-> > =
+Shrinking memory...  Pages needed: 128103 normal, 0 highmem
+Pages needed: 125226 normal, 0 highmem
+Pages needed: -5757 normal, 0 highmem
+Pages needed: -5757 normal, 0 highmem
+Pages needed: -5757 normal, 0 highmem
+Pages needed: -5757
+Pages needed: 127953 normal, 0 highmem
+Pages needed: 125076 normal, 0 highmem
+Pages needed: -6043 normal, 0 highmem
+Pages needed: -6043 normal, 0 highmem
+Pages needed: -6043 normal, 0 highmem
+Pages needed: -6043
+done (200 pages freed)
+Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
+Suspending console(s)
+...
+CPU1 is down
+swsusp: critical section:
+swsusp: Need to copy 131358 pages
+swsusp: Normal pages needed: 131358
+swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 130607
+swsusp: Not enough free memory
+Error -12 suspending
+Enabling non-boot CPUs ...
+SMP alternatives: switching to SMP code
+Booting processor 1/2 APIC 0x1
+Not responding.
+Inquiring remote APIC #1...
+... APIC #1 ID: failed
+... APIC #1 VERSION: failed
+... APIC #1 SPIV: failed
+kvm: disabling virtualization on CPU1
+Error taking CPU1 up: -5
+PCI: Setting latency timer of device 0000:00:01.0 to 64
 
-> > just something i threw together, not in final form, but it represents
-> > tossing the legacy PM stuff.  at the moment, the menuconfig entry for
-> > PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
-> > "obsolete."  that's a good sign that it's getting close to the time
-> > for it to go, and the removal is fairly straightforward, but there's
-> > no mention of its removal in the feature removal schedule file.
-> =
+Please note the CPU#1 bring up problem too. Whole dmesg at:
+http://www.fi.muni.cz/~xslaby/sklad/dmesg.nomem
 
-> It's been like this for a long long time.  I think you're right that it c=
-an be
-> dropped, but I don't know the details (eg. why it hasn't been dropped yet=
-).
-
-I was just thinking about this the other day.  I did an inventory of
-the actual _users_ of this code when I added the deprecation to Kconfig,
-and the only driver that would catch the notification was for some
-old m68k platform serial driver (Amiga?) ... that won't have changed.
-
-So the only reason not to remove it at that time was to make sure that
-folk had a chance to squawk about it going away.  I think it's past
-time for this ancient stuff to vanish, since it's been obsolete for
-most of 2.5..2.6 and there's only that one event consumer left.
-
-Go for it!
-
-- Dave
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
