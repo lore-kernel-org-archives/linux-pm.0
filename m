@@ -1,17 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 09:19:43 +1000
-Message-ID: <1176506383.5764.129.camel@localhost.localdomain>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<1176499086.7052.124.camel@johannes.berg>
-	<20070413213349.GL28264@elf.ucw.cz> <200704140009.33298.rjw@sisk.pl>
-	<1176503122.5764.109.camel@localhost.localdomain>
-	<20070413223922.GS28264@elf.ucw.cz>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: Linux 2.6.21-rc6
+Date: Sat, 14 Apr 2007 01:50:17 +0200
+Message-ID: <20070413235017.GR5907@stusta.de>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+	<20070413212954.GA2545@melchior.yamamaya.is-a-geek.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413223922.GS28264@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <20070413212954.GA2545@melchior.yamamaya.is-a-geek.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,95 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz
+Cc: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Ok, PowerPC Decrementer 101
+On Fri, Apr 13, 2007 at 11:29:55PM +0200, Tobias Diedrich wrote:
+> Linus Torvalds wrote:
+> =
 
-The processor contains a special register, the decrementer, which
-keeps ... decrementing. It can be set to any arbitrary value at any time
-and will decrement in sync with the processor timebase.
+> > We should be getting close to a 2.6.21 release, so please update any =
 
-There are some subtle differences between implementations regarding what
-happens when reaching 0, but the basic idea is that you get an interrupt
-(depending on the processor, that interrupt is somewhat a level
-interrupt asserted when the decrementer is negative or it can be a kind
-of edge interrupt queued up when the dec transitions from 0 to -1).
+> > regression reports you've done,
+> =
 
-This decrementer is used as the main timer. Thus it needs to be
-operating normally at all time until interrupts are off or the scheduler
-will stop working properly, kernel timers will not fire, etc...
+> For me, suspend to disk works only once (has been the case for all
+> .21-rcs IIRC, but I didn't get around to report it so far).
+> There are some threads about an issue like this, which is supposed
+> to be fixed by disabling CONFIG_PCI_MSI, but on my system the
+> problem persists nonetheless.
+> =
 
-(and saying that platforms devices should use mdelay instead is just
-gross, I won't even go there. Interrupts are still on -> the core kernel
-should operate normally and that includes the main timer source).
+> On the second suspend attempt, the last message I see is
+> "Suspending console(s)"
+> =
 
-Now what happens when we put the processors (well, most desktop
-processors, at least the one that concern us in that discussion) to
-sleep is that they get out of sleep when an interrupt occur, for
-example ... a decrementer interrupt. This is not good for STR for
-various reasons related to the way STR works in hardware (the
-northbridge snoops that the CPU is going to sleep and starts putting
-things down, ultimately shutting the CPU off, it can't really cope if
-the CPU wakes up right away and start doing things). Unfortunately, for
-other reasons, the procedure of putting the CPU to sleep involves
-turning interrupts on. For all external interrupts, that isn't a problem
-as we have previously shut them all down on the main PIC, but it is with
-the DEC.
+> If I find the time, I'll try to bisect it this weekend.
+>...
 
-The "trick" is that once interrupts are off, we want the DEC to be set
-to such a high value that it won't tick anytime soon (that is actually
-several seconds, enough in practice). But if we do that after IRQs have
-been turned off (from a sysdev), we have the risk that it might have
-ticked between turning IRQs off and our sysdev, and thus a DEC
-interrupts is already "queued up" (especially on CPUs where it acts as
-an edge interrupt) and will screw up our attempt to put the CPU to sleep
-later on.
+Does CONFIG_HPET_TIMER=3Dn make any difference?
+Does the latest -git work?
+ =
 
-The procedure we use is to set it to 0x7fffffff with IRQs on, then turn
-IRQs off, then set it back to 0x7fffffff in case it kicked in just
-before and the timer interrupt set it back to a short value. As you can
-imagine, thoseh have to be done close together as part of the main irq
-disabling procedure, after platform devices have run (that is we can
-consider the scheduler as "off") and before sysdev's etc...
+cu
+Adrian
 
-Now, in addition to that, we have some weird motherboard stuff we need
-to turn off/on, which has to be done after drivers (because it renders
-various busses inaccessible in some cases, and might cause DMA snooping
-to stop working, I'm not 100% sure, but I know for sure it has to be
-done late) but can't be done as a sysdev because we need some
-infrastructure like the i2c stuff (and others) that requires semaphores
-and timers. It's based on something remotely akin to AML in that we have
-to execute "scripts" provided by the firmware and the code to do so need
-to run in an environment where scheduler & timers are operating.
+-- =
 
-That later thing could be dealt with using a platform device if we could
-guarantee that platform device is put to sleep last of all devices in
-the tree and woken up first. Right now, we have no such guarantee and no
-mecanism for it, and I don't see a solution showing up for 2.6.22
 
-In the long run, we might be able to break up that phase to have each
-individual device that has such functions associated have ways to call
-into them after the device has been put to sleep, but that involves more
-complication, probably hook in the generic PCI code etc... and more
-ordering issues vs. some motherboard foo so it's definitely not on the
-short term radar.
-
-For all those reasons, I do think that the proper, clean and incremental
-approach to get our stuff working is to have that pair of hooks allowing
-us to "replace" the local_irq_disable/enable calls...
-
-Now it does not need to be pm_ops. I'm fine with arch_pm_irq_quiesce()
-kind of thing (or find a better name if you can, maybe
-arch_pm_after_devices_suspend() arch_pm_before_device_wakeup() ?) and
-have the default implementation of these just do
-local_irq_disable/enable.
-
-It's basically about quiescing the scheduler/timers, which on powerpc
-(bcs of the way the DEC operates) requires a little bit more than just a
-call to local_irq_disable. And once the hook is there, use it for some
-other arch specific bits that we can't quite fit anywhere else at the
-moment.
-
-Ben.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
