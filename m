@@ -1,7 +1,7 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Fri, 13 Apr 2007 23:52:41 +0200
-Message-ID: <20070413215241.GO28264@elf.ucw.cz>
+Date: Fri, 13 Apr 2007 23:56:09 +0200
+Message-ID: <20070413215609.GP28264@elf.ucw.cz>
 References: <1175810054.3489.34.camel@johannes.berg>
 	<200704131347.30001.rjw@sisk.pl>
 	<1176470819.7052.108.camel@johannes.berg>
@@ -9,15 +9,13 @@ References: <1175810054.3489.34.camel@johannes.berg>
 	<20070413205837.GG28264@elf.ucw.cz>
 	<1176498368.7052.117.camel@johannes.berg>
 	<20070413211232.GJ28264@elf.ucw.cz>
-	<1176499086.7052.124.camel@johannes.berg>
-	<20070413213349.GL28264@elf.ucw.cz>
-	<1176500749.7052.127.camel@johannes.berg>
+	<1176499130.5764.94.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1176500749.7052.127.camel@johannes.berg>
+In-Reply-To: <1176499130.5764.94.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,49 +25,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2007-04-13 23:45:48, Johannes Berg wrote:
-> On Fri, 2007-04-13 at 23:33 +0200, Pavel Machek wrote:
+Hi!
+
+> > > > That it is same old hack it used to be. There's nothing magic about
+> > > > decrementer, and I do not think it is _neccessary_ to touch it just
+> > > > before cli. Just disable it from sysdev handler or something.
+> > > =
+
+> > > No, you cannot disable it from sysdev handler because you have to be
+> > > able to take interrupts. Can we *please* move on to some more product=
+ive
+> > > discussion?
+> > =
+
+> > So what happens if you disable it as a platform device? There has to
+> > be better solution than this. What is so special about decrementer?
 > =
 
-> > Still, swsusp shuts down the devices:
-> > =
-
-> >         if ((error =3D arch_prepare_suspend()))
-> >                 return error;
-> > =
-
-> >         local_irq_disable();
-> >         /* At this point, device_suspend() has been called, but *not*
-> >          * device_power_down(). We *must* device_power_down() now.
-> >          * Otherwise, drivers for some devices (e.g. interrupt
-> > controllers)
-> >          * become desynchronized with the actual state of the hardware
-> >          * at resume time, and evil weirdness ensues.
-> >          */
-> >         if ((error =3D device_power_down(PMSG_FREEZE))) {
-> >                 printk(KERN_ERR "Some devices failed to power down, abo=
-rting suspend\n");
-> >                 goto Enable_irqs;
-> >         }
-> > =
-
-> > This local_irq_disable() is very similar to the one you are doing in
-> > suspend-to-RAM. According to your description, it needs to play with
-> > the decrementor, too. But I'd really prefer not to have pm_ops call
-> > here -- exactly because swsusp has nothing to do with pm_ops in
-> > shutdown mode.
+> That you are dead since once it's disabled, kernel timers etc... stop
+> working.
 > =
 
-> Right. But we don't actually care because we just power down, we don't
-> have to put the CPU into a proper state.
+> > We were able to handle MTRR registers on PC. Timer setup fit into the
+> > model too...
+> =
 
-Look again, this sequence is before taking system snapshot, and then
-we have to recover and save the snapshot, too.
+> I don't care what you do on x86. If I tell you I need to take control at
+> that point, then I need. Beside I really can't understand why you are so
+> dead set against an arch hook there. It's not like this will do anything
+> to you... it can't propagate to drivers, it's purely arch stuff, so
+> what ? =
 
+
+There are about 7 places where we do stop_platform_devices()
+local_irq_disable() stop_sysdevs(). You call your hook from one of
+them and I suspect you need to call it from more than one. Plus, the
+hook needs to have documented semantics, so people know if they should
+do local_irq_disable() or if they should call your hook.
 									Pavel
 -- =
 
