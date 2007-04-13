@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] swsusp problem: Drivers allocate much memory
-	during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
-Date: Sat, 14 Apr 2007 00:10:16 +0200
-Message-ID: <20070413221016.GQ28264@elf.ucw.cz>
-References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl>
-	<1176466896.7112.159.camel@nigel.suspend2.net>
-	<200704132241.52725.rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Sat, 14 Apr 2007 00:13:26 +0200
+Message-ID: <1176502406.7052.134.camel@johannes.berg>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<1176499086.7052.124.camel@johannes.berg>
+	<20070413213349.GL28264@elf.ucw.cz>  <200704140009.33298.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1644266773=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200704132241.52725.rjw@sisk.pl>
+In-Reply-To: <200704140009.33298.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,56 +19,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > > Well, it looks like someone allocated about 6000 pages after we had f=
-reed
-> > > enough memory for suspending.
-> > =
+--===============1644266773==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-DJkmSs0xVn+bAlUbAmvk"
 
-> > We have a tunable allowance in Suspend2 for this, because fglrx
-> > allocates a lot of pages in its suspend routine if DRI is enabled. I
-> > think some other drivers do too, but fglrx is the main one I know.
-> =
 
-> I wasn't aware of that, thanks for the information.
-> =
+--=-DJkmSs0xVn+bAlUbAmvk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I think this means we'll probably need to add a tunable, similar to image=
-_size,
-> that will allow the users to specify how much spare memory they want to r=
-eserve
-> for suspending (instead of the constant PAGES_FOR_IO).  IMO we can call it
-> 'spare_memory'.
+On Sat, 2007-04-14 at 00:09 +0200, Rafael J. Wysocki wrote:
 
-Just increase PAGES_FOR_IO. This should not be tunable.
+> Hmm, I missed that. :-(
+>=20
+> I think we need to make things clear: Either we add the additional hooks =
+to
+> pm_ops in which case they should be taken into account in the (u)swsusp c=
+ode
+> too, or we don't add them at all.
 
-> Still, this doesn't look like a real solution, because it would require t=
-he
-> users affected by this problem to experiment with suspending in order to
-> figure out how much spare memory they will need.
+I can do that. I don't care one bit since I will never use pm_ops for
+suspend to disk anyway.
 
-Exactly.
+johannes
 
-> IMO to really fix the problem, we should let the drivers that need much m=
-emory
-> for suspending allocate it _before_ the memory shrinker is called.  For t=
-his
-> purpose we can use notifiers that will be called before we start the shri=
-nking
-> of memory.  Namely, if a driver needs to allocate substantial amount
-> of memory
+--=-DJkmSs0xVn+bAlUbAmvk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Yes please. Using that notifier without leaking the memory will be
-"interesting" but if someone needs so much memory during suspend, let
-them eat their own complexity.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-									Pavel
--- =
+iD8DBQBGIACG/ETPhpq3jKURAnNUAJ9kAICzxRfXD01Etfz0KLNXjvL1hACghZu7
+sZE7LVNFxzLhswDwaxYm0b4=
+=/ml3
+-----END PGP SIGNATURE-----
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+--=-DJkmSs0xVn+bAlUbAmvk--
+
+
+--===============1644266773==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============1644266773==--
