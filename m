@@ -1,20 +1,15 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 08:24:10 +1000
-Message-ID: <1176503050.5764.107.camel@localhost.localdomain>
+Date: Sat, 14 Apr 2007 08:25:22 +1000
+Message-ID: <1176503122.5764.109.camel@localhost.localdomain>
 References: <1175810054.3489.34.camel@johannes.berg>
-	<200704131347.30001.rjw@sisk.pl>
-	<1176470819.7052.108.camel@johannes.berg>
-	<200704132243.59618.rjw@sisk.pl> <20070413205837.GG28264@elf.ucw.cz>
-	<1176498368.7052.117.camel@johannes.berg>
-	<20070413211232.GJ28264@elf.ucw.cz>
-	<1176499130.5764.94.camel@localhost.localdomain>
-	<20070413215609.GP28264@elf.ucw.cz>
+	<1176499086.7052.124.camel@johannes.berg>
+	<20070413213349.GL28264@elf.ucw.cz>  <200704140009.33298.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413215609.GP28264@elf.ucw.cz>
+In-Reply-To: <200704140009.33298.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,18 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
 
-> There are about 7 places where we do stop_platform_devices()
-> local_irq_disable() stop_sysdevs(). You call your hook from one of
-> them and I suspect you need to call it from more than one. Plus, the
-> hook needs to have documented semantics, so people know if they should
-> do local_irq_disable() or if they should call your hook.
+> Hmm, I missed that. :-(
+> =
 
-The simple fact that these sequence is copied in 7 different places is a
-pretty good illustration of what's wrong with the core pm code ...
+> I think we need to make things clear: Either we add the additional hooks =
+to
+> pm_ops in which case they should be taken into account in the (u)swsusp c=
+ode
+> too, or we don't add them at all.
+> =
+
+> Well, there also is one more solution.  Namely, we can add the hooks to p=
+m_ops
+> and make (u)swsusp use something else instead of pm_ops, but that would r=
+equire
+> some more consideration.
+
+Well, what would be nice would be if swsusp wasn't just such a gross
+contraption completely bypassing the rest of the suspend/resume
+framework...
 
 Ben.
