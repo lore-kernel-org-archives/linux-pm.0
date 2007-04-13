@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Sat, 14 Apr 2007 00:09:32 +0200
-Message-ID: <200704140009.33298.rjw@sisk.pl>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<1176499086.7052.124.camel@johannes.berg>
-	<20070413213349.GL28264@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFD] swsusp problem: Drivers allocate much memory
+	during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
+Date: Sat, 14 Apr 2007 00:10:16 +0200
+Message-ID: <20070413221016.GQ28264@elf.ucw.cz>
+References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl>
+	<1176466896.7112.159.camel@nigel.suspend2.net>
+	<200704132241.52725.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070413213349.GL28264@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <200704132241.52725.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,74 +21,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, Jiri Slaby <jirislaby@gmail.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 13 April 2007 23:33, Pavel Machek wrote:
-> On Fri 2007-04-13 23:18:05, Johannes Berg wrote:
-> > On Fri, 2007-04-13 at 23:12 +0200, Pavel Machek wrote:
+Hi!
+
+> > > Well, it looks like someone allocated about 6000 pages after we had f=
+reed
+> > > enough memory for suspending.
 > > =
 
-> > =
-
-> > > > Whoops, I had that in an earlier version, it's not supposed to be c=
-alled
-> > > > for (u)swsusp because pm_ops involvement there is a hack anyway. I'=
-ll
-> > > > fix the description.
-> > > =
-
-> > > But (u)swsusp needs to shut down the devices, and it does both suspend
-> > > and powerdown, too...?
-> > =
-
-> > Yes, but the special S4 state is just hacked onto pm_ops, nothing but
-> > ACPI S4 will ever sanely use pm_ops. If I'd invented pm_ops I'd made
-> > pm_ops solely for suspend to ram/standby/... and added a *separate* hook
-> > for pm_disk_mode and S4 because logically that really doesn't belong to
-> > pm_ops which does almost exclusively things for suspend to ram/standby.
+> > We have a tunable allowance in Suspend2 for this, because fglrx
+> > allocates a lot of pages in its suspend routine if DRI is enabled. I
+> > think some other drivers do too, but fglrx is the main one I know.
 > =
 
-> Still, swsusp shuts down the devices:
+> I wasn't aware of that, thanks for the information.
 > =
 
->         if ((error =3D arch_prepare_suspend()))
->                 return error;
-> =
+> I think this means we'll probably need to add a tunable, similar to image=
+_size,
+> that will allow the users to specify how much spare memory they want to r=
+eserve
+> for suspending (instead of the constant PAGES_FOR_IO).  IMO we can call it
+> 'spare_memory'.
 
->         local_irq_disable();
->         /* At this point, device_suspend() has been called, but *not*
->          * device_power_down(). We *must* device_power_down() now.
->          * Otherwise, drivers for some devices (e.g. interrupt
-> controllers)
->          * become desynchronized with the actual state of the hardware
->          * at resume time, and evil weirdness ensues.
->          */
->         if ((error =3D device_power_down(PMSG_FREEZE))) {
->                 printk(KERN_ERR "Some devices failed to power down, abort=
-ing suspend\n");
->                 goto Enable_irqs;
->         }
-> =
+Just increase PAGES_FOR_IO. This should not be tunable.
 
-> This local_irq_disable() is very similar to the one you are doing in
-> suspend-to-RAM. According to your description, it needs to play with
-> the decrementor, too. But I'd really prefer not to have pm_ops call
-> here -- exactly because swsusp has nothing to do with pm_ops in
-> shutdown mode.
+> Still, this doesn't look like a real solution, because it would require t=
+he
+> users affected by this problem to experiment with suspending in order to
+> figure out how much spare memory they will need.
 
-Hmm, I missed that. :-(
+Exactly.
 
-I think we need to make things clear: Either we add the additional hooks to
-pm_ops in which case they should be taken into account in the (u)swsusp code
-too, or we don't add them at all.
+> IMO to really fix the problem, we should let the drivers that need much m=
+emory
+> for suspending allocate it _before_ the memory shrinker is called.  For t=
+his
+> purpose we can use notifiers that will be called before we start the shri=
+nking
+> of memory.  Namely, if a driver needs to allocate substantial amount
+> of memory
 
-Well, there also is one more solution.  Namely, we can add the hooks to pm_=
-ops
-and make (u)swsusp use something else instead of pm_ops, but that would req=
-uire
-some more consideration.
+Yes please. Using that notifier without leaking the memory will be
+"interesting" but if someone needs so much memory during suspend, let
+them eat their own complexity.
 
-Greetings,
-Rafael
+									Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
