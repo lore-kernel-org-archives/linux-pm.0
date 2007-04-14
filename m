@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.21-rc6
-Date: Sat, 14 Apr 2007 23:58:30 +0200
-Message-ID: <200704142358.31758.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<200704142223.32410.rjw@sisk.pl>
-	<20070414213526.GA2401@melchior.yamamaya.is-a-geek.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Sat, 14 Apr 2007 15:10:23 -0700
+Message-ID: <200704141510.24254.david-b@pacbell.net>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<20070413215045.GN28264@elf.ucw.cz>
+	<1176503006.5764.105.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070414213526.GA2401@melchior.yamamaya.is-a-geek.org>
+In-Reply-To: <1176503006.5764.105.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,170 +20,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+To: linux-pm@lists.linux-foundation.org
+Cc: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 14 April 2007 23:35, Tobias Diedrich wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 14 April 2007 21:56, Tobias Diedrich wrote:
-> > > Rafael J. Wysocki wrote:
-> > > > On Saturday, 14 April 2007 15:00, Adrian Bunk wrote:
-> > > > > On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
-> > > > > > Tobias Diedrich wrote:
-> > > > > > > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
-> > > > > > > > commit ed746e3b18f4df18afa3763155972c5835f284c5
-> > > > > > > > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > > > Date:   Sat Feb 10 01:43:32 2007 -0800
-> > > > > > > > =
-
-> > > > > > > >     [PATCH] swsusp: Change code ordering in disk.c
-> > > > > > > >     =
-
-> > > > > > > >     Change the ordering of code in kernel/power/disk.c so t=
-hat device_suspend() is
-> > > > > > > >     called before disable_nonboot_cpus() and platform_finis=
-h() is called after
-> > > > > > > >     enable_nonboot_cpus() and before device_resume(), as in=
-dicated by the recent
-> > > > > > > >     discussion on Linux-PM (cf.
-> > > > > > > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/=
-004164.html).
-> > > > > > > >     =
-
-> > > > > > > >     The changes here only affect the built-in swsusp.
-> > > > > > > >     =
-
-> > > > > > > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinkin=
-g during image load]
-> > > > > > > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > > >     Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > > > > > >     Cc: Greg KH <greg@kroah.com>
-> > > > > > > >     Cc: Nigel Cunningham <nigel@suspend2.net>
-> > > > > > > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
-> > > > > > > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.in=
-tel.com>
-> > > > > > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > > > > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundatio=
-n.org>
-> > > > > > > > =
-
-> > > > > > > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 831=
-3b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
-> > > > > > > > =
-
-> > > > > > > > =
-
-> > > > > > > > Now, the remaining test is to try reverting this commit fro=
-m -rc6. :)
-> > > > > > > =
-
-> > > > > > > Doesn't apply cleanly against -rc6, but fixes the problem when
-> > > > > > > reverted from -rc1.
-> > > > > > =
-
-> > > > > > Now, this was already reported in
-> > > > > > http://lkml.org/lkml/2007/3/16/126
-> > > > > > and I even flagged that message in my local folder, but apparen=
-tly forgot
-> > > > > > to follow up on it... *sigh*
-> > > > > =
-
-> > > > > Unless I misunderstood something, all of the problems Maxim descr=
-ibed in =
-
-> > > > > this email are fixed for him in -rc6.
-> > > > > =
-
-> > > > > But it's quite possible that you are running into a different iss=
-ue =
-
-> > > > > exposed by this commit.
-> > > > =
-
-> > > > Yes, it's likely.
-> > > > =
-
-> > > > Tobias, I'm unable to reproduce the problem with your .config, but =
-my hardware
-> > > > is certainly different.  Which suspend mode do you use?  If that's =
-"platform",
-> > > > can you try to use "shutdown" or "reboot" and see if that helps?
-> > > =
-
-> > > Sure.
-> > > shutdown/reboot works fine, only platform is broken.
-> > =
-
-> > Thanks.
-> > =
-
-> > Now, I suspect the problem is somehow related to the hardware, so it wo=
-uld help
-> > a lot if we could identify the piece of hardware (or driver) involved.
-> > =
-
-> > AFAICT, your system is a non-SMP one, so we can rule out
-> > disable/enable_nonboot_cpus().  To confirm that the problem is related =
-to
-> > platform_finish(), can you please apply the appended debug patch and
-> > see if the suspend in the 'platform' mode works with it?
+On Friday 13 April 2007 3:23 pm, Benjamin Herrenschmidt wrote:
 > =
 
-> Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
-> single core CPU.
+> > We have "drivers" for few chips every PC has, like i8259 timer,
+> > interrupt controller, APIC, etc. Sysdevs and platform devices are
+> > designed for hardware like that.
+> > =
+
+> > If you want to have a rule "platform device is not supposed to rely on
+> > timers still working",  I think you can get that. Such low-level
+> > devices should really use udelay()/mdelay() that spins and does not
+> > need timer hw.
 > =
 
-> > Also, would that be feasible for you to use 'shutdown' as a workaround =
-in case
-> > the source of the problem is difficult to find and/or fix?
-> =
+> That's nonsense.
 
-> I guess so, but the below patch fixes the problem. :)
+Agreed.  Platform devices are the *primary* device types on
+most embedded systems.  Their suspend() and resume() methods
+are allowed to use timers and sleep() just like they are with
+any other bus type.
 
-Well, I thought it would, but it also would break some other people's syste=
-ms.
-That's the _real_ problem.  Let's see if we can learn more.
-
-Can you please revert it for now, apply the appended one and try to
-suspend/resume twice in the 'platform' mode (it may or may not work)?
-
-Rafael
-
----
- kernel/power/disk.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc6/kernel/power/disk.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.21-rc6.orig/kernel/power/disk.c
-+++ linux-2.6.21-rc6/kernel/power/disk.c
-@@ -267,12 +267,15 @@ static int software_resume(void)
- 	error =3D swsusp_read();
- 	if (error) {
- 		swsusp_free();
--		platform_finish();
- 		goto Thaw;
- 	}
- =
-
- 	pr_debug("PM: Preparing devices for restore.\n");
- =
-
-+	error =3D platform_prepare();
-+	if (error)
-+		goto Thaw;
-+
- 	suspend_console();
- 	error =3D device_suspend(PMSG_PRETHAW);
- 	if (error)
-@@ -285,6 +288,7 @@ static int software_resume(void)
- 	enable_nonboot_cpus();
-  Free:
- 	swsusp_free();
-+	platform_finish();
- 	device_resume();
- 	resume_console();
-  Thaw:
+We do know that timers aren't available during the suspend_late()
+and resume_early() calls, for any bus type.
