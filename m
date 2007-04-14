@@ -1,17 +1,16 @@
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Linux 2.6.21-rc6
-Date: Sat, 14 Apr 2007 23:35:27 +0200
-Message-ID: <20070414213526.GA2401@melchior.yamamaya.is-a-geek.org>
+Date: Sat, 14 Apr 2007 23:58:30 +0200
+Message-ID: <200704142358.31758.rjw@sisk.pl>
 References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<200704142028.04694.rjw@sisk.pl>
-	<20070414195611.GC806@yamamaya.is-a-geek.org>
 	<200704142223.32410.rjw@sisk.pl>
+	<20070414213526.GA2401@melchior.yamamaya.is-a-geek.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070414213526.GA2401@melchior.yamamaya.is-a-geek.org>
 Content-Disposition: inline
-In-Reply-To: <200704142223.32410.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,92 +20,170 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
 Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
 List-Id: linux-pm@vger.kernel.org
 
-UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gT24gU2F0dXJkYXksIDE0IEFwcmlsIDIwMDcgMjE6
-NTYsIFRvYmlhcyBEaWVkcmljaCB3cm90ZToKPiA+IFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
-ID4gPiBPbiBTYXR1cmRheSwgMTQgQXByaWwgMjAwNyAxNTowMCwgQWRyaWFuIEJ1bmsgd3JvdGU6
-Cj4gPiA+ID4gT24gU2F0LCBBcHIgMTQsIDIwMDcgYXQgMDI6MzE6NTRQTSArMDIwMCwgVG9iaWFz
-IERpZWRyaWNoIHdyb3RlOgo+ID4gPiA+ID4gVG9iaWFzIERpZWRyaWNoIHdyb3RlOgo+ID4gPiA+
-ID4gPiA+IGVkNzQ2ZTNiMThmNGRmMThhZmEzNzYzMTU1OTcyYzU4MzVmMjg0YzUgaXMgZmlyc3Qg
-YmFkIGNvbW1pdAo+ID4gPiA+ID4gPiA+IGNvbW1pdCBlZDc0NmUzYjE4ZjRkZjE4YWZhMzc2MzE1
-NTk3MmM1ODM1ZjI4NGM1Cj4gPiA+ID4gPiA+ID4gQXV0aG9yOiBSYWZhZWwgSi4gV3lzb2NraSA8
-cmp3QHNpc2sucGw+Cj4gPiA+ID4gPiA+ID4gRGF0ZTogICBTYXQgRmViIDEwIDAxOjQzOjMyIDIw
-MDcgLTA4MDAKPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gPiAgICAgW1BBVENIXSBzd3N1c3A6
-IENoYW5nZSBjb2RlIG9yZGVyaW5nIGluIGRpc2suYwo+ID4gPiA+ID4gPiA+ICAgICAKPiA+ID4g
-PiA+ID4gPiAgICAgQ2hhbmdlIHRoZSBvcmRlcmluZyBvZiBjb2RlIGluIGtlcm5lbC9wb3dlci9k
-aXNrLmMgc28gdGhhdCBkZXZpY2Vfc3VzcGVuZCgpIGlzCj4gPiA+ID4gPiA+ID4gICAgIGNhbGxl
-ZCBiZWZvcmUgZGlzYWJsZV9ub25ib290X2NwdXMoKSBhbmQgcGxhdGZvcm1fZmluaXNoKCkgaXMg
-Y2FsbGVkIGFmdGVyCj4gPiA+ID4gPiA+ID4gICAgIGVuYWJsZV9ub25ib290X2NwdXMoKSBhbmQg
-YmVmb3JlIGRldmljZV9yZXN1bWUoKSwgYXMgaW5kaWNhdGVkIGJ5IHRoZSByZWNlbnQKPiA+ID4g
-PiA+ID4gPiAgICAgZGlzY3Vzc2lvbiBvbiBMaW51eC1QTSAoY2YuCj4gPiA+ID4gPiA+ID4gICAg
-IGh0dHA6Ly9saXN0cy5vc2RsLm9yZy9waXBlcm1haWwvbGludXgtcG0vMjAwNi1Ob3ZlbWJlci8w
-MDQxNjQuaHRtbCkuCj4gPiA+ID4gPiA+ID4gICAgIAo+ID4gPiA+ID4gPiA+ICAgICBUaGUgY2hh
-bmdlcyBoZXJlIG9ubHkgYWZmZWN0IHRoZSBidWlsdC1pbiBzd3N1c3AuCj4gPiA+ID4gPiA+ID4g
-ICAgIAo+ID4gPiA+ID4gPiA+ICAgICBbYWxleGV5Lnkuc3Rhcmlrb3Zza2l5QGxpbnV4LmludGVs
-LmNvbTogZml4IExFRCBibGlua2luZyBkdXJpbmcgaW1hZ2UgbG9hZF0KPiA+ID4gPiA+ID4gPiAg
-ICAgU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgo+ID4gPiA+
-ID4gPiA+ICAgICBBY2tlZC1ieTogUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+Cj4gPiA+ID4g
-PiA+ID4gICAgIENjOiBHcmVnIEtIIDxncmVnQGtyb2FoLmNvbT4KPiA+ID4gPiA+ID4gPiAgICAg
-Q2M6IE5pZ2VsIEN1bm5pbmdoYW0gPG5pZ2VsQHN1c3BlbmQyLm5ldD4KPiA+ID4gPiA+ID4gPiAg
-ICAgQ2M6IFBhdHJpY2sgTW9jaGVsIDxtb2NoZWxAZGlnaXRhbGltcGxhbnQub3JnPgo+ID4gPiA+
-ID4gPiA+ICAgICBDYzogQWxleGV5IFN0YXJpa292c2tpeSA8YWxleGV5Lnkuc3Rhcmlrb3Zza2l5
-QGxpbnV4LmludGVsLmNvbT4KPiA+ID4gPiA+ID4gPiAgICAgU2lnbmVkLW9mZi1ieTogQW5kcmV3
-IE1vcnRvbiA8YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4KPiA+ID4gPiA+ID4gPiAgICAgU2ln
-bmVkLW9mZi1ieTogTGludXMgVG9ydmFsZHMgPHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3Jn
-Pgo+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+IDowNDAwMDAgMDQwMDAwIDdlY2E1YjNhOGY5
-NjA2YmM0ZjJmZjQxMTkyZWM4YzlkNGNhOTBkMTggODMxM2I2NzRlMWQxYmRmNjg0OTM1MGFmMDZk
-MjhhODliM2JiMzA1NCBNICAgICAga2VybmVsCj4gPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4g
-Cj4gPiA+ID4gPiA+ID4gTm93LCB0aGUgcmVtYWluaW5nIHRlc3QgaXMgdG8gdHJ5IHJldmVydGlu
-ZyB0aGlzIGNvbW1pdCBmcm9tIC1yYzYuIDopCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBEb2Vz
-bid0IGFwcGx5IGNsZWFubHkgYWdhaW5zdCAtcmM2LCBidXQgZml4ZXMgdGhlIHByb2JsZW0gd2hl
-bgo+ID4gPiA+ID4gPiByZXZlcnRlZCBmcm9tIC1yYzEuCj4gPiA+ID4gPiAKPiA+ID4gPiA+IE5v
-dywgdGhpcyB3YXMgYWxyZWFkeSByZXBvcnRlZCBpbgo+ID4gPiA+ID4gaHR0cDovL2xrbWwub3Jn
-L2xrbWwvMjAwNy8zLzE2LzEyNgo+ID4gPiA+ID4gYW5kIEkgZXZlbiBmbGFnZ2VkIHRoYXQgbWVz
-c2FnZSBpbiBteSBsb2NhbCBmb2xkZXIsIGJ1dCBhcHBhcmVudGx5IGZvcmdvdAo+ID4gPiA+ID4g
-dG8gZm9sbG93IHVwIG9uIGl0Li4uICpzaWdoKgo+ID4gPiA+IAo+ID4gPiA+IFVubGVzcyBJIG1p
-c3VuZGVyc3Rvb2Qgc29tZXRoaW5nLCBhbGwgb2YgdGhlIHByb2JsZW1zIE1heGltIGRlc2NyaWJl
-ZCBpbiAKPiA+ID4gPiB0aGlzIGVtYWlsIGFyZSBmaXhlZCBmb3IgaGltIGluIC1yYzYuCj4gPiA+
-ID4gCj4gPiA+ID4gQnV0IGl0J3MgcXVpdGUgcG9zc2libGUgdGhhdCB5b3UgYXJlIHJ1bm5pbmcg
-aW50byBhIGRpZmZlcmVudCBpc3N1ZSAKPiA+ID4gPiBleHBvc2VkIGJ5IHRoaXMgY29tbWl0Lgo+
-ID4gPiAKPiA+ID4gWWVzLCBpdCdzIGxpa2VseS4KPiA+ID4gCj4gPiA+IFRvYmlhcywgSSdtIHVu
-YWJsZSB0byByZXByb2R1Y2UgdGhlIHByb2JsZW0gd2l0aCB5b3VyIC5jb25maWcsIGJ1dCBteSBo
-YXJkd2FyZQo+ID4gPiBpcyBjZXJ0YWlubHkgZGlmZmVyZW50LiAgV2hpY2ggc3VzcGVuZCBtb2Rl
-IGRvIHlvdSB1c2U/ICBJZiB0aGF0J3MgInBsYXRmb3JtIiwKPiA+ID4gY2FuIHlvdSB0cnkgdG8g
-dXNlICJzaHV0ZG93biIgb3IgInJlYm9vdCIgYW5kIHNlZSBpZiB0aGF0IGhlbHBzPwo+ID4gCj4g
-PiBTdXJlLgo+ID4gc2h1dGRvd24vcmVib290IHdvcmtzIGZpbmUsIG9ubHkgcGxhdGZvcm0gaXMg
-YnJva2VuLgo+IAo+IFRoYW5rcy4KPiAKPiBOb3csIEkgc3VzcGVjdCB0aGUgcHJvYmxlbSBpcyBz
-b21laG93IHJlbGF0ZWQgdG8gdGhlIGhhcmR3YXJlLCBzbyBpdCB3b3VsZCBoZWxwCj4gYSBsb3Qg
-aWYgd2UgY291bGQgaWRlbnRpZnkgdGhlIHBpZWNlIG9mIGhhcmR3YXJlIChvciBkcml2ZXIpIGlu
-dm9sdmVkLgo+IAo+IEFGQUlDVCwgeW91ciBzeXN0ZW0gaXMgYSBub24tU01QIG9uZSwgc28gd2Ug
-Y2FuIHJ1bGUgb3V0Cj4gZGlzYWJsZS9lbmFibGVfbm9uYm9vdF9jcHVzKCkuICBUbyBjb25maXJt
-IHRoYXQgdGhlIHByb2JsZW0gaXMgcmVsYXRlZCB0bwo+IHBsYXRmb3JtX2ZpbmlzaCgpLCBjYW4g
-eW91IHBsZWFzZSBhcHBseSB0aGUgYXBwZW5kZWQgZGVidWcgcGF0Y2ggYW5kCj4gc2VlIGlmIHRo
-ZSBzdXNwZW5kIGluIHRoZSAncGxhdGZvcm0nIG1vZGUgd29ya3Mgd2l0aCBpdD8KClllcywgaXQn
-cyBhIEFzdXMgTTJOLVNMSS1EZWx1eGUgTWFpbmJvYXJkIHdpdGggYSBBdGhsb242NCAzMjAwKwpz
-aW5nbGUgY29yZSBDUFUuCgo+IEFsc28sIHdvdWxkIHRoYXQgYmUgZmVhc2libGUgZm9yIHlvdSB0
-byB1c2UgJ3NodXRkb3duJyBhcyBhIHdvcmthcm91bmQgaW4gY2FzZQo+IHRoZSBzb3VyY2Ugb2Yg
-dGhlIHByb2JsZW0gaXMgZGlmZmljdWx0IHRvIGZpbmQgYW5kL29yIGZpeD8KCkkgZ3Vlc3Mgc28s
-IGJ1dCB0aGUgYmVsb3cgcGF0Y2ggZml4ZXMgdGhlIHByb2JsZW0uIDopCgo+IC0tLQo+ICBrZXJu
-ZWwvcG93ZXIvZGlzay5jIHwgICAgNCArKy0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlv
-bnMoKyksIDIgZGVsZXRpb25zKC0pCj4gCj4gSW5kZXg6IGxpbnV4LTIuNi4yMS1yYzYva2VybmVs
-L3Bvd2VyL2Rpc2suYwo+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiAtLS0gbGludXgtMi42LjIxLXJjNi5vcmlnL2tl
-cm5lbC9wb3dlci9kaXNrLmMKPiArKysgbGludXgtMi42LjIxLXJjNi9rZXJuZWwvcG93ZXIvZGlz
-ay5jCj4gQEAgLTE3MCw4ICsxNzAsOCBAQCBpbnQgcG1fc3VzcGVuZF9kaXNrKHZvaWQpCj4gIAo+
-ICAJaWYgKGluX3N1c3BlbmQpIHsKPiAgCQllbmFibGVfbm9uYm9vdF9jcHVzKCk7Cj4gLQkJcGxh
-dGZvcm1fZmluaXNoKCk7Cj4gIAkJZGV2aWNlX3Jlc3VtZSgpOwo+ICsJCXBsYXRmb3JtX2Zpbmlz
-aCgpOwo+ICAJCXJlc3VtZV9jb25zb2xlKCk7Cj4gIAkJcHJfZGVidWcoIlBNOiB3cml0aW5nIGlt
-YWdlLlxuIik7Cj4gIAkJZXJyb3IgPSBzd3N1c3Bfd3JpdGUoKTsKPiBAQCAtMTg5LDggKzE4OSw4
-IEBAIGludCBwbV9zdXNwZW5kX2Rpc2sodm9pZCkKPiAgIEVuYWJsZV9jcHVzOgo+ICAJZW5hYmxl
-X25vbmJvb3RfY3B1cygpOwo+ICAgUmVzdW1lX2RldmljZXM6Cj4gLQlwbGF0Zm9ybV9maW5pc2go
-KTsKPiAgCWRldmljZV9yZXN1bWUoKTsKPiArCXBsYXRmb3JtX2ZpbmlzaCgpOwo+ICAJcmVzdW1l
-X2NvbnNvbGUoKTsKPiAgIFRoYXc6Cj4gIAl1bnByZXBhcmVfcHJvY2Vzc2VzKCk7Cj4gCgotLSAK
-VG9iaWFzCQkJCQkJUEdQOiBodHRwOi8vOWFjN2UwYmMudWd1dS5kZQrjgZPjga7jg6Hjg7zjg6vj
-ga/ljYHlibLlho3liKnnlKjjgZXjgozjgZ/jg5Pjg4Pjg4jjgafkvZzjgonjgozjgabjgYTjgb7j
-gZnjgIIKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
-dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
-dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
-bQo=
+On Saturday, 14 April 2007 23:35, Tobias Diedrich wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday, 14 April 2007 21:56, Tobias Diedrich wrote:
+> > > Rafael J. Wysocki wrote:
+> > > > On Saturday, 14 April 2007 15:00, Adrian Bunk wrote:
+> > > > > On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
+> > > > > > Tobias Diedrich wrote:
+> > > > > > > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
+> > > > > > > > commit ed746e3b18f4df18afa3763155972c5835f284c5
+> > > > > > > > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > > Date:   Sat Feb 10 01:43:32 2007 -0800
+> > > > > > > > =
+
+> > > > > > > >     [PATCH] swsusp: Change code ordering in disk.c
+> > > > > > > >     =
+
+> > > > > > > >     Change the ordering of code in kernel/power/disk.c so t=
+hat device_suspend() is
+> > > > > > > >     called before disable_nonboot_cpus() and platform_finis=
+h() is called after
+> > > > > > > >     enable_nonboot_cpus() and before device_resume(), as in=
+dicated by the recent
+> > > > > > > >     discussion on Linux-PM (cf.
+> > > > > > > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/=
+004164.html).
+> > > > > > > >     =
+
+> > > > > > > >     The changes here only affect the built-in swsusp.
+> > > > > > > >     =
+
+> > > > > > > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinkin=
+g during image load]
+> > > > > > > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > >     Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > > > > > >     Cc: Greg KH <greg@kroah.com>
+> > > > > > > >     Cc: Nigel Cunningham <nigel@suspend2.net>
+> > > > > > > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
+> > > > > > > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.in=
+tel.com>
+> > > > > > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > > > > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundatio=
+n.org>
+> > > > > > > > =
+
+> > > > > > > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 831=
+3b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
+> > > > > > > > =
+
+> > > > > > > > =
+
+> > > > > > > > Now, the remaining test is to try reverting this commit fro=
+m -rc6. :)
+> > > > > > > =
+
+> > > > > > > Doesn't apply cleanly against -rc6, but fixes the problem when
+> > > > > > > reverted from -rc1.
+> > > > > > =
+
+> > > > > > Now, this was already reported in
+> > > > > > http://lkml.org/lkml/2007/3/16/126
+> > > > > > and I even flagged that message in my local folder, but apparen=
+tly forgot
+> > > > > > to follow up on it... *sigh*
+> > > > > =
+
+> > > > > Unless I misunderstood something, all of the problems Maxim descr=
+ibed in =
+
+> > > > > this email are fixed for him in -rc6.
+> > > > > =
+
+> > > > > But it's quite possible that you are running into a different iss=
+ue =
+
+> > > > > exposed by this commit.
+> > > > =
+
+> > > > Yes, it's likely.
+> > > > =
+
+> > > > Tobias, I'm unable to reproduce the problem with your .config, but =
+my hardware
+> > > > is certainly different.  Which suspend mode do you use?  If that's =
+"platform",
+> > > > can you try to use "shutdown" or "reboot" and see if that helps?
+> > > =
+
+> > > Sure.
+> > > shutdown/reboot works fine, only platform is broken.
+> > =
+
+> > Thanks.
+> > =
+
+> > Now, I suspect the problem is somehow related to the hardware, so it wo=
+uld help
+> > a lot if we could identify the piece of hardware (or driver) involved.
+> > =
+
+> > AFAICT, your system is a non-SMP one, so we can rule out
+> > disable/enable_nonboot_cpus().  To confirm that the problem is related =
+to
+> > platform_finish(), can you please apply the appended debug patch and
+> > see if the suspend in the 'platform' mode works with it?
+> =
+
+> Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
+> single core CPU.
+> =
+
+> > Also, would that be feasible for you to use 'shutdown' as a workaround =
+in case
+> > the source of the problem is difficult to find and/or fix?
+> =
+
+> I guess so, but the below patch fixes the problem. :)
+
+Well, I thought it would, but it also would break some other people's syste=
+ms.
+That's the _real_ problem.  Let's see if we can learn more.
+
+Can you please revert it for now, apply the appended one and try to
+suspend/resume twice in the 'platform' mode (it may or may not work)?
+
+Rafael
+
+---
+ kernel/power/disk.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.21-rc6/kernel/power/disk.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.21-rc6.orig/kernel/power/disk.c
++++ linux-2.6.21-rc6/kernel/power/disk.c
+@@ -267,12 +267,15 @@ static int software_resume(void)
+ 	error =3D swsusp_read();
+ 	if (error) {
+ 		swsusp_free();
+-		platform_finish();
+ 		goto Thaw;
+ 	}
+ =
+
+ 	pr_debug("PM: Preparing devices for restore.\n");
+ =
+
++	error =3D platform_prepare();
++	if (error)
++		goto Thaw;
++
+ 	suspend_console();
+ 	error =3D device_suspend(PMSG_PRETHAW);
+ 	if (error)
+@@ -285,6 +288,7 @@ static int software_resume(void)
+ 	enable_nonboot_cpus();
+  Free:
+ 	swsusp_free();
++	platform_finish();
+ 	device_resume();
+ 	resume_console();
+  Thaw:
