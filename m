@@ -1,14 +1,16 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [3/3] 2.6.21-rc6: known regressions
-Date: Sat, 14 Apr 2007 09:57:03 +0800
-Message-ID: <1176515823.4807.7.camel@daplas>
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Subject: Re: Linux 2.6.21-rc6
+Date: Sat, 14 Apr 2007 08:50:24 +0200
+Message-ID: <20070414065024.GA2690@melchior.yamamaya.is-a-geek.org>
 References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<20070414003808.GU5907@stusta.de>
+	<20070413212954.GA2545@melchior.yamamaya.is-a-geek.org>
+	<20070413235017.GR5907@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070414003808.GU5907@stusta.de>
+Content-Disposition: inline
+In-Reply-To: <20070413235017.GR5907@stusta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +21,14 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Adrian Bunk <bunk@stusta.de>
-Cc: James Simmons <jsimmons@infradead.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Marcus Better <marcus@better.se>
+Cc: linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2007-04-14 at 02:38 +0200, Adrian Bunk wrote:
-> This email lists some known regressions in Linus' tree compared to 2.6.20.
-> =
-
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way
-> possibly involved with one or more of these issues.
-> =
-
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> =
-
-> =
-
-> Subject    : resume from RAM corrupts vesafb console
-> References : http://lkml.org/lkml/2007/3/26/76
-> Submitter  : Marcus Better <marcus@better.se>
-> Handled-By : Pavel Machek <pavel@ucw.cz>
-> Status     : problem is being debugged
-> =
-
-> =
-
-Hi Marcus,
-
-A screen with blinking green blocks implies that your display is in text
-mode, not in graphics mode.  I don't know what options you are using,
-but have you tried using:
-
-acpi_sleep=3Ds3_mode
-
-If the above does not work, also try
-
-acpi_sleep=3Ds3_bios,s3_mode
-
-If it is still not working, you can add this to your suspend script:
-
-vbetool vbemode set <VESA mode ID>
-
-where VESA mode ID =3D "vga=3D" value - 512 (0x200)
-
-Tony
-
-PS: If your BIOS setup has an option to re-POST the graphics card on
-resume, that is a big help.
-
-Tony
+QWRyaWFuIEJ1bmsgd3JvdGU6Cgo+IERvZXMgQ09ORklHX0hQRVRfVElNRVI9biBtYWtlIGFueSBk
+aWZmZXJlbmNlPwoKVW5mb3J0dW5hdGVseSBub3QuCgo+IERvZXMgdGhlIGxhdGVzdCAtZ2l0IHdv
+cms/CgpDb21pbmcgdXAgbmV4dCA6KQoKLS0gClRvYmlhcwkJCQkJCVBHUDogaHR0cDovLzlhYzdl
+MGJjLnVndXUuZGUK44GT44Gu44Oh44O844Or44Gv5Y2B5Ymy5YaN5Yip55So44GV44KM44Gf44OT
+44OD44OI44Gn5L2c44KJ44KM44Gm44GE44G+44GZ44CCCl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0K
