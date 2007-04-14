@@ -1,19 +1,18 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: Linux 2.6.21-rc6
-Date: Sat, 14 Apr 2007 15:00:45 +0200
-Message-ID: <20070414130045.GE3691@stusta.de>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<20070413212954.GA2545@melchior.yamamaya.is-a-geek.org>
-	<20070413235017.GR5907@stusta.de>
-	<20070414120900.GA3001@melchior.yamamaya.is-a-geek.org>
-	<20070414122447.GA2827@melchior.yamamaya.is-a-geek.org>
-	<20070414123154.GA2863@melchior.yamamaya.is-a-geek.org>
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
+Date: Sun, 15 Apr 2007 02:55:13 +1000
+Message-ID: <17953.1905.510261.169936@cargo.ozlabs.ibm.com>
+References: <1175810054.3489.34.camel@johannes.berg>
+	<1176499086.7052.124.camel@johannes.berg>
+	<20070413213349.GL28264@elf.ucw.cz>
+	<200704140009.33298.rjw@sisk.pl>
+	<1176502406.7052.134.camel@johannes.berg>
+	<20070413221652.GR28264@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070414123154.GA2863@melchior.yamamaya.is-a-geek.org>
+In-Reply-To: <20070413221652.GR28264@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,82 +22,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.osdl.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
-> Tobias Diedrich wrote:
-> > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
-> > > commit ed746e3b18f4df18afa3763155972c5835f284c5
-> > > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Date:   Sat Feb 10 01:43:32 2007 -0800
-> > > =
+Pavel Machek writes:
 
-> > >     [PATCH] swsusp: Change code ordering in disk.c
-> > >     =
+> I see ppc as being really special here.
 
-> > >     Change the ordering of code in kernel/power/disk.c so that device=
-_suspend() is
-> > >     called before disable_nonboot_cpus() and platform_finish() is cal=
-led after
-> > >     enable_nonboot_cpus() and before device_resume(), as indicated by=
- the recent
-> > >     discussion on Linux-PM (cf.
-> > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.htm=
-l).
-> > >     =
+It is, I guess.  The salient point is that once the decrementer has an
+interrupt pending, the only way to clear it is to take the interrupt.
+There is no explicit access to the interrupt pending bit and no
+separate enable bit for its interrupt, only the global interrupt
+enable for the whole CPU.  We have to turn on the global interrupt
+enable when finally putting the system into the suspend state (for
+suspend to RAM), otherwise on some machines we'll never wake up again.
 
-> > >     The changes here only affect the built-in swsusp.
-> > >     =
+Effectively, when dealing with the decrementer during preparation for
+suspend-to-RAM, we may need to have interrupts enabled briefly in
+order to clear a pending decrementer interrupt.
 
-> > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during i=
-mage load]
-> > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > >     Acked-by: Pavel Machek <pavel@ucw.cz>
-> > >     Cc: Greg KH <greg@kroah.com>
-> > >     Cc: Nigel Cunningham <nigel@suspend2.net>
-> > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
-> > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-> > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > > =
-
-> > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1b=
-df6849350af06d28a89b3bb3054 M      kernel
-> > > =
-
-> > > =
-
-> > > Now, the remaining test is to try reverting this commit from -rc6. :)
-> > =
-
-> > Doesn't apply cleanly against -rc6, but fixes the problem when
-> > reverted from -rc1.
-> =
-
-> Now, this was already reported in
-> http://lkml.org/lkml/2007/3/16/126
-> and I even flagged that message in my local folder, but apparently forgot
-> to follow up on it... *sigh*
-
-Unless I misunderstood something, all of the problems Maxim described in =
-
-this email are fixed for him in -rc6.
-
-But it's quite possible that you are running into a different issue =
-
-exposed by this commit.
-
-> Tobias
-
-cu
-Adrian
-
--- =
-
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Paul.
