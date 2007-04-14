@@ -1,64 +1,72 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [3/3] 2.6.21-rc6: known regressions
-Date: Sat, 14 Apr 2007 02:38:08 +0200
-Message-ID: <20070414003808.GU5907@stusta.de>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [3/3] 2.6.21-rc6: known regressions
+Date: Sat, 14 Apr 2007 09:57:03 +0800
+Message-ID: <1176515823.4807.7.camel@daplas>
 References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+	<20070414003808.GU5907@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, pavel@suse.cz, linux-pm@lists.osdl.org, Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Tobias Doerffel <tobias.doerffel@gmail.com>, Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org, Marcus Better <marcus@better.se>, adaplas@gmail.com, James Simmons <jsimmons@infradead.org>, Jeff Chua <jeff.chua.linux@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070414003808.GU5907@stusta.de>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: James Simmons <jsimmons@infradead.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Marcus Better <marcus@better.se>
 List-Id: linux-pm@vger.kernel.org
 
-This email lists some known regressions in Linus' tree compared to 2.6.20.
+On Sat, 2007-04-14 at 02:38 +0200, Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
+> =
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
-possibly involved with one or more of these issues.
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
+> =
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> =
 
+> =
 
-Subject    : suspend to disk works only once
-References : http://lkml.org/lkml/2007/4/13/240
-Submitter  : Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Status     : unknown
+> Subject    : resume from RAM corrupts vesafb console
+> References : http://lkml.org/lkml/2007/3/26/76
+> Submitter  : Marcus Better <marcus@better.se>
+> Handled-By : Pavel Machek <pavel@ucw.cz>
+> Status     : problem is being debugged
+> =
 
+> =
 
-Subject    : ThinkPad X60: resume no longer works  (PCI related?)
-             workaround: booting with "hpet=disable"
-References : http://lkml.org/lkml/2007/3/13/3
-Submitter  : Dave Jones <davej@redhat.com>
-             Jeremy Fitzhardinge <jeremy@goop.org>
-Caused-By  : PCI merge
-             commit 78149df6d565c36675463352d0bfe0000b02b7a7
-Handled-By : Eric W. Biederman <ebiederm@xmission.com>
-             Rafael J. Wysocki <rjw@sisk.pl>
-Status     : problem is being debugged
+Hi Marcus,
 
+A screen with blinking green blocks implies that your display is in text
+mode, not in graphics mode.  I don't know what options you are using,
+but have you tried using:
 
-Subject    : Suspend to RAM doesn't work anymore  (ACPI?)
-References : http://lkml.org/lkml/2007/3/19/128
-             http://bugzilla.kernel.org/show_bug.cgi?id=8247
-Submitter  : Tobias Doerffel <tobias.doerffel@gmail.com>
-Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-             Len Brown <len.brown@intel.com>
-Status     : problem is being debugged
+acpi_sleep=3Ds3_mode
 
+If the above does not work, also try
 
-Subject    : resume from RAM corrupts vesafb console
-References : http://lkml.org/lkml/2007/3/26/76
-Submitter  : Marcus Better <marcus@better.se>
-Handled-By : Pavel Machek <pavel@ucw.cz>
-Status     : problem is being debugged
+acpi_sleep=3Ds3_bios,s3_mode
 
+If it is still not working, you can add this to your suspend script:
 
-Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/3/25/217
-Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
-Status     : unknown
+vbetool vbemode set <VESA mode ID>
 
+where VESA mode ID =3D "vga=3D" value - 512 (0x200)
+
+Tony
+
+PS: If your BIOS setup has an option to re-POST the graphics card on
+resume, that is a big help.
+
+Tony
