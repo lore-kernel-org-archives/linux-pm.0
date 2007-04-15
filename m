@@ -1,161 +1,106 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.21-rc6
-Date: Sun, 15 Apr 2007 21:37:53 +0200
-Message-ID: <200704152137.54574.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<200704151753.00584.rjw@sisk.pl>
-	<20070415184959.GA26517@melchior.yamamaya.is-a-geek.org>
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Subject: Re: [linux-pm] Linux 2.6.21-rc6
+Date: Sun, 15 Apr 2007 21:40:24 +0200
+Message-ID: <20070415194023.GA2538@melchior.yamamaya.is-a-geek.org>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704151316.26136.rjw@sisk.pl> <200704150814.01747.david-b@pacbell.net> <200704151837.40756.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070415184959.GA26517@melchior.yamamaya.is-a-geek.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753413AbXDOTk1@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+In-Reply-To: <200704151837.40756.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.linux-foundation.org, pavel@suse.cz, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 15 April 2007 20:50, Tobias Diedrich wrote:
-> Rafael J. Wysocki wrote:
-> > On Sunday, 15 April 2007 16:19, Dmitry Torokhov wrote:
-> > > On Sunday 15 April 2007 07:16, Rafael J. Wysocki wrote:
-> > > > On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
-> > > > =
+Rafael J. Wysocki wrote:
+> On Sunday, 15 April 2007 17:14, David Brownell wrote:
+> > On Sunday 15 April 2007 4:16 am, Rafael J. Wysocki wrote:
+> > > On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
+> >=20
+> > > > > > > Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64=
+ 3200+
+> > > > > > > single core CPU.
+> >=20
+> > And NVidia southbridge, so OHCI not UHCI (plus EHCI) ... one experi=
+ment
+> > would be to disable the EHCI (high speed USB) support in BIOS, to m=
+ake
+> > for a simpler hardware configuration, and see if that makes BIOS ha=
+ppier.
+> > (Or better, just take EHCI out of your Linux config.)  Likewise, ta=
+king
+> > the 8042 drivers out of Linux.
+> >=20
+> > I wouldn't be surprised if those factors didn't matter, but it'd be=
+ good
+> > to rule them out.
+>=20
+> I think the disabling of i8042 support might help.
 
-> > > > > > With CONFIG_PM_DEBUG=3Dy and CONFIG_DISABLE_CONSOLE_SUSPEND=3Dy=
- I see
-> > > > > > that the second suspend hangs at "i8042 i8042: EARLY resume".
-> > > > > > This is kinda interesting because I'm normally using a USB keyb=
-oard
-> > > > > > and sure enough, if I hook up a normal keyboard and disable USB
-> > > > > > legacy support in the BIOS, then suspend to disk works multiple
-> > > > > > times. I'd still rather like to use my USB keyboard though. ;)
-> > > > =
+Still hangs with "# CONFIG_SERIO_I8042 is not set".
 
-> > > > Well, I think that when you're using the USB keyboard and the USB l=
-egacy
-> > > > support, the i8042 driver thinks it has a keyboard to handle and tr=
-ies to
-> > > > handle it during the suspend, which fails.  I don't know why it fai=
-ls during
-> > > > the second suspend, though.
-> > > > =
+> > > Dmitry, could you please have a look?
+> > >=20
+> > > > And I can now confirm that unpatched 2.6.21-rc6 works fine as l=
+ong
+> > > > as USB legacy support is disabled (however without legacy suppo=
+rt I
+> > > > can't use the USB keyboard to control grub).
+> > >=20
+> > > I think using the 'shutdown' mode of suspend would be better.  Th=
+ere's a little
+> > > point in using 'platform' on desktop systems anyway.
+> > >=20
+> > > Frankly, I don't know what to do about it.  If we move platform_f=
+inish() after
+> > > device_resume(), some systems may be broken ...
+> >=20
+> > What I'm curious about is exactly why the patch matters.  What ACPI
+> > magic is being invoked to confuse, or unconfuse, those controllers?
+>=20
+> I think the patch helps, because it makes the ACPI magic be done whil=
+e the
+> i8042's .resume() is being executed.
+>=20
+> Which makes me think the following patch might help:
 
-> > > > Dmitry, could you please have a look?
-> > > > =
+Unfortunately not, I tried this before disabling CONFIG_SERIO_I8042.
 
-> > > =
+>  drivers/input/serio/i8042.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>=20
+> Index: linux-2.6.21-rc6/drivers/input/serio/i8042.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.21-rc6.orig/drivers/input/serio/i8042.c	2007-04-07 12:1=
+5:19.000000000 +0200
+> +++ linux-2.6.21-rc6/drivers/input/serio/i8042.c	2007-04-15 18:30:01.=
+000000000 +0200
+> @@ -846,7 +846,8 @@ static long i8042_panic_blink(long count
+>  static int i8042_suspend(struct platform_device *dev, pm_message_t s=
+tate)
+>  {
+>  	if (dev->dev.power.power_state.event !=3D state.event) {
+> -		if (state.event =3D=3D PM_EVENT_SUSPEND)
+> +		if (state.event =3D=3D PM_EVENT_SUSPEND
+> +		    || state.event =3D=3D PM_EVENT_PRETHAW)
+>  			i8042_controller_reset();
+> =20
+>  		dev->dev.power.power_state =3D state;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
+l" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
 
-> > > This is wierd as i8042 does not use suspend_late/resume_early hooks a=
-nd
-> > > so it is impossible for it to hang there. None of input drivers use t=
-hese
-> > > hooks. Could it be that some other driver _after_ i8042 hangs?
-> > =
-
-> > Yes.
-> > =
-
-> > Tobias, can you please post the dmesg output from after a successful
-> > suspend/resume cycle with CONFIG_PM_DEBUG=3Dy in the 'platform' mode?
-> =
-
-> Here you go:
-
-Thanks.
-
-[--snip--]
-> [10233.239209] swsusp: critical section: =
-
-> [10233.253579] swsusp: Need to copy 125818 pages
-> [10233.253688] swsusp: Normal pages needed: 125818 + 1024 + 22, available=
- pages: 135940
-> [   43.795445] Extended CMOS year: 2000
-> [   43.798813] svm_cpu_init: svm_data is NULL on 0
-> [   43.800886] pci 0000:00:00.0: EARLY resume
-> [   43.800994] pci 0000:00:01.0: EARLY resume
-> [   43.801102] nForce2_smbus 0000:00:01.1: EARLY resume
-> [   43.801210] pci 0000:00:01.2: EARLY resume
-> [   43.801317] ohci_hcd 0000:00:02.0: EARLY resume
-> [   43.801425] ehci_hcd 0000:00:02.1: EARLY resume
-> [   43.801532] pata_amd 0000:00:04.0: EARLY resume
-> [   43.801640] pci 0000:00:06.0: EARLY resume
-> [   43.801747] pci 0000:00:06.1: EARLY resume
-> [   43.801854] forcedeth 0000:00:08.0: EARLY resume
-> [   43.801962] forcedeth 0000:00:09.0: EARLY resume
-> [   43.802070] pcieport-driver 0000:00:0a.0: EARLY resume
-> [   43.802177] pcieport-driver 0000:00:0b.0: EARLY resume
-> [   43.802289] pcieport-driver 0000:00:0c.0: EARLY resume
-> [   43.802398] pcieport-driver 0000:00:0d.0: EARLY resume
-> [   43.802506] pcieport-driver 0000:00:0e.0: EARLY resume
-> [   43.802613] pcieport-driver 0000:00:0f.0: EARLY resume
-> [   43.802721] pci 0000:00:18.0: EARLY resume
-> [   43.802828] pci 0000:00:18.1: EARLY resume
-> [   43.802935] pci 0000:00:18.2: EARLY resume
-> [   43.803043] k8temp 0000:00:18.3: EARLY resume
-> [   43.803150] e100 0000:01:07.0: EARLY resume
-> [   43.803257] EMU10K1_Audigy 0000:01:08.0: EARLY resume
-> [   43.803365] Emu10k1_gameport 0000:01:08.1: EARLY resume
-> [   43.803473] pci 0000:01:0b.0: EARLY resume
-> [   43.803580] ahci 0000:06:00.0: EARLY resume
-> [   43.803695] pci 0000:06:00.1: EARLY resume
-> [   43.803802] pci 0000:07:00.0: EARLY resume
-> [   43.803910] pci 0000:07:00.1: EARLY resume
-> [   43.804018] platform bluetooth: EARLY resume
-> [   43.804126] platform pcspkr: EARLY resume
-> [   43.804233] platform vesafb.0: EARLY resume
-> [   43.804348] i8042 i8042: EARLY resume
-> [   43.804460] PM: Image restored successfully.
-> [   43.924837] acpi acpi_system:00: resuming
-> [   43.924946] button button_power:00: resuming
-> [   43.925054] processor ACPI0007:00: resuming
-> [   43.925161] processor ACPI0007:01: resuming
-> [   43.925268] acpi device:00: resuming
-[--snip--]
-
-Hmm, it looks like i8042 is the last thing on the dpm_off_irq list.  Still,
-if the ACPI resume fails, the next messages may not make it to the console
-(it's not very probable, though).
-
-I've tried to reproduce your problem on another box on which I have no PS/2
-keyboard (USB keyboard/mouse only) and the USB legacy support set, but I ca=
-n't.
-There must be something very special in your configuration.
-
-Have you tried the patch that I posted some time ago (appended again for
-convenience)?
-
-Rafael
-
-
- drivers/input/serio/i8042.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc6/drivers/input/serio/i8042.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.21-rc6.orig/drivers/input/serio/i8042.c	2007-04-07 12:15:19.0=
-00000000 +0200
-+++ linux-2.6.21-rc6/drivers/input/serio/i8042.c	2007-04-15 18:30:01.000000=
-000 +0200
-@@ -846,7 +846,8 @@ static long i8042_panic_blink(long count
- static int i8042_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	if (dev->dev.power.power_state.event !=3D state.event) {
--		if (state.event =3D=3D PM_EVENT_SUSPEND)
-+		if (state.event =3D=3D PM_EVENT_SUSPEND
-+		    || state.event =3D=3D PM_EVENT_PRETHAW)
- 			i8042_controller_reset();
- =
-
- 		dev->dev.power.power_state =3D state;
+--=20
+Tobias						PGP: http://9ac7e0bc.uguu.de
+=E3=81=93=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=E3=81=AF=E5=8D=81=E5=89=B2=
+=E5=86=8D=E5=88=A9=E7=94=A8=E3=81=95=E3=82=8C=E3=81=9F=E3=83=93=E3=83=83=
+=E3=83=88=E3=81=A7=E4=BD=9C=E3=82=89=E3=82=8C=E3=81=A6=E3=81=84=E3=81=BE=
+=E3=81=99=E3=80=82
