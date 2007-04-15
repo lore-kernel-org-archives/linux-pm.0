@@ -1,42 +1,143 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
-Date: Sun, 15 Apr 2007 10:23:28 +0000
-Message-ID: <20070415102328.GA11021@ucw.cz>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
-	<200704131022.45315.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.21-rc6
+Date: Sun, 15 Apr 2007 13:16:25 +0200
+Message-ID: <200704151316.26136.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070415073820.GA2589@melchior.yamamaya.is-a-geek.org> <20070415080258.GA2716@melchior.yamamaya.is-a-geek.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752654AbXDOLMq@vger.kernel.org>
+In-Reply-To: <20070415080258.GA2716@melchior.yamamaya.is-a-geek.org>
 Content-Disposition: inline
-In-Reply-To: <200704131022.45315.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, "Robert P. J. Day" <rpjday@mindspring.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, pavel@suse.cz, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org, Maxim Levitsky <maximlevitsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
+> Tobias Diedrich wrote:
+> > Rafael J. Wysocki wrote:
+> > > On Saturday, 14 April 2007 23:35, Tobias Diedrich wrote:
+> > > > Rafael J. Wysocki wrote:
+> > > > > On Saturday, 14 April 2007 21:56, Tobias Diedrich wrote:
+> > > > > > Rafael J. Wysocki wrote:
+> > > > > > > On Saturday, 14 April 2007 15:00, Adrian Bunk wrote:
+> > > > > > > > On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
+> > > > > > > > > Tobias Diedrich wrote:
+> > > > > > > > > > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
+> > > > > > > > > > > commit ed746e3b18f4df18afa3763155972c5835f284c5
+> > > > > > > > > > > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > > > > > Date:   Sat Feb 10 01:43:32 2007 -0800
+> > > > > > > > > > > 
+> > > > > > > > > > >     [PATCH] swsusp: Change code ordering in disk.c
+> > > > > > > > > > >     
+> > > > > > > > > > >     Change the ordering of code in kernel/power/disk.c so that device_suspend() is
+> > > > > > > > > > >     called before disable_nonboot_cpus() and platform_finish() is called after
+> > > > > > > > > > >     enable_nonboot_cpus() and before device_resume(), as indicated by the recent
+> > > > > > > > > > >     discussion on Linux-PM (cf.
+> > > > > > > > > > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+> > > > > > > > > > >     
+> > > > > > > > > > >     The changes here only affect the built-in swsusp.
+> > > > > > > > > > >     
+> > > > > > > > > > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during image load]
+> > > > > > > > > > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > > > > >     Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > > > > > > > > >     Cc: Greg KH <greg@kroah.com>
+> > > > > > > > > > >     Cc: Nigel Cunningham <nigel@suspend2.net>
+> > > > > > > > > > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
+> > > > > > > > > > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+> > > > > > > > > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > > > > > > > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > > > > > > > > 
+> > > > > > > > > > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
+> > > > > > > > > > > 
+> > > > > > > > > > > 
+> > > > > > > > > > > Now, the remaining test is to try reverting this commit from -rc6. :)
+> > > > > > > > > > 
+> > > > > > > > > > Doesn't apply cleanly against -rc6, but fixes the problem when
+> > > > > > > > > > reverted from -rc1.
+> > > > > > > > > 
+> > > > > > > > > Now, this was already reported in
+> > > > > > > > > http://lkml.org/lkml/2007/3/16/126
+> > > > > > > > > and I even flagged that message in my local folder, but apparently forgot
+> > > > > > > > > to follow up on it... *sigh*
+> > > > > > > > 
+> > > > > > > > Unless I misunderstood something, all of the problems Maxim described in 
+> > > > > > > > this email are fixed for him in -rc6.
+> > > > > > > > 
+> > > > > > > > But it's quite possible that you are running into a different issue 
+> > > > > > > > exposed by this commit.
+> > > > > > > 
+> > > > > > > Yes, it's likely.
+> > > > > > > 
+> > > > > > > Tobias, I'm unable to reproduce the problem with your .config, but my hardware
+> > > > > > > is certainly different.  Which suspend mode do you use?  If that's "platform",
+> > > > > > > can you try to use "shutdown" or "reboot" and see if that helps?
+> > > > > > 
+> > > > > > Sure.
+> > > > > > shutdown/reboot works fine, only platform is broken.
+> > > > > 
+> > > > > Thanks.
+> > > > > 
+> > > > > Now, I suspect the problem is somehow related to the hardware, so it would help
+> > > > > a lot if we could identify the piece of hardware (or driver) involved.
+> > > > > 
+> > > > > AFAICT, your system is a non-SMP one, so we can rule out
+> > > > > disable/enable_nonboot_cpus().  To confirm that the problem is related to
+> > > > > platform_finish(), can you please apply the appended debug patch and
+> > > > > see if the suspend in the 'platform' mode works with it?
+> > > > 
+> > > > Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
+> > > > single core CPU.
+> > > > 
+> > > > > Also, would that be feasible for you to use 'shutdown' as a workaround in case
+> > > > > the source of the problem is difficult to find and/or fix?
+> > > > 
+> > > > I guess so, but the below patch fixes the problem. :)
+> > > 
+> > > Well, I thought it would, but it also would break some other people's systems.
+> > > That's the _real_ problem.  Let's see if we can learn more.
+> > > 
+> > > Can you please revert it for now, apply the appended one and try to
+> > > suspend/resume twice in the 'platform' mode (it may or may not work)?
+> > 
+> > Ok. The patch doesn't apply cleanly to 2.6.21-rc6:
+> > |patching file kernel/power/disk.c
+> > |Hunk #1 FAILED at 267.
+> > |Hunk #2 succeeded at 265 (offset -23 lines).
+> > |1 out of 2 hunks FAILED -- saving rejects to file
+> > |kernel/power/disk.c.rej
+> > 
+> > wiggle helps, seems the first part of Hunk #1 is already applied in
+> > 2.6.21-rc6.
 
-> > just something i threw together, not in final form, but it represents
-> > tossing the legacy PM stuff.  at the moment, the menuconfig entry for
-> > PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
-> > "obsolete."  that's a good sign that it's getting close to the time
-> > for it to go, and the removal is fairly straightforward, but there's
-> > no mention of its removal in the feature removal schedule file.
+Ah, sorry.  I used a wrong tree to generate the patch.
 
-Yes, it will be nice to see this old code be gone.
+> > With CONFIG_PM_DEBUG=y and CONFIG_DISABLE_CONSOLE_SUSPEND=y I see
+> > that the second suspend hangs at "i8042 i8042: EARLY resume".
+> > This is kinda interesting because I'm normally using a USB keyboard
+> > and sure enough, if I hook up a normal keyboard and disable USB
+> > legacy support in the BIOS, then suspend to disk works multiple
+> > times. I'd still rather like to use my USB keyboard though. ;)
 
-							Pavel
--- =
+Well, I think that when you're using the USB keyboard and the USB legacy
+support, the i8042 driver thinks it has a keyboard to handle and tries to
+handle it during the suspend, which fails.  I don't know why it fails during
+the second suspend, though.
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Dmitry, could you please have a look?
+
+> And I can now confirm that unpatched 2.6.21-rc6 works fine as long
+> as USB legacy support is disabled (however without legacy support I
+> can't use the USB keyboard to control grub).
+
+I think using the 'shutdown' mode of suspend would be better.  There's a little
+point in using 'platform' on desktop systems anyway.
+
+Frankly, I don't know what to do about it.  If we move platform_finish() after
+device_resume(), some systems may be broken and I think there are more such
+systems than there are systems that set USB legacy support in the BIOS and
+have no PS/2 keyboards attached.  Pavel, what do you think?
+
+Rafael
