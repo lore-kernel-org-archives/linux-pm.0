@@ -1,16 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Linux 2.6.21-rc6
-Date: Sun, 15 Apr 2007 08:14:00 -0700
-Message-ID: <200704150814.01747.david-b@pacbell.net>
+From: Marcus Better <marcus@better.se>
+Subject: Re: [3/3] 2.6.21-rc6: known regressions
+Date: Sun, 15 Apr 2007 18:26:33 +0200
+Message-ID: <200704151826.33837.marcus@better.se>
 References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<20070415080258.GA2716@melchior.yamamaya.is-a-geek.org>
-	<200704151316.26136.rjw@sisk.pl>
+	<20070414003808.GU5907@stusta.de> <1176515823.4807.7.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1522757379=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704151316.26136.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <1176515823.4807.7.camel@daplas>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,70 +17,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Adrian Bunk <bunk@stusta.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 15 April 2007 4:16 am, Rafael J. Wysocki wrote:
-> On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
+--===============1522757379==
+Content-Type: multipart/signed; boundary="nextPart4280644.u9WsuYudWA";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> > > > > Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
-> > > > > single core CPU.
+--nextPart4280644.u9WsuYudWA
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-And NVidia southbridge, so OHCI not UHCI (plus EHCI) ... one experiment
-would be to disable the EHCI (high speed USB) support in BIOS, to make
-for a simpler hardware configuration, and see if that makes BIOS happier.
-(Or better, just take EHCI out of your Linux config.)  Likewise, taking
-the 8042 drivers out of Linux.
+Antonino A. Daplas wrote:
+> A screen with blinking green blocks implies that your display is in text
+> mode, not in graphics mode.
 
-I wouldn't be surprised if those factors didn't matter, but it'd be good
-to rule them out.
+Yes, it happens when I suspend from text mode.
 
+> If the above does not work, also try
+>
+> acpi_sleep=3Ds3_bios,s3_mode
 
-> > > With CONFIG_PM_DEBUG=3Dy and CONFIG_DISABLE_CONSOLE_SUSPEND=3Dy I see
-> > > that the second suspend hangs at "i8042 i8042: EARLY resume".
-> > > This is kinda interesting because I'm normally using a USB keyboard
-> > > and sure enough, if I hook up a normal keyboard and disable USB
-> > > legacy support in the BIOS, then suspend to disk works multiple
-> > > times. I'd still rather like to use my USB keyboard though. ;)
-> =
+Will try, but I'm using "s2ram -f -a3" which should mean precisely the abov=
+e=20
+IIUC.
 
-> Well, I think that when you're using the USB keyboard and the USB legacy
-> support, the i8042 driver thinks it has a keyboard to handle and tries to
-> handle it during the suspend, which fails.  I don't know why it fails dur=
-ing
-> the second suspend, though.
+Marcus
 
-The "legacy" support in at least some cases involves BIOS having a
-small USB stack -- enough to handle a keyboard or mouse in "boot mode"
-(plus sometimes a USB disk or CDROM) -- and poking the i8042 chip to
-act as if *IT* received the data bytes that really came over USB.
+--nextPart4280644.u9WsuYudWA
+Content-Type: application/pgp-signature
 
-I sure don't know the ins-and-outs of such schemes (ISTR there are
-others), but my guess is that either the 8042 or OHCI got confused,
-at least in conjunction with the lowlevel magic ACPI was doing.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-That's all black magic though, as far as I can understand it ...
+iD8DBQBGIlI5XjXn6TzcAQkRAh3rAJ0exGxenHskFcXGy7wlhwUMzpb+cgCeLCYF
+Stq7eJu8dHjPGfYHLyqYWBo=
+=Wofn
+-----END PGP SIGNATURE-----
+
+--nextPart4280644.u9WsuYudWA--
 
 
-> Dmitry, could you please have a look?
-> =
 
-> > And I can now confirm that unpatched 2.6.21-rc6 works fine as long
-> > as USB legacy support is disabled (however without legacy support I
-> > can't use the USB keyboard to control grub).
-> =
+--===============1522757379==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I think using the 'shutdown' mode of suspend would be better.  There's a =
-little
-> point in using 'platform' on desktop systems anyway.
-> =
 
-> Frankly, I don't know what to do about it.  If we move platform_finish() =
-after
-> device_resume(), some systems may be broken ...
-
-What I'm curious about is exactly why the patch matters.  What ACPI
-magic is being invoked to confuse, or unconfuse, those controllers?
-
-- Dave
+--===============1522757379==--
