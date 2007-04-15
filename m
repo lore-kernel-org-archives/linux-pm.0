@@ -1,7 +1,7 @@
-From: Dmitry Torokhov <dtor@insightbb.com>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: Linux 2.6.21-rc6
-Date: Sun, 15 Apr 2007 10:19:35 -0400
-Message-ID: <200704151019.37074.dtor@insightbb.com>
+Date: Sun, 15 Apr 2007 08:14:00 -0700
+Message-ID: <200704150814.01747.david-b@pacbell.net>
 References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
 	<20070415080258.GA2716@melchior.yamamaya.is-a-geek.org>
 	<200704151316.26136.rjw@sisk.pl>
@@ -20,13 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
+To: linux-pm@lists.linux-foundation.org
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Adrian Bunk <bunk@stusta.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 15 April 2007 07:16, Rafael J. Wysocki wrote:
+On Sunday 15 April 2007 4:16 am, Rafael J. Wysocki wrote:
 > On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
-> =
+
+> > > > > Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
+> > > > > single core CPU.
+
+And NVidia southbridge, so OHCI not UHCI (plus EHCI) ... one experiment
+would be to disable the EHCI (high speed USB) support in BIOS, to make
+for a simpler hardware configuration, and see if that makes BIOS happier.
+(Or better, just take EHCI out of your Linux config.)  Likewise, taking
+the 8042 drivers out of Linux.
+
+I wouldn't be surprised if those factors didn't matter, but it'd be good
+to rule them out.
+
 
 > > > With CONFIG_PM_DEBUG=3Dy and CONFIG_DISABLE_CONSOLE_SUSPEND=3Dy I see
 > > > that the second suspend hangs at "i8042 i8042: EARLY resume".
@@ -41,15 +53,21 @@ On Sunday 15 April 2007 07:16, Rafael J. Wysocki wrote:
 > handle it during the suspend, which fails.  I don't know why it fails dur=
 ing
 > the second suspend, though.
-> =
+
+The "legacy" support in at least some cases involves BIOS having a
+small USB stack -- enough to handle a keyboard or mouse in "boot mode"
+(plus sometimes a USB disk or CDROM) -- and poking the i8042 chip to
+act as if *IT* received the data bytes that really came over USB.
+
+I sure don't know the ins-and-outs of such schemes (ISTR there are
+others), but my guess is that either the 8042 or OHCI got confused,
+at least in conjunction with the lowlevel magic ACPI was doing.
+
+That's all black magic though, as far as I can understand it ...
+
 
 > Dmitry, could you please have a look?
 > =
-
-
-This is wierd as i8042 does not use suspend_late/resume_early hooks and
-so it is impossible for it to hang there. None of input drivers use these
-hooks. Could it be that some other driver _after_ i8042 hangs?
 
 > > And I can now confirm that unpatched 2.6.21-rc6 works fine as long
 > > as USB legacy support is disabled (however without legacy support I
@@ -63,15 +81,9 @@ little
 
 > Frankly, I don't know what to do about it.  If we move platform_finish() =
 after
-> device_resume(), some systems may be broken and I think there are more su=
-ch
-> systems than there are systems that set USB legacy support in the BIOS and
-> have no PS/2 keyboards attached.
+> device_resume(), some systems may be broken ...
 
-I would say that every box that does not use PS/2 keyboard does this.
-IOW every box with USB keyboard has legacy emulation turned on so quite
-few of them...
+What I'm curious about is exactly why the patch matters.  What ACPI
+magic is being invoked to confuse, or unconfuse, those controllers?
 
--- =
-
-Dmitry
+- Dave
