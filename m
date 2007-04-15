@@ -1,18 +1,15 @@
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: Linux 2.6.21-rc6
-Date: Sun, 15 Apr 2007 10:02:59 +0200
-Message-ID: <20070415080258.GA2716@melchior.yamamaya.is-a-geek.org>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	<200704142223.32410.rjw@sisk.pl>
-	<20070414213526.GA2401@melchior.yamamaya.is-a-geek.org>
-	<200704142358.31758.rjw@sisk.pl>
-	<20070415073820.GA2589@melchior.yamamaya.is-a-geek.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
+Date: Sun, 15 Apr 2007 10:23:28 +0000
+Message-ID: <20070415102328.GA11021@ucw.cz>
+References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
+	<200704131022.45315.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070415073820.GA2589@melchior.yamamaya.is-a-geek.org>
+In-Reply-To: <200704131022.45315.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,108 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.osdl.org, Maxim Levitsky <maximlevitsky@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, "Robert P. J. Day" <rpjday@mindspring.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-VG9iaWFzIERpZWRyaWNoIHdyb3RlOgo+IFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gT24g
-U2F0dXJkYXksIDE0IEFwcmlsIDIwMDcgMjM6MzUsIFRvYmlhcyBEaWVkcmljaCB3cm90ZToKPiA+
-ID4gUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4gT24gU2F0dXJkYXksIDE0IEFwcmls
-IDIwMDcgMjE6NTYsIFRvYmlhcyBEaWVkcmljaCB3cm90ZToKPiA+ID4gPiA+IFJhZmFlbCBKLiBX
-eXNvY2tpIHdyb3RlOgo+ID4gPiA+ID4gPiBPbiBTYXR1cmRheSwgMTQgQXByaWwgMjAwNyAxNTow
-MCwgQWRyaWFuIEJ1bmsgd3JvdGU6Cj4gPiA+ID4gPiA+ID4gT24gU2F0LCBBcHIgMTQsIDIwMDcg
-YXQgMDI6MzE6NTRQTSArMDIwMCwgVG9iaWFzIERpZWRyaWNoIHdyb3RlOgo+ID4gPiA+ID4gPiA+
-ID4gVG9iaWFzIERpZWRyaWNoIHdyb3RlOgo+ID4gPiA+ID4gPiA+ID4gPiA+IGVkNzQ2ZTNiMThm
-NGRmMThhZmEzNzYzMTU1OTcyYzU4MzVmMjg0YzUgaXMgZmlyc3QgYmFkIGNvbW1pdAo+ID4gPiA+
-ID4gPiA+ID4gPiA+IGNvbW1pdCBlZDc0NmUzYjE4ZjRkZjE4YWZhMzc2MzE1NTk3MmM1ODM1ZjI4
-NGM1Cj4gPiA+ID4gPiA+ID4gPiA+ID4gQXV0aG9yOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNp
-c2sucGw+Cj4gPiA+ID4gPiA+ID4gPiA+ID4gRGF0ZTogICBTYXQgRmViIDEwIDAxOjQzOjMyIDIw
-MDcgLTA4MDAKPiA+ID4gPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgW1BB
-VENIXSBzd3N1c3A6IENoYW5nZSBjb2RlIG9yZGVyaW5nIGluIGRpc2suYwo+ID4gPiA+ID4gPiA+
-ID4gPiA+ICAgICAKPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgQ2hhbmdlIHRoZSBvcmRlcmluZyBv
-ZiBjb2RlIGluIGtlcm5lbC9wb3dlci9kaXNrLmMgc28gdGhhdCBkZXZpY2Vfc3VzcGVuZCgpIGlz
-Cj4gPiA+ID4gPiA+ID4gPiA+ID4gICAgIGNhbGxlZCBiZWZvcmUgZGlzYWJsZV9ub25ib290X2Nw
-dXMoKSBhbmQgcGxhdGZvcm1fZmluaXNoKCkgaXMgY2FsbGVkIGFmdGVyCj4gPiA+ID4gPiA+ID4g
-PiA+ID4gICAgIGVuYWJsZV9ub25ib290X2NwdXMoKSBhbmQgYmVmb3JlIGRldmljZV9yZXN1bWUo
-KSwgYXMgaW5kaWNhdGVkIGJ5IHRoZSByZWNlbnQKPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgZGlz
-Y3Vzc2lvbiBvbiBMaW51eC1QTSAoY2YuCj4gPiA+ID4gPiA+ID4gPiA+ID4gICAgIGh0dHA6Ly9s
-aXN0cy5vc2RsLm9yZy9waXBlcm1haWwvbGludXgtcG0vMjAwNi1Ob3ZlbWJlci8wMDQxNjQuaHRt
-bCkuCj4gPiA+ID4gPiA+ID4gPiA+ID4gICAgIAo+ID4gPiA+ID4gPiA+ID4gPiA+ICAgICBUaGUg
-Y2hhbmdlcyBoZXJlIG9ubHkgYWZmZWN0IHRoZSBidWlsdC1pbiBzd3N1c3AuCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gICAgIAo+ID4gPiA+ID4gPiA+ID4gPiA+ICAgICBbYWxleGV5Lnkuc3Rhcmlrb3Zz
-a2l5QGxpbnV4LmludGVsLmNvbTogZml4IExFRCBibGlua2luZyBkdXJpbmcgaW1hZ2UgbG9hZF0K
-PiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kg
-PHJqd0BzaXNrLnBsPgo+ID4gPiA+ID4gPiA+ID4gPiA+ICAgICBBY2tlZC1ieTogUGF2ZWwgTWFj
-aGVrIDxwYXZlbEB1Y3cuY3o+Cj4gPiA+ID4gPiA+ID4gPiA+ID4gICAgIENjOiBHcmVnIEtIIDxn
-cmVnQGtyb2FoLmNvbT4KPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgQ2M6IE5pZ2VsIEN1bm5pbmdo
-YW0gPG5pZ2VsQHN1c3BlbmQyLm5ldD4KPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgQ2M6IFBhdHJp
-Y2sgTW9jaGVsIDxtb2NoZWxAZGlnaXRhbGltcGxhbnQub3JnPgo+ID4gPiA+ID4gPiA+ID4gPiA+
-ICAgICBDYzogQWxleGV5IFN0YXJpa292c2tpeSA8YWxleGV5Lnkuc3Rhcmlrb3Zza2l5QGxpbnV4
-LmludGVsLmNvbT4KPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgU2lnbmVkLW9mZi1ieTogQW5kcmV3
-IE1vcnRvbiA8YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4KPiA+ID4gPiA+ID4gPiA+ID4gPiAg
-ICAgU2lnbmVkLW9mZi1ieTogTGludXMgVG9ydmFsZHMgPHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRp
-b24ub3JnPgo+ID4gPiA+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+ID4gPiA+IDowNDAwMDAg
-MDQwMDAwIDdlY2E1YjNhOGY5NjA2YmM0ZjJmZjQxMTkyZWM4YzlkNGNhOTBkMTggODMxM2I2NzRl
-MWQxYmRmNjg0OTM1MGFmMDZkMjhhODliM2JiMzA1NCBNICAgICAga2VybmVsCj4gPiA+ID4gPiA+
-ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4gPiA+ID4gTm93LCB0
-aGUgcmVtYWluaW5nIHRlc3QgaXMgdG8gdHJ5IHJldmVydGluZyB0aGlzIGNvbW1pdCBmcm9tIC1y
-YzYuIDopCj4gPiA+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+ID4gPiBEb2Vzbid0IGFwcGx5
-IGNsZWFubHkgYWdhaW5zdCAtcmM2LCBidXQgZml4ZXMgdGhlIHByb2JsZW0gd2hlbgo+ID4gPiA+
-ID4gPiA+ID4gPiByZXZlcnRlZCBmcm9tIC1yYzEuCj4gPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
-ID4gPiA+IE5vdywgdGhpcyB3YXMgYWxyZWFkeSByZXBvcnRlZCBpbgo+ID4gPiA+ID4gPiA+ID4g
-aHR0cDovL2xrbWwub3JnL2xrbWwvMjAwNy8zLzE2LzEyNgo+ID4gPiA+ID4gPiA+ID4gYW5kIEkg
-ZXZlbiBmbGFnZ2VkIHRoYXQgbWVzc2FnZSBpbiBteSBsb2NhbCBmb2xkZXIsIGJ1dCBhcHBhcmVu
-dGx5IGZvcmdvdAo+ID4gPiA+ID4gPiA+ID4gdG8gZm9sbG93IHVwIG9uIGl0Li4uICpzaWdoKgo+
-ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+IFVubGVzcyBJIG1pc3VuZGVyc3Rvb2Qgc29tZXRo
-aW5nLCBhbGwgb2YgdGhlIHByb2JsZW1zIE1heGltIGRlc2NyaWJlZCBpbiAKPiA+ID4gPiA+ID4g
-PiB0aGlzIGVtYWlsIGFyZSBmaXhlZCBmb3IgaGltIGluIC1yYzYuCj4gPiA+ID4gPiA+ID4gCj4g
-PiA+ID4gPiA+ID4gQnV0IGl0J3MgcXVpdGUgcG9zc2libGUgdGhhdCB5b3UgYXJlIHJ1bm5pbmcg
-aW50byBhIGRpZmZlcmVudCBpc3N1ZSAKPiA+ID4gPiA+ID4gPiBleHBvc2VkIGJ5IHRoaXMgY29t
-bWl0Lgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gWWVzLCBpdCdzIGxpa2VseS4KPiA+ID4gPiA+
-ID4gCj4gPiA+ID4gPiA+IFRvYmlhcywgSSdtIHVuYWJsZSB0byByZXByb2R1Y2UgdGhlIHByb2Js
-ZW0gd2l0aCB5b3VyIC5jb25maWcsIGJ1dCBteSBoYXJkd2FyZQo+ID4gPiA+ID4gPiBpcyBjZXJ0
-YWlubHkgZGlmZmVyZW50LiAgV2hpY2ggc3VzcGVuZCBtb2RlIGRvIHlvdSB1c2U/ICBJZiB0aGF0
-J3MgInBsYXRmb3JtIiwKPiA+ID4gPiA+ID4gY2FuIHlvdSB0cnkgdG8gdXNlICJzaHV0ZG93biIg
-b3IgInJlYm9vdCIgYW5kIHNlZSBpZiB0aGF0IGhlbHBzPwo+ID4gPiA+ID4gCj4gPiA+ID4gPiBT
-dXJlLgo+ID4gPiA+ID4gc2h1dGRvd24vcmVib290IHdvcmtzIGZpbmUsIG9ubHkgcGxhdGZvcm0g
-aXMgYnJva2VuLgo+ID4gPiA+IAo+ID4gPiA+IFRoYW5rcy4KPiA+ID4gPiAKPiA+ID4gPiBOb3cs
-IEkgc3VzcGVjdCB0aGUgcHJvYmxlbSBpcyBzb21laG93IHJlbGF0ZWQgdG8gdGhlIGhhcmR3YXJl
-LCBzbyBpdCB3b3VsZCBoZWxwCj4gPiA+ID4gYSBsb3QgaWYgd2UgY291bGQgaWRlbnRpZnkgdGhl
-IHBpZWNlIG9mIGhhcmR3YXJlIChvciBkcml2ZXIpIGludm9sdmVkLgo+ID4gPiA+IAo+ID4gPiA+
-IEFGQUlDVCwgeW91ciBzeXN0ZW0gaXMgYSBub24tU01QIG9uZSwgc28gd2UgY2FuIHJ1bGUgb3V0
-Cj4gPiA+ID4gZGlzYWJsZS9lbmFibGVfbm9uYm9vdF9jcHVzKCkuICBUbyBjb25maXJtIHRoYXQg
-dGhlIHByb2JsZW0gaXMgcmVsYXRlZCB0bwo+ID4gPiA+IHBsYXRmb3JtX2ZpbmlzaCgpLCBjYW4g
-eW91IHBsZWFzZSBhcHBseSB0aGUgYXBwZW5kZWQgZGVidWcgcGF0Y2ggYW5kCj4gPiA+ID4gc2Vl
-IGlmIHRoZSBzdXNwZW5kIGluIHRoZSAncGxhdGZvcm0nIG1vZGUgd29ya3Mgd2l0aCBpdD8KPiA+
-ID4gCj4gPiA+IFllcywgaXQncyBhIEFzdXMgTTJOLVNMSS1EZWx1eGUgTWFpbmJvYXJkIHdpdGgg
-YSBBdGhsb242NCAzMjAwKwo+ID4gPiBzaW5nbGUgY29yZSBDUFUuCj4gPiA+IAo+ID4gPiA+IEFs
-c28sIHdvdWxkIHRoYXQgYmUgZmVhc2libGUgZm9yIHlvdSB0byB1c2UgJ3NodXRkb3duJyBhcyBh
-IHdvcmthcm91bmQgaW4gY2FzZQo+ID4gPiA+IHRoZSBzb3VyY2Ugb2YgdGhlIHByb2JsZW0gaXMg
-ZGlmZmljdWx0IHRvIGZpbmQgYW5kL29yIGZpeD8KPiA+ID4gCj4gPiA+IEkgZ3Vlc3Mgc28sIGJ1
-dCB0aGUgYmVsb3cgcGF0Y2ggZml4ZXMgdGhlIHByb2JsZW0uIDopCj4gPiAKPiA+IFdlbGwsIEkg
-dGhvdWdodCBpdCB3b3VsZCwgYnV0IGl0IGFsc28gd291bGQgYnJlYWsgc29tZSBvdGhlciBwZW9w
-bGUncyBzeXN0ZW1zLgo+ID4gVGhhdCdzIHRoZSBfcmVhbF8gcHJvYmxlbS4gIExldCdzIHNlZSBp
-ZiB3ZSBjYW4gbGVhcm4gbW9yZS4KPiA+IAo+ID4gQ2FuIHlvdSBwbGVhc2UgcmV2ZXJ0IGl0IGZv
-ciBub3csIGFwcGx5IHRoZSBhcHBlbmRlZCBvbmUgYW5kIHRyeSB0bwo+ID4gc3VzcGVuZC9yZXN1
-bWUgdHdpY2UgaW4gdGhlICdwbGF0Zm9ybScgbW9kZSAoaXQgbWF5IG9yIG1heSBub3Qgd29yayk/
-Cj4gCj4gT2suIFRoZSBwYXRjaCBkb2Vzbid0IGFwcGx5IGNsZWFubHkgdG8gMi42LjIxLXJjNjoK
-PiB8cGF0Y2hpbmcgZmlsZSBrZXJuZWwvcG93ZXIvZGlzay5jCj4gfEh1bmsgIzEgRkFJTEVEIGF0
-IDI2Ny4KPiB8SHVuayAjMiBzdWNjZWVkZWQgYXQgMjY1IChvZmZzZXQgLTIzIGxpbmVzKS4KPiB8
-MSBvdXQgb2YgMiBodW5rcyBGQUlMRUQgLS0gc2F2aW5nIHJlamVjdHMgdG8gZmlsZQo+IHxrZXJu
-ZWwvcG93ZXIvZGlzay5jLnJlago+IAo+IHdpZ2dsZSBoZWxwcywgc2VlbXMgdGhlIGZpcnN0IHBh
-cnQgb2YgSHVuayAjMSBpcyBhbHJlYWR5IGFwcGxpZWQgaW4KPiAyLjYuMjEtcmM2Lgo+IFdpdGgg
-Q09ORklHX1BNX0RFQlVHPXkgYW5kIENPTkZJR19ESVNBQkxFX0NPTlNPTEVfU1VTUEVORD15IEkg
-c2VlCj4gdGhhdCB0aGUgc2Vjb25kIHN1c3BlbmQgaGFuZ3MgYXQgImk4MDQyIGk4MDQyOiBFQVJM
-WSByZXN1bWUiLgo+IFRoaXMgaXMga2luZGEgaW50ZXJlc3RpbmcgYmVjYXVzZSBJJ20gbm9ybWFs
-bHkgdXNpbmcgYSBVU0Iga2V5Ym9hcmQKPiBhbmQgc3VyZSBlbm91Z2gsIGlmIEkgaG9vayB1cCBh
-IG5vcm1hbCBrZXlib2FyZCBhbmQgZGlzYWJsZSBVU0IKPiBsZWdhY3kgc3VwcG9ydCBpbiB0aGUg
-QklPUywgdGhlbiBzdXNwZW5kIHRvIGRpc2sgd29ya3MgbXVsdGlwbGUKPiB0aW1lcy4gSSdkIHN0
-aWxsIHJhdGhlciBsaWtlIHRvIHVzZSBteSBVU0Iga2V5Ym9hcmQgdGhvdWdoLiA7KQoKQW5kIEkg
-Y2FuIG5vdyBjb25maXJtIHRoYXQgdW5wYXRjaGVkIDIuNi4yMS1yYzYgd29ya3MgZmluZSBhcyBs
-b25nCmFzIFVTQiBsZWdhY3kgc3VwcG9ydCBpcyBkaXNhYmxlZCAoaG93ZXZlciB3aXRob3V0IGxl
-Z2FjeSBzdXBwb3J0IEkKY2FuJ3QgdXNlIHRoZSBVU0Iga2V5Ym9hcmQgdG8gY29udHJvbCBncnVi
-KS4KCi0tIApUb2JpYXMJCQkJCQlQR1A6IGh0dHA6Ly85YWM3ZTBiYy51Z3V1LmRlCuOBk+OBruOD
-oeODvOODq+OBr+WNgeWJsuWGjeWIqeeUqOOBleOCjOOBn+ODk+ODg+ODiOOBp+S9nOOCieOCjOOB
-puOBhOOBvuOBmeOAggpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LXBtCg==
+Hi!
+
+> > just something i threw together, not in final form, but it represents
+> > tossing the legacy PM stuff.  at the moment, the menuconfig entry for
+> > PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
+> > "obsolete."  that's a good sign that it's getting close to the time
+> > for it to go, and the removal is fairly straightforward, but there's
+> > no mention of its removal in the feature removal schedule file.
+
+Yes, it will be nice to see this old code be gone.
+
+							Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
