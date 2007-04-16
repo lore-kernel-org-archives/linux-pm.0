@@ -1,43 +1,43 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-Date: Sun, 15 Apr 2007 20:44:12 -0700
-Message-ID: <4622F10C.1080203@goop.org>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	<20070416003723.GM3691@stusta.de>
-	<20070416005446.GB21217@redhat.com>
-	<20070416011636.GO3691@stusta.de>
+From: Marcus Better <marcus@better.se>
+Subject: Re: [3/3] 2.6.21-rc6: known regressions
+Date: Mon, 16 Apr 2007 08:23:34 +0200
+Message-ID: <200704160823.39074.marcus@better.se>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704151826.33837.marcus@better.se> <1176678525.16909.3.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070416011636.GO3691@stusta.de>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: gregkh@suse.de, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/signed;
+  boundary="nextPart7708283.HRsQ8eHoKH";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750712AbXDPGXz@vger.kernel.org>
+In-Reply-To: <1176678525.16909.3.camel@daplas>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Adrian Bunk wrote:
-> I'm not sure why I thought you two ran into the same regression.
->
-> So "hpet=3Ddisable" worked for Jeremy but not for you, IOW: you two were =
+--nextPart7708283.HRsQ8eHoKH
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> running into different regressions?
->
-> @Jeremy:
-> If this is true, is your HPET related related regression still present =
+> Just for clarification, do you suspend from VESA framebuffer console or
+> from VGA text console?
 
-> in -rc7?
+=46rom VESA console.
 
-I need to recheck, but when I tried -rc6, I was still having resume
-problems but hpet=3Ddisabled didn't help.  So I definitely think there are
-multiple bugs with the same symtoms.  I haven't tried -rc7 yet.
+Marcus
 
-    J
+--nextPart7708283.HRsQ8eHoKH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGIxZrXjXn6TzcAQkRAh7UAKCclMltC+r5QjSifisocO2FYOiP4gCg08bW
+s3ZMk/8WmfD60I313MJb2UM=
+=GyNz
+-----END PGP SIGNATURE-----
+
+--nextPart7708283.HRsQ8eHoKH--
