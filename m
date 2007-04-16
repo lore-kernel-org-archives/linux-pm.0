@@ -1,71 +1,46 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH v4] pm_ops: add system quiesce/activate hooks
-Date: Mon, 16 Apr 2007 10:37:13 +0200
-Message-ID: <1176712634.7052.175.camel@johannes.berg>
-References: <1175810054.3489.34.camel@johannes.berg>
-	<1176499086.7052.124.camel@johannes.berg>
-	<20070413213349.GL28264@elf.ucw.cz> <200704140009.33298.rjw@sisk.pl>
-	<1176503122.5764.109.camel@localhost.localdomain>
-	<20070413223922.GS28264@elf.ucw.cz>
-	<1176506383.5764.129.camel@localhost.localdomain>
-	<20070416073249.GA2057@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Date: Mon, 16 Apr 2007 12:06:22 +0200
+Message-ID: <200704161206.31145.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0985771857=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070416073249.GA2057@elf.ucw.cz>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751951AbXDPKDE@vger.kernel.org>
+In-Reply-To: <20070416003723.GM3691@stusta.de>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz, linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>, "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Dmitry Torokhov <dtor@insightbb.com>, David Brownell <david-b@pacbell.net>, Marcus Better <marcus@better.se>, "Antonino A. Daplas" <adaplas@gmail.com>, James Simmons <jsimmons@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday, 16 April 2007 02:37, Adrian Bunk wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
+> 
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+[--snip--]
+> 
+> 
+> Subject    : suspend to disk works only once
+> References : http://lkml.org/lkml/2007/4/13/240
+> Submitter  : Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+>              commit ed746e3b18f4df18afa3763155972c5835f284c5
+> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+>              Dmitry Torokhov <dtor@insightbb.com>
+>              David Brownell <david-b@pacbell.net>
+> Status     : problem is being debugged
 
---===============0985771857==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-xSI9L78KtaWvbW81+5nB"
+Workaround is possible: do "echo shutdown > /sys/power/disk" before the
+suspend or, for s2disk, add "shutdown method = shutdown" to the configuration
+file.
 
-
---=-xSI9L78KtaWvbW81+5nB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2007-04-16 at 09:32 +0200, Pavel Machek wrote:
-
-> As decrementer is special for s2ram, we can add the hook. (It is
-> single hook).
-
-No, it's two, for enabling as well.
-
-johannes
-
---=-xSI9L78KtaWvbW81+5nB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGIzW5/ETPhpq3jKURAsZaAJ9YwOhAty6gddFdweGuYp+9Nk5MGQCggv2A
-+oITKRftr6Bt2qaxcmAyTwk=
-=cu8e
------END PGP SIGNATURE-----
-
---=-xSI9L78KtaWvbW81+5nB--
-
-
---===============0985771857==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0985771857==--
+Greetings,
+Rafael
