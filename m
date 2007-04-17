@@ -1,15 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.21-rc5-git 0/3] x86_pc and ACPI support
-	/sys/devices/.../wakeup
-Date: Tue, 17 Apr 2007 13:15:34 -0700
-Message-ID: <200704171315.35160.david-b__23331.6561593258$1176840975$gmane$org@pacbell.net>
-References: <200704051248.40745.david-b@pacbell.net>
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
+Date: Tue, 17 Apr 2007 18:12:54 -0400
+Message-ID: <46254666.2020308@tmr.com>
+References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
+	<200704131022.45315.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704051248.40745.david-b@pacbell.net>
-Content-Disposition: inline
+In-Reply-To: <200704131022.45315.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,202 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, "Robert P. J. Day" <rpjday@mindspring.com>, Pavel Machek <pavel@ucw.cz>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-So, ACPI team ... will there be any signed-off-by lines forthcoming?
-On at least the first two patches, which are now known to work and
-which don't raise any cross-platform issues.
-
-And if you could share an explanation for why sometimes PCI bridges
-seem to get marked as wakeup-capable in the ACPI tables, that would
-be nice too ...
-
-- Dave
-
-
-
-On Thursday 05 April 2007 12:48 pm, David Brownell wrote:
-> Following are three patches for basic driver model wakeup flag support on
-> PCs.  I think the first two are nearly mergable.  The third previously br=
-oke
-> powerpc, so it's likely not yet mergeable ... the issue was arch-specific
-> differences in PCI initialization, someone else will need to solve them.
+Rafael J. Wysocki wrote:
+> [appropriate CCs added]
 > =
 
-> The patches are:
+> On Friday, 13 April 2007 02:33, Robert P. J. Day wrote:
+>> just something i threw together, not in final form, but it represents
+>> tossing the legacy PM stuff.  at the moment, the menuconfig entry for
+>> PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
+>> "obsolete."  that's a good sign that it's getting close to the time
+>> for it to go, and the removal is fairly straightforward, but there's
+>> no mention of its removal in the feature removal schedule file.
 > =
 
->  - Define a platform_enable_wakeup() PM hook and use it with PCI.  (This
->    might help OLPC with its non-RTC events...)
-> =
+> It's been like this for a long long time.  I think you're right that it c=
+an be
+> dropped, but I don't know the details (eg. why it hasn't been dropped yet=
+).
+>  =
 
->  - Make ACPI init and use driver model wakeup flags for the (motherboard)
->    devices in its table ... and implement that new platform hook.  Now
->    /proc/acpi/wakeup is almost purely informative.
-> =
+One reason was that there are (were?) a number of machines which only =
 
->  - Update PCI to set those flags on devices that can issue PME#/WAKE#;
->    this gets overridden by ACPI, except for add-on cards.
-> =
+powered down properly using apm. It was discussed as part of shutting =
 
-> Now, I've not yet made time to test whether the results _work_ but they
-> do look like they do the right thing.  (So far I've had lousy luck seeing
-> ACPI recover from wake events...)  The script I append (which I've posted
-> before) gave the following on one system:
-> =
+down after power failure when your UPS is running out of power.
 
-> 	input      on  acpi_system:00/device:00/PNP0C0E:00
-> 	           on  pci0000:00/0000:00:09.0
-> 	lan        on  pci0000:00/0000:00:04.0
-> 	hub        on  pci0000:00/0000:00:03.3/usb1
-> 	usb_host   on  pci0000:00/0000:00:03.3
-> 	hub        on  pci0000:00/0000:00:03.1/usb3
-> 	usb_host   on  pci0000:00/0000:00:03.1
-> 	input      on  pci0000:00/0000:00:03.0/usb2/2-1/2-1.1
-> 	hub        on  pci0000:00/0000:00:03.0/usb2/2-1
-> 	hub        on  pci0000:00/0000:00:03.0/usb2
-> 	usb_host   on  pci0000:00/0000:00:03.0
-> 	modem      on  pci0000:00/0000:00:02.7
-> 	           on  pci0000:00
-> 	tty        on  pnp0/00:08
-> 	           on  pnp0/00:06
-> 	           on  pnp0/00:05
-> 	rtc        on  pnp0/00:02
-> =
+I haven't checked on that in a while, I'm just supplying one reason =
 
-> Notice the external USB hub and keyboard.  The i8042 drivers don't
-> seem to list themselvs as input drivers in the usual way, or those
-> PS2 kbd/aux nodes would also say "input".  PCI 00:09.0 is an add-in
-> card, invisible without the third patch; it'd be a USB host if it
-> had a Linux driver.
-> =
+since you wondered.
 
-> - Dave
-> =
+-- =
 
-> #!/bin/bash
-> # pm-wake
-> =
-
-> # classfilename *:* =3D=3D> $type
-> class_label ()
-> {
-> 	case $1 in
-> 	# recognize common types of wakeup-capable devices
-> 	i2c-dev:*)	type=3D"smbus     "; return 0;;
-> 	input:*)	type=3D"input     "; return 0;;
-> 	mmc_host:*)	type=3D"mmc_host  "; return 0;;
-> 	net:eth*)	type=3D"lan       "; return 0;;
-> 	net:*)		type=3D"net       "; return 0;;
-> 	pcmcia_socket:*)type=3D"pcmcia    "; return 0;;
-> 	rtc:*)		type=3D"rtc       "; return 0;;
-> 	sound:*)	type=3D"modem     "; return 0;;
-> 	tty:*)		type=3D"tty       "; return 0;;
-> 	usb_host:*)	type=3D"usb_host  "; return 0;;
-> 	esac
-> 	return 1
-> }
-> =
-
-> # interface_label $PATH =3D=3D> $type
-> interface_label ()
-> {
-> 	for F in $(cd $1 >/dev/null 2>&1 ; echo *:*)
-> 	do
-> 		class_label $F && return
-> 	done
-> }
-> =
-
-> # devtype $PATH =3D=3D> $type
-> devtype ()
-> {
-> 	local F T
-> =
-
-> 	# fixed length, currently ten spaces
-> 	type=3D""
-> =
-
-> 	for F in $(cd $1 >/dev/null 2>&1 ; echo *:*)
-> 	do
-> 		if [ ! -d "$1/$F" ]
-> 		then
-> 			break;
-> 		fi
-> =
-
-> 		# is this a usb interface?
-> 		if [ -f $1/$F/bInterfaceClass ]
-> 		then
-> 			interface_label $1/$F && return
-> 		fi
-> =
-
-> 		case $F in
-> 		# use interface's label if possible, else generic
-> 		usb_device:*)
-> 			read T < $1/maxchild
-> 			if [ 0 -lt $T ]
-> 			then
-> 				type=3D"hub       "
-> 				return
-> 			fi
-> 			type=3D"(usb)     "
-> 			continue;;
-> 		*:*)	class_label $F && return ;;
-> 		esac
-> =
-
-> 	done
-> =
-
-> 	if [ "$type" =3D "" ]
-> 	then
-> 		for T in $(cd $1 >/dev/null 2>&1 ; echo fw-host*/ieee1394_host:*)
-> 		do
-> 			if [ ! -L "$1/$T" ]
-> 			then
-> 				break;
-> 			fi
-> 			type=3D"firewire  "
-> 			return
-> 		done
-> 	fi
-> =
-
-> 	if [ "$type" =3D "" ]
-> 		then
-> 		type=3D"          "
-> 	fi
-> }
-> =
-
-> cd /sys/devices
-> for F in $(find * -name 'wakeup')
-> do
-> 	# F=3D.../power/wakeup
-> 	read value < $F
-> 	if [ "$value" =3D "" ]
-> 	then
-> 		continue
-> 	fi
-> =
-
-> 	# F=3D...
-> 	F=3D$(dirname $(dirname $F))
-> 	devtype $F
-> =
-
-> 	# for each entry that actually supports wakeup, one line with:
-> 	#  - device type (if recognized)
-> 	#  - wake on/OFF
-> 	#  - /sys/devices/... path
-> 	case "$value" in
-> 	"disabled")	echo "$type OFF $F" ;;
-> 	"enabled")	echo "$type on  $F" ;;
-> 	esac
-> done
-> =
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
