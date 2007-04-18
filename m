@@ -1,7 +1,7 @@
-From: "Robert P. J. Day" <rpjday@mindspring.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
-Date: Wed, 18 Apr 2007 14:31:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.64.0704181427470.13500@localhost.localdomain>
+Date: Wed, 18 Apr 2007 22:10:36 +0200
+Message-ID: <20070418201036.GA2112@elf.ucw.cz>
 References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
 	<200704131022.45315.rjw@sisk.pl> <46254666.2020308@tmr.com>
 	<Pine.LNX.4.64.0704172045100.18821@localhost.localdomain>
@@ -10,6 +10,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <46265F60.4040600@tmr.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,43 +22,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Bill Davidsen <davidsen@tmr.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, "Robert P. J. Day" <rpjday@mindspring.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 18 Apr 2007, Bill Davidsen wrote:
+Hi!
 
-> Robert P. J. Day wrote:
-...
-> > um ... what does APM have to do with legacy PM?  two different
-> > issues, no?
+> >>One reason was that there are (were?) a number of machines which only =
 
-> Since the patches are going into apm.c and apm was used for suspend
-> and poweroff before ACPI was a feature of the hardware, I assume
-> there's a relationship. As of 2.6.9 ACPI still couldn't power down
-> one of my old boxes, it hasn't been updated since that time, so I
-> can't say what later kernels will do.
+> >>powered
+> >>down properly using apm. It was discussed as part of shutting down afte=
+r =
 
-perhaps i completely misunderstood what i was looking at but when i
-submitted a patch to remove "legacy power management," i wasn't
-referring to APM.  i was talking about the PM stuff even *older* than
-that, that's listed as "Legacy Power Management API (DEPRECATED)"
-under the PM config menu.
+> >>power
+> >>failure when your UPS is running out of power.
+> >>    =
 
-so, politics and scheduling aside, was that earlier patch a reasonable
-and correct way to do *that*?
+> >
+> >um ... what does APM have to do with legacy PM?  two different issues,
+> >no?
+> >  =
 
-rday
+> Since the patches are going into apm.c and apm was used for suspend and =
 
+> poweroff before ACPI was a feature of the hardware, I assume there's a =
+
+> relationship. As of 2.6.9 ACPI still couldn't power down one of my
+>old
+
+There is not. The patches should not affect you unless you use obscure
+68000 driver.
+
+We are removing infrastructure that has no users.
+									Pavel
 -- =
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=3DMain_Page
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
