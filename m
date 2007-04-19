@@ -1,18 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.21-rc5-git 0/3] x86_pc and ACPI support
-	/sys/devices/.../wakeup
-Date: Thu, 19 Apr 2007 12:24:08 -0700
-Message-ID: <200704191224.08474.david-b__31339.9749379188$1177011638$gmane$org@pacbell.net>
-References: <200704051248.40745.david-b@pacbell.net>
-	<200704180933.07601.david-b@pacbell.net>
-	<1176976112.9072.54.camel@localhost.localdomain>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
+Date: Thu, 19 Apr 2007 14:55:08 -0700
+Message-ID: <20070419145508.4a6d2055.akpm@linux-foundation.org>
+References: <1176980411.6141.83.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1176976112.9072.54.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <1176980411.6141.83.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,98 +17,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > > > The patches are:
-> > > > 
-> > > >  - Define a platform_enable_wakeup() PM hook and use it with PCI.  (This
-> > > >    might help OLPC with its non-RTC events...)
-> > > > 
-> > > >  - Make ACPI init and use driver model wakeup flags for the (motherboard)
-> > > >    devices in its table ... and implement that new platform hook.  Now
-> > > >    /proc/acpi/wakeup is almost purely informative.
-> > > 
-> > > Yes.
-> > > But /proc/acpi/wakeup is exporting the wrong information then.
-> > 
-> > I'd say it's always exported the wrong information ... and
-> > since those /proc files are going away, this there's no
-> > strong need to continue following that path.
-> > 
-> > The literal meaning hasn't changed:  it still reflects the
-> > value of the acpi_device.wakeup.state.enabled flag.  This
-> > version of the patch avoided changing that meaning, to make
-> > the compatibility story simpler.
-> > 
-> > > I.e. when a physical device is set to may_wakeup, the corresponding
-> > > GPE will be enabled before entering a system sleep state.
-> > 
-> > The GPE is not always enabled when device_may_wakeup(dev)
-> > returns true.  When drivers aren't set up to handle wakeups,
-> > they won't make requests that boil down to enabling GPEs.
-> > 
-> > What /proc/acpi/wakeup shows in those cases is the state
-> > of what I called "manual overrides".  Drivers that aren't
-> > wakeup-aware will use those settings ... same as always.
-> > (Unless userspace disables wakeup for that device through
-> > the driver model.)
-> > 
+On Thu, 19 Apr 2007 13:00:11 +0200
+Johannes Berg <johannes@sipsolutions.net> wrote:
+
+> For powermac, we need to do some things between suspending devices and
+> device_power_off, for example setting the decrementer. This patch
+> allows architectures to define arch_s2ram_{en,dis}able_irqs in their
+> asm/suspend.h to have control over this step.
 > 
-> > Wakeup-aware drivers will manage their GPEs directly, by
-> > calling pci_enable_wake() -- or whatever -- according to
-> > what device_may_wakeup(dev) tells them to do.
-> > 
+
+what on earth is a decrementer?
+
 > 
-> That's true.
-> Now acpi_device.wakeup.state.enabled is handled by
-> the wakeup-aware drivers of the "real" device.
+> ---
+>  kernel/power/main.c |   14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
 > 
-> I love the first two patches which help user space get rid of
-> this ACPI specific GPE control.
+> --- wireless-dev.orig/kernel/power/main.c	2007-04-17 18:52:24.536830941 +0200
+> +++ wireless-dev/kernel/power/main.c	2007-04-17 19:09:40.966830941 +0200
+> @@ -128,13 +128,22 @@ static int suspend_prepare(suspend_state
+>  	return error;
+>  }
+>  
+> +#ifndef arch_s2ram_disable_irqs
+> +#define arch_s2ram_disable_irqs(flags) local_irq_save(*flags)
+> +#endif
+> +
+> +#ifndef arch_s2ram_enable_irqs
+> +#define arch_s2ram_enable_irqs(flags) local_irq_restore(*flags)
+> +#endif
+> +
+>  
+>  int suspend_enter(suspend_state_t state)
+>  {
+>  	int error = 0;
+>  	unsigned long flags;
+>  
+> -	local_irq_save(flags);
+> +	arch_s2ram_disable_irqs(&flags);
 
-OK, good -- we're on the same page then!
+hm, ugly.  We could use attribute(weak) here, so we don't force
+architectures to implement this with a macro.  But whatever.
 
 
-> What I meant yesterday is that, as /proc/acpi/wakeup won't be
-> removed until we are able to map all the ACPI devices shown to
-> the real device node, if they have one,
-> it would be better if we either remove this GPE status information
-> from /proc/acpi/wakeup, or export something that really makes sense.
-
-That's a bit of a sticky situation.  I went back and forth
-on it a bit ... and eventually decided the simplest, and
-clearest, approach was not to change how /proc/acpi/wakeup
-handles those flags.
-
-
-> But now I think it's wrong. Because the other devices that are not
-> mapped yet still need this I/F to enable/disable GPE, we can not
-> remove/change this at the current stage.
-
-Exactly!
-
-
-> Then the first two patches are OK with me.:)
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-
-Great -- thanks!  I'll append that to these patches and ask
-Andrew to merge them.
-
-Given these and the PNP patches, most /proc/acpi/wakeup
-devices will now get the right annotations.  There will still
-be some puzzles to work out over time though ... the PS2
-devices, some ACPI buttons, and PCI bridges.
-
-Plus of course the PCI issues addressed in the third patch.
-I switched things around a bit; maybe it's now easier to
-have something that won't break powerpc.
-
-- Dave
-
- 
-> Thanks,
-> Rui
-> 
+It might be nice to identify which arch header is supposed to define
+arch_s2ram_disable_irqs, perhaps via an explicit inclusion of that header.
