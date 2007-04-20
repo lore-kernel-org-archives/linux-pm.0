@@ -1,77 +1,68 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-Date: Fri, 20 Apr 2007 08:28:10 -0700
-Message-ID: <4628DC0A.60707@goop.org>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
+Date: Fri, 20 Apr 2007 17:31:33 +0200
+Message-ID: <1177083093.5902.3.camel@johannes.berg>
+References: <1176980411.6141.83.camel@johannes.berg>
+	<20070420065731.GA5831@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2993268AbXDTP2L@vger.kernel.org>
-In-Reply-To: <20070420145126.GC25051@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>, Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
+Content-Type: multipart/mixed; boundary="===============2062326145558298131=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070420065731.GA5831@kroah.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dave Jones wrote:
-> -BUG: at arch/i386/kernel/sched-clock.c:170 init_sched_clock()
-> - [<c01091b5>] show_trace_log_lvl+0x1a/0x30
-> - [<c010980c>] show_trace+0x12/0x14
-> - [<c01098cb>] dump_stack+0x16/0x18
-> - [<c0468dbd>] init_sched_clock+0x58/0x9b
-> - [<c0461502>] init+0x14b/0x241
-> - [<c0108d97>] kernel_thread_helper+0x7/0x10
-> - =======================
->
-> heh, one for Ingo :)
->   
 
-Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+--===============2062326145558298131==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ZuA7wSiEkcRRQXBt/Qdb"
 
-> -ACPI: ACPI Dock Station Driver 
-> -ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: found ejectable bay
-> -ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: Adding notify handler
-> -ACPI: Bay [\_SB_.PCI0.IDE0.PRIM.MSTR] Added
->
-> Hmm, I should try without the dock stuff built.
->
-> -PCI: Using MMCONFIG
-> +PCI: PCI BIOS revision 2.10 entry at 0xfd82b, last bus=24
-> +PCI: Using configuration type 1
->
-> Think I've tried with and without MMCONFIG
->
-> -pnp: PnP ACPI: found 11 devices
-> +pnp: PnP ACPI: found 13 devices
->
-> My Wacom tablet is one of them. There's also a mysterious 13th device :)
->
->  ibm_acpi: IBM ThinkPad ACPI Extras v0.13
->  ibm_acpi: http://ibm-acpi.sf.net/
-> -ibm_acpi: ThinkPad EC firmware 7BHT37WW-1.10
-> +ibm_acpi: ThinkPad EC firmware 7JHT12WW-1.03
->
-> possibly just because of the touchscreen.
->   
 
-I'm running a very recent BIOS in order to enable hardware
-virtualization (VT/VMX).  The BIOS updates also update the EC firmware.
+--=-ZuA7wSiEkcRRQXBt/Qdb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> So most of the differences seem to be BIOS/firmware rather than hardware. 
-> The PCI bus layout is identical for eg.
->   
+On Fri, 2007-04-20 at 06:57 +0000, Greg KH wrote:
 
-Do you have Intel wireless?  I realized one chance I'd made was to swap
-the Atheros wireless with Intel, since it just seems to work better
-overall.  I'd never had any major suspend/resume problems that I could
-attribute to madwifi though (lots of minor wifi-related ones though).
+> Can't you just make this a "weak" symbol and override it in your ppc
+> code if you really need it, and make a "real" function here in this file
+> for all other arches?
 
-> Looking at your .config, I notice that you don't have CONFIG_FB_BACKLIGHT set
-> (because you don't have any framebuffer drivers that use it enabled).
-> Can you enable say.. CONFIG_FB_RADEON=m and CONFIG_FB_RADEON_BACKLIGHT=y
-> (which should turn on CONFIG_FB_BACKLIGHT=y by dependancy), and see if
-> it stops working for you? (You don't even need to load radeonfb.ko, just
-> have it compiled).
+I'm not opposed to that. How do I do that?
 
-OK, I'll give it a spin.
+johannes
 
-    J
+--=-ZuA7wSiEkcRRQXBt/Qdb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGKNzV/ETPhpq3jKURApSwAKCaTI4lMEHB21P1nn5TyqZKor4KPwCfbGrq
+QSAPQQ/dBq/SpviGTxDErJM=
+=ahJY
+-----END PGP SIGNATURE-----
+
+--=-ZuA7wSiEkcRRQXBt/Qdb--
+
+
+--===============2062326145558298131==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============2062326145558298131==--
