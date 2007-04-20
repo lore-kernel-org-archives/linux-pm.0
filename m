@@ -1,13 +1,8 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
-Date: Fri, 20 Apr 2007 06:57:31 +0000
-Message-ID: <20070420065731.GA5831@kroah.com>
-References: <1176980411.6141.83.camel@johannes.berg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: euromillionresult@mchsi.com (EURO MILLION)
+Subject: Winning Ticket: Reference Number: LRP/19-DE/9317
+Date: Fri, 20 Apr 2007 07:48:24 +0000
+Message-ID: <042020070748.8119.46287044000DAC0500001FB7219791336303010CD2079C080C03BF9B049A9C0A9D02010704040703019D9A0A@mchsi.com>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1176980411.6141.83.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,40 +12,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 01:00:11PM +0200, Johannes Berg wrote:
-> For powermac, we need to do some things between suspending devices and
-> device_power_off, for example setting the decrementer. This patch
-> allows architectures to define arch_s2ram_{en,dis}able_irqs in their
-> asm/suspend.h to have control over this step.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> 
-> ---
->  kernel/power/main.c |   14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-> 
-> --- wireless-dev.orig/kernel/power/main.c	2007-04-17 18:52:24.536830941 +0200
-> +++ wireless-dev/kernel/power/main.c	2007-04-17 19:09:40.966830941 +0200
-> @@ -128,13 +128,22 @@ static int suspend_prepare(suspend_state
->  	return error;
->  }
->  
-> +#ifndef arch_s2ram_disable_irqs
-> +#define arch_s2ram_disable_irqs(flags) local_irq_save(*flags)
-> +#endif
-> +
-> +#ifndef arch_s2ram_enable_irqs
-> +#define arch_s2ram_enable_irqs(flags) local_irq_restore(*flags)
-> +#endif
+                                      EURO MILLION E-LOTTERY
+                                      Ferdinand-Sauerbruch-Strasse2 
+                                      DE-56073 Koblenz,
+                                      9XF
+                                      Germany. 
+Reference Number: LRP/19-DE/9317                                    
+Batch: LRP/06/41
+ 
+DEAR WINNER,
+      
+       We are pleased to inform you of the release, of the results of the EURO
+MILLION E-LOTTERY held on the 06/4/2007, You were entered as dependent clients
+with: Reference Number: LRP/19-DE/9317 and Batch number: LRP/06/41.Your email
+address attached to the Ticket number: 15-23-29-41-48-03-06 drew the lucky
+winning number, which consequently won the sweepstake in the first category, 
+You have been approved for a payment of 1,000,000 Euro  (ONE MILLION EURO).
+Please contact the fiduciary agent whose details are stated below to begin the
+processing of your claim. Once again congratulation from the entire staffs of
+Euro Million E-lottery. 
 
-Can't you just make this a "weak" symbol and override it in your ppc
-code if you really need it, and make a "real" function here in this file
-for all other arches?
-
-thanks,
-
-greg k-h
+CONTACT;
+Sir. Billy Moore
+Foreign Services Manager,
+Email: info.euromillionagent@yahoo.co.uk  
+ 
+ 
+Yours Sincerely,
+MS GLORIA EDWARDS 
+(Lottery Coordinator/Director)
+EURO MILLION E-LOTTERY        
