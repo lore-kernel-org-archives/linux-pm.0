@@ -1,15 +1,16 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
-Date: Fri, 20 Apr 2007 10:39:51 -0700
-Message-ID: <20070420173951.GB14778@kroah.com>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] s2ram: add arch irq disable/enable hooks
+Date: Fri, 20 Apr 2007 21:37:18 +0200
+Message-ID: <1177097838.5902.10.camel@johannes.berg>
 References: <1176980411.6141.83.camel@johannes.berg>
 	<20070420065731.GA5831@kroah.com>
 	<1177083093.5902.3.camel@johannes.berg>
+	<20070420173951.GB14778@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1177083093.5902.3.camel@johannes.berg>
+In-Reply-To: <20070420173951.GB14778@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +20,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: Greg KH <greg@kroah.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 05:31:33PM +0200, Johannes Berg wrote:
-> On Fri, 2007-04-20 at 06:57 +0000, Greg KH wrote:
-> 
-> > Can't you just make this a "weak" symbol and override it in your ppc
-> > code if you really need it, and make a "real" function here in this file
-> > for all other arches?
-> 
-> I'm not opposed to that. How do I do that?
+Thanks. Does this look good?
 
-Look at the other examples in the kernel, pcibios_disable_device is one
-such example.
+Haven't tested it yet but I don't see a reason it shouldn't work for me.
 
-thanks,
+Sparse will probably complain about this, should I define them
+somewhere?
 
-greg k-h
+---
+ kernel/power/main.c |   27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
+
+--- wireless-dev.orig/kernel/power/main.c	2007-04-20 21:34:01.531107385 +0200
++++ wireless-dev/kernel/power/main.c	2007-04-20 21:34:02.141107385 +0200
+@@ -128,13 +128,35 @@ static int suspend_prepare(suspend_state
+ 	return error;
+ }
+ 
++/**
++ * arch_s2ram_disable_irqs - disable IRQs for suspend
++ *
++ * Disables IRQs (in the default case) and allows architectures
++ * to override it if more needs to be done.
++ */
++void __attribute__ ((weak)) arch_s2ram_disable_irqs(unsigned long *flags)
++{
++	local_irq_save(*flags);
++}
++
++/**
++ * arch_s2ram_enable_irqs - enable IRQs after suspend
++ *
++ * Enables IRQs (in the default case) and allows architectures
++ * to override it if more needs to be done.
++ */
++void __attribute__ ((weak)) arch_s2ram_enable_irqs(unsigned long *flags)
++{
++	local_irq_restore(*flags);
++}
+ 
+ int suspend_enter(suspend_state_t state)
+ {
+ 	int error = 0;
+ 	unsigned long flags;
+ 
+-	local_irq_save(flags);
++	arch_s2ram_disable_irqs(&flags);
++	BUG_ON(!irqs_disabled());
+ 
+ 	if ((error = device_power_down(PMSG_SUSPEND))) {
+ 		printk(KERN_ERR "Some devices failed to power down\n");
+@@ -143,7 +165,8 @@ int suspend_enter(suspend_state_t state)
+ 	error = pm_ops->enter(state);
+ 	device_power_up();
+  Done:
+-	local_irq_restore(flags);
++	arch_s2ram_enable_irqs(&flags);
++	BUG_ON(irqs_disabled());
+ 	return error;
+ }
+ 
