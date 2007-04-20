@@ -1,13 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
-Date: Fri, 20 Apr 2007 17:31:33 +0200
-Message-ID: <1177083093.5902.3.camel@johannes.berg>
+Date: Fri, 20 Apr 2007 17:34:25 +0200
+Message-ID: <1177083265.5902.6.camel@johannes.berg>
 References: <1176980411.6141.83.camel@johannes.berg>
-	<20070420065731.GA5831@kroah.com>
+	<20070419145508.4a6d2055.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2062326145558298131=="
+Content-Type: multipart/mixed; boundary="===============5299878062972027816=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070420065731.GA5831@kroah.com>
+In-Reply-To: <20070419145508.4a6d2055.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.osdl.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============2062326145558298131==
+--===============5299878062972027816==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-ZuA7wSiEkcRRQXBt/Qdb"
+	boundary="=-pxUrzUUQe8gM+FW/t8Lc"
 
 
---=-ZuA7wSiEkcRRQXBt/Qdb
+--=-pxUrzUUQe8gM+FW/t8Lc
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-04-20 at 06:57 +0000, Greg KH wrote:
+On Thu, 2007-04-19 at 14:55 -0700, Andrew Morton wrote:
 
-> Can't you just make this a "weak" symbol and override it in your ppc
-> code if you really need it, and make a "real" function here in this file
-> for all other arches?
+> what on earth is a decrementer?
 
-I'm not opposed to that. How do I do that?
+BenH explained it here:
+http://thread.gmane.org/gmane.linux.power-management.general/5088/focus=3D5=
+230
+
+> It might be nice to identify which arch header is supposed to define
+> arch_s2ram_disable_irqs, perhaps via an explicit inclusion of that header=
+.
+
+It's supposed to go into asm/suspend.h which is included from
+linux/suspend.h. I thought about doing it explicitly but opted against
+it in the end. But if I change it to be a weak symbol (somebody tell me
+how to please) then that will be moot.
 
 johannes
 
---=-ZuA7wSiEkcRRQXBt/Qdb
+--=-pxUrzUUQe8gM+FW/t8Lc
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGKNzV/ETPhpq3jKURApSwAKCaTI4lMEHB21P1nn5TyqZKor4KPwCfbGrq
-QSAPQQ/dBq/SpviGTxDErJM=
-=ahJY
+iD8DBQBGKN2B/ETPhpq3jKURAvNDAJ97fUiwVZIO1RXD/mvnhMVbByiJywCcC5zy
+SkUL9BzNuA+7vT5bYuTQmd8=
+=iynn
 -----END PGP SIGNATURE-----
 
---=-ZuA7wSiEkcRRQXBt/Qdb--
+--=-pxUrzUUQe8gM+FW/t8Lc--
 
 
---===============2062326145558298131==
+--===============5299878062972027816==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============2062326145558298131==--
+--===============5299878062972027816==--
