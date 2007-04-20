@@ -1,13 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
-Date: Fri, 20 Apr 2007 17:34:25 +0200
-Message-ID: <1177083265.5902.6.camel@johannes.berg>
-References: <1176980411.6141.83.camel@johannes.berg>
-	<20070419145508.4a6d2055.akpm@linux-foundation.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Date: Fri, 20 Apr 2007 12:03:08 -0400
+Message-ID: <20070420160308.GB20118@redhat.com>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	<20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org>
+	<20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org>
+	<20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org>
+	<20070420145126.GC25051@redhat.com> <4628DC0A.60707@goop.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5299878062972027816=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070419145508.4a6d2055.akpm@linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <4628DC0A.60707@goop.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,63 +19,42 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: gregkh@suse.de, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.osdl.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Apr 20, 2007 at 08:28:10AM -0700, Jeremy Fitzhardinge wrote:
+ > Dave Jones wrote:
+ > > -BUG: at arch/i386/kernel/sched-clock.c:170 init_sched_clock()
+ > > - [<c01091b5>] show_trace_log_lvl+0x1a/0x30
+ > > - [<c010980c>] show_trace+0x12/0x14
+ > > - [<c01098cb>] dump_stack+0x16/0x18
+ > > - [<c0468dbd>] init_sched_clock+0x58/0x9b
+ > > - [<c0461502>] init+0x14b/0x241
+ > > - [<c0108d97>] kernel_thread_helper+0x7/0x10
+ > > - =======================
+ > >
+ > > heh, one for Ingo :)
+ > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
 
---===============5299878062972027816==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pxUrzUUQe8gM+FW/t8Lc"
+Ah, I saw you patched in CFS too, and thought it may be related.
 
+ > > So most of the differences seem to be BIOS/firmware rather than hardware. 
+ > > The PCI bus layout is identical for eg.
+ > 
+ > Do you have Intel wireless?  I realized one chance I'd made was to swap
+ > the Atheros wireless with Intel, since it just seems to work better
+ > overall.  I'd never had any major suspend/resume problems that I could
+ > attribute to madwifi though (lots of minor wifi-related ones though).
 
---=-pxUrzUUQe8gM+FW/t8Lc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+yeah, the intel wireless.  Same as teh one in your pci.gz attachment..
+03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network Connection (rev 02)
+	Subsystem: Intel Corporation Unknown device 1010
+	Flags: bus master, fast devsel, latency 0, IRQ 21
 
-On Thu, 2007-04-19 at 14:55 -0700, Andrew Morton wrote:
+	Dave
 
-> what on earth is a decrementer?
-
-BenH explained it here:
-http://thread.gmane.org/gmane.linux.power-management.general/5088/focus=3D5=
-230
-
-> It might be nice to identify which arch header is supposed to define
-> arch_s2ram_disable_irqs, perhaps via an explicit inclusion of that header=
-.
-
-It's supposed to go into asm/suspend.h which is included from
-linux/suspend.h. I thought about doing it explicitly but opted against
-it in the end. But if I change it to be a weak symbol (somebody tell me
-how to please) then that will be moot.
-
-johannes
-
---=-pxUrzUUQe8gM+FW/t8Lc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGKN2B/ETPhpq3jKURAvNDAJ97fUiwVZIO1RXD/mvnhMVbByiJywCcC5zy
-SkUL9BzNuA+7vT5bYuTQmd8=
-=iynn
------END PGP SIGNATURE-----
-
---=-pxUrzUUQe8gM+FW/t8Lc--
-
-
---===============5299878062972027816==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5299878062972027816==--
+-- 
+http://www.codemonkey.org.uk
