@@ -1,68 +1,33 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
-Date: Thu, 19 Apr 2007 14:55:08 -0700
-Message-ID: <20070419145508.4a6d2055.akpm@linux-foundation.org>
-References: <1176980411.6141.83.camel@johannes.berg>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Date: Thu, 19 Apr 2007 21:57:15 -0700
+Message-ID: <4628482B.6040804@goop.org>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1176980411.6141.83.camel@johannes.berg>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161152AbXDTE5P@vger.kernel.org>
+In-Reply-To: <20070416003723.GM3691@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 19 Apr 2007 13:00:11 +0200
-Johannes Berg <johannes@sipsolutions.net> wrote:
+Adrian Bunk wrote:
+> Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+>              workaround: booting with "hpet=disable"
+> References : http://lkml.org/lkml/2007/3/13/3
+> Submitter  : Dave Jones <davej@redhat.com>
+>              Jeremy Fitzhardinge <jeremy@goop.org>
+> Caused-By  : PCI merge
+>              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+> Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+>              Rafael J. Wysocki <rjw@sisk.pl>
+> Status     : unknown
+>   
 
-> For powermac, we need to do some things between suspending devices and
-> device_power_off, for example setting the decrementer. This patch
-> allows architectures to define arch_s2ram_{en,dis}able_irqs in their
-> asm/suspend.h to have control over this step.
-> 
+OK. 2.6.21-rc7 suspend/resume works perfectly for me.  It's the first
+kernel version in a long time.  I have no workarounds or special boot
+options.  It's using hpet as the clocksource.
 
-what on earth is a decrementer?
-
-> 
-> ---
->  kernel/power/main.c |   14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-> 
-> --- wireless-dev.orig/kernel/power/main.c	2007-04-17 18:52:24.536830941 +0200
-> +++ wireless-dev/kernel/power/main.c	2007-04-17 19:09:40.966830941 +0200
-> @@ -128,13 +128,22 @@ static int suspend_prepare(suspend_state
->  	return error;
->  }
->  
-> +#ifndef arch_s2ram_disable_irqs
-> +#define arch_s2ram_disable_irqs(flags) local_irq_save(*flags)
-> +#endif
-> +
-> +#ifndef arch_s2ram_enable_irqs
-> +#define arch_s2ram_enable_irqs(flags) local_irq_restore(*flags)
-> +#endif
-> +
->  
->  int suspend_enter(suspend_state_t state)
->  {
->  	int error = 0;
->  	unsigned long flags;
->  
-> -	local_irq_save(flags);
-> +	arch_s2ram_disable_irqs(&flags);
-
-hm, ugly.  We could use attribute(weak) here, so we don't force
-architectures to implement this with a macro.  But whatever.
-
-
-It might be nice to identify which arch header is supposed to define
-arch_s2ram_disable_irqs, perhaps via an explicit inclusion of that header.
+    J
