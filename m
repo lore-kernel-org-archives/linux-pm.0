@@ -1,16 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
-Date: Sun, 22 Apr 2007 13:13:43 +0000
-Message-ID: <20070422131343.GD4236@ucw.cz>
-References: <1176980411.6141.83.camel@johannes.berg>
-	<200704210841.18581.david-b@pacbell.net>
-	<20070421214405.GA2758@elf.ucw.cz>
-	<200704212005.55743.david-b@pacbell.net>
+Subject: Re: [RFC][PATCH -mm 2/2] PM: Introduce suspend notifiers
+Date: Sun, 22 Apr 2007 13:00:34 +0000
+Message-ID: <20070422130034.GB4236@ucw.cz>
+References: <200704220002.37083.rjw@sisk.pl> <200704220007.14028.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200704212005.55743.david-b@pacbell.net>
+In-Reply-To: <200704220007.14028.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +17,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm <linux-pm@lists.osdl.org>, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2007-04-21 20:05:55, David Brownell wrote:
-> On Saturday 21 April 2007, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > >  int suspend_enter(suspend_state_t state)
-> > > >  {
-> > > >  	int error = 0;
-> > > > -	unsigned long flags;
-> > > >  
-> > > > -	local_irq_save(flags);
-> > > > +	arch_s2ram_disable_irqs();
-> > > 
-> > > Sorry for not highlighting this before, but these are badly misnamed.
-> > > They apply for every system suspend state except PM_SUSPEND_DISK ...
-> > > NOT just suspend-to-ram, as specified by the function name.
-> > 
-> > Every suspend state means "standby" and "s2ram" in this context. I
-> > think this name is better than alternatives.
-> 
-> Every suspend state is **NOT** s2ram though.
-> 
-> This is a very straightforward point.  A function that's
-> called on non-S2RAM paths shouldn't be named as if it's
-> only for S2RAM.
+Hi!
 
-And the function that's called for s2ram+standby should not be named
-as if it's also for swsusp...
 
-> Ergo, those two functions are misnamed.  End of story.
+> Index: linux-2.6.21-rc6-mm1/Documentation/power/suspend-notifiers.txt
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.21-rc6-mm1/Documentation/power/suspend-notifiers.txt	2007-04-21 23:24:50.000000000 +0200
+> @@ -0,0 +1,41 @@
+> +Suspend notifiers
+> +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
+> +
+> +There are some operations that device drivers may want to carry out in their
+> +.suspend() routines, but shouldn't, because they can cause a suspend to fail.
+> +For example, a driver may want to allocate a substantial amount of memory
+> +(like 50 MB) in .suspend(), but that shouldn't be done after the swsusp's memory
+> +shrinker has run.  Also, there may be some operations, that subsystems may want
+> +to carry out before a suspend or after a resume, requiring the system to be
+> +fully functional, so the drivers' .suspend() and .resume() routines are not
+> +suitable for this purpose.
+> +
+> +The subsystems that have such needs can register suspend notifiers that will be
+> +notified of the following events by the suspend core:
+> +
+> +SUSPEND_PREPARE		the system is going to suspend, tasks will be frozen
+> +			immediately
+> +
+> +SUSPEND_ENTER_PREPARE	tasks have been frozen, memory is going to be freed
+> +			and devices are going to be suspended
+> +
+> +SUSPEND_THAW_PREPARE	devices have been resumed, tasks will be thawed
+> +			immediately
+> +
+> +SUSPEND_FINISHED	the resume is complete, the system is fully functional
 
-...which is not only misnamed, it is also actively confusing. (And
-someone _will_ ask me to call that function from swsusp, too.
++ This hook is called even if suspend fails, so that we do not
++ leak memory.
 
-...maybe we could solve it with a big fat comment?
 
-							Pavel
+?
+
+Looks ok to me.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
