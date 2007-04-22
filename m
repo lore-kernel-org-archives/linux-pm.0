@@ -1,13 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: [patch 2.6.21-rc7] kconfig mentioneds 'hibernation' not
-	just swsusp
-Date: Sat, 21 Apr 2007 20:02:59 -0700
-Message-ID: <200704212002.59554.david-b@pacbell.net>
+Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
+Date: Sat, 21 Apr 2007 20:10:50 -0700
+Message-ID: <200704212010.51139.david-b@pacbell.net>
+References: <1176980411.6141.83.camel@johannes.berg>
+	<200704211006.58857.david-b@pacbell.net>
+	<20070421214557.GB2758@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070421214557.GB2758@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,48 +21,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Clarify that "software suspend" is what's called "hibernation" in most
-user interfaces, shrinking a terminology gap.  (Examples include Gnome
-and MS-Windows.)
+On Saturday 21 April 2007, Pavel Machek wrote:
 
-Also provide a more succinct description of what it does, so you won't
-have to read the whole novel in Kconfig; and highlights just why the
-lack of BIOS requirements for swsusp are a big deal.
+> > system checkpoint/restore framework.  And even userspace makes
+> > that distinction clear, calling it "Hibernate" not "Suspend".
+> 
+> Gnome deciding to confuse their users is _their_ problem.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- kernel/power/Kconfig |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+Hot news flash for Pavel:  "hibernate" is much more widely used
+and understood than "software suspend".  Everyone using Windows
+has already been trained in what it means.  But even today lots
+of folk scratch their heads at "software suspend" ... "gee, isn't
+all suspending done by software?"
 
---- g26.orig/kernel/power/Kconfig	2007-04-21 10:07:18.000000000 -0700
-+++ g26/kernel/power/Kconfig	2007-04-21 10:23:24.000000000 -0700
-@@ -78,17 +78,22 @@ config PM_SYSFS_DEPRECATED
- 	  are likely to be bus or driver specific.
- 
- config SOFTWARE_SUSPEND
--	bool "Software Suspend"
-+	bool "Software Suspend (Hibernation)"
- 	depends on PM && SWAP && ((X86 && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
- 	---help---
--	  Enable the suspend to disk (STD) functionality.
-+	  Enable the suspend to disk (STD) functionality, which is usually
-+	  called "hibernation" in user interfaces.  STD checkpoints the
-+	  system and powers it off; and restores that checkpoint on reboot.
- 
- 	  You can suspend your machine with 'echo disk > /sys/power/state'.
- 	  Alternatively, you can use the additional userland tools available
- 	  from <http://suspend.sf.net>.
- 
- 	  In principle it does not require ACPI or APM, although for example
--	  ACPI will be used if available.
-+	  ACPI will be used for the final steps when it is available.  One
-+	  of the reasons to use software suspend is that the firmware hooks
-+	  for suspend states like suspend-to-RAM (STR) often don't work very
-+	  well with Linux.
- 
- 	  It creates an image which is saved in your active swap. Upon the next
- 	  boot, pass the 'resume=/dev/swappartition' argument to the kernel to
+
+> > I feel a Kconfig patch coming on ... ;)
+> 
+> I do not think confusion from a change is worth the benefit.
+
+Glad you waited to see the patch before you objected!
+
+Oh wait -- you didn't wait.  Sorry, I seem to have
+misunderstood the process here.  Could you explain
+this new revised Linux patch process to me?
+
+- Dave
