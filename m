@@ -1,13 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 2/2] PM: Introduce suspend notifiers
-Date: Sun, 22 Apr 2007 13:00:34 +0000
-Message-ID: <20070422130034.GB4236@ucw.cz>
-References: <200704220002.37083.rjw@sisk.pl> <200704220007.14028.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Free more memory
+Date: Sun, 22 Apr 2007 12:55:23 +0000
+Message-ID: <20070422125523.GA4236@ucw.cz>
+References: <200704220002.37083.rjw@sisk.pl> <200704220005.39942.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200704220007.14028.rjw@sisk.pl>
+In-Reply-To: <200704220005.39942.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,46 +23,17 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
+> Move the definition of PAGES_FOR_IO to kernel/power/power.h and introduce
+> SPARE_PAGES representing the number of pages that should be freed by the
+> swsusp's memory shrinker in addition to PAGES_FOR_IO so that device drivers can
+> allocate some memory (up to 1 MB total) in their .suspend() routines without
+> causing the suspend to fail.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> Index: linux-2.6.21-rc6-mm1/Documentation/power/suspend-notifiers.txt
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6.21-rc6-mm1/Documentation/power/suspend-notifiers.txt	2007-04-21 23:24:50.000000000 +0200
-> @@ -0,0 +1,41 @@
-> +Suspend notifiers
-> +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
-> +
-> +There are some operations that device drivers may want to carry out in their
-> +.suspend() routines, but shouldn't, because they can cause a suspend to fail.
-> +For example, a driver may want to allocate a substantial amount of memory
-> +(like 50 MB) in .suspend(), but that shouldn't be done after the swsusp's memory
-> +shrinker has run.  Also, there may be some operations, that subsystems may want
-> +to carry out before a suspend or after a resume, requiring the system to be
-> +fully functional, so the drivers' .suspend() and .resume() routines are not
-> +suitable for this purpose.
-> +
-> +The subsystems that have such needs can register suspend notifiers that will be
-> +notified of the following events by the suspend core:
-> +
-> +SUSPEND_PREPARE		the system is going to suspend, tasks will be frozen
-> +			immediately
-> +
-> +SUSPEND_ENTER_PREPARE	tasks have been frozen, memory is going to be freed
-> +			and devices are going to be suspended
-> +
-> +SUSPEND_THAW_PREPARE	devices have been resumed, tasks will be thawed
-> +			immediately
-> +
-> +SUSPEND_FINISHED	the resume is complete, the system is fully functional
+ACK.
 
-+ This hook is called even if suspend fails, so that we do not
-+ leak memory.
-
-
-?
-
-Looks ok to me.
-
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
