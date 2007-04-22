@@ -1,13 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Free more memory
-Date: Sun, 22 Apr 2007 12:55:23 +0000
-Message-ID: <20070422125523.GA4236@ucw.cz>
-References: <200704220002.37083.rjw@sisk.pl> <200704220005.39942.rjw@sisk.pl>
+Subject: Re: [patch 2.6.21-rc7] kconfig mentioneds 'hibernation'
+	not just swsusp
+Date: Sun, 22 Apr 2007 16:58:27 +0200
+Message-ID: <20070422145827.GC3118@elf.ucw.cz>
+References: <200704212002.59554.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200704220005.39942.rjw@sisk.pl>
+In-Reply-To: <200704212002.59554.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,23 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Move the definition of PAGES_FOR_IO to kernel/power/power.h and introduce
-> SPARE_PAGES representing the number of pages that should be freed by the
-> swsusp's memory shrinker in addition to PAGES_FOR_IO so that device drivers can
-> allocate some memory (up to 1 MB total) in their .suspend() routines without
-> causing the suspend to fail.
+> Clarify that "software suspend" is what's called "hibernation" in most
+> user interfaces, shrinking a terminology gap.  (Examples include Gnome
+> and MS-Windows.)
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Also provide a more succinct description of what it does, so you won't
+> have to read the whole novel in Kconfig; and highlights just why the
+> lack of BIOS requirements for swsusp are a big deal.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
 ACK.
-
-							Pavel
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
