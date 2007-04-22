@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Free more memory
-Date: Sun, 22 Apr 2007 11:37:33 +0200
-Message-ID: <200704221137.34104.rjw@sisk.pl>
-References: <200704220002.37083.rjw@sisk.pl> <200704220005.39942.rjw@sisk.pl>
-	<1177198299.4036.8.camel@nigel.suspend2.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
+Date: Sun, 22 Apr 2007 13:09:49 +0000
+Message-ID: <20070422130948.GC4236@ucw.cz>
+References: <1176980411.6141.83.camel@johannes.berg>
+	<200704211006.58857.david-b@pacbell.net>
+	<20070421214557.GB2758@elf.ucw.cz>
+	<200704212010.51139.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177198299.4036.8.camel@nigel.suspend2.net>
 Content-Disposition: inline
+In-Reply-To: <200704212010.51139.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@nigel.suspend2.net
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 22 April 2007 01:31, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Sun, 2007-04-22 at 00:05 +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi!
+
+> > > system checkpoint/restore framework.  And even userspace makes
+> > > that distinction clear, calling it "Hibernate" not "Suspend".
 > > 
-> > Move the definition of PAGES_FOR_IO to kernel/power/power.h and introduce
-> > SPARE_PAGES representing the number of pages that should be freed by the
-> > swsusp's memory shrinker in addition to PAGES_FOR_IO so that device drivers can
-> > allocate some memory (up to 1 MB total) in their .suspend() routines without
-> > causing the suspend to fail.
+> > Gnome deciding to confuse their users is _their_ problem.
 > 
-> 1MB is not going to be enough for people with DRI. I have a cycle on my
-> machine recording 3510 extra pages (13 meg) allocated during the atomic
-> copy, and I know there are others with larger numbers.
+> Hot news flash for Pavel:  "hibernate" is much more widely used
+> and understood than "software suspend".  Everyone using Windows
+> has already been trained in what it means.  But even today lots
+> of folk scratch their heads at "software suspend" ... "gee, isn't
+> all suspending done by software?"
 
-I know.  The other mechanism (ie. notifiers) is for them.
+Well, in apm case it is firmware, not software. That's how the name
+was born.
 
-The idea of this patch is to make it possible to _avoid_ using the notifiers
-if you need only a limited amount of memory.
+> > > I feel a Kconfig patch coming on ... ;)
+> > 
+> > I do not think confusion from a change is worth the benefit.
+> 
+> Glad you waited to see the patch before you objected!
 
-Greetings,
-Rafael
+Uf I thought you were going to
+s/CONFIG_SOFTWARE_SUSPEND/CONFIG/HIBERNATION/ over the kernel, and
+wanted to spare you some time.
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
