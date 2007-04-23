@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Free more memory
-Date: Mon, 23 Apr 2007 21:59:17 +0200
-Message-ID: <200704232159.18003.rjw@sisk.pl>
-References: <200704220002.37083.rjw@sisk.pl> <200704221137.34104.rjw@sisk.pl>
-	<1177280555.18406.71.camel@nigel.suspend2.net>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [3/3] 2.6.21-rc7: known regressions (v2)
+Date: Mon, 23 Apr 2007 23:49:09 +0200
+Message-ID: <20070423214909.GD3468@stusta.de>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177280555.18406.71.camel@nigel.suspend2.net>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +17,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@nigel.suspend2.net
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: discuss@x86-64.org, Mikael Pettersson <mikpe@it.uu.se>, James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, John Stultz <johnstul@us.ibm.com>, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ak@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, Guilherme Schroeder <guilherme@centralinf.com.br>, Thomas Gleixner <tglx@linutronix.de>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 23 April 2007 00:22, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Sun, 2007-04-22 at 11:37 +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 22 April 2007 01:31, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Sun, 2007-04-22 at 00:05 +0200, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Move the definition of PAGES_FOR_IO to kernel/power/power.h and introduce
-> > > > SPARE_PAGES representing the number of pages that should be freed by the
-> > > > swsusp's memory shrinker in addition to PAGES_FOR_IO so that device drivers can
-> > > > allocate some memory (up to 1 MB total) in their .suspend() routines without
-> > > > causing the suspend to fail.
-> > > 
-> > > 1MB is not going to be enough for people with DRI. I have a cycle on my
-> > > machine recording 3510 extra pages (13 meg) allocated during the atomic
-> > > copy, and I know there are others with larger numbers.
-> > 
-> > I know.  The other mechanism (ie. notifiers) is for them.
-> > 
-> > The idea of this patch is to make it possible to _avoid_ using the notifiers
-> > if you need only a limited amount of memory.
-> 
-> That's fine when the notifiers are actually used, but for the moment....
+This email lists some known regressions in Linus' tree compared to 2.6.20.
 
-I know, but if I make SPARE_PAGES large enough for everyone, then no one will
-have any reason to use the notifiers. :-)
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-Greetings,
-Rafael
+Due to the huge amount of recipients, please trim the Cc when answering.
+
+
+Subject    : HPET enabled freeze my machine at boot
+             workaround: clocksource=acpi_pm
+References : http://lkml.org/lkml/2007/4/19/370
+Submitter  : Guilherme Schroeder <guilherme@centralinf.com.br>
+Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+             commit 5d8b34fdcb384161552d01ee8f34af5ff11f9684
+Handled-By : John Stultz <johnstul@us.ibm.com>
+Status     : problem is being debugged
+
+
+Subject    : acpi_pm clocksource loses time on x86-64
+References : http://lkml.org/lkml/2007/4/17/143
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Handled-By : John Stultz <johnstul@us.ibm.com>
+Status     : problem is being debugged
+
+
+Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
+References : http://lkml.org/lkml/2007/3/25/217
+Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
+
+
+Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+             workaround: CONFIG_FB_BACKLIGHT=n
+References : http://lkml.org/lkml/2007/3/13/3
+Submitter  : Dave Jones <davej@redhat.com>
+Caused-By  : PCI merge
+             commit 78149df6d565c36675463352d0bfe0000b02b7a7
+Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+             Rafael J. Wysocki <rjw@sisk.pl>
+             Antonino A. Daplas <adaplas@gmail.com>
+Status     : unknown
+
+
+Subject    : suspend to disk works only once
+             workaround: "echo shutdown > /sys/power/disk"
+References : http://lkml.org/lkml/2007/4/13/240
+Submitter  : Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
+             commit ed746e3b18f4df18afa3763155972c5835f284c5
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+             Dmitry Torokhov <dtor@insightbb.com>
+Status     : problem is being debugged
