@@ -1,11 +1,14 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Update lists.osdl.org to lists.linux-foundation.org
-Date: Mon, 23 Apr 2007 17:59:37 +0900
-Message-ID: <20070423085935.GJ4272@verge.net.au>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch 2.6.21-rc5-git 1/3] new platform_enable_wake()
+	hook; use it in PCI
+Date: Mon, 23 Apr 2007 12:51:06 +0000
+Message-ID: <20070423125106.GA4077__30230.287629138$1177332745$gmane$org@ucw.cz>
+References: <200704051248.56703.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <200704051248.56703.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,58 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: bridge@lists.linux-foundation.org, netem@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-lists.linux-foundation.org seems to be funtional now,
-so I guess it is as good a time as any to update
-the MAINTAINERS file.
+Hi!
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
+>  static inline int device_suspend(pm_message_t state)
+> --- g26.orig/drivers/base/power/main.c	2007-04-04 13:03:33.000000000 -0700
+> +++ g26/drivers/base/power/main.c	2007-04-04 13:03:34.000000000 -0700
+> @@ -29,6 +29,9 @@ LIST_HEAD(dpm_off_irq);
+>  DECLARE_MUTEX(dpm_sem);
+>  DECLARE_MUTEX(dpm_list_sem);
+>  
+> +int (*platform_enable_wakeup)(struct device *dev, int is_on) = NULL;
 
---- 
-There are still some http links to osdl.org, but
-I'm not sure if they should be updated, and if so,
-what they should be updated to.
+Static variables do not need zero initializers.
 
-Index: linux-2.6/MAINTAINERS
-===================================================================
---- linux-2.6.orig/MAINTAINERS	2007-04-23 17:53:26.000000000 +0900
-+++ linux-2.6/MAINTAINERS	2007-04-23 17:55:25.000000000 +0900
-@@ -1318,7 +1318,7 @@ S:	Maintained
- ETHERNET BRIDGE
- P:	Stephen Hemminger
- M:	shemminger@linux-foundation.org
--L:	bridge@lists.osdl.org
-+L:	bridge@lists.linux-foundation.org
- W:	http://bridge.sourceforge.net/
- S:	Maintained
- 
-@@ -1978,7 +1978,7 @@ S:	Maintained 
- 
- KERNEL JANITORS
- P:	Several
--L:	kernel-janitors@lists.osdl.org
-+L:	kernel-janitors@lists.linux-foundation.org
- W:	http://www.kerneljanitors.org/
- S:	Maintained
- 
-@@ -2339,7 +2339,7 @@ S:	Maintained
- NETEM NETWORK EMULATOR
- P:	Stephen Hemminger
- M:	shemminger@linux-foundation.org
--L:	netem@lists.osdl.org
-+L:	netem@lists.linux-foundation.org
- S:	Maintained
- 
- NETFILTER/IPTABLES/IPCHAINS
-@@ -3068,7 +3068,7 @@ S:	Supported
- SOFTWARE SUSPEND:
- P:	Pavel Machek
- M:	pavel@suse.cz
--L:	linux-pm@lists.osdl.org
-+L:	linux-pm@lists.linux-foundation.org
- S:	Maintained
- 
- SONIC NETWORK DRIVER
+Otherwise it looks ok.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
