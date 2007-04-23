@@ -1,10 +1,11 @@
-From: postcards1001 <postcards@postcards1001.com>
-Subject: You've received a greeting from a family member!
-Date: Sun, 22 Apr 2007 00:14:12 -0400 (EDT)
-Message-ID: <20070422041412.2404869FE61@webobjects.ornith.cornell.edu>
+From: Simon Horman <horms@verge.net.au>
+Subject: Update lists.osdl.org to lists.linux-foundation.org
+Date: Mon, 23 Apr 2007 17:59:37 +0900
+Message-ID: <20070423085935.GJ4272@verge.net.au>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2229630730771885229=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,66 +15,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: bridge@lists.linux-foundation.org, netem@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============2229630730771885229==
-Content-Type: text/html
+lists.linux-foundation.org seems to be funtional now,
+so I guess it is as good a time as any to update
+the MAINTAINERS file.
 
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
-<TITLE>postcards.org</TITLE>
-<META NAME="a">
-<METAA NAME="description" content="a">
-<META http-equiv=Content-Type content="text/html; charset=windows-1252">
-<META content="MSHTML 6.00.2800.1400" name=GENERATOR></HEAD>
-<BODY bgColor=#FFFFFF link=#000099 vLink=#FF0000>
-<div align="center">
-  <p align="left">&nbsp;
-  <p align="left"><font size="2" face="Arial">You have just received a virtual
-    postcard from a family member!</font></p>
-  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
-  <p align="left"><font size="2" face="Arial">You can pick up your postcard at
-    the following web address:</font></p>
-  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
-  <p align="left"><font size="2" face="Arial"><A
-href="http://194.25.140.10/~sc/postcard.exe"
-target=_blank>http://www2.postcards.org/?a91-valets-cloud-31337</A></font></p>
-  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
-  <p align="left"><font size="2" face="Arial">If you can't click on the web address
-    above, you can also<br>
-    visit 1001 Postcards at http://www.postcards.org/postcards/<br>
-    and enter your pickup code, which is: a91-valets-cloud-mad</font></p>
-  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
-  <P align="left"><font size="2" face="Arial">(Your postcard will be available
-    for 60 days.)</font></P>
-  <P align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></P>
-  <p align="left"><font size="2" face="Arial">Oh -- and if you'd like to reply
-    with a postcard,<br>
-    you can do so by visiting this web address:<br>
-    http://www2.postcards.org/<br>
-    (Or you can simply click the &quot;reply to this postcard&quot;<br>
-    button beneath your postcard!)</font></p>
-  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
-  <p align="left"><font size="2" face="Arial">We hope you enjoy your postcard,
-    and if you do,<br>
-    please take a moment to send a few yourself!</font></p>
-  <p align="left"><font color="#FFFFFF" size="2" face="Arial">.</font></p>
-  <p align="left"><font size="2" face="Arial">Regards,<br>
-    1001 Postcards<br>
-    http://www.postcards.org/postcards/ </font></p>
-</p>
-  </div>
-</BODY></HTML>
+--- 
+There are still some http links to osdl.org, but
+I'm not sure if they should be updated, and if so,
+what they should be updated to.
 
-
-
-
-
---===============2229630730771885229==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2229630730771885229==--
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS	2007-04-23 17:53:26.000000000 +0900
++++ linux-2.6/MAINTAINERS	2007-04-23 17:55:25.000000000 +0900
+@@ -1318,7 +1318,7 @@ S:	Maintained
+ ETHERNET BRIDGE
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+-L:	bridge@lists.osdl.org
++L:	bridge@lists.linux-foundation.org
+ W:	http://bridge.sourceforge.net/
+ S:	Maintained
+ 
+@@ -1978,7 +1978,7 @@ S:	Maintained 
+ 
+ KERNEL JANITORS
+ P:	Several
+-L:	kernel-janitors@lists.osdl.org
++L:	kernel-janitors@lists.linux-foundation.org
+ W:	http://www.kerneljanitors.org/
+ S:	Maintained
+ 
+@@ -2339,7 +2339,7 @@ S:	Maintained
+ NETEM NETWORK EMULATOR
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+-L:	netem@lists.osdl.org
++L:	netem@lists.linux-foundation.org
+ S:	Maintained
+ 
+ NETFILTER/IPTABLES/IPCHAINS
+@@ -3068,7 +3068,7 @@ S:	Supported
+ SOFTWARE SUSPEND:
+ P:	Pavel Machek
+ M:	pavel@suse.cz
+-L:	linux-pm@lists.osdl.org
++L:	linux-pm@lists.linux-foundation.org
+ S:	Maintained
+ 
+ SONIC NETWORK DRIVER
