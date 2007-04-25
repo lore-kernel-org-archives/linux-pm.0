@@ -1,10 +1,17 @@
-From: Doctor Bianca <linux-pm@osdl.org>
-Subject: RE: MedHelp 55306
-Date: Tue, 24 Apr 2007 19:30:44 -0700
-Message-ID: <20070425093108.19463.qmail@79e7a634fc8645d>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] s2ram: add arch irq disable/enable hooks
+Date: Tue, 24 Apr 2007 20:45:56 -0700
+Message-ID: <200704242045.56409.david-b@pacbell.net>
+References: <1176980411.6141.83.camel@johannes.berg>
+	<1177422695.3528.24.camel@johannes.berg>
+	<20070424181615.GB15920@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7312137665420954311=="
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070424181615.GB15920@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,84 +19,48 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============7312137665420954311==
-Content-Type: text/html
+On Tuesday 24 April 2007, Pavel Machek wrote:
+> Hi!
+> 
+> > > > This is a very straightforward point.  A function that's
+> > > > called on non-S2RAM paths shouldn't be named as if it's
+> > > > only for S2RAM.
+> > > 
+> > > And the function that's called for s2ram+standby should not be named
+> > > as if it's also for swsusp...
+> > > 
+> > > > Ergo, those two functions are misnamed.  End of story.
+> > > 
+> > > ...which is not only misnamed, it is also actively confusing. (And
+> > > someone _will_ ask me to call that function from swsusp, too.
+> > > 
+> > > ...maybe we could solve it with a big fat comment?
+> > 
+> > So how about we don't call them s2ram which is confusing since s2ram is
+> > only one suspend state we support but call them suspend as David
+> > originally proposed and add a comment that since suspend-to-disk isn't a
+> > true suspend state, they are not called there?
+> 
+> calling them ..._suspend_... and explaining in comment is probably ok.
 
-<style>
-Workers Compensation Tax
-
-COMMENTS:
-Not one of these taxes existed 100 years ago and our nation was the
-most prosperous in the world, had absolutely no national debt, had the
-largest middle class in the world and Mom could stay home to raise the
-kids and be a homemaker.
-
--CB
->
-
-<!This article approaches a subject that needs a lot of public
-discussion.    When a group's religious views can influence world-wide
-and peace,  they become a matter of interest to us all.  These are the
-people who support war in the Mid East. 
-
-In this sentence -- the author sums it up well.  <gj >
-
-"....And in a strange sense, war is kinda good and peace is kinda bad
---  since war is a sign that the end is near and peace on earth is a
-sign of the Antichrist. Any Christian who doesnA?t agree with all this
-is deceived at best and a heretic at worst...."
-
---------------------------------------------------
-
-Troubling Worldview of the 'Rapture-Ready' Christian
-</style><a target="_blank"  href="http://www.litchfieldphoto.com/images//index.html" ><img src="http://www.loganelm.org/images//1.gif">
-<style>
-by Bill Barnwell
-
-When the subject of the "end-times" comes up, many Christians and
-non-Christians donA?t want to talk about it. Some Christians, annoyed
-with all the competing theories and terminology just say, "What
-difference does it make? Jesus is coming back and I just need to be
-ready." Non-Christians just assume that since Christianity isnA?t true,
-then the whole issue doesnA?t matter. Well, actually, it does matter. I
-will submit that the popular doctrines of the Left Behind series pose
-very real threats not only to Christianity, but also to the wider
-culture.
-
-continued at --
-
-<!Hello Everyone,
-
-I have posted once in a while to all of these groups over the years.
-Not a whole lot, but once in a while.  Some of you might remember me,
-others not.
-
-Anyway, I caught a quick headline on the news last night about
-"Evangelical Climate Initiative", where they said that the Evanelists
-got together and decided something to the effect of "God made the earth
-and it was a sin to pollute and destroy the earth, and we need to do
-something about the greenhouse gasses and climate change."  That was
-all the news really had to say.
-
-So I said, that sounds like the Christians are coming around to the way
-the old religions have been thinking for years (Hellinic Paganism,
-Asatru, Wiccan, Druidism, Celtic Paganism, Native American or First
-Nation Shamanism, or any of the other spiritual paths along these
-lines).
-</style>
+Yah, I'm fine with that too.
 
 
---===============7312137665420954311==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-
---===============7312137665420954311==--
+> > Has anybody figured out if (and if yes, where) we should add them to
+> > some header file?
+> 
+> include/linux/pm.h is probably the right place.
+> 
+> Feel free to add my acked-by: and send it to akpm.
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
