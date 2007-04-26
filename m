@@ -1,22 +1,17 @@
-From: Adrian Bunk <bunk@stusta.de>
+From: Len Brown <lenb@kernel.org>
 Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
-Date: Thu, 26 Apr 2007 01:00:23 +0200
-Message-ID: <20070425230023.GG3468__34006.7268968143$1177542074$gmane$org@stusta.de>
+Date: Wed, 25 Apr 2007 20:33:05 -0400
+Message-ID: <200704252033.06288.lenb@kernel.org>
 References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	<20070423214909.GD3468@stusta.de>
 	<20070425040605.6d6b4a82.akpm@linux-foundation.org>
-	<20070425113102.GU3468@stusta.de>
-	<20070425130102.GA10141@redhat.com>
-	<1177509014.29878.12.camel@daplas>
-	<1177509136.29878.14.camel@daplas>
-	<20070425143305.GB27215@redhat.com>
-	<1177514682.4856.24.camel@daplas>
-	<20070425163145.GA6630@redhat.com>
+	<1177524532.6401.17.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1177524532.6401.17.camel@localhost.localdomain>
 Content-Disposition: inline
-In-Reply-To: <20070425163145.GA6630@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,43 +21,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Jones <davej@redhat.com>, "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, linux-pm@lists.linux-foundation.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Simmons <jsimmons@infradead.org>, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Jeremy Fitzhardinge <jeremy@goop.org>, Richard Purdie <rpurdie@rpsys.net>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Len Brown <len.brown@intel.com>, Mikael Pettersson <mikpe@it.uu.se>, Ingo Molnar <mingo@elte.hu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-pm@lists.linux-foundation.org, Guilherme Schroeder <guilherme@centralinf.com.br>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, ak@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 12:31:45PM -0400, Dave Jones wrote:
-> On Wed, Apr 25, 2007 at 11:24:42PM +0800, Antonino A. Daplas wrote:
->  > On Wed, 2007-04-25 at 10:33 -0400, Dave Jones wrote:
->  > > On Wed, Apr 25, 2007 at 09:52:16PM +0800, Antonino A. Daplas wrote:
->  > >  > > And have you tried the following settings:
->  > >  > > FB_BACKLIGHT=y
->  > >  > > ACPI_IBM=n
->  > >  > > ACPI_VIDEO=n
->  > > 
->  > 
->  > BTW, there was one report where resume from RAM resulted in a screen
->  > full of garbage.  It seems that the option acpi_sleep= (or s2ram -a3)
->  > did not work for him anymore.  But it worked with s2ram and other
->  > options. So if you have s2ram, try:
->  > 
->  > s2ram -f -s -a3
->  > s2ram -f -m -a3
->  > s2ram -f -p -m
->  > s2ram -f -p -s
+On Wednesday 25 April 2007 14:08, john stultz wrote:
+> On Wed, 2007-04-25 at 04:06 -0700, Andrew Morton wrote:
+> > On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > This email lists some known regressions in Linus' tree compared to 2.6.20.
+> > > 
+> > > If you find your name in the Cc header, you are either submitter of one
+> > > of the bugs, maintainer of an affectected subsystem or driver, a patch
+> > > of you caused a breakage or I'm considering you in any other way
+> > > possibly involved with one or more of these issues.
+> > > 
+> > > Due to the huge amount of recipients, please trim the Cc when answering.
+> > > 
+> > > 
+> > > Subject    : HPET enabled freeze my machine at boot
+> > >              workaround: clocksource=acpi_pm
+> > > References : http://lkml.org/lkml/2007/4/19/370
+> > > Submitter  : Guilherme Schroeder <guilherme@centralinf.com.br>
+> > > Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+> > >              commit 5d8b34fdcb384161552d01ee8f34af5ff11f9684
+> > > Handled-By : John Stultz <johnstul@us.ibm.com>
+> > > Status     : problem is being debugged
+> > > 
+> > > 
+> > > Subject    : acpi_pm clocksource loses time on x86-64
+> > > References : http://lkml.org/lkml/2007/4/17/143
+> > > Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+> > > Handled-By : John Stultz <johnstul@us.ibm.com>
+> > > Status     : problem is being debugged
+> > > 
+> > > 
+> > > Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
+> > > References : http://lkml.org/lkml/2007/3/25/217
+> > > Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+> > > Status     : unknown
+> > 
+> > That's still rather a lot of bustage from the timekeeping changes.  Is
+> > anything really happening here or have we all given up?
 > 
-> I just did a pull of linus' tree, and it now works for me fine.
-> Adrian, I think we can remove this from the list.
->...
+> 
+> The ACPI PM one is *really* odd as its the same clocksource driver on
+> both arches. I had Mikael cut out the clocksource frequency adjustments,
+> and confirmed both i386 and x86_64 are using the same base freq
+> (confirmed via printks).
 
-Thanks, removed as "seems fixed in -rc8".
+If this chipset's PM-timer loses "several minutes per hour" on x86_64,
+I would expect it to do the same on i386.  I can't imagine what the
+difference could be.  Any possibility it is the 24-bit version
+and we do something funky on wraparound?
 
-> 	Dave
+-Len
 
-cu
-Adrian
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> It almost seems like when booting x86_64 the ACPI PM counter is running
+> slowly! 
+> 
+> Len: Have you ever heard of such a thing? It seems quite unlikely...
+> 
+> 
+> WRT the HPET freeze issue, I'm still digging there. In that case it
+> appears the HPET isn't counting, so timekeeping just stops. I was
+> thinking it might be HRT messing w/ the wrong HPET registers, but so far
+> that hasn't shaken out.
+> 
+> I'll spend some more time on these today and see if we get any further.
+> 
+> thanks
+> -john
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
