@@ -1,11 +1,14 @@
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: [RFC/PATCH 2/2] driver core: power management debugging
-Date: Fri, 27 Apr 2007 15:25:46 +0300 (EEST)
-Message-ID: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC/PATCH 1/2] swsusp: preserve boot-time printk
+	output after resume
+Date: Fri, 27 Apr 2007 14:36:15 +0200
+Message-ID: <20070427123615.GF22250@elf.ucw.cz>
+References: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,101 +18,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
-Cc: nigel@nigel.suspend2.net, pavel@ucw.cz
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Hi!
 
-Add power management related debugging into driver core. Make the
-kernel complain if a device driver lacks bus and class support for
-resume or if a PCI or USB driver does not have a driver specific
-resume function.
+> Nigel, can I please get a sign-off for these if you're okay with them. 
+> Rafael, Pavel, please ACK or NAK. Thanks.
 
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/base/core.c       |   13 +++++++++++++
- drivers/pci/pci-driver.c  |    6 ++++++
- drivers/usb/core/driver.c |    6 ++++++
- include/linux/device.h    |    1 +
- 4 files changed, 26 insertions(+)
+> Adds a new config option CONFIG_PRINTK_NOSAVE which makes the kernel
+> preserve printk() output from boot after resume.  This is useful for
+> debugging hibernation.
 
-Index: 2.6/drivers/base/core.c
-===================================================================
---- 2.6.orig/drivers/base/core.c	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/drivers/base/core.c	2007-04-27 14:43:14.000000000 +0300
-@@ -652,6 +652,18 @@ int device_add(struct device *dev)
- 				class_intf->add_dev(dev, class_intf);
- 		up(&dev->class->sem);
- 	}
-+
-+#ifdef CONFIG_PM
-+	if (!((dev->class && dev->class->resume) ||
-+	      (dev->bus && (dev->bus->resume || dev->bus->resume_early))) &&
-+	    !dev->pm_safe) {
-+		printk(KERN_WARNING "Device driver %s lacks bus and class "
-+				    "support for being resumed.\n",
-+				    kobject_name(&dev->kobj));
-+		dump_stack();
-+	}
-+#endif
-+
-  Done:
-  	kfree(class_name);
- 	put_device(dev);
-@@ -989,6 +1001,7 @@ struct device *device_create(struct clas
- 	dev->class = class;
- 	dev->parent = parent;
- 	dev->release = device_create_release;
-+	dev->pm_safe = 1;
- 
- 	va_start(args, fmt);
- 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
-Index: 2.6/drivers/pci/pci-driver.c
-===================================================================
---- 2.6.orig/drivers/pci/pci-driver.c	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/drivers/pci/pci-driver.c	2007-04-27 14:43:14.000000000 +0300
-@@ -451,6 +451,12 @@ int __pci_register_driver(struct pci_dri
- 	if (error)
- 		driver_unregister(&drv->driver);
- 
-+#ifdef CONFIG_PM
-+	if (!drv->resume)
-+		printk(KERN_WARNING "PCI driver %s lacks driver specific "
-+				    "resume support.\n", drv->name);
-+#endif
-+
- 	return error;
- }
- 
-Index: 2.6/drivers/usb/core/driver.c
-===================================================================
---- 2.6.orig/drivers/usb/core/driver.c	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/drivers/usb/core/driver.c	2007-04-27 14:43:14.000000000 +0300
-@@ -721,6 +721,12 @@ 	int retval = 0;
- 		pr_info("%s: registered new device driver %s\n",
- 			usbcore_name, new_udriver->name);
- 		usbfs_update_special();
-+#ifdef CONFIG_PM
-+		if (!new_udriver->resume)
-+			printk(KERN_WARNING "USB driver %s lacks driver "
-+					    "specific resume support.\n",
-+					    new_udriver->name);
-+#endif
- 	} else {
- 		printk(KERN_ERR "%s: error %d registering device "
- 			"	driver %s\n",
-Index: 2.6/include/linux/device.h
-===================================================================
---- 2.6.orig/include/linux/device.h	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/include/linux/device.h	2007-04-27 14:43:14.000000000 +0300
-@@ -401,6 +401,7 @@ struct device {
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
- 	struct device_type	*type;
- 	unsigned		is_registered:1;
-+	unsigned		pm_safe:1; /* no resume function is safe */
- 	struct device_attribute uevent_attr;
- 	struct device_attribute *devt_attr;
- 
+1. This should not be a config option
+
+
+> @@ -92,9 +93,9 @@ static DEFINE_SPINLOCK(logbuf_lock);
+>   * The indices into log_buf are not constrained to log_buf_len - they
+>   * must be masked before subscripting
+>   */
+> -static unsigned long log_start;	/* Index into log_buf: next char to be read by syslog() */
+> -static unsigned long con_start;	/* Index into log_buf: next char to be sent to consoles */
+> -static unsigned long log_end;	/* Index into log_buf: most-recently-written-char + 1 */
+> +static unsigned long POSS_NOSAVE log_start;	/* Index into log_buf: next char to be read by syslog() */
+> +static unsigned long POSS_NOSAVE con_start;	/* Index into log_buf: next char to be sent to consoles */
+> +static unsigned long POSS_NOSAVE log_end;	/* Index into log_buf: most-recently-written-char + 1 */
+
+2. This does not work. pointers are nosave, but logbuf is not. Eh?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
