@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 20:31:39 +0200
-Message-ID: <200704272031.41215.rjw__21897.460104856$1177698505$gmane$org@sisk.pl>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	<1177669279.7828.55.camel@johannes.berg>
-	<200704270856.42524.david-b@pacbell.net>
+Date: Fri, 27 Apr 2007 20:34:11 +0200
+Message-ID: <200704272034.12535.rjw__35789.0979656533$1177698634$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
+	<200704271720.08150.rjw@sisk.pl>
+	<alpine.LFD.0.98.0704270842430.9964@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704270856.42524.david-b@pacbell.net>
+In-Reply-To: <alpine.LFD.0.98.0704270842430.9964@woody.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,92 +21,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>, suspend2-devel@lists.suspend2.net, Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Johannes Berg <johannes@sipsolutions.net>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, Kernel development list <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 27 April 2007 17:56, David Brownell wrote:
-> On Friday 27 April 2007, Johannes Berg wrote:
+On Friday, 27 April 2007 17:52, Linus Torvalds wrote:
+> 
+> On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
 > > 
-> >  * FREEZE       Quiesce operations so that a consistent image can be saved;
-> >  *              but do NOT otherwise enter a low power device state, and do
-> >  *              NOT emit system wakeup events.
-> >  *
-> >  * PRETHAW      Quiesce as if for FREEZE; additionally, prepare for restoring
-> >  *              the system from a snapshot taken after an earlier FREEZE.
-> >  *              Some drivers will need to reset their hardware state instead
-> >  *              of preserving it, to ensure that it's never mistaken for the
-> >  *              state which that earlier snapshot had set up.
-> > 
-> > Why is prethaw even necessary?
+> > I think we can use 'stages' and pass them as arguments to the functions.
 > 
-> Read the patch comments for the patch adding that transition.  Briefly,
-> adding that transition to swsusp resume was a significant bugfix for
-> all drivers that rely on controller state to determine how to resume.
+> No, no NOOOO!
 > 
-> (That's mostly drivers that are intelligent about wakeup events... so
-> unless you're working with such drivers, the issue may be unclear.)
+> If you use stages, just describe them in the function name instead.	
 > 
+> > quiesce(PREPARE) -- that may be needed for drivers that allocate much memory
+> > before quiescing devices (if any)
+> > ...
+> > quiesce(PRE_SNAPSHOT)
+> > ...
+> > quiesce(PRE_SNAPSHOT_IRQ_OFF)
 > 
-> > As far as I can tell it's only necessary 
-> > because resume() can't tell you whether you just want to thaw or need to
-> > reset since it doesn't tell you at what point it's invoked.
+> There is *no* advantage to this (and _lots_ of disadvantages) compared to 
+> saying
 > 
-> More like:  because swsusp overloaded the suspend()/resume() code paths
-> to do double duty.
+> 	dev->snapshot_prepare(dev);
+> 	dev->snapshot_freeze(dev);
+> 	dev->snapshot(dev)
 > 
-> Instead of just putting devices into low power states (just *which* state
-> is another discussion), they evolved into support for swsusp transitions...
-> causing trouble (and sometimes breakage) for non-swsusp models.
+> The latter is
+>  - more readable
+>  - MUCH easier for programmers to write readable code for (if-statements 
+>    and case-statements are *by*definition* more complicated to parse both 
+>    for humans and for CPU's - static information is good)
+>  - allows for the different stages to have different arguments, and 
+>    somewhat related to that, to have better static C type checking.
 > 
+> Look here, which one is more readable:
 > 
-> > Having ->freeze(), ->thaw() and ->restart() (can somebody come up with a
-> > better name?) that are called at the appropriate places (with
-> > freeze/thaw around preparing the image and freeze/restart around
-> > restoring would go a long way of clearing up the confusion in all the
-> > drivers. Of course, it'd have to be documented that freeze/thaw isn't
-> > the only valid combination but that freeze/restart is used too, but
-> > that's not hard to do nor hard to understand.
+> 	int some_mixed_function(int arg)
+> 	{
+> 		do_one_thing();
+> 		if (arg == SLEEP)
+> 			do_another_thing();
+> 		else
+> 			do_yet_another_thing();
+> 	}
 > 
-> I suspect that after snapshot resume restart() should always be used.
-> That shouldn't be hard to understand at all.  It'd be sub-optimal in
-> the same cases today's system resume is sub-optimal:  devices that
-> were in low power states before system suspend wouldn't be that way
-> after system resume.
+> or
 > 
+> 	int do_sleep(void)
+> 	{
+> 		do_one_thing();
+> 		do_another_thing();
+> 	}
 > 
-> > And, incidentally, it could possibly make both suspend and hibernate
-> > work much faster too. The comments there talk about "minimally power
-> > management aware" drivers which always do the wrong thing for suspend,
-> > in that they always reset everything...
+> 	int prepare_to_sleep(void)
+> 	{
+> 		do_one_thing();
+> 		do_yet_another_thing();
+> 	}
 > 
-> That comment was purely about existing practice ... and was mostly
-> about resume() processing, not suspend() paths.
+> and quite frankly, while the second case may take more lines of code, 
+> anybody who says that it's not clearer what it does (because it can 
+> "self-document" with function names etc) is either lying, or just a really 
+> bad programmer. The second case is also likely faster and probably not 
+> larger code-size-wise either, since it does static decisions _statically_ 
+> (since all callers are realistically going to use a constant argument 
+> anyway, and the argument really is static).
 > 
-> It's an unfortunate reality that most device drivers are stupid in
-> terms of power management, so we need to be clear about just how
-> stupid they're allowed to be without being terminally broken.
+> Finally, the second case is *much* easier to fix, exactly because it 
+> doesn't mix up the cases. You can change the arguments, you can have 
+> totally different locking, you don't need things like
 > 
-> Additionally, it would be a Good Thing if changes to clean up the
-> swsusp-related code paths didn't make "real suspend" more painful.
+> 	int gfp = (arg == SLEEP) ? GFP_ATOMIC : GFP_KERNEL;
 > 
+> etc, and it's just more logical.
 > 
-> > Of course, some drivers will 
-> > actually need to do that, but if freeze/suspend and thaw/restart/resume
-> > have the same prototypes (probably just int <function>(void)) then
-> > drivers can trivially assign the same there.
-> > And hibernate would benefit since a lot of drivers could do a lot less
-> > work for freeze/thaw.
+> So don't overload a function. That's the *bug* with the current 
+> "dev->suspend()" interface already. Don't re-create it. The current one 
+> overloads two *totally*different* operations onto one function. 
 > 
-> That actually gets into discussions from a while back about wanting
-> to be able to quiesce() devices, as separate from actually putting
-> them into low power states.
+> Just don't do it. Not in the suspend part, not *ever*.
 
-Yes, exactly.
-
-Moreover, I think we should separate the current suspend code from the
-hibernation (aka STD) code paths we're discussing.  I mean, we need
-hibernation-specific equivalents of drivers/base/power/suspend.c etc.
+OK, I won't.
 
 Greetings,
 Rafael
