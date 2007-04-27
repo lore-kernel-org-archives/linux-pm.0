@@ -1,15 +1,12 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and
-	suspend2: hang in atomic copy)
-Date: Fri, 27 Apr 2007 14:07:03 +0200
-Message-ID: <1177675623.6024.5.camel__46196.3265472606$1177676302$gmane$org@johannes.berg>
-References: <20070425072350.GA6866@ucw.cz> <200704271218.07120.rjw@sisk.pl>
-	<1177669179.7828.53.camel@johannes.berg>
-	<200704271409.56687.rjw@sisk.pl>
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: [RFC/PATCH 1/2] swsusp: preserve boot-time printk output
+	after resume
+Date: Fri, 27 Apr 2007 15:25:06 +0300 (EEST)
+Message-ID: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8756725908545647798=="
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704271409.56687.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,56 +14,93 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <npiggin@suse.de>, Nigel Cunningham <nigel@nigel.suspend2.net>, Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@infradead.org>
+To: linux-pm@lists.osdl.org
+Cc: nigel@nigel.suspend2.net, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---===============8756725908545647798==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Duv+W3zEEh/Xf3CK2V7z"
+Nigel, can I please get a sign-off for these if you're okay with them. 
+Rafael, Pavel, please ACK or NAK. Thanks.
 
+			Pekka
 
---=-Duv+W3zEEh/Xf3CK2V7z
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 
-On Fri, 2007-04-27 at 14:09 +0200, Rafael J. Wysocki wrote:
+Adds a new config option CONFIG_PRINTK_NOSAVE which makes the kernel
+preserve printk() output from boot after resume.  This is useful for
+debugging hibernation.
 
-> Yes.  Still, I'd like to rework your patch to deal with ACPI without
-> introducing hibernate_ops .  I'm going to do this later today if you don'=
-t
-> mind. :-)
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/suspend.h |    6 ++++++
+ kernel/power/Kconfig    |   11 +++++++++++
+ kernel/printk.c         |    7 ++++---
+ 3 files changed, 21 insertions(+), 3 deletions(-)
 
-Not at all :) That's why I actually sent it out instead of just saying
-"well I give up it breaks user.c"
-
-johannes
-
---=-Duv+W3zEEh/Xf3CK2V7z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMedm/ETPhpq3jKURAmzgAJ0UPtMWRQqszy3TTebsAdowYCdonwCgmww1
-M7AKOJZXkosQfpUASSO4HWI=
-=TE+E
------END PGP SIGNATURE-----
-
---=-Duv+W3zEEh/Xf3CK2V7z--
-
-
---===============8756725908545647798==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8756725908545647798==--
+Index: 2.6/include/linux/suspend.h
+===================================================================
+--- 2.6.orig/include/linux/suspend.h	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/include/linux/suspend.h	2007-04-27 14:43:13.000000000 +0300
+@@ -55,4 +55,10 @@ unsigned long get_safe_page(gfp_t gfp_ma
+  */
+ #define PAGES_FOR_IO	1024
+ 
++#ifdef CONFIG_PRINTK_NOSAVE
++#define POSS_NOSAVE __nosavedata
++#else
++#define POSS_NOSAVE
++#endif
++
+ #endif /* _LINUX_SWSUSP_H */
+Index: 2.6/kernel/power/Kconfig
+===================================================================
+--- 2.6.orig/kernel/power/Kconfig	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/kernel/power/Kconfig	2007-04-27 14:43:13.000000000 +0300
+@@ -48,6 +48,17 @@ config DISABLE_CONSOLE_SUSPEND
+ 	suspend/resume routines, but may itself lead to problems, for example
+ 	if netconsole is used.
+ 
++config PRINTK_NOSAVE
++	bool "Preserve printk data from boot kernel when resuming."
++	default n
++	---help---
++	This option gives printk data and the associated variables the
++	attribute __nosave, which means that they will not be saves as
++	part of the image. The net effect is that after resuming, your
++	dmesg will show the messages from prior to the atomic restore,
++	instead of the messages from the resumed kernel. This may be
++	useful for debugging hibernation.
++
+ config PM_TRACE
+ 	bool "Suspend/resume event tracing"
+ 	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
+Index: 2.6/kernel/printk.c
+===================================================================
+--- 2.6.orig/kernel/printk.c	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/kernel/printk.c	2007-04-27 14:43:13.000000000 +0300
+@@ -32,6 +32,7 @@  *	01Mar01 Andrew Morton <andrewm@uow.ed
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
+ #include <linux/jiffies.h>
++#include <linux/suspend.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -92,9 +93,9 @@ static DEFINE_SPINLOCK(logbuf_lock);
+  * The indices into log_buf are not constrained to log_buf_len - they
+  * must be masked before subscripting
+  */
+-static unsigned long log_start;	/* Index into log_buf: next char to be read by syslog() */
+-static unsigned long con_start;	/* Index into log_buf: next char to be sent to consoles */
+-static unsigned long log_end;	/* Index into log_buf: most-recently-written-char + 1 */
++static unsigned long POSS_NOSAVE log_start;	/* Index into log_buf: next char to be read by syslog() */
++static unsigned long POSS_NOSAVE con_start;	/* Index into log_buf: next char to be sent to consoles */
++static unsigned long POSS_NOSAVE log_end;	/* Index into log_buf: most-recently-written-char + 1 */
+ 
+ /*
+  *	Array of consoles built from command line options (console=)
