@@ -1,13 +1,15 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] power management: remove some useless code
-	from arm platforms
-Date: Fri, 27 Apr 2007 11:38:36 +0200
-Message-ID: <1177666716.7828.27.camel@johannes.berg>
-References: <1177604177.6814.81.camel@johannes.berg> <463115BA.70505@gmail.com>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and
+	suspend2: hang in atomic copy)
+Date: Fri, 27 Apr 2007 11:41:55 +0200
+Message-ID: <1177666915.7828.35.camel__21665.7735327773$1177667200$gmane$org@johannes.berg>
+References: <20070425072350.GA6866@ucw.cz> <200704262040.31760.rjw@sisk.pl>
+	<1177612802.6814.121.camel@johannes.berg>
+	<200704262102.38568.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5770246068008570769=="
+Content-Type: multipart/mixed; boundary="===============3151674759677673979=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <463115BA.70505@gmail.com>
+In-Reply-To: <200704262102.38568.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-omap-open-source@linux.omap.com, linux-pm <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nick Piggin <npiggin@suse.de>, Nigel Cunningham <nigel@nigel.suspend2.net>, Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============5770246068008570769==
+--===============3151674759677673979==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-18b7X1ACLDSk2ZbL8vcy"
+	boundary="=-sx0pN/4AmYPOBo7ZlVak"
 
 
---=-18b7X1ACLDSk2ZbL8vcy
+--=-sx0pN/4AmYPOBo7ZlVak
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-04-27 at 01:12 +0400, Dmitry Krivoschekov wrote:
-> Johannes Berg wrote:
-> > This patch kills some useless code omap1/omap2.
-> Although the change looks harmless it'd be nice  CC-ing
-> appropriate "arch" or "mach" lists.
+On Thu, 2007-04-26 at 21:02 +0200, Rafael J. Wysocki wrote:
 
-Sorry.
+> Yes.  That's because we want to be able to repeat creating the image
+> without closing the fd in some situations.
 
-> Added omap list to CC.
+Oh yeah, I just checked and it's not in fact necessary. I'm just
+confused.
 
-Thanks.
+> Still, we could use a global var 'platform_hibernation' or something like=
+ this,
+> I think.  Then, we can do
+>=20
+> #define platform_hibernation	0
+>=20
+> on the architectures that don't need it and make ACPI use it instead of t=
+his
+> "dynamic linking".
 
-> BTW, you change OMAP stuff only, so your subject is slightly irrelevant.
-
-Uh, yeah, I wanted to change axn4008 or whatever it's called in the same
-patch and then thought better of it.
+No, because acpi doesn't know at build time whether it can actually do
+S4 or not.
 
 johannes
 
---=-18b7X1ACLDSk2ZbL8vcy
+--=-sx0pN/4AmYPOBo7ZlVak
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGMcSb/ETPhpq3jKURAnAWAJ9aiQbZLvrAufeWcr8JHXijVBp00QCfd82/
-xU6sSkK/LgzqY0utNIDHNi0=
-=O5LT
+iD8DBQBGMcVj/ETPhpq3jKURAmB6AKCpfdLNEeTvIqeZrHsehiRh+q545wCgo1nU
+i/lNjbTZPhyGSdDmbHpra5w=
+=TVqT
 -----END PGP SIGNATURE-----
 
---=-18b7X1ACLDSk2ZbL8vcy--
+--=-sx0pN/4AmYPOBo7ZlVak--
 
 
---===============5770246068008570769==
+--===============3151674759677673979==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============5770246068008570769==--
+--===============3151674759677673979==--
