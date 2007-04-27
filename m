@@ -1,15 +1,19 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
- to -mm tree
-Date: Fri, 27 Apr 2007 15:55:30 -0700
-Message-ID: <20070427155530.9d589078.akpm@linux-foundation.org>
-References: <200703221800.l2MI0tBW026306@shell0.pdx.osdl.net>
-	<1177711880.3565.79.camel@johannes.berg>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC/PATCH 2/2] kernel: don't update load average
+	during snapshot/shutdown
+Date: Sat, 28 Apr 2007 09:05:34 +1000
+Message-ID: <1177715134.4737.194.camel@nigel.suspend2.net>
+References: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
+	<20070427145212.GO22250@elf.ucw.cz>
+	<1177709523.4737.157.camel@nigel.suspend2.net>
+	<20070427221234.GE2994@elf.ucw.cz>
+	<1177712296.4737.182.camel@nigel.suspend2.net>
+	<20070427222543.GF2994@elf.ucw.cz>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============8399943789427783038=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177711880.3565.79.camel@johannes.berg>
+In-Reply-To: <20070427222543.GF2994@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,49 +21,112 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org, rmk@arm.linux.org.uk
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 28 Apr 2007 00:11:20 +0200
-Johannes Berg <johannes@sipsolutions.net> wrote:
 
-> On Thu, 2007-03-22 at 10:00 -0800, akpm@linux-foundation.org wrote:
-> > The patch titled
-> >      rework pm_ops pm_disk_mode, kill misuse
-> > has been added to the -mm tree.  Its filename is
-> >      rework-pm_ops-pm_disk_mode-kill-misuse.patch
-> 
-> Will you be sending this patch for .22?
+--===============8399943789427783038==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-FHD+r37QJg9AcCztK2vX"
 
-yup.  It's about halfway back in the -mm queue, and I usually don't start
-sending the bulk of the -mm patches until halfway through the merge window
-(because I have dependencies on subsystem trees, some of which are often
-distressingly sluggish).
 
-So the ETA on this one would normally be 1.5 weeks.
+--=-FHD+r37QJg9AcCztK2vX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I'd love to get my powermac/pmu
-> suspend work merged that gets /sys/power/state working instead of using
-> that pmu specific ioctl, but it depends on this patch to clean up the
-> mess surrounding pm_disk_mode [1].
-> 
-> johannes
-> 
-> [1] the generic code assumes that PM_DISK_PLATFORM is a great idea in
-> all cases. I'm surprised that suspend to disk is actually working for
-> anybody but acpi with S4 by default.
+Hi.
 
-In which case I'll move
+On Sat, 2007-04-28 at 00:25 +0200, Pavel Machek wrote:
+> Hi!
+>=20
+> > > > > NAK. This slows down regular operation, at it is 30 lines for wha=
+t
+> > > > > should have been one (or five).
+> > > >=20
+> > > > Count them. It is one line (an if statement) plus seven lines of
+> > > > comment.
+> > >=20
+> > > You count them. Hint... you'll need to read original patch.
+> >=20
+> > Ah. You're assuming this is the only use of freezer_is_on().
+>=20
+> Yes. You need quite good reason for hack like freezer_is_on(), and
+> this is not it.
+>=20
+> > > > > Just place avenrun[0] =3D avenrun[1] =3D avenrun[2] =3D 0 at stra=
+tegic place
+> > > > > if you feel strongly about this. Additional points for using Rafa=
+el's
+> > > > > "suspend done" notifier so that you don't have to modify suspend =
+core.
+> > > >=20
+> > > > =3D0 might not be right. If you did have a high load average prior =
+to
+> > > > suspending, not delivering email would be the right thing to do.
+> > >=20
+> > > Ok, so =3D0 is not right, but it is better than adding 30lines of jun=
+k
+> > > to the kernel.
+> > >=20
+> > > NAK on this patch. Original behaviour is acceptable.
+> >=20
+> > to someone who IIRC correctly recently said he doesn't even use the
+> > code.
+>=20
+> If you want to work with me, learn how to write kernel code, learn
+> english, and learn how to behave.
 
-rework-pm_ops-pm_disk_mode-kill-misuse.patch
-power-management-remove-firmware-disk-mode.patch
-power-management-implement-pm_opsvalid-for-everybody.patch
-power-management-force-pm_opsvalid-callback-to-be.patch
+Pavel, I would love to work well with you, but I just find you arrogant
+and unhelpful. I don't think it's just me. In the past, I've seen you
+tell users to fix problems themselves. I've seen you dismiss real
+problems (like this) as acceptable. That's not acceptable. If we want
+Linux to be the best and most useful operating system out there, we have
+to be willing to support things that we personally don't find useful,
+and help people with problems that we personally don't care about that
+much.
 
-to head-of-queue.
+I haven't spent something like seven years working on hibernation
+support because I find it fun or because I have nothing better to do.
+I've worked on it because you're happy with a solution that just doesn't
+cut the mustard for me and thousands of other people.
 
-As long as it all compiles.  It often turns out that things in this area
-have dependencies upon the latest gregkh rampage.  We'll see.
+If I could find a way that we could work together and get those features
+that others find useful and helpful in, I'd jump at it. But that just
+doesn't seem to be possible.
+
+I therefore have to ask: Please. Go away. Hand the maintainership of
+hibernation over to Rafael. Work on things you do care about and where
+you do want to see a fully functional implementation. But stop being a
+hindrance to us making Linux hibernation support everything that it
+ought to be.
+
+Nigel
+
+--=-FHD+r37QJg9AcCztK2vX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGMoG+N0y+n1M3mo0RApryAJ9zDAk2pA9I4Navn+8ZiqAArVHQ3wCfbwaU
++Uvd6JtH2NzzJOnJMjVjAI8=
+=p/Z2
+-----END PGP SIGNATURE-----
+
+--=-FHD+r37QJg9AcCztK2vX--
+
+
+--===============8399943789427783038==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============8399943789427783038==--
