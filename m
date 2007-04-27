@@ -1,8 +1,7 @@
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: [RFC/PATCH 1/2] swsusp: preserve boot-time printk output
-	after resume
-Date: Fri, 27 Apr 2007 15:25:06 +0300 (EEST)
-Message-ID: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
+Subject: [RFC/PATCH 2/2] driver core: power management debugging
+Date: Fri, 27 Apr 2007 15:25:46 +0300 (EEST)
+Message-ID: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -20,87 +19,97 @@ To: linux-pm@lists.osdl.org
 Cc: nigel@nigel.suspend2.net, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Nigel, can I please get a sign-off for these if you're okay with them. 
-Rafael, Pavel, please ACK or NAK. Thanks.
-
-			Pekka
-
 From: Nigel Cunningham <nigel@nigel.suspend2.net>
 
-Adds a new config option CONFIG_PRINTK_NOSAVE which makes the kernel
-preserve printk() output from boot after resume.  This is useful for
-debugging hibernation.
+Add power management related debugging into driver core. Make the
+kernel complain if a device driver lacks bus and class support for
+resume or if a PCI or USB driver does not have a driver specific
+resume function.
 
 Cc: Pavel Machek <pavel@ucw.cz>
 Cc: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/suspend.h |    6 ++++++
- kernel/power/Kconfig    |   11 +++++++++++
- kernel/printk.c         |    7 ++++---
- 3 files changed, 21 insertions(+), 3 deletions(-)
+ drivers/base/core.c       |   13 +++++++++++++
+ drivers/pci/pci-driver.c  |    6 ++++++
+ drivers/usb/core/driver.c |    6 ++++++
+ include/linux/device.h    |    1 +
+ 4 files changed, 26 insertions(+)
 
-Index: 2.6/include/linux/suspend.h
+Index: 2.6/drivers/base/core.c
 ===================================================================
---- 2.6.orig/include/linux/suspend.h	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/include/linux/suspend.h	2007-04-27 14:43:13.000000000 +0300
-@@ -55,4 +55,10 @@ unsigned long get_safe_page(gfp_t gfp_ma
-  */
- #define PAGES_FOR_IO	1024
- 
-+#ifdef CONFIG_PRINTK_NOSAVE
-+#define POSS_NOSAVE __nosavedata
-+#else
-+#define POSS_NOSAVE
+--- 2.6.orig/drivers/base/core.c	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/drivers/base/core.c	2007-04-27 14:43:14.000000000 +0300
+@@ -652,6 +652,18 @@ int device_add(struct device *dev)
+ 				class_intf->add_dev(dev, class_intf);
+ 		up(&dev->class->sem);
+ 	}
++
++#ifdef CONFIG_PM
++	if (!((dev->class && dev->class->resume) ||
++	      (dev->bus && (dev->bus->resume || dev->bus->resume_early))) &&
++	    !dev->pm_safe) {
++		printk(KERN_WARNING "Device driver %s lacks bus and class "
++				    "support for being resumed.\n",
++				    kobject_name(&dev->kobj));
++		dump_stack();
++	}
 +#endif
 +
- #endif /* _LINUX_SWSUSP_H */
-Index: 2.6/kernel/power/Kconfig
-===================================================================
---- 2.6.orig/kernel/power/Kconfig	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/kernel/power/Kconfig	2007-04-27 14:43:13.000000000 +0300
-@@ -48,6 +48,17 @@ config DISABLE_CONSOLE_SUSPEND
- 	suspend/resume routines, but may itself lead to problems, for example
- 	if netconsole is used.
+  Done:
+  	kfree(class_name);
+ 	put_device(dev);
+@@ -989,6 +1001,7 @@ struct device *device_create(struct clas
+ 	dev->class = class;
+ 	dev->parent = parent;
+ 	dev->release = device_create_release;
++	dev->pm_safe = 1;
  
-+config PRINTK_NOSAVE
-+	bool "Preserve printk data from boot kernel when resuming."
-+	default n
-+	---help---
-+	This option gives printk data and the associated variables the
-+	attribute __nosave, which means that they will not be saves as
-+	part of the image. The net effect is that after resuming, your
-+	dmesg will show the messages from prior to the atomic restore,
-+	instead of the messages from the resumed kernel. This may be
-+	useful for debugging hibernation.
+ 	va_start(args, fmt);
+ 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
+Index: 2.6/drivers/pci/pci-driver.c
+===================================================================
+--- 2.6.orig/drivers/pci/pci-driver.c	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/drivers/pci/pci-driver.c	2007-04-27 14:43:14.000000000 +0300
+@@ -451,6 +451,12 @@ int __pci_register_driver(struct pci_dri
+ 	if (error)
+ 		driver_unregister(&drv->driver);
+ 
++#ifdef CONFIG_PM
++	if (!drv->resume)
++		printk(KERN_WARNING "PCI driver %s lacks driver specific "
++				    "resume support.\n", drv->name);
++#endif
 +
- config PM_TRACE
- 	bool "Suspend/resume event tracing"
- 	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
-Index: 2.6/kernel/printk.c
+ 	return error;
+ }
+ 
+Index: 2.6/drivers/usb/core/driver.c
 ===================================================================
---- 2.6.orig/kernel/printk.c	2007-04-27 14:42:13.000000000 +0300
-+++ 2.6/kernel/printk.c	2007-04-27 14:43:13.000000000 +0300
-@@ -32,6 +32,7 @@  *	01Mar01 Andrew Morton <andrewm@uow.ed
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
- #include <linux/jiffies.h>
-+#include <linux/suspend.h>
+--- 2.6.orig/drivers/usb/core/driver.c	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/drivers/usb/core/driver.c	2007-04-27 14:43:14.000000000 +0300
+@@ -721,6 +721,12 @@ 	int retval = 0;
+ 		pr_info("%s: registered new device driver %s\n",
+ 			usbcore_name, new_udriver->name);
+ 		usbfs_update_special();
++#ifdef CONFIG_PM
++		if (!new_udriver->resume)
++			printk(KERN_WARNING "USB driver %s lacks driver "
++					    "specific resume support.\n",
++					    new_udriver->name);
++#endif
+ 	} else {
+ 		printk(KERN_ERR "%s: error %d registering device "
+ 			"	driver %s\n",
+Index: 2.6/include/linux/device.h
+===================================================================
+--- 2.6.orig/include/linux/device.h	2007-04-27 14:42:13.000000000 +0300
++++ 2.6/include/linux/device.h	2007-04-27 14:43:14.000000000 +0300
+@@ -401,6 +401,7 @@ struct device {
+ 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
+ 	struct device_type	*type;
+ 	unsigned		is_registered:1;
++	unsigned		pm_safe:1; /* no resume function is safe */
+ 	struct device_attribute uevent_attr;
+ 	struct device_attribute *devt_attr;
  
- #include <asm/uaccess.h>
- 
-@@ -92,9 +93,9 @@ static DEFINE_SPINLOCK(logbuf_lock);
-  * The indices into log_buf are not constrained to log_buf_len - they
-  * must be masked before subscripting
-  */
--static unsigned long log_start;	/* Index into log_buf: next char to be read by syslog() */
--static unsigned long con_start;	/* Index into log_buf: next char to be sent to consoles */
--static unsigned long log_end;	/* Index into log_buf: most-recently-written-char + 1 */
-+static unsigned long POSS_NOSAVE log_start;	/* Index into log_buf: next char to be read by syslog() */
-+static unsigned long POSS_NOSAVE con_start;	/* Index into log_buf: next char to be sent to consoles */
-+static unsigned long POSS_NOSAVE log_end;	/* Index into log_buf: most-recently-written-char + 1 */
- 
- /*
-  *	Array of consoles built from command line options (console=)
