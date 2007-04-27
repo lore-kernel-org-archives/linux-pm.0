@@ -1,15 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 17:27:18 +0200
-Message-ID: <1177687638.3565.42.camel__20518.251139629$1177687763$gmane$org@johannes.berg>
+Date: Fri, 27 Apr 2007 08:41:58 -0700 (PDT)
+Message-ID: <alpine.LFD.0.98.0704270833270.9964@woody.linux-foundation.org>
 References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
 	<1177684764.3565.20.camel@johannes.berg>
 	<1177685391.3565.22.camel@johannes.berg>
-	<200704271720.08150.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2811077807960666157=="
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704271720.08150.rjw@sisk.pl>
+In-Reply-To: <1177685391.3565.22.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,77 +16,66 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <npiggin@suse.de>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, Kernel development list <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@infradead.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Nick Piggin <npiggin@suse.de>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, Kernel development list <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============2811077807960666157==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-osp2hhg194W4i3Vhs4fx"
 
+On Fri, 27 Apr 2007, Johannes Berg wrote:
+> 
+> Eh, the point I actually wanted to make is that many drivers don't care
+> for the irqs disabled case and would have to add code to exclude it.
 
---=-osp2hhg194W4i3Vhs4fx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+You really *really* want to do a two-phase thing, at least for the case I 
+care about. Whether that snapshotting thing does or not, I could care 
+less.
 
-On Fri, 2007-04-27 at 17:20 +0200, Rafael J. Wysocki wrote:
+There's a damn good reason why the kernel uses 
 
-> I think we can use 'stages' and pass them as arguments to the functions.
->=20
-> In that case we can have two callbacks for the hibernation (I'd prefer to=
- say
-> 'hibernation' instead of 'suspend to disk' from now on), one 'quiesce' ca=
-llback
-> and one 'activate' callback that can be called many times in one
-> snapshot/restore cycle with different arguments, for example:
+	/* phase 1 */
+	for_each_dev()
+		dev->suspend(dev);
 
-But you're not proposing to add suspend/resume to this interface too, I
-hope :)
+	cli();
+	/* phase 2 */
+	for_each_dev()
+		dev->suspend_late(dev);
 
-> quiesce(PREPARE) -- that may be needed for drivers that allocate much mem=
-ory
-> before quiescing devices (if any)
-> ...
-> quiesce(PRE_SNAPSHOT)
-> ...
-> quiesce(PRE_SNAPSHOT_IRQ_OFF)
-> ...
-> activate(POST_SNAPSHOT_IRQ_OFF)
-> ...
-> activate(POST_SNAPSHOT)
-> ...
-> activate(FINISH)
+(and the reverse case on resume).
 
-I'm still not sure I like having to switch on the argument for every
-implementation. Is it really worth it?
+The reason is simply that there are two totally different cases: things 
+like disks etc want to spin down and do slow and high-level operations, 
+while things like USB controllers and console devices do *not* want to be 
+suspended early, because if you do, you lose debuggability.
 
-johannes
+So some things really *really* want to be done when they know that there 
+isn't anything else going on any more, and they want to delay the shutdown 
+to the very end. While other things really *require* that they can send 
+requests that can take time, and cannot run with interrupts disabled.
 
---=-osp2hhg194W4i3Vhs4fx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I actually think that "snapshot" is totally different, exactly because for 
+snapshotting, the slow operations like spinning down disks etc probably 
+don't really even exist, and would always be no-ops. But who knows..
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Anyway, I do have a final comment: 
 
-iD8DBQBGMhZW/ETPhpq3jKURAjCcAKCLAlJhQHeG4dnh1E0Wo7XnhNY/CACghT5L
-RTKQbNIAYC7XxiC1X6AN8W8=
-=XxdO
------END PGP SIGNATURE-----
+     DO NOT PASS "STATE FLAGS" TO DRIVERS 
 
---=-osp2hhg194W4i3Vhs4fx--
+(or, even worse, assume that drivers would test "implicit" state by 
+calling the same function under two different states, and then have the 
+drivers test for "are interrupts disabled? Then I need to do something 
+else").
 
+If drivers are possibly going to do two different things, make it two 
+different entry-points. There's absolutely no downsides. It's _clearer_ to 
+the device writer when he gets called two different ways that it's not the 
+same case, and in case a particular device can do the same thing for both 
+cases, he can just set the function pointer to the same entry for both.
 
---===============2811077807960666157==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Never EVER pass dynamic flags that modify behaviour. It's simply bad 
+programming. A function should do *one* thing, and do it well. 
 
-
---===============2811077807960666157==--
+		Linus
