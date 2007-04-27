@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 14:50:01 +0200
-Message-ID: <20070427125001.GI22250@elf.ucw.cz>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	<20070425203150.GD17387@elf.ucw.cz>
-	<1177669279.7828.55.camel@johannes.berg>
-	<200704271407.00879.rjw@sisk.pl>
-	<20070427124029.GH22250@elf.ucw.cz>
-	<1177678002.6024.11.camel@johannes.berg>
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [RFC/PATCH 1/2] swsusp: preserve boot-time printk
+ output after resume
+Date: Fri, 27 Apr 2007 15:52:12 +0300 (EEST)
+Message-ID: <Pine.LNX.4.64.0704271551250.12688@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
+	<20070427123615.GF22250@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1177678002.6024.11.camel@johannes.berg>
+In-Reply-To: <20070427123615.GF22250@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +19,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Fri, 27 Apr 2007, Pavel Machek wrote:
+> 1. This should not be a config option
 
-> > > Five callbacks are fine by me, especially if we can define reasonable defaults
-> > > for the hibernation (and can we?).
-> > 
-> > Well, we still can default to suspend(PMSG_FREEZE) for freeze(), and
-> > resume() for thaw(). Anything else is just not sane way forward.
-> 
-> I think we should remove the argument to suspend() in the same patch
-> series. Yes, that would mean porting all drivers that currently use
-> it,
+Ok.
 
-Well, if you can do it in one patch series, go ahead. But I think such
-massive change all over kernel will take slightly longer, so I'd
-prefer to keep the dummy argument for a while (so it still compiles)
-and fix it slowly.
+On Fri, 27 Apr 2007, Pavel Machek wrote:
+> 2. This does not work. pointers are nosave, but logbuf is not. Eh?
 
-Of course, it is up to the person doing the series. And yes, such
-series would be welcome.
+My bad, sorry. Thanks for the comments, Pavel!
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+			Pekka
+
+[PATCH] kernel: preserve boot-time printk output after resume
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+
+This makes the kernel preserve boot-time printk() output after resume.
+
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ kernel/printk.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+Index: 2.6/kernel/printk.c
+===================================================================
+--- 2.6.orig/kernel/printk.c	2007-04-27 15:39:26.000000000 +0300
++++ 2.6/kernel/printk.c	2007-04-27 15:49:25.000000000 +0300
+@@ -92,9 +92,9 @@ static DEFINE_SPINLOCK(logbuf_lock);
+  * The indices into log_buf are not constrained to log_buf_len - they
+  * must be masked before subscripting
+  */
+-static unsigned long log_start;	/* Index into log_buf: next char to be read by syslog() */
+-static unsigned long con_start;	/* Index into log_buf: next char to be sent to consoles */
+-static unsigned long log_end;	/* Index into log_buf: most-recently-written-char + 1 */
++static unsigned long __nosavedata log_start;	/* Index into log_buf: next char to be read by syslog() */
++static unsigned long __nosavedata con_start;	/* Index into log_buf: next char to be sent to consoles */
++static unsigned long __nosavedata log_end;	/* Index into log_buf: most-recently-written-char + 1 */
+ 
+ /*
+  *	Array of consoles built from command line options (console=)
+@@ -117,10 +117,10 @@ static int console_may_schedule;
+ 
+ #ifdef CONFIG_PRINTK
+ 
+-static char __log_buf[__LOG_BUF_LEN];
+-static char *log_buf = __log_buf;
+-static int log_buf_len = __LOG_BUF_LEN;
+-static unsigned long logged_chars; /* Number of chars produced since last read+clear operation */
++static char __nosavedata __log_buf[__LOG_BUF_LEN];
++static char __nosavedata *log_buf = __log_buf;
++static int __nosavedata log_buf_len = __LOG_BUF_LEN;
++static unsigned long __nosavedata logged_chars; /* Number of chars produced since last read+clear operation */
+ 
+ static int __init log_buf_len_setup(char *str)
+ {
