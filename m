@@ -1,19 +1,13 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC/PATCH 1/2] swsusp: preserve boot-time printk
-	output after resume
-Date: Sat, 28 Apr 2007 08:09:32 +1000
-Message-ID: <1177711773.4737.178.camel@nigel.suspend2.net>
-References: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
-	<20070427123615.GF22250@elf.ucw.cz>
-	<Pine.LNX.4.64.0704271551250.12688@sbz-30.cs.Helsinki.FI>
-	<20070427125734.GK22250@elf.ucw.cz>
-	<1177708919.4737.145.camel@nigel.suspend2.net>
-	<20070427220554.GB2994@elf.ucw.cz>
-Reply-To: nigel@nigel.suspend2.net
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+	to -mm tree
+Date: Sat, 28 Apr 2007 00:11:20 +0200
+Message-ID: <1177711880.3565.79.camel@johannes.berg>
+References: <200703221800.l2MI0tBW026306@shell0.pdx.osdl.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6206449637203490362=="
+Content-Type: multipart/mixed; boundary="===============4101199785966109610=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070427220554.GB2994@elf.ucw.cz>
+In-Reply-To: <200703221800.l2MI0tBW026306@shell0.pdx.osdl.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,75 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org
+To: akpm@linux-foundation.org
+Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org, rmk@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
 
---===============6206449637203490362==
+--===============4101199785966109610==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-eHRH8bGRiDIhjFFpYwEQ"
+	boundary="=-1/MsCnRN6ohvXOMVHQ/p"
 
 
---=-eHRH8bGRiDIhjFFpYwEQ
+--=-1/MsCnRN6ohvXOMVHQ/p
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi.
+On Thu, 2007-03-22 at 10:00 -0800, akpm@linux-foundation.org wrote:
+> The patch titled
+>      rework pm_ops pm_disk_mode, kill misuse
+> has been added to the -mm tree.  Its filename is
+>      rework-pm_ops-pm_disk_mode-kill-misuse.patch
 
-On Sat, 2007-04-28 at 00:05 +0200, Pavel Machek wrote:
-> On Sat 2007-04-28 07:21:59, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > On Fri, 2007-04-27 at 14:57 +0200, Pavel Machek wrote:
-> > > On Fri 2007-04-27 15:52:12, Pekka J Enberg wrote:
-> > > > On Fri, 27 Apr 2007, Pavel Machek wrote:
-> > > > > 1. This should not be a config option
-> > > >=20
-> > > > Ok.
-> > >=20
-> > > Unfortunately, we loose dmesg from the state saving this way, so I do
-> > > not think it can be hardcoded, either. Best way would be to somehow
-> > > preserve both dmesg buffers.
-> > >=20
-> > > Other way is to just control it by the define in the .c file; person
-> > > using this is by definition kernel hacker, anyway. Or this can simply
-> > > live like debugging patch, interested parties can apply.
-> >=20
-> > That's why I made it a config option - so you can choose whether you
-> > want it or not.
->=20
-> Yes, and having it as a config option is completely wrong. There's no
-> good value for that config option, how is poor user going to answer
-> it. That config option is evil.
+Will you be sending this patch for .22? I'd love to get my powermac/pmu
+suspend work merged that gets /sys/power/state working instead of using
+that pmu specific ioctl, but it depends on this patch to clean up the
+mess surrounding pm_disk_mode [1].
 
-It's an option for developers, and what's appropriate depends on which
-part of the resume you're trying to debug. That said, I do agree that
-preserving both buffers would be nicer.
+johannes
 
-Nigel
+[1] the generic code assumes that PM_DISK_PLATFORM is a great idea in
+all cases. I'm surprised that suspend to disk is actually working for
+anybody but acpi with S4 by default.
 
---=-eHRH8bGRiDIhjFFpYwEQ
+--=-1/MsCnRN6ohvXOMVHQ/p
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iD8DBQBGMnScN0y+n1M3mo0RAvmlAKDsEM5qNizeWRR5eDP69/JIoRmJuACgqNp5
-7JtdBmFVq7CIHg2yB4Od/Og=
-=FBjL
+iD8DBQBGMnUH/ETPhpq3jKURAnAUAKCUqyLP2/5XzdWgqnAJk3DDbXc8wwCgsnK6
+6LGtSCRhYrX3yFTS9OuSM8M=
+=ZfHM
 -----END PGP SIGNATURE-----
 
---=-eHRH8bGRiDIhjFFpYwEQ--
+--=-1/MsCnRN6ohvXOMVHQ/p--
 
 
---===============6206449637203490362==
+--===============4101199785966109610==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============6206449637203490362==--
+--===============4101199785966109610==--
