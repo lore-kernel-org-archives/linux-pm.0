@@ -1,16 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Re: [RFC/PATCH 2/2] kernel: don't update load
-	average during snapshot/shutdown
-Date: Fri, 27 Apr 2007 21:56:24 +0200
-Message-ID: <1177703785.3565.46.camel@johannes.berg>
-References: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
-	<20070427150527.GQ22250@elf.ucw.cz>
-	<1177686732.3565.30.camel@johannes.berg>
-	<200704271753.43240.rjw@sisk.pl>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC/PATCH 1/2] swsusp: preserve boot-time printk
+	output after resume
+Date: Sat, 28 Apr 2007 07:21:59 +1000
+Message-ID: <1177708919.4737.145.camel@nigel.suspend2.net>
+References: <Pine.LNX.4.64.0704271522070.11149@sbz-30.cs.Helsinki.FI>
+	<20070427123615.GF22250@elf.ucw.cz>
+	<Pine.LNX.4.64.0704271551250.12688@sbz-30.cs.Helsinki.FI>
+	<20070427125734.GK22250@elf.ucw.cz>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0689835931083420568=="
+Content-Type: multipart/mixed; boundary="===============5805052740279161941=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704271753.43240.rjw@sisk.pl>
+In-Reply-To: <20070427125734.GK22250@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,51 +22,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org, nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0689835931083420568==
+--===============5805052740279161941==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-y0krwyheyng8L8LxLUGR"
+	boundary="=-A5e/5G3hKat+tNt/C+4Y"
 
 
---=-y0krwyheyng8L8LxLUGR
+--=-A5e/5G3hKat+tNt/C+4Y
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-04-27 at 17:53 +0200, Rafael J. Wysocki wrote:
+Hi.
 
-> I can set up a quilt patch series and export it for everyone from my webs=
-erver
-> if that helps.
+On Fri, 2007-04-27 at 14:57 +0200, Pavel Machek wrote:
+> On Fri 2007-04-27 15:52:12, Pekka J Enberg wrote:
+> > On Fri, 27 Apr 2007, Pavel Machek wrote:
+> > > 1. This should not be a config option
+> >=20
+> > Ok.
+>=20
+> Unfortunately, we loose dmesg from the state saving this way, so I do
+> not think it can be hardcoded, either. Best way would be to somehow
+> preserve both dmesg buffers.
+>=20
+> Other way is to just control it by the define in the .c file; person
+> using this is by definition kernel hacker, anyway. Or this can simply
+> live like debugging patch, interested parties can apply.
 
-That would be useful, to me anyway.
+That's why I made it a config option - so you can choose whether you
+want it or not.
 
-johannes
+Nigel
 
---=-y0krwyheyng8L8LxLUGR
+--=-A5e/5G3hKat+tNt/C+4Y
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGMlVo/ETPhpq3jKURAjchAKCcf/qsj1d3ibT2ivhPBW9bTorNAACePhae
-/YNOzFRBBv7t854qm7VYZNk=
-=M07o
+iD8DBQBGMml3N0y+n1M3mo0RAi1lAJ41gxwIjg/z2b6mYvIwT+/wBL6T+gCfRfCB
+K2ImKzWOEIqkRhgn2/Q4kaI=
+=6pL9
 -----END PGP SIGNATURE-----
 
---=-y0krwyheyng8L8LxLUGR--
+--=-A5e/5G3hKat+tNt/C+4Y--
 
 
---===============0689835931083420568==
+--===============5805052740279161941==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============0689835931083420568==--
+--===============5805052740279161941==--
