@@ -1,18 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFC/PATCH 2/2] kernel: don't update load average
-	during snapshot/shutdown
-Date: Fri, 27 Apr 2007 17:53:42 +0200
-Message-ID: <200704271753.43240.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
-	<20070427150527.GQ22250@elf.ucw.cz>
-	<1177686732.3565.30.camel@johannes.berg>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: driver power operations (was Re: suspend2 merge)
+Date: Fri, 27 Apr 2007 08:52:05 -0700 (PDT)
+Message-ID: <alpine.LFD.0.98.0704270842430.9964@woody.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
+	<1177684764.3565.20.camel@johannes.berg>
+	<1177685391.3565.22.camel@johannes.berg>
+	<200704271720.08150.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177686732.3565.30.camel@johannes.berg>
-Content-Disposition: inline
+In-Reply-To: <200704271720.08150.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,30 +19,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org, nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, Kernel development list <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 27 April 2007 17:12, Johannes Berg wrote:
-> On Fri, 2007-04-27 at 17:05 +0200, Pavel Machek wrote:
+
+
+On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
 > 
-> > I think we should track -mm for now. git tree means Linus has to
-> > trust you, and if he does not, you are in _big_ trouble.
-> 
-> We could still generate patches from the actual git tree and send those
-> on to -mm. Bit more work though. Dunno. I try to import patches I see on
-> the mailing list into my own patch queue, but that seems not to be
-> effective all the time (never saw the freezer changes anywhere for
-> example)
+> I think we can use 'stages' and pass them as arguments to the functions.
 
-The freezer patches went through the LKML.
+No, no NOOOO!
 
-Generally, I expect we'll have quite a lot of patches floating around in the
-near future and a separate common tree would be handy, if someone has the
-time to maintain it.
+If you use stages, just describe them in the function name instead.	
 
-I can set up a quilt patch series and export it for everyone from my webserver
-if that helps.
+> quiesce(PREPARE) -- that may be needed for drivers that allocate much memory
+> before quiescing devices (if any)
+> ...
+> quiesce(PRE_SNAPSHOT)
+> ...
+> quiesce(PRE_SNAPSHOT_IRQ_OFF)
 
-Greetings,
-Rafael
+There is *no* advantage to this (and _lots_ of disadvantages) compared to 
+saying
+
+	dev->snapshot_prepare(dev);
+	dev->snapshot_freeze(dev);
+	dev->snapshot(dev)
+
+The latter is
+ - more readable
+ - MUCH easier for programmers to write readable code for (if-statements 
+   and case-statements are *by*definition* more complicated to parse both 
+   for humans and for CPU's - static information is good)
+ - allows for the different stages to have different arguments, and 
+   somewhat related to that, to have better static C type checking.
+
+Look here, which one is more readable:
+
+	int some_mixed_function(int arg)
+	{
+		do_one_thing();
+		if (arg == SLEEP)
+			do_another_thing();
+		else
+			do_yet_another_thing();
+	}
+
+or
+
+	int do_sleep(void)
+	{
+		do_one_thing();
+		do_another_thing();
+	}
+
+	int prepare_to_sleep(void)
+	{
+		do_one_thing();
+		do_yet_another_thing();
+	}
+
+and quite frankly, while the second case may take more lines of code, 
+anybody who says that it's not clearer what it does (because it can 
+"self-document" with function names etc) is either lying, or just a really 
+bad programmer. The second case is also likely faster and probably not 
+larger code-size-wise either, since it does static decisions _statically_ 
+(since all callers are realistically going to use a constant argument 
+anyway, and the argument really is static).
+
+Finally, the second case is *much* easier to fix, exactly because it 
+doesn't mix up the cases. You can change the arguments, you can have 
+totally different locking, you don't need things like
+
+	int gfp = (arg == SLEEP) ? GFP_ATOMIC : GFP_KERNEL;
+
+etc, and it's just more logical.
+
+So don't overload a function. That's the *bug* with the current 
+"dev->suspend()" interface already. Don't re-create it. The current one 
+overloads two *totally*different* operations onto one function. 
+
+Just don't do it. Not in the suspend part, not *ever*.
+
+		Linus
