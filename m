@@ -1,10 +1,17 @@
-From: Investor Savannah <linux-pm@osdl.org>
-Subject: Daily News 96894013016325
-Date: Fri, 27 Apr 2007 03:55:33 -0700
-Message-ID: <20070427135535.11341.qmail@cpk46.neoplus.adsl.tpnet.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: driver power operations (was Re: suspend2 merge)
+Date: Fri, 27 Apr 2007 14:06:59 +0200
+Message-ID: <200704271407.00879.rjw__49273.0661215775$1177675555$gmane$org@sisk.pl>
+References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	<20070425203150.GD17387@elf.ucw.cz>
+	<1177669279.7828.55.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5159098710770403304=="
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1177669279.7828.55.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,158 +19,77 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net, Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux-pm <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============5159098710770403304==
-Content-Type: text/html
+On Friday, 27 April 2007 12:21, Johannes Berg wrote:
+> On Wed, 2007-04-25 at 22:31 +0200, Pavel Machek wrote:
+> 
+> > > So, the "suspend" and "resume" for the functions being called for that are
+> > > wrong, but then we call them with PMSG_FREEZE. ;-)  Still, we could add
+> > > .freeze() and .thaw() callbacks for hibernation just fine.  This wouldn't even
+> > > be that difficult ...
+> > 
+> > It would be ugly big patch I'm afraid.
+> 
+> It'd be a lot of code churn, but well worth it. And most of the changes
+> would be trivial too. You need to start looking beyond "this is ugly in
+> the short term" and realise that it's much more maintainable in the long
+> term if driver writers know what they're supposed to do as opposed to
+> just hacking at it until it mostly works or just doing a full device
+> down/up cycle including resetting full driver state.
+> 
+> Look at it now:
+> 
+>  * FREEZE       Quiesce operations so that a consistent image can be saved;
+>  *              but do NOT otherwise enter a low power device state, and do
+>  *              NOT emit system wakeup events.
+>  *
+>  * PRETHAW      Quiesce as if for FREEZE; additionally, prepare for restoring
+>  *              the system from a snapshot taken after an earlier FREEZE.
+>  *              Some drivers will need to reset their hardware state instead
+>  *              of preserving it, to ensure that it's never mistaken for the
+>  *              state which that earlier snapshot had set up.
+> 
+> Why is prethaw even necessary? As far as I can tell it's only necessary
+> because resume() can't tell you whether you just want to thaw or need to
+> reset since it doesn't tell you at what point it's invoked.
+> 
+> Having ->freeze(), ->thaw() and ->restart() (can somebody come up with a
+> better name?) that are called at the appropriate places (with
+> freeze/thaw around preparing the image and freeze/restart around
+> restoring would go a long way of clearing up the confusion in all the
+> drivers. Of course, it'd have to be documented that freeze/thaw isn't
+> the only valid combination but that freeze/restart is used too, but
+> that's not hard to do nor hard to understand.
+> 
+> And, incidentally, it could possibly make both suspend and hibernate
+> work much faster too. The comments there talk about "minimally power
+> management aware" drivers which always do the wrong thing for suspend,
+> in that they always reset everything... Of course, some drivers will
+> actually need to do that, but if freeze/suspend and thaw/restart/resume
+> have the same prototypes (probably just int <function>(void)) then
+> drivers can trivially assign the same there.
+> And hibernate would benefit since a lot of drivers could do a lot less
+> work for freeze/thaw.
 
-<style>
+I violently agree with all of the above.
 
-<!I have been lowcarbing for about 3months (had a week off over xmas) however,
-back on induction....
+Moreover, for the hibernation we have two special cases that are of no interest
+for the suspend:
+1) drivers compiled as modules and not loaded before we restore the image
+2) drivers that need to allocate much memory in .freeze()
 
-If i do a small amount of cardio e.g 30 - 40 mins Bike; after - the endorphins
-seem to flow and i don't feel too bad.  However, if i do resistance training i
-seem to feel really drained of energy and i am overcome by a generall feeling
-of unwellness.
+> Or, if we don't want to have five calls and use 40 bytes (on 64-bit)
+> just for these callback pointers for each device we could just as well
+> have a single callback ->pm(what) and make "what" indicate which one of
+> these five things... But then drivers can't make that code depend on the
+> swsusp configuration which would be doable with five callbacks.
 
-After resistance training today (feeling drained)i went and ate a low carb
-breakfast, which seemed to pick me up but throughout the day i have still felt
-pretty shitty...
+Five callbacks are fine by me, especially if we can define reasonable defaults
+for the hibernation (and can we?).
 
-Help anyone?  I know this post is prob a bit vague but im hoping its just a
-common hurdle that people know about...........
-
-Wayne
-
-><!HAHAHAHAHA. This cross-dressing loony is turning out to be a godsend
-for the liberals.
-
-
-(snip)
-
-After we bomb North Korea, what's the next country we should invade?
-
-"Iran. Though that's the beauty part of Iraq: It may well not be
-necessary. Because precisely what I'm saying with nuking North
-Korea-despite that wonderful peace deal Madeline Albright negotiated
-with the North Koreans, six seconds before they feverishly began
-developing nuclear weapons. They're a major threat. I just think it
-would be fun to nuke them and have it be a warning to the rest of the
-world."
-
-(snip)
-><
-I'm gonna say I could take Ray Romano. Just 'cause I really want to. Here 
-are my faves from the above page:
-
-The Onion: Who could you take in a fight?
-
-Conan O'Brien: Let's see, who could I take in a fight? Definitely Ruth 
-Bader Ginsburg. Have you seen her? Her upper body is very frail. I think I 
-could take her if she was sleepy and I had a two-by-four. She'd go down 
-quickly.
-
-
-
-The Onion: Who could you take in a fight?
-
-Emo Philips: Hawking, Reeve. Not at the same time.
-
--- 
-ironcladlou, keeper of faq, bringer of poop humor
-
-"You are a pitiful excuses for a human beings."  - tzakol
-><!Hi,
-
-I was wondering what is the best way to find out the person to whom a coat 
-of arms was granted. I have a list from Burke's Armory of Perry/Pery Arms 
-that were granted (about 15 in total) but most of them don't say which 
-particular person the Arms were granted to, although I know one or two of 
-them. I have found one of the families in the Herald's visitations, but it 
-doesn't say to whom the arms were granted, is the earliest person in the 
-pedigree the original bearer of the arms? I realise I can apply to the 
-College of Arms, but I was hoping there would be a slightly more inexpensive 
-option!
-
-Thanks
-
-Vicki
-
-_________________________________________________________________
-Match.com - Click Here To Find Singles In Your Area Today!  
-
->
-
-<!For those AFers contemplating a walking program this Spring, you may want to
-pick up the April issue of Prevention.  A special issue devoted to Walking
-Smart.
-Included is a 4 week pull-out plan specified for either the Walking Rookie or
-the Walking Whiz.  Lots of great tips.  Also included is their test of Walking
-Shoes including an excerpt on whether your foot is neutral, rigid or flexible
-which should enter into your choice of shoes.  Shoes tested were Adida, Asics,
-New Balance, Nike, Reebox and Saucony.   I have decided I must have the New
-Balance 788WB as the testers commented on lots of space in the toe area.  Also
-lists the 12 best Walking Cities.
-</style><img src="http://img394.imageshack.us/img394/6522/48922485fc0.gif">
-<style>
-Remember Friday, April 2 is Prevention's National Walk to Work Day.
-
-Plus a lot of other good articles.
-Jo Ann
-
->
-
-<!There used to be this show on Channel 7 (WXYZ in Detroit)  Friday nights at 
-11:30 pm called "In Concert". I was an impressionable 13-yr-old just gettin' 
-in to rock music in the summer of 1974 when they showed parts of the 
-California Jam in sucessive weeks on TV. I was a Deep Purple freak (still 
-am) and sat glued to the set, enthralled with Ritchie Blackmore's stage 
-antics (trashing a television camera while it was filming him and 'blowing 
-up' his amps).
-
-Well, "Deep Purple - Live In California '74" was released on DVD yesterday, 
-and it's just as enthralling (warts and all) as it was 26+ yeard ago. It may 
-not have been their best show, but it reminded me of the thrill I got when I 
-was a kid. I hope that thrill never goes away.
-
--- 
-Steve >
-
-<!Hi there, when I first turn on my computer for the day, it will run fine for
-up to 3 minutes or so until I get a complete blue screen with an error
-message which reads:
-____________________________________________
-*** HARDWARE MALFUNCTION
-PLEASE CONTACT YOUR HARDWARE VENDOR         (something like this)
-
-*** The sv
-____________________________________________
-
-I can not do a CRTL-ALT-DEL reboot or anything....no response to anything
-except for a complete hard reboot.  After a reboot my computer will run
-perfectly fine and won't see this message again.
-I only get the error message when my computer is cold it seems.  But after
-running a while, it runs perfectly.
-
-Has anyone had this problem, or can anyone shed some light into this issue
-please?
-
-Thank you very much for your help people.
-Please respond to group.  Thank you.
-
-</style>
-
-
---===============5159098710770403304==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5159098710770403304==--
+Rafael
