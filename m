@@ -1,13 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 16:49:51 +0200
-Message-ID: <1177685391.3565.22.camel@johannes.berg>
-References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
-	<1177684764.3565.20.camel@johannes.berg>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC/PATCH 2/2] kernel: don't update load average
+	during snapshot/shutdown
+Date: Fri, 27 Apr 2007 16:52:12 +0200
+Message-ID: <20070427145212.GO22250@elf.ucw.cz>
+References: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6242769109834517123=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177684764.3565.20.camel@johannes.berg>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,56 +16,58 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Nick Piggin <npiggin@suse.de>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, Kernel development list <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@infradead.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
---===============6242769109834517123==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-d3dVFZWUqqs8GQ5o4eJI"
+> From: Nigel Cunningham <nigel@nigel.suspend2.net>
+> 
+> As explained by Nigel, Sendmail and some other programs look at the
+> load average and stop delivering when it gets too high.  The CPU
+> intensiveness of suspending to disk pushes the load average up quite
+> high but post-resume we shouldn't really take that into account.  Not
+> updating the load average therefore makes snapshot/shutdown invisible
+> to sendmail and so on.
 
+Is it kernel problem? We _had_ high load, and load average goes down
+pretty quickly.
 
---=-d3dVFZWUqqs8GQ5o4eJI
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> @@ -1253,9 +1254,18 @@ static inline void calc_load(unsigned lo
+>  	if (unlikely(count < 0)) {
+>  		active_tasks = count_active_tasks();
+>  		do {
+> -			CALC_LOAD(avenrun[0], EXP_1, active_tasks);
+> -			CALC_LOAD(avenrun[1], EXP_5, active_tasks);
+> -			CALC_LOAD(avenrun[2], EXP_15, active_tasks);
+> +			/*
+> +			 * If we let the load average be updated while
+> +			 * snapshot/shutdown, it will be very high
+> +			 * post resume. Processes such as some MTAs
+> +			 * that stop work while the average is high
+> +			 * will be unnecessarily disrupted.
+> +			 */
+> +			if (likely(!freezer_is_on())) {
+> +				CALC_LOAD(avenrun[0], EXP_1, active_tasks);
+> +				CALC_LOAD(avenrun[1], EXP_5, active_tasks);
+> +				CALC_LOAD(avenrun[2], EXP_15, active_tasks);
+> +			}
+>  			count += LOAD_FREQ;
+>  		} while (count < 0);
+>  	}
 
-On Fri, 2007-04-27 at 16:39 +0200, Johannes Berg wrote:
+NAK. This slows down regular operation, at it is 30 lines for what
+should have been one (or five).
 
-> Good point. Though if we go for passing the interrupt-enable setting as
-> an argument then many drivers will have the same
-> "if (irqs_disabled()) return" code. Hm. I guess passing it isn't even
-> strictly necessary.
+Just place avenrun[0] = avenrun[1] = avenrun[2] = 0 at strategic place
+if you feel strongly about this. Additional points for using Rafael's
+"suspend done" notifier so that you don't have to modify suspend core.
 
-Eh, the point I actually wanted to make is that many drivers don't care
-for the irqs disabled case and would have to add code to exclude it.
+								Pavel
 
-johannes
-
---=-d3dVFZWUqqs8GQ5o4eJI
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMg2P/ETPhpq3jKURAlFSAKC58IY4REN7J4Z2orFc3GjSOD7AfACbBJ1i
-3SsunRItONabcfep2bqhFZM=
-=V/xn
------END PGP SIGNATURE-----
-
---=-d3dVFZWUqqs8GQ5o4eJI--
-
-
---===============6242769109834517123==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6242769109834517123==--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
