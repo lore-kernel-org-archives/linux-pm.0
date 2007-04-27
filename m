@@ -1,15 +1,14 @@
 From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: Re: [RFC/PATCH 1/2] swsusp: preserve boot-time printk
-	output after resume
-Date: Fri, 27 Apr 2007 17:10:35 +0300
-Message-ID: <84144f020704270710o13cbaadep909826b903ad564c@mail.gmail.com>
-References: <20070427125734.GK22250@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0704271002060.3430-100000@iolanthe.rowland.org>
+Subject: Re: [RFC/PATCH 2/2] driver core: power management debugging
+Date: Fri, 27 Apr 2007 17:13:47 +0300
+Message-ID: <84144f020704270713g7ea2907bib8ce1aad76ba5a93@mail.gmail.com>
+References: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
+	<Pine.LNX.4.44L0.0704271004090.3430-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0704271002060.3430-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704271004090.3430-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,16 +20,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, Pavel Machek <pavel@ucw.cz>
+Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
 On 4/27/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> Consider this: Add a debugfs file containing a binary value.  If the value
-> is on then preserve the boot dmesg buffer.  If the value is off, don't
-> preserve it -- overwrite the buffer pointers with values saved in the
-> image.
+> Now perhaps you would prefer to check the USB interface drivers -- there
+> are many of them, and quite a few don't have suspend or resume methods.
+> You would need to modify usb_register_driver() instead of
+> usb_register_device_driver().
 
-But isn't it impractical to change a debugfs file upon kernel startup
-before we hit resume? Or do you mean we always make a copy of the
-dmesg buffer before resume starts and afterwards replace the new one
-if the debug value is set?
+I'll change that. Thanks.
+
+On 4/27/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On the other hand, the drivers' maintainers are probably quite aware of
+> the missing PM support, so it's not clear that printing out warning
+> messages will actually help anybody.
+
+It will help to debug a swsusp problem that is reported by a non-developer, no?
