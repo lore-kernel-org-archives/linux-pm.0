@@ -1,15 +1,13 @@
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [RFC/PATCH 2/2] driver core: power management debugging
-Date: Fri, 27 Apr 2007 17:13:47 +0300
-Message-ID: <84144f020704270713g7ea2907bib8ce1aad76ba5a93@mail.gmail.com>
-References: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.44L0.0704271004090.3430-100000@iolanthe.rowland.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Re: [RFC/PATCH 1/2] swsusp: preserve boot-time
+	printk output after resume
+Date: Fri, 27 Apr 2007 16:32:30 +0200
+Message-ID: <1177684350.3565.13.camel@johannes.berg>
+References: <Pine.LNX.4.44L0.0704271002060.3430-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============6558632109429195733=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0704271004090.3430-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0704271002060.3430-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,23 +15,57 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, pavel@ucw.cz
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org, nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On 4/27/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> Now perhaps you would prefer to check the USB interface drivers -- there
-> are many of them, and quite a few don't have suspend or resume methods.
-> You would need to modify usb_register_driver() instead of
-> usb_register_device_driver().
 
-I'll change that. Thanks.
+--===============6558632109429195733==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-/+f05GRCAUr7yb3d64Ib"
 
-On 4/27/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On the other hand, the drivers' maintainers are probably quite aware of
-> the missing PM support, so it's not clear that printing out warning
-> messages will actually help anybody.
 
-It will help to debug a swsusp problem that is reported by a non-developer, no?
+--=-/+f05GRCAUr7yb3d64Ib
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 2007-04-27 at 10:03 -0400, Alan Stern wrote:
+
+> Consider this: Add a debugfs file containing a binary value.  If the valu=
+e=20
+> is on then preserve the boot dmesg buffer.  If the value is off, don't=20
+> preserve it -- overwrite the buffer pointers with values saved in the=20
+> image.
+
+Or just add a debugfs file containing the printk buffer from before? I'd
+think it's only useful for debugging anyway.
+
+johannes
+
+--=-/+f05GRCAUr7yb3d64Ib
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGMgl9/ETPhpq3jKURAhsXAKCJw0U5bWIYiFjZPqaAT9eJnCtbDgCfe/Ob
+MSBD2PKMtOHzL+PDgmMH4DQ=
+=Sy5O
+-----END PGP SIGNATURE-----
+
+--=-/+f05GRCAUr7yb3d64Ib--
+
+
+--===============6558632109429195733==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6558632109429195733==--
