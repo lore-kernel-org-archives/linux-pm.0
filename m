@@ -1,7 +1,8 @@
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: [RFC/PATCH 1/2] freezer: add include guards to header
-Date: Fri, 27 Apr 2007 16:29:13 +0300 (EEST)
-Message-ID: <Pine.LNX.4.64.0704271627540.15297@sbz-30.cs.Helsinki.FI>
+Subject: [RFC/PATCH 2/2] kernel: don't update load average during
+	snapshot/shutdown
+Date: Fri, 27 Apr 2007 16:29:53 +0300 (EEST)
+Message-ID: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -19,36 +20,117 @@ To: linux-pm@lists.osdl.org
 Cc: nigel@nigel.suspend2.net, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 
-Add include guards to <linux/freezer.h>.
+As explained by Nigel, Sendmail and some other programs look at the
+load average and stop delivering when it gets too high.  The CPU
+intensiveness of suspending to disk pushes the load average up quite
+high but post-resume we shouldn't really take that into account.  Not
+updating the load average therefore makes snapshot/shutdown invisible
+to sendmail and so on.
 
 Cc: Pavel Machek <pavel@ucw.cz>
 Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/freezer.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ include/linux/freezer.h |   13 +++++++++++++
+ kernel/power/process.c  |    6 ++++++
+ kernel/timer.c          |   16 +++++++++++++---
+ 3 files changed, 32 insertions(+), 3 deletions(-)
 
 Index: 2.6/include/linux/freezer.h
 ===================================================================
---- 2.6.orig/include/linux/freezer.h	2007-04-27 16:18:28.000000000 +0300
-+++ 2.6/include/linux/freezer.h	2007-04-27 16:19:17.000000000 +0300
-@@ -1,7 +1,10 @@
--/* Freezer declarations */
-+#ifndef LINUX_FREEZER_H
-+#define LINUX_FREEZER_H
+--- 2.6.orig/include/linux/freezer.h	2007-04-27 16:26:12.000000000 +0300
++++ 2.6/include/linux/freezer.h	2007-04-27 16:26:14.000000000 +0300
+@@ -76,6 +76,18 @@ 		return 0;
  
- #include <linux/sched.h>
+ extern void thaw_some_processes(int all);
  
-+/* Freezer declarations */
++enum {
++	FREEZER_OFF	= 0,
++	FREEZER_ON	= 1,
++};
 +
- #ifdef CONFIG_PM
- /*
-  * Check if a process has been frozen
-@@ -88,3 +91,4 @@ static inline int try_to_freeze(void) { 
++extern int freezer_state;
++
++static inline int freezer_is_on(void)
++{
++	return freezer_state == FREEZER_ON;
++}
++
+ #else
+ static inline int frozen(struct task_struct *p) { return 0; }
+ static inline int freezing(struct task_struct *p) { return 0; }
+@@ -88,6 +100,7 @@ static inline int freeze_processes(void)
+ static inline void thaw_processes(void) {}
+ 
+ static inline int try_to_freeze(void) { return 0; }
++static inline int freezer_is_on(void) { return 0; }
  
  
  #endif
-+#endif /* LINUX_FREEZER_H */
+Index: 2.6/kernel/power/process.c
+===================================================================
+--- 2.6.orig/kernel/power/process.c	2007-04-27 16:24:45.000000000 +0300
++++ 2.6/kernel/power/process.c	2007-04-27 16:26:14.000000000 +0300
+@@ -15,6 +15,8 @@
+ #include <linux/syscalls.h>
+ #include <linux/freezer.h>
+ 
++int freezer_state;
++
+ /* 
+  * Timeout for stopping processes
+  */
+@@ -183,6 +185,8 @@ int freeze_processes(void)
+ 	if (nr_unfrozen)
+ 		return nr_unfrozen;
+ 
++	freezer_state = FREEZER_ON;
++
+ 	printk("done.\n");
+ 	BUG_ON(in_atomic());
+ 	return 0;
+@@ -209,6 +213,8 @@ static void thaw_tasks(int thaw_user_spa
+ 
+ void thaw_processes(void)
+ {
++	freezer_state = FREEZER_OFF;
++
+ 	printk("Restarting tasks ... ");
+ 	thaw_tasks(FREEZER_KERNEL_THREADS);
+ 	thaw_tasks(FREEZER_USER_SPACE);
+Index: 2.6/kernel/timer.c
+===================================================================
+--- 2.6.orig/kernel/timer.c	2007-04-27 16:24:45.000000000 +0300
++++ 2.6/kernel/timer.c	2007-04-27 16:27:00.000000000 +0300
+@@ -36,6 +36,7 @@  *                              Copyrigh
+ #include <linux/delay.h>
+ #include <linux/tick.h>
+ #include <linux/kallsyms.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -1253,9 +1254,18 @@ static inline void calc_load(unsigned lo
+ 	if (unlikely(count < 0)) {
+ 		active_tasks = count_active_tasks();
+ 		do {
+-			CALC_LOAD(avenrun[0], EXP_1, active_tasks);
+-			CALC_LOAD(avenrun[1], EXP_5, active_tasks);
+-			CALC_LOAD(avenrun[2], EXP_15, active_tasks);
++			/*
++			 * If we let the load average be updated while
++			 * snapshot/shutdown, it will be very high
++			 * post resume. Processes such as some MTAs
++			 * that stop work while the average is high
++			 * will be unnecessarily disrupted.
++			 */
++			if (likely(!freezer_is_on())) {
++				CALC_LOAD(avenrun[0], EXP_1, active_tasks);
++				CALC_LOAD(avenrun[1], EXP_5, active_tasks);
++				CALC_LOAD(avenrun[2], EXP_15, active_tasks);
++			}
+ 			count += LOAD_FREQ;
+ 		} while (count < 0);
+ 	}
