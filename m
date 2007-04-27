@@ -1,14 +1,13 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 08:41:58 -0700 (PDT)
-Message-ID: <alpine.LFD.0.98.0704270833270.9964@woody.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
-	<1177684764.3565.20.camel@johannes.berg>
-	<1177685391.3565.22.camel@johannes.berg>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH 2/2] driver core: power management debugging
+Date: Fri, 27 Apr 2007 08:40:20 -0700
+Message-ID: <20070427154020.GA11190@kroah.com>
+References: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177685391.3565.22.camel@johannes.berg>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,64 +17,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Nick Piggin <npiggin@suse.de>, Pavel Machek <pavel@ucw.cz>, Mike Galbraith <efault@gmx.de>, Kernel development list <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, suspend2-devel@lists.suspend2.net, linux-pm <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@infradead.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Fri, 27 Apr 2007, Johannes Berg wrote:
+On Fri, Apr 27, 2007 at 03:25:46PM +0300, Pekka J Enberg wrote:
+> From: Nigel Cunningham <nigel@nigel.suspend2.net>
 > 
-> Eh, the point I actually wanted to make is that many drivers don't care
-> for the irqs disabled case and would have to add code to exclude it.
+> Add power management related debugging into driver core. Make the
+> kernel complain if a device driver lacks bus and class support for
+> resume or if a PCI or USB driver does not have a driver specific
+> resume function.
+> 
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  drivers/base/core.c       |   13 +++++++++++++
+>  drivers/pci/pci-driver.c  |    6 ++++++
+>  drivers/usb/core/driver.c |    6 ++++++
+>  include/linux/device.h    |    1 +
+>  4 files changed, 26 insertions(+)
+> 
+> Index: 2.6/drivers/base/core.c
+> ===================================================================
+> --- 2.6.orig/drivers/base/core.c	2007-04-27 14:42:13.000000000 +0300
+> +++ 2.6/drivers/base/core.c	2007-04-27 14:43:14.000000000 +0300
+> @@ -652,6 +652,18 @@ int device_add(struct device *dev)
+>  				class_intf->add_dev(dev, class_intf);
+>  		up(&dev->class->sem);
+>  	}
+> +
+> +#ifdef CONFIG_PM
+> +	if (!((dev->class && dev->class->resume) ||
+> +	      (dev->bus && (dev->bus->resume || dev->bus->resume_early))) &&
+> +	    !dev->pm_safe) {
+> +		printk(KERN_WARNING "Device driver %s lacks bus and class "
+> +				    "support for being resumed.\n",
+> +				    kobject_name(&dev->kobj));
+> +		dump_stack();
+> +	}
+> +#endif
 
-You really *really* want to do a two-phase thing, at least for the case I 
-care about. Whether that snapshotting thing does or not, I could care 
-less.
 
-There's a damn good reason why the kernel uses 
+I think you are reporting the wrong thing here, we want to know about
+the busses and classes without suspend support, not the individual
+devices, right?
 
-	/* phase 1 */
-	for_each_dev()
-		dev->suspend(dev);
+And dumping stuff like this to the log for every bus/class isn't the
+nicest :(
 
-	cli();
-	/* phase 2 */
-	for_each_dev()
-		dev->suspend_late(dev);
 
-(and the reverse case on resume).
+> +
+>   Done:
+>   	kfree(class_name);
+>  	put_device(dev);
+> @@ -989,6 +1001,7 @@ struct device *device_create(struct clas
+>  	dev->class = class;
+>  	dev->parent = parent;
+>  	dev->release = device_create_release;
+> +	dev->pm_safe = 1;
 
-The reason is simply that there are two totally different cases: things 
-like disks etc want to spin down and do slow and high-level operations, 
-while things like USB controllers and console devices do *not* want to be 
-suspended early, because if you do, you lose debuggability.
+I don't understand the use of this flag, it looks like it is only being
+set, which doesn't really make it very useful.
 
-So some things really *really* want to be done when they know that there 
-isn't anything else going on any more, and they want to delay the shutdown 
-to the very end. While other things really *require* that they can send 
-requests that can take time, and cannot run with interrupts disabled.
+So NAK on this patch.
 
-I actually think that "snapshot" is totally different, exactly because for 
-snapshotting, the slow operations like spinning down disks etc probably 
-don't really even exist, and would always be no-ops. But who knows..
+Oh, and please CC: me on driver core and USB and PCI core changes
+please...
 
-Anyway, I do have a final comment: 
+thanks,
 
-     DO NOT PASS "STATE FLAGS" TO DRIVERS 
-
-(or, even worse, assume that drivers would test "implicit" state by 
-calling the same function under two different states, and then have the 
-drivers test for "are interrupts disabled? Then I need to do something 
-else").
-
-If drivers are possibly going to do two different things, make it two 
-different entry-points. There's absolutely no downsides. It's _clearer_ to 
-the device writer when he gets called two different ways that it's not the 
-same case, and in case a particular device can do the same thing for both 
-cases, he can just set the function pointer to the same entry for both.
-
-Never EVER pass dynamic flags that modify behaviour. It's simply bad 
-programming. A function should do *one* thing, and do it well. 
-
-		Linus
+greg k-h
