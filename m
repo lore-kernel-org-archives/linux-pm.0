@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/PATCH 2/2] kernel: don't update load average
-	during snapshot/shutdown
-Date: Sat, 28 Apr 2007 00:25:43 +0200
-Message-ID: <20070427222543.GF2994@elf.ucw.cz>
-References: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
-	<20070427145212.GO22250@elf.ucw.cz>
-	<1177709523.4737.157.camel@nigel.suspend2.net>
-	<20070427221234.GE2994@elf.ucw.cz>
-	<1177712296.4737.182.camel@nigel.suspend2.net>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+ to -mm tree
+Date: Fri, 27 Apr 2007 15:55:30 -0700
+Message-ID: <20070427155530.9d589078.akpm@linux-foundation.org>
+References: <200703221800.l2MI0tBW026306@shell0.pdx.osdl.net>
+	<1177711880.3565.79.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1177712296.4737.182.camel@nigel.suspend2.net>
+In-Reply-To: <1177711880.3565.79.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,43 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org, rmk@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sat, 28 Apr 2007 00:11:20 +0200
+Johannes Berg <johannes@sipsolutions.net> wrote:
 
-> > > > NAK. This slows down regular operation, at it is 30 lines for what
-> > > > should have been one (or five).
-> > > 
-> > > Count them. It is one line (an if statement) plus seven lines of
-> > > comment.
-> > 
-> > You count them. Hint... you'll need to read original patch.
+> On Thu, 2007-03-22 at 10:00 -0800, akpm@linux-foundation.org wrote:
+> > The patch titled
+> >      rework pm_ops pm_disk_mode, kill misuse
+> > has been added to the -mm tree.  Its filename is
+> >      rework-pm_ops-pm_disk_mode-kill-misuse.patch
 > 
-> Ah. You're assuming this is the only use of freezer_is_on().
+> Will you be sending this patch for .22?
 
-Yes. You need quite good reason for hack like freezer_is_on(), and
-this is not it.
+yup.  It's about halfway back in the -mm queue, and I usually don't start
+sending the bulk of the -mm patches until halfway through the merge window
+(because I have dependencies on subsystem trees, some of which are often
+distressingly sluggish).
 
-> > > > Just place avenrun[0] = avenrun[1] = avenrun[2] = 0 at strategic place
-> > > > if you feel strongly about this. Additional points for using Rafael's
-> > > > "suspend done" notifier so that you don't have to modify suspend core.
-> > > 
-> > > =0 might not be right. If you did have a high load average prior to
-> > > suspending, not delivering email would be the right thing to do.
-> > 
-> > Ok, so =0 is not right, but it is better than adding 30lines of junk
-> > to the kernel.
-> > 
-> > NAK on this patch. Original behaviour is acceptable.
+So the ETA on this one would normally be 1.5 weeks.
+
+> I'd love to get my powermac/pmu
+> suspend work merged that gets /sys/power/state working instead of using
+> that pmu specific ioctl, but it depends on this patch to clean up the
+> mess surrounding pm_disk_mode [1].
 > 
-> to someone who IIRC correctly recently said he doesn't even use the
-> code.
+> johannes
+> 
+> [1] the generic code assumes that PM_DISK_PLATFORM is a great idea in
+> all cases. I'm surprised that suspend to disk is actually working for
+> anybody but acpi with S4 by default.
 
-If you want to work with me, learn how to write kernel code, learn
-english, and learn how to behave.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+In which case I'll move
+
+rework-pm_ops-pm_disk_mode-kill-misuse.patch
+power-management-remove-firmware-disk-mode.patch
+power-management-implement-pm_opsvalid-for-everybody.patch
+power-management-force-pm_opsvalid-callback-to-be.patch
+
+to head-of-queue.
+
+As long as it all compiles.  It often turns out that things in this area
+have dependencies upon the latest gregkh rampage.  We'll see.
