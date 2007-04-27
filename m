@@ -1,13 +1,18 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC/PATCH 2/2] driver core: power management debugging
-Date: Fri, 27 Apr 2007 08:40:20 -0700
-Message-ID: <20070427154020.GA11190@kroah.com>
-References: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [RFC/PATCH 2/2] kernel: don't update load average
+	during snapshot/shutdown
+Date: Fri, 27 Apr 2007 17:53:42 +0200
+Message-ID: <200704271753.43240.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0704271629150.15297@sbz-30.cs.Helsinki.FI>
+	<20070427150527.GQ22250@elf.ucw.cz>
+	<1177686732.3565.30.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1177686732.3565.30.camel@johannes.berg>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704271525071.11149@sbz-30.cs.Helsinki.FI>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,75 +22,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: nigel@nigel.suspend2.net, linux-pm@lists.osdl.org, pavel@ucw.cz
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.osdl.org, nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 03:25:46PM +0300, Pekka J Enberg wrote:
-> From: Nigel Cunningham <nigel@nigel.suspend2.net>
+On Friday, 27 April 2007 17:12, Johannes Berg wrote:
+> On Fri, 2007-04-27 at 17:05 +0200, Pavel Machek wrote:
 > 
-> Add power management related debugging into driver core. Make the
-> kernel complain if a device driver lacks bus and class support for
-> resume or if a PCI or USB driver does not have a driver specific
-> resume function.
+> > I think we should track -mm for now. git tree means Linus has to
+> > trust you, and if he does not, you are in _big_ trouble.
 > 
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  drivers/base/core.c       |   13 +++++++++++++
->  drivers/pci/pci-driver.c  |    6 ++++++
->  drivers/usb/core/driver.c |    6 ++++++
->  include/linux/device.h    |    1 +
->  4 files changed, 26 insertions(+)
-> 
-> Index: 2.6/drivers/base/core.c
-> ===================================================================
-> --- 2.6.orig/drivers/base/core.c	2007-04-27 14:42:13.000000000 +0300
-> +++ 2.6/drivers/base/core.c	2007-04-27 14:43:14.000000000 +0300
-> @@ -652,6 +652,18 @@ int device_add(struct device *dev)
->  				class_intf->add_dev(dev, class_intf);
->  		up(&dev->class->sem);
->  	}
-> +
-> +#ifdef CONFIG_PM
-> +	if (!((dev->class && dev->class->resume) ||
-> +	      (dev->bus && (dev->bus->resume || dev->bus->resume_early))) &&
-> +	    !dev->pm_safe) {
-> +		printk(KERN_WARNING "Device driver %s lacks bus and class "
-> +				    "support for being resumed.\n",
-> +				    kobject_name(&dev->kobj));
-> +		dump_stack();
-> +	}
-> +#endif
+> We could still generate patches from the actual git tree and send those
+> on to -mm. Bit more work though. Dunno. I try to import patches I see on
+> the mailing list into my own patch queue, but that seems not to be
+> effective all the time (never saw the freezer changes anywhere for
+> example)
 
+The freezer patches went through the LKML.
 
-I think you are reporting the wrong thing here, we want to know about
-the busses and classes without suspend support, not the individual
-devices, right?
+Generally, I expect we'll have quite a lot of patches floating around in the
+near future and a separate common tree would be handy, if someone has the
+time to maintain it.
 
-And dumping stuff like this to the log for every bus/class isn't the
-nicest :(
+I can set up a quilt patch series and export it for everyone from my webserver
+if that helps.
 
-
-> +
->   Done:
->   	kfree(class_name);
->  	put_device(dev);
-> @@ -989,6 +1001,7 @@ struct device *device_create(struct clas
->  	dev->class = class;
->  	dev->parent = parent;
->  	dev->release = device_create_release;
-> +	dev->pm_safe = 1;
-
-I don't understand the use of this flag, it looks like it is only being
-set, which doesn't really make it very useful.
-
-So NAK on this patch.
-
-Oh, and please CC: me on driver core and USB and PCI core changes
-please...
-
-thanks,
-
-greg k-h
+Greetings,
+Rafael
