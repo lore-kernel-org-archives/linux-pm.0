@@ -1,15 +1,15 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] power management: remove some useless code
-	from arm platforms
-Date: Sat, 28 Apr 2007 03:41:38 +0000
-Message-ID: <20070428034137.GA7200@atomide.com>
-References: <1177604177.6814.81.camel@johannes.berg> <463115BA.70505@gmail.com>
-	<20070427175327.d8739c5c.akpm@linux-foundation.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: + rework-pm_ops-pm_disk_mode-kill-misuse.patch added
+	to -mm tree
+Date: Sat, 28 Apr 2007 08:40:44 +0200
+Message-ID: <1177742445.3448.3.camel@johannes.berg>
+References: <200703221800.l2MI0tBW026306@shell0.pdx.osdl.net>
+	<1177711880.3565.79.camel@johannes.berg>
+	<20070427155530.9d589078.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============7175107517701572034=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070427175327.d8739c5c.akpm@linux-foundation.org>
+In-Reply-To: <20070427155530.9d589078.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,57 +17,62 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Johannes Berg <johannes@sipsolutions.net>, linux-omap-open-source@linux.omap.com, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org, rmk@arm.linux.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-* Andrew Morton <akpm@linux-foundation.org> [070428 00:53]:
-> On Fri, 27 Apr 2007 01:12:26 +0400
-> Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com> wrote:
-> 
-> > Johannes Berg wrote:
-> > > This patch kills some useless code omap1/omap2.
-> > Although the change looks harmless it'd be nice  CC-ing
-> > appropriate "arch" or "mach" lists.
-> > 
-> > Added omap list to CC.
-> > 
-> > BTW, you change OMAP stuff only, so your subject is slightly irrelevant.
-> > 
-> 
-> I'm not very comfortable handling OMAP code (Tony), ARM code (Russell) or
-> power-management code (Greg), and this patch is all three.
+--===============7175107517701572034==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-VhOfa3P5m01Mbx1AO5N2"
 
-Well this patch will probably cause some minor merge conflicts with the
-pending omap patches, not a big deal though.
 
-> So ho hum.  I queued it up with Greg as the arbitrary target, but I'm not
-> sure that is really appopriate.  Probably it should have been Tony, but
-> Tony's tree is hiding from me.
+--=-VhOfa3P5m01Mbx1AO5N2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The omap tree is available at [1] and the currently pending patches
-pile at [2].
+On Fri, 2007-04-27 at 15:55 -0700, Andrew Morton wrote:
 
-> I guess we should look at dragging the OMAP git tree into -mm.
+> In which case I'll move
+>=20
+> rework-pm_ops-pm_disk_mode-kill-misuse.patch
+> power-management-remove-firmware-disk-mode.patch
+> power-management-implement-pm_opsvalid-for-everybody.patch
+> power-management-force-pm_opsvalid-callback-to-be.patch
+>=20
+> to head-of-queue.
 
-I thought Russell is about to apply the pending omap patches to his
-tree, so let's wait until we hear from him.
+Thanks, much appreciated. If there are any problems the first one is the
+only patch my other patches really depend on, the others are just
+cleanups I made while in that area to ensure the mess doesn't
+proliferate again.
 
-Assuming Russell applies the pending omap patches, things should
-be pretty much in sync with the mainline tree and linux-omap tree for
-the core omap support.
+johannes
 
-There will be some driver and PM patches that would fit to -mm tree
-though. At least the voltage framework, and possibly the DSP code later
-on, come to mind.
+--=-VhOfa3P5m01Mbx1AO5N2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Regards,
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Tony
+iD4DBQBGMuxs/ETPhpq3jKURAhbXAJd6S55RizdDGuQiWMnGLlqvTq3IAJ0bmZNa
+Y0mE0TTqnpb+GjwjEvAxOw==
+=yXuy
+-----END PGP SIGNATURE-----
 
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
-[2] git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-upstream-after-clocksource
+--=-VhOfa3P5m01Mbx1AO5N2--
+
+
+--===============7175107517701572034==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7175107517701572034==--
