@@ -1,12 +1,15 @@
-From: "pmensah74@terra.es" <pmensah74@terra.es>
-Subject: Gold for sell
-Date: Sun, 29 Apr 2007 19:51:57 +0200 (MEST)
-Message-ID: <24527948.1177869117785.JavaMail.root@cps2>
-Reply-To: "pmensah74@terra.es" <pmensah74@terra.es>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.21-rc7-mm2 suspend bug. [kernel/kthread.c]
+Date: Sun, 29 Apr 2007 22:27:44 +0200
+Message-ID: <200704292227.45215.rjw__2777.25813580236$1177878276$gmane$org@sisk.pl>
+References: <a8f16e2b0704291251l69c1b02ahb9b22370bc468fa1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1177869244-411-228"
-Content-Transfer-Encoding: binary
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <a8f16e2b0704291251l69c1b02ahb9b22370bc468fa1@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,120 +19,169 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Dan Kruchinin <dubalom@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+Hi,
 
-------------=_1177869244-411-228
-Received: from cps2 (213.4.149.20) by csmtpout3.frontal.correo (7.3.118.4)
-	id 46290AE6006E55AE; Sun, 29 Apr 2007 19:52:23 +0200
-Received: from [217.168.112.117] by correo2.terra.es with HTTP
-	(authenticated as pmensah74@terra.es); Sun, 29 Apr 2007 19:51:57 +0200
-Message-ID: <24527948.1177869117785.JavaMail.root@cps2>
-Date: Sun, 29 Apr 2007 19:51:57 +0200 (MEST)
-From: "pmensah74@terra.es" <pmensah74@terra.es>
-Reply-To: "pmensah74@terra.es" <pmensah74@terra.es>
-Subject: Gold for sell
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_4352_5729290.1177869117783"
+On Sunday, 29 April 2007 21:51, Dan Kruchinin wrote:
+> Hi all.
+> 
+> There is a problem on my macbook core duo with suspend.
+> after suspending when i'm trying to 'wake up' my notebook, it seems
+> that it works, but i don't see anything at my monitor. So i have to
+> reboot it to continue my work.
+
+What exactly do you do to suspend?
+
+Rafael
 
 
-------=_Part_4352_5729290.1177869117783
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Dear sir,
-
-My family has a land with a gold deposit here in Ghana  which we mine localy and we need an expansion. Right now we have the AU Alluvial Gold Dust worth the following quantity and quality for sale.
-
-Product: Au metal (Gold).
-Origin: Ghana.
-Purity: 22 carat or better.
-Quantity: 350 Kg
-
-At moment, I want you to help  Us sell this products to enable  us expand our mining site.
-
-Looking forward to hear from you soonest
-
-Your Sincerely,
-Peter Mensah
-Accra-Ghana. 
-
-
-
-
-
-
-Ahora tambi&eacute;n puedes acceder a tu correo Terra desde el m&oacute;vil.
-
-Inf&oacute;rmate pinchando aqu&iacute;.
-
-
-
-
-
-
-------=_Part_4352_5729290.1177869117783
-Content-Type: text/html;charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Dear sir,<br/><br/>My family has a land with a gold deposit here in Ghana  which we mine localy and we need an expansion. Right now we have the AU Alluvial Gold Dust worth the following quantity and quality for sale.<br/><br/>Product: Au metal (Gold).<br/>Origin: Ghana.<br/>Purity: 22 carat or better.<br/>Quantity: 350 Kg<br/><br/>At moment, I want you to help  Us sell this products to enable  us expand our mining site.<br/><br/>Looking forward to hear from you soonest<br/><br/>Your Sincerely,<br/>Peter Mensah<br/>Accra-Ghana. <br/><br>
-<br>
-<br>
-<b>Ahora tambi&eacute;n puedes acceder a tu correo Terra desde el m&oacute;vil.</b><br>
-<b>Inf&oacute;rmate pinchando</b><a href="http://ad.doubleclick.net/clk;77451406;6134080;d?http://www.correo.movistar.es/do/isp/assistant/login?isp=terra"><b><strong> aqu&iacute;.</strong></b></a><br>
-
-
-
-
-
-------=_Part_4352_5729290.1177869117783--
-
-
-------------=_1177869244-411-228
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-
-Spam detection software, running on the system "daredevil.osdl.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  Dear sir, My family has a land with a gold deposit here
-  in Ghana which we mine localy and we need an expansion. Right now we
-  have the AU Alluvial Gold Dust worth the following quantity and quality
-  for sale. [...] 
-
-Content analysis details:   (7.0 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 0.7 UNDISC_RECIPS          Valid-looking To "undisclosed-recipients"
- 1.9 DEAR_SOMETHING         BODY: Contains 'Dear (something)'
- 0.1 OSDL_NIGERIAN_GOLD     BODY: "go*ld"
- 0.4 FUZZY_AMBIEN           BODY: Attempt to obfuscate words in spam
- 0.1 OSDL_NIGERIAN_DEPOSIT  BODY: "dep*osit"
- 1.5 HTML_OBFUSCATE_05_10   BODY: Message is 5% to 10% HTML obfuscation
- 0.5 HTML_30_40             BODY: Message is 30% to 40% HTML
- 0.0 HTML_MESSAGE           BODY: HTML included in message
- 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-                            [score: 0.5000]
- 1.8 HTML_BADTAG_50_60      BODY: HTML message is 50% to 60% bad tags
-
-
-
-------------=_1177869244-411-228
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-------------=_1177869244-411-228--
+> ---
+> Apr 29 23:31:16 midgard kernel: [140594.900856] BUG: at
+> kernel/kthread.c:166 kthread_bind()
+> Apr 29 23:31:16 midgard kernel: [140594.900870]  [<c0142c9b>]
+> _cpu_down+0x16b/0x250
+> Apr 29 23:31:16 midgard kernel: [140594.900893]  [<c0142f80>]
+> disable_nonboot_cpus+0x60/0xf0
+> Apr 29 23:31:16 midgard kernel: [140594.900903]  [<c0147efa>]
+> enter_state+0x22a/0x240
+> Apr 29 23:31:16 midgard kernel: [140594.900913]  [<c0147fcd>]
+> state_store+0xbd/0xd0
+> Apr 29 23:31:16 midgard kernel: [140594.900920]  [<c0147f10>]
+> state_store+0x0/0xd0
+> Apr 29 23:31:16 midgard kernel: [140594.900927]  [<c01c1559>]
+> subsys_attr_store+0x29/0x40
+> Apr 29 23:31:16 midgard kernel: [140594.900937]  [<c01c1774>]
+> sysfs_write_file+0xd4/0x160
+> Apr 29 23:31:16 midgard kernel: [140594.900948]  [<c0180eb6>]
+> vfs_write+0xa6/0x160
+> Apr 29 23:31:16 midgard kernel: [140594.900958]  [<c01c16a0>]
+> sysfs_write_file+0x0/0x160
+> Apr 29 23:31:16 midgard kernel: [140594.900966]  [<c0181601>]
+> sys_write+0x41/0x70
+> Apr 29 23:31:16 midgard kernel: [140594.900974]  [<c018c70b>]
+> sys_dup2+0xeb/0x120
+> Apr 29 23:31:16 midgard kernel: [140594.900984]  [<c0104116>]
+> sysenter_past_esp+0x5f/0x85
+> Apr 29 23:31:16 midgard kernel: [140594.900999]  =======================
+> ---
+> 
+> dmesg output:
+> ----
+> ....
+> Apr 29 23:31:16 midgard kernel: [140594.788697] Suspending device vtcon0
+> Apr 29 23:31:16 midgard kernel: [140594.788700] Suspending device platform
+> Apr 29 23:31:16 midgard kernel: [140594.788704] Disabling non-boot CPUs ...
+> Apr 29 23:31:16 midgard kernel: [140594.900464] CPU 1 is now offline
+> Apr 29 23:31:16 midgard kernel: [140594.900469] SMP alternatives:
+> switching to UP code
+> Apr 29 23:31:16 midgard kernel: [140594.900856] BUG: at
+> kernel/kthread.c:166 kthread_bind()
+> Apr 29 23:31:16 midgard kernel: [140594.900870]  [<c0142c9b>]
+> _cpu_down+0x16b/0x250
+> Apr 29 23:31:16 midgard kernel: [140594.900893]  [<c0142f80>]
+> disable_nonboot_cpus+0x60/0xf0
+> Apr 29 23:31:16 midgard kernel: [140594.900903]  [<c0147efa>]
+> enter_state+0x22a/0x240
+> Apr 29 23:31:16 midgard kernel: [140594.900913]  [<c0147fcd>]
+> state_store+0xbd/0xd0
+> Apr 29 23:31:16 midgard kernel: [140594.900920]  [<c0147f10>]
+> state_store+0x0/0xd0
+> Apr 29 23:31:16 midgard kernel: [140594.900927]  [<c01c1559>]
+> subsys_attr_store+0x29/0x40
+> Apr 29 23:31:16 midgard kernel: [140594.900937]  [<c01c1774>]
+> sysfs_write_file+0xd4/0x160
+> Apr 29 23:31:16 midgard kernel: [140594.900948]  [<c0180eb6>]
+> vfs_write+0xa6/0x160
+> Apr 29 23:31:16 midgard kernel: [140594.900958]  [<c01c16a0>]
+> sysfs_write_file+0x0/0x160
+> Apr 29 23:31:16 midgard kernel: [140594.900966]  [<c0181601>]
+> sys_write+0x41/0x70
+> Apr 29 23:31:16 midgard kernel: [140594.900974]  [<c018c70b>]
+> sys_dup2+0xeb/0x120
+> Apr 29 23:31:16 midgard kernel: [140594.900984]  [<c0104116>]
+> sysenter_past_esp+0x5f/0x85
+> Apr 29 23:31:16 midgard kernel: [140594.900999]  =======================
+> Apr 29 23:31:16 midgard kernel: [140594.902843] CPU1 is down
+> Apr 29 23:31:16 midgard kernel: [18014366.415769] Enabling non-boot CPUs ...
+> Apr 29 23:31:16 midgard kernel: [18014366.426999] SMP alternatives:
+> switching to SMP code
+> Apr 29 23:31:16 midgard kernel: [18014366.427165] Booting processor 1/1 eip 3000
+> Apr 29 23:31:16 midgard kernel: [18014366.436913] Initializing CPU#1
+> Apr 29 23:31:16 midgard kernel: [18014366.509141] Calibrating delay
+> using timer specific routine.. 3994.69 BogoMIPS (lpj=7989390)
+> Apr 29 23:31:16 midgard kernel: [18014366.509152] monitor/mwait feature present.
+> Apr 29 23:31:16 midgard kernel: [18014366.509156] CPU: L1 I cache:
+> 32K, L1 D cache: 32K
+> Apr 29 23:31:16 midgard kernel: [18014366.509158] CPU: L2 cache: 2048K
+> Apr 29 23:31:16 midgard kernel: [18014366.509160] CPU: Physical Processor ID: 0
+> Apr 29 23:31:16 midgard kernel: [18014366.509161] CPU: Processor Core ID: 1
+> Apr 29 23:31:16 midgard kernel: [18014366.509637] CPU1: Intel Genuine
+> Intel(R) CPU            1500  @ 2.00GHz stepping 08
+> Apr 29 23:31:16 midgard kernel: [18014366.509659] checking TSC
+> synchronization [CPU#0 -> CPU#1]:
+> Apr 29 23:31:16 midgard kernel: [18014366.529627] Measured 68812018716
+> cycles TSC warp between CPUs, turning off TSC clock.
+> Apr 29 23:31:16 midgard kernel: [18014366.529630] Marking TSC unstable
+> due to: check_tsc_sync_source failed.
+> Apr 29 23:31:16 midgard kernel: [18014366.529641] Time: hpet
+> clocksource has been installed.
+> Apr 29 23:31:16 midgard kernel: [18014366.530137] speedstep-centrino
+> with X86_SPEEDSTEP_CENTRINO_ACPI config is deprecated.
+> Apr 29 23:31:16 midgard kernel: [18014366.530139]  Use
+> X86_ACPI_CPUFREQ (acpi-cpufreq) instead.
+> Apr 29 23:31:16 midgard kernel: [18014366.530209] CPU1 is up
+> Apr 29 23:31:16 midgard kernel: [18014366.614003] Clocksource tsc
+> unstable (delta = 4125051653052 ns)
+> Apr 29 23:31:16 midgard kernel: [18014366.730352] ACPI: PCI Interrupt
+> 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> Apr 29 23:31:16 midgard kernel: [18014366.745126] ACPI: PCI Interrupt
+> 0000:00:1b.0[A] -> GSI 22 (level, low) -> IRQ 22
+> Apr 29 23:31:16 midgard kernel: [18014366.894946] ACPI: PCI Interrupt
+> 0000:00:1c.0[A] -> GSI 17 (level, low) -> IRQ 17
+> Apr 29 23:31:16 midgard kernel: [18014366.895025] ACPI: PCI Interrupt
+> 0000:00:1c.1[B] -> GSI 16 (level, low) -> IRQ 16
+> Apr 29 23:31:16 midgard kernel: [18014366.895039] PCI: Enabling device
+> 0000:00:1d.0 (0000 -> 0001)
+> Apr 29 23:31:16 midgard kernel: [18014366.895042] ACPI: PCI Interrupt
+> 0000:00:1d.0[A] -> GSI 21 (level, low) -> IRQ 21
+> Apr 29 23:31:16 midgard kernel: [18014366.895104] usb usb1: root hub
+> lost power or was reset
+> Apr 29 23:31:16 midgard kernel: [18014366.895141] PCI: Enabling device
+> 0000:00:1d.1 (0000 -> 0001)
+> Apr 29 23:31:16 midgard kernel: [18014366.895144] ACPI: PCI Interrupt
+> 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 19
+> Apr 29 23:31:16 midgard kernel: [18014366.895204] usb usb2: root hub
+> lost power or was reset
+> Apr 29 23:31:16 midgard kernel: [18014366.895237] PCI: Enabling device
+> 0000:00:1d.2 (0000 -> 0001)
+> Apr 29 23:31:16 midgard kernel: [18014366.895240] ACPI: PCI Interrupt
+> 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 18
+> Apr 29 23:31:16 midgard kernel: [18014366.895299] usb usb3: root hub
+> lost power or was reset
+> Apr 29 23:31:16 midgard kernel: [18014366.895328] PCI: Enabling device
+> 0000:00:1d.3 (0000 -> 0001)
+> Apr 29 23:31:16 midgard kernel: [18014366.895331] ACPI: PCI Interrupt
+> 0000:00:1d.3[D] -> GSI 16 (level, low) -> IRQ 16
+> Apr 29 23:31:16 midgard kernel: [18014366.895391] usb usb4: root hub
+> lost power or was reset
+> Apr 29 23:31:16 midgard kernel: [18014366.909854] PCI: Enabling device
+> 0000:00:1d.7 (0000 -> 0002)
+> Apr 29 23:31:16 midgard kernel: [18014366.909857] ACPI: PCI Interrupt
+> 0000:00:1d.7[A] -> GSI 21 (level, low) -> IRQ 21
+> Apr 29 23:31:16 midgard kernel: [18014366.910032] ACPI: PCI Interrupt
+> 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
+> Apr 29 23:31:16 midgard kernel: [18014366.924871] ACPI: PCI Interrupt
+> 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 19
+> Apr 29 23:31:16 midgard kernel: [18014366.939965] sky2 eth0: enabling interface
+> Apr 29 23:31:16 midgard kernel: [18014366.941763] sky2 eth0: ram buffer 48K
+> Apr 29 23:31:16 midgard kernel: [18014367.006976] ohci1394: fw-host0:
+> OHCI-1394 1.0 (PCI): IRQ=[19]  MMIO=[90000000-900007ff]  Max
+> Packet=[2048]  IR/IT contexts=[8/8]
+> ...
+> ---
+> 
+> Thanks.
+> Dan Kruchinin.
