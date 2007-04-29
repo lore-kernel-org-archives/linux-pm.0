@@ -1,11 +1,14 @@
-From: "Spoon Oganov" <Oganovildov@aatservices.com>
-Subject: Our assumptions about entropy in user passphrases can
-	make this better or worse.
-Date: Sun, 29 Apr 2007 01:57:29 +0200
-Message-ID: <000701c789f0$fa989b10$4e4580d9@alpha>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH 2/2] driver core: power management debugging
+Date: Sat, 28 Apr 2007 23:50:51 -0700
+Message-ID: <20070429065051.GA31628@kroah.com>
+References: <Pine.LNX.4.44L0.0704281035530.31211-100000@netrider.rowland.org>
+	<1177800952.7652.4.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3790507556222564922=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <1177800952.7652.4.camel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,69 +16,53 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: linux-pm@lists.osdl.org, Pekka J Enberg <penberg@cs.helsinki.fi>, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
---===============3790507556222564922==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0005_01C78A01.BE216B10"
+On Sun, Apr 29, 2007 at 08:55:52AM +1000, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Sat, 2007-04-28 at 10:42 -0400, Alan Stern wrote:
+> > On Sat, 28 Apr 2007, Nigel Cunningham wrote:
+> > 
+> > > Hi Alan.
+> > 
+> > > Sorry. I thought you were wrong for a minute, but then I looked again at
+> > > the messages in my dmesg...
+> > > 
+> > > [   33.944214] Device driver usbdev1.1_ep00 lacks bus and class support for being resumed.
+> > > [   34.051765] Device driver usbdev1.1_ep81 lacks bus and class support for being resumed.
+> > > [   34.113740] Device driver usbdev2.1_ep00 lacks bus and class support for being resumed.
+> > > [   34.221541] Device driver usbdev2.1_ep81 lacks bus and class support for being resumed.
+> > > [   34.251562] Device driver usbdev3.1_ep00 lacks bus and class support for being resumed.
+> > > [   34.361345] Device driver usbdev3.1_ep81 lacks bus and class support for being resumed.
+> > > 
+> > > They're coming from the other printk, of course.
+> > > 
+> > > > Now perhaps you would prefer to check the USB interface drivers -- there 
+> > > > are many of them, and quite a few don't have suspend or resume methods.  
+> > > > You would need to modify usb_register_driver() instead of 
+> > > > usb_register_device_driver().
+> > > 
+> > > Would they be the ones covered above?
+> > 
+> > No.  As Greg pointed out, these usbdevXX_epYY "devices" are nothing but 
+> > placeholders at the moment.  They don't actually do anything and they have 
+> > no need for power management.  (But they do manage to clutter up the 
+> > system log with lots of extraneous warnings from the PM core...)
+> 
+> Ok, so they could have the pm_safe flag set to suppress the message.
 
-------=_NextPart_000_0005_01C78A01.BE216B10
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+No, we don't want a flag just to shut up a message, that's the first
+thing a developer will do when they see that message, without realizing
+what exactly they should be doing instead.
 
-ANLEGER UHR BJ5N.F!!!
-DIE RALLYE IST GESTARTET
+Trust me, I know the lengths kernel developers go to to try to work
+around "helpful hints" that the kernel can spit out at you :(
 
-Firma: BOERSE INVEST BETEI
-WKN : 797639
-ISIN : CH0012802093
-Markt: Frankfurt
-Kürzel : BJ5N.F
-Preis: 1.90
-5-Tag Prognose: 3.00
+thanks,
 
-KAUFEN KAUFEN KAUFEN!
-BJ5N.F ESGESCHAFT FIN UNTER PARI!
-------=_NextPart_000_0005_01C78A01.BE216B10
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.3059" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT Arial size=3D2>ANLEGER UHR BJ5N.F!!!</FONT></DIV>
-<DIV><FONT Arial size=3D2>DIE RALLYE IST GESTARTET</FONT></DIV>
-<DIV><FONT Arial size=3D2></FONT></DIV>
-<DIV><FONT Arial size=3D2>Firma: BOERSE INVEST BETEI</FONT></DIV>
-<DIV><FONT Arial size=3D2>WKN : 797639</FONT></DIV>
-<DIV><FONT Arial size=3D2>ISIN : CH0012802093</FONT></DIV>
-<DIV><FONT Arial size=3D2>Markt: Frankfurt</FONT></DIV>
-<DIV><FONT Arial size=3D2>K=FCrzel : BJ5N.F</FONT></DIV>
-<DIV><FONT Arial size=3D2>Preis: 1.90</FONT></DIV>
-<DIV><FONT Arial size=3D2>5-Tag Prognose: 3.00</FONT></DIV>
-<DIV><FONT Arial size=3D2></FONT></DIV>
-<DIV><FONT Arial size=3D2>KAUFEN KAUFEN KAUFEN!</FONT></DIV>
-<DIV><FONT Arial size=3D2>BJ5N.F ESGESCHAFT FIN UNTER=20
-PARI!</FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0005_01C78A01.BE216B10--
-
-
---===============3790507556222564922==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---===============3790507556222564922==--
+greg k-h
