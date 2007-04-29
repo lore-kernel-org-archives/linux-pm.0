@@ -1,10 +1,15 @@
-From: "Luke veselinovic" <Luke_veselinovic@Dacom.net>
-Subject: Enter wbemtest in the Open edit field.
-Date: Sun, 29 Apr 2007 10:11:02 -0500
-Message-ID: <000601c78a70$99c14960$52cbdbc9@SERVIDOR>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.21 suspend-to-disk regression
+Date: Sun, 29 Apr 2007 18:32:15 +0200
+Message-ID: <200704291832.15959.rjw@sisk.pl>
+References: <f129n6$mro$1@sea.gmane.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6150640340668840697=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <f129n6$mro$1@sea.gmane.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,69 +17,97 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.osdl.org, Marcus Better <marcus@better.se>
 List-Id: linux-pm@vger.kernel.org
 
---===============6150640340668840697==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0003_01C78A46.B0EB4160"
+Hi,
 
-------=_NextPart_000_0003_01C78A46.B0EB4160
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Sunday, 29 April 2007 16:22, Marcus Better wrote:
+> Hi,
+> 
+> suspend-to-disk isn't working well anymore on my Thinkpad R60 with Intel
+> Core 2 Duo and kernel 2.6.21 (x86_64). It's a Debian system with uswsusp
+> 0.6~cvs20070202-1, and I'm using s2disk. I believe it was quite stable
+> around 2.6.20. 
+> 
+> It does succeed sometimes, but often it fails at suspend. Several times it
+> hung at "snapshotting system" with the sleep LED blinking. Once it just
+> rebooted at that point. Sometimes it suspends correctly but the image is
+> not recognized at boot.
+> 
+> I don't know if this is similar to any of the previously listed regressions,
+> it's a bit daunting to wade through all the suspend-related threads...
 
-ANLEGER UHR BJ5N.F!!!
-DIE RALLYE IST GESTARTET
+We have some suspend regressions on Thinkpads reported, but I think they
+are different to what you describe.
 
-Firma: BOERSE INVEST BETEI
-WKN : 797639
-ISIN : CH0012802093
-Markt: Frankfurt
-Kürzel : BJ5N.F
-Preis: 1.90
-5-Tag Prognose: 3.00
+Can you please apply the appended patch and see if that helps?
 
-KAUFEN KAUFEN KAUFEN!
-BJ5N.F ESGESCHAFT FIN UNTER PARI!
-------=_NextPart_000_0003_01C78A46.B0EB4160
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Rafael
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.3059" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT Arial size=3D2>ANLEGER UHR BJ5N.F!!!</FONT></DIV>
-<DIV><FONT Arial size=3D2>DIE RALLYE IST GESTARTET</FONT></DIV>
-<DIV><FONT Arial size=3D2></FONT></DIV>
-<DIV><FONT Arial size=3D2>Firma: BOERSE INVEST BETEI</FONT></DIV>
-<DIV><FONT Arial size=3D2>WKN : 797639</FONT></DIV>
-<DIV><FONT Arial size=3D2>ISIN : CH0012802093</FONT></DIV>
-<DIV><FONT Arial size=3D2>Markt: Frankfurt</FONT></DIV>
-<DIV><FONT Arial size=3D2>K=FCrzel : BJ5N.F</FONT></DIV>
-<DIV><FONT Arial size=3D2>Preis: 1.90</FONT></DIV>
-<DIV><FONT Arial size=3D2>5-Tag Prognose: 3.00</FONT></DIV>
-<DIV><FONT Arial size=3D2></FONT></DIV>
-<DIV><FONT Arial size=3D2>KAUFEN KAUFEN KAUFEN!</FONT></DIV>
-<DIV><FONT Arial size=3D2>BJ5N.F ESGESCHAFT FIN UNTER=20
-PARI!</FONT></DIV></BODY></HTML>
+---
+ kernel/power/disk.c |    4 ++--
+ kernel/power/user.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-------=_NextPart_000_0003_01C78A46.B0EB4160--
-
-
---===============6150640340668840697==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---===============6150640340668840697==--
+Index: linux-2.6.21-rc7/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21-rc7.orig/kernel/power/disk.c
++++ linux-2.6.21-rc7/kernel/power/disk.c
+@@ -170,9 +170,9 @@ int pm_suspend_disk(void)
+ 
+ 	if (in_suspend) {
+ 		enable_nonboot_cpus();
+-		platform_finish();
+ 		device_resume();
+ 		resume_console();
++		platform_finish();
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write();
+ 		if (!error)
+@@ -189,9 +189,9 @@ int pm_suspend_disk(void)
+  Enable_cpus:
+ 	enable_nonboot_cpus();
+  Resume_devices:
+-	platform_finish();
+ 	device_resume();
+ 	resume_console();
++	platform_finish();
+  Thaw:
+ 	unprepare_processes();
+  Finish:
+Index: linux-2.6.21-rc7/kernel/power/user.c
+===================================================================
+--- linux-2.6.21-rc7.orig/kernel/power/user.c
++++ linux-2.6.21-rc7/kernel/power/user.c
+@@ -170,11 +170,11 @@ static inline int snapshot_suspend(int p
+ 	}
+ 	enable_nonboot_cpus();
+  Resume_devices:
++	device_resume();
++	resume_console();
+ 	if (platform_suspend)
+ 		platform_finish();
+ 
+-	device_resume();
+-	resume_console();
+  Finish:
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+@@ -202,11 +202,11 @@ static inline int snapshot_restore(int p
+ 
+ 	enable_nonboot_cpus();
+  Resume_devices:
++	device_resume();
++	resume_console();
+ 	if (platform_suspend)
+ 		platform_finish();
+ 
+-	device_resume();
+-	resume_console();
+  Finish:
+ 	pm_restore_console();
+ 	mutex_unlock(&pm_mutex);
