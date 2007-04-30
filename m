@@ -1,17 +1,9 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: shrinking memory for suspend?
-Date: Mon, 30 Apr 2007 21:57:32 +0200
-Message-ID: <200704302157.33000.rjw@sisk.pl>
-References: <1177943076.5102.83.camel@johannes.berg>
-	<200704301710.43329.rjw@sisk.pl>
-	<1177945758.5102.96.camel@johannes.berg>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+From: akpm@linux-foundation.org
+Subject: [patch 6/8] power management: force pm_ops.valid
+	callback to be assigned
+Date: Mon, 30 Apr 2007 15:09:55 -0700
+Message-ID: <200704302209.l3UM9tSx016074@shell0.pdx.osdl.net>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177945758.5102.96.camel@johannes.berg>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +13,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: torvalds@linux-foundation.org
+Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, johannes@sipsolutions.net
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 30 April 2007 17:09, Johannes Berg wrote:
-> Hi,
-> 
-> > I don't think it's related to the freezing of user space.  You can allocate
-> > memory with all of the user space frozen just fine.  I'd say it's related to
-> > the freezing of kernel threads, rather.
-> 
-> Ah, true, of course.
-> 
-> > > Why do we freeze userspace anyway?
-> > 
-> > Well, let me quote Linus:
-> > 
-> > "I _do_ realize the IO request queue issues, and that we cannot actually do 
-> > s2ram with some devices in the middle of a DMA. So we want to be able to 
-> > avoid *that*, there's no question about that. And I suspect that stopping 
-> > user threads and then waiting for a sync is practically one of the easier 
-> > ways to do so."
-> 
-> Hmm, yeah. Does this apply to kernel threads too? Actually, I guess
-> device drivers should wait for suspend and reject commands to devices
-> that are suspended already?
+From: Johannes Berg <johannes@sipsolutions.net>
 
-Kernel threads that belong to device drivers are frozen too (well, not exactly
-all of them, but let's omit the ugly details for now), because they generally
-need to be synchronized with the drivers' .suspend() and .resume() routines
-and IMO it's easier to freeze them than handle that in any other way.
+This patch changes the docs and behaviour from "all states valid" to "no
+states valid" if no .valid callback is assigned.  Users of pm_ops that only
+need mem sleep can assign pm_valid_only_mem without any overhead, others
+will require more elaborate callbacks.
 
-After .suspend() and before .resume() any commands should not be sent to the
-device.
+Now that all users of pm_ops have a .valid callback this is a safe thing to
+do and prevents things from getting messy again as they were before.
 
-> Can it actually happen that we schedule to userspace while calling all the
-> suspend issues etc? 
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Looks-okay-to: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: <linux-pm@lists.linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-No, the user space is frozen (ie. in TASK_UNINTERRUPTIBLE) at that time.
+ include/linux/pm.h  |   12 ++++++------
+ kernel/power/main.c |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-Greetings,
-Rafael
+diff -puN include/linux/pm.h~power-management-force-pm_opsvalid-callback-to-be include/linux/pm.h
+--- a/include/linux/pm.h~power-management-force-pm_opsvalid-callback-to-be
++++ a/include/linux/pm.h
+@@ -125,12 +125,12 @@ typedef int __bitwise suspend_disk_metho
+  * struct pm_ops - Callbacks for managing platform dependent suspend states.
+  * @valid: Callback to determine whether the given state can be entered.
+  * 	If %CONFIG_SOFTWARE_SUSPEND is set then %PM_SUSPEND_DISK is
+- *	always valid and never passed to this call.
+- *	If not assigned, all suspend states are advertised as valid
+- *	in /sys/power/state (but can still be rejected by prepare or enter.)
+- *	Since new states can be added for other platforms, you should
+- *	assign this callback. There is a %pm_valid_only_mem function
+- *	available if you only implemented mem sleep.
++ *	always valid and never passed to this call. If not assigned,
++ *	no suspend states are valid.
++ *	Valid states are advertised in /sys/power/state but can still
++ *	be rejected by prepare or enter if the conditions aren't right.
++ *	There is a %pm_valid_only_mem function available that can be assigned
++ *	to this if you only implement mem sleep.
+  *
+  * @prepare: Prepare the platform for the given suspend state. Can return a
+  *	negative error code if necessary.
+diff -puN kernel/power/main.c~power-management-force-pm_opsvalid-callback-to-be kernel/power/main.c
+--- a/kernel/power/main.c~power-management-force-pm_opsvalid-callback-to-be
++++ a/kernel/power/main.c
+@@ -198,8 +198,8 @@ static inline int valid_state(suspend_st
+ 
+ 	/* all other states need lowlevel support and need to be
+ 	 * valid to the lowlevel implementation, no valid callback
+-	 * implies that all are valid. */
+-	if (!pm_ops || (pm_ops->valid && !pm_ops->valid(state)))
++	 * implies that none are valid. */
++	if (!pm_ops || !pm_ops->valid || !pm_ops->valid(state))
+ 		return 0;
+ 	return 1;
+ }
+_
