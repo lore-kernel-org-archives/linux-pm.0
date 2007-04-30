@@ -1,17 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] swsusp: do not use pm_ops (was: Re: suspend2
-	merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Mon, 30 Apr 2007 16:51:45 +0200
-Message-ID: <200704301651.46376.rjw@sisk.pl>
-References: <20070425072350.GA6866@ucw.cz>
-	<200704291448.44855.Rafal.Wysocki@fuw.edu.pl>
-	<1177921759.5102.24.camel@johannes.berg>
+Subject: Re: Re: 2.6.21-rc7-mm2 suspend bug. [kernel/kthread.c]
+Date: Mon, 30 Apr 2007 16:58:04 +0200
+Message-ID: <200704301658.05387.rjw__2108.6246859797$1177944888$gmane$org@sisk.pl>
+References: <a8f16e2b0704291251l69c1b02ahb9b22370bc468fa1@mail.gmail.com>
+	<20070430003946.b4d856b4.akpm@linux-foundation.org>
+	<20070430100535.GA30975@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1177921759.5102.24.camel@johannes.berg>
+In-Reply-To: <20070430100535.GA30975@in.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,41 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: ego@in.ibm.com
+Cc: Pavel Machek <pavel@ucw.cz>, Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org, pm@smtp2.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 30 April 2007 10:29, Johannes Berg wrote:
-> On Sun, 2007-04-29 at 14:48 +0200, R. J. Wysocki wrote:
+On Monday, 30 April 2007 12:05, Gautham R Shenoy wrote:
+> On Mon, Apr 30, 2007 at 12:39:46AM -0700, Andrew Morton wrote:
+> > On Sun, 29 Apr 2007 22:27:44 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > On Sunday, 29 April 2007 21:51, Dan Kruchinin wrote:
+> > > > Hi all.
+> > > > 
+> > > > There is a problem on my macbook core duo with suspend.
+> > > > after suspending when i'm trying to 'wake up' my notebook, it seems
+> > > > that it works, but i don't see anything at my monitor. So i have to
+> > > > reboot it to continue my work.
+> > > 
+> > > What exactly do you do to suspend?
+> > > 
+> > 
+> > This is due to _cpu_down() calling kthread_bind() in state TASK_RUNNING.
 > 
-> > +	status = acpi_enter_sleep_state(ACPI_STATE_S4);
-> > +	local_irq_restore(flags);
-> > +
-> > +	/*
-> > +	 * Restore processor state
-> > +	 * We should only be here if we're coming back from hibernation and
-> > +	 * the memory image should have already been loaded from disk.
+> The state should be TASK_INTERRUPTIBLE. That's the state of the thread
+> 'p' should be in when we do a kthread_bind(p) in _cpu_down().
 > 
-> That comment doesn't seem right. This is in ->enter so afaict the image
-> hasn't been loaded yet at this point. I don't know if you just moved
-> code but if you did then I don't think it was correct before.
+> Are you sure about the TASK_RUNNING part ?
 
-It was in your patch, so I kept it, but I don't think it's correct too.
+Well, the WARN_ON() in kernel/kthread.c, line166, is triggering here, so it
+may be TASK_INTERRUPTIBLE too (should the WARN_ON() trigger in that case)?
 
-Moreover, it seems that acpi_save_state_mem() and acpi_restore_state_mem() are
-only needed by s2ram, so we can safely remove them from the hibernation code
-path.  Pavel, is that correct?
-
-> > +	 */
-> > +	acpi_restore_state_mem();
-> 
-> Maybe that needs to be in ->finish then? Or somewhere in the deeper arch
-> code?
-> 
-> Other than that it looks good to me on a cursory look. I'll give it a
-> try on my G5 on Wednesday or Thursday.
-
-I think I'll have an improved version till then. :-)
-
-Greetings,
 Rafael
