@@ -1,12 +1,14 @@
-From: Marcus Better <marcus@better.se>
-Subject: Re: 2.6.21 suspend-to-disk regression
-Date: Mon, 30 Apr 2007 08:58:07 +0200
-Message-ID: <200704300858.11370.marcus@better.se>
-References: <f129n6$mro$1@sea.gmane.org> <200704291832.15959.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc7-mm2 suspend bug. [kernel/kthread.c]
+Date: Mon, 30 Apr 2007 00:39:46 -0700
+Message-ID: <20070430003946.b4d856b4.akpm@linux-foundation.org>
+References: <a8f16e2b0704291251l69c1b02ahb9b22370bc468fa1@mail.gmail.com>
+	<200704292227.45215.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4620987534978704626=="
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704291832.15959.rjw@sisk.pl>
+In-Reply-To: <200704292227.45215.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,57 +16,64 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm@lists.osdl.org
+Cc: list <linux-pm@lists.linux-foundation.org>, Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, pm@smtp2.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============4620987534978704626==
-Content-Type: multipart/signed; boundary="nextPart3172214.6CjZeyZSRj";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Sun, 29 Apr 2007 22:27:44 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
---nextPart3172214.6CjZeyZSRj
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> On Sunday, 29 April 2007 21:51, Dan Kruchinin wrote:
+> > Hi all.
+> > 
+> > There is a problem on my macbook core duo with suspend.
+> > after suspending when i'm trying to 'wake up' my notebook, it seems
+> > that it works, but i don't see anything at my monitor. So i have to
+> > reboot it to continue my work.
+> 
+> What exactly do you do to suspend?
+> 
 
-Rafael J. Wysocki wrote:
-> Can you please apply the appended patch and see if that helps?
+This is due to _cpu_down() calling kthread_bind() in state TASK_RUNNING.
 
-Only tried once so far, but it powered off while writing out the image,=20
-towards the end. When booting it of course didn't resume, and said the=20
-partitions were not cleanly shut down.
-
-I think I had similar behaviour once before, so it may not be related to th=
-e=20
-patch. I should probably try more to see if the patch had any effect.
-
-Marcus
-
---nextPart3172214.6CjZeyZSRj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGNZODXjXn6TzcAQkRAmseAJ4g3VlGBj2qFFZlMLJZZwEERna0IACffge2
-y4cTjq8eVsGhElw8j2Aw7gI=
-=XiNB
------END PGP SIGNATURE-----
-
---nextPart3172214.6CjZeyZSRj--
+So I was sent the below, including worrisome changelog.
 
 
 
---===============4620987534978704626==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
+From: Gautham R Shenoy <ego@in.ibm.com>
 
---===============4620987534978704626==--
+We are anyway kthread_stop()ping other per-cpu kernel threads after
+move_task_off_dead_cpu(), so we can do it with the stop_machine_run thread
+as well.
+
+I just checked with Vatsa if there was any subtle reason why they
+had put in the kthread_bind() in cpu.c. Vatsa cannot seem to recollect
+any and I can't see any. So let us just remove the kthread_bind.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/cpu.c |    4 ----
+ 1 files changed, 4 deletions(-)
+
+diff -puN kernel/cpu.c~remvoe-kthread_bind-call-from-_cpu_down kernel/cpu.c
+--- a/kernel/cpu.c~remvoe-kthread_bind-call-from-_cpu_down
++++ a/kernel/cpu.c
+@@ -175,10 +175,6 @@ static int _cpu_down(unsigned int cpu)
+ 	/* This actually kills the CPU. */
+ 	__cpu_die(cpu);
+ 
+-	/* Move it here so it can run. */
+-	kthread_bind(p, get_cpu());
+-	put_cpu();
+-
+ 	/* CPU is completely dead: tell everyone.  Too late to complain. */
+ 	if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD, hcpu) == NOTIFY_BAD)
+ 		BUG();
+_
