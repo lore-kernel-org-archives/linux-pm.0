@@ -1,16 +1,15 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] swsusp: do not use pm_ops (was: Re: suspend2
-	merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Mon, 30 Apr 2007 16:59:51 +0200
-Message-ID: <1177945191.5102.93.camel@johannes.berg>
-References: <20070425072350.GA6866@ucw.cz>
-	<200704291448.44855.Rafal.Wysocki@fuw.edu.pl>
-	<1177921759.5102.24.camel@johannes.berg>
-	<200704301651.46376.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: shrinking memory for suspend?
+Date: Mon, 30 Apr 2007 17:10:42 +0200
+Message-ID: <200704301710.43329.rjw@sisk.pl>
+References: <1177943076.5102.83.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0298296586920500334=="
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200704301651.46376.rjw@sisk.pl>
+In-Reply-To: <1177943076.5102.83.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +17,34 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---===============0298296586920500334==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-9n9j4v58Z70rqKCFygNn"
+On Monday, 30 April 2007 16:24, Johannes Berg wrote:
+> Hi,
+> 
+> Paul Mackerras noticed that even for suspend to ram we currently free
+> some memory in suspend_prepare. Is that necessary because we freeze
+> userspace so devices can allocate a bit of memory for suspend?
 
+I don't think it's related to the freezing of user space.  You can allocate
+memory with all of the user space frozen just fine.  I'd say it's related to
+the freezing of kernel threads, rather.
 
---=-9n9j4v58Z70rqKCFygNn
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Why do we freeze userspace anyway?
 
-On Mon, 2007-04-30 at 16:51 +0200, Rafael J. Wysocki wrote:
+Well, let me quote Linus:
 
-> > That comment doesn't seem right. This is in ->enter so afaict the image
-> > hasn't been loaded yet at this point. I don't know if you just moved
-> > code but if you did then I don't think it was correct before.
->=20
-> It was in your patch, so I kept it, but I don't think it's correct too.
+"I _do_ realize the IO request queue issues, and that we cannot actually do 
+s2ram with some devices in the middle of a DMA. So we want to be able to 
+avoid *that*, there's no question about that. And I suspect that stopping 
+user threads and then waiting for a sync is practically one of the easier 
+ways to do so."
 
-If it was in my patch then it must be there in the original code, iirc I
-just shuffled it a bit :)
-
-> Moreover, it seems that acpi_save_state_mem() and acpi_restore_state_mem(=
-) are
-> only needed by s2ram, so we can safely remove them from the hibernation c=
-ode
-> path.  Pavel, is that correct?
-
-This I don't know. They seemed to be done on hibernate too.
-
-johannes
-
---=-9n9j4v58Z70rqKCFygNn
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGNgRn/ETPhpq3jKURAugaAJ4t6obMauE6e7j3hyBpsjtAoWIB+gCfQpYi
-KmgHHeQY2b6M2G2YeFR6XBs=
-=BLeo
------END PGP SIGNATURE-----
-
---=-9n9j4v58Z70rqKCFygNn--
-
-
---===============0298296586920500334==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0298296586920500334==--
+Greetings,
+Rafael
