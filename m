@@ -1,18 +1,16 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
-Date: Wed, 02 May 2007 23:44:01 +0200
-Message-ID: <1178142241.2340.21.camel__24742.651920724$1178149387$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	<20070423214909.GD3468@stusta.de>
-	<20070425040605.6d6b4a82.akpm@linux-foundation.org>
-	<20070425114317.GA32153@elte.hu>
-	<b6a2187b0704250645t62a0d8u20f1f43df6feaea@mail.gmail.com>
-Reply-To: tglx@linutronix.de
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] power management: remove some useless code
+	from arm platforms
+Date: Wed, 2 May 2007 03:48:33 +0000
+Message-ID: <20070502034833.GC27201__2254.2830826298$1178150372$gmane$org@atomide.com>
+References: <1177604177.6814.81.camel@johannes.berg> <463115BA.70505@gmail.com>
+	<20070427175327.d8739c5c.akpm@linux-foundation.org>
+	<20070428034137.GA7200@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b6a2187b0704250645t62a0d8u20f1f43df6feaea@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20070428034137.GA7200@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,41 +20,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mikael Pettersson <mikpe@it.uu.se>, John Stultz <johnstul@us.ibm.com>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Guilherme Schroeder <guilherme@centralinf.com.br>, Adrian Bunk <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz, ak@suse.de, James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, discuss@x86-64.org, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Johannes Berg <johannes@sipsolutions.net>, linux-omap-open-source@linux.omap.com, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Jeff,
-
-On Wed, 2007-04-25 at 21:45 +0800, Jeff Chua wrote:
-> On 4/25/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > > > Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
-> > > > References : http://lkml.org/lkml/2007/3/25/217
-> > > > Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
-> > > > Status     : unknown
-> > >
-> > > That's still rather a lot of bustage from the timekeeping changes.  Is
-> > > anything really happening here or have we all given up?
-> >
-> > Jeff: does that suspend-to-disk hang problem also happen if you use
-> > hpet=disable?
+* Tony Lindgren <tony@atomide.com> [070428 03:41]:
+> Hi,
 > 
-> Yes, it is still broken with HPET disabled.
+> * Andrew Morton <akpm@linux-foundation.org> [070428 00:53]:
+> > On Fri, 27 Apr 2007 01:12:26 +0400
+> > Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com> wrote:
+> > 
+> > > Johannes Berg wrote:
+> > > > This patch kills some useless code omap1/omap2.
+> > > Although the change looks harmless it'd be nice  CC-ing
+> > > appropriate "arch" or "mach" lists.
+> > > 
+> > > Added omap list to CC.
+> > > 
+> > > BTW, you change OMAP stuff only, so your subject is slightly irrelevant.
+> > > 
+> > 
+> > I'm not very comfortable handling OMAP code (Tony), ARM code (Russell) or
+> > power-management code (Greg), and this patch is all three.
 > 
-> I've reported that if I press some keys, suspend will complete
-> successfully, otherwise, it'll just hang before the "percentage" comes
-> on.
+> Well this patch will probably cause some minor merge conflicts with the
+> pending omap patches, not a big deal though.
 
-Can you please grab the collection of fixups, which I just put into
-bugzilla: 
+Looks like the omap pile still applies fine after Johannes' patches,
+so no merge issue there :)
 
-http://bugzilla.kernel.org/attachment.cgi?id=11379&action=view
-
-and apply it on top of 2.6.21 ?
-
-Thanks,
-
-	tglx
+> > So ho hum.  I queued it up with Greg as the arbitrary target, but I'm not
+> > sure that is really appopriate.  Probably it should have been Tony, but
+> > Tony's tree is hiding from me.
+> 
+> The omap tree is available at [1] and the currently pending patches
+> pile at [2].
+> 
+> > I guess we should look at dragging the OMAP git tree into -mm.
+> 
+> I thought Russell is about to apply the pending omap patches to his
+> tree, so let's wait until we hear from him.
+> 
+> Assuming Russell applies the pending omap patches, things should
+> be pretty much in sync with the mainline tree and linux-omap tree for
+> the core omap support.
+> 
+> There will be some driver and PM patches that would fit to -mm tree
+> though. At least the voltage framework, and possibly the DSP code later
+> on, come to mind.
+> 
+> Regards,
+> 
+> Tony
+> 
+> [1] git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
+> [2] git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-upstream-after-clocksource
