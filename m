@@ -1,15 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.21 suspend-to-disk regression
-Date: Wed, 2 May 2007 11:20:06 +0200
-Message-ID: <20070502092006.GB10245@elf.ucw.cz>
-References: <f129n6$mro$1@sea.gmane.org> <200704291832.15959.rjw@sisk.pl>
-	<200704301434.10008.marcus@better.se>
-	<200704301621.11826.rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Wed, 02 May 2007 11:25:12 +0200
+Message-ID: <1178097912.13233.54.camel@johannes.berg>
+References: <20070425072350.GA6866@ucw.cz>
+	<1177945191.5102.93.camel@johannes.berg>
+	<200705011605.16993.rjw@sisk.pl> <200705020002.55331.rjw@sisk.pl>
+	<1178094106.13233.39.camel@johannes.berg>
+	<20070502091633.GA10245@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============6229415426685075141=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200704301621.11826.rjw@sisk.pl>
+In-Reply-To: <20070502091633.GA10245@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,34 +19,59 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Marcus Better <marcus@better.se>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> > Rafael J. Wysocki wrote:
-> > > Can you please apply the appended patch and see if that helps?
-> > 
-> > A second attempt also succeeded, so I think it's an improvement at least.
-> 
-> OK, so please run with it applied for a while to make sure it helps.
-> 
-> Ugh, we seem to have a problem with the code ordering in which
-> platform_finish() goes before device_resume(), at least in the hibernation
-> (aka s2disk) case.
+--===============6229415426685075141==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-fuxvNuOCxN6dwnDFM8jk"
 
-Was not platform_finish before device_resume requirement for MSI
-interrupts working?
 
-> This is the second report confirming that the change of this ordering has fixed
-> the a suspend problem, but the change of this ordering is intrusive, so I was
-> afraid to do it before 2.6.21.  Can we try to change it now?
+--=-fuxvNuOCxN6dwnDFM8jk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I guess so.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Wed, 2007-05-02 at 11:16 +0200, Pavel Machek wrote:
+
+> Well... the powerdown during hibernation... does not have _anything_
+> to do with snapshot/restore. It is really a very deep sleep; similar
+> to soft powerdown, but not quite.
+
+It's also horribly confusing to intermingle hibernation and suspend into
+one operation struct when there's only a single user for it anyway. Just
+look at what all the arm platforms had there, trying to veto suspend to
+disk through pm_ops etc. I don't technically disagree with you, but from
+a point of how to understand this whole thing I'd rather have hibernate
+and suspend be totally orthogonal.
+
+johannes
+
+--=-fuxvNuOCxN6dwnDFM8jk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGOFj3/ETPhpq3jKURAhUeAJ9+zkhWyWZlBB9oZSACo9NDMPn0pwCeJuwU
+s+nQRaNrSRVWqPcYCiW24UQ=
+=bD6Y
+-----END PGP SIGNATURE-----
+
+--=-fuxvNuOCxN6dwnDFM8jk--
+
+
+--===============6229415426685075141==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6229415426685075141==--
