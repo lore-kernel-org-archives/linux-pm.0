@@ -1,17 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Wed, 2 May 2007 11:16:33 +0200
-Message-ID: <20070502091633.GA10245@elf.ucw.cz>
-References: <20070425072350.GA6866@ucw.cz>
-	<1177945191.5102.93.camel@johannes.berg>
-	<200705011605.16993.rjw@sisk.pl> <200705020002.55331.rjw@sisk.pl>
-	<1178094106.13233.39.camel@johannes.berg>
+Subject: Re: 2.6.21 suspend-to-disk regression
+Date: Wed, 2 May 2007 11:20:06 +0200
+Message-ID: <20070502092006.GB10245@elf.ucw.cz>
+References: <f129n6$mro$1@sea.gmane.org> <200704291832.15959.rjw@sisk.pl>
+	<200704301434.10008.marcus@better.se>
+	<200704301621.11826.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1178094106.13233.39.camel@johannes.berg>
+In-Reply-To: <200704301621.11826.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,38 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Marcus Better <marcus@better.se>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > Well, having a look on the ACPI spec I'm thinking that what we're trying to do
-> > with this patch is actually wrong.
+> > Rafael J. Wysocki wrote:
+> > > Can you please apply the appended patch and see if that helps?
+> > 
+> > A second attempt also succeeded, so I think it's an improvement at least.
 > 
-> No idea :)
+> OK, so please run with it applied for a while to make sure it helps.
 > 
-> > Instead, we should rip off all of the invocations of pm_ops->whatever() from
-> > the hibernation code paths (with the below exceptions) and *if* the platform
-> > method is to be used, call pm_ops to make the system go down, in the following
-> > way:
-> > 1) call pm_ops->prepare(PM_SUSPEND_DISK)
-> > 2) suspend devices (ie. call device_suspend() etc.)
-> > 3) call pm_ops->enter(PM_SUSPEND_DISK)
-> > and if that *fails* (ie. pm_ops->enter() returns):
-> > 4) call pm_ops->finish(PM_SUSPEND_DISK)
-> > 5) halt the system
-> 
-> Can we still split that off to another method so we don't use pm_ops? No
-> matter how we invoke hibernation_ops or in what order, imho we shouldn't
-> use pm_ops.
+> Ugh, we seem to have a problem with the code ordering in which
+> platform_finish() goes before device_resume(), at least in the hibernation
+> (aka s2disk) case.
 
-Well... the powerdown during hibernation... does not have _anything_
-to do with snapshot/restore. It is really a very deep sleep; similar
-to soft powerdown, but not quite.
+Was not platform_finish before device_resume requirement for MSI
+interrupts working?
 
-So this usage of pm_ops seems ok.
-								Pavel
+> This is the second report confirming that the change of this ordering has fixed
+> the a suspend problem, but the change of this ordering is intrusive, so I was
+> afraid to do it before 2.6.21.  Can we try to change it now?
+
+I guess so.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
