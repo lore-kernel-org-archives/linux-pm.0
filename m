@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
 	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Wed, 2 May 2007 11:02:57 +0200
-Message-ID: <200705021102.57914.rjw@sisk.pl>
-References: <20070425072350.GA6866@ucw.cz> <200705020002.55331.rjw@sisk.pl>
+Date: Wed, 2 May 2007 11:16:33 +0200
+Message-ID: <20070502091633.GA10245@elf.ucw.cz>
+References: <20070425072350.GA6866@ucw.cz>
+	<1177945191.5102.93.camel@johannes.berg>
+	<200705011605.16993.rjw@sisk.pl> <200705020002.55331.rjw@sisk.pl>
 	<1178094106.13233.39.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1178094106.13233.39.camel@johannes.berg>
 Content-Disposition: inline
+In-Reply-To: <1178094106.13233.39.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,12 +22,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 2 May 2007 10:21, Johannes Berg wrote:
-> On Wed, 2007-05-02 at 00:02 +0200, Rafael J. Wysocki wrote:
-> 
+Hi!
+
 > > Well, having a look on the ACPI spec I'm thinking that what we're trying to do
 > > with this patch is actually wrong.
 > 
@@ -48,11 +47,12 @@ On Wednesday, 2 May 2007 10:21, Johannes Berg wrote:
 > matter how we invoke hibernation_ops or in what order, imho we shouldn't
 > use pm_ops.
 
-OK, I think we can go ahead with the patch if nobody objects.  It's been tested
-to some extent and seems to work.  More testing will be appreciated.
+Well... the powerdown during hibernation... does not have _anything_
+to do with snapshot/restore. It is really a very deep sleep; similar
+to soft powerdown, but not quite.
 
-Later on we can do what I said above using hibernation_ops instead of pm_ops,
-if turns out to really make sense.
-
-Greetings,
-Rafael
+So this usage of pm_ops seems ok.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
