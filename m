@@ -1,18 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Wed, 2 May 2007 00:02:54 +0200
-Message-ID: <200705020002.55331.rjw@sisk.pl>
-References: <20070425072350.GA6866@ucw.cz>
-	<1177945191.5102.93.camel@johannes.berg>
-	<200705011605.16993.rjw@sisk.pl>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
+Date: Wed, 02 May 2007 23:44:01 +0200
+Message-ID: <1178142241.2340.21.camel__24742.651920724$1178149387$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	<20070423214909.GD3468@stusta.de>
+	<20070425040605.6d6b4a82.akpm@linux-foundation.org>
+	<20070425114317.GA32153@elte.hu>
+	<b6a2187b0704250645t62a0d8u20f1f43df6feaea@mail.gmail.com>
+Reply-To: tglx@linutronix.de
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705011605.16993.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <b6a2187b0704250645t62a0d8u20f1f43df6feaea@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,59 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mikael Pettersson <mikpe@it.uu.se>, John Stultz <johnstul@us.ibm.com>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Guilherme Schroeder <guilherme@centralinf.com.br>, Adrian Bunk <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz, ak@suse.de, James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, discuss@x86-64.org, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 1 May 2007 16:05, Rafael J. Wysocki wrote:
-> On Monday, 30 April 2007 16:59, Johannes Berg wrote:
-> > On Mon, 2007-04-30 at 16:51 +0200, Rafael J. Wysocki wrote:
-> > 
-> > > > That comment doesn't seem right. This is in ->enter so afaict the image
-> > > > hasn't been loaded yet at this point. I don't know if you just moved
-> > > > code but if you did then I don't think it was correct before.
-> > > 
-> > > It was in your patch, so I kept it, but I don't think it's correct too.
-> > 
-> > If it was in my patch then it must be there in the original code, iirc I
-> > just shuffled it a bit :)
-> > 
-> > > Moreover, it seems that acpi_save_state_mem() and acpi_restore_state_mem() are
-> > > only needed by s2ram, so we can safely remove them from the hibernation code
-> > > path.  Pavel, is that correct?
-> > 
-> > This I don't know. They seemed to be done on hibernate too.
+Jeff,
+
+On Wed, 2007-04-25 at 21:45 +0800, Jeff Chua wrote:
+> On 4/25/07, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > > > Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
+> > > > References : http://lkml.org/lkml/2007/3/25/217
+> > > > Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+> > > > Status     : unknown
+> > >
+> > > That's still rather a lot of bustage from the timekeeping changes.  Is
+> > > anything really happening here or have we all given up?
+> >
+> > Jeff: does that suspend-to-disk hang problem also happen if you use
+> > hpet=disable?
 > 
-> The previous version of the patch was missing the changes in suspend.h.
+> Yes, it is still broken with HPET disabled.
 > 
-> Apart from this I've cleaned up some changes in disk.c and main.c to make
-> the sysfs interface work again and dropped some ACPI code that I think was
-> not necessary.
-> 
-> Patch appended (tested on x86_64, but not extensively), comments welcome. :-)
+> I've reported that if I press some keys, suspend will complete
+> successfully, otherwise, it'll just hang before the "percentage" comes
+> on.
 
-Well, having a look on the ACPI spec I'm thinking that what we're trying to do
-with this patch is actually wrong.
+Can you please grab the collection of fixups, which I just put into
+bugzilla: 
 
-Instead, we should rip off all of the invocations of pm_ops->whatever() from
-the hibernation code paths (with the below exceptions) and *if* the platform
-method is to be used, call pm_ops to make the system go down, in the following
-way:
-1) call pm_ops->prepare(PM_SUSPEND_DISK)
-2) suspend devices (ie. call device_suspend() etc.)
-3) call pm_ops->enter(PM_SUSPEND_DISK)
-and if that *fails* (ie. pm_ops->enter() returns):
-4) call pm_ops->finish(PM_SUSPEND_DISK)
-5) halt the system
+http://bugzilla.kernel.org/attachment.cgi?id=11379&action=view
 
-Formally, after restoring the image, *if* the platform method was used (ie. the
-above was executed as the last hibernation step), we should call
-pm_ops->finish(PM_SUSPEND_DISK) before resuming devices, but
-since we get the control from the "old kernel" rather than from the BIOS,
-this doesn't seem to be the right thing to do.
+and apply it on top of 2.6.21 ?
 
-I'll try to create a patch along these lines and see if it breaks anything on
-my boxes.
+Thanks,
 
-Greetings,
-Rafael
+	tglx
