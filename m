@@ -1,13 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFT][PATCH] swsusp: Change code ordering related to ACPI
-Date: Fri, 4 May 2007 11:43:01 +0200
-Message-ID: <200705041143.02451.rjw__9546.73036835647$1178271587$gmane$org@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Hibernation and suspend patchset
+Date: Thu, 03 May 2007 15:38:59 +0200
+Message-ID: <1178199539.8233.9.camel@johannes.berg>
+References: <200705011558.11170.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============6107642617936035289=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200705011558.11170.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,95 +14,53 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-The change of the hibernation/suspend code ordering made before 2.6.21 has
-caused some systems to have problems related to ACPI.  In particular, the
-'platform' hibernation mode doesn't work any more on some systems.
+--===============6107642617936035289==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-gouPTIGONsRVq6dTkhp6"
 
-It has been confirmed that the appended patch fixes the problem, but it's not
-certain if this changes don't break some other systems.  For this reason, all
-users of hibernation (swsusp, uswsusp) are gently requested to verify if this
-patch doesn't break their systems.
 
-Greetings,
-Rafael
+--=-gouPTIGONsRVq6dTkhp6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi again,
 
-The current code ordering in the hibernation code paths causes some systems to
-have problems.  It has been confirmed by testers that these problems do not
-appear if the acpi_pm_finish() function (called via platform_finish()) is
-executed after device_suspend().
+I just took your whole patchset, removed two patches that wouldn't apply
+against Linus's current git tree, put mine for suspend to disk on G5 on
+top of it, then applied the freezer fix I just sent and finally tested
+the whole thing. It works :)
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |    4 ++--
- kernel/power/user.c |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+johannes
 
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c	2007-05-04 10:31:51.000000000 +0200
-+++ linux-2.6.21/kernel/power/disk.c	2007-05-04 10:32:12.000000000 +0200
-@@ -195,9 +195,9 @@ int hibernate(void)
- 
- 	if (in_suspend) {
- 		enable_nonboot_cpus();
--		platform_finish();
- 		device_resume();
- 		resume_console();
-+		platform_finish();
- 		pr_debug("PM: writing image.\n");
- 		error = swsusp_write();
- 		if (!error)
-@@ -214,9 +214,9 @@ int hibernate(void)
-  Enable_cpus:
- 	enable_nonboot_cpus();
-  Resume_devices:
--	platform_finish();
- 	device_resume();
- 	resume_console();
-+	platform_finish();
-  Thaw:
- 	mutex_unlock(&pm_mutex);
- 	unprepare_processes();
-Index: linux-2.6.21/kernel/power/user.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/user.c	2007-05-04 10:31:51.000000000 +0200
-+++ linux-2.6.21/kernel/power/user.c	2007-05-04 10:32:12.000000000 +0200
-@@ -169,11 +169,11 @@ static inline int snapshot_suspend(int p
- 	}
- 	enable_nonboot_cpus();
-  Resume_devices:
-+	device_resume();
-+	resume_console();
- 	if (platform_suspend)
- 		platform_finish();
- 
--	device_resume();
--	resume_console();
-  Finish:
- 	mutex_unlock(&pm_mutex);
- 	return error;
-@@ -201,11 +201,11 @@ static inline int snapshot_restore(int p
- 
- 	enable_nonboot_cpus();
-  Resume_devices:
-+	device_resume();
-+	resume_console();
- 	if (platform_suspend)
- 		platform_finish();
- 
--	device_resume();
--	resume_console();
-  Finish:
- 	pm_restore_console();
- 	mutex_unlock(&pm_mutex);
+--=-gouPTIGONsRVq6dTkhp6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGOeXy/ETPhpq3jKURAkimAKCt4+GwsRBnQ8lCnl+f5AEEyMZiuwCbBBhv
+jIOceWD9/ew2z3gsPikRHEs=
+=hI/D
+-----END PGP SIGNATURE-----
+
+--=-gouPTIGONsRVq6dTkhp6--
+
+
+--===============6107642617936035289==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6107642617936035289==--
