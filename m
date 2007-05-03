@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] swsusp: Do not use pm_ops
-Date: Thu, 3 May 2007 14:54:25 +0200
-Message-ID: <200705031454.25877.rjw__45428.3429346562$1178196631$gmane$org@sisk.pl>
-References: <200705022213.35831.rjw@sisk.pl>
-	<1178194429.13233.100.camel@johannes.berg>
+Subject: Re: shrinking memory for suspend?
+Date: Thu, 3 May 2007 14:56:51 +0200
+Message-ID: <200705031456.51546.rjw@sisk.pl>
+References: <1177943076.5102.83.camel@johannes.berg>
+	<200705031217.30979.rjw@sisk.pl>
+	<1178192016.13233.94.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1178194429.13233.100.camel@johannes.berg>
+In-Reply-To: <1178192016.13233.94.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,16 +22,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 3 May 2007 14:13, Johannes Berg wrote:
-> On Wed, 2007-05-02 at 22:13 +0200, Rafael J. Wysocki wrote:
+On Thursday, 3 May 2007 13:33, Johannes Berg wrote:
+> On Thu, 2007-05-03 at 12:17 +0200, Rafael J. Wysocki wrote:
 > 
-> > +extern inline int hibernate(void) { return -ENOSYS; }
+> > I think that on a uniprocessor system it's quite safe, but on SMP it doesn't
+> > seem so.  For example, imagine the situation in which one CPU is executing the
+> > suspend code while another one is running userspace with system calls etc.
 > 
-> and I don't think that will compile :)
+> We can still hot-unplug all the other CPUs though, no?
 
-It will, but this is a mistake.  It should be 'static', not 'extern'.  Will fix, thanks.
+We used to, but now we're "hot-unplugging" them after suspending devices.
 
+Besides, preemptible kernels are not much different from SMP in that respect,
+so ...
+
+Greetings,
 Rafael
