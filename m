@@ -1,13 +1,9 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Thu, 3 May 2007 14:33:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0705031401580.7259-100000@iolanthe.rowland.org>
-References: <200705031917.24417.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: akpm@linux-foundation.org
+Subject: - power-management-force-pm_opsvalid-callback-to-be.patch
+	removed from -mm tree
+Date: Thu, 03 May 2007 12:30:26 -0700
+Message-ID: <200705031930.l43JUQZQ018186@shell0.pdx.osdl.net>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705031917.24417.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,108 +13,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: johannes@sipsolutions.net, greg@kroah.com, linux-pm@lists.linux-foundation.org, pavel@ucw.cz, rjw@sisk.pl, mm-commits@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 May 2007, Rafael J. Wysocki wrote:
 
-> > In fact, shouldn't the poweroff at the end of a hibernate be exactly the 
-> > same as a normal non-hibernate poweroff?
-> 
-> Not quite (see (*) below).
+The patch titled
+     power management: force pm_ops.valid callback to be assigned
+has been removed from the -mm tree.  Its filename was
+     power-management-force-pm_opsvalid-callback-to-be.patch
 
-> The problem, generally speaking, is that we have to prepare devices for waking
-> up the system.  On an ACPI system this is done, among other things, by
-> executing the devices' _PSW control methods after the system-level _PTS method
-> has run.  For this purpose the devices must be in (low) power states from which
-> the wake is possible, so in particular they must not be powered off.  Later, by
-> making the platform enter the suspend-to-disk (ACPI S4) state we prevent it
-> from powering off the wake-up devices, among other things.
-> 
-> That's why I'm thinking that it might be a good idea to do a
-> suspend-before-poweroff, but it doesn't mean that device drivers would be
-> allowed to make any assumptions regarding the state of the device after the
-> resume.  IMO, if this is a resume from disk, devices should be initialized from
-> scratch.
+This patch was dropped because it was merged into mainline or a subsystem tree
 
-I generally agree with your last sentence, but with one reservation (see 
-below).
+------------------------------------------------------
+Subject: power management: force pm_ops.valid callback to be assigned
+From: Johannes Berg <johannes@sipsolutions.net>
 
-As for the rest, you missed my point.  Granted that all these special 
-activities are required on ACPI systems in order to support proper 
-operation of wakeup devices -- Why shouldn't these same steps also be 
-followed during a normal poweroff?
+This patch changes the docs and behaviour from "all states valid" to "no
+states valid" if no .valid callback is assigned.  Users of pm_ops that only
+need mem sleep can assign pm_valid_only_mem without any overhead, others
+will require more elaborate callbacks.
 
-There really are two orthogonal issues here:
+Now that all users of pm_ops have a .valid callback this is a safe thing to
+do and prevents things from getting messy again as they were before.
 
-	(1) Is this a "hibernate" poweroff (as opposed to a "normal" 
-	    poweroff)? 
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Looks-okay-to: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: <linux-pm@lists.linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-	(2) Should some devices remain minimally powered and be capable
-	    of waking up the system?
+ include/linux/pm.h  |   12 ++++++------
+ kernel/power/main.c |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-I don't see any necessary relation between the answers to (1) and (2).  In 
-particular, I don't see why a Yes answer to (1) should imply a Yes answer 
-to (2).
+diff -puN include/linux/pm.h~power-management-force-pm_opsvalid-callback-to-be include/linux/pm.h
+--- a/include/linux/pm.h~power-management-force-pm_opsvalid-callback-to-be
++++ a/include/linux/pm.h
+@@ -125,12 +125,12 @@ typedef int __bitwise suspend_disk_metho
+  * struct pm_ops - Callbacks for managing platform dependent suspend states.
+  * @valid: Callback to determine whether the given state can be entered.
+  * 	If %CONFIG_SOFTWARE_SUSPEND is set then %PM_SUSPEND_DISK is
+- *	always valid and never passed to this call.
+- *	If not assigned, all suspend states are advertised as valid
+- *	in /sys/power/state (but can still be rejected by prepare or enter.)
+- *	Since new states can be added for other platforms, you should
+- *	assign this callback. There is a %pm_valid_only_mem function
+- *	available if you only implemented mem sleep.
++ *	always valid and never passed to this call. If not assigned,
++ *	no suspend states are valid.
++ *	Valid states are advertised in /sys/power/state but can still
++ *	be rejected by prepare or enter if the conditions aren't right.
++ *	There is a %pm_valid_only_mem function available that can be assigned
++ *	to this if you only implement mem sleep.
+  *
+  * @prepare: Prepare the platform for the given suspend state. Can return a
+  *	negative error code if necessary.
+diff -puN kernel/power/main.c~power-management-force-pm_opsvalid-callback-to-be kernel/power/main.c
+--- a/kernel/power/main.c~power-management-force-pm_opsvalid-callback-to-be
++++ a/kernel/power/main.c
+@@ -198,8 +198,8 @@ static inline int valid_state(suspend_st
+ 
+ 	/* all other states need lowlevel support and need to be
+ 	 * valid to the lowlevel implementation, no valid callback
+-	 * implies that all are valid. */
+-	if (!pm_ops || (pm_ops->valid && !pm_ops->valid(state)))
++	 * implies that none are valid. */
++	if (!pm_ops || !pm_ops->valid || !pm_ops->valid(state))
+ 		return 0;
+ 	return 1;
+ }
+_
 
-This suggests that the poweroff methods be completely independent of
-hibernation_ops (or whatever you are now calling it).  Perhaps there
-should be a separate sysfs attribute controlling whether or not wakeup is
-enabled.  If it is then poweroff should go through all the ACPI (or the
-platform's equivalent) hoops, otherwise everything should just be turned
-off completely.  Regardless of whether the poweroff is part of a
-hibernate sequence.
+Patches currently in -mm which might be from johannes@sipsolutions.net are
 
-> (*) Another issue is that, for example, on my notebook the status of the AC
-> power supply (and sometimes of the battery too) is not reported correctly by
-> the platform after the resume if the suspend-to-disk (ACPI S4) state has not
-> been entered during the hibernation. I don't understand why this happens, but
-> I'm going to find out.
-
-Hopefully it's not directly related to the matter under discussion. :-)
-
-
-There remains one issue associated with always reinitializing devices 
-during resume from hibernation.  In the one area I know a lot about (USB) 
-this actually does matter, at least a little.
-
-The USB specs include the notion of a "power session", which is
-essentially an uninterrupted continuous connection between the host and
-the device.  As long as a power session exists, the host is guaranteed
-that the device has not been unplugged or replaced with a different
-device.
-
-On most systems, hibernation breaks power sessions.  When the system wakes 
-back up it sees a bunch of USB devices connected, but it is not allowed 
-(by the spec!) to assume that these are the same devices as were attached 
-before.  In fact, some of them might not be.
-
-Mostly this doesn't make any difference, but for mass-storage it does.  
-Memory mappings and filesystem mounts will be disrupted when the
-underlying logical device goes away, even if the same physical device is
-still attached to the same port.  This has caused significant headaches
-for USB users in the past.
-
-On the other hand, some systems are designed cleverly enough to maintain
-power sessions across hibernation.  Not many -- the only ones I've heard
-about were all PPC Macs.  The USB drivers have always tried to keep power
-sessions intact across hibernation whenever the hardware and firmware
-would permit, but of course reinitializing the USB controller would
-destroy them.
-
-There are a couple of reaons for not worrying about this very much.  
-First, as mentioned before this issue exists on only a small number of
-systems.  Second, I have submitted to Greg KH a couple of patches to
-maintain persistence of USB devices even when the power sessions are lost
-(they're still in his queue so you can't try them out yet).  This feature
-violates the USB spec and it is potentially dangerous -- users could
-easily lose data for example by changing the card in a USB card reader
-while the system is hibernating -- so it is a non-default Kconfig option.  
-Nevertheless, it does solve the problem.
-
-In the end, this is a long-winded way of saying that always reinitializing
-devices while resuming from a hibernation is probably the best overall
-approach, even if it may not be optimal in a few cases.
-
-Alan Stern
+origin.patch
+remove-software_suspend.patch
+power-management-change-sys-power-disk-display.patch
+git-alsa.patch
+git-powerpc.patch
+power-management-remove-some-useless-code-from-arm.patch
+git-wireless.patch
+fix-sscanf-%n-match-at-end-of-input-string.patch
+kernel-doc-html-mode-struct-highlights.patch
