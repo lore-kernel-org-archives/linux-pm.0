@@ -1,12 +1,13 @@
-From: info@freeaward.co.uk
-Subject: FREE AWARD DEPT( YOU ARE A WINNER)...............
-Date: Thu,  3 May 2007 06:03:49 -0700
-Message-ID: <1178197429.4639ddb5aa00e__39075.002881191$1178197900$gmane$org@webmail.telus.net>
-Reply-To: sirdannyboer_freeawarddept@yahoo.com.hk
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Thu, 3 May 2007 10:00:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705030946400.3548-100000@iolanthe.rowland.org>
+References: <1178097912.13233.54.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1178097912.13233.54.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,30 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 2 May 2007, Johannes Berg wrote:
 
+> On Wed, 2007-05-02 at 11:16 +0200, Pavel Machek wrote:
+> 
+> > Well... the powerdown during hibernation... does not have _anything_
+> > to do with snapshot/restore. It is really a very deep sleep; similar
+> > to soft powerdown, but not quite.
 
-FREE AWARD DEPARTMENT
-L70 1NL.LONDON,UNITED KINGDOM 
-Ref: UK/9420X2/68
-Batch: 074/05/ZY369 
-  We are pleased to announce FREE LOTTO AWARDS draw held on 3rd of  May . 
-All 3 winning addresses were randomlyselected from a batch of 5,000,000 
-international emails. Your email addressemerged alongside 2 others as a 
-3rd category winner in this month's draw.Consequently,you have therefore 
-been approved for a total pay out of (Five Hundred And Fifty Thousand 
-Pounds Sterlings) only. The following particulars are 
-attached to your lotto payment order:
-(i) Ticket:56475600545005
-(ii) Serial Number:5368
-(iii)File Number:KTU/9023118308/03 
-(iv)LuckyNumber:09112239404212
-Please contact the underlisted claims officer as soon as possible for 
-the immediate release of your winnings:
+Is this really a good idea?
 
-Mr.Danny Boer
-Email: mrdannyboer_freelottoaward@yahoo.com.hk
-Tel : +44 7024035988
-Yours faithfully, 
-FREE AWARD DEPARTMENT
+For that matter, what are the differences among the various sorts of 
+poweroff?
+
+	Which devices remain minimally powered for wakeup purposes?
+
+	Anything else?
+
+In fact, shouldn't the poweroff at the end of a hibernate be exactly the 
+same as a normal non-hibernate poweroff?  Aren't drivers required to 
+assume (during the processing after the snapshot has been restored) that 
+power could have been lost and devices might need to be completely 
+reinitialized?
+
+We are letting ourselves in for problems if we say that when the snapshot
+is restored, devices may or may not need to be reinitialized.  Drivers
+might not be able to tell which, so they would have to reinitialize
+regardless, losing any advantage.  Even worse, the device may _appear_ not
+to need reinitialization because the firmware (BIOS) has already
+initialized it but left it in a state that's useless for the kernel's
+purposes.  (That's part of the reason why PRETHAW was added.)
+
+If the only remaining difference between poweroff for hibernate and normal 
+poweroff is which wakeup devices will function, then it seems pointless.  
+Why shouldn't the same devices work for wakeup from hibernate and wakeup 
+from normal poweroff?
+
+Or have I misunderstood something and is this all nonsense?
+
+Alan Stern
