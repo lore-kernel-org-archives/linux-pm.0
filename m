@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Paul Mackerras <paulus@samba.org>
 Subject: Re: shrinking memory for suspend?
-Date: Thu, 3 May 2007 14:56:51 +0200
-Message-ID: <200705031456.51546.rjw@sisk.pl>
+Date: Thu, 3 May 2007 22:51:36 +1000
+Message-ID: <17977.56024.199983.463385@cargo.ozlabs.ibm.com>
 References: <1177943076.5102.83.camel@johannes.berg>
 	<200705031217.30979.rjw@sisk.pl>
-	<1178192016.13233.94.camel@johannes.berg>
+	<17977.47777.929627.2150@cargo.ozlabs.ibm.com>
+	<200705031245.05454.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1178192016.13233.94.camel@johannes.berg>
-Content-Disposition: inline
+In-Reply-To: <200705031245.05454.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,23 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 3 May 2007 13:33, Johannes Berg wrote:
-> On Thu, 2007-05-03 at 12:17 +0200, Rafael J. Wysocki wrote:
+Rafael J. Wysocki writes:
+
+> > Which is why the powermac/powerbook sleep code insists on there only
+> > being one cpu active.  I have an SMP powermac which can sleep; I use a
+> > little script to take the second cpu down before sleeping and bring it
+> > back up after waking up.
 > 
-> > I think that on a uniprocessor system it's quite safe, but on SMP it doesn't
-> > seem so.  For example, imagine the situation in which one CPU is executing the
-> > suspend code while another one is running userspace with system calls etc.
-> 
-> We can still hot-unplug all the other CPUs though, no?
+> That's quite intrusive.  Ideally, user space processes should not notice that
+> there have been a suspend at one point.
 
-We used to, but now we're "hot-unplugging" them after suspending devices.
+Certainly, *most* userspace processes should not notice, and they
+don't.  But the process initiating the suspend most certainly knows
+about the suspend happening.  And that's the one that arranges for
+taking the second cpu down and bringing it up.  So your objection
+seems silly to me, unless you meant something other than what your
+words seem to say.
 
-Besides, preemptible kernels are not much different from SMP in that respect,
-so ...
-
-Greetings,
-Rafael
+Paul.
