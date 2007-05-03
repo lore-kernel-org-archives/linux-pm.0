@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: shrinking memory for suspend?
-Date: Thu, 3 May 2007 18:34:46 +0200
-Message-ID: <20070503163446.GD32401@elf.ucw.cz>
-References: <1177943076.5102.83.camel@johannes.berg>
-	<200705031217.30979.rjw@sisk.pl>
-	<17977.47777.929627.2150@cargo.ozlabs.ibm.com>
-	<200705031245.05454.rjw@sisk.pl>
-	<17977.56024.199983.463385@cargo.ozlabs.ibm.com>
+Date: Thu, 3 May 2007 18:39:32 +0200
+Message-ID: <200705031839.32952.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705031031500.3548-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705031031500.3548-100000@iolanthe.rowland.org>
 Content-Disposition: inline
-In-Reply-To: <17977.56024.199983.463385@cargo.ozlabs.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,12 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
+On Thursday, 3 May 2007 16:34, Alan Stern wrote:
+> On Thu, 3 May 2007, Rafael J. Wysocki wrote:
+> 
+> > On Thursday, 3 May 2007 12:34, Paul Mackerras wrote:
+> > > Rafael J. Wysocki writes:
+> > > 
+> > > > I think that on a uniprocessor system it's quite safe, but on SMP it doesn't
+> > > > seem so.  For example, imagine the situation in which one CPU is executing the
+> > > > suspend code while another one is running userspace with system calls etc.
+> > > > Pretty scary.
+> > > 
 > > > Which is why the powermac/powerbook sleep code insists on there only
 > > > being one cpu active.  I have an SMP powermac which can sleep; I use a
 > > > little script to take the second cpu down before sleeping and bring it
@@ -35,27 +42,13 @@ Hi!
 > > That's quite intrusive.  Ideally, user space processes should not notice that
 > > there have been a suspend at one point.
 > 
-> Certainly, *most* userspace processes should not notice, and they
-> don't.  But the process initiating the suspend most certainly knows
-> about the suspend happening.  And that's the one that arranges for
-> taking the second cpu down and bringing it up.  So your objection
-> seems silly to me, unless you meant something other than what your
-> words seem to say.
+> What happens without preemption enabled when a device driver's suspend() 
+> method calls schedule()?
+> 
+> With or without preemption enabled, what happens when a user process tries
+> to do I/O to a suspended device?
 
-Not silly at all.
+Yeah, right.  So much for the unforzen user space during a suspend. :-)
 
-xterm #1						xterm #2
-
-suspend-to-RAM					
-script does echo 0 > CPU1/online as part of process	echo 0 > CPU1/online
-
-If this happens, resume will most likely online CPU1, contrary to
-user's commands.
-
-Plus, if your script is bad and leaves other CPUs running, you
-get rather nasty oops, or worse. Userspace should not be able to crash
-kernel like _that_.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings,
+Rafael
