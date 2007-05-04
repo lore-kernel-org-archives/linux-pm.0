@@ -1,15 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: ACPI code in platform mode hibernation code paths
-	(was: Re: [PATCH] swsusp: do not use pm_ops)
-Date: Fri, 04 May 2007 12:54:32 +0200
-Message-ID: <1178276072.7408.7.camel__41478.3297259875$1178276085$gmane$org@johannes.berg>
-References: <20070425072350.GA6866@ucw.cz> <200705021542.24988.rjw@sisk.pl>
-	<8f8ff01d0705020711r630b8b92sdd2cd9316eb39edc@mail.gmail.com>
-	<200705022126.47897.rjw@sisk.pl>  <20070503224807.GD13426@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Hibernation and suspend patchset
+Date: Fri, 4 May 2007 13:34:54 +0200
+Message-ID: <200705041334.55622.rjw@sisk.pl>
+References: <200705011558.11170.rjw@sisk.pl>
+	<1178219335.4575.4.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2161154425911866587=="
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070503224807.GD13426@elf.ucw.cz>
+In-Reply-To: <1178219335.4575.4.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,56 +18,30 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, 3 May 2007 21:08, Johannes Berg wrote:
+> Hi Rafael,
+>=20
+> Some bugs with freezer_exempt:
+>=20
+> kernel/softirq.c: In function =E2=80=98ksoftirqd=E2=80=99:
+> kernel/softirq.c:515: warning: implicit declaration of function =E2=80=98=
+freezer_exempt=E2=80=99
+> [...]
+>=20
+> Maybe some header file they all use pulls in freezer.h on x86 but not o=
+n
+> powerpc? This fixes it.
 
---===============2161154425911866587==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-CjF+mLxeAtR+/hSspegD"
+Yes, that's possible.
 
+Thanks for the patch, I'll add it to the patchset and send it for inclusi=
+on in -mm.
 
---=-CjF+mLxeAtR+/hSspegD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2007-05-04 at 00:48 +0200, Pavel Machek wrote:
-
-> Crazy idea... could we kill hibernate_ops-like struct, and just create
-> a device for ACPI, using its suspend()/resume()/whatever callbacks to
-> do the ACPI magic?
-
-Doesn't that have the ordering problem again? You must ensure that this
-sysdev is suspended as the last one, and that's currently impossible if
-ACPI is modular.
-
-johannes
-
---=-CjF+mLxeAtR+/hSspegD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGOxDo/ETPhpq3jKURAlG2AJwN0pnM3ASCTCS07ixmYkmKTm0eWQCeJx0Y
-KFGVxDWv+FATUIUpsxC0ZBc=
-=YONC
------END PGP SIGNATURE-----
-
---=-CjF+mLxeAtR+/hSspegD--
-
-
---===============2161154425911866587==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2161154425911866587==--
+Greetings,
+Rafael
