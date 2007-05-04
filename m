@@ -1,18 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
 	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Fri, 4 May 2007 23:24:23 +0200
-Message-ID: <200705042324.24104.rjw@sisk.pl>
-References: <200705032221.59285.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0705041020530.3417-100000@iolanthe.rowland.org>
-	<20070504205846.GB24123@elf.ucw.cz>
+Date: Fri, 04 May 2007 23:23:50 +0200
+Message-ID: <1178313830.7408.43.camel@johannes.berg>
+References: <Pine.LNX.4.44L0.0705041054520.3417-100000@iolanthe.rowland.org>
+	<200705042250.29760.rjw@sisk.pl>
+	<1178311750.7408.34.camel@johannes.berg>
+	<200705042311.23557.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4660299324670861987=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070504205846.GB24123@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200705042311.23557.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,69 +18,57 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-On Friday, 4 May 2007 22:58, Pavel Machek wrote:
-> Hi!
-> 
-> > You all misunderstood the point I was trying to make.
-> > 
-> 
-> > > acpi_enter_sleep_state(ACPI_STATE_S4), are just different pieces of one
-> > > (complicated) 'platform' power off method.  It doesn't make sense to use the
-> > > (other) hibernation_ops without the ->enter() method.
-> > 
-> > Let's look at the big picture.
-> > 
-> > Entering hibernation basically involves these steps:
-> > 
-> > 	1. Freeze tasks
-> > 
-> > 	2. Quiesce devices and drivers
-> > 
-> > 	3. Create snapshot
-> > 
-> > 	4. Reactivate devices and drivers
-> > 
-> > 	5. Save snapshot to disk
-> > 
-> > 	6. Prepare devices for wakeup
-> > 
-> > 	7. Power down (ACPI S4 on systems which support it)
-> > 
-> > Leaving hibernation involves a similar sequence which I won't discuss.
-> > 
-> > Notice that steps 1-5 above are _completely_ independent of all issues 
-> > concerning wakeup devices and S4 vs. S5 vs. whatever.  They have to
-> > be
-> 
-> No, they are not. You probably should tell ACPI at step 2 that you are
-> suspending,
+--===============4660299324670861987==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-kSXRS5xPiI8UPJ6dOuFt"
 
-You can, but even if you don't, the BIOS shouldn't have problems.  What might
-have problems is our ACPI code during the resume, if it cannot get appropriate
-information from the BIOS.
 
-> and you definitely need to tell ACPI that you have resumed 
-> (so it can re-scan AC adapters, for example).
+--=-kSXRS5xPiI8UPJ6dOuFt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes, but that can be done in two different ways:
+On Fri, 2007-05-04 at 23:11 +0200, Rafael J. Wysocki wrote:
 
-1) "We have restored the hibernation image, but the BIOS state corresponds to
-a fresh reboot, so please initialize everything from scratch."
+> Actually, prethaw is to prevent drivers loaded before the image is restor=
+ed
+> from doing unreasonable things.  It doesn't have any effect on the driver=
+s'
+> .resume() routines.
 
-2) "We have restored the hibernation image and the ACPI S4 was used for
-powering off (hint: you may try not to initialize everything from scratch)."
+Oh, but it can, you could have a flag in your driver saying "the next
+resume is after restore" and you set that flag in prethaw.
 
-Of course, in the case 2) we are responsible for ensuring that the contents of
-the hibernation image are consistent with the information preserved by the
-BIOS.
+johannes
 
-Greetings,
-Rafael
+--=-kSXRS5xPiI8UPJ6dOuFt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGO6Rl/ETPhpq3jKURAngjAKCCS6qNcnBBgxtsXEAMkxfRNRE35QCgqhTl
+0Cp1rbszTDrTh/GSuPk6ugY=
+=f6rH
+-----END PGP SIGNATURE-----
+
+--=-kSXRS5xPiI8UPJ6dOuFt--
+
+
+--===============4660299324670861987==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4660299324670861987==--
