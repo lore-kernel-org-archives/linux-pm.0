@@ -1,18 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: ACPI code in platform mode hibernation code paths
-	(was: Re: [PATCH] swsusp: do not use pm_ops)
-Date: Fri, 4 May 2007 14:08:02 +0200
-Message-ID: <20070504120802.GF13426__30763.7387108572$1178280535$gmane$org@elf.ucw.cz>
-References: <20070425072350.GA6866@ucw.cz> <200705021542.24988.rjw@sisk.pl>
-	<8f8ff01d0705020711r630b8b92sdd2cd9316eb39edc@mail.gmail.com>
-	<200705022126.47897.rjw@sisk.pl>
-	<20070503224807.GD13426@elf.ucw.cz>
-	<1178276072.7408.7.camel@johannes.berg>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Hibernation and suspend patchset
+Date: Fri, 4 May 2007 14:15:45 +0200
+Message-ID: <200705041415.45773.rjw@sisk.pl>
+References: <200705011558.11170.rjw@sisk.pl> <200705041402.40964.rjw@sisk.pl>
+	<1178280352.7408.15.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1178280352.7408.15.camel@johannes.berg>
 Content-Disposition: inline
-In-Reply-To: <1178276072.7408.7.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,24 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > Crazy idea... could we kill hibernate_ops-like struct, and just create
-> > a device for ACPI, using its suspend()/resume()/whatever callbacks to
-> > do the ACPI magic?
+On Friday, 4 May 2007 14:05, Johannes Berg wrote:
+> Hi,
 > 
-> Doesn't that have the ordering problem again? You must ensure that this
-> sysdev is suspended as the last one, and that's currently impossible if
-> ACPI is modular.
+> > These #includes are added by
+> > 
+> > 008-add-try_to_freeze-everywhere.patch
+> > 
+> > Perhaps it's one of the patches that don't apply to the current -git?
+> 
+> Hmm, could be, but shouldn't the patch that adds the freezer_exempt
+> calls add them as well?
 
-I do not think acpi has these kinds of ordering requirements... (And I
-do not see what it has to do with module or not).
+Well, I'm not sure what you mean.  It's on top of
+008-add-try_to_freeze-everywhere.patch and the #includes are already there, so
+it can't just add them once again.
 
+IOW, the ordering of patches in the patchset is important and if you drop one,
+you may need to replace it with another patch that does similar changes.
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings,
+Rafael
