@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Sat, 5 May 2007 00:31:50 +0200
-Message-ID: <200705050031.51141.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705041054520.3417-100000@iolanthe.rowland.org>
-	<200705042355.19145.rjw@sisk.pl>
-	<200705041512.16087.david-b@pacbell.net>
+From: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: [RFT][PATCH] swsusp: Change code ordering related to
+	ACPI
+Date: Fri, 4 May 2007 16:11:17 -0700
+Message-ID: <2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7__42197.8134698749$1178320335$gmane$org@mail.gmail.com>
+References: <200705041143.02451.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705041512.16087.david-b@pacbell.net>
+In-Reply-To: <200705041143.02451.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,33 +19,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Marcus Better <marcus@better.se>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 5 May 2007 00:12, David Brownell wrote:
-> On Friday 04 May 2007, Rafael J. Wysocki wrote:
-> > On Friday, 4 May 2007 23:23, Johannes Berg wrote:
-> > > On Fri, 2007-05-04 at 23:11 +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > > Actually, prethaw is to prevent drivers loaded before the image is restored
-> > > > from doing unreasonable things.  It doesn't have any effect on the drivers'
-> > > > .resume() routines.
-> > > 
-> > > Oh, but it can, you could have a flag in your driver saying "the next
-> > > resume is after restore" and you set that flag in prethaw.
-> > 
-> > No, you should have set that flag in .suspend(), really. :-)
-> 
-> That doesn't work very well.  Not only does suspend() not
-> know the target state, but you don't want to trash the
-> controller state if you're getting resumed after some kind
-> of fault in the suspend-to-disk path...
-> 
-> I'm hoping that explains the smiley!
+On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> The change of the hibernation/suspend code ordering made before 2.6.21 has
+> caused some systems to have problems related to ACPI.  In particular, the
+> 'platform' hibernation mode doesn't work any more on some systems.
 
-Yes, among other things (like that passing anything from prethaw to .resume()
-really doesn't work unless the data are stored in a device ;-)).
+It seems that somewhere between 2.6.21-rc4 and 2.6.21 final my laptop
+stopped being able to come out of suspend to RAM. Before I start
+bisecting (again, sigh), is this ringing any bells for anyone? In
+particular your, patch (snipped) that deals with hibernation, would it
+also affect suspend to RAM?
 
-Greetings,
-Rafael
+Ray
