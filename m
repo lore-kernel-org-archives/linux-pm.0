@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Why don't we use _TTS method?
-Date: Fri, 4 May 2007 22:09:02 +0200
-Message-ID: <200705042209.03655.rjw__17171.8753911138$1178309149$gmane$org@sisk.pl>
-References: <B28E9812BAF6E2498B7EC5C427F293A4026B61BC@orsmsx415.amr.corp.intel.com>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Fri, 4 May 2007 22:20:23 +0200
+Message-ID: <200705042220.24518.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705041020530.3417-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A4026B61BC@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0705041020530.3417-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,217 +20,108 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 4 May 2007 20:10, Moore, Robert wrote:
-> "New" is of course relative. In the ACPI world, anything about ACPI 3.0
-> is still considered "new". Windows has yet to fully implement ACPI 2.0,
-> let alone ACPI 3.0...
->=20
-> Please point me to where the "spec spec seems to suggest that _GTS
-> should be executed with interrupts off", as I don't think it should.
+On Friday, 4 May 2007 16:40, Alan Stern wrote:
+> Rafael, David, and Pavel:
+> 
+> You all misunderstood the point I was trying to make.
+> 
+> On Thu, 3 May 2007, Rafael J. Wysocki wrote:
+> 
+> > > But why shouldn't a "normal" poweroff enter ACPI S4?  And why shouldn't a 
+> > > "hibernate" poweroff enter ACPI S5?  The choice of which state to enter is 
+> > > independent of the reason for shutting down, right?
+> > 
+> > Well, not exactly.
+> > 
+> > > In other words, the choice for whether or not to call
+> > > acpi_enter_sleep_state(ACPI_STATE_S4) shouldn't depend on whether or not 
+> > > you're hibernating.  So it shouldn't affect the usage of hibernation_ops 
+> > > at all.
+> > 
+> > This works the other way around, I think. :-)
+> > 
+> > Granted, some boxes require us to call acpi_enter_sleep_state(ACPI_STATE_S4)
+> > as a 'power off method' so that they work correctly after the 'return' from hibernation.
+> > If we do acpi_enter_sleep_state(ACPI_STATE_S5) instead, some things might
+> > not work on them (this is an experimental observation, I don't know what
+> > exactly the reason of it is).
+> > 
+> > Now, since I have such a box, I need to do the
+> > acpi_enter_sleep_state(ACPI_STATE_S4) thing (IOW, use the 'platform' power off
+> > method) and not acpi_enter_sleep_state(ACPI_STATE_S5) (the 'shutdown' power
+> > off method).  *However*, acpi_enter_sleep_state(ACPI_STATE_S4) cannot be used
+> > without previous preparations, which are made with the help of hibernation_ops.
+> > 
+> > IOW, all hibernation_ops, including the ->enter() method that actually calls
+> > acpi_enter_sleep_state(ACPI_STATE_S4), are just different pieces of one
+> > (complicated) 'platform' power off method.  It doesn't make sense to use the
+> > (other) hibernation_ops without the ->enter() method.
+> 
+> Let's look at the big picture.
+> 
+> Entering hibernation basically involves these steps:
+> 
+> 	1. Freeze tasks
+> 
+> 	2. Quiesce devices and drivers
+> 
+> 	3. Create snapshot
+> 
+> 	4. Reactivate devices and drivers
+> 
+> 	5. Save snapshot to disk
+> 
+> 	6. Prepare devices for wakeup
+> 
+> 	7. Power down (ACPI S4 on systems which support it)
+> 
+> Leaving hibernation involves a similar sequence which I won't discuss.
+> 
+> Notice that steps 1-5 above are _completely_ independent of all issues 
+> concerning wakeup devices and S4 vs. S5 vs. whatever.  They have to be 
+> carried out for hibernation to work, no matter how the system ends up 
+> getting shut down.
+> 
+> On the other hand, steps 6 and 7 aren't really needed for hibernation.  
+> You _could_ shut the system off completely (ACPI S5).  Automatic wakeup
+> wouldn't work, but the next time the user turned the computer on manually
+> it would still resume from hibernation.
 
-The ACPI 2.0 specification, 7.3.3, says:
+That's correct, with the exception that the user may find the system not fully
+functional after the resume in that case.
 
-"OSPM will set the sleep enable (SLP_EN) bit in the PM1 control register
-immediately following the execution of the _GTS control method without
-performing any other physical I/O or allowing any interrupt servicing."
+> Conversely, steps 6 and 7 can make sense even in situations where you
+> don't want to hibernate.  For example, you might want a normal shutdown in
+> which the operating system does a full restart when the firmware is
+> signalled by a wakeup device.
+> 
+> So there should be separate data structures associated with 1-5 and 6-7.  
+> Maybe the one associated with 6-7 is what you are calling hibernation_ops;  
+> if so then fine.  But I still think that it should be usable for
+> situations where you are not entering hibernation, and we should be 
+> possible to enter hibernation without using it.  The system administrator 
+> should be able to choose which of S4 or S5 gets used for _any_ poweroff, 
+> regardless of whether it's to start hibernating.
 
-This is also clearly stated in Subsection 9.1.
+Yes, this should be doable.
+ 
+> The ACPI spec might refer to S4 as "hibernation" (does it? -- I'm too lazy
+> to check and see),
 
-Yet, according to the same specification, 9.1.6:
+Not directly.  The word "hibernation" is never used in the ACPI specification
+(as of ACPI 2.0).
 
-"7. OSPM executes the _GTS control method, passing an argument that indic=
-ates
-    the sleeping state to be entered (1, 2, 3, or 4 representing S1, S2, =
-S3, and
-    S4).
-8. OSPM clears the WAK_STS in the PM1a_STS and PM1b_STS registers.
-9. OSPM saves the local processor=E2=80=99s context to memory.
-10. OSPM flushes caches (only if entering S1, S2 or S3).
-11. OSPM sets GPE enable registers to ensure that all appropriate wake si=
-gnals are armed.
-12. If entering an S4 state using the S4BIOS mechanism, OSPM writes the
-    S4BIOS_REQ value (from the FADT) to the SMI_CMD port. This passes con=
-trol
-    to the BIOS, which then transitions the platform into the S4BIOS stat=
-e.
-13. If not entering an S4BIOS state, then OSPM writes SLP_TYPa (from the
-    associated sleeping object) with the SLP_ENa bit set to the PM1a_CNT
-    register.
-14. OSPM writes SLP_TYPb with the SLP_EN bit set to the PM1b_CNT register=
-."
+> but that doesn't mean we have to use the terms synonymously.
 
-which kind of contradicts the previous requirement.  Still, 8-14 look lik=
-e
-things that should be done with interrupts off.
+Agreed.
 
-> In any case, the AML interpreter cannot be executed with interrupts off.
-> There is way too much going on in that code.
+> Does this make sense, or am I missing something very basic?
 
-Well, perhaps we can execute _GTS immediately before switching interrupts=
- off.
+Hmm, I think it makes sense.
 
 Greetings,
 Rafael
-
-
-> > -----Original Message-----
-> > From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
-> > Sent: Friday, May 04, 2007 1:51 AM
-> > To: Alexey Starikovskiy
-> > Cc: Moore, Robert; ACPI Devel Maling List; pm list; Pavel Machek
-> > Subject: Re: Why don't we use _TTS method?
-> >=20
-> > Hi Alexey,
-> >=20
-> > On Friday, 4 May 2007 06:34, Alexey Starikovskiy wrote:
-> > > Rafael,
-> > >
-> > > code in prepare() and enter() is split as code with interrupts on
-> and
-> > > code with interrupts off.
-> >=20
-> > I see.  Still, the spec seems to suggest that _GTS should be executed
-> with
-> > interrupts off, but we run it in the 'interrupts on' part of code.
-> Isn't
-> > that
-> > wrong?
-> >=20
-> > > thus it doesn't quite follow a spec in regards of driver suspend.
-> >=20
-> > Yes.
-> >=20
-> > > Basically we need to either split it to smaller pieces or have hook=
-s
-> > > to control interrupts/driver suspend from this code.
-> >=20
-> > I'd like to split it and I'd like to figure out *how* to do this.
-> More
-> > precisely, I'd like to learn which part of acpi_pm_prepare() should b=
-e
-> > executed before device_suspend() and which part can be run after it.
-> > Analogously, I'd like to learn which part of acpi_pm_finish() needs t=
-o
-> be
-> > run before device_resume() and which part can be (or should be) run
-> > after it.
-> >=20
-> > Greetings,
-> > Rafael
-> >=20
-> >=20
-> > > On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > On Friday, 4 May 2007 00:57, Moore, Robert wrote:
-> > > > >
-> > > > > > -----Original Message-----
-> > > > > > From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
-> > > > > > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
-> > > > > > Sent: Thursday, May 03, 2007 1:02 PM
-> > > > > > To: ACPI Devel Maling List
-> > > > > > Cc: pm list; Pavel Machek
-> > > > > > Subject: Why don't we use _TTS method?
-> > > > > >
-> > > > > > Hi,
-> > > > > >
-> > > > > > I've got two questions regarding the implementation of the
-> ACPI
-> > > > > > poweroff/sleep
-> > > > > > code in drivers/acpi/sleep and drivers/acpi/hardware .
-> > > > > >
-> > > > > > 1) We don't seem to use the _TTS system-control method,
-> although
-> > the
-> > > > > ACPI
-> > > > > > specification (ACPI 3.0b) says that this method should be use=
-d
-> for
-> > > > > > intiating
-> > > > > > and finishing power transitions.  Could you please tell me wh=
-y
-> we
-> > > > > don't
-> > > > > > use it?
-> > > > > >
-> > > > > [Moore, Robert]
-> > > > >
-> > > > > Probably because it's fairly new and it takes a long time for
-> these
-> > > > > things to appear in real machines. Also, needs to be supported
-> in
-> > > > > Windows before we ever see it in real machines.
-> > > >
-> > > > Hmm, it already was in the 3.0 spec from 2004, so it doesn't seem
-> to
-> > be
-> > > > that new.  Still, I'm not an expert ...
-> > > >
-> > > > > > 2) In the functions acpi_enter_sleep_state_prep(),
-> > > > > > acpi_enter_sleep_state(),
-> > > > > > acpi_leave_sleep_state() we manipulate GPEs quite extensively
-> (we
-> > > > > disable
-> > > > > > and enable them for a couple of times during a transition),
-> > although
-> > > > > the
-> > > > > > specification doesn't tell anything about that explicitly.
-> Could
-> > you
-> > > > > > please
-> > > > > > explain to me what the purpose of that is?
-> > > > > >
-> > > > > [Moore, Robert]
-> > > > >
-> > > > > There a wake GPEs and runtime GPEs that need to be managed
-> > separately.
-> > > > > We want to make sure that only the "Wake" GPEs are enabled as w=
-e
-> > goto
-> > > > > sleep.
-> > > >
-> > > > I understand that, but the runtime GPEs seem to be disabled befor=
-e
-> we
-> > call
-> > > > device drivers' .suspend() routines (ie. before the devices are
-> placed
-> > in the
-> > > > appropriate Dx states) and that's the point I don't quite get.  I=
-s
-> > there a
-> > > > technical reason for doing it in this particular place?
-> > > >
-> > > > Thanks a lot for your reply.
-> > > >
-> > > > Greetings,
-> > > > Rafael
-> > > > -
-> > > > To unsubscribe from this list: send the line "unsubscribe
-> linux-acpi"
-> > in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.htm=
-l
-> > > >
-> > >
-> > >
-> >=20
-> > --
-> > If you don't have the time to read,
-> > you don't have the time or the tools to write.
-> > 		- Stephen King
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
->=20
-
---=20
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
