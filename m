@@ -1,16 +1,18 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
 	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Fri, 04 May 2007 23:08:50 +0200
-Message-ID: <1178312930.7408.38.camel@johannes.berg>
+Date: Fri, 4 May 2007 23:15:19 +0200
+Message-ID: <20070504211519.GA24246@elf.ucw.cz>
 References: <Pine.LNX.4.44L0.0705041020530.3417-100000@iolanthe.rowland.org>
 	<200705042220.24518.rjw@sisk.pl>
 	<1178310082.7408.33.camel@johannes.berg>
 	<20070504205524.GA24123@elf.ucw.cz>
+	<1178312930.7408.38.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8578964022706328442=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070504205524.GA24123@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1178312930.7408.38.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,91 +20,57 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
 Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
---===============8578964022706328442==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-zVCbIJZbNPQIgtwwpM68"
+> > ACPI BIOS communicates with hw, too. Suppose it generates random
+> > number, stores it in memory and tells it to the keyboard conroller
+> > during bootup (more specifically during ACPI enable phase).
+> > 
+> > Now, it periodically checks if number in memory is same as the number
+> > known by keyboard controller.
+> > 
+> > If you suspend/resume without telling acpi, it will find out, because
+> > numbers will not match.
+> > 
+> > (And now, ACPI is probably not crazy enough to store random numbers --
+> > but it could -- but for example "I had AC power, now I do not, and I
+> > did not see a interrupt telling me it went away" can be counted as
+> > confusing for ACPI).
+> 
+> I don't follow.
+> 
+>  * you have AC power.
+>  * you save system state and shut down (S5)
+>  * you boot up again on battery power
+>  * you restore system state
+>  * ...
+> 
+> vs.
+> 
+>  * you have AC power
+>  * you shut down
+>  * you boot up again on battery power
+>  * ...
+> 
+> where's the difference to the ACPI bios? Oh, I see, it stores it
+> somewhere in the memory that you've stored/restored? Well, that's your
+> bug then, don't touch it.
 
+Not sure... yes, it stores parts somewhere in memory. Plus, it may
+have some parts related to the communications with operating system
+(*)... I guess we need to save those, and parts related to hw
+state... where your suggestion makes sense.
 
---=-zVCbIJZbNPQIgtwwpM68
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2007-05-04 at 22:55 +0200, Pavel Machek wrote:
-
-> > Why is that anyway? Is it just a matter of the acpi code getting
-> > confused about the acpi bios state? How can the acpi bios possibly be
-> > screwed up after what it must see as a fresh boot? Does the acpi code
-> > poke it in ways it's not supposed to be poked after a fresh boot?
->=20
-> No, ACPI BIOS does not see a fresh boot.
-
-Sure. It just booted the machine so it must see it as a fresh boot.
-
-> ACPI BIOS communicates with hw, too. Suppose it generates random
-> number, stores it in memory and tells it to the keyboard conroller
-> during bootup (more specifically during ACPI enable phase).
->=20
-> Now, it periodically checks if number in memory is same as the number
-> known by keyboard controller.
->=20
-> If you suspend/resume without telling acpi, it will find out, because
-> numbers will not match.
->=20
-> (And now, ACPI is probably not crazy enough to store random numbers --
-> but it could -- but for example "I had AC power, now I do not, and I
-> did not see a interrupt telling me it went away" can be counted as
-> confusing for ACPI).
-
-I don't follow.
-
- * you have AC power.
- * you save system state and shut down (S5)
- * you boot up again on battery power
- * you restore system state
- * ...
-
-vs.
-
- * you have AC power
- * you shut down
- * you boot up again on battery power
- * ...
-
-where's the difference to the ACPI bios? Oh, I see, it stores it
-somewhere in the memory that you've stored/restored? Well, that's your
-bug then, don't touch it.
-
-johannes
-
---=-zVCbIJZbNPQIgtwwpM68
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGO6Di/ETPhpq3jKURAilCAJ9TG4b/GzIX0Dw4kTOQmc0vT+gC9wCffHKY
-ghEQfBLi0z6dg4aW1GAhdKE=
-=NER6
------END PGP SIGNATURE-----
-
---=-zVCbIJZbNPQIgtwwpM68--
-
-
---===============8578964022706328442==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8578964022706328442==--
+(*) and yes, there probably are such parts. If we set backlight to
+20%, we'll be confused if it is 100% after resume... we probably could
+handle those one-by-one...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
