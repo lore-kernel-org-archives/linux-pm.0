@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Why don't we use _TTS method?
-Date: Fri, 4 May 2007 10:50:40 +0200
-Message-ID: <200705041050.41439.rjw__15606.7249052741$1178268447$gmane$org@sisk.pl>
-References: <B28E9812BAF6E2498B7EC5C427F293A40267F659@orsmsx415.amr.corp.intel.com>
-	<200705040122.56563.rjw@sisk.pl>
-	<8f8ff01d0705032134s4758d675qe1b37febb5745770@mail.gmail.com>
+Subject: Re: shrinking memory for suspend?
+Date: Fri, 4 May 2007 11:02:57 +0200
+Message-ID: <200705041102.57944.rjw@sisk.pl>
+References: <200705031245.05454.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0705031031500.3548-100000@iolanthe.rowland.org>
+	<17978.28914.736715.985306@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8f8ff01d0705032134s4758d675qe1b37febb5745770@mail.gmail.com>
+In-Reply-To: <17978.28914.736715.985306@cargo.ozlabs.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,109 +21,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, "Moore,
-	Robert" <robert.moore@intel.com>, Pavel Machek <pavel@ucw.cz>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alexey,
-
-On Friday, 4 May 2007 06:34, Alexey Starikovskiy wrote:
-> Rafael,
+On Friday, 4 May 2007 01:32, Paul Mackerras wrote:
+> Alan Stern writes:
 > 
-> code in prepare() and enter() is split as code with interrupts on and
-> code with interrupts off.
+> > > > Which is why the powermac/powerbook sleep code insists on there only
+> > > > being one cpu active.  I have an SMP powermac which can sleep; I use a
+> > > > little script to take the second cpu down before sleeping and bring it
+> > > > back up after waking up.
+> > > 
+> > > That's quite intrusive.  Ideally, user space processes should not notice that
+> > > there have been a suspend at one point.
+> > 
+> > What happens without preemption enabled when a device driver's suspend() 
+> > method calls schedule()?
+> 
+> That would be bad; don't do that. :)
+> 
+> In the context of the original powermac sleep code, drivers registered
+> a notifier for sleep which got called twice - the first time before
+> doing the sync, and the second time after it, with an argument to the
+> notifier to indicate which call this is.  Drivers are allowed to call
+> schedule on the first call but not on the second.
+> 
+> > With or without preemption enabled, what happens when a user process tries
+> > to do I/O to a suspended device?
+> 
+> If we have two calls to the driver, then the second one should happen
+> with only one cpu still active and preemption disabled, and that's the
+> call where the device hardware should actually be put into its suspend
+> state.
+> 
+> I'm not saying the original powermac code was perfect, but it does
+> work well for many users using powerbooks (which are all single-cpu
+> machines), without freezing processes.
+> 
+> I can see the attraction of the freezer, but there are still at least
+> three problems with it AFAICS:
+> 
+> * Working out which kernel threads should *not* be frozen is a manual,
+>   difficult and error-prone process
+> * Putting processes into an uninterruptible sleep stuffs up the load
+>   average
 
-I see.  Still, the spec seems to suggest that _GTS should be executed with
-interrupts off, but we run it in the 'interrupts on' part of code.  Isn't that
-wrong?
+This is fixable, I think.
 
-> thus it doesn't quite follow a spec in regards of driver suspend.
+> * It's intrusive in the sense that every kernel thread needs to have
+>   code in it to allow it to be frozen, and not all the kernel thread
+>   main loops have been "fixed".
 
-Yes.
+IMO, the freezing of user space and the freezing of kernel threads are two
+different issues.  While the freezing of user space is pretty straightforward,
+the freezing of kernel threads is difficult.
 
-> Basically we need to either split it to smaller pieces or have hooks
-> to control interrupts/driver suspend from this code.
+OTOH, it turns out that the freezer is also useful for other purposes, like
+kprobes and the CPU hotplug (yes, yes), so the infrastructure needed by it
+is no longer suspend-specific.  Since we have the infrastructure (needed for
+other purposes anyway), we can use it just fine.
 
-I'd like to split it and I'd like to figure out *how* to do this.  More
-precisely, I'd like to learn which part of acpi_pm_prepare() should be
-executed before device_suspend() and which part can be run after it.
-Analogously, I'd like to learn which part of acpi_pm_finish() needs to be
-run before device_resume() and which part can be (or should be) run
-after it.
+Of course, the problem of working out which kernel threads should not be
+frozen for the suspend is real.
 
 Greetings,
 Rafael
-
-
-> On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday, 4 May 2007 00:57, Moore, Robert wrote:
-> > >
-> > > > -----Original Message-----
-> > > > From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
-> > > > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
-> > > > Sent: Thursday, May 03, 2007 1:02 PM
-> > > > To: ACPI Devel Maling List
-> > > > Cc: pm list; Pavel Machek
-> > > > Subject: Why don't we use _TTS method?
-> > > >
-> > > > Hi,
-> > > >
-> > > > I've got two questions regarding the implementation of the ACPI
-> > > > poweroff/sleep
-> > > > code in drivers/acpi/sleep and drivers/acpi/hardware .
-> > > >
-> > > > 1) We don't seem to use the _TTS system-control method, although the
-> > > ACPI
-> > > > specification (ACPI 3.0b) says that this method should be used for
-> > > > intiating
-> > > > and finishing power transitions.  Could you please tell me why we
-> > > don't
-> > > > use it?
-> > > >
-> > > [Moore, Robert]
-> > >
-> > > Probably because it's fairly new and it takes a long time for these
-> > > things to appear in real machines. Also, needs to be supported in
-> > > Windows before we ever see it in real machines.
-> >
-> > Hmm, it already was in the 3.0 spec from 2004, so it doesn't seem to be
-> > that new.  Still, I'm not an expert ...
-> >
-> > > > 2) In the functions acpi_enter_sleep_state_prep(),
-> > > > acpi_enter_sleep_state(),
-> > > > acpi_leave_sleep_state() we manipulate GPEs quite extensively (we
-> > > disable
-> > > > and enable them for a couple of times during a transition), although
-> > > the
-> > > > specification doesn't tell anything about that explicitly.  Could you
-> > > > please
-> > > > explain to me what the purpose of that is?
-> > > >
-> > > [Moore, Robert]
-> > >
-> > > There a wake GPEs and runtime GPEs that need to be managed separately.
-> > > We want to make sure that only the "Wake" GPEs are enabled as we goto
-> > > sleep.
-> >
-> > I understand that, but the runtime GPEs seem to be disabled before we call
-> > device drivers' .suspend() routines (ie. before the devices are placed in the
-> > appropriate Dx states) and that's the point I don't quite get.  Is there a
-> > technical reason for doing it in this particular place?
-> >
-> > Thanks a lot for your reply.
-> >
-> > Greetings,
-> > Rafael
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
-> 
-
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
