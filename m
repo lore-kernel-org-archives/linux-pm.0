@@ -1,16 +1,15 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: shrinking memory for suspend?
-Date: Fri, 4 May 2007 20:49:23 +1000
-Message-ID: <17979.4019.603174.454513@cargo.ozlabs.ibm.com>
-References: <200705031245.05454.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0705031031500.3548-100000@iolanthe.rowland.org>
-	<17978.28914.736715.985306@cargo.ozlabs.ibm.com>
-	<200705041102.57944.rjw@sisk.pl>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: ACPI code in platform mode hibernation code paths
+	(was: Re: [PATCH] swsusp: do not use pm_ops)
+Date: Fri, 04 May 2007 12:54:32 +0200
+Message-ID: <1178276072.7408.7.camel__41478.3297259875$1178276085$gmane$org@johannes.berg>
+References: <20070425072350.GA6866@ucw.cz> <200705021542.24988.rjw@sisk.pl>
+	<8f8ff01d0705020711r630b8b92sdd2cd9316eb39edc@mail.gmail.com>
+	<200705022126.47897.rjw@sisk.pl>  <20070503224807.GD13426@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2161154425911866587=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705041102.57944.rjw@sisk.pl>
+In-Reply-To: <20070503224807.GD13426@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +17,56 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki writes:
 
-> IMO, the freezing of user space and the freezing of kernel threads are two
-> different issues.  While the freezing of user space is pretty straightforward,
-> the freezing of kernel threads is difficult.
+--===============2161154425911866587==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-CjF+mLxeAtR+/hSspegD"
 
-In general I agree, but now that we have FUSE, plus the framework for
-doing device drivers in userspace (I have forgotten its name), it gets
-even more complicated because some userspace processes are now doing
-the sorts of things that kernel threads do.
 
-This is relevant for me because I use encfs regularly, and encfs is
-based on FUSE.  What happens if there is an encfs filesystem mounted,
-and we freeze all userspace processes and then do a sys_sync()?  Does
-the system wait forever for the encfs filesystem to write out its
-dirty data?
+--=-CjF+mLxeAtR+/hSspegD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Paul.
+On Fri, 2007-05-04 at 00:48 +0200, Pavel Machek wrote:
+
+> Crazy idea... could we kill hibernate_ops-like struct, and just create
+> a device for ACPI, using its suspend()/resume()/whatever callbacks to
+> do the ACPI magic?
+
+Doesn't that have the ordering problem again? You must ensure that this
+sysdev is suspended as the last one, and that's currently impossible if
+ACPI is modular.
+
+johannes
+
+--=-CjF+mLxeAtR+/hSspegD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGOxDo/ETPhpq3jKURAlG2AJwN0pnM3ASCTCS07ixmYkmKTm0eWQCeJx0Y
+KFGVxDWv+FATUIUpsxC0ZBc=
+=YONC
+-----END PGP SIGNATURE-----
+
+--=-CjF+mLxeAtR+/hSspegD--
+
+
+--===============2161154425911866587==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============2161154425911866587==--
