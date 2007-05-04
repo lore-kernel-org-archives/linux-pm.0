@@ -1,15 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Paul Mackerras <paulus@samba.org>
 Subject: Re: shrinking memory for suspend?
-Date: Fri, 04 May 2007 12:48:32 +0200
-Message-ID: <1178275712.7408.0.camel@johannes.berg>
-References: <1177943076.5102.83.camel@johannes.berg>
-	<200705031217.30979.rjw@sisk.pl>
-	<1178192016.13233.94.camel@johannes.berg>
-	<200705031456.51546.rjw@sisk.pl>
+Date: Fri, 4 May 2007 20:49:23 +1000
+Message-ID: <17979.4019.603174.454513@cargo.ozlabs.ibm.com>
+References: <200705031245.05454.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0705031031500.3548-100000@iolanthe.rowland.org>
+	<17978.28914.736715.985306@cargo.ozlabs.ibm.com>
+	<200705041102.57944.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3732638723762291252=="
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705031456.51546.rjw@sisk.pl>
+In-Reply-To: <200705041102.57944.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,55 +18,27 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+Rafael J. Wysocki writes:
 
---===============3732638723762291252==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-c/kfPDRoTZPbm8vSEHA9"
+> IMO, the freezing of user space and the freezing of kernel threads are two
+> different issues.  While the freezing of user space is pretty straightforward,
+> the freezing of kernel threads is difficult.
 
+In general I agree, but now that we have FUSE, plus the framework for
+doing device drivers in userspace (I have forgotten its name), it gets
+even more complicated because some userspace processes are now doing
+the sorts of things that kernel threads do.
 
---=-c/kfPDRoTZPbm8vSEHA9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This is relevant for me because I use encfs regularly, and encfs is
+based on FUSE.  What happens if there is an encfs filesystem mounted,
+and we freeze all userspace processes and then do a sys_sync()?  Does
+the system wait forever for the encfs filesystem to write out its
+dirty data?
 
-On Thu, 2007-05-03 at 14:56 +0200, Rafael J. Wysocki wrote:
-
-> Besides, preemptible kernels are not much different from SMP in that resp=
-ect,
-> so ...
-
-Yeah, we just disable preempt in the interesting code paths on
-powermac ;)
-
-johannes
-
---=-c/kfPDRoTZPbm8vSEHA9
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGOw+A/ETPhpq3jKURAlIDAJ4zljArWO3etrttwj68WiU9CivUdgCdHwId
-DB2HTKb0pDFFEuFL4Nnu1Zc=
-=zo2V
------END PGP SIGNATURE-----
-
---=-c/kfPDRoTZPbm8vSEHA9--
-
-
---===============3732638723762291252==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3732638723762291252==--
+Paul.
