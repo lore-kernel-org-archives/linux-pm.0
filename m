@@ -1,16 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: shrinking memory for suspend?
-Date: Fri, 4 May 2007 11:02:57 +0200
-Message-ID: <200705041102.57944.rjw@sisk.pl>
-References: <200705031245.05454.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0705031031500.3548-100000@iolanthe.rowland.org>
-	<17978.28914.736715.985306@cargo.ozlabs.ibm.com>
+Subject: [RFT][PATCH] swsusp: Change code ordering related to ACPI
+Date: Fri, 4 May 2007 11:43:01 +0200
+Message-ID: <200705041143.02451.rjw__9546.73036835647$1178271587$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <17978.28914.736715.985306@cargo.ozlabs.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,69 +17,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 4 May 2007 01:32, Paul Mackerras wrote:
-> Alan Stern writes:
-> 
-> > > > Which is why the powermac/powerbook sleep code insists on there only
-> > > > being one cpu active.  I have an SMP powermac which can sleep; I use a
-> > > > little script to take the second cpu down before sleeping and bring it
-> > > > back up after waking up.
-> > > 
-> > > That's quite intrusive.  Ideally, user space processes should not notice that
-> > > there have been a suspend at one point.
-> > 
-> > What happens without preemption enabled when a device driver's suspend() 
-> > method calls schedule()?
-> 
-> That would be bad; don't do that. :)
-> 
-> In the context of the original powermac sleep code, drivers registered
-> a notifier for sleep which got called twice - the first time before
-> doing the sync, and the second time after it, with an argument to the
-> notifier to indicate which call this is.  Drivers are allowed to call
-> schedule on the first call but not on the second.
-> 
-> > With or without preemption enabled, what happens when a user process tries
-> > to do I/O to a suspended device?
-> 
-> If we have two calls to the driver, then the second one should happen
-> with only one cpu still active and preemption disabled, and that's the
-> call where the device hardware should actually be put into its suspend
-> state.
-> 
-> I'm not saying the original powermac code was perfect, but it does
-> work well for many users using powerbooks (which are all single-cpu
-> machines), without freezing processes.
-> 
-> I can see the attraction of the freezer, but there are still at least
-> three problems with it AFAICS:
-> 
-> * Working out which kernel threads should *not* be frozen is a manual,
->   difficult and error-prone process
-> * Putting processes into an uninterruptible sleep stuffs up the load
->   average
+Hi,
 
-This is fixable, I think.
+The change of the hibernation/suspend code ordering made before 2.6.21 has
+caused some systems to have problems related to ACPI.  In particular, the
+'platform' hibernation mode doesn't work any more on some systems.
 
-> * It's intrusive in the sense that every kernel thread needs to have
->   code in it to allow it to be frozen, and not all the kernel thread
->   main loops have been "fixed".
-
-IMO, the freezing of user space and the freezing of kernel threads are two
-different issues.  While the freezing of user space is pretty straightforward,
-the freezing of kernel threads is difficult.
-
-OTOH, it turns out that the freezer is also useful for other purposes, like
-kprobes and the CPU hotplug (yes, yes), so the infrastructure needed by it
-is no longer suspend-specific.  Since we have the infrastructure (needed for
-other purposes anyway), we can use it just fine.
-
-Of course, the problem of working out which kernel threads should not be
-frozen for the suspend is real.
+It has been confirmed that the appended patch fixes the problem, but it's not
+certain if this changes don't break some other systems.  For this reason, all
+users of hibernation (swsusp, uswsusp) are gently requested to verify if this
+patch doesn't break their systems.
 
 Greetings,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+The current code ordering in the hibernation code paths causes some systems to
+have problems.  It has been confirmed by testers that these problems do not
+appear if the acpi_pm_finish() function (called via platform_finish()) is
+executed after device_suspend().
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |    4 ++--
+ kernel/power/user.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.21/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/disk.c	2007-05-04 10:31:51.000000000 +0200
++++ linux-2.6.21/kernel/power/disk.c	2007-05-04 10:32:12.000000000 +0200
+@@ -195,9 +195,9 @@ int hibernate(void)
+ 
+ 	if (in_suspend) {
+ 		enable_nonboot_cpus();
+-		platform_finish();
+ 		device_resume();
+ 		resume_console();
++		platform_finish();
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write();
+ 		if (!error)
+@@ -214,9 +214,9 @@ int hibernate(void)
+  Enable_cpus:
+ 	enable_nonboot_cpus();
+  Resume_devices:
+-	platform_finish();
+ 	device_resume();
+ 	resume_console();
++	platform_finish();
+  Thaw:
+ 	mutex_unlock(&pm_mutex);
+ 	unprepare_processes();
+Index: linux-2.6.21/kernel/power/user.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/user.c	2007-05-04 10:31:51.000000000 +0200
++++ linux-2.6.21/kernel/power/user.c	2007-05-04 10:32:12.000000000 +0200
+@@ -169,11 +169,11 @@ static inline int snapshot_suspend(int p
+ 	}
+ 	enable_nonboot_cpus();
+  Resume_devices:
++	device_resume();
++	resume_console();
+ 	if (platform_suspend)
+ 		platform_finish();
+ 
+-	device_resume();
+-	resume_console();
+  Finish:
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+@@ -201,11 +201,11 @@ static inline int snapshot_restore(int p
+ 
+ 	enable_nonboot_cpus();
+  Resume_devices:
++	device_resume();
++	resume_console();
+ 	if (platform_suspend)
+ 		platform_finish();
+ 
+-	device_resume();
+-	resume_console();
+  Finish:
+ 	pm_restore_console();
+ 	mutex_unlock(&pm_mutex);
