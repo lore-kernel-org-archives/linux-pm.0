@@ -1,14 +1,16 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
 	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Fri, 04 May 2007 22:49:09 +0200
-Message-ID: <1178311750.7408.34.camel@johannes.berg>
-References: <Pine.LNX.4.44L0.0705041054520.3417-100000@iolanthe.rowland.org>
-	<200705042250.29760.rjw@sisk.pl>
+Date: Fri, 4 May 2007 22:55:24 +0200
+Message-ID: <20070504205524.GA24123@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0705041020530.3417-100000@iolanthe.rowland.org>
+	<200705042220.24518.rjw@sisk.pl>
+	<1178310082.7408.33.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9078114654112933698=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705042250.29760.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <1178310082.7408.33.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,56 +18,44 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
---===============9078114654112933698==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-xceTg+dd4ZC3NGEXy/uG"
+> > > On the other hand, steps 6 and 7 aren't really needed for hibernation.  
+> > > You _could_ shut the system off completely (ACPI S5).  Automatic wakeup
+> > > wouldn't work, but the next time the user turned the computer on manually
+> > > it would still resume from hibernation.
+> > 
+> > That's correct, with the exception that the user may find the system not fully
+> > functional after the resume in that case.
+> 
+> Why is that anyway? Is it just a matter of the acpi code getting
+> confused about the acpi bios state? How can the acpi bios possibly be
+> screwed up after what it must see as a fresh boot? Does the acpi code
+> poke it in ways it's not supposed to be poked after a fresh boot?
 
+No, ACPI BIOS does not see a fresh boot.
 
---=-xceTg+dd4ZC3NGEXy/uG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+ACPI BIOS communicates with hw, too. Suppose it generates random
+number, stores it in memory and tells it to the keyboard conroller
+during bootup (more specifically during ACPI enable phase).
 
-On Fri, 2007-05-04 at 22:50 +0200, Rafael J. Wysocki wrote:
+Now, it periodically checks if number in memory is same as the number
+known by keyboard controller.
 
-> To prevent this from happening, we need a separate set of hibernation cal=
-lbacks
-> in device drivers.
+If you suspend/resume without telling acpi, it will find out, because
+numbers will not match.
 
-You *can* actually do that now with prethaw and all that afaict. But all
-the more argument for splitting up the callbacks as discussed
-previously.
-
-johannes
-
---=-xceTg+dd4ZC3NGEXy/uG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGO5xF/ETPhpq3jKURAtAYAJ9LHrICoj/E5IqM8tV2mrMz1NH8jQCgocu+
-xlOJLepqVSCZPxliE31et/s=
-=ToOb
------END PGP SIGNATURE-----
-
---=-xceTg+dd4ZC3NGEXy/uG--
-
-
---===============9078114654112933698==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============9078114654112933698==--
+(And now, ACPI is probably not crazy enough to store random numbers --
+but it could -- but for example "I had AC power, now I do not, and I
+did not see a interrupt telling me it went away" can be counted as
+confusing for ACPI).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
