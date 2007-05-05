@@ -1,15 +1,12 @@
-From: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [RFT][PATCH] swsusp: Change code ordering related to
-	ACPI
-Date: Fri, 4 May 2007 16:11:17 -0700
-Message-ID: <2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7__42197.8134698749$1178320335$gmane$org@mail.gmail.com>
-References: <200705041143.02451.rjw@sisk.pl>
+From: Microsoft Award Team <mgredden@bellsouth.net>
+Subject: Microsoft Award Promo
+Date: Fri, 4 May 2007 22:17:35 -0500
+Message-ID: <20070505031735.PEMQ1041.ibm67aec.bellsouth.net@mail.bellsouth.net>
+Reply-To: claimsagent_carpenter07@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705041143.02451.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +16,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Marcus Better <marcus@better.se>, pm list <linux-pm@lists.linux-foundation.org>
+To: info@com
 List-Id: linux-pm@vger.kernel.org
 
-On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> The change of the hibernation/suspend code ordering made before 2.6.21 has
-> caused some systems to have problems related to ACPI.  In particular, the
-> 'platform' hibernation mode doesn't work any more on some systems.
 
-It seems that somewhere between 2.6.21-rc4 and 2.6.21 final my laptop
-stopped being able to come out of suspend to RAM. Before I start
-bisecting (again, sigh), is this ringing any bells for anyone? In
-particular your, patch (snipped) that deals with hibernation, would it
-also affect suspend to RAM?
+Microsoft Award Promo
+43 Wilson Ave, Harlesden London NW10 United Kingdom,
+Ref: BTD/876/03
+Batch: 653978E
 
-Ray
+Dear Winner,
+The prestigious Microsoft and AOL has set out and successfully
+organised a Sweepstakes marking this year 2007 anniversary we rolled out =
+over
+=A310,000.000.00 (Ten million Great Britain Pounds) for this year Anniver=
+sary Draws.
+The selection was made randomly from World Wide Web site through a comput=
+er draw system extracted from over 100,000 individuals and companies,
+attaching email addresses to ticket numbers.
+Your email address as indicated was drawn and attached to ticket number
+005493262748 with serial numbers BTD/890578302/04 and drew the lucky
+numbers 15-22-27-38-40-47(20) which subsequently wonyou =A31,000,000.00
+(One Million Great Britain Pounds) as one of the 10 jackpot winners in th=
+is draw.
+contact your agent on how to claim your prize=20
+Name: MR. DAVID CARPENTER
+Email :claimsagent_carpenter07@yahoo.co.uk=20
+
+Sincerely,
+Mrs Susan Miller
+Microsoft Promotion Team
