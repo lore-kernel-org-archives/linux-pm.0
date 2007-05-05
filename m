@@ -1,14 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] suspend/resume debugging: device filter
-Date: Sat, 5 May 2007 12:08:55 +0200
-Message-ID: <20070505100855.GC25704@elf.ucw.cz>
-References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de>
-	<20070505092425.GA23125@elte.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Sat, 5 May 2007 11:37:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705051132310.1976-100000@netrider.rowland.org>
+References: <200705050021.29481.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070505092425.GA23125@elte.hu>
+In-Reply-To: <200705050021.29481.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Greg KH <gregkh@suse.de>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sat, 5 May 2007, Rafael J. Wysocki wrote:
 
-> > Here's a (compile tested only) patch that does this on a per-device 
-> > basis, which is smaller, and should work just as well as your patch.
-> > 
-> > It creates a new file in the power/ directory for every device called 
-> > "can_suspend".  Write a '0' to it to prevent that device from being 
-> > suspended.
-> > 
-> > Does this work for you?
+> > Yeah, whatever. You can fix the problem but it's ugly. Let's come up
+> > with a good way to do the 6 callbacks mentioned in some other thread
+> > earlier.
 > 
-> yeah, i was able to use this too to debug suspend/resume problems. But 
-> i've added the check to the resume path too - for example sw-suspend 
-> does a resume of devices during its suspend cycle, cutting off much of 
-> the netconsole output.
+> This is the plan, but we need to do some preparations.
 > 
-> which makes the can_suspend flag mis-named - perhaps rename it to 
-> exclude_pm ?
+> For example, I think, we should introduce some consistent terminology, so that
+> we *always* know what we're talking about.
 
-debug_exclude_pm? I do not want people playing with it, then
-complaining that they broke the suspend.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+A proposal:
+
+For suspend-to-RAM we already have suspend() and resume().  At the 
+possible cost of introducing some confusion, I think it makes sense to 
+keep those method names.
+
+For hibernation we need these:
+
+	pre_snapshot()
+	post_snapshot()
+	pre_restore()
+	post_restore()
+
+In addition we may want to have early/late variations on these (for use 
+after interrupts have been disabled), which would lead to:
+
+	pre_snapshot()
+	pre_snapshot_late()
+	post_snapshot_early()
+	post_snapshot()
+	pre_restore()
+	pre_restore_late()
+	post_restore_early()
+	post_restore()
+
+Yes, it's a large list...  But it seems to be necessary for providing all 
+the information drivers will need.
+
+Alan Stern
