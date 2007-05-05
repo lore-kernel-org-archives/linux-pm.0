@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
 	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Sat, 5 May 2007 17:43:46 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0705051742100.27516-100000@netrider.rowland.org>
-References: <200705051950.18318.rjw@sisk.pl>
+Date: Sat, 5 May 2007 17:44:33 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705051743560.27516-100000@netrider.rowland.org>
+References: <200705052049.58353.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705051950.18318.rjw@sisk.pl>
+In-Reply-To: <200705052049.58353.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,20 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
 On Sat, 5 May 2007, Rafael J. Wysocki wrote:
 
-> > I'm also pointing out that the policy choice decided by the contents of 
-> > /sys/power/disk comes into play during steps 6-7 above, but not at all in 
-> > steps 1-5.  Hence any associated software structures should explicitly be 
-> > connected only with steps 6 and 7.
+> > In addition we may want to have early/late variations on these (for use 
+> > after interrupts have been disabled), which would lead to:
+> > 
+> > 	pre_snapshot()
+> > 	pre_snapshot_late()
+> > 	post_snapshot_early()
+> > 	post_snapshot()
+> > 	pre_restore()
+> > 	pre_restore_late()
+> > 	post_restore_early()
+> > 	post_restore()
+> > 
+> > Yes, it's a large list...  But it seems to be necessary for providing all 
+> > the information drivers will need.
 > 
-> At present, this policy choice does affect the earlier steps too.
+> I think we may need yet another callback, executed before pre_snapshot()
+> and before we shrink memory during the hibernation, to be used by drivers
+> that need a lot of additional memory in pre_snapshot().
 
-Isn't this then another aspect of hibernation needing to be fixed?  Or is 
-there some genuine reason I'm not aware of that the choice of shutdown 
-method should affect those steps?
+	pre_snapshot_early()
 
 Alan Stern
