@@ -1,13 +1,13 @@
-From: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: BUG: sleeping function called from invalid context at
-	net/core/sock.c:1523
-Date: Sat, 5 May 2007 14:25:03 -0700
-Message-ID: <2c0942db0705051425kd878e7exf9484ee8d03cd3bb__16157.5356185951$1178400353$gmane$org@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Sat, 5 May 2007 17:42:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705051737290.27516-100000@netrider.rowland.org>
+References: <200705051946.08625.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200705051946.08625.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,55 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Max Krasnyansky <maxk@qualcomm.com>, marcel@holtmann.org, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Upon resume (from suspend to RAM) of my laptop, I'm getting the
-following. (Not a regression, it's been there a while.) This is under
-2.6.21. Everything *seems* fine afterward, but... <shrug> -- it's not
-like I use bluetooth all that often.
+On Sat, 5 May 2007, Rafael J. Wysocki wrote:
 
-My laptop has the bluetooth adapter hooked via USB insternally, so
-it's the hci_usb driver. Authors cc:d.
+> > > Yes, but that can be done in two different ways:
+> > > 
+> > > 1) "We have restored the hibernation image, but the BIOS state corresponds to
+> > > a fresh reboot, so please initialize everything from scratch."
+> > > 
+> > > 2) "We have restored the hibernation image and the ACPI S4 was used for
+> > > powering off (hint: you may try not to initialize everything from scratch)."
+> > > 
+> > > Of course, in the case 2) we are responsible for ensuring that the contents of
+> > > the hibernation image are consistent with the information preserved by the
+> > > BIOS.
+> > 
+> > Keep in mind also that before you can do either 1) or 2), the boot kernel 
+> > has already communicated with the BIOS, possibly changing some of the ACPI 
+> > state.
+> 
+> That's correct, but it follows from the ACPI spec that there is a way for the
+> boot kernel to distinguish 'normal' boot from 'S4 resume' boot.  If this
+> mechanism is used and the boot kernel states that it's doing a 'S4 resume',
+> it will be able to leave ACPI alone and restore the hibernation image.
 
-[    1.329537] BUG: sleeping function called from invalid context at
-net/core/sock.c:1523
-[    1.329574] in_atomic():1, irqs_disabled():0
-[    1.329576] INFO: lockdep is turned off.
-[    1.329578]
-[    1.329578] Call Trace:
-[    1.329585]  [<ffffffff8029cedc>] debug_show_held_locks+0x1c/0x30
-[    1.329598]  [<ffffffff8020b2f5>] __might_sleep+0xe5/0xf0
-[    1.329603]  [<ffffffff803cfdbc>] lock_sock_nested+0x2c/0x120
-[    1.329617]  [<ffffffff881c9a6a>] :bluetooth:hci_sock_dev_event+0x4a/0xf0
-[    1.329627]  [<ffffffff881c9ae7>] :bluetooth:hci_sock_dev_event+0xc7/0xf0
-[    1.329634]  [<ffffffff80269cef>] notifier_call_chain+0x2f/0x50
-[    1.329639]  [<ffffffff80269d49>] atomic_notifier_call_chain+0x39/0x70
-[    1.329649]  [<ffffffff881c4d86>] :bluetooth:hci_notify+0x16/0x20
-[    1.329657]  [<ffffffff881c5deb>] :bluetooth:hci_unregister_dev+0x5b/0x80
-[    1.329664]  [<ffffffff8825e136>] :hci_usb:hci_usb_disconnect+0x56/0x90
-[    1.329683]  [<ffffffff8801e0fe>] :usbcore:usb_unbind_interface+0x4e/0xa0
-[    1.329690]  [<ffffffff80392e03>] __device_release_driver+0x93/0xc0
-[    1.329694]  [<ffffffff803933e6>] device_release_driver+0x46/0x70
-[    1.329699]  [<ffffffff80392638>] bus_remove_device+0x78/0x90
-[    1.329703]  [<ffffffff80390697>] device_del+0x187/0x200
-[    1.329717]  [<ffffffff8801b4d2>] :usbcore:usb_disable_device+0x82/0x110
-[    1.329731]  [<ffffffff8801745a>] :usbcore:usb_disconnect+0xba/0x140
-[    1.329746]  [<ffffffff88018440>] :usbcore:hub_thread+0x400/0xcc0
-[    1.329757]  [<ffffffff80297970>] autoremove_wake_function+0x0/0x40
-[    1.329772]  [<ffffffff88018040>] :usbcore:hub_thread+0x0/0xcc0
-[    1.329775]  [<ffffffff802977a0>] keventd_create_kthread+0x0/0x90
-[    1.329781]  [<ffffffff80233e73>] kthread+0xd3/0x110
-[    1.329784]  [<ffffffff80228890>] schedule_tail+0x0/0xe0
-[    1.329791]  [<ffffffff80260648>] child_rip+0xa/0x12
-[    1.329796]  [<ffffffff80260200>] restore_args+0x0/0x30
-[    1.329802]  [<ffffffff80233da0>] kthread+0x0/0x110
-[    1.329806]  [<ffffffff8026063e>] child_rip+0x0/0x12
-[    1.329809]
+Okay, good.  That means part of the resume-from-hibernation handling must
+be included in the standard startup code of the ACPI driver, because it 
+runs in the boot kernel rather than the restored kernel.  Does it work 
+that way now?  You'd think it must...
 
-dmesg and lspci -vvv at
+The restored kernel could do either 1) or 2), I don't see that it matters
+much which.  1) might be safer, because it's possible that external power
+was turned off at some point during the hibernation (and no battery power 
+was available).
 
-    http://madrabbit.org/~ray/2.6.21-dmesg
-    http://madrabbit.org/~ray/nx6125.lspci
-
-Ray
+Alan Stern
