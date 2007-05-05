@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC/RFT][PATCH] Reduce code duplication between main.c
-	and user.c
-Date: Sat, 5 May 2007 22:26:55 +0200
-Message-ID: <200705052226.56578.rjw__7880.34395450286$1178396673$gmane$org@sisk.pl>
+Subject: [RFC][PATCH] swsusp: Reduce code duplication between
+	user.c and disk.c
+Date: Sat, 5 May 2007 22:27:13 +0200
+Message-ID: <200705052227.14265.rjw__35590.5578508557$1178396682$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
@@ -24,211 +24,426 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-Some code from kernel/power/main.c is currently duplicated in
-kernel/power/user.c , which leads to maintenance complications, so it seems
-reasonable to eliminate that duplication.
+Currently much of the code in kernel/power/disk.c is duplicated in
+kernel/power/user.c , mainly for historical reasons.  By eliminating this
+duplication we can reduce the size of user.c quite substantially and remove
+the maintenance difficulty with making essentially the same changes in two
+different places.
 
-This patch has only been compilation tested, so if anyone with working s2ram
-can test it, please do so.
+However, this modifies the user-observable behavior in such a way that
+if the user sets 'shutdown mode = platform' in the s2disk's configuration file,
+the kernel will use the hibernation mode resulting from the sysfs interface
+settings.  That is, if there is 'shutdown mode = platform' in the s2disk's
+configuration file, but the hibernation mode is set to 'reboot' in the sysfs
+interface, the system will be rebooted instead of going for the 'ACPI S0->S4
+transition'.
+
+Still, this change will only be observable by the users who change the PM
+settings using the sysfs interface.  The users who use s2disk only will not
+observe any change.
+
+Comments welcome.
 
 Greetings,
 Rafael
 
 ---
- kernel/power/main.c  |   82 +++++++++++++++++++++++++++------------------------
- kernel/power/power.h |    4 ++
- kernel/power/user.c  |   28 +----------------
- 3 files changed, 50 insertions(+), 64 deletions(-)
+ kernel/power/disk.c  |  165 ++++++++++++++++++++++++++++-----------------------
+ kernel/power/power.h |    5 +
+ kernel/power/user.c  |  116 +----------------------------------
+ 3 files changed, 101 insertions(+), 185 deletions(-)
 
-Index: linux-2.6.21/kernel/power/main.c
+Index: linux-2.6.21/kernel/power/disk.c
 ===================================================================
---- linux-2.6.21.orig/kernel/power/main.c	2007-05-05 00:39:53.000000000 +0200
-+++ linux-2.6.21/kernel/power/main.c	2007-05-05 22:05:34.000000000 +0200
-@@ -63,6 +63,18 @@ static inline void pm_finish(suspend_sta
+--- linux-2.6.21.orig/kernel/power/disk.c	2007-05-05 15:45:23.000000000 +0200
++++ linux-2.6.21/kernel/power/disk.c	2007-05-05 21:36:29.000000000 +0200
+@@ -90,13 +90,95 @@ static void platform_finish(void)
  }
  
  /**
-+ *	suspend_finish - Do final work before exiting suspend sequence.
+- *	power_down - Shut the machine down for hibernation.
++ *	hibernation_snapshot - quiesce devices and create the hibernation
++ *	snapshot image.  Use the platform driver, if available, to prepare the
++ *	platform frimware for the power transition.
 + *
-+ *	Restart processes and free the console that we've allocated.
++ *	Must be called with pm_mutex held
 + */
 +
-+static void suspend_finish(void)
++int hibernation_snapshot(void)
 +{
-+	thaw_processes();
-+	pm_restore_console();
++	int error;
++
++	/* Free memory before shutting down devices. */
++	error = swsusp_shrink_memory();
++	if (error)
++		goto Finish;
++
++	error = platform_prepare();
++	if (error)
++		goto Finish;
++
++	suspend_console();
++	error = device_suspend(PMSG_FREEZE);
++	if (error)
++		goto Resume_devices;
++
++	error = disable_nonboot_cpus();
++	if (!error) {
++		if (hibernation_mode != HIBERNATION_TEST) {
++			in_suspend = 1;
++			error = swsusp_suspend();
++			/* Control returns here after successful restore */
++		} else {
++			printk("swsusp debug: Waiting for 5 seconds.\n");
++			mdelay(5000);
++		}
++	}
++	enable_nonboot_cpus();
++ Resume_devices:
++	platform_finish();
++	device_resume();
++	resume_console();
++ Finish:
++	return error;
 +}
 +
 +/**
-  *	suspend_prepare - Do prep work before entering low-power state.
-  *	@state:		State we're entering.
++ *	hibernation_restore - quiesce devices and restore the hibernation
++ *	snapshot image.  If successful, cotrol reappears in
++ *	hibernation_snaphot()
++ *
++ *	Must be called with pm_mutex held
++ */
++
++int hibernation_restore(void)
++{
++	int error;
++
++	pm_prepare_console();
++	error = platform_prepare();
++	if (error)
++		goto Finish;
++
++	suspend_console();
++	error = device_suspend(PMSG_PRETHAW);
++	if (error)
++		goto Resume_devices;
++
++	error = disable_nonboot_cpus();
++	if (!error)
++		error = swsusp_resume();
++
++	enable_nonboot_cpus();
++ Resume_devices:
++	platform_finish();
++	device_resume();
++	resume_console();
++ Finish:
++	pm_restore_console();
++	return error;
++}
++
++/**
++ *	hibernation_power_down - Shut the machine down for hibernation.
   *
-@@ -97,29 +109,10 @@ static int suspend_prepare(suspend_state
- 		}
- 	}
+  *	Use the platform driver, if configured so; otherwise try
+  *	to power off or reboot.
+  */
  
--	if (pm_ops->prepare) {
--		if ((error = pm_ops->prepare(state)))
--			goto Thaw;
--	}
+-static void power_down(void)
++void hibernation_power_down(void)
+ {
+ 	switch (hibernation_mode) {
+ 	case HIBERNATION_TEST:
+@@ -169,62 +251,17 @@ int hibernate(void)
+ 		mdelay(5000);
+ 		goto Thaw;
+ 	}
+-
+-	/* Free memory before shutting down devices. */
+-	error = swsusp_shrink_memory();
+-	if (error)
+-		goto Thaw;
+-
+-	error = platform_prepare();
+-	if (error)
+-		goto Thaw;
 -
 -	suspend_console();
--	error = device_suspend(PMSG_SUSPEND);
+-	error = device_suspend(PMSG_FREEZE);
 -	if (error) {
--		printk(KERN_ERR "Some devices failed to suspend\n");
+-		printk(KERN_ERR "PM: Some devices failed to suspend\n");
 -		goto Resume_devices;
 -	}
 -	error = disable_nonboot_cpus();
--	if (!error)
--		return 0;
-+	return 0;
- 
+-	if (error)
+-		goto Enable_cpus;
+-
+-	if (hibernation_mode == HIBERNATION_TEST) {
+-		printk("swsusp debug: Waiting for 5 seconds.\n");
+-		mdelay(5000);
+-		goto Enable_cpus;
+-	}
+-
+-	pr_debug("PM: snapshotting memory.\n");
+-	in_suspend = 1;
+-	error = swsusp_suspend();
+-	if (error)
+-		goto Enable_cpus;
+-
+-	if (in_suspend) {
+-		enable_nonboot_cpus();
+-		platform_finish();
+-		device_resume();
+-		resume_console();
++	error = hibernation_snapshot();
++	if (in_suspend && !error) {
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write();
++		swsusp_free();
+ 		if (!error)
+-			power_down();
+-		else {
+-			swsusp_free();
+-			goto Thaw;
+-		}
++			hibernation_power_down();
+ 	} else {
+ 		pr_debug("PM: Image restored successfully.\n");
++		swsusp_free();
+ 	}
+-
+-	swsusp_free();
+- Enable_cpus:
 -	enable_nonboot_cpus();
 - Resume_devices:
--	pm_finish(state);
+-	platform_finish();
 -	device_resume();
 -	resume_console();
   Thaw:
--	thaw_processes();
--	pm_restore_console();
-+	suspend_finish();
- 	return error;
- }
+ 	mutex_unlock(&pm_mutex);
+ 	unprepare_processes();
+@@ -299,29 +336,11 @@ static int software_resume(void)
+ 	pr_debug("PM: Reading swsusp image.\n");
  
-@@ -155,32 +148,46 @@ int suspend_enter(suspend_state_t state)
- }
+ 	error = swsusp_read();
+-	if (error) {
+-		swsusp_free();
+-		goto Thaw;
+-	}
+-
+-	pr_debug("PM: Preparing devices for restore.\n");
+-
+-	suspend_console();
+-	error = device_suspend(PMSG_PRETHAW);
+-	if (error)
+-		goto Free;
+-
+-	error = disable_nonboot_cpus();
+ 	if (!error)
+-		swsusp_resume();
++		hibernation_restore();
  
- 
-+static const char * const pm_states[PM_SUSPEND_MAX] = {
-+	[PM_SUSPEND_STANDBY]	= "standby",
-+	[PM_SUSPEND_MEM]	= "mem",
-+};
-+
- /**
-- *	suspend_finish - Do final work before exiting suspend sequence.
-- *	@state:		State we're coming out of.
-+ *	pm_enter_state - carry out the state transition
-  *
-- *	Call platform code to clean up, restart processes, and free the 
-- *	console that we've allocated. This is not called for suspend-to-disk.
-+ *	Must be called with pm_mutex held
-  */
- 
--static void suspend_finish(suspend_state_t state)
-+int pm_enter_state(suspend_state_t state)
- {
-+	int error;
-+
-+	if (pm_ops->prepare) {
-+		error = pm_ops->prepare(state);
-+		if (error)
-+			return error;
-+	}
-+	suspend_console();
-+	error = device_suspend(PMSG_SUSPEND);
-+	if (error) {
-+		printk(KERN_ERR "Some devices failed to suspend\n");
-+		goto Resume_devices;
-+	}
-+	error = disable_nonboot_cpus();
-+	if (!error) {
-+		pr_debug("PM: Entering %s sleep\n", pm_states[state]);
-+		error = suspend_enter(state);
-+	}
- 	enable_nonboot_cpus();
-+ Resume_devices:
- 	pm_finish(state);
- 	device_resume();
- 	resume_console();
--	thaw_processes();
--	pm_restore_console();
+-	enable_nonboot_cpus();
+- Free:
+-	swsusp_free();
+-	device_resume();
+-	resume_console();
+- Thaw:
+ 	printk(KERN_ERR "PM: Restore failed, recovering.\n");
++	swsusp_free();
+ 	unprepare_processes();
+  Done:
+ 	free_basic_memory_bitmaps();
+@@ -331,7 +350,7 @@ static int software_resume(void)
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+ 	pr_debug("PM: Resume from disk failed.\n");
+-	return 0;
 +	return error;
  }
  
- 
--
--
--static const char * const pm_states[PM_SUSPEND_MAX] = {
--	[PM_SUSPEND_STANDBY]	= "standby",
--	[PM_SUSPEND_MEM]	= "mem",
--};
--
- static inline int valid_state(suspend_state_t state)
- {
- 	/* All states need lowlevel support and need to be valid
-@@ -216,11 +223,10 @@ static int enter_state(suspend_state_t s
- 	if ((error = suspend_prepare(state)))
- 		goto Unlock;
- 
--	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
--	error = suspend_enter(state);
-+	error = pm_enter_state(state);
- 
- 	pr_debug("PM: Finishing wakeup.\n");
--	suspend_finish(state);
-+	suspend_finish();
-  Unlock:
- 	mutex_unlock(&pm_mutex);
- 	return error;
-Index: linux-2.6.21/kernel/power/user.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/user.c	2007-05-05 21:34:30.000000000 +0200
-+++ linux-2.6.21/kernel/power/user.c	2007-05-05 22:05:34.000000000 +0200
-@@ -246,7 +246,7 @@ static int snapshot_ioctl(struct inode *
- 		break;
- 
- 	case SNAPSHOT_S2RAM:
--		if (!pm_ops) {
-+		if (!pm_ops || !pm_ops->enter) {
- 			error = -ENOSYS;
- 			break;
- 		}
-@@ -261,32 +261,8 @@ static int snapshot_ioctl(struct inode *
- 			break;
- 		}
- 
--		if (pm_ops->prepare) {
--			error = pm_ops->prepare(PM_SUSPEND_MEM);
--			if (error)
--				goto OutS3;
--		}
--
--		/* Put devices to sleep */
--		suspend_console();
--		error = device_suspend(PMSG_SUSPEND);
--		if (error) {
--			printk(KERN_ERR "Failed to suspend some devices.\n");
--		} else {
--			error = disable_nonboot_cpus();
--			if (!error) {
--				/* Enter S3, system is already frozen */
--				suspend_enter(PM_SUSPEND_MEM);
--				enable_nonboot_cpus();
--			}
--			/* Wake up devices */
--			device_resume();
--		}
--		resume_console();
--		if (pm_ops->finish)
--			pm_ops->finish(PM_SUSPEND_MEM);
-+		error = pm_enter_state(PM_SUSPEND_MEM);
- 
-- OutS3:
- 		mutex_unlock(&pm_mutex);
- 		break;
- 
+ late_initcall(software_resume);
 Index: linux-2.6.21/kernel/power/power.h
 ===================================================================
---- linux-2.6.21.orig/kernel/power/power.h	2007-05-05 21:18:23.000000000 +0200
-+++ linux-2.6.21/kernel/power/power.h	2007-05-05 22:07:25.000000000 +0200
-@@ -32,6 +32,10 @@ extern void hibernation_power_down(void)
+--- linux-2.6.21.orig/kernel/power/power.h	2007-05-05 00:39:53.000000000 +0200
++++ linux-2.6.21/kernel/power/power.h	2007-05-05 22:08:01.000000000 +0200
+@@ -25,7 +25,10 @@ struct swsusp_info {
+  */
+ #define SPARE_PAGES	((1024 * 1024) >> PAGE_SHIFT)
+ 
+-extern struct hibernation_ops *hibernation_ops;
++/* kernel/power/disk.c */
++extern int hibernation_snapshot(void);
++extern int hibernation_restore(void);
++extern void hibernation_power_down(void);
+ #endif
  
  extern struct mutex pm_mutex;
+Index: linux-2.6.21/kernel/power/user.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/user.c	2007-05-05 00:57:20.000000000 +0200
++++ linux-2.6.21/kernel/power/user.c	2007-05-05 22:07:49.000000000 +0200
+@@ -36,7 +36,6 @@ static struct snapshot_data {
+ 	int mode;
+ 	char frozen;
+ 	char ready;
+-	char platform_suspend;
+ } snapshot_state;
  
-+/* kernel/power/main.c */
-+/* This function must be called with pm_mutex held */
-+extern int pm_enter_state(suspend_state_t state);
-+
- #define power_attr(_name) \
- static struct subsys_attribute _name##_attr = {	\
- 	.attr	= {				\
+ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+@@ -70,7 +69,6 @@ static int snapshot_open(struct inode *i
+ 	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+-	data->platform_suspend = 0;
+ 
+ 	return 0;
+ }
+@@ -126,92 +124,6 @@ static ssize_t snapshot_write(struct fil
+ 	return res;
+ }
+ 
+-static inline int platform_prepare(void)
+-{
+-	int error = 0;
+-
+-	if (hibernation_ops)
+-		error = hibernation_ops->prepare();
+-
+-	return error;
+-}
+-
+-static inline void platform_finish(void)
+-{
+-	if (hibernation_ops)
+-		hibernation_ops->finish();
+-}
+-
+-static inline int snapshot_suspend(int platform_suspend)
+-{
+-	int error;
+-
+-	mutex_lock(&pm_mutex);
+-	/* Free memory before shutting down devices. */
+-	error = swsusp_shrink_memory();
+-	if (error)
+-		goto Finish;
+-
+-	if (platform_suspend) {
+-		error = platform_prepare();
+-		if (error)
+-			goto Finish;
+-	}
+-	suspend_console();
+-	error = device_suspend(PMSG_FREEZE);
+-	if (error)
+-		goto Resume_devices;
+-
+-	error = disable_nonboot_cpus();
+-	if (!error) {
+-		in_suspend = 1;
+-		error = swsusp_suspend();
+-	}
+-	enable_nonboot_cpus();
+- Resume_devices:
+-	if (platform_suspend)
+-		platform_finish();
+-
+-	device_resume();
+-	resume_console();
+- Finish:
+-	mutex_unlock(&pm_mutex);
+-	return error;
+-}
+-
+-static inline int snapshot_restore(int platform_suspend)
+-{
+-	int error;
+-
+-	mutex_lock(&pm_mutex);
+-	pm_prepare_console();
+-	if (platform_suspend) {
+-		error = platform_prepare();
+-		if (error)
+-			goto Finish;
+-	}
+-	suspend_console();
+-	error = device_suspend(PMSG_PRETHAW);
+-	if (error)
+-		goto Resume_devices;
+-
+-	error = disable_nonboot_cpus();
+-	if (!error)
+-		error = swsusp_resume();
+-
+-	enable_nonboot_cpus();
+- Resume_devices:
+-	if (platform_suspend)
+-		platform_finish();
+-
+-	device_resume();
+-	resume_console();
+- Finish:
+-	pm_restore_console();
+-	mutex_unlock(&pm_mutex);
+-	return error;
+-}
+-
+ static int snapshot_ioctl(struct inode *inode, struct file *filp,
+                           unsigned int cmd, unsigned long arg)
+ {
+@@ -258,7 +170,7 @@ static int snapshot_ioctl(struct inode *
+ 			error = -EPERM;
+ 			break;
+ 		}
+-		error = snapshot_suspend(data->platform_suspend);
++		error = hibernation_snapshot();
+ 		if (!error)
+ 			error = put_user(in_suspend, (unsigned int __user *)arg);
+ 		if (!error)
+@@ -272,7 +184,7 @@ static int snapshot_ioctl(struct inode *
+ 			error = -EPERM;
+ 			break;
+ 		}
+-		error = snapshot_restore(data->platform_suspend);
++		error = hibernation_restore();
+ 		break;
+ 
+ 	case SNAPSHOT_FREE:
+@@ -382,32 +294,14 @@ static int snapshot_ioctl(struct inode *
+ 		error = -EINVAL;
+ 
+ 		switch (arg) {
+-
+-		case PMOPS_PREPARE:
+-			if (hibernation_ops) {
+-				data->platform_suspend = 1;
+-				error = 0;
+-			} else {
+-				error = -ENOSYS;
+-			}
+-			break;
+-
+ 		case PMOPS_ENTER:
+-			if (data->platform_suspend) {
+-				kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+-				error = hibernation_ops->enter();
+-			}
+-			break;
+-
++			hibernation_power_down();
+ 		case PMOPS_FINISH:
+-			if (data->platform_suspend)
+-				error = 0;
+-
++		case PMOPS_PREPARE:
++			error = 0;
+ 			break;
+-
+ 		default:
+ 			printk(KERN_ERR "SNAPSHOT_PMOPS: invalid argument %ld\n", arg);
+-
+ 		}
+ 		break;
+ 
