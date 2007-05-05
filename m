@@ -1,45 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] suspend/resume debugging: device filter
-Date: Sat, 5 May 2007 11:39:32 +0200
-Message-ID: <200705051139.33008.rjw@sisk.pl>
-References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de> <20070505092425.GA23125@elte.hu>
+Subject: Re: [RFT][PATCH] swsusp: Change code ordering related to
+	ACPI
+Date: Sat, 5 May 2007 11:50:21 +0200
+Message-ID: <200705051150.22108.rjw@sisk.pl>
+References: <200705041143.02451.rjw@sisk.pl>
+	<2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423239AbXEEJfJ@vger.kernel.org>
-In-Reply-To: <20070505092425.GA23125@elte.hu>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7@mail.gmail.com>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Marcus Better <marcus@better.se>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 5 May 2007 11:24, Ingo Molnar wrote:
+On Saturday, 5 May 2007 01:11, Ray Lee wrote:
+> On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > The change of the hibernation/suspend code ordering made before 2.6.21 has
+> > caused some systems to have problems related to ACPI.  In particular, the
+> > 'platform' hibernation mode doesn't work any more on some systems.
 > 
-> * Greg KH <gregkh@suse.de> wrote:
-> 
-> > Here's a (compile tested only) patch that does this on a per-device 
-> > basis, which is smaller, and should work just as well as your patch.
-> > 
-> > It creates a new file in the power/ directory for every device called 
-> > "can_suspend".  Write a '0' to it to prevent that device from being 
-> > suspended.
-> > 
-> > Does this work for you?
-> 
-> yeah, i was able to use this too to debug suspend/resume problems. But 
-> i've added the check to the resume path too - for example sw-suspend 
-> does a resume of devices during its suspend cycle, cutting off much of 
-> the netconsole output.
-> 
-> which makes the can_suspend flag mis-named - perhaps rename it to 
-> exclude_pm ?
-> 
-> updated patch below, against v2.6.21. Could we get this into v2.6.22 
-> please? It's a real time-saver.
+> It seems that somewhere between 2.6.21-rc4 and 2.6.21 final my laptop
+> stopped being able to come out of suspend to RAM. Before I start
+> bisecting (again, sigh), is this ringing any bells for anyone? In
+> particular your, patch (snipped) that deals with hibernation, would it
+> also affect suspend to RAM?
 
-ACK
+Not this particular one, but you may try to move pm_finish() after
+resume_console() in kernel/power/main.c:suspend_prepare() and see if that
+helps.
+
+If it doesn't help, then try to compile the kernel with NO_HZ and
+HIGH_RES_TIMERS unset.  If that doesn't help, you may try with HPET_TIMER
+unset additionally.
 
 Greetings,
-Rafael
+Rafael 
