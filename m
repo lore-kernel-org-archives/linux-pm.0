@@ -1,16 +1,12 @@
 From: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [RFT][PATCH] swsusp: Change code ordering related to
-	ACPI
-Date: Sat, 5 May 2007 13:46:14 -0700
-Message-ID: <2c0942db0705051346jabd14bam170cf4cf8b54d473@mail.gmail.com>
-References: <200705041143.02451.rjw@sisk.pl>
-	<2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7@mail.gmail.com>
-	<200705051150.22108.rjw@sisk.pl>
+Subject: BUG: sleeping function called from invalid context at
+	net/core/sock.c:1523
+Date: Sat, 5 May 2007 14:25:03 -0700
+Message-ID: <2c0942db0705051425kd878e7exf9484ee8d03cd3bb__16157.5356185951$1178400353$gmane$org@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705051150.22108.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,39 +17,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tobias Diedrich <ranma+kernel@tdiedrich.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Marcus Better <marcus@better.se>, pm list <linux-pm@lists.linux-foundation.org>
+To: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Max Krasnyansky <maxk@qualcomm.com>, marcel@holtmann.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 5/5/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, 5 May 2007 01:11, Ray Lee wrote:
-> > On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > The change of the hibernation/suspend code ordering made before 2.6.21 has
-> > > caused some systems to have problems related to ACPI.  In particular, the
-> > > 'platform' hibernation mode doesn't work any more on some systems.
-> >
-> > It seems that somewhere between 2.6.21-rc4 and 2.6.21 final my laptop
-> > stopped being able to come out of suspend to RAM. Before I start
-> > bisecting (again, sigh), is this ringing any bells for anyone? In
-> > particular your, patch (snipped) that deals with hibernation, would it
-> > also affect suspend to RAM?
->
-> Not this particular one, but you may try to move pm_finish() after
-> resume_console() in kernel/power/main.c:suspend_prepare() and see if that
-> helps.
->
-> If it doesn't help, then try to compile the kernel with NO_HZ and
-> HIGH_RES_TIMERS unset.  If that doesn't help, you may try with HPET_TIMER
-> unset additionally.
+Upon resume (from suspend to RAM) of my laptop, I'm getting the
+following. (Not a regression, it's been there a while.) This is under
+2.6.21. Everything *seems* fine afterward, but... <shrug> -- it's not
+like I use bluetooth all that often.
 
-Okay, my system is doing it with a known good kernel as well
-(2.6.21-rc4), so this is something else. Please ignore my report for
-now. In the meantime, I'll be downgrading my hal and drm to what they
-were a week ago to see if that fixes the problem.
+My laptop has the bluetooth adapter hooked via USB insternally, so
+it's the hci_usb driver. Authors cc:d.
 
-(I knew better than to change more than one thing at a time, really I
-did. Sigh.)
+[    1.329537] BUG: sleeping function called from invalid context at
+net/core/sock.c:1523
+[    1.329574] in_atomic():1, irqs_disabled():0
+[    1.329576] INFO: lockdep is turned off.
+[    1.329578]
+[    1.329578] Call Trace:
+[    1.329585]  [<ffffffff8029cedc>] debug_show_held_locks+0x1c/0x30
+[    1.329598]  [<ffffffff8020b2f5>] __might_sleep+0xe5/0xf0
+[    1.329603]  [<ffffffff803cfdbc>] lock_sock_nested+0x2c/0x120
+[    1.329617]  [<ffffffff881c9a6a>] :bluetooth:hci_sock_dev_event+0x4a/0xf0
+[    1.329627]  [<ffffffff881c9ae7>] :bluetooth:hci_sock_dev_event+0xc7/0xf0
+[    1.329634]  [<ffffffff80269cef>] notifier_call_chain+0x2f/0x50
+[    1.329639]  [<ffffffff80269d49>] atomic_notifier_call_chain+0x39/0x70
+[    1.329649]  [<ffffffff881c4d86>] :bluetooth:hci_notify+0x16/0x20
+[    1.329657]  [<ffffffff881c5deb>] :bluetooth:hci_unregister_dev+0x5b/0x80
+[    1.329664]  [<ffffffff8825e136>] :hci_usb:hci_usb_disconnect+0x56/0x90
+[    1.329683]  [<ffffffff8801e0fe>] :usbcore:usb_unbind_interface+0x4e/0xa0
+[    1.329690]  [<ffffffff80392e03>] __device_release_driver+0x93/0xc0
+[    1.329694]  [<ffffffff803933e6>] device_release_driver+0x46/0x70
+[    1.329699]  [<ffffffff80392638>] bus_remove_device+0x78/0x90
+[    1.329703]  [<ffffffff80390697>] device_del+0x187/0x200
+[    1.329717]  [<ffffffff8801b4d2>] :usbcore:usb_disable_device+0x82/0x110
+[    1.329731]  [<ffffffff8801745a>] :usbcore:usb_disconnect+0xba/0x140
+[    1.329746]  [<ffffffff88018440>] :usbcore:hub_thread+0x400/0xcc0
+[    1.329757]  [<ffffffff80297970>] autoremove_wake_function+0x0/0x40
+[    1.329772]  [<ffffffff88018040>] :usbcore:hub_thread+0x0/0xcc0
+[    1.329775]  [<ffffffff802977a0>] keventd_create_kthread+0x0/0x90
+[    1.329781]  [<ffffffff80233e73>] kthread+0xd3/0x110
+[    1.329784]  [<ffffffff80228890>] schedule_tail+0x0/0xe0
+[    1.329791]  [<ffffffff80260648>] child_rip+0xa/0x12
+[    1.329796]  [<ffffffff80260200>] restore_args+0x0/0x30
+[    1.329802]  [<ffffffff80233da0>] kthread+0x0/0x110
+[    1.329806]  [<ffffffff8026063e>] child_rip+0x0/0x12
+[    1.329809]
 
-Thanks for your help regardless,
+dmesg and lspci -vvv at
+
+    http://madrabbit.org/~ray/2.6.21-dmesg
+    http://madrabbit.org/~ray/nx6125.lspci
 
 Ray
