@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Sun, 6 May 2007 00:36:43 +0200
-Message-ID: <200705060036.44550.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705051743560.27516-100000@netrider.rowland.org>
+From: "CO-ORDINATOR {Euromillionlottery}" <emilysimon009@yahoo.es>
+Subject: Euro Million Loteria Award !!!
+Date: Sat, 5 May 2007 18:19:45 -0500 (CDT)
+Message-ID: <3518.81.199.179.2.1178407185.squirrel@leveldonchange.250meg.com>
+Reply-To: mrmelvinclinton@aim.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705051743560.27516-100000@netrider.rowland.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,84 +16,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 5 May 2007 23:44, Alan Stern wrote:
-> On Sat, 5 May 2007, Rafael J. Wysocki wrote:
-> 
-> > > In addition we may want to have early/late variations on these (for use 
-> > > after interrupts have been disabled), which would lead to:
-> > > 
-> > > 	pre_snapshot()
-> > > 	pre_snapshot_late()
-> > > 	post_snapshot_early()
-> > > 	post_snapshot()
-> > > 	pre_restore()
-> > > 	pre_restore_late()
-> > > 	post_restore_early()
-> > > 	post_restore()
-> > > 
-> > > Yes, it's a large list...  But it seems to be necessary for providing all 
-> > > the information drivers will need.
-> > 
-> > I think we may need yet another callback, executed before pre_snapshot()
-> > and before we shrink memory during the hibernation, to be used by drivers
-> > that need a lot of additional memory in pre_snapshot().
-> 
-> 	pre_snapshot_early()
 
-OK
 
-So, I think the hibernation code ordering should be like this (let's forget
-about ACPI for now):
 
-1) tasks are frozen
-2) pre_snapshot_early()
-3) memory is freed for the snapshot image
-4) pre_snapshod()
-5) nonboot CPUs are offlined
-6) IRQs are disabled
-7) pre_snapshot_late()
-8) sysdev_pre_snapshot()
-9) snapshot image is created
-10) sysdev_post_snapshot()
-11) post_snapshot_early()
-12) IRQs are enabled
-13) nonboot CPUs are enabled
-14) post_snapshot()
-15) snapshot image is saved
-16) device_shutdown()
-17) system is powered off
+Euro Million Loteria Award
+Paseo De La Castellana
+15-89, 28008 Madrid,Spain Branch.
+Ref. N=BA: ES/007/05/12/MAD.
+Batch. N=BA: GHT/2907/333/05.
+www.loteria.com
+Prize And Award Notification
 
-Apart from this, we may need notifiers for subsystems that should do something
-before the freezing and after the thawing of tasks (like FUSE etc.).
+                     YOUR E-MAIL ADDRESS WON THE LOTTERY.
+We wish to congratulate you over your email success in our computer
+BALLOTING SWEEPSTAKE held on May 5th,2007. This is a millennium scientifi=
+c
+computer game in which email addresses were used. It is a promotional
+program aimed at encouraging internet users; therefore you do not need to
+buy ticket to enter for it.
 
-Also, if there's an error, we have to be able to thaw tasks after
-post_snapshot() and continue running.
+Your email address attached to ticket star number (9901-0148-790-691) dre=
+w
+the EUROMILLION lucky numbers 3-19-26-49-50 which consequently won the
+draw in the Second category.
 
-The restore code, IMO, should be like this (again, let's ignore ACPI for now):
+You have been approve for the star prize of EUR  787,248.26. (Seven
+Hundred And Eighty Seven housand, Two Hundred And Fourty Eight
+Euros,Twenty Six Cents)
 
-1) boot kernel is started, initrd is loaded etc.
-2) tasks are frozen
-3) snapshot image is loaded
-4) pre_restore()
-5) nonboot CPUs are offlined
-6) IRQs are disabled
-7) pre_restore_late()
-8) sysdev_pre_restore()
-9) boot kernel is replaced with the 'hibernated' kernel
-10) sysdev_post_restore()
-11) post_restore_early()
-12) IRQs are enabled
-13) nonboot CPUs are enabled
-14) post_restore()
-15) tasks are thawed
-16) system is running
+CONGRATULATIONS !!!
+You are advised to keep this winning very confidential until you receive
+your lump prize in your account or optional cheque issuance to you. This
+is a protective measure to avoid double claiming by people you may tell a=
+s
+we have had cases like this before. You are required to provide the
+information below:
 
-and we may need a notifier for subsystems that should do something after
-tasks have been thawed.
+Name, Telephone Number, Fax Number, Wining Ticket Number, Reference Numbe=
+r
+and Amount Won.
+This information For processing of your winning fund should be sent to ou=
+r
+registered claim agent in address below.
 
-Greetings,
-Rafael
+Guarantee Trust Agency.
+Mr.Melvin Clinton.
+Address: Sin Numero Madrid Spain.
+Telephone: 0034636287740.
+E-mail: mrmelvinclinton@aim.com
+Remember, all winning must be claimed not later than May 31st, 2007.
+Please note, in order to avoid unnecessary delays and complications,
+remember to quote your reference number and batch number in all
+correspondence. Furthermore, should there be any change of address do
+inform our agent as soon as possible.
+
+ONCE AGAIN CONGRATULATIONS.
+
+Best Regard,
+Mrs. Emily Simon,
+Lottery Co-Odinator.
+
+The information transmitted is intended only for the person or entity to
+whom or which it is addressed. Unauthorised use, disclosure or copying is
+strictly prohibited. The sender accepts no liability for the improper
+transmission of this communication nor for any delay in its receipt.
