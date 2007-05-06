@@ -1,10 +1,15 @@
-From: "randolph leelah" <bordensharline@blaze-brace.com>
-Subject: Adobe Photoshop CS3 Extended ready to download
-Date: Sat, 5 May 2007 23:45:03 -0300
-Message-ID: <1c1ad01c78f88$8c400ac0$7d2650c9@P4>
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: BUG: sleeping function called from invalid context
+	at net/core/sock.c:1523
+Date: Sun, 6 May 2007 18:16:20 +0530
+Message-ID: <a781481a0705060546o2e3f5914v5a83adb8d73afe01__35938.9573488899$1178455652$gmane$org@mail.gmail.com>
+References: <2c0942db0705051425kd878e7exf9484ee8d03cd3bb@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6788363948599492619=="
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <2c0942db0705051425kd878e7exf9484ee8d03cd3bb@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,91 +17,72 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: lennie angeli <linux-pm@osdl.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: marcel@holtmann.org, LKML <linux-kernel@vger.kernel.org>, Max Krasnyansky <maxk@qualcomm.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Hi Ray,
 
---===============6788363948599492619==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_1BBC1_01C78F6F.43619940"
+On 5/6/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> Upon resume (from suspend to RAM) of my laptop, I'm getting the
+> following. (Not a regression, it's been there a while.) This is under
+> 2.6.21. Everything *seems* fine afterward, but... <shrug> -- it's not
+> like I use bluetooth all that often.
+>
+> My laptop has the bluetooth adapter hooked via USB insternally, so
+> it's the hci_usb driver. Authors cc:d.
+>
+> [    1.329537] BUG: sleeping function called from invalid context at
+> net/core/sock.c:1523
+> [    1.329574] in_atomic():1, irqs_disabled():0
+> [    1.329576] INFO: lockdep is turned off.
+> [    1.329578]
+> [    1.329578] Call Trace:
+> [    1.329585]  [<ffffffff8029cedc>] debug_show_held_locks+0x1c/0x30
+> [    1.329598]  [<ffffffff8020b2f5>] __might_sleep+0xe5/0xf0
+> [    1.329603]  [<ffffffff803cfdbc>] lock_sock_nested+0x2c/0x120
+> [    1.329617]  [<ffffffff881c9a6a>] :bluetooth:hci_sock_dev_event+0x4a/0xf0
+> [    1.329627]  [<ffffffff881c9ae7>] :bluetooth:hci_sock_dev_event+0xc7/0xf0
+> [    1.329634]  [<ffffffff80269cef>] notifier_call_chain+0x2f/0x50
+> [    1.329639]  [<ffffffff80269d49>] atomic_notifier_call_chain+0x39/0x70
+> [    1.329649]  [<ffffffff881c4d86>] :bluetooth:hci_notify+0x16/0x20
+> [    1.329657]  [<ffffffff881c5deb>] :bluetooth:hci_unregister_dev+0x5b/0x80
+> [    1.329664]  [<ffffffff8825e136>] :hci_usb:hci_usb_disconnect+0x56/0x90
+> [    1.329683]  [<ffffffff8801e0fe>] :usbcore:usb_unbind_interface+0x4e/0xa0
+> [    1.329690]  [<ffffffff80392e03>] __device_release_driver+0x93/0xc0
+> [    1.329694]  [<ffffffff803933e6>] device_release_driver+0x46/0x70
+> [    1.329699]  [<ffffffff80392638>] bus_remove_device+0x78/0x90
+> [    1.329703]  [<ffffffff80390697>] device_del+0x187/0x200
+> [    1.329717]  [<ffffffff8801b4d2>] :usbcore:usb_disable_device+0x82/0x110
+> [    1.329731]  [<ffffffff8801745a>] :usbcore:usb_disconnect+0xba/0x140
+> [    1.329746]  [<ffffffff88018440>] :usbcore:hub_thread+0x400/0xcc0
+> [    1.329757]  [<ffffffff80297970>] autoremove_wake_function+0x0/0x40
+> [    1.329772]  [<ffffffff88018040>] :usbcore:hub_thread+0x0/0xcc0
+> [    1.329775]  [<ffffffff802977a0>] keventd_create_kthread+0x0/0x90
+> [    1.329781]  [<ffffffff80233e73>] kthread+0xd3/0x110
+> [    1.329784]  [<ffffffff80228890>] schedule_tail+0x0/0xe0
+> [    1.329791]  [<ffffffff80260648>] child_rip+0xa/0x12
+> [    1.329796]  [<ffffffff80260200>] restore_args+0x0/0x30
+> [    1.329802]  [<ffffffff80233da0>] kthread+0x0/0x110
+> [    1.329806]  [<ffffffff8026063e>] child_rip+0x0/0x12
+> [    1.329809]
 
-This is a multi-part message in MIME format.
+Hmmm ... net/bluetooth/hci_sock.c:hci_sock_dev_event() is calling
+lock_sock() which can sleep (while holding the hci_sk_list.lock
+read-write spinlock).
 
-------=_NextPart_000_1BBC1_01C78F6F.43619940
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Can't really convert hci_sk_list.lock to a rwsem as
+hci_sock_dev_event() is the notifier_call for hci_sock_nblock which is
+an atomic notifier and so executes in atomic context.
 
-Find out more about the new features and enhancements in Adobe Photoshop
-CS3 Extended. Boost your productivity with a streamlined interface,
-enhancements to raw-image processing and asset management workflows, and
-more; experience unrivaled editing power with nondestructive filters,
-more precise color-correction controls, and more powerful cloning and
-healing tools; easily create rich composites using new tools for
-automatically aligning and blending layers and making quick selections;
-3D and motion support with the ability to edit 3D content and
-incorporate it into 2D compositions, paint and clone over multiple video
-frames, and more; comprehensive image analysis with new image
-measurement and counting tools, MATLAB integration, and DICOM file
-support.
-Adobe Photoshop CS3 Extended
-Retail Price $999.00
-Our Price $89.95
-You save $909.05
-http://bloggers-haven.com/poli/
-Please note, that there will be more special offers available for our
-constant customers. Every effort has been made to ensure the accuracy of
-all information contained herein. DS Team makes no warranty expressed or
-implied with respect to accuracy of the information, including price,
-product editorials or product specifications. Product and manufacturer
-names are used only for the purpose of identification. We appreciate
-your cooperation with us and we'll be glad to see you as our clients in
-the future. 
+We could convert hci_sock_nblock itself to a blocking notifier too,
+but then I'm not _that_ familiar with this code to do that myself.
 
-------=_NextPart_000_1BBC1_01C78F6F.43619940
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Anyway, this doesn't look like anything to do with suspend-resume.
+Perhaps you could try to send this on bluez-devel@lists.sf.net or
+netdev@vger.kernel.org or something.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
-<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=#ffffff><FONT face=Arial size=2>Find out more about the new 
-features and enhancements in Adobe Photoshop CS3 Extended. Boost your 
-productivity with a streamlined interface, enhancements to raw-image processing 
-and asset management workflows, and more; experience unrivaled editing power 
-with nondestructive filters, more precise color-correction controls, and more 
-powerful cloning and healing tools; easily create rich composites using new 
-tools for automatically aligning and blending layers and making quick 
-selections; 3D and motion support with the ability to edit 3D content and 
-incorporate it into 2D compositions, paint and clone over multiple video frames, 
-and more; comprehensive image analysis with new image measurement and counting 
-tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop CS3 
-Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save $909.05<BR><A 
-href="http://bloggers-haven.com/poli/">http://bloggers-haven.com/poli/</A><BR>Please note, that 
-there will be more special offers available for our constant customers. Every 
-effort has been made to ensure the accuracy of all information contained herein. 
-DS Team makes no warranty expressed or implied with respect to accuracy of the 
-information, including price, product editorials or product specifications. 
-Product and manufacturer names are used only for the purpose of identification. 
-We appreciate your cooperation with us and we'll be glad to see you as our 
-clients in the future.</FONT>
-<DIV><FONT face=Arial size=2></FONT> </DIV></BODY></HTML>
-------=_NextPart_000_1BBC1_01C78F6F.43619940--
-
-
---===============6788363948599492619==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6788363948599492619==--
+Cheers,
+Satyam
