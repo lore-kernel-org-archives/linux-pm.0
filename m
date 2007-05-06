@@ -1,14 +1,13 @@
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: [PATCH] make hci_notifier a blocking notifier (was Re:
-	BUG: sleeping function called from invalid context at
-	net/core/sock.c:1523)
-Date: Sun, 6 May 2007 20:46:49 +0530
-Message-ID: <a781481a0705060816v59c1ae70m1d5067fcaba5a25d__25573.1044257574$1178464662$gmane$org@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Sun, 6 May 2007 18:01:16 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705061751230.21407-100000@netrider.rowland.org>
+References: <200705060036.44550.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200705060036.44550.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,142 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ray Lee <ray-lk@madrabbit.org>, stern@rowland.harvard.edu
-Cc: marcel@holtmann.org, LKML <linux-kernel@vger.kernel.org>, Max Krasnyansky <maxk@qualcomm.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 5/6/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi Ray,
->
-> On 5/6/07, Ray Lee <ray-lk@madrabbit.org> wrote:
-> > Upon resume (from suspend to RAM) of my laptop, I'm getting the
-> > following. (Not a regression, it's been there a while.) This is under
-> > 2.6.21. Everything *seems* fine afterward, but... <shrug> -- it's not
-> > like I use bluetooth all that often.
-> >
-> > My laptop has the bluetooth adapter hooked via USB insternally, so
-> > it's the hci_usb driver. Authors cc:d.
-> >
-> > [    1.329537] BUG: sleeping function called from invalid context at
-> > net/core/sock.c:1523
-> > [    1.329574] in_atomic():1, irqs_disabled():0
-> > [    1.329576] INFO: lockdep is turned off.
-> > [    1.329578]
-> > [    1.329578] Call Trace:
-> > [    1.329585]  [<ffffffff8029cedc>] debug_show_held_locks+0x1c/0x30
-> > [    1.329598]  [<ffffffff8020b2f5>] __might_sleep+0xe5/0xf0
-> > [    1.329603]  [<ffffffff803cfdbc>] lock_sock_nested+0x2c/0x120
-> > [    1.329617]  [<ffffffff881c9a6a>] :bluetooth:hci_sock_dev_event+0x4a/0xf0
-> > [    1.329627]  [<ffffffff881c9ae7>] :bluetooth:hci_sock_dev_event+0xc7/0xf0
-> > [    1.329634]  [<ffffffff80269cef>] notifier_call_chain+0x2f/0x50
-> > [    1.329639]  [<ffffffff80269d49>] atomic_notifier_call_chain+0x39/0x70
-> > [    1.329649]  [<ffffffff881c4d86>] :bluetooth:hci_notify+0x16/0x20
-> > [    1.329657]  [<ffffffff881c5deb>] :bluetooth:hci_unregister_dev+0x5b/0x80
-> > [    1.329664]  [<ffffffff8825e136>] :hci_usb:hci_usb_disconnect+0x56/0x90
-> > [    1.329683]  [<ffffffff8801e0fe>] :usbcore:usb_unbind_interface+0x4e/0xa0
-> > [    1.329690]  [<ffffffff80392e03>] __device_release_driver+0x93/0xc0
-> > [    1.329694]  [<ffffffff803933e6>] device_release_driver+0x46/0x70
-> > [    1.329699]  [<ffffffff80392638>] bus_remove_device+0x78/0x90
-> > [    1.329703]  [<ffffffff80390697>] device_del+0x187/0x200
-> > [    1.329717]  [<ffffffff8801b4d2>] :usbcore:usb_disable_device+0x82/0x110
-> > [    1.329731]  [<ffffffff8801745a>] :usbcore:usb_disconnect+0xba/0x140
-> > [    1.329746]  [<ffffffff88018440>] :usbcore:hub_thread+0x400/0xcc0
-> > [    1.329757]  [<ffffffff80297970>] autoremove_wake_function+0x0/0x40
-> > [    1.329772]  [<ffffffff88018040>] :usbcore:hub_thread+0x0/0xcc0
-> > [    1.329775]  [<ffffffff802977a0>] keventd_create_kthread+0x0/0x90
-> > [    1.329781]  [<ffffffff80233e73>] kthread+0xd3/0x110
-> > [    1.329784]  [<ffffffff80228890>] schedule_tail+0x0/0xe0
-> > [    1.329791]  [<ffffffff80260648>] child_rip+0xa/0x12
-> > [    1.329796]  [<ffffffff80260200>] restore_args+0x0/0x30
-> > [    1.329802]  [<ffffffff80233da0>] kthread+0x0/0x110
-> > [    1.329806]  [<ffffffff8026063e>] child_rip+0x0/0x12
-> > [    1.329809]
->
-> Hmmm ... net/bluetooth/hci_sock.c:hci_sock_dev_event() is calling
-> lock_sock() which can sleep (while holding the hci_sk_list.lock
-> read-write spinlock).
->
-> Can't really convert hci_sk_list.lock to a rwsem as
-> hci_sock_dev_event() is the notifier_call for hci_sock_nblock which is
-> an atomic notifier and so executes in atomic context.
->
-> We could convert hci_sock_nblock itself to a blocking notifier too,
-> but then I'm not _that_ familiar with this code to do that myself.
->
-> Anyway, this doesn't look like anything to do with suspend-resume.
-> Perhaps you could try to send this on bluez-devel@lists.sf.net or
-> netdev@vger.kernel.org or something.
+On Sun, 6 May 2007, Rafael J. Wysocki wrote:
 
-Well, it was a cool summer Sunday evening in Kanpur and ... I decided
-to stay in the lab and investigate this :-(
+> > > I think we may need yet another callback, executed before pre_snapshot()
+> > > and before we shrink memory during the hibernation, to be used by drivers
+> > > that need a lot of additional memory in pre_snapshot().
+> > 
+> > 	pre_snapshot_early()
+> 
+> OK
 
-Anyway, the hci_notifier is called from the following six call sites:
+I changed my mind -- pre_hibernate() seems like a better name.  There
+could be a matching post_hibernate(), if anyone finds it necessary.  I
+considered pre_freeze(), but that's not such a good choice since the
+freezer can be used for other things in addition to hibernation.
 
-hci_dev_open() and hci_dev_close() -> both called from
-hci_sock_ioctl() => both can sleep
-hci_register_dev() and hci_unregister_dev() => again both are capable
-of sleeping
-hci_suspend_dev() and hci_resume_dev() -> called from the .suspend()
-and .resume() of the hci_usb_driver, and again both of these can sleep
+> So, I think the hibernation code ordering should be like this (let's forget
+> about ACPI for now):
+> 
+> 1) tasks are frozen
+> 2) pre_snapshot_early()
 
-Is there any other reason why hci_notifier must be an atomic notifier?
+Or rather: 2) pre_hibernate()
 
-(CC'ing Alan Stern just in case, apparently hci_notifier became atomic
-when notifier chains were classified into atomic / blocking)
+> 3) memory is freed for the snapshot image
+> 4) pre_snapshod()
+> 5) nonboot CPUs are offlined
+> 6) IRQs are disabled
+> 7) pre_snapshot_late()
+> 8) sysdev_pre_snapshot()
+> 9) snapshot image is created
+> 10) sysdev_post_snapshot()
+> 11) post_snapshot_early()
+> 12) IRQs are enabled
+> 13) nonboot CPUs are enabled
+> 14) post_snapshot()
+> 15) snapshot image is saved
+> 16) device_shutdown()
+> 17) system is powered off
+> 
+> Apart from this, we may need notifiers for subsystems that should do something
+> before the freezing and after the thawing of tasks (like FUSE etc.).
 
-Patch below makes hci_notifier a blocking notifier. Compile-tested
-only, I have no bluetooth hardware to run this, so let me know if this
-would be wrong.
+Quite so.
 
-(Note that this only goes half-way in resolving this bug, because we
-would also need to convert hci_sk_list.lock from rwlock to rwsem for
-that. But that is not possible as other users of hci_sk_list.lock
-_are_ atomic)
+> Also, if there's an error, we have to be able to thaw tasks after
+> post_snapshot() and continue running.
+> 
+> The restore code, IMO, should be like this (again, let's ignore ACPI for now):
+> 
+> 1) boot kernel is started, initrd is loaded etc.
+> 2) tasks are frozen
+> 3) snapshot image is loaded
+> 4) pre_restore()
+> 5) nonboot CPUs are offlined
+> 6) IRQs are disabled
+> 7) pre_restore_late()
+> 8) sysdev_pre_restore()
+> 9) boot kernel is replaced with the 'hibernated' kernel
+> 10) sysdev_post_restore()
+> 11) post_restore_early()
+> 12) IRQs are enabled
+> 13) nonboot CPUs are enabled
+> 14) post_restore()
+> 15) tasks are thawed
+> 16) system is running
+> 
+> and we may need a notifier for subsystems that should do something after
+> tasks have been thawed.
 
-Satyam
+It sounds good to me.  Now if only it were possible to get rid of those
+pesky sysdevs...
 
----
-
-Make hci_notifier a blocking notifier, as none of its users call it
-from atomic context.
-
-Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-
----
-
- net/bluetooth/hci_core.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
----
-
-diff -ruNp a/net/bluetooth/hci_core.c b/net/bluetooth/hci_core.c
---- a/net/bluetooth/hci_core.c	2007-04-26 08:38:32.000000000 +0530
-+++ b/net/bluetooth/hci_core.c	2007-05-06 20:16:30.000000000 +0530
-@@ -72,23 +72,23 @@ DEFINE_RWLOCK(hci_cb_list_lock);
- struct hci_proto *hci_proto[HCI_MAX_PROTO];
-
- /* HCI notifiers list */
--static ATOMIC_NOTIFIER_HEAD(hci_notifier);
-+static BLOCKING_NOTIFIER_HEAD(hci_notifier);
-
- /* ---- HCI notifications ---- */
-
- int hci_register_notifier(struct notifier_block *nb)
- {
--	return atomic_notifier_chain_register(&hci_notifier, nb);
-+	return blocking_notifier_chain_register(&hci_notifier, nb);
- }
-
- int hci_unregister_notifier(struct notifier_block *nb)
- {
--	return atomic_notifier_chain_unregister(&hci_notifier, nb);
-+	return blocking_notifier_chain_unregister(&hci_notifier, nb);
- }
-
- static void hci_notify(struct hci_dev *hdev, int event)
- {
--	atomic_notifier_call_chain(&hci_notifier, event, hdev);
-+	blocking_notifier_call_chain(&hci_notifier, event, hdev);
- }
-
- /* ---- HCI requests ---- */
+Alan Stern
