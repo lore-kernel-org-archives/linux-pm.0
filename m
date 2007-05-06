@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Mon, 7 May 2007 00:31:11 +0200
-Message-ID: <200705070031.12095.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705061751230.21407-100000@netrider.rowland.org>
+From: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: [PATCH] make hci_notifier a blocking notifier (was
+	Re: BUG: sleeping function called from invalid context at
+	net/core/sock.c:1523)
+Date: Sun, 6 May 2007 16:15:00 -0700
+Message-ID: <2c0942db0705061615i1c6147a1h6aca54012c3509aa__30184.170677285$1178493352$gmane$org@mail.gmail.com>
+References: <a781481a0705060816v59c1ae70m1d5067fcaba5a25d@mail.gmail.com>
+	<Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705061751230.21407-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,90 +22,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: marcel@holtmann.org, LKML <linux-kernel@vger.kernel.org>, Max Krasnyansky <maxk@qualcomm.com>, Satyam Sharma <satyam.sharma@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 May 2007 00:01, Alan Stern wrote:
-> On Sun, 6 May 2007, Rafael J. Wysocki wrote:
-> 
-> > > > I think we may need yet another callback, executed before pre_snapshot()
-> > > > and before we shrink memory during the hibernation, to be used by drivers
-> > > > that need a lot of additional memory in pre_snapshot().
-> > > 
-> > > 	pre_snapshot_early()
-> > 
-> > OK
-> 
-> I changed my mind -- pre_hibernate() seems like a better name.
+On 5/6/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Sun, 6 May 2007, Satyam Sharma wrote:
+>
+> > Anyway, the hci_notifier is called from the following six call sites:
+> >
+> > hci_dev_open() and hci_dev_close() -> both called from
+> > hci_sock_ioctl() => both can sleep
+> > hci_register_dev() and hci_unregister_dev() => again both are capable
+> > of sleeping
+> > hci_suspend_dev() and hci_resume_dev() -> called from the .suspend()
+> > and .resume() of the hci_usb_driver, and again both of these can sleep
+> >
+> > Is there any other reason why hci_notifier must be an atomic notifier?
+> >
+> > (CC'ing Alan Stern just in case, apparently hci_notifier became atomic
+> > when notifier chains were classified into atomic / blocking)
+>
+> I don't remember exactly why this particular choice was made.  Perhaps we
+> found that the notifier callout routines didn't use any blocking
+> primitives (we may have been mistaken about this -- there was a lot of
+> code to check) and so therefore the choice didn't matter.  In that case we
+> probably just decided to make it an atomic notifier to keep things simple.
+>
+> As you found, changing it to a blocking notifier is very easy.  Provided
+> all the callers are non-atomic it should work just fine.
 
-OK
+Okay, I'll go ahead and try the patch, then, and report back.
 
-> There could be a matching post_hibernate(), if anyone finds it necessary.  I
-> considered pre_freeze(), but that's not such a good choice since the
-> freezer can be used for other things in addition to hibernation.
+Thanks,
 
-Agreed.
-
-> > So, I think the hibernation code ordering should be like this (let's forget
-> > about ACPI for now):
-> > 
-> > 1) tasks are frozen
-> > 2) pre_snapshot_early()
-> 
-> Or rather: 2) pre_hibernate()
-
-OK
-
-> > 3) memory is freed for the snapshot image
-> > 4) pre_snapshod()
-> > 5) nonboot CPUs are offlined
-> > 6) IRQs are disabled
-> > 7) pre_snapshot_late()
-> > 8) sysdev_pre_snapshot()
-> > 9) snapshot image is created
-> > 10) sysdev_post_snapshot()
-> > 11) post_snapshot_early()
-> > 12) IRQs are enabled
-> > 13) nonboot CPUs are enabled
-> > 14) post_snapshot()
-> > 15) snapshot image is saved
-> > 16) device_shutdown()
-> > 17) system is powered off
-> > 
-> > Apart from this, we may need notifiers for subsystems that should do something
-> > before the freezing and after the thawing of tasks (like FUSE etc.).
-> 
-> Quite so.
-> 
-> > Also, if there's an error, we have to be able to thaw tasks after
-> > post_snapshot() and continue running.
-> > 
-> > The restore code, IMO, should be like this (again, let's ignore ACPI for now):
-> > 
-> > 1) boot kernel is started, initrd is loaded etc.
-> > 2) tasks are frozen
-> > 3) snapshot image is loaded
-> > 4) pre_restore()
-> > 5) nonboot CPUs are offlined
-> > 6) IRQs are disabled
-> > 7) pre_restore_late()
-> > 8) sysdev_pre_restore()
-> > 9) boot kernel is replaced with the 'hibernated' kernel
-> > 10) sysdev_post_restore()
-> > 11) post_restore_early()
-> > 12) IRQs are enabled
-> > 13) nonboot CPUs are enabled
-> > 14) post_restore()
-> > 15) tasks are thawed
-> > 16) system is running
-> > 
-> > and we may need a notifier for subsystems that should do something after
-> > tasks have been thawed.
-> 
-> It sounds good to me.  Now if only it were possible to get rid of those
-> pesky sysdevs...
-
-I think that will be possible over time.
-
-Greetings,
-Rafael
+Ray
