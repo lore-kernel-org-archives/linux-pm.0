@@ -1,11 +1,9 @@
-From: "CO-ORDINATOR {Euromillionlottery}" <emilysimon009@yahoo.es>
-Subject: Euro Million Loteria Award !!!
-Date: Sat, 5 May 2007 18:19:45 -0500 (CDT)
-Message-ID: <3518.81.199.179.2.1178407185.squirrel@leveldonchange.250meg.com>
-Reply-To: mrmelvinclinton@aim.com
+From: "randolph leelah" <bordensharline@blaze-brace.com>
+Subject: Adobe Photoshop CS3 Extended ready to download
+Date: Sat, 5 May 2007 23:45:03 -0300
+Message-ID: <1c1ad01c78f88$8c400ac0$7d2650c9@P4>
 Mime-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============6788363948599492619=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -14,71 +12,91 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: lennie angeli <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format.
+
+--===============6788363948599492619==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_1BBC1_01C78F6F.43619940"
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_1BBC1_01C78F6F.43619940
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+
+Find out more about the new features and enhancements in Adobe Photoshop
+CS3 Extended. Boost your productivity with a streamlined interface,
+enhancements to raw-image processing and asset management workflows, and
+more; experience unrivaled editing power with nondestructive filters,
+more precise color-correction controls, and more powerful cloning and
+healing tools; easily create rich composites using new tools for
+automatically aligning and blending layers and making quick selections;
+3D and motion support with the ability to edit 3D content and
+incorporate it into 2D compositions, paint and clone over multiple video
+frames, and more; comprehensive image analysis with new image
+measurement and counting tools, MATLAB integration, and DICOM file
+support.
+Adobe Photoshop CS3 Extended
+Retail Price $999.00
+Our Price $89.95
+You save $909.05
+http://bloggers-haven.com/poli/
+Please note, that there will be more special offers available for our
+constant customers. Every effort has been made to ensure the accuracy of
+all information contained herein. DS Team makes no warranty expressed or
+implied with respect to accuracy of the information, including price,
+product editorials or product specifications. Product and manufacturer
+names are used only for the purpose of identification. We appreciate
+your cooperation with us and we'll be glad to see you as our clients in
+the future. 
+
+------=_NextPart_000_1BBC1_01C78F6F.43619940
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=#ffffff><FONT face=Arial size=2>Find out more about the new 
+features and enhancements in Adobe Photoshop CS3 Extended. Boost your 
+productivity with a streamlined interface, enhancements to raw-image processing 
+and asset management workflows, and more; experience unrivaled editing power 
+with nondestructive filters, more precise color-correction controls, and more 
+powerful cloning and healing tools; easily create rich composites using new 
+tools for automatically aligning and blending layers and making quick 
+selections; 3D and motion support with the ability to edit 3D content and 
+incorporate it into 2D compositions, paint and clone over multiple video frames, 
+and more; comprehensive image analysis with new image measurement and counting 
+tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop CS3 
+Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save $909.05<BR><A 
+href="http://bloggers-haven.com/poli/">http://bloggers-haven.com/poli/</A><BR>Please note, that 
+there will be more special offers available for our constant customers. Every 
+effort has been made to ensure the accuracy of all information contained herein. 
+DS Team makes no warranty expressed or implied with respect to accuracy of the 
+information, including price, product editorials or product specifications. 
+Product and manufacturer names are used only for the purpose of identification. 
+We appreciate your cooperation with us and we'll be glad to see you as our 
+clients in the future.</FONT>
+<DIV><FONT face=Arial size=2></FONT> </DIV></BODY></HTML>
+------=_NextPart_000_1BBC1_01C78F6F.43619940--
 
 
+--===============6788363948599492619==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Euro Million Loteria Award
-Paseo De La Castellana
-15-89, 28008 Madrid,Spain Branch.
-Ref. N=BA: ES/007/05/12/MAD.
-Batch. N=BA: GHT/2907/333/05.
-www.loteria.com
-Prize And Award Notification
 
-                     YOUR E-MAIL ADDRESS WON THE LOTTERY.
-We wish to congratulate you over your email success in our computer
-BALLOTING SWEEPSTAKE held on May 5th,2007. This is a millennium scientifi=
-c
-computer game in which email addresses were used. It is a promotional
-program aimed at encouraging internet users; therefore you do not need to
-buy ticket to enter for it.
-
-Your email address attached to ticket star number (9901-0148-790-691) dre=
-w
-the EUROMILLION lucky numbers 3-19-26-49-50 which consequently won the
-draw in the Second category.
-
-You have been approve for the star prize of EUR  787,248.26. (Seven
-Hundred And Eighty Seven housand, Two Hundred And Fourty Eight
-Euros,Twenty Six Cents)
-
-CONGRATULATIONS !!!
-You are advised to keep this winning very confidential until you receive
-your lump prize in your account or optional cheque issuance to you. This
-is a protective measure to avoid double claiming by people you may tell a=
-s
-we have had cases like this before. You are required to provide the
-information below:
-
-Name, Telephone Number, Fax Number, Wining Ticket Number, Reference Numbe=
-r
-and Amount Won.
-This information For processing of your winning fund should be sent to ou=
-r
-registered claim agent in address below.
-
-Guarantee Trust Agency.
-Mr.Melvin Clinton.
-Address: Sin Numero Madrid Spain.
-Telephone: 0034636287740.
-E-mail: mrmelvinclinton@aim.com
-Remember, all winning must be claimed not later than May 31st, 2007.
-Please note, in order to avoid unnecessary delays and complications,
-remember to quote your reference number and batch number in all
-correspondence. Furthermore, should there be any change of address do
-inform our agent as soon as possible.
-
-ONCE AGAIN CONGRATULATIONS.
-
-Best Regard,
-Mrs. Emily Simon,
-Lottery Co-Odinator.
-
-The information transmitted is intended only for the person or entity to
-whom or which it is addressed. Unauthorised use, disclosure or copying is
-strictly prohibited. The sender accepts no liability for the improper
-transmission of this communication nor for any delay in its receipt.
+--===============6788363948599492619==--
