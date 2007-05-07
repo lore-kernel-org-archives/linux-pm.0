@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...)
-Date: Mon, 7 May 2007 12:33:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0705071207100.3429-100000@iolanthe.rowland.org>
-References: <200705061831.08805.david-b@pacbell.net>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...))
+Date: Mon, 7 May 2007 14:46:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705071426090.3429-100000@iolanthe.rowland.org>
+References: <200705061810.40499.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705061831.08805.david-b@pacbell.net>
+In-Reply-To: <200705061810.40499.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,102 +17,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Pekka Enberg <penberg@cs.helsinki.fi>, Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
 On Sun, 6 May 2007, David Brownell wrote:
 
 > On Saturday 05 May 2007, Alan Stern wrote:
-> > On Fri, 4 May 2007, David Brownell wrote:
+> 
+> > But who says that hibernate has to use "Non-Volatile Sleep" and normal 
+> > shutdown has to use software-controlled "poweroff"?  Why shouldn't the 
+> > user be able to do it the other way 'round?
+> 
+> Well, the definition of NVS matches hibernation, and
+> the definition of soft-off matches poweroff.
+
+Okay, I read sections 2.2 and 2.4 of the ACPI 3.0 spec.  Here's the story
+in a nutshell:
+
+	G3 = "mechanical off" = no wakeup devices are enabled,
+				safe to disassemble
+	G2/S5 = "soft off" = wakeup may be enabled, not safe to
+				disassemble
+	S4 = "non-volatile sleep" = hibernation, memory image is saved
+	S5 = "soft off" = almost the same as S4 except there is no
+				memory image
+
+The spec does not explicitly associate S4 with either G2 or G3, and in
+fact it contains language suggesting very strongly that the system could
+be in either one.  The spec also uses the same name for G2 and for S5, no 
+doubt leading to extra levels of confusion.
+
+So there's no question that S4 = NVS = hibernation.  But hibernation
+can involve either G2 or G3.
+
+And there's no question (in my mind at least) that normal shutdown should
+be able to involve either G2/S5 or G3.  So although the spec doesn't put 
+things quite this way, we could say:
+
+	hibernation = S4 = G2/S4 or G3/S4,
+
+	shutdown = S5 = G2/S5 or G3/S5.
+
+Thus the choice between S4 vs. S5 is made at the very start, and steps 1-5 
+are executed only for S4.  The choice between G2 vs. G3 can be (and should 
+be!) deferred until steps 6-7.
+
+
+> > > That's a different suggestion, yes.  I'm not sure I see any
+> > > benefit of that flexibility for "soft off" states though,
+> > > especially if it made "off" consume more power.
 > > 
-> > Did you mean to say that Step _6_ is supposed to be aware of the target 
-> > state's capabilities?  I'll agree to that.
+> > The benefit is that it allows more devices to function as wakeup sources, 
+> > right?
 > 
-> Yes ... but I don't see why it would be wrong for step 2 either.
+> With downsides of "more power consumed during 'off' states"
+> and "invalidating documentation, training, and expectations".
 
-The principle of information hiding: If step 2 doesn't _need_ to know 
-the final target state (which it shouldn't!) then we ought not to tell it.
+Okay, let's clear up the confusion.  The additional flexibility I'm 
+suggesting for "soft off" = G2 states is that we should allow both G2/S4 
+and G2/S5.  They would consume the same amount of power since they are 
+both G2 states; the difference is that G2/S4 involves saving and restoring 
+a memory image and G2/S5 does not.
 
-> If the device can't wake from S5, it wouldn't set up with the
-> assumption that was a possibility.
-
-But step 2 doesn't set up devices' wakeup functions.  It merely quiesces
-them so the snapshot can be made safely.  Then step 4 reactivates the
-devices, and step 6 takes care of setting up the devices for the final
-sleep state.
-
-
-> > Sure.  But entering hibernation need not involve putting the system into a 
-> > "sleeping" state.  Going into G3 should also work for hibernation.
-> 
-> For some definitions of "should"; that's where specs get fuzzy.
-> 
-> Since disassembly is allowed in G3, if you swapped a disk that
-> should prevent the system from resuming ... it should force a
-> boot-from-scratch.  But if you just swapped a power supply it
-> would probably work OK.
-
-Yep.  The problem isn't so much in the specs; it's that no one has ever
-(so far as I know) given a precise definition of what Linux's "hibernate"  
-is supposed to do.  Is it supposed to be safe to disassemble a hibernating
-computer?  Is remote wakeup necessarily supported?  I've never seen
-answers to these questions.
-
-> > I'm also pointing out that the policy choice decided by the contents of 
-> > /sys/power/disk comes into play during steps 6-7 above, but not at all in 
-> > steps 1-5.  Hence any associated software structures should explicitly be 
-> > connected only with steps 6 and 7.
-> 
-> The difference between S4 and S5 could matter to step 2 though.
-> Perhaps it's not the most likely thing, but certainly avoiding
-> the work to setup wake-from-S4 is reasonable when going to S5.
-
-I don't understand.  Step 2 doesn't do the work to set up wake-from-S4;  
-step 6 does.  So why should the knowledge of S4 vs. S5 matter to step 2?
-
-> > And since normal shutdown ought to have its own analog of steps 6 and 7, 
-> > the same software structures should be used there.  Hence naming them 
-> > "hibernation_ops" isn't a good idea.
-> 
-> That's something of a different stance.  And it's untrue for
-> step 6 too ... suspend() and shutdown() differ a lot.  Maybe
-> if I saw some details, that would make more sense to me.
-
-It is true that for G3 type shutdown, step 6 can be empty.  We don't need 
-to do anything to the devices or drivers, we just turn off all the power.  
-Still, the empty set _is_ a set.  :-)
-
-Here's another way to express my ideas: We want to support at least two 
-different kinds of powered-down states:
-
-	(A) Remote wakeup may be enabled on some devices, there can be
-	    a certain power drain on the batteries or power line, it may 
-	    not be safe to disassemble the machine, etc.
-
-	(B) Remote wakeup is completely disabled, there is no power
-	    drain at all, it is safe to disassemble the machine provided
-	    you don't switch components like disks, etc.
-
-(With (B) it should always be _physically_ safe to switch disks and other
-components.  Whether it is _logically_ safe depends on what happens the
-next time you start the machine: Will you try to restore a saved memory
-image or not?  This isn't directly related to the nature of the
-powered-down state except for the obvious fact that you can't restore an
-image if no image has been saved.)
-
-I don't see any reason why (A) and (B) shouldn't both be allowed for 
-hibernate, as in fact they are now by way of /sys/power/disk.  And I don't 
-see any reason why they shouldn't both be allowed for normal non-hibernate 
-shutdowns as well.
-
-Furthermore, the choice of whether to use (A) or (B) shouldn't matter 
-during steps 1-5 of the hibernate sequence.  It should matter during steps 
-6-7 and during normal shutdown (which doesn't have steps 1-5 since it 
-doesn't save a memory image).
-
-> Plus there's the issue that while this thread has touched a lot
-> on ACPI issues and models, Linux must not assume ACPI.
-
-Yes indeed.
+This does not invalidate any documentation or training so far as I know.  
+And as for expectations...  That's a little harder.  What people _expect_ 
+of Linux and what Linux actually _does_ don't always jibe well, owing to 
+lack of sufficient documentation -- typical of Open Source projects.
 
 Alan Stern
