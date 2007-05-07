@@ -1,17 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] swsusp: Reduce code duplication between
-	user.c and disk.c
-Date: Mon, 7 May 2007 22:57:12 +0200
-Message-ID: <200705072257.13405.rjw__36908.6461294957$1178571340$gmane$org@sisk.pl>
-References: <200705052227.14265.rjw@sisk.pl>
-	<1178538191.7261.13.camel@johannes.berg>
-	<20070507122619.GE20605@elf.ucw.cz>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...)
+Date: Mon, 7 May 2007 23:00:02 +0200
+Message-ID: <200705072300.03299.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705051149360.1976-100000@netrider.rowland.org>
+	<200705061816.46439.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070507122619.GE20605@elf.ucw.cz>
+In-Reply-To: <200705061816.46439.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,30 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, Johannes Berg <johannes@sipsolutions.net>, Nigel Cunningham <nigel@nigel.suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>, Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Brownell <david-b@pacbell.net>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 7 May 2007 14:26, Pavel Machek wrote:
-> On Mon 2007-05-07 13:43:11, Johannes Berg wrote:
-> > Hi,
-> > 
-> > > However, this modifies the user-observable behavior in such a way that
-> > > if the user sets 'shutdown mode = platform' in the s2disk's configuration file,
-> > > the kernel will use the hibernation mode resulting from the sysfs interface
-> > > settings.  That is, if there is 'shutdown mode = platform' in the s2disk's
-> > > configuration file, but the hibernation mode is set to 'reboot' in the sysfs
-> > > interface, the system will be rebooted instead of going for the 'ACPI S0->S4
-> > > transition'.
-> > 
-> > This I don't understand. Without looking at the code, it seems that
-> > you're invoking some common code that checks the sysfs file. Couldn't
-> > those functions take an argument instead?
+On Monday, 7 May 2007 03:16, David Brownell wrote:
+> On Saturday 05 May 2007, Alan Stern wrote:
 > 
-> I'll second this. Can we pass down an argument, meaning userland
-> interface does not change?
+> > Agreed, these all sound like problems in the ACPI driver's implementation 
+> > of suspend and resume.  Problems that are caused (at least in part) by the 
+> > fact that the PM core doesn't tell the driver whether it's doing
+> > suspend-to-RAM vs. hibernation.  Once that is straighened out, everything 
+> > else should become much simpler.
+> 
+> I'm not sure I agree with that diagnosis, but for the record:
+> updating drivers/pci/pci-acpi.c so that it can implement the
+> platform_pci_choose_state() hook requires ACPI to export that
+> information.
+> 
+> So for now I have drivers/acpi/sleep/main.c exporting
+> 
+>         s_state = acpi_get_target_sleep_state();
+> 
+> so that ACPI-aware code can know to call "_S3D" instead of
+> the "_S1D" or "_S4D" methods (and "_S3W" etc).  Of course
+> the $SUBJECT patch will finish borking that for S4.  :(
 
-Yes, we can.  I'll have an updated patch in a couple of days.
+Why exactly?
 
-Greetings,
 Rafael
