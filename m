@@ -1,11 +1,17 @@
-From: "delmor carly" <chandalgayle@marmsolerhof.com>
-Subject: Adobe Photoshop CS3 Extended ready to download!
-Date: Mon, 7 May 2007 08:28:09 +0800
-Message-ID: <3c3601c7903e$96b820d0$c501a8c0@jbc01>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...))
+Date: Sun, 6 May 2007 18:05:50 -0700
+Message-ID: <200705061805.51366.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0705041020530.3417-100000@iolanthe.rowland.org>
+	<200705041440.59023.david-b@pacbell.net>
+	<200705050019.23856.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2344337590937932575=="
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Class: urn:content-classes:message
+In-Reply-To: <200705050019.23856.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,111 +19,86 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: beauregard ruthann <linux-pm@osdl.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Friday 04 May 2007, Rafael J. Wysocki wrote:
+> On Friday, 4 May 2007 23:40, David Brownell wrote:
+> > On Friday 04 May 2007, Alan Stern wrote:
 
---===============2344337590937932575==
-Content-Class: urn:content-classes:message
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_340B_01C79081.793BEDA0"
+> > > 	1. Freeze tasks
+> > > 	2. Quiesce devices and drivers
+> > > 	3. Create snapshot
+> > > 	4. Reactivate devices and drivers
+> > > 	5. Save snapshot to disk
+> > > 	6. Prepare devices for wakeup
+> > > 	7. Power down (ACPI S4 on systems which support it)
+> > > 
+> > > Leaving hibernation involves a similar sequence which I won't discuss.
+> > > 
+> > > Notice that steps 1-5 above are _completely_ independent of all issues 
+> > > concerning wakeup devices and S4 vs. S5 vs. whatever.  They have to be 
+> > > carried out for hibernation to work, no matter how the system ends up 
+> > > getting shut down.
+> > 
+> > Not exactly.  Step 2 is supposed to be aware of the target state's
+> > capabilities, including what's wakeup-capable.  ACPI uses target
+> > device states to choose which _SxD methods to execute, etc.  (Or it
+> > should ... though come to think of it, I don't think I ever saw a
+> > hook whereby PCI could trigger that.)
 
-This is a multi-part message in MIME format.
+The hook is there, but it's not yet implemented ... patch in the
+works.  Whoever implemented pci_choose_state() botched it up.
 
-------=_NextPart_000_340B_01C79081.793BEDA0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+ 
+> Still, step 4 effectively undoes at least some things we did in 2.  At least
+> the GPEs should be enabled for normal operation so that we can save the image.
 
-Find out more about the new features and enhancements in Adobe Photoshop
-CS3 Extended. Boost your productivity with a streamlined interface,
-enhancements to raw-image processing and asset management workflows, and
-more; experience unrivaled editing power with nondestructive filters,
-more precise color-correction controls, and more powerful cloning and
-healing tools; easily create rich composites using new tools for
-automatically aligning and blending layers and making quick selections;
-3D and motion support with the ability to edit 3D content and
-incorporate it into 2D compositions, paint and clone over multiple video
-frames, and more; comprehensive image analysis with new image
-measurement and counting tools, MATLAB integration, and DICOM file
-support.
-Adobe Photoshop CS3 Extended
-Retail Price $999.00
-Our Price $89.95
-You save $909.05
-http://absolutefetish.net/rewds/
-Please note, that there will be more special offers available for our
-constant customers. Every effort has been made to ensure the accuracy of
-all information contained herein. DS Team makes no warranty expressed or
-implied with respect to accuracy of the information, including price,
-product editorials or product specifications. Product and manufacturer
-names are used only for the purpose of identification. We appreciate
-your cooperation with us and we'll be glad to see you as our clients in
-the future. 
+And for that matter, wakeup shouldn't be limited to wake-from-sleep;
+runtime device PM should be able to use it.  ACPI doesn't use GPEs
+very well at all, except maybe runtime GPEs.  Step 6 needs to know
+the same info, so it can enable the GPEs that work from S4.
+
  
 
-------=_NextPart_000_340B_01C79081.793BEDA0
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+> But then there's the nice picture in 9.3.3 (OS loading) that shows how OSPM
+> (that would be us) can verify that the hardware configuration hasn't changed.
+> 
+> In fact we don't do this, because we always go to the "Load OS Images" block
+> and load the hibernation image from this newly loaded OS (aka the boot kernel).
+> 
+> Thus our resume is always different from the "ACPI wake up from S4".
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff><FONT face=3DArial size=3D2>Find out more about =
-the new=20
-features and enhancements in Adobe Photoshop CS3 Extended. Boost your=20
-productivity with a streamlined interface, enhancements to raw-image =
-processing=20
-and asset management workflows, and more; experience unrivaled editing =
-power=20
-with nondestructive filters, more precise color-correction controls, and =
-more=20
-powerful cloning and healing tools; easily create rich composites using =
-new=20
-tools for automatically aligning and blending layers and making quick=20
-selections; 3D and motion support with the ability to edit 3D content =
-and=20
-incorporate it into 2D compositions, paint and clone over multiple video =
-frames,=20
-and more; comprehensive image analysis with new image measurement and =
-counting=20
-tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop =
-CS3=20
-Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save =
-$909.05<BR><A=20
-href=3D"http://absolutefetish.net/rewds/">http://absolutefetish.net/rewds=
-/</A><BR>Please note, that=20
-there will be more special offers available for our constant customers. =
-Every=20
-effort has been made to ensure the accuracy of all information contained =
-herein.=20
-DS Team makes no warranty expressed or implied with respect to accuracy =
-of the=20
-information, including price, product editorials or product =
-specifications.=20
-Product and manufacturer names are used only for the purpose of =
-identification.=20
-We appreciate your cooperation with us and we'll be glad to see you as =
-our=20
-clients in the future.</FONT>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
-------=_NextPart_000_340B_01C79081.793BEDA0--
+Right ... "slower" being one consequence.
 
 
---===============2344337590937932575==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> > ACPI is allowed to distinguish between S4 and S5 in more ways
+> > than just the power usage.  It'd be fair for the AML to store
+> > state in something that retains power, and rely on that.  It'd
+> > be better not to do things that are allowed to confuse ACPI.
+> 
+> As far as I understand the specification, OSPM (ie. we) can always discard
+> the fact that the system has entered S4 and reinitialize everything from
+> scratch.
+
+At the price of making some things needlessly misbehave.  Devices
+that can wake from D3cold will detect state being trashed if you
+re-init, which is at least sub-optimal if not wrong.
 
 
---===============2344337590937932575==--
+> >	 Still, the point is that these systems are now
+> > documented to work in a particular way, and there really ought to
+> > be a good reason to invalidate user training and documentation.
+> 
+> That's a very important point, IMO.
+
+So I just re-quoted it.  ;)
+
+
+> > A "Soft OFF" should be S5 to conform to specs and
+> > documentation.
+
+- Dave
