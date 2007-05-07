@@ -1,14 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
-	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
-Date: Mon, 07 May 2007 10:51:38 +0200
-Message-ID: <1178527898.7261.0.camel@johannes.berg>
-References: <Pine.LNX.4.44L0.0705051132310.1976-100000@netrider.rowland.org>
-	<200705052049.58353.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] swsusp: Reduce code duplication between
+	user.c and disk.c
+Date: Mon, 07 May 2007 13:43:11 +0200
+Message-ID: <1178538191.7261.13.camel__12366.6676613086$1178538252$gmane$org@johannes.berg>
+References: <200705052227.14265.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8590939171209398933=="
+Content-Type: multipart/mixed; boundary="===============2005819484529829348=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705052049.58353.rjw@sisk.pl>
+In-Reply-To: <200705052227.14265.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +19,64 @@ Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@cs.helsinki.fi>
 List-Id: linux-pm@vger.kernel.org
 
 
---===============8590939171209398933==
+--===============2005819484529829348==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-2lRYVXUZkf3QEEKC3LfC"
+	boundary="=-8QMwLgBnJW5JXpT5Ygzl"
 
 
---=-2lRYVXUZkf3QEEKC3LfC
+--=-8QMwLgBnJW5JXpT5Ygzl
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2007-05-05 at 20:49 +0200, Rafael J. Wysocki wrote:
+Hi,
 
-> I think we may need yet another callback, executed before pre_snapshot()
-> and before we shrink memory during the hibernation, to be used by drivers
-> that need a lot of additional memory in pre_snapshot().
+> However, this modifies the user-observable behavior in such a way that
+> if the user sets 'shutdown mode =3D platform' in the s2disk's configurati=
+on file,
+> the kernel will use the hibernation mode resulting from the sysfs interfa=
+ce
+> settings.  That is, if there is 'shutdown mode =3D platform' in the s2dis=
+k's
+> configuration file, but the hibernation mode is set to 'reboot' in the sy=
+sfs
+> interface, the system will be rebooted instead of going for the 'ACPI S0-=
+>S4
+> transition'.
 
-I'm not sure we really need a callback here for that, your suspend
-memory allocation chain seemed good enough since most drivers won't
-actually be using it and it's not a hard requirement. Not that I care
-much.
+This I don't understand. Without looking at the code, it seems that
+you're invoking some common code that checks the sysfs file. Couldn't
+those functions take an argument instead? Or even kill off the ioctl
+interface completely and just use whatever was in the sysfs file (and
+change userland to change the sysfs file). There isn't much point in
+having two separate configuration entries for one thing, imho.
 
 johannes
 
---=-2lRYVXUZkf3QEEKC3LfC
+--=-8QMwLgBnJW5JXpT5Ygzl
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGPuiZ/ETPhpq3jKURApg4AKC5w/gfrnBFyn9iptbnb4++4tXeSwCeLvq4
-G7mAHmB0fz4lndNCFdmenww=
-=MIys
+iD8DBQBGPxDO/ETPhpq3jKURAjcWAKCva4qWX/Z7C8pVy/cELhZ2aJ66GACdHdLX
+HSqck6MUF0XgTvpBx/RTXC0=
+=+3SI
 -----END PGP SIGNATURE-----
 
---=-2lRYVXUZkf3QEEKC3LfC--
+--=-8QMwLgBnJW5JXpT5Ygzl--
 
 
---===============8590939171209398933==
+--===============2005819484529829348==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============8590939171209398933==--
+--===============2005819484529829348==--
