@@ -1,10 +1,14 @@
-From: "walther olivero" <corabellarudolf@my-case.com>
-Subject: Adobe Photoshop CS3 Extended ready to download!
-Date: Mon, 7 May 2007 12:52:28 +0900
-Message-ID: <404cec01c7905b$21e9e9b0$040aa8c0@rok>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re:
+	suspend2 merge (was: Re: CFS and suspend2: hang in atomic copy))
+Date: Mon, 07 May 2007 10:51:38 +0200
+Message-ID: <1178527898.7261.0.camel@johannes.berg>
+References: <Pine.LNX.4.44L0.0705051132310.1976-100000@netrider.rowland.org>
+	<200705052049.58353.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6814447315854646424=="
+Content-Type: multipart/mixed; boundary="===============8590939171209398933=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200705052049.58353.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,89 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: felita starla <linux-pm@osdl.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
 
---===============6814447315854646424==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_404710_01C790A6.6D70D330"
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_404710_01C790A6.6D70D330
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
-Content-Transfer-Encoding: 7bit
-
-Find out more about the new features and enhancements in Adobe Photoshop
-CS3 Extended. Boost your productivity with a streamlined interface,
-enhancements to raw-image processing and asset management workflows, and
-more; experience unrivaled editing power with nondestructive filters,
-more precise color-correction controls, and more powerful cloning and
-healing tools; easily create rich composites using new tools for
-automatically aligning and blending layers and making quick selections;
-3D and motion support with the ability to edit 3D content and
-incorporate it into 2D compositions, paint and clone over multiple video
-frames, and more; comprehensive image analysis with new image
-measurement and counting tools, MATLAB integration, and DICOM file
-support.
-Adobe Photoshop CS3 Extended
-Retail Price $999.00
-Our Price $89.95
-You save $909.05
-http://adulthostedblogs.com/?w=computersoftware
-Please note, that there will be more special offers available for our
-constant customers. Every effort has been made to ensure the accuracy of
-all information contained herein. DS Team makes no warranty expressed or
-implied with respect to accuracy of the information, including price,
-product editorials or product specifications. Product and manufacturer
-names are used only for the purpose of identification. We appreciate
-your cooperation with us and we'll be glad to see you as our clients in
-the future. 
- 
-
-------=_NextPart_000_404710_01C790A6.6D70D330
-Content-Type: text/html;
-	charset="ks_c_5601-1987"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
-<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=#ffffff><FONT face=Arial size=2>Find out more about the new 
-features and enhancements in Adobe Photoshop CS3 Extended. Boost your 
-productivity with a streamlined interface, enhancements to raw-image processing 
-and asset management workflows, and more; experience unrivaled editing power 
-with nondestructive filters, more precise color-correction controls, and more 
-powerful cloning and healing tools; easily create rich composites using new 
-tools for automatically aligning and blending layers and making quick 
-selections; 3D and motion support with the ability to edit 3D content and 
-incorporate it into 2D compositions, paint and clone over multiple video frames, 
-and more; comprehensive image analysis with new image measurement and counting 
-tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop CS3 
-Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save $909.05<BR><A 
-href="http://adulthostedblogs.com/?w=computersoftware">http://adulthostedblogs.com/?w=computersoftware</A><BR>Please note, that 
-there will be more special offers available for our constant customers. Every 
-effort has been made to ensure the accuracy of all information contained herein. 
-DS Team makes no warranty expressed or implied with respect to accuracy of the 
-information, including price, product editorials or product specifications. 
-Product and manufacturer names are used only for the purpose of identification. 
-We appreciate your cooperation with us and we'll be glad to see you as our 
-clients in the future.</FONT>
-<DIV><FONT face=Arial size=2></FONT>&nbsp;</DIV></BODY></HTML>
-------=_NextPart_000_404710_01C790A6.6D70D330--
+--===============8590939171209398933==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-2lRYVXUZkf3QEEKC3LfC"
 
 
---===============6814447315854646424==
+--=-2lRYVXUZkf3QEEKC3LfC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, 2007-05-05 at 20:49 +0200, Rafael J. Wysocki wrote:
+
+> I think we may need yet another callback, executed before pre_snapshot()
+> and before we shrink memory during the hibernation, to be used by drivers
+> that need a lot of additional memory in pre_snapshot().
+
+I'm not sure we really need a callback here for that, your suspend
+memory allocation chain seemed good enough since most drivers won't
+actually be using it and it's not a hard requirement. Not that I care
+much.
+
+johannes
+
+--=-2lRYVXUZkf3QEEKC3LfC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGPuiZ/ETPhpq3jKURApg4AKC5w/gfrnBFyn9iptbnb4++4tXeSwCeLvq4
+G7mAHmB0fz4lndNCFdmenww=
+=MIys
+-----END PGP SIGNATURE-----
+
+--=-2lRYVXUZkf3QEEKC3LfC--
+
+
+--===============8590939171209398933==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============6814447315854646424==--
+--===============8590939171209398933==--
