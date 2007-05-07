@@ -1,17 +1,11 @@
-From: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH] make hci_notifier a blocking notifier (was
-	Re: BUG: sleeping function called from invalid context at
-	net/core/sock.c:1523)
-Date: Sun, 6 May 2007 16:15:00 -0700
-Message-ID: <2c0942db0705061615i1c6147a1h6aca54012c3509aa__30184.170677285$1178493352$gmane$org@mail.gmail.com>
-References: <a781481a0705060816v59c1ae70m1d5067fcaba5a25d@mail.gmail.com>
-	<Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
+From: "delmor carly" <chandalgayle@marmsolerhof.com>
+Subject: Adobe Photoshop CS3 Extended ready to download!
+Date: Mon, 7 May 2007 08:28:09 +0800
+Message-ID: <3c3601c7903e$96b820d0$c501a8c0@jbc01>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2344337590937932575=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
-Content-Disposition: inline
+Content-Class: urn:content-classes:message
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +13,111 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: marcel@holtmann.org, LKML <linux-kernel@vger.kernel.org>, Max Krasnyansky <maxk@qualcomm.com>, Satyam Sharma <satyam.sharma@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: beauregard ruthann <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 5/6/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Sun, 6 May 2007, Satyam Sharma wrote:
->
-> > Anyway, the hci_notifier is called from the following six call sites:
-> >
-> > hci_dev_open() and hci_dev_close() -> both called from
-> > hci_sock_ioctl() => both can sleep
-> > hci_register_dev() and hci_unregister_dev() => again both are capable
-> > of sleeping
-> > hci_suspend_dev() and hci_resume_dev() -> called from the .suspend()
-> > and .resume() of the hci_usb_driver, and again both of these can sleep
-> >
-> > Is there any other reason why hci_notifier must be an atomic notifier?
-> >
-> > (CC'ing Alan Stern just in case, apparently hci_notifier became atomic
-> > when notifier chains were classified into atomic / blocking)
->
-> I don't remember exactly why this particular choice was made.  Perhaps we
-> found that the notifier callout routines didn't use any blocking
-> primitives (we may have been mistaken about this -- there was a lot of
-> code to check) and so therefore the choice didn't matter.  In that case we
-> probably just decided to make it an atomic notifier to keep things simple.
->
-> As you found, changing it to a blocking notifier is very easy.  Provided
-> all the callers are non-atomic it should work just fine.
+This is a multi-part message in MIME format.
 
-Okay, I'll go ahead and try the patch, then, and report back.
+--===============2344337590937932575==
+Content-Class: urn:content-classes:message
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_340B_01C79081.793BEDA0"
 
-Thanks,
+This is a multi-part message in MIME format.
 
-Ray
+------=_NextPart_000_340B_01C79081.793BEDA0
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
+
+Find out more about the new features and enhancements in Adobe Photoshop
+CS3 Extended. Boost your productivity with a streamlined interface,
+enhancements to raw-image processing and asset management workflows, and
+more; experience unrivaled editing power with nondestructive filters,
+more precise color-correction controls, and more powerful cloning and
+healing tools; easily create rich composites using new tools for
+automatically aligning and blending layers and making quick selections;
+3D and motion support with the ability to edit 3D content and
+incorporate it into 2D compositions, paint and clone over multiple video
+frames, and more; comprehensive image analysis with new image
+measurement and counting tools, MATLAB integration, and DICOM file
+support.
+Adobe Photoshop CS3 Extended
+Retail Price $999.00
+Our Price $89.95
+You save $909.05
+http://absolutefetish.net/rewds/
+Please note, that there will be more special offers available for our
+constant customers. Every effort has been made to ensure the accuracy of
+all information contained herein. DS Team makes no warranty expressed or
+implied with respect to accuracy of the information, including price,
+product editorials or product specifications. Product and manufacturer
+names are used only for the purpose of identification. We appreciate
+your cooperation with us and we'll be glad to see you as our clients in
+the future. 
+ 
+
+------=_NextPart_000_340B_01C79081.793BEDA0
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff><FONT face=3DArial size=3D2>Find out more about =
+the new=20
+features and enhancements in Adobe Photoshop CS3 Extended. Boost your=20
+productivity with a streamlined interface, enhancements to raw-image =
+processing=20
+and asset management workflows, and more; experience unrivaled editing =
+power=20
+with nondestructive filters, more precise color-correction controls, and =
+more=20
+powerful cloning and healing tools; easily create rich composites using =
+new=20
+tools for automatically aligning and blending layers and making quick=20
+selections; 3D and motion support with the ability to edit 3D content =
+and=20
+incorporate it into 2D compositions, paint and clone over multiple video =
+frames,=20
+and more; comprehensive image analysis with new image measurement and =
+counting=20
+tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop =
+CS3=20
+Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save =
+$909.05<BR><A=20
+href=3D"http://absolutefetish.net/rewds/">http://absolutefetish.net/rewds=
+/</A><BR>Please note, that=20
+there will be more special offers available for our constant customers. =
+Every=20
+effort has been made to ensure the accuracy of all information contained =
+herein.=20
+DS Team makes no warranty expressed or implied with respect to accuracy =
+of the=20
+information, including price, product editorials or product =
+specifications.=20
+Product and manufacturer names are used only for the purpose of =
+identification.=20
+We appreciate your cooperation with us and we'll be glad to see you as =
+our=20
+clients in the future.</FONT>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
+------=_NextPart_000_340B_01C79081.793BEDA0--
+
+
+--===============2344337590937932575==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============2344337590937932575==--
