@@ -1,14 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-mm1+hotfix -- Time gets confused during
- resume from suspend (18014554.415987)
-Date: Mon, 7 May 2007 13:42:46 -0700
-Message-ID: <20070507134246.c937cdd7.akpm__49783.5189955824$1178570738$gmane$org@linux-foundation.org>
-References: <a44ae5cd0705071213md3a403bk3b4b6686a7e333db@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...)
+Date: Mon, 7 May 2007 22:49:12 +0200
+Message-ID: <20070507204912.GC18400@elf.ucw.cz>
+References: <200705061831.08805.david-b@pacbell.net>
+	<Pine.LNX.4.44L0.0705071207100.3429-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <a44ae5cd0705071213md3a403bk3b4b6686a7e333db@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0705071207100.3429-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miles Lane <miles.lane@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 7 May 2007 12:13:30 -0700
-"Miles Lane" <miles.lane@gmail.com> wrote:
+Hi!
 
-> [ 1278.513048] agpgart-intel 0000:00:00.0: LATE suspend
-> [ 1278.513791]  hwsleep-0323 [03] enter_sleep_state     : Entering
-> sleep state [S3]
-> [18014554.415987] Intel machine check architecture supported.
-> [18014554.416010] Intel machine check reporting enabled on CPU#0.
-> [18014554.416050] Back to C!
-> [ 1281.221504] agpgart-intel 0000:00:00.0: EARLY resume
-> [ 1281.221508] PCI: Calling quirk c01cbfe6 for 0000:00:00.0
-> [ 1281.221510] pci 0000:00:00.1: EARLY resume
-> [ 1281.221513] PCI: Calling quirk c01cbfe6 for 0000:00:00.1
+> It is true that for G3 type shutdown, step 6 can be empty.  We don't need 
+> to do anything to the devices or drivers, we just turn off all the power.  
+> Still, the empty set _is_ a set.  :-)
+> 
+> Here's another way to express my ideas: We want to support at least two 
+> different kinds of powered-down states:
+> 
+> 	(A) Remote wakeup may be enabled on some devices, there can be
+> 	    a certain power drain on the batteries or power line, it may 
+> 	    not be safe to disassemble the machine, etc.
+> 
+> 	(B) Remote wakeup is completely disabled, there is no power
+> 	    drain at all, it is safe to disassemble the machine provided
+> 	    you don't switch components like disks, etc.
+> 
+...
+> 
+> I don't see any reason why (A) and (B) shouldn't both be allowed for 
+> hibernate, as in fact they are now by way of /sys/power/disk.  And I don't 
+> see any reason why they shouldn't both be allowed for normal non-hibernate 
+> shutdowns as well.
 
-I think Andi had a suspend/resume handler which would prevent this,
-but it got temporarily removed and will soon be coming back?
+No, sorry, that does not work. Software can't select (A) vs. (B). Only
+user can, by physically switching real power switch, or by unplugging
+the machine.
+
+And yes, there's documentation about expectations of swsusp, in
+Doc*/power/swsusp.txt.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
