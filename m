@@ -1,7 +1,7 @@
 From: "Attah Bukari" <INFO91@freeuso.it>
 Subject: ASSISTANCE/INVESTMENT
-Date: Mon, 7 May 2007 08:15:47 -0700
-Message-ID: <45DD8CCF00143291__21431.23080391$1178552011$gmane$org@ims1.edisontel.com>
+Date: Mon, 7 May 2007 08:15:43 -0700
+Message-ID: <45DD8CCF00143289__47794.1468511291$1178552135$gmane$org@ims1.edisontel.com>
 Reply-To: attamehab17@walla.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-15"
