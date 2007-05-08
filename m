@@ -1,14 +1,16 @@
 From: Oleg Nesterov <oleg@tv-sign.ru>
 Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Date: Tue, 8 May 2007 16:40:47 +0400
-Message-ID: <20070508124047.GA995__32401.8638035797$1178628113$gmane$org@tv-sign.ru>
-References: <20070508105528.GA86@tv-sign.ru>
-	<20070508121232.GE1772@ff.dom.local>
+Date: Tue, 8 May 2007 17:48:15 +0400
+Message-ID: <20070508134815.GA1074__10394.5105839104$1178632164$gmane$org@tv-sign.ru>
+References: <46403B7F.1050009@gmail.com>
+	<20070508021131.438cee31.akpm@linux-foundation.org>
+	<20070508105528.GA86@tv-sign.ru> <46405A67.8020105@gmail.com>
+	<46406656.9060504@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070508121232.GE1772@ff.dom.local>
+In-Reply-To: <46406656.9060504@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/08, Jarek Poplawski wrote:
+On 05/08, Jiri Slaby wrote:
 >
-> On 08-05-2007 12:55, Oleg Nesterov wrote:
-> > On 05/08, Andrew Morton wrote:
-> >> On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> >>
-> >>> this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
-> >>> through netconsole). Perfectly reproducible, it simply happens each time I
-> >>> try it.
-> >> Let's cc Oleg.
-> >>
-> >>> usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
-> >>> ------------[ cut here ]------------
-> >>> kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
-> >>> invalid opcode: 0000 [#1]
-> >>> SMP
-> >>> Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
-> >>> ehci_hcd pata_acpi ff_memless sr_mod cdrom
-> ...
-> > queue_delayed_work().
-> > 
-> > Probably, cancel_delayed_work(&delayed_work->work) was called with the ->timer
-> > pending. This is wrong, cancel_delayed_work() clears _PENDING unconditionally,
+> > Oleg Nesterov napsal(a):
+> >>>
+> >>>> kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
+> >>>> invalid opcode: 0000 [#1]
+> >>>> SMP
+> >>>> Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
+> >>>> ehci_hcd pata_acpi ff_memless sr_mod cdrom
+> >>>> CPU:    1
+> >>>> EIP:    0060:[<c0132161>]    Not tainted VLI
+> >>>> EFLAGS: 00010046   (2.6.21-mm1 #272)
+> >>>> EIP is at insert_work+0x6d/0x71
+> [...]
+> >> --- OLD/kernel/workqueue.c~	2007-05-06 00:01:06.000000000 +0400
+> >> +++ OLD/kernel/workqueue.c	2007-05-08 14:50:39.000000000 +0400
+> >> @@ -103,7 +103,10 @@ static inline void set_wq_data(struct wo
+> >>  {
+> >>  	unsigned long new;
+> >>  
+> >> -	BUG_ON(!work_pending(work));
+> >> +	if (!work_pending(work)) {
+> >> +		printk(KERN_ERR "BUG: set_wq_data ");
+> >> +		print_symbol("%s\n", (unsigned long) work->func);
+> >> +	}
+> >>  
+> >>  	new = (unsigned long) cwq | (1UL << WORK_STRUCT_PENDING);
+> >>  	new |= WORK_STRUCT_FLAG_MASK & *work_data_bits(work);
 > 
-> Maybe I miss your point, but clearing is conditional: on timer delete...
-> 
-> I think more suspicious is calling cancel_work_sync() for a delayed work
-> (with timer pending). Or maybe some race profits from _PENDING cleared
-> without locking?
+> vmstat_update+0x0/0x2b
 
-Yes, of course, I meant cancel_work_sync(), sorry for the confusion.
+Thanks a lot.
 
-Thanks!
+I know nothing about hwsusp, to the point I don't even know what it does.
+I'll try to do some reading tomorrow.
 
-So, once again, cancel_work_sync(&dwork->work) is wrong unless the timer
-was stopped.
+Right now,
 
-Before make-cancel_rearming_delayed_work-reliable.patch
+> +static void vmstat_update(struct work_struct *w)
+> +{
+> +       refresh_cpu_vm_stats(smp_processor_id());
+> +       schedule_delayed_work(&__get_cpu_var(vmstat_work),
+> +               sysctl_stat_interval);
+> +}
 
-	it requires that the @work can't be re-queued.
+This is not precisely correct. We cam schedule the wrong vmstat_work
+if this timer/work migrates to another CPU. I'd suggest
 
-After
-	works, but waits for the timer expiration in a busy-wait loop.
+	schedule_delayed_work(container_of(w, struct delayed_work, work))
+
+This should not happen because we are doing cancel_rearming_delayed_work()
+below, however:
+
+> +       case CPU_DOWN_PREPARE:
+> +       case CPU_DOWN_PREPARE_FROZEN:
+> +               cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
+> +               per_cpu(vmstat_work, cpu).work.func = NULL;
+> +       case CPU_DOWN_FAILED:
+> +       case CPU_DOWN_FAILED_FROZEN:
+> +               start_cpu_timer(cpu);
+
+we need a "break;" before "case CPU_DOWN_FAILED", otherwise we re-start
+vmstat_update() immediately.
+
+This is a bug, but I am not sure is this the only problem.
 
 Oleg.
