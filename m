@@ -1,44 +1,36 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: [linux-pm] Re: [patch] suspend/resume debugging: device filter
-Date: Mon, 7 May 2007 19:54:26 -0700
-Message-ID: <20070508025426.GA28166@kroah.com>
-References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de> <20070505092425.GA23125@elte.hu> <20070505100855.GC25704@elf.ucw.cz>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ..)
+Date: Mon, 7 May 2007 19:57:52 -0700
+Message-ID: <20070508025752.GB28166@kroah.com>
+References: <Pine.LNX.4.44L0.0705061751230.21407-100000@netrider.rowland.org>
+	<200705061837.36969.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S967666AbXEHCzY@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070505100855.GC25704@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Greg KH <gregkh@suse.de>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200705061837.36969.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-pm@lists.linux-foundation.org, Nigel Cunningham <nigel@nigel.suspend2.net>, Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 05, 2007 at 12:08:55PM +0200, Pavel Machek wrote:
-> Hi!
+On Sun, May 06, 2007 at 06:37:36PM -0700, David Brownell wrote:
+> On Sunday 06 May 2007, Alan Stern wrote:
+> > It sounds good to me.  Now if only it were possible to get rid of those
+> > pesky sysdevs...
 > 
-> > > Here's a (compile tested only) patch that does this on a per-device 
-> > > basis, which is smaller, and should work just as well as your patch.
-> > > 
-> > > It creates a new file in the power/ directory for every device called 
-> > > "can_suspend".  Write a '0' to it to prevent that device from being 
-> > > suspended.
-> > > 
-> > > Does this work for you?
-> > 
-> > yeah, i was able to use this too to debug suspend/resume problems. But 
-> > i've added the check to the resume path too - for example sw-suspend 
-> > does a resume of devices during its suspend cycle, cutting off much of 
-> > the netconsole output.
-> > 
-> > which makes the can_suspend flag mis-named - perhaps rename it to 
-> > exclude_pm ?
-> 
-> debug_exclude_pm? I do not want people playing with it, then
-> complaining that they broke the suspend.
+> Other than lack of patches ... is there a reason??
+> I thought that sysdevs were no longer needed.
 
-I can make the attribute only show up if CONFIG_DEBUG_DRIVER is enabled.
-Would that be better?  We can also write to the syslog when the
-attribute is changed that they just might have broken something.
+I would love to get rid of them, patches gladly accepted :)
 
 thanks,
 
