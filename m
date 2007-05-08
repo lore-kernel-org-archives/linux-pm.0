@@ -1,13 +1,14 @@
-From: Jarek Poplawski <jarkao2@o2.pl>
+From: Oleg Nesterov <oleg@tv-sign.ru>
 Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Date: Tue, 8 May 2007 12:51:58 +0200
-Message-ID: <20070508105158.GD1772__23930.5131057792$1178621205$gmane$org@ff.dom.local>
+Date: Tue, 8 May 2007 14:55:28 +0400
+Message-ID: <20070508105528.GA86__28714.2580993988$1178621817$gmane$org@tv-sign.ru>
 References: <46403B7F.1050009@gmail.com>
+	<20070508021131.438cee31.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <46403B7F.1050009@gmail.com>
+In-Reply-To: <20070508021131.438cee31.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,16 +18,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08-05-2007 10:57, Jiri Slaby wrote:
-...
-> [...] Perfectly reproducible, it simply happens each time I
-> try it.
+On 05/08, Andrew Morton wrote:
+>
+> On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+> > 
+> > this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
+> > through netconsole). Perfectly reproducible, it simply happens each time I
+> > try it.
+> 
+> Let's cc Oleg.
+> 
+> > usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
+> > ------------[ cut here ]------------
+> > kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
+> > invalid opcode: 0000 [#1]
+> > SMP
+> > Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
+> > ehci_hcd pata_acpi ff_memless sr_mod cdrom
+> > CPU:    1
+> > EIP:    0060:[<c0132161>]    Not tainted VLI
+> > EFLAGS: 00010046   (2.6.21-mm1 #272)
+> > EIP is at insert_work+0x6d/0x71
+> > eax: c1c3b3c0   ebx: c1814aa0   ecx: 00000001   edx: c1814aa0
+> > esi: c1c3b340   edi: 00000282   ebp: c04d2f68   esp: c04d2f50
+> > ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> > Process swapper (pid: 0, ti=c04d2000 task=c1c26030 task.ti=c1c20000)
+> > Stack: c4685f54 c18148ac c04d2f98 c013816f c1c3b340 c1814aa0 c04d2f88 c013256c
+> >        00000066 c1814880 c1c5e000 c04d2fc4 c01325a1
+> > c1c5e000 00000100 c012ba35 00000000 c04d2fb8 c01333f4 Call Trace:
+> >  [<c0104f27>]  [<c0104fe2>] show_stack_log_lvl+0xa5/0xca
+> > show_registers+0x1e2/0x2da
+> >  [<c01053f5>]  [<c010559a>] do_trap+0x84/0xaa
+> > do_invalid_op+0x88/0x92
+> >  [<c0378662>]  [<c013256c>] __queue_work+0x22/0x33
+> > delayed_work_timer_fn+0x24/0x2a
+> >  [<c012ba35>]  [<c01288a9>] __do_softirq+0x75/0xe6
+> > do_softirq+0x63/0xac
+> >  [<c0128713>]  [<c0116d7e>] smp_apic_timer_interrupt+0x5c/0x88
+> > apic_timer_interrupt+0x28/0x30
 
-...so, maybe, only subjectively reproducible?
+queue_delayed_work().
 
-Regards,
-Jarek P.
+Probably, cancel_delayed_work(&delayed_work->work) was called with the ->timer
+pending. This is wrong, cancel_delayed_work() clears _PENDING unconditionally,
+that is why the comment says
+
+	it is expected that, prior to calling cancel_work_sync(), the caller has
+	arranged for the work to not be requeued.
+
+(Just in case, after make-cancel_rearming_delayed_work-reliable.patch this is still
+ wrong (as documented) to do cancel_delayed_work() before cancel_delayed_timer(),
+ but should work correctly).
+
+ata_port_flush_task() and ata_port_detach() do this, I sent the patch to fix this
+twice. The last one is
+
+	[PATCH -mm] libata-core: convert to use cancel_rearming_delayed_work()
+	http://marc.info/?l=linux-kernel&m=117840349108505
+	
+
+Jiri, any chance you can re-test with the patch below?
+
+--- OLD/kernel/workqueue.c~	2007-05-06 00:01:06.000000000 +0400
++++ OLD/kernel/workqueue.c	2007-05-08 14:50:39.000000000 +0400
+@@ -103,7 +103,10 @@ static inline void set_wq_data(struct wo
+ {
+ 	unsigned long new;
+ 
+-	BUG_ON(!work_pending(work));
++	if (!work_pending(work)) {
++		printk(KERN_ERR "BUG: set_wq_data ");
++		print_symbol("%s\n", (unsigned long) work->func);
++	}
+ 
+ 	new = (unsigned long) cwq | (1UL << WORK_STRUCT_PENDING);
+ 	new |= WORK_STRUCT_FLAG_MASK & *work_data_bits(work);
