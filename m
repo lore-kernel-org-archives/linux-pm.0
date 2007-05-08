@@ -1,45 +1,45 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...)
-Date: Tue, 8 May 2007 02:30:41 +0200
-Message-ID: <20070508003041.GD18400@elf.ucw.cz>
-References: <20070507204912.GC18400@elf.ucw.cz>
-	<Pine.LNX.4.44L0.0705071725400.4301-100000@iolanthe.rowland.org>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [linux-pm] Re: [patch] suspend/resume debugging: device filter
+Date: Mon, 7 May 2007 19:54:26 -0700
+Message-ID: <20070508025426.GA28166@kroah.com>
+References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de> <20070505092425.GA23125@elte.hu> <20070505100855.GC25704@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S967666AbXEHCzY@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0705071725400.4301-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20070505100855.GC25704@elf.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Greg KH <gregkh@suse.de>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sat, May 05, 2007 at 12:08:55PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > Here's a (compile tested only) patch that does this on a per-device 
+> > > basis, which is smaller, and should work just as well as your patch.
+> > > 
+> > > It creates a new file in the power/ directory for every device called 
+> > > "can_suspend".  Write a '0' to it to prevent that device from being 
+> > > suspended.
+> > > 
+> > > Does this work for you?
+> > 
+> > yeah, i was able to use this too to debug suspend/resume problems. But 
+> > i've added the check to the resume path too - for example sw-suspend 
+> > does a resume of devices during its suspend cycle, cutting off much of 
+> > the netconsole output.
+> > 
+> > which makes the can_suspend flag mis-named - perhaps rename it to 
+> > exclude_pm ?
+> 
+> debug_exclude_pm? I do not want people playing with it, then
+> complaining that they broke the suspend.
 
-> It says this near the start:
-> 
->  * 		If you change
->  * your hardware while system is suspended... well, it was not good idea;
->  * but it will probably only crash.
-> 
-> with similar warnings elsewhere.
-> 
-> This appears to refer to confusion in the kernel after the image is 
-> restored; it doesn't seem to mean that you could damage equipment or 
-> electrocute yourself.
+I can make the attribute only show up if CONFIG_DEBUG_DRIVER is enabled.
+Would that be better?  We can also write to the syslog when the
+attribute is changed that they just might have broken something.
 
-For electrocuting, see product manual :-). Basically, you have to
-unplug PC from AC power physically in order to open it. shutdown -h
-now is _not_ enough. For notebooks, remove battery, too.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+thanks,
+
+greg k-h
