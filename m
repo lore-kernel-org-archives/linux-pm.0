@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.21 -- Forced to hard power off from attempted
-	hibernation
-Date: Tue, 8 May 2007 21:20:40 +0200
-Message-ID: <200705082120.40508.rjw@sisk.pl>
-References: <a44ae5cd0705080009l2e7bac9ayc379acdfe17e2507@mail.gmail.com>
-	<200705081224.48600.rjw@sisk.pl>
-	<a44ae5cd0705080927v2203543dl7fcee33c139cc4c0@mail.gmail.com>
+Subject: Re: [Suspend-devel] Toshiba Setellite U205-S5067 Suspend
+	to RAM
+Date: Tue, 8 May 2007 21:33:22 +0200
+Message-ID: <200705082133.23094.rjw__20343.2544986301$1178652569$gmane$org@sisk.pl>
+References: <1178503360.5988.22.camel@trinity>
+	<87wszlnumj.fsf@superfluity.lefae.org>
+	<87hcqntd5z.fsf@superfluity.lefae.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <a44ae5cd0705080927v2203543dl7fcee33c139cc4c0@mail.gmail.com>
+In-Reply-To: <87hcqntd5z.fsf@superfluity.lefae.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,44 +22,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miles Lane <miles.lane@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Ross Patterson <me@rpatterson.net>
+Cc: suspend-devel@lists.sourceforge.net, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 8 May 2007 18:27, Miles Lane wrote:
-> On 5/8/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Hi,
+On Tuesday, 8 May 2007 19:53, Ross Patterson wrote:
+> Ross Patterson <me@rpatterson.net> writes:
+> 
+> > Ross Patterson <me@rpatterson.net> writes:
 > >
-> > On Tuesday, 8 May 2007 09:09, Miles Lane wrote:
-> > > Hello,
-> > >
-> > > When I tried to hibernate my laptop (HP Pavilion dv1240us), everything
-> > > seemed to be working,  but the power never shut off.  I had to hold
-> > > down the power button for five seconds.
-> >
-> > Does the log below finish where the machine hanged?
+> >> "Paulo J. S. Silva" <pjssilva@ime.usp.br> writes:
+> >>
+> >>> I am not a kernel hacker, but I have tried to add some printk as
+> >>> suggested by Pavel (I haven't used udelay, I was not sure what it did
+> >>> (Is there a good explanation anywhere?). I added one printk to
+> >>> state_store function in main.c file (in kernel/power/ directory of
+> >>> course) to make sure that the process was starting, and many in
+> >>> enter_state function.
+> >>>
+> >>> What I could see, at first, is that something was taking long while the
+> >>> kernel was trying to disable the non-boot CPU. Here is the important log
+> >>> snippet (mine printk start with ****):
+> >>>
+> >>>
+> >>>> May  6 12:44:44 trinity kernel: [  704.412000] ****Receiving request to power sa
+> >>>> ve: mem
+> >>>> May  6 12:44:44 trinity kernel: [  704.412000] .
+> >>>> May  6 12:44:44 trinity kernel: [  704.412000] **** starting enter_state.
+> >>>> May  6 12:44:44 trinity kernel: [  704.412000] **** Preparing system for mem sle
+> >>>> ep
+> >>>> May  6 12:44:44 trinity kernel: [  704.416000] Disabling non-boot CPUs ...
+> >>>> May  6 12:44:44 trinity kernel: [  704.552000] CPU 1 is now offline
+> >>>> May  6 12:44:44 trinity kernel: [  704.552000] SMP alternatives: switching to UP
+> >>>>  code
+> >>>> May  6 12:55:00 trinity kernel: [  704.552000] CPU1 is down
+> >>>
+> >>> You see? Something took 10 minutes between the last two lines.
+> >>>
+> >>> I then thought that SMP was the problem. I have then disabled the second
+> >>> CPU during boot using "noapic nosmp" options. But I still get the same
+> >>> long wait before suspending. Moreover, something weird happens. There is
+> >>> no more delay in the sequence of messages related to suspend. But the
+> >>> whole sequence of messages, even the first sentence that says that the
+> >>> system is calling the function state_store, is only written to the disk
+> >>> when the system is waked up and not before the suspend take place. The
+> >>> same thing happen if I disable the second CPU in the bios, instead of
+> >>> using "noapic nosmp". What should I try now?
 > 
-> It's odd.  I thought that the hang must have occurred down...
-> 
-> > > [ 2815.639718] pci 0000:00:00.1: LATE freeze
-> > > [ 2815.639718] agpgart-intel 0000:00:00.0: LATE freeze
-> > > [ 2815.639718] swsusp: critical section:
-> > > [ 2815.639718] swsusp: Need to copy 124696 pages
-> > > [ 2815.639718] swsusp: Normal pages needed: 114475 + 1024 + 24,
-> > > available pages: 118745
-> 
-> <<< HERE >>>
-> 
-> > > [ 2815.639718] Intel machine check architecture supported.
-> > > [ 2815.639718] Intel machine check reporting enabled on CPU#0.
-> > > [ 2815.639718] agpgart-intel 0000:00:00.0: EARLY resume
-> 
-> Since this is where the suspend process seems to complete and the
-> resume begins.
+> I was wondering if anyone has any thoughts on what we might try from
+> here?  I think there are at least two willing, if not knowledgable :),
+> testers here.
 
-Does this mean that it hanged during the resume?
+Well, I'm afraid no one has any idea.  Otherwise, someone would have responded. ;-)
 
+I've added more appropriate lists for your problem report to the CC list.
+Also, it probably would be a good idea to file a bug report at
+http://bugzilla.kernel.org, in the ACPI->Power-Sleep-Wake category (please
+add my address to the bugzilla entry's CC list if you do that).
+
+Greetings,
 Rafael
-
-PS
-Please keep the CC list when you reply, thanks.
