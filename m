@@ -1,16 +1,14 @@
-From: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Date: Tue, 8 May 2007 18:20:25 +0400
-Message-ID: <20070508142025.GB1105__28766.3410570987$1178634076$gmane$org@tv-sign.ru>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] vmstat-use-our-own-timer-events-fix
+Date: Tue,  8 May 2007 16:30:55 +0200 (CEST)
+Message-ID: <735170251589527543__33278.1798825183$1178634719$gmane$org@wsc.cz>
 References: <46403B7F.1050009@gmail.com>
 	<20070508021131.438cee31.akpm@linux-foundation.org>
 	<20070508105528.GA86@tv-sign.ru> <46405A67.8020105@gmail.com>
 	<46406656.9060504@gmail.com> <20070508134815.GA1074@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	<20070508134815.GA1074@tv-sign.ru>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070508134815.GA1074@tv-sign.ru>
+In-reply-to: <20070508142025.GB1105@tv-sign.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,50 +18,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Oleg Nesterov <oleg@tv-sign.ru>, Christoph Lameter <clameter@sgi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/08, Oleg Nesterov wrote:
->
-> On 05/08, Jiri Slaby wrote:
+Oleg Nesterov wrote:
+> On 05/08, Oleg Nesterov wrote:
 > >
-> > vmstat_update+0x0/0x2b
+> > On 05/08, Jiri Slaby wrote:
+> >
+> > This should not happen because we are doing cancel_rearming_delayed_work()
+> > below, however:
+> > 
+> > > +       case CPU_DOWN_PREPARE:
+> > > +       case CPU_DOWN_PREPARE_FROZEN:
+> > > +               cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
+> > > +               per_cpu(vmstat_work, cpu).work.func = NULL;
+> > > +       case CPU_DOWN_FAILED:
+> > > +       case CPU_DOWN_FAILED_FROZEN:
+> > > +               start_cpu_timer(cpu);
+> > 
+> > we need a "break;" before "case CPU_DOWN_FAILED", otherwise we re-start
+> > vmstat_update() immediately.
+> > 
+> > This is a bug, but I am not sure is this the only problem.
 > 
-> Thanks a lot.
-> 
-> Right now,
-> 
-> > +static void vmstat_update(struct work_struct *w)
-> > +{
-> > +       refresh_cpu_vm_stats(smp_processor_id());
-> > +       schedule_delayed_work(&__get_cpu_var(vmstat_work),
-> > +               sysctl_stat_interval);
-> > +}
-> 
-> This is not precisely correct. We cam schedule the wrong vmstat_work
-> if this timer/work migrates to another CPU. I'd suggest
-> 
-> 	schedule_delayed_work(container_of(w, struct delayed_work, work))
-> 
-> This should not happen because we are doing cancel_rearming_delayed_work()
-> below, however:
-> 
-> > +       case CPU_DOWN_PREPARE:
-> > +       case CPU_DOWN_PREPARE_FROZEN:
-> > +               cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
-> > +               per_cpu(vmstat_work, cpu).work.func = NULL;
-> > +       case CPU_DOWN_FAILED:
-> > +       case CPU_DOWN_FAILED_FROZEN:
-> > +               start_cpu_timer(cpu);
-> 
-> we need a "break;" before "case CPU_DOWN_FAILED", otherwise we re-start
-> vmstat_update() immediately.
-> 
-> This is a bug, but I am not sure is this the only problem.
+> In case I was not clear, this _can_ explain the problem. Because an extra
+> start_cpu_timer() (due to missed "break;") re-initializes dwork, and clears
+> _PENDING.
 
-In case I was not clear, this _can_ explain the problem. Because an extra
-start_cpu_timer() (due to missed "break;") re-initializes dwork, and clears
-_PENDING.
+Yes, it helped, thanks. If no objections, please apply the patch below.
 
-Oleg.
+--
+
+vmstat-use-our-own-timer-events-fix
+
+add missing break
+
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+
+---
+commit e0fe3cf4776a3c16ac7625ce9eae75ea42eb9b4e
+tree c9a4277860e2cea03911b3d73c9386c9284d991b
+parent b1034323f7e57642eee59a0f5e77c50bc26982c5
+author Jiri Slaby <jirislaby@gmail.com> Tue, 08 May 2007 16:25:28 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 08 May 2007 16:25:28 +0200
+
+ mm/vmstat.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 709e2f0..fac05e8 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -677,6 +677,7 @@ static int __cpuinit vmstat_cpuup_callback(struct notifier_block *nfb,
+ 	case CPU_DOWN_PREPARE_FROZEN:
+ 		cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
+ 		per_cpu(vmstat_work, cpu).work.func = NULL;
++		break;
+ 	case CPU_DOWN_FAILED:
+ 	case CPU_DOWN_FAILED_FROZEN:
+ 		start_cpu_timer(cpu);
