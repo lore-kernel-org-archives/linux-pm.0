@@ -1,17 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...)
-Date: Wed, 9 May 2007 12:23:40 -0700
-Message-ID: <200705091223.40864.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0705051149360.1976-100000@netrider.rowland.org>
-	<200705071445.40547.david-b@pacbell.net>
-	<200705080016.09735.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...))
+Date: Wed, 9 May 2007 16:04:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705091556520.8586-100000@iolanthe.rowland.org>
+References: <200705091235.05613.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705080016.09735.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200705091235.05613.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +16,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 May 2007, Rafael J. Wysocki wrote:
-> On Monday, 7 May 2007 23:45, David Brownell wrote:
-> > On Monday 07 May 2007, Rafael J. Wysocki wrote:
-> > > On Monday, 7 May 2007 03:16, David Brownell wrote:
-> > 
-> > > > So for now I have drivers/acpi/sleep/main.c exporting
-> > > > 
-> > > >         s_state = acpi_get_target_sleep_state();
-> > > > 
-> > > > so that ACPI-aware code can know to call "_S3D" instead of
-> > > > the "_S1D" or "_S4D" methods (and "_S3W" etc).  Of course
-> > > > the $SUBJECT patch will finish borking that for S4.  :(
-> > > 
-> > > Why exactly?
-> > 
-> > Because it adds new code paths ... currently pm_ops methods
-> > record the target state.  Fixable later.
+On Wed, 9 May 2007, David Brownell wrote:
+
+> > 			In fact, it is the state the computer enters 
+> > 	when you first plug it in (or insert the battery).
 > 
-> Hmm, I think hibernation_ops do the equivalent of what pm_ops did for
-> ACPI_STATE_S4 and the target state is still recorded (in
-> acpi_enter_sleep_state_prep()).  Isn't that correct?
+> No; again, you're missing the entire point of G3 "mechanical off".
+> 
+> When you first plug it in, it's going to be in G3.  Then you turn
+> on the power switch.  Then you press the "on/off" button.
+> 
+> From then on you can use only the "on/off" button, but the system
+> is vampiric ... when off/dead, it can choose to come alive, and is
+> always sucking power/blood at a low level.
+> 
+> But the "large red switch" option is available to put the system
+> into G3 ... driving a bloody stake through its heart, so it can't
+> re-activate itself at midnight, and preventing constant power drain.
 
-I didn't use that method, because of information hiding.
+Sorry.  What I meant to say was that S5 is the state the computer enters 
+when you first plug it in and turn on the power switch -- before you press 
+the on/off button.
 
-See the patch I just posted.
+> > From the user's point of view, the differences between S4 and S5 amount to
+> > just these: power consumption and availability of wakeup devices.
+> 
+> And the fact that in S4 there's always a resumable OS image.
 
-- Dave
+Are you sure?  What happens if the OSPM writes a defective, non-resumable 
+OS image and then goes into S4?
+
+What happens if the OS writes a resumable OS image and goes into S4, and 
+then the user unplugs the computer, plugs it back in, and turns the power 
+switch on?  At that point the system must be in S5 (by definition), but 
+there's still a resumable image.
+
+Alan Stern
