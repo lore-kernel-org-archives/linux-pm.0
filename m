@@ -1,14 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...))
-Date: Wed, 9 May 2007 12:35:05 -0700
-Message-ID: <200705091235.05613.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0705080949280.3217-100000@iolanthe.rowland.org>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...)
+Date: Wed, 9 May 2007 12:23:40 -0700
+Message-ID: <200705091223.40864.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0705051149360.1976-100000@netrider.rowland.org>
+	<200705071445.40547.david-b@pacbell.net>
+	<200705080016.09735.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705080949280.3217-100000@iolanthe.rowland.org>
+In-Reply-To: <200705080016.09735.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,53 +21,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 08 May 2007, Alan Stern wrote:
-
-> So here's the current state of my understanding of ACPI:
+On Monday 07 May 2007, Rafael J. Wysocki wrote:
+> On Monday, 7 May 2007 23:45, David Brownell wrote:
+> > On Monday 07 May 2007, Rafael J. Wysocki wrote:
+> > > On Monday, 7 May 2007 03:16, David Brownell wrote:
+> > 
+> > > > So for now I have drivers/acpi/sleep/main.c exporting
+> > > > 
+> > > >         s_state = acpi_get_target_sleep_state();
+> > > > 
+> > > > so that ACPI-aware code can know to call "_S3D" instead of
+> > > > the "_S1D" or "_S4D" methods (and "_S3W" etc).  Of course
+> > > > the $SUBJECT patch will finish borking that for S4.  :(
+> > > 
+> > > Why exactly?
+> > 
+> > Because it adds new code paths ... currently pm_ops methods
+> > record the target state.  Fixable later.
 > 
-> 	S4 is the lowest-power Sleep state.  RAM is not powered, the OS
-> 	has stored a non-volatile memory image somewhere, and some ACPI
-> 	state is maintained.
-> 
-> 	S5 is misnamed, in that it isn't really a Sleep state at all --
-> 	it's an Off state. 
+> Hmm, I think hibernation_ops do the equivalent of what pm_ops did for
+> ACPI_STATE_S4 and the target state is still recorded (in
+> acpi_enter_sleep_state_prep()).  Isn't that correct?
 
-It's called "Soft Off" ... :)
+I didn't use that method, because of information hiding.
 
-The reason it resembles a sleep state is that various events other
-than power switches are allowed to wake systems in S5.  RTC alarms
-and keyboard events come to mind as common examples.
-
-Agreed that the distinction between S4 and S5 seems too much in the
-category of "because we said so!" than because of real technical
-differences (beyond presence/absence of a non-volatile image, and
-a few additional wakeup event sources).
-
-
-> 			In fact, it is the state the computer enters 
-> 	when you first plug it in (or insert the battery).
-
-No; again, you're missing the entire point of G3 "mechanical off".
-
-When you first plug it in, it's going to be in G3.  Then you turn
-on the power switch.  Then you press the "on/off" button.
-
->From then on you can use only the "on/off" button, but the system
-is vampiric ... when off/dead, it can choose to come alive, and is
-always sucking power/blood at a low level.
-
-But the "large red switch" option is available to put the system
-into G3 ... driving a bloody stake through its heart, so it can't
-re-activate itself at midnight, and preventing constant power drain.
-
-
-> From the user's point of view, the differences between S4 and S5 amount to
-> just these: power consumption and availability of wakeup devices.
-
-And the fact that in S4 there's always a resumable OS image.
+See the patch I just posted.
 
 - Dave
