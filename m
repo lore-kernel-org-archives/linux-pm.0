@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Remove platform callbacks
 	from restore code
-Date: Wed, 9 May 2007 15:19:19 +0200
-Message-ID: <200705091519.19922.rjw__14242.9795502268$1178730634$gmane$org@sisk.pl>
-References: <200705052227.14265.rjw@sisk.pl> <200705090027.05735.rjw@sisk.pl>
+Date: Wed, 9 May 2007 15:20:22 +0200
+Message-ID: <200705091520.23052.rjw__40637.2080826715$1178730642$gmane$org@sisk.pl>
+References: <200705052227.14265.rjw@sisk.pl>
 	<8f8ff01d0705082358t74c08b5dja18e1c8b6c8e53e8@mail.gmail.com>
+	<8f8ff01d0705090459l346d1118m1b06a2a384c636c0@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8f8ff01d0705082358t74c08b5dja18e1c8b6c8e53e8@mail.gmail.com>
+In-Reply-To: <8f8ff01d0705090459l346d1118m1b06a2a384c636c0@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,11 +26,10 @@ To: Alexey Starikovskiy <aystarik@gmail.com>
 Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, suspend-devel@lists.sourceforge.net, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 9 May 2007 08:58, Alexey Starikovskiy wrote:
-> I expect http://bugzilla.kernel.org/show_bug.cgi?id=7887 this bug to
-> pop again with this patch.
+On Wednesday, 9 May 2007 13:59, Alexey Starikovskiy wrote:
+> This patch will disable EC GPE, which seems to be major problem.
 
-Well, this change only reflects what's done in kernel/power/disk.c .
+Could you please explain to me why you think so?
 
 Greetings,
 Rafael
