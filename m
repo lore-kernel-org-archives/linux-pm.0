@@ -1,12 +1,16 @@
-From: Microsoft =?ISO-8859-1?B?rg==?= Award Team <infomicrosoft@bellsouth.net>
-Subject: Microsoft Award Promo: BTD/890578302/04
-Date: Tue, 8 May 2007 22:55:34 -0400
-Message-ID: <20070509025534.TYZ11358.ibm57aec.bellsouth.net__29987.6037556261$1178729161$gmane$org@mail.bellsouth.net>
-Reply-To: claimsagent_carpenter07@yahoo.co.uk
+From: "Alexey Starikovskiy" <aystarik@gmail.com>
+Subject: Re: [RFC][PATCH -mm 1/2] swsusp: Remove platform callbacks
+	from restore code
+Date: Wed, 9 May 2007 10:58:58 +0400
+Message-ID: <8f8ff01d0705082358t74c08b5dja18e1c8b6c8e53e8__22066.6392161094$1178729826$gmane$org@mail.gmail.com>
+References: <200705052227.14265.rjw@sisk.pl> <200705072257.13405.rjw@sisk.pl>
+	<200705090019.20232.rjw@sisk.pl> <200705090027.05735.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200705090027.05735.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,33 +20,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: info@com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, suspend-devel@lists.sourceforge.net, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Microsoft Award Promo
-43 Wilson Ave, Harlesden London NW10 United Kingdom,
-Ref: BTD/876/03
-Batch: 653978E
+I expect http://bugzilla.kernel.org/show_bug.cgi?id=7887 this bug to
+pop again with this patch.
 
-Dear Winner,
-The prestigious Microsoft and AOL has set out and successfully
-organised a Sweepstakes marking this year 2007 anniversary we rolled=20
-out over
-=A310,000.000.00 (Ten million Great Britain Pounds) for this year=20
-Anniversary Draws.
-The selection was made randomly from World Wide Web site through a
-computer draw system extracted from over 100,000 individuals and=20
-companies,
-attaching email addresses to ticket numbers.
-Your email address as indicated was drawn and attached to ticket number
-005493262748 with serial numbers BTD/890578302/04 and drew the lucky
-numbers 15-22-27-38-40-47(20) which subsequently won you =A31,000,000.00
-(One Million Great Britain Pounds) as one of the 10 jackpot winners in=20
-this draw.
-contact your agent on how to claim your prize=20
-Name: MR. DAVID CARPENTER
-Email :claimsagent_carpenter07@yahoo.co.uk=20
+Regards,
+Alex.
 
-Sincerely,
-Mrs Susan Miller
-Microsoft Promotion Team
+On 5/9/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> The restore part of the hibernation code should not call any 'platform'
+> functions, since it doesn't carry out any power transition of the system.
+> Still, such functions are called from the restore code in kernel/power/user.c .
+> Fix that.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/user.c |   17 ++++-------------
+>  1 file changed, 4 insertions(+), 13 deletions(-)
+>
+> Index: linux-2.6.21/kernel/power/user.c
+> ===================================================================
+> --- linux-2.6.21.orig/kernel/power/user.c       2007-05-08 22:10:36.000000000 +0200
+> +++ linux-2.6.21/kernel/power/user.c    2007-05-08 23:03:17.000000000 +0200
+> @@ -179,34 +179,25 @@ static inline int snapshot_suspend(int p
+>         return error;
+>  }
+>
+> -static inline int snapshot_restore(int platform_suspend)
+> +static inline int snapshot_restore(void)
+>  {
+>         int error;
+>
+>         mutex_lock(&pm_mutex);
+>         pm_prepare_console();
+> -       if (platform_suspend) {
+> -               error = platform_prepare();
+> -               if (error)
+> -                       goto Finish;
+> -       }
+>         suspend_console();
+>         error = device_suspend(PMSG_PRETHAW);
+>         if (error)
+> -               goto Resume_devices;
+> +               goto Finish;
+>
+>         error = disable_nonboot_cpus();
+>         if (!error)
+>                 error = swsusp_resume();
+>
+>         enable_nonboot_cpus();
+> - Resume_devices:
+> -       if (platform_suspend)
+> -               platform_finish();
+> -
+> + Finish:
+>         device_resume();
+>         resume_console();
+> - Finish:
+>         pm_restore_console();
+>         mutex_unlock(&pm_mutex);
+>         return error;
+> @@ -272,7 +263,7 @@ static int snapshot_ioctl(struct inode *
+>                         error = -EPERM;
+>                         break;
+>                 }
+> -               error = snapshot_restore(data->platform_suspend);
+> +               error = snapshot_restore();
+>                 break;
+>
+>         case SNAPSHOT_FREE:
+>
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
