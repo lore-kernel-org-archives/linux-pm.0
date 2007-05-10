@@ -1,11 +1,12 @@
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: 2.6.21-gitX: known regressions
-Date: Thu, 10 May 2007 14:04:13 +0200
-Message-ID: <46430A3D.4030004__6733.23348532922$1178798772$gmane$org@googlemail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] swsusp: do not use pm_ops (was: Re: ...))
+Date: Thu, 10 May 2007 11:17:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705101115310.3498-100000@iolanthe.rowland.org>
+References: <200705091321.39991.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200705091321.39991.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,67 +16,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>, pavel@suse.cz, linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Alexey Dobriyan <adobriyan@sw.ru>, netdev@vger.kernel.org, Auke Kok <auke-jan.h.kok@intel.com>, Doug Chapman <doug.chapman@hp.com>, Jeb Cramer <cramerj@intel.com>, John Ronciak <john.ronciak@intel.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, e1000-devel@lists.sourceforge.net, Thomas Gleixner <tglx@linutronix.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+On Wed, 9 May 2007, David Brownell wrote:
 
-Here is a list of some known regressions in 2.6.21-gitX.
+> > > > From the user's point of view, the differences between S4 and S5 amount to
+> > > > just these: power consumption and availability of wakeup devices.
+> > > 
+> > > And the fact that in S4 there's always a resumable OS image.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+> > What happens if the OS writes a resumable OS image and goes into S4, and 
+> > then the user unplugs the computer, plugs it back in, and turns the power 
+> > switch on?  At that point the system must be in S5 (by definition), but 
+> > there's still a resumable image.
+> 
+> As allowed by the chapter 2 text I pointed out earlier.
+> S4 *always* has such an image.
 
+So the correct statement is that S4 always has a resumable OS image and S5
+may have a resumable image.  From a user's point of view that doesn't
+sound like much of a difference, especially since the image can be 
+successfully restored from either state.
 
-
-Unclassified:
-
-Subject    : 2.6.21-git10/11: files getting truncated on xfs (after suspend/resume?)
-References : http://lkml.org/lkml/2007/5/9/410
-Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-Handled-By : David Chinner <dgc@sgi.com>
-Status     : problem is being debugged
-
-Subject    : Current -git kernel kills X
-References : http://lkml.org/lkml/2007/5/8/667
-Submitter  : Jeff Garzik <jeff@garzik.org>
-Status     : Unknown
-
-
-
-Block devices:
-
-Subject    : BUG in loop.ko
-References : http://lkml.org/lkml/2007/5/9/510
-Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-Status     : Unknown
-
-
-
-Networking:
-
-Subject    : panic with e1000 driver on HP Integrity servers
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8455
-Submitter  : Doug Chapman <doug.chapman@hp.com>
-Caused-By  : Auke Kok <auke-jan.h.kok@intel.com>
-             commit e0aac5a289b1dacbc94bd9ae8c449bcdf9ab508c
-Status     : Unknown
-
-
-
-Timers/NOHZ:
-
-Subject    : 2.6.21-git4 BUG: soft lockup detected on CPU#1! 
-References : http://lkml.org/lkml/2007/5/2/511
-Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Status     : problem is being debugged
-
-
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+Alan Stern
