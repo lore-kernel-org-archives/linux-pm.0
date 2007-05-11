@@ -1,13 +1,13 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-gitX: known regressions
-Date: Thu, 10 May 2007 18:10:44 -0700
-Message-ID: <20070510181044.d0f24e51.akpm__8811.81932422823$1178845932$gmane$org@linux-foundation.org>
-References: <46430A3D.4030004@googlemail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PM: Fix sysfs interface
+Date: Fri, 11 May 2007 11:58:44 +0200
+Message-ID: <200705111158.44913.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46430A3D.4030004@googlemail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,71 +17,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Auke Kok <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>, e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, Thomas@smtp2.linux-foundation.org, David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>, Doug Chapman <doug.chapman@hp.com>, Alexey Dobriyan <adobriyan@sw.ru>, John Ronciak <john.ronciak@intel.com>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-pm@lists.linux-foundation.org, Gleixner <tglx@linutronix.de>, Jeb Cramer <cramerj@intel.com>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Peter Moulder <Peter.Moulder@infotech.monash.edu.au>, Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 10 May 2007 14:04:13 +0200
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> Hi all,
-> 
-> Here is a list of some known regressions in 2.6.21-gitX.
-> 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
-> 
-> 
-> 
-> Unclassified:
-> 
-> Subject    : 2.6.21-git10/11: files getting truncated on xfs (after suspend/resume?)
-> References : http://lkml.org/lkml/2007/5/9/410
-> Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-> Handled-By : David Chinner <dgc@sgi.com>
-> Status     : problem is being debugged
-> 
-> Subject    : Current -git kernel kills X
-> References : http://lkml.org/lkml/2007/5/8/667
-> Submitter  : Jeff Garzik <jeff@garzik.org>
-> Status     : Unknown
-> 
-> 
-> 
-> Block devices:
-> 
-> Subject    : BUG in loop.ko
-> References : http://lkml.org/lkml/2007/5/9/510
-> Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-> Status     : Unknown
-> 
-> 
-> 
-> Networking:
-> 
-> Subject    : panic with e1000 driver on HP Integrity servers
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8455
-> Submitter  : Doug Chapman <doug.chapman@hp.com>
-> Caused-By  : Auke Kok <auke-jan.h.kok@intel.com>
->              commit e0aac5a289b1dacbc94bd9ae8c449bcdf9ab508c
-> Status     : Unknown
-> 
-> 
-> 
-> Timers/NOHZ:
-> 
-> Subject    : 2.6.21-git4 BUG: soft lockup detected on CPU#1! 
-> References : http://lkml.org/lkml/2007/5/2/511
-> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> Status     : problem is being debugged
-> 
+The sysfs files /sys/power/disk and /sys/power/state do not work as documented,
+since they allow the user to write only a few initial characters of the
+input string to trigger the option (eg. 'echo pl > /sys/power/disk' activates
+the platform mode of hibernation).  Fix it.
 
-Please also consider:
+Special thanks to Peter Moulder <Peter.Moulder@infotech.monash.edu.au> for
+pointing out the problem.
 
-Subject: libata reset-seq merge broke sata_sil on sh
-Subject: [Bugme-new] [Bug 8462] New: applications under wine freezes
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |    3 ++-
+ kernel/power/main.c |    4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-But we have many many more regressions which are in 2.6.21.x, only nobody's
-tracking those.  Nobody seems to be fixing them either.  Probably
-everyone's busy on the 2.6.14 regressions.
+Index: linux-2.6.21/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/disk.c
++++ linux-2.6.21/kernel/power/disk.c
+@@ -416,7 +416,8 @@ static ssize_t disk_store(struct subsyst
+ 
+ 	mutex_lock(&pm_mutex);
+ 	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
+-		if (!strncmp(buf, hibernation_modes[i], len)) {
++		if (len == strlen(hibernation_modes[i])
++		    && !strncmp(buf, hibernation_modes[i], len)) {
+ 			mode = i;
+ 			break;
+ 		}
+Index: linux-2.6.21/kernel/power/main.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/main.c
++++ linux-2.6.21/kernel/power/main.c
+@@ -289,13 +289,13 @@ static ssize_t state_store(struct subsys
+ 	len = p ? p - buf : n;
+ 
+ 	/* First, check if we are requested to hibernate */
+-	if (!strncmp(buf, "disk", len)) {
++	if (len == 4 && !strncmp(buf, "disk", len)) {
+ 		error = hibernate();
+ 		return error ? error : n;
+ 	}
+ 
+ 	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
+-		if (*s && !strncmp(buf, *s, len))
++		if (*s && len == strlen(s) && !strncmp(buf, *s, len))
+ 			break;
+ 	}
+ 	if (state < PM_SUSPEND_MAX && *s)
