@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM: Fix sysfs interface
-Date: Fri, 11 May 2007 11:58:44 +0200
-Message-ID: <200705111158.44913.rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Fix sysfs interface
+Date: Fri, 11 May 2007 12:13:30 +0200
+Message-ID: <200705111213.30715.rjw@sisk.pl>
+References: <200705111158.44913.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200705111158.44913.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,10 +19,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 Cc: Peter Moulder <Peter.Moulder@infotech.monash.edu.au>, Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+Sorry, there's a mistake in the previous version.  Corrected patch follows.
+
+---
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
 The sysfs files /sys/power/disk and /sys/power/state do not work as documented,
@@ -32,15 +37,14 @@ Special thanks to Peter Moulder <Peter.Moulder@infotech.monash.edu.au> for
 pointing out the problem.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
  kernel/power/disk.c |    3 ++-
  kernel/power/main.c |    4 ++--
  2 files changed, 4 insertions(+), 3 deletions(-)
 
 Index: linux-2.6.21/kernel/power/disk.c
 ===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c
-+++ linux-2.6.21/kernel/power/disk.c
+--- linux-2.6.21.orig/kernel/power/disk.c	2007-05-11 12:06:28.000000000 +0200
++++ linux-2.6.21/kernel/power/disk.c	2007-05-11 12:06:33.000000000 +0200
 @@ -416,7 +416,8 @@ static ssize_t disk_store(struct subsyst
  
  	mutex_lock(&pm_mutex);
@@ -53,8 +57,8 @@ Index: linux-2.6.21/kernel/power/disk.c
  		}
 Index: linux-2.6.21/kernel/power/main.c
 ===================================================================
---- linux-2.6.21.orig/kernel/power/main.c
-+++ linux-2.6.21/kernel/power/main.c
+--- linux-2.6.21.orig/kernel/power/main.c	2007-05-11 12:06:28.000000000 +0200
++++ linux-2.6.21/kernel/power/main.c	2007-05-11 12:07:02.000000000 +0200
 @@ -289,13 +289,13 @@ static ssize_t state_store(struct subsys
  	len = p ? p - buf : n;
  
@@ -67,7 +71,11 @@ Index: linux-2.6.21/kernel/power/main.c
  
  	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
 -		if (*s && !strncmp(buf, *s, len))
-+		if (*s && len == strlen(s) && !strncmp(buf, *s, len))
++		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
  			break;
  	}
  	if (state < PM_SUSPEND_MAX && *s)
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
