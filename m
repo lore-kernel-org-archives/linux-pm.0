@@ -1,13 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Ottawa Linux Power Management Summit
-Date: Sun, 13 May 2007 00:33:59 +0200
-Message-ID: <20070512223359.GB720@elf.ucw.cz>
-References: <200705112313.54744.lenb@kernel.org>
+From: Uk National lottery <wli@bellsouth.net>
+Subject: Government Accredited Licensed Promoters,
+Date: Sat, 12 May 2007 19:41:30 -0400
+Message-ID: <20070512234130.TNJV10983.ibm64aec.bellsouth.net@mail.bellsouth.net>
+Reply-To: info_verificationdepartment@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200705112313.54744.lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +16,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: info@lottery.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Government Accredited Licensed Promoters,
+10 Plough Place, London EC4A 1DE UNITED KINGDOM
+REFERENCE No: ASL- WF97 =96 5G3
+BATCH No: OX9T =96 7T5T =96 D3N
 
-> I'd like to conduct a Linux Power Management Summit
-> during the two days preceeding the Ottawa Linux Symposium:
-> 
-> Monday June 25
-> Tuesday June 26
-> 
-> Hopefully the session can benefit from some of the lessons learned
-> by the Storage Summit folks -- according to James they include:
-> 
-> 1. round-table format -- discussion oriented, limited presentations.
-> 2. limit to ~20 attendees to support discussion format
-> 3. prepare agenda and topic list by consensus via e-mail ahead of time.
-> 
-> Please let me know what you think should be on the agenda,
-> and if you are motivated to show up for the discussion.
+Attn:Sir/Madam
 
-I'd like to be there, but I am not going to OLS this year. Could we
-perhaps do PM summit near kernel summit -- that's september in
-england.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+We are pleased to notify you of the release of the UK National
+Lottery/International Promotions programs held on the 13th day of MAY
+2007,Participants were selected through a computer
+ballot system drawn from 98,000 names from Europe, America, Asia,
+Australia, New Zealand, Middle-East, Africa,North & South America and
+canada as part of our international promotions program conducted
+annually to
+encourage prospective internet users.
+
+REFERENCE No: ASL- WF97 =96 5G3
+BATCH No: OX9T =96 7T5T =96 D3N
+TICKET NUMBER: 7-1-8-36-4-22
+LUCKY BALL NUMBER:7363789,
+SERIAL No : 18
+
+As a category B winner, you have been selected by computer balloting
+system where only email addresses are soughted, from a total numbers of
+30,000 email addresses drawn from all over the globe. After an
+automated computer ballot of our International Promotions Program
+consequently
+won in the second Category. You have therefore been awarded a lump sum
+pay out of US$1,500,000.00 in cash.
+
+To claim winning contact customer service department:
+Customer Service Unit,
+CONTACT PERSON: Mr. Richey Campbell
+EMAIL: info_verificationdepartment@yahoo.co.uk
+
+You must contact the appointed agent also with the following datas
+inclusive, via email to process the immediate payment of your prize.
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+
+Your Full Names:
+Your full Contact Address:
+Your Country of Residence:
+Your Date and Place of Birth:
+Your Occupation:
+Your contact Telephone Numbers:
+Your contact Fax Number:
+Your Ticket Number:
+Your Amount Won:
+Your e-mail Address
+
+
+
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Mrs. Theresa White,
+Online Lottery Co-ordinator
