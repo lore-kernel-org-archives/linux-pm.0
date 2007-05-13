@@ -1,11 +1,9 @@
-From: Uk National lottery <wli@bellsouth.net>
-Subject: Government Accredited Licensed Promoters,
-Date: Sat, 12 May 2007 19:41:30 -0400
-Message-ID: <20070512234130.TNJV10983.ibm64aec.bellsouth.net@mail.bellsouth.net>
-Reply-To: info_verificationdepartment@yahoo.co.uk
+From: "glynn ivan" <madelenamozes@oddave.com>
+Subject: Adobe Photoshop CS3 Extended $89
+Date: Sat, 12 May 2007 23:25:52 -0700
+Message-ID: <8082b01c79527$8df5d530$0202a8c0@portuguez>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============4790244401496692962=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -14,71 +12,92 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: info@lottery.org
+To: walton tamqrah <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Government Accredited Licensed Promoters,
-10 Plough Place, London EC4A 1DE UNITED KINGDOM
-REFERENCE No: ASL- WF97 =96 5G3
-BATCH No: OX9T =96 7T5T =96 D3N
+This is a multi-part message in MIME format.
 
-Attn:Sir/Madam
+--===============4790244401496692962==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_807A7_01C794EC.E0BC7BB0"
 
-We are pleased to notify you of the release of the UK National
-Lottery/International Promotions programs held on the 13th day of MAY
-2007,Participants were selected through a computer
-ballot system drawn from 98,000 names from Europe, America, Asia,
-Australia, New Zealand, Middle-East, Africa,North & South America and
-canada as part of our international promotions program conducted
-annually to
-encourage prospective internet users.
+This is a multi-part message in MIME format.
 
-REFERENCE No: ASL- WF97 =96 5G3
-BATCH No: OX9T =96 7T5T =96 D3N
-TICKET NUMBER: 7-1-8-36-4-22
-LUCKY BALL NUMBER:7363789,
-SERIAL No : 18
+------=_NextPart_000_807A7_01C794EC.E0BC7BB0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-As a category B winner, you have been selected by computer balloting
-system where only email addresses are soughted, from a total numbers of
-30,000 email addresses drawn from all over the globe. After an
-automated computer ballot of our International Promotions Program
-consequently
-won in the second Category. You have therefore been awarded a lump sum
-pay out of US$1,500,000.00 in cash.
+Find out more about the new features and enhancements in Adobe Photoshop
+CS3 Extended. Boost your productivity with a streamlined interface,
+enhancements to raw-image processing and asset management workflows, and
+more; experience unrivaled editing power with nondestructive filters,
+more precise color-correction controls, and more powerful cloning and
+healing tools; easily create rich composites using new tools for
+automatically aligning and blending layers and making quick selections;
+3D and motion support with the ability to edit 3D content and
+incorporate it into 2D compositions, paint and clone over multiple video
+frames, and more; comprehensive image analysis with new image
+measurement and counting tools, MATLAB integration, and DICOM file
+support.
+Adobe Photoshop CS3 Extended
+Retail Price $999.00
+Our Price $89.95
+You save $909.05
+http://poete.org/rewq89/
+Please note, that there will be more special offers available for our
+constant customers. Every effort has been made to ensure the accuracy of
+all information contained herein. DS Team makes no warranty expressed or
+implied with respect to accuracy of the information, including price,
+product editorials or product specifications. Product and manufacturer
+names are used only for the purpose of identification. We appreciate
+your cooperation with us and we'll be glad to see you as our clients in
+the future. 
+ 
 
-To claim winning contact customer service department:
-Customer Service Unit,
-CONTACT PERSON: Mr. Richey Campbell
-EMAIL: info_verificationdepartment@yahoo.co.uk
+------=_NextPart_000_807A7_01C794EC.E0BC7BB0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-You must contact the appointed agent also with the following datas
-inclusive, via email to process the immediate payment of your prize.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=#ffffff><FONT face=Arial size=2>Find out more about the new 
+features and enhancements in Adobe Photoshop CS3 Extended. Boost your 
+productivity with a streamlined interface, enhancements to raw-image processing 
+and asset management workflows, and more; experience unrivaled editing power 
+with nondestructive filters, more precise color-correction controls, and more 
+powerful cloning and healing tools; easily create rich composites using new 
+tools for automatically aligning and blending layers and making quick 
+selections; 3D and motion support with the ability to edit 3D content and 
+incorporate it into 2D compositions, paint and clone over multiple video frames, 
+and more; comprehensive image analysis with new image measurement and counting 
+tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop CS3 
+Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save $909.05<BR><A 
+href="http://poete.org/rewq89/">http://poete.org/rewq89/</A><BR>Please note, that 
+there will be more special offers available for our constant customers. Every 
+effort has been made to ensure the accuracy of all information contained herein. 
+DS Team makes no warranty expressed or implied with respect to accuracy of the 
+information, including price, product editorials or product specifications. 
+Product and manufacturer names are used only for the purpose of identification. 
+We appreciate your cooperation with us and we'll be glad to see you as our 
+clients in the future.</FONT>
+<DIV><FONT face=Arial size=2></FONT>&nbsp;</DIV></BODY></HTML>
+------=_NextPart_000_807A7_01C794EC.E0BC7BB0--
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+--===============4790244401496692962==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-Your Full Names:
-Your full Contact Address:
-Your Country of Residence:
-Your Date and Place of Birth:
-Your Occupation:
-Your contact Telephone Numbers:
-Your contact Fax Number:
-Your Ticket Number:
-Your Amount Won:
-Your e-mail Address
-
-
-
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-Mrs. Theresa White,
-Online Lottery Co-ordinator
+--===============4790244401496692962==--
