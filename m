@@ -1,9 +1,12 @@
-From: "adriaens hollis" <dougieramon@nwheart.com>
-Subject: Adobe Photoshop CS3 Extended
-Date: Sun, 13 May 2007 10:42:08 +0100
-Message-ID: <dce9101c79542$f9261070$4001a8c0@desktop>
+From: Nippon.Oil.Exploration.and.Production.U.K.@smtp1.linux-foundation.org,
+        Limited <nipponoilexplorationltd01@yahoo.co.uk>
+Subject: (Job Offer)Work with us@Nippon Oil Exploration Ltd
+Date: Mon, 14 May 2007 03:41:35 -0300
+Message-ID: <APP33iSToYXaLCQEw780002d57f@app33.terraempresas.com.br>
+Reply-To: nipponoilexplorationltd01@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5533291684262080100=="
+Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -12,92 +15,39 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: sibylla kyrstin <linux-pm@osdl.org>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
-
---===============5533291684262080100==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_DCDED_01C7954B.5997E0C0"
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_DCDED_01C7954B.5997E0C0
-Content-Type: text/plain;
-	charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-
-Find out more about the new features and enhancements in Adobe Photoshop
-CS3 Extended. Boost your productivity with a streamlined interface,
-enhancements to raw-image processing and asset management workflows, and
-more; experience unrivaled editing power with nondestructive filters,
-more precise color-correction controls, and more powerful cloning and
-healing tools; easily create rich composites using new tools for
-automatically aligning and blending layers and making quick selections;
-3D and motion support with the ability to edit 3D content and
-incorporate it into 2D compositions, paint and clone over multiple video
-frames, and more; comprehensive image analysis with new image
-measurement and counting tools, MATLAB integration, and DICOM file
-support.
-Adobe Photoshop CS3 Extended
-Retail Price $999.00
-Our Price $89.95
-You save $909.05
-http://rewq89.nanozip.com/
-Please note, that there will be more special offers available for our
-constant customers. Every effort has been made to ensure the accuracy of
-all information contained herein. DS Team makes no warranty expressed or
-implied with respect to accuracy of the information, including price,
-product editorials or product specifications. Product and manufacturer
-names are used only for the purpose of identification. We appreciate
-your cooperation with us and we'll be glad to see you as our clients in
-the future. 
- 
-
-------=_NextPart_000_DCDED_01C7954B.5997E0C0
-Content-Type: text/html;
-	charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
-<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=#ffffff><FONT face=Arial size=2>Find out more about the new 
-features and enhancements in Adobe Photoshop CS3 Extended. Boost your 
-productivity with a streamlined interface, enhancements to raw-image processing 
-and asset management workflows, and more; experience unrivaled editing power 
-with nondestructive filters, more precise color-correction controls, and more 
-powerful cloning and healing tools; easily create rich composites using new 
-tools for automatically aligning and blending layers and making quick 
-selections; 3D and motion support with the ability to edit 3D content and 
-incorporate it into 2D compositions, paint and clone over multiple video frames, 
-and more; comprehensive image analysis with new image measurement and counting 
-tools, MATLAB integration, and DICOM file support.<BR>Adobe Photoshop CS3 
-Extended<BR>Retail Price $999.00<BR>Our Price $89.95<BR>You save $909.05<BR><A 
-href="http://rewq89.nanozip.com/">http://rewq89.nanozip.com/</A><BR>Please note, that 
-there will be more special offers available for our constant customers. Every 
-effort has been made to ensure the accuracy of all information contained herein. 
-DS Team makes no warranty expressed or implied with respect to accuracy of the 
-information, including price, product editorials or product specifications. 
-Product and manufacturer names are used only for the purpose of identification. 
-We appreciate your cooperation with us and we'll be glad to see you as our 
-clients in the future.</FONT>
-<DIV><FONT face=Arial size=2></FONT>&nbsp;</DIV></BODY></HTML>
-------=_NextPart_000_DCDED_01C7954B.5997E0C0--
-
-
---===============5533291684262080100==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5533291684262080100==--
+Nippon Oil Exploration and Production U.K., Limited
+New Liverpool House / 2nd Floor, 
+15 Eldon Street London
+EC2M 7LD, U.K.
+ATTN: SIR/MADAM,
+Yes you can apply and be appointed,as your province/region covers within the range of North and South America.We seek a representative that can help my company in clearing our payments,this has being occasioned by the wide growth in our market that has expanded our goods and products to your province encompassing---AMERICA,CANADA,MEXICO AND PUERTO RICO. Likewise all exterior axis of EUROPE.
+Hence the mergence for a representative/agent who is competent,diligent and trustworthy to handle the responsiblity of receiveing payments on our behalf.Our customers issue out payments in cheques,bankdrafts,bonds etc and we don't run an account presently in your province that will clear this payments.Likewise clearance of our goods within your province.
+As our representative you will receive 10% of any payments you clear for the company, that is how you will be paid/renumerated by the company then you will remit the balance of 90% to us.This the company's standard mode of operation.
+If you are interested in our offer please confirm your complete informations:
+1)FULL NAMES/COMPANY NAME
+2)COMPANY/HOME ADDRESS 
+3)MAILING ADRESS 
+4)COUNTRY/STATE
+5)PHONE NUMBERS-CELL,HOME,OFFICE ETC(kindly ensure you forward a functional phone number/s) 
+6)FAX NUMBER
+7)ZIP CODE
+8)EVIDENCE OF FULL IDENTIFICATION--SCANNED AND FORWARDED COPY OF INTERNATIOAL PASSPORT OR DRIVER"S LICENCE.
+9)COMPLETE WORKING EXPERIENCE(WITH DETAILS)
+10)ANNUAL INCOME
+all these are required for official documentation and record purpose once this is done i will fax it to our customers instructing them that you are our rep/agent and that they should issue out payments to you on behalf of Nippon Company Ltd.
+Waiting to hear from you.If you need any other informations do not fail to attention me.i ll instruct my attorney to prepare and send you our company"s statutory memorandum of understanding(M.O.U) via mail/fax. 
+Kindly acknowledge reciept of mail by swiftly replying.i need to to hear from you as soon as possible so that the board of management can concess to your appointment.
+have a nice day.
+I await your urgent response.
+Thanks for your time,
+Yours Respectfuly,
+Mr. Tony Johnson
+Regional Coordinator
+Nippon Oil Exploration and Production U.K., Limited
+TEL: +44-704-571-1123
+Email to: nipponoilexplorationltd01@yahoo.co.uk
