@@ -1,13 +1,13 @@
-From: Nippon.Oil.Exploration.and.Production.U.K.@smtp1.linux-foundation.org,
-        Limited <nipponoilexplorationltd01@yahoo.co.uk>
-Subject: (Job Offer)Work with us@Nippon Oil Exploration Ltd
-Date: Mon, 14 May 2007 03:41:35 -0300
-Message-ID: <APP33iSToYXaLCQEw780002d57f@app33.terraempresas.com.br>
-Reply-To: nipponoilexplorationltd01@yahoo.co.uk
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: Fix sysfs interface
+Date: Mon, 14 May 2007 11:18:05 +0200
+Message-ID: <20070514091805.GH11735@elf.ucw.cz>
+References: <200705111158.44913.rjw@sisk.pl> <200705111213.30715.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200705111213.30715.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,37 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Peter Moulder <Peter.Moulder@infotech.monash.edu.au>
 List-Id: linux-pm@vger.kernel.org
 
-Nippon Oil Exploration and Production U.K., Limited
-New Liverpool House / 2nd Floor, 
-15 Eldon Street London
-EC2M 7LD, U.K.
-ATTN: SIR/MADAM,
-Yes you can apply and be appointed,as your province/region covers within the range of North and South America.We seek a representative that can help my company in clearing our payments,this has being occasioned by the wide growth in our market that has expanded our goods and products to your province encompassing---AMERICA,CANADA,MEXICO AND PUERTO RICO. Likewise all exterior axis of EUROPE.
-Hence the mergence for a representative/agent who is competent,diligent and trustworthy to handle the responsiblity of receiveing payments on our behalf.Our customers issue out payments in cheques,bankdrafts,bonds etc and we don't run an account presently in your province that will clear this payments.Likewise clearance of our goods within your province.
-As our representative you will receive 10% of any payments you clear for the company, that is how you will be paid/renumerated by the company then you will remit the balance of 90% to us.This the company's standard mode of operation.
-If you are interested in our offer please confirm your complete informations:
-1)FULL NAMES/COMPANY NAME
-2)COMPANY/HOME ADDRESS 
-3)MAILING ADRESS 
-4)COUNTRY/STATE
-5)PHONE NUMBERS-CELL,HOME,OFFICE ETC(kindly ensure you forward a functional phone number/s) 
-6)FAX NUMBER
-7)ZIP CODE
-8)EVIDENCE OF FULL IDENTIFICATION--SCANNED AND FORWARDED COPY OF INTERNATIOAL PASSPORT OR DRIVER"S LICENCE.
-9)COMPLETE WORKING EXPERIENCE(WITH DETAILS)
-10)ANNUAL INCOME
-all these are required for official documentation and record purpose once this is done i will fax it to our customers instructing them that you are our rep/agent and that they should issue out payments to you on behalf of Nippon Company Ltd.
-Waiting to hear from you.If you need any other informations do not fail to attention me.i ll instruct my attorney to prepare and send you our company"s statutory memorandum of understanding(M.O.U) via mail/fax. 
-Kindly acknowledge reciept of mail by swiftly replying.i need to to hear from you as soon as possible so that the board of management can concess to your appointment.
-have a nice day.
-I await your urgent response.
-Thanks for your time,
-Yours Respectfuly,
-Mr. Tony Johnson
-Regional Coordinator
-Nippon Oil Exploration and Production U.K., Limited
-TEL: +44-704-571-1123
-Email to: nipponoilexplorationltd01@yahoo.co.uk
+On Fri 2007-05-11 12:13:30, Rafael J. Wysocki wrote:
+> Sorry, there's a mistake in the previous version.  Corrected patch follows.
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The sysfs files /sys/power/disk and /sys/power/state do not work as documented,
+> since they allow the user to write only a few initial characters of the
+> input string to trigger the option (eg. 'echo pl > /sys/power/disk' activates
+> the platform mode of hibernation).  Fix it.
+> 
+> Special thanks to Peter Moulder <Peter.Moulder@infotech.monash.edu.au> for
+> pointing out the problem.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+ACK.
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
