@@ -1,16 +1,10 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: Ottawa Linux Power Management Summit
-Date: Mon, 14 May 2007 16:38:41 -0400
-Message-ID: <200705141638.41722.lenb@kernel.org>
-References: <200705112313.54744.lenb@kernel.org>
-	<20070512223359.GB720@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Freezing kernel threads for suspend or hibernation
+Date: Mon, 14 May 2007 17:21:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705141702350.13972-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070512223359.GB720@elf.ucw.cz>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +14,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 12 May 2007 18:33, Pavel Machek wrote:
-> Hi!
-> 
-> > I'd like to conduct a Linux Power Management Summit
-> > during the two days preceeding the Ottawa Linux Symposium:
-> > 
-> > Monday June 25
-> > Tuesday June 26
-> > 
-> > Hopefully the session can benefit from some of the lessons learned
-> > by the Storage Summit folks -- according to James they include:
-> > 
-> > 1. round-table format -- discussion oriented, limited presentations.
-> > 2. limit to ~20 attendees to support discussion format
-> > 3. prepare agenda and topic list by consensus via e-mail ahead of time.
-> > 
-> > Please let me know what you think should be on the agenda,
-> > and if you are motivated to show up for the discussion.
-> 
-> I'd like to be there, but I am not going to OLS this year. Could we
-> perhaps do PM summit near kernel summit -- that's september in
-> england.
+There are a few threads in the USB core which currently do want to be
+frozen.  The reason is simple enough: If left running, they would resume
+some suspended devices.  Why?  Because of pending I/O requests or wakeup
+requests.
 
-The meeting in Ottawa is on.
+This raises the question: What to do about remote wakeup requests that are
+received while a suspend or hibernation is in progress?  Actually that's
+two separate questions.
 
-We can also meet in Cambridge in September.
+With hibernation, the issue arises only while preparing the memory 
+snaphot.  After the snaphot is saved to disk, devices do _not_ get 
+suspended before the system is shut down.  Or is that in fact not true?  
+Doesn't entering S4 require the OS to put devices in a low-power state?
 
-In both cases there will be folks who are unable to attend,
-and so the discussion will be colored by those who can.
+Anyway, there's no question about what should happen with snapshotting.  
+Devices should be quiesced, with no interrupt requests and no remote
+wakeup.  Still, what if a request received before the pre_snapshot call is
+sitting in a kernel thread's queue?  It's not so easy for the thread to
+recognize that it needs to stop processing its queue, because there's no
+way to notify it about the upcoming snapshot.
 
-thanks,
--Len
+(Furthermore, as a practical matter it's not so easy to do the right thing
+for snapshotting, because at the moment the same method call is used for
+both snapshot and suspend.  That at least we are going to fix.)
+
+
+On the other side of the fence, consider suspend.  In principle I don't 
+see anything wrong with handling remote wakeup requests while the system 
+is trying to suspend.  What should happen is that the device is resumed, 
+then the parent should fail to suspend because it has an unsuspended 
+child, and the entire system suspend transition should fail.  This is just 
+a shortcut for what would happen anyway -- even if the system did manage 
+to suspend completely, the pending wakeup request would bring it right 
+back up.
+
+The problem to worry about is losing wakeup requests.  This can happen if
+a request arrives at the wrong time and the driver isn't careful about
+handling it.  For example, maybe the device can't be woken because its
+parent is already suspended.  But the request has been acknowledged by the
+CPU, so the device won't continue to send more requests.  As a result the
+system gets suspended and stays that way.  I think solutions to this
+problem must be bus-specific; it's hard to say anything that would hold in
+all cases.
+
+Alan Stern
