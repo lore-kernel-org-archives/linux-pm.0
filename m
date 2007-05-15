@@ -1,14 +1,14 @@
-From: "Amit Kucheria" <kucheria.amit@gmail.com>
-Subject: Re: Ottawa Linux Power Management Summit
-Date: Tue, 15 May 2007 01:36:30 +0300
-Message-ID: <52d486620705141536s513a92d5w192ab318b984b11@mail.gmail.com>
-References: <200705112313.54744.lenb@kernel.org>
-	<20070512223359.GB720@elf.ucw.cz> <200705141638.41722.lenb@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Freezing kernel threads for suspend or hibernation
+Date: Tue, 15 May 2007 23:13:06 +0200
+Message-ID: <200705152313.07275.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705141702350.13972-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705141638.41722.lenb@kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705141702350.13972-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,49 +19,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 5/14/07, Len Brown <lenb@kernel.org> wrote:
-> On Saturday 12 May 2007 18:33, Pavel Machek wrote:
-> > Hi!
-> >
-> > > I'd like to conduct a Linux Power Management Summit
-> > > during the two days preceeding the Ottawa Linux Symposium:
-> > >
-> > > Monday June 25
-> > > Tuesday June 26
-> > >
-> > > Hopefully the session can benefit from some of the lessons learned
-> > > by the Storage Summit folks -- according to James they include:
-> > >
-> > > 1. round-table format -- discussion oriented, limited presentations.
-> > > 2. limit to ~20 attendees to support discussion format
-> > > 3. prepare agenda and topic list by consensus via e-mail ahead of time.
-> > >
-> > > Please let me know what you think should be on the agenda,
-> > > and if you are motivated to show up for the discussion.
+On Monday, 14 May 2007 23:21, Alan Stern wrote:
+> There are a few threads in the USB core which currently do want to be
+> frozen.  The reason is simple enough: If left running, they would resume
+> some suspended devices.  Why?  Because of pending I/O requests or wakeup
+> requests.
+> 
+> This raises the question: What to do about remote wakeup requests that are
+> received while a suspend or hibernation is in progress?  Actually that's
+> two separate questions.
+> 
+> With hibernation, the issue arises only while preparing the memory 
+> snaphot.  After the snaphot is saved to disk, devices do _not_ get 
+> suspended before the system is shut down.  Or is that in fact not true?  
+> Doesn't entering S4 require the OS to put devices in a low-power state?
 
-Here are a few things that have been tossed around for a while on
-linux-pm and CELF that should be discussed:
+At present the devices are just powered off (more precisely, device_shutdown()
+is called before ->enter(ACPI_STATE_S4)).  [That should be changed, IMHO,
+and we've already discussed it.]
 
-1. Unified interface to dynamic/runtime PM for laptop/server and
-embedded platforms - Does it make sense?
-2. Enhancements to Linux driver model to handle dynamic PM
-3. Where should policy be located? Drivers or userspace or a mix of both?
-4. Interfaces to userspace policy manager
-5. Can x86 device drivers and bus drivers do more runtime PM? Similar
-to some of the USB work being carried on by Alan/David.
-6. What can be done to ensure Suspend To RAM _always_ works? Video
-drivers are the big problem now, anything else?
-7. Using wakeup latency as a parameter to decide how deep we want to sleep
+> Anyway, there's no question about what should happen with snapshotting.  
+> Devices should be quiesced, with no interrupt requests and no remote
+> wakeup.  Still, what if a request received before the pre_snapshot call is
+> sitting in a kernel thread's queue?  It's not so easy for the thread to
+> recognize that it needs to stop processing its queue, because there's no
+> way to notify it about the upcoming snapshot.
 
-As someone pointed out, it would be nice to see the results of this at
-the PM BOF or even covered by LWN.
+I have a patch that introduces "suspend" notifiers which may be useful here.
+It was withdrawn temporarily, because it interfered with some more urgent
+things, but I'm going to resubmit it (or a reworked version) soon.
 
-Regards,
-Amit
+> (Furthermore, as a practical matter it's not so easy to do the right thing
+> for snapshotting, because at the moment the same method call is used for
+> both snapshot and suspend.  That at least we are going to fix.)
+> 
+> 
+> On the other side of the fence, consider suspend.  In principle I don't 
+> see anything wrong with handling remote wakeup requests while the system 
+> is trying to suspend.  What should happen is that the device is resumed, 
+> then the parent should fail to suspend because it has an unsuspended 
+> child, and the entire system suspend transition should fail.  This is just 
+> a shortcut for what would happen anyway -- even if the system did manage 
+> to suspend completely, the pending wakeup request would bring it right 
+> back up.
 
---
-Amit Kucheria, Embedded developer
+Agreed.
+
+> The problem to worry about is losing wakeup requests.  This can happen if
+> a request arrives at the wrong time and the driver isn't careful about
+> handling it.  For example, maybe the device can't be woken because its
+> parent is already suspended.  But the request has been acknowledged by the
+> CPU, so the device won't continue to send more requests.  As a result the
+> system gets suspended and stays that way.  I think solutions to this
+> problem must be bus-specific; it's hard to say anything that would hold in
+> all cases.
+
+Agreed again.
+
+Greetings,
+Rafafel
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
