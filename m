@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 4/4] swsusp: Fix hibernation code ordering
-Date: Fri, 18 May 2007 00:26:20 +0200
-Message-ID: <200705180026.20647.rjw__19046.6753476814$1179440744$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 1/4] swsusp: Remove incorrect code from
+	user.c
+Date: Fri, 18 May 2007 00:21:21 +0200
+Message-ID: <200705180021.21953.rjw__18440.8220382922$1179440749$gmane$org@sisk.pl>
 References: <200705180019.35548.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,38 +26,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Change the code ordering so that hibernation_ops->prepare() is called after
-device_suspend().  This is needed so that we don't violate the ACPI
-specification, which states that the _PTS and _GTS system-control methods,
-executed from acpi_sleep_prepare(), ought to be called after devices have been
-put in low power states.
+Make the code hibernation code in kernel/power/user.c be functionally equivalent
+to the corresponding code in kernel/power/disk.c , as it should be.
+
+The calls to the platform functions removed by this patch are incorrect.  They
+should be replaced with some other "platform" operations that will be
+introduced in one of the subsequent patches.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/disk.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ kernel/power/user.c |   17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-Index: linux-2.6.22-rc1/kernel/power/disk.c
+Index: linux-2.6.21/kernel/power/user.c
 ===================================================================
---- linux-2.6.22-rc1.orig/kernel/power/disk.c	2007-05-17 22:53:27.000000000 +0200
-+++ linux-2.6.22-rc1/kernel/power/disk.c	2007-05-17 22:56:24.000000000 +0200
-@@ -135,15 +135,15 @@ int hibernation_snapshot(int platform_mo
- 	if (error)
- 		goto Finish;
+--- linux-2.6.21.orig/kernel/power/user.c	2007-05-08 22:10:36.000000000 +0200
++++ linux-2.6.21/kernel/power/user.c	2007-05-08 23:03:17.000000000 +0200
+@@ -179,34 +179,25 @@ static inline int snapshot_suspend(int p
+ 	return error;
+ }
  
--	error = platform_prepare(platform_mode);
--	if (error)
--		goto Finish;
--
+-static inline int snapshot_restore(int platform_suspend)
++static inline int snapshot_restore(void)
+ {
+ 	int error;
+ 
+ 	mutex_lock(&pm_mutex);
+ 	pm_prepare_console();
+-	if (platform_suspend) {
+-		error = platform_prepare();
+-		if (error)
+-			goto Finish;
+-	}
  	suspend_console();
- 	error = device_suspend(PMSG_FREEZE);
+ 	error = device_suspend(PMSG_PRETHAW);
  	if (error)
- 		goto Resume_devices;
+-		goto Resume_devices;
++		goto Finish;
  
-+	error = platform_prepare(platform_mode);
-+	if (error)
-+		goto Resume_devices;
-+
  	error = disable_nonboot_cpus();
- 	if (!error) {
- 		if (hibernation_mode != HIBERNATION_TEST) {
+ 	if (!error)
+ 		error = swsusp_resume();
+ 
+ 	enable_nonboot_cpus();
+- Resume_devices:
+-	if (platform_suspend)
+-		platform_finish();
+-
++ Finish:
+ 	device_resume();
+ 	resume_console();
+- Finish:
+ 	pm_restore_console();
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+@@ -272,7 +263,7 @@ static int snapshot_ioctl(struct inode *
+ 			error = -EPERM;
+ 			break;
+ 		}
+-		error = snapshot_restore(data->platform_suspend);
++		error = snapshot_restore();
+ 		break;
+ 
+ 	case SNAPSHOT_FREE:
