@@ -1,16 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: Re: 2.6.22-rc1 suspend to RAM problem
-Date: Fri, 18 May 2007 11:03:26 +0200
-Message-ID: <20070518090326.GB7342@elf.ucw.cz>
-References: <f2evir$8n1$1@sea.gmane.org> <f2f02b$a47$1@sea.gmane.org>
-	<200705161534.42740.rjw@sisk.pl>
-	<200705171044.26662.marcus@better.se>
-	<20070517092809.GA4608@ucw.cz> <f2i2ho$l8p$1@sea.gmane.org>
+From: Marcus Better <marcus@better.se>
+Subject: fw-ohci breaks suspend-to-RAM
+Date: Fri, 18 May 2007 12:07:40 +0200
+Message-ID: <200705181207.45868.marcus@better.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============0857166752963032343=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <f2i2ho$l8p$1@sea.gmane.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,20 +12,56 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcus Better <marcus@better.se>
-Cc: linux-pm@lists.osdl.org
+To: Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>
+Cc: akpm@osdl.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+--===============0857166752963032343==
+Content-Type: multipart/signed; boundary="nextPart1248606.kMK78POzdl";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> > Sounds so. Try to locate which driver.
-> 
-> Found it! It's fw-ohci. Haven't bisected it yet though.
+--nextPart1248606.kMK78POzdl
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Complain to its maintainer, cc list and akpm, I'd say.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hi,
+
+the fw-ohci driver breaks suspend to RAM on my Thinkpad R60, Intel Core 2 D=
+uo,=20
+kernel 2.6.22-rc1 (x86_64, SMP). It does suspend but hangs on resume if the=
+=20
+fw-ohci module is loaded. (See also the original report [1]).
+
+Best regards,
+
+Marcus
+
+[1] http://permalink.gmane.org/gmane.linux.power-management.general/5819
+
+--nextPart1248606.kMK78POzdl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGTXrxXjXn6TzcAQkRAv87AKCiWGhBZfJyhYm8xHabcVJtffJSZACgtdTF
+zVtUgNzTsNO2WO52R5h3qto=
+=9cW0
+-----END PGP SIGNATURE-----
+
+--nextPart1248606.kMK78POzdl--
+
+--===============0857166752963032343==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0857166752963032343==--
