@@ -1,18 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.22-rc1 regression: tifm prevents suspending
-	[was: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR]
-Date: Sat, 19 May 2007 20:29:36 +0200
-Message-ID: <200705192029.37436.rjw__48340.2955615476$1179599164$gmane$org@sisk.pl>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070519151110.GA3393@inferi.kami.home>
-	<6bffcb0e0705191017n1d1e6eb7k1370d5ce5cf17fb9@mail.gmail.com>
+Subject: [RFC][PATCH] Hibernation: Prepare to enter the low power
+	state (updated)
+Date: Sat, 19 May 2007 20:32:13 +0200
+Message-ID: <200705192032.13577.rjw__37512.2923207984$1179599282$gmane$org@sisk.pl>
+References: <200705191227.47325.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <6bffcb0e0705191017n1d1e6eb7k1370d5ce5cf17fb9@mail.gmail.com>
+In-Reply-To: <200705191227.47325.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,72 +20,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Alex Dubov <oakad@yahoo.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mattia Dongili <malattia@linux.it>, Pierre Ossman <drzeus@drzeus.cx>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 19 May 2007 19:17, Michal Piotrowski wrote:
-> Hi,
-> 
-> On 19/05/07, Mattia Dongili <malattia@linux.it> wrote:
-> > On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> > > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > >
-> > > > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
-> > > > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > > > >
-> > > > > > Hello,
-> > > > > >
-> > > > > > After finally catching fw-{ohci,core} to be problematic during resume,
-> > > > > > I'm now experiencing an immediate resume after suspending.
-> > > > > >
-> > > > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
-> > > > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
-> > > > > > 2.6.21-rc6-mm* after the cpuidle fixes).
-> > > > > >
-> > > > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
-> > > > > > and a str cycle with PM_DEBUG=y:
-> > > > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
-> > > > ...
-> > > > > > Any idea where to start from? (bisecting is ok, but it'll take some
-> > > > > > time...)
-> > > > >
-> > > > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
-> > > >
-> > > > ok, git-acpi.patch is not the bad boy :)
-> > > > Anyway what we have is a regression in 2.6.22-rc1 since the laptop can't
-> > > > suspend (it sits on the "Stopping tasks" console screen) while 2.6.21
-> > > > can.
-> > > > I'm now bisecting this, will come to -mm1 later when done with this one.
-> > >
-> > > OK, thanks.
-> > >
-> > > > Who is the regression-guy?
-> > >
-> > > Len, usually ;)    But I think you meant Michal, cc'ed here.
-> >
-> > LOL, not this time. We have the responsible commit for 2.6.22-rc1 (Cc
-> > added):
-> >
-> > 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5 is first bad commit
-> > commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
-> > Author: Alex Dubov <oakad@yahoo.com>
-> > Date:   Thu Apr 12 16:59:15 2007 +1000
-> >
-> 
-> Subject    : Broken suspend on SMP with tifm
-> References : http://lkml.org/lkml/2007/5/13/161
-> Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
-> Status     : patch was suggested
-> 
-> Actually should be "a few patches was suggested"
-> 
-> Rafael, please point me the right patch.
+Sorry, the code ordering was wrong in the previous version.
 
-Fixed in the mainline, by
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit e3dfd2964ea86ae65f511b10d62ea54d46db3708
-make freezeable workqueues singlethread
+During hibernation we call hibernation_ops->prepare() before creating the image,
+but then, before saving it, we cancel the power transition by calling
+hibernation_ops->finish().  Thus prior to calling hibernation_ops->enter() we
+should let the platform firmware know that we're going to enter the low power
+state after all.
 
-Greetings,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.22-rc2/kernel/power/disk.c
+===================================================================
+--- linux-2.6.22-rc2.orig/kernel/power/disk.c	2007-05-19 11:25:56.000000000 +0200
++++ linux-2.6.22-rc2/kernel/power/disk.c	2007-05-19 12:43:52.000000000 +0200
+@@ -205,12 +205,23 @@ int hibernation_restore(int platform_mod
+ 
+ int hibernation_platform_enter(void)
+ {
++	int error;
++
+ 	if (hibernation_ops) {
+ 		kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+-		return hibernation_ops->enter();
++		/*
++		 * We have cancelled the power transition by running
++		 * hibernation_ops->finish() before saving the image, so we
++		 * should let the firmware know that we're going to enter the
++		 * sleep state after all
++		 */
++		error = hibernation_ops->prepare();
++		if (!error)
++			error = hibernation_ops->enter();
+ 	} else {
+-		return -ENOSYS;
++		error = -ENOSYS;
+ 	}
++	return error;
+ }
+ 
+ /**
