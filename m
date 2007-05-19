@@ -1,13 +1,16 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [4/5] 2.6.22-rc2: known regressions
-Date: Sun, 20 May 2007 00:23:06 +0200
-Message-ID: <464F78CA.3040707@s5r6.in-berlin.de>
-References: <464F6DC9.80805@googlemail.com> <464F74DF.6030003@googlemail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: (fwd) empty /sys/power/state?
+Date: Sun, 20 May 2007 00:53:58 +0200
+Message-ID: <200705200053.58388.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705191714070.32062-100000@netrider.rowland.org>
+	<464F6E74.1040607@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <464F74DF.6030003@googlemail.com>
+In-Reply-To: <464F6E74.1040607@s5r6.in-berlin.de>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Marcus Better <marcus@better.se>
+To: linux-pm@lists.linux-foundation.org
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>
 List-Id: linux-pm@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Subject    : 2.6.22-rc1 suspend to RAM problem
-> References : http://permalink.gmane.org/gmane.linux.power-management.ge=
-neral/5819
-> Submitter  : Marcus Better <marcus@better.se>
-> Status     : caused by fw-ohci module
+On Saturday, 19 May 2007 23:39, Stefan Richter wrote:
+> Alan Stern wrote:
+> > On Sat, 19 May 2007, Stefan Richter wrote:
+> > 
+> >> Maybe linux-pm is the more appropriate list for this question:
+> >>
+> >> I wrote at suspend-devel@lists.sourceforge.net:
+> >>> What's wrong here?
+> >>>
+> >>> # cat /sys/power/state
+> >>> # echo mem > /sys/power/state
+> >>> -su: echo: write error: No such device
+> > 
+> >> Thanks for advice,
+> > 
+> > No doubt other people will be able to give better answers than I.  However 
+> > an important first step is to provide the dmesg log showing what happened 
+> > when the attempted suspend failed.
+> 
+> I rebuilt the kernel with PM_DEBUG.
+> There is nothing in dmesg after echo mem > /sys/power/state.
+> This is also true if I first unload all modular drivers.
+> 
+> Dmesg and .config attached.
 
-akpm forwarded it to linux1394-devel, hence:
+Apparently kernel/power/main.c:valid_state() on your boxes always returns 0.
 
-Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>,
-             Kristian H=F8gsberg <krh@bitplanet.net>
+Can you please try to set CONFIG_SOFTWARE_SUSPEND and see if that helps?
 
-Alas I am lacking a machine which suspends, but I'm working on it.  If
-all fails, I'm gonna have to pull an old APM laptop out of the rubbish.
---=20
-Stefan Richter
--=3D=3D=3D=3D=3D-=3D-=3D=3D=3D -=3D-=3D =3D-=3D--
-http://arcgraph.de/sr/
+Rafael
