@@ -1,13 +1,13 @@
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [4/5] 2.6.22-rc2: known regressions
-Date: Sun, 20 May 2007 00:06:23 +0200
-Message-ID: <464F74DF.6030003__37460.4568620727$1179612494$gmane$org@googlemail.com>
-References: <464F6DC9.80805@googlemail.com>
+Subject: Re: [2/2] 2.6.22-rc2: known regressions with patches
+Date: Sun, 20 May 2007 00:06:52 +0200
+Message-ID: <464F74FC.8000800@googlemail.com>
+References: <464F7400.2070701@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <464F6DC9.80805@googlemail.com>
+In-Reply-To: <464F7400.2070701@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "art@usfltd.com" <art@usfltd.com>, linux-usb-devel@lists.sourceforge.net, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Marcus Better <marcus@better.se>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, linux-pm@lists.linux-foundation.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Greg Kroah-Hartman <gregkh@suse.de>, Avuton Olrich <avuton@gmail.com>, David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>, Andrea Righi <righiandr@users.sourceforge.net>, xfs-masters@oss.sgi.com, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Christoph Lameter <clameter@sgi.com>
 List-Id: linux-pm@vger.kernel.org
 
 Hi all,
 
-Here is a list of some known regressions in 2.6.22-rc2.
+Here is a list of some known regressions in 2.6.22-rc2
+with patches available.
 
 Feel free to add new regressions/remove fixed etc.
 http://kernelnewbies.org/known_regressions
 
 
 
+File systems
+
+Subject    : 2.6.21-git10/11: files getting truncated on xfs
+References : http://lkml.org/lkml/2007/5/9/410
+Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
+Handled-By : David Chinner <dgc@sgi.com>
+Patch      : http://lkml.org/lkml/2007/5/12/93
+Status     : patch available
+
+
+
+Memory management
+
+Subject    : bug in i386 MTRR initialization
+References : http://lkml.org/lkml/2007/5/19/93
+Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
+Status     : patch available
+
+
+
 Suspend
 
-Subject    : STD fails with pci_device_suspend(): usb_hcd_pci_suspend+0x0/0x160 [usbcore]() returns -16
-References : http://lkml.org/lkml/2007/5/19/66
-Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-Status     : Unknown
-
-Subject    : 2.6.22-rc1 suspend to RAM problem
-References : http://permalink.gmane.org/gmane.linux.power-management.general/5819
-Submitter  : Marcus Better <marcus@better.se>
-Status     : caused by fw-ohci module
-
-
-
-Timers/NOHZ
-
-Subject    : 2.6.21-git4 BUG: soft lockup detected on CPU#1! 
-References : http://lkml.org/lkml/2007/5/2/511
-Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Status     : problem is being debugged
-
-
-
-USB
-
-Subject    : usb hotplug/udev cannot correctly register usb/scanners
-References : http://lkml.org/lkml/2007/5/15/205
-Submitter  : art@usfltd.com <art@usfltd.com>
-Status     : Unknown
+Subject    : resume after suspend-to-disk broken when USB compiled in
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8498
+Submitter  : Avuton Olrich <avuton@gmail.com>
+Patch      : http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-04-usb/usb-make-the-autosuspend-workqueue-thread-freezable.patch
+Status     : patch available
 
 
 
