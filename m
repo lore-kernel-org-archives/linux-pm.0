@@ -1,15 +1,19 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: (fwd) empty /sys/power/state?
-Date: Sat, 19 May 2007 22:15:50 +0200
-Message-ID: <464F5AF6.3090507@s5r6.in-berlin.de>
-References: <464F53C2.8070802@s5r6.in-berlin.de>
-	<464F5625.9020905@s5r6.in-berlin.de>
-	<464F58FD.5010101@s5r6.in-berlin.de>
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.22-rc1 regression: tifm prevents suspending
+	[was: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
+	resumes after STR]
+Date: Sat, 19 May 2007 22:50:14 +0200
+Message-ID: <6bffcb0e0705191350l71d9ebeeo7e0f90582355af5f__41536.7242684171$1179607895$gmane$org@mail.gmail.com>
+References: <20070518071523.GA3195@inferi.kami.home>
+	<20070519151110.GA3393@inferi.kami.home>
+	<6bffcb0e0705191017n1d1e6eb7k1370d5ce5cf17fb9@mail.gmail.com>
+	<200705192029.37436.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <464F58FD.5010101@s5r6.in-berlin.de>
+In-Reply-To: <200705192029.37436.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +23,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alex Dubov <oakad@yahoo.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mattia Dongili <malattia@linux.it>, Pierre Ossman <drzeus@drzeus.cx>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
->>> What's wrong here?
->>>
->>> # cat /sys/power/state
->>> # echo mem > /sys/power/state
->>> -su: echo: write error: No such device
->>> # uname -a
->>> Linux mini 2.6.22-rc2 #3 SMP PREEMPT Sat May 19 20:56:46 CEST 2007
->>> x86_64 Intel(R) Core(TM)2 CPU         T7600  @ 2.33GHz GenuineIntel
->>> GNU/Linux
-> 
-> PS:  It's an Apple Mac mini with Bootcamp.  I'd like to get suspend (to
-> RAM) working for driver testing, but I won't switch to an i386 kernel.
+On 19/05/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday, 19 May 2007 19:17, Michal Piotrowski wrote:
+[..]
+> > Subject    : Broken suspend on SMP with tifm
+> > References : http://lkml.org/lkml/2007/5/13/161
+> > Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
+> > Status     : patch was suggested
+> >
+> > Actually should be "a few patches was suggested"
+> >
+> > Rafael, please point me the right patch.
+>
+> Fixed in the mainline, by
+>
+> commit e3dfd2964ea86ae65f511b10d62ea54d46db3708
+> make freezeable workqueues singlethread
 
-PPS:  The i386 kernel won't help anyway.
+Thanks for the information.
 
-On another machine with 32bit kernel:
+>
+> Greetings,
+> Rafael
+>
 
-# cat /sys/power/state
-# echo mem > /sys/power/state
--su: echo: write error: No such device
-# uname -a
-Linux stein 2.6.22-rc1 #1 SMP PREEMPT Sun May 13 19:50:17 CEST 2007 i686
-Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz GenuineIntel GNU/Linux
+Regards,
+Michal
 
-That's a PC with 945GM based MSI microATX motherboard.
 -- 
-Stefan Richter
--=====-=-=== -=-= =--==
-http://arcgraph.de/sr/
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
