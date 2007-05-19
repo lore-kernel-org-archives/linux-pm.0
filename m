@@ -1,16 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: (fwd) empty /sys/power/state?
-Date: Sun, 20 May 2007 01:20:45 +0200
-Message-ID: <200705200120.45892.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705191714070.32062-100000@netrider.rowland.org>
-	<200705200053.58388.rjw@sisk.pl>
-	<464F8395.4080300@s5r6.in-berlin.de>
+Subject: [RFC][PATCH -mm] Freezer: Avoid freezing kernel threads
+	prematurely
+Date: Sun, 20 May 2007 01:24:08 +0200
+Message-ID: <200705200124.08651.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <464F8395.4080300@s5r6.in-berlin.de>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,34 +18,219 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 20 May 2007 01:09, Stefan Richter wrote:
-> Rafael J. Wysocki wrote:
-> > Can you please try to set CONFIG_SOFTWARE_SUSPEND and see if that helps?
-> 
-> I will do so.  BTW,
-> 
-> config SOFTWARE_SUSPEND
-> 	bool "Software Suspend (Hibernation)"
-> 	depends on PM && SWAP && (((X86 || PPC64_SWSUSP) && (!SMP ||
-> 			SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
-> 
-> and
-> 
-> config SUSPEND_SMP
-> 	bool
-> 	depends on HOTPLUG_CPU && (X86 || PPC64) && PM
-> 
-> So, no HOTPLUG_CPU -> no SOFTWARE_SUSPEND.  I don't expect a
-> single-processor, dual-core PC to require CPU hotplugging support.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-We use the CPU hotplug code for disabling/enabling nonboot CPUs.
+Kernel threads should not have TIF_FREEZE set when user space processes are
+being frozen, since otherwise some of them might be frozen prematurely.
+To prevent this from happening we can make exit_mm() unset TIF_FREEZE
+unconditionally just after clearing tsk->mm and when user space processes are to
+be frozen, try_to_freeze_tasks() should check if p->mm is different from zero
+and PF_BORROWED_MM is unset in p->flags (this must be done under task_lock() to
+prevent potential races with exit_mm() or or use_mm()/unuse_mm() from occuring).
 
-You need to enable it to be able to suspend (BTW, it's also necesary for
-the suspend to RAM).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/freezer.h |    9 +++---
+ kernel/exit.c           |    3 ++
+ kernel/power/process.c  |   64 ++++++++++++++++++++++++------------------------
+ 3 files changed, 41 insertions(+), 35 deletions(-)
 
-Greetings,
-Rafael
+Index: linux-2.6.22-rc2/include/linux/freezer.h
+===================================================================
+--- linux-2.6.22-rc2.orig/include/linux/freezer.h	2007-05-19 11:25:56.000000000 +0200
++++ linux-2.6.22-rc2/include/linux/freezer.h	2007-05-19 21:00:41.000000000 +0200
+@@ -22,7 +22,7 @@ static inline int freezing(struct task_s
+ /*
+  * Request that a process be frozen
+  */
+-static inline void freeze(struct task_struct *p)
++static inline void set_freeze_flag(struct task_struct *p)
+ {
+ 	set_tsk_thread_flag(p, TIF_FREEZE);
+ }
+@@ -30,7 +30,7 @@ static inline void freeze(struct task_st
+ /*
+  * Sometimes we may need to cancel the previous 'freeze' request
+  */
+-static inline void do_not_freeze(struct task_struct *p)
++static inline void clear_freeze_flag(struct task_struct *p)
+ {
+ 	clear_tsk_thread_flag(p, TIF_FREEZE);
+ }
+@@ -53,7 +53,7 @@ static inline int thaw_process(struct ta
+ 		wake_up_process(p);
+ 		return 1;
+ 	}
+-	clear_tsk_thread_flag(p, TIF_FREEZE);
++	clear_freeze_flag(p);
+ 	task_unlock(p);
+ 	return 0;
+ }
+@@ -118,7 +118,8 @@ static inline int freezer_should_skip(st
+ #else
+ static inline int frozen(struct task_struct *p) { return 0; }
+ static inline int freezing(struct task_struct *p) { return 0; }
+-static inline void freeze(struct task_struct *p) { BUG(); }
++static inline void set_freeze_flag(struct task_struct *p) {}
++static inline void clear_freeze_flag(struct task_struct *p) {}
+ static inline int thaw_process(struct task_struct *p) { return 1; }
+ 
+ static inline void refrigerator(void) {}
+Index: linux-2.6.22-rc2/kernel/power/process.c
+===================================================================
+--- linux-2.6.22-rc2.orig/kernel/power/process.c	2007-05-19 11:25:56.000000000 +0200
++++ linux-2.6.22-rc2/kernel/power/process.c	2007-05-20 00:29:27.000000000 +0200
+@@ -40,7 +40,7 @@ static inline void frozen_process(void)
+ 		current->flags |= PF_FROZEN;
+ 		wmb();
+ 	}
+-	clear_tsk_thread_flag(current, TIF_FREEZE);
++	clear_freeze_flag(current);
+ }
+ 
+ /* Refrigerator is place where frozen processes are stored :-). */
+@@ -75,17 +75,16 @@ void refrigerator(void)
+ 	current->state = save;
+ }
+ 
+-static inline void freeze_process(struct task_struct *p)
++static void freeze_task(struct task_struct *p)
+ {
+ 	unsigned long flags;
+ 
+ 	if (!freezing(p)) {
+ 		rmb();
+ 		if (!frozen(p)) {
++			set_freeze_flag(p);
+ 			if (p->state == TASK_STOPPED)
+ 				force_sig_specific(SIGSTOP, p);
+-
+-			freeze(p);
+ 			spin_lock_irqsave(&p->sighand->siglock, flags);
+ 			signal_wake_up(p, p->state == TASK_STOPPED);
+ 			spin_unlock_irqrestore(&p->sighand->siglock, flags);
+@@ -99,18 +98,13 @@ static void cancel_freezing(struct task_
+ 
+ 	if (freezing(p)) {
+ 		pr_debug("  clean up: %s\n", p->comm);
+-		do_not_freeze(p);
++		clear_freeze_flag(p);
+ 		spin_lock_irqsave(&p->sighand->siglock, flags);
+ 		recalc_sigpending_tsk(p);
+ 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
+ 	}
+ }
+ 
+-static inline int is_user_space(struct task_struct *p)
+-{
+-	return p->mm && !(p->flags & PF_BORROWED_MM);
+-}
+-
+ static unsigned int try_to_freeze_tasks(int freeze_user_space)
+ {
+ 	struct task_struct *g, *p;
+@@ -122,20 +116,34 @@ static unsigned int try_to_freeze_tasks(
+ 		todo = 0;
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+-			if (!freezeable(p))
+-				continue;
+-
+-			if (frozen(p))
++			if (frozen(p) || !freezeable(p))
+ 				continue;
+ 
+-			if (p->state == TASK_TRACED && frozen(p->parent)) {
+-				cancel_freezing(p);
+-				continue;
++			if (freeze_user_space) {
++				if (p->state == TASK_TRACED &&
++				    frozen(p->parent)) {
++					cancel_freezing(p);
++					continue;
++				}
++				/*
++				 * Kernel threads should not have TIF_FREEZE set
++				 * at this point, so we must ensure that either
++				 * p->mm is not NULL *and* PF_BORROWED_MM is
++				 * unset, or TIF_FRREZE is left unset.
++				 * The task_lock() is necessary to prevent races
++				 * with exit_mm() or use_mm()/unuse_mm() from
++				 * occuring.
++				 */
++				task_lock(p);
++				if (!p->mm || (p->flags & PF_BORROWED_MM)) {
++					task_unlock(p);
++					continue;
++				}
++				freeze_task(p);
++				task_unlock(p);
++			} else {
++				freeze_task(p);
+ 			}
+-			if (freeze_user_space && !is_user_space(p))
+-				continue;
+-
+-			freeze_process(p);
+ 			if (!freezer_should_skip(p))
+ 				todo++;
+ 		} while_each_thread(g, p);
+@@ -152,21 +160,15 @@ static unsigned int try_to_freeze_tasks(
+ 		 * but it cleans up leftover PF_FREEZE requests.
+ 		 */
+ 		printk("\n");
+-		printk(KERN_ERR "Stopping %s timed out after %d seconds "
++		printk(KERN_ERR "Freezing of %s timed out after %d seconds "
+ 				"(%d tasks refusing to freeze):\n",
+-				freeze_user_space ? "user space processes" :
+-					"kernel threads",
++				freeze_user_space ? "user space " : "tasks ",
+ 				TIMEOUT / HZ, todo);
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+-			if (freeze_user_space && !is_user_space(p))
+-				continue;
+-
+ 			task_lock(p);
+-			if (freezeable(p) && !frozen(p) &&
+-			    !freezer_should_skip(p))
++			if (freezing(p) && !freezer_should_skip(p))
+ 				printk(KERN_ERR " %s\n", p->comm);
+-
+ 			cancel_freezing(p);
+ 			task_unlock(p);
+ 		} while_each_thread(g, p);
+@@ -210,7 +212,7 @@ static void thaw_tasks(int thaw_user_spa
+ 		if (!freezeable(p))
+ 			continue;
+ 
+-		if (is_user_space(p) == !thaw_user_space)
++		if (!p->mm == thaw_user_space)
+ 			continue;
+ 
+ 		thaw_process(p);
+Index: linux-2.6.22-rc2/kernel/exit.c
+===================================================================
+--- linux-2.6.22-rc2.orig/kernel/exit.c	2007-05-19 11:18:32.000000000 +0200
++++ linux-2.6.22-rc2/kernel/exit.c	2007-05-19 22:21:43.000000000 +0200
+@@ -44,6 +44,7 @@
+ #include <linux/resource.h>
+ #include <linux/blkdev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -589,6 +590,8 @@ static void exit_mm(struct task_struct *
+ 	tsk->mm = NULL;
+ 	up_read(&mm->mmap_sem);
+ 	enter_lazy_tlb(mm, current);
++	/* We don't want this task to be frozen prematurely */
++	clear_freeze_flag(tsk);
+ 	task_unlock(tsk);
+ 	mmput(mm);
+ }
