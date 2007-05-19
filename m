@@ -1,13 +1,13 @@
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc2: known regressions with patches
-Date: Sun, 20 May 2007 00:06:52 +0200
-Message-ID: <464F74FC.8000800@googlemail.com>
-References: <464F7400.2070701@googlemail.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [4/5] 2.6.22-rc2: known regressions
+Date: Sun, 20 May 2007 00:23:06 +0200
+Message-ID: <464F78CA.3040707@s5r6.in-berlin.de>
+References: <464F6DC9.80805@googlemail.com> <464F74DF.6030003@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <464F7400.2070701@googlemail.com>
+In-Reply-To: <464F74DF.6030003@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +17,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Greg Kroah-Hartman <gregkh@suse.de>, Avuton Olrich <avuton@gmail.com>, David Chinner <dgc@sgi.com>, LKML <linux-kernel@vger.kernel.org>, Andrea Righi <righiandr@users.sourceforge.net>, xfs-masters@oss.sgi.com, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Christoph Lameter <clameter@sgi.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Marcus Better <marcus@better.se>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Michal Piotrowski wrote:
+> Subject    : 2.6.22-rc1 suspend to RAM problem
+> References : http://permalink.gmane.org/gmane.linux.power-management.ge=
+neral/5819
+> Submitter  : Marcus Better <marcus@better.se>
+> Status     : caused by fw-ohci module
 
-Here is a list of some known regressions in 2.6.22-rc2
-with patches available.
+akpm forwarded it to linux1394-devel, hence:
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>,
+             Kristian H=F8gsberg <krh@bitplanet.net>
 
-
-
-File systems
-
-Subject    : 2.6.21-git10/11: files getting truncated on xfs
-References : http://lkml.org/lkml/2007/5/9/410
-Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-Handled-By : David Chinner <dgc@sgi.com>
-Patch      : http://lkml.org/lkml/2007/5/12/93
-Status     : patch available
-
-
-
-Memory management
-
-Subject    : bug in i386 MTRR initialization
-References : http://lkml.org/lkml/2007/5/19/93
-Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
-Status     : patch available
-
-
-
-Suspend
-
-Subject    : resume after suspend-to-disk broken when USB compiled in
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8498
-Submitter  : Avuton Olrich <avuton@gmail.com>
-Patch      : http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-04-usb/usb-make-the-autosuspend-workqueue-thread-freezable.patch
-Status     : patch available
-
-
-
-Regards,
-Michal
-
---
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+Alas I am lacking a machine which suspends, but I'm working on it.  If
+all fails, I'm gonna have to pull an old APM laptop out of the rubbish.
+--=20
+Stefan Richter
+-=3D=3D=3D=3D=3D-=3D-=3D=3D=3D -=3D-=3D =3D-=3D--
+http://arcgraph.de/sr/
