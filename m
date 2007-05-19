@@ -1,18 +1,10 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: 2.6.22-rc1 regression: tifm prevents suspending [was:
-	Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes
-	after STR]
-Date: Sun, 20 May 2007 00:11:10 +0900
-Message-ID: <20070519151110.GA3393__33810.2110465572$1179587658$gmane$org@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070518002240.bc08e811.akpm@linux-foundation.org>
-	<20070519064829.GA15518@inferi.kami.home>
-	<20070519000413.75badb6f.akpm@linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: usb-make-the-autosuspend-workqueue-thread-freezable.patch
+Date: Sat, 19 May 2007 11:16:44 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705191110340.8729-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070519000413.75badb6f.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,66 +14,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Alex Dubov <oakad@yahoo.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pierre Ossman <drzeus@drzeus.cx>, linux-pm@lists.linux-foundation.org
+To: Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB development list <linux-usb-devel@lists.sourceforge.net>, Avuton Olrich <avuton@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> 
-> > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
-> > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > > 
-> > > > Hello,
-> > > > 
-> > > > After finally catching fw-{ohci,core} to be problematic during resume,
-> > > > I'm now experiencing an immediate resume after suspending.
-> > > > 
-> > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
-> > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
-> > > > 2.6.21-rc6-mm* after the cpuidle fixes).
-> > > > 
-> > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
-> > > > and a str cycle with PM_DEBUG=y:
-> > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
-> > ...
-> > > > Any idea where to start from? (bisecting is ok, but it'll take some
-> > > > time...)
-> > > 
-> > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
-> > 
-> > ok, git-acpi.patch is not the bad boy :)
-> > Anyway what we have is a regression in 2.6.22-rc1 since the laptop can't
-> > suspend (it sits on the "Stopping tasks" console screen) while 2.6.21
-> > can.
-> > I'm now bisecting this, will come to -mm1 later when done with this one.
-> 
-> OK, thanks.
-> 
-> > Who is the regression-guy?
-> 
-> Len, usually ;)    But I think you meant Michal, cc'ed here.
+Greg:
 
-LOL, not this time. We have the responsible commit for 2.6.22-rc1 (Cc
-added):
+The patch in $SUBJECT (already in your development tree) fixes a problem
+with system suspend in 2.6.22-rc1, as described in
 
-3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5 is first bad commit
-commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
-Author: Alex Dubov <oakad@yahoo.com>
-Date:   Thu Apr 12 16:59:15 2007 +1000
+	http://bugzilla.kernel.org/show_bug.cgi?id=8498
 
-    tifm: replace per-adapter kthread with freezeable workqueue
-    
-    Freezeable workqueue makes sure that adapter work items (device insertions
-    and removals) would be handled after the system is fully resumed. Previously
-    this was achieved by explicit freezing of the kthread.
-    
-    Signed-off-by: Alex Dubov <oakad@yahoo.com>
-    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+(For people on the PM development list, it's worth pointing out that all
+the patch does is make a particular kernel thread freezable.)
 
-I'm now seeing if avoiding the tifm stuff in -mm1 fixes the
-immediately-resumes-after-str problem (unfortunately the commint doesn't
-revert cleanly).
--- 
-mattia
-:wq!
+Can you please expedite getting it sent up to Linus?
+
+Thanks,
+
+Alan Stern
