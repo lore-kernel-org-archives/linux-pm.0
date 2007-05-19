@@ -1,13 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: usb-make-the-autosuspend-workqueue-thread-freezable.patch
-Date: Sat, 19 May 2007 09:45:04 -0700
-Message-ID: <20070519164504.GA10675__42344.6381850683$1179600684$gmane$org@kroah.com>
-References: <Pine.LNX.4.44L0.0705191110340.8729-100000@netrider.rowland.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: (fwd) empty /sys/power/state?
+Date: Sat, 19 May 2007 21:55:17 +0200
+Message-ID: <464F5625.9020905@s5r6.in-berlin.de>
+References: <464F53C2.8070802@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0705191110340.8729-100000@netrider.rowland.org>
+In-Reply-To: <464F53C2.8070802@s5r6.in-berlin.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,26 +17,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB development list <linux-usb-devel@lists.sourceforge.net>, Avuton Olrich <avuton@gmail.com>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 19, 2007 at 11:16:44AM -0400, Alan Stern wrote:
-> Greg:
-> 
-> The patch in $SUBJECT (already in your development tree) fixes a problem
-> with system suspend in 2.6.22-rc1, as described in
-> 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=8498
-> 
-> (For people on the PM development list, it's worth pointing out that all
-> the patch does is make a particular kernel thread freezable.)
-> 
-> Can you please expedite getting it sent up to Linus?
+Maybe linux-pm is the more appropriate list for this question:
 
-Will do, I have a number of USB bugfixes to go to Linus, just been
-traveling too much.  Next week I'll be able to get to it...
+I wrote at suspend-devel@lists.sourceforge.net:
+> What's wrong here?
+> 
+> # cat /sys/power/state
+> # echo mem > /sys/power/state
+> -su: echo: write error: No such device
+> # uname -a
+> Linux mini 2.6.22-rc2 #3 SMP PREEMPT Sat May 19 20:56:46 CEST 2007
+> x86_64 Intel(R) Core(TM)2 CPU         T7600  @ 2.33GHz GenuineIntel
+> GNU/Linux
+> # grep -e _PM -e _ACPI /usr/src/linux/.config
+> CONFIG_PM=y
+> # CONFIG_PM_LEGACY is not set
+> # CONFIG_PM_DEBUG is not set
+> # CONFIG_PM_SYSFS_DEPRECATED is not set
+> CONFIG_ACPI=y
+> CONFIG_ACPI_PROCFS=y
+> CONFIG_ACPI_AC=m
+> CONFIG_ACPI_BATTERY=m
+> CONFIG_ACPI_BUTTON=m
+> CONFIG_ACPI_FAN=m
+> # CONFIG_ACPI_DOCK is not set
+> CONFIG_ACPI_PROCESSOR=m
+> CONFIG_ACPI_THERMAL=m
+> # CONFIG_ACPI_ASUS is not set
+> # CONFIG_ACPI_TOSHIBA is not set
+> CONFIG_ACPI_BLACKLIST_YEAR=0
+> # CONFIG_ACPI_DEBUG is not set
+> CONFIG_ACPI_EC=y
+> CONFIG_ACPI_POWER=y
+> CONFIG_ACPI_SYSTEM=y
+> CONFIG_X86_PM_TIMER=y
+> # CONFIG_ACPI_CONTAINER is not set
+> # CONFIG_ACPI_SBS is not set
+> CONFIG_X86_ACPI_CPUFREQ=m
+> # CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
+> # CONFIG_THINKPAD_ACPI is not set
+> CONFIG_ATA_ACPI=y
+> # CONFIG_FB_PM2 is not set
+> # CONFIG_FB_PM3 is not set
+> 
 
-thanks,
-
-greg k-h
+Thanks for advice,
+-- 
+Stefan Richter
+-=====-=-=== -=-= =--==
+http://arcgraph.de/sr/
