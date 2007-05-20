@@ -1,19 +1,10 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Sun, 20 May 2007 15:59:48 +0900
-Message-ID: <20070520065947.GA4880__28256.0579282746$1179644633$gmane$org@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070518002240.bc08e811.akpm@linux-foundation.org>
-	<20070519064829.GA15518@inferi.kami.home>
-	<20070519000413.75badb6f.akpm@linux-foundation.org>
-	<20070520061408.GA3325@inferi.kami.home>
-	<20070519234723.5200a8b4.akpm@linux-foundation.org>
+From: Elimar Riesebieter <riesebie@lxtec.de>
+Subject: 2.6.22-rc2 built on ppc (1)
+Date: Sun, 20 May 2007 13:06:25 +0200
+Message-ID: <20070520110625.GC3253@aragorn.home.lxtec.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============1669334480315767404=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070519234723.5200a8b4.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +12,68 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: pavel@suse.cz
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 19, 2007 at 11:47:23PM -0700, Andrew Morton wrote:
-> On Sun, 20 May 2007 15:14:08 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> 
-> > On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> > > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-...
-> > > > ok, git-acpi.patch is not the bad boy :)
-> > 
-> > but very very close:
-> > acpi-driver-model-flags-and-platform_enable_wake.patch
-> > 
-> 
-> Thanks very much for working that out - it saves lots of people heaps of
-> pain.  I dropped the patch.
 
-oh dear... and now, with the full series applied, I hit the
-immediately-resuspend-after-resume someone already reported...
+--===============1669334480315767404==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3siQDZowHQqNOShm"
+Content-Disposition: inline
 
-aargh
--- 
-mattia
-:wq!
+
+--3siQDZowHQqNOShm
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+FYI, building 2.6.22-rc2 with
+gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+on my powerbook (PPC) gives:
+
+=2E..
+kernel/power/swsusp.c: In function 'swsusp_show_speed':
+kernel/power/swsusp.c:193: warning: comparison of distinct pointer types la=
+cks a cast
+=2E..
+
+
+If more info is needed, please contact me via PM, as I am not
+subscribed.
+
+Thanks for your patience
+Elimar
+
+--=20
+  Never make anything simple and efficient when a way
+  can be found to make it complex and wonderful ;-)
+
+--3siQDZowHQqNOShm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGUCux3Ig8bsVPf7ARArD2AKCce2ThrTGY1b4PlJdRQjqHbruLMACgpZIf
+G/DX+cHVT9bTHX7R3JrFVVw=
+=bjba
+-----END PGP SIGNATURE-----
+
+--3siQDZowHQqNOShm--
+
+--===============1669334480315767404==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1669334480315767404==--
