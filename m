@@ -1,13 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: 2.6.22-rc2 built on ppc (1)
-Date: Sun, 20 May 2007 13:43:57 +0200
-Message-ID: <1179661437.3590.11.camel@johannes.berg>
-References: <20070520110625.GC3253@aragorn.home.lxtec.de>
-	<200705201336.05205.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: (fwd) empty /sys/power/state?
+Date: Sun, 20 May 2007 14:36:33 +0200
+Message-ID: <200705201436.34409.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705191714070.32062-100000@netrider.rowland.org>
+	<tkrat.64219d323de1c016@s5r6.in-berlin.de>
+	<464F8D22.7070501@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7487822594669624612=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705201336.05205.rjw@sisk.pl>
+In-Reply-To: <464F8D22.7070501@s5r6.in-berlin.de>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,63 +19,27 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Elimar Riesebieter <riesebie@lxtec.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Sunday, 20 May 2007 01:49, Stefan Richter wrote:
+> I wrote:
+> > --- linux.orig/arch/i386/Kconfig
+> > +++ linux/arch/i386/Kconfig
+> > @@ -891,7 +891,7 @@ config PHYSICAL_ALIGN
+> >  	  Don't change this unless you know what you are doing.
+> >  
+> >  config HOTPLUG_CPU
+> > -	bool "Support for hot-pluggable CPUs (EXPERIMENTAL)"
+> > +	bool "Support for suspend on SMP hot-pluggable CPUs (EXPERIMENTAL)"
+>                                         ^
+>                                         insert "and" here
 
---===============7487822594669624612==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-aIkb5Qg4QI+6sMMun3rD"
+Since I agree with the changes in your patch, I think I'll just send it to
+Andrew (unless you prefer to send it yourself).
 
-
---=-aIkb5Qg4QI+6sMMun3rD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-> > kernel/power/swsusp.c: In function 'swsusp_show_speed':
-> > kernel/power/swsusp.c:193: warning: comparison of distinct pointer type=
-s lacks a cast
->=20
-> Well, this warning doesn't make sense.  In 2.6.22-rc2 line 193 of swsusp.=
-c is
->=20
-> do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
->=20
-> where elapsed_centisecs64 is s64.
-
-yeah, and the do_div64 macro is then comparing (s64*) =3D=3D (u64*) in a
-null-statement and tells you that the types are different. I tracked
-this a long time ago and figured it wasn't worth thinking about.
-
-johannes
-
---=-aIkb5Qg4QI+6sMMun3rD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGUDR8/ETPhpq3jKURAofVAJ9bFmQ08dMGrcFRzovEZy+cXsWwUACghnFo
-IqlYdqkiXVSaLd0N2Xisoog=
-=pwqc
------END PGP SIGNATURE-----
-
---=-aIkb5Qg4QI+6sMMun3rD--
-
-
---===============7487822594669624612==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============7487822594669624612==--
+Greetings,
+Rafael
