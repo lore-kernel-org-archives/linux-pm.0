@@ -1,11 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Oleg Nesterov <oleg@tv-sign.ru>
 Subject: Re: Singlethread vs. freezable workqueues
-Date: Mon, 21 May 2007 16:23:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0705211621000.5679-100000@iolanthe.rowland.org>
-References: <200705212154.34490.rjw@sisk.pl>
+Date: Tue, 22 May 2007 00:54:09 +0400
+Message-ID: <20070521205409.GA167@tv-sign.ru>
+References: <Pine.LNX.4.44L0.0705211531530.5679-100000@iolanthe.rowland.org>
+	<200705212154.34490.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <200705212154.34490.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,12 +19,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 May 2007, Rafael J. Wysocki wrote:
-
-> Hi,
+On 05/21, Rafael J. Wysocki wrote:
 > 
 > On Monday, 21 May 2007 21:33, Alan Stern wrote:
 > > Raphael:
@@ -38,13 +38,22 @@ On Mon, 21 May 2007, Rafael J. Wysocki wrote:
 > take some time.  We've discussed this a bit with Oleg and I believe he has an
 > idea of how it can be done cleanly.
 
-The reason I asked is because, prior to the release of 2.6.22, I sent 
-in a patch which added a create_singlethread_freezeable_workqueue() 
-macro.  Now it isn't needed, since create_freezeable_workqueue() does 
-the same thing.  Is there any reason to keep the macro?
+No, I don't have an idea how to do this cleanly currently.
 
-I'm worried that if I get rid of it and simply define the workqueue as 
-freezable, then at some time in the future it might turn into a 
-multithread workqueue without my knowledge.
+We can fix them right now with Rafael's "take_over_work() + migrate_sequence"
+patch, feel free to send it. Not perfect, but should work.
 
-Alan Stern
+Perhaps it makes sense to make some other changes first. For example, kill
+CPU_TASKS_FROZEN bit.
+
+Next. We can't make all wqs freezeable, but if we add freezer_exempt/PF_FE_XXX
+we can freeze them all for cpu_up/cpu_down, this also make things simpler.
+
+Note that we don't have a good way to use take_over_work() for !freezeable wq.
+2.6.21 does kthread_stop() first, this is deadlockable because we may have
+a work_struct on ->worklist which also calls kthread_stop(). Perhaps it makes
+sense to wait until kthread_stop() will be reworked (should be soon).
+
+Perhaps we can think a bit more :)
+
+Oleg.
