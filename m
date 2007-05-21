@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Singlethread vs. freezable workqueues
-Date: Mon, 21 May 2007 23:20:06 +0200
-Message-ID: <200705212320.07126.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705211621000.5679-100000@iolanthe.rowland.org>
+Date: Mon, 21 May 2007 23:28:00 +0200
+Message-ID: <200705212328.00860.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705211531530.5679-100000@iolanthe.rowland.org>
+	<200705212154.34490.rjw@sisk.pl> <20070521205409.GA167@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705211621000.5679-100000@iolanthe.rowland.org>
+In-Reply-To: <20070521205409.GA167@tv-sign.ru>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,14 +20,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 21 May 2007 22:23, Alan Stern wrote:
-> On Mon, 21 May 2007, Rafael J. Wysocki wrote:
-> 
-> > Hi,
+On Monday, 21 May 2007 22:54, Oleg Nesterov wrote:
+> On 05/21, Rafael J. Wysocki wrote:
 > > 
 > > On Monday, 21 May 2007 21:33, Alan Stern wrote:
 > > > Raphael:
@@ -42,19 +41,35 @@ On Monday, 21 May 2007 22:23, Alan Stern wrote:
 > > take some time.  We've discussed this a bit with Oleg and I believe he has an
 > > idea of how it can be done cleanly.
 > 
-> The reason I asked is because, prior to the release of 2.6.22, I sent 
-> in a patch which added a create_singlethread_freezeable_workqueue() 
-> macro.  Now it isn't needed, since create_freezeable_workqueue() does 
-> the same thing.  Is there any reason to keep the macro?
+> No, I don't have an idea how to do this cleanly currently.
 > 
-> I'm worried that if I get rid of it and simply define the workqueue as 
-> freezable, then at some time in the future it might turn into a 
-> multithread workqueue without my knowledge.
+> We can fix them right now with Rafael's "take_over_work() + migrate_sequence"
+> patch, feel free to send it. Not perfect, but should work.
 
-If we introduce multithread freezable workqueues again, we'll have to review
-all current users of create_freezeable_workqueue() anyway to see whether or
-not they need to use a singlethread workqueue.  Still, if you added a comment
-saying that your workqueue had to be singlethread, that would certainly help. ;-)
+Well, there's no hurry with that, I think.  If there's a clear case in which
+such a workqueue would be useful, we can do this.  For now, I don't see one.
+
+> Perhaps it makes sense to make some other changes first. For example, kill
+> CPU_TASKS_FROZEN bit.
+
+That's possible, but the microcode driver uses it in a nontrivial way and that
+should be taken into consideration.
+
+> Next. We can't make all wqs freezeable, but if we add freezer_exempt/PF_FE_XXX
+> we can freeze them all for cpu_up/cpu_down, this also make things simpler.
+
+Yes.
+
+> Note that we don't have a good way to use take_over_work() for !freezeable wq.
+> 2.6.21 does kthread_stop() first, this is deadlockable because we may have
+> a work_struct on ->worklist which also calls kthread_stop(). Perhaps it makes
+> sense to wait until kthread_stop() will be reworked (should be soon).
+
+Yes, I think we should wait until the kthread-related things settle.
+
+> Perhaps we can think a bit more :)
+
+Sure, that won't hurt. :-)
 
 Greetings,
 Rafael
