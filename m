@@ -1,16 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Singlethread vs. freezable workqueues
-Date: Mon, 21 May 2007 23:28:00 +0200
-Message-ID: <200705212328.00860.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705211531530.5679-100000@iolanthe.rowland.org>
-	<200705212154.34490.rjw@sisk.pl> <20070521205409.GA167@tv-sign.ru>
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Sky2 driver dies some time after resume
+Date: Mon, 21 May 2007 18:29:17 -0300
+Message-ID: <1179782957.32496.17.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070521205409.GA167@tv-sign.ru>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,56 +15,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: shemminger@linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 21 May 2007 22:54, Oleg Nesterov wrote:
-> On 05/21, Rafael J. Wysocki wrote:
-> > 
-> > On Monday, 21 May 2007 21:33, Alan Stern wrote:
-> > > Raphael:
-> > > 
-> > > Are we now committed to making freezable workqueues always 
-> > > singlethreaded?  Is it at all likely to change back?  Or should I 
-> > > introduce a "create_singlethread_freezeable_workqueue" macro?
-> > 
-> > This was done as a quick fix of an issue with one driver that started to use
-> > (broken) freezable workqueues when we were not watching. ;-)
-> > 
-> > We are going to have multithread freezable workqueues as well, but that'll
-> > take some time.  We've discussed this a bit with Oleg and I believe he has an
-> > idea of how it can be done cleanly.
-> 
-> No, I don't have an idea how to do this cleanly currently.
-> 
-> We can fix them right now with Rafael's "take_over_work() + migrate_sequence"
-> patch, feel free to send it. Not perfect, but should work.
+Hi Stephen,
 
-Well, there's no hurry with that, I think.  If there's a clear case in which
-such a workqueue would be useful, we can do this.  For now, I don't see one.
+I've noticing a weird behavior on sky2 driver after returning from
+suspend. 
 
-> Perhaps it makes sense to make some other changes first. For example, kill
-> CPU_TASKS_FROZEN bit.
+After returning, the driver works as expected. However, after some usage
+at the interface, it behaves like if the network were down.
 
-That's possible, but the microcode driver uses it in a nontrivial way and that
-should be taken into consideration.
+The workaround I'm currently using is manually removing sky2 driver and
+reinserting.
 
-> Next. We can't make all wqs freezeable, but if we add freezer_exempt/PF_FE_XXX
-> we can freeze them all for cpu_up/cpu_down, this also make things simpler.
+This bug is present on all kernel versions I tested on this machine,
+since when I bought it, on Feb, 2007. I'm currently running 2.6.20.7 on
+this notebook.
 
-Yes.
+The SKY2 hardware is:
 
-> Note that we don't have a good way to use take_over_work() for !freezeable wq.
-> 2.6.21 does kthread_stop() first, this is deadlockable because we may have
-> a work_struct on ->worklist which also calls kthread_stop(). Perhaps it makes
-> sense to wait until kthread_stop() will be reworked (should be soon).
+02:00.0 Ethernet controller [0200]: Marvell Technology Group Ltd. 88E8038 PCI-E Fast Ethernet Controller [11ab:4352] (rev 14)
+        Subsystem: Gateway 2000 Unknown device [107b:0367]
+        Flags: bus master, fast devsel, latency 0, IRQ 318
+        Memory at c0200000 (64-bit, non-prefetchable) [size=16K]
+        I/O ports at a000 [size=256]
+        Capabilities: [48] Power Management version 2
+        Capabilities: [50] Vital Product Data
+        Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+        Capabilities: [e0] Express Legacy Endpoint IRQ 0
+        Capabilities: [100] Advanced Error Reporting
 
-Yes, I think we should wait until the kthread-related things settle.
-
-> Perhaps we can think a bit more :)
-
-Sure, that won't hurt. :-)
-
-Greetings,
-Rafael
+-- 
+Cheers,
+Mauro
