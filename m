@@ -1,13 +1,14 @@
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Sky2 driver dies some time after resume
-Date: Mon, 21 May 2007 15:35:49 -0700
-Message-ID: <20070521153549.6bd46f7e@freepuppy>
-References: <1179782957.32496.17.camel@localhost>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 1/4] swsusp: Remove incorrect code from
+	user.c
+Date: Tue, 22 May 2007 01:29:04 +0200
+Message-ID: <20070521232904.GJ10714__28500.3696721562$1179790231$gmane$org@elf.ucw.cz>
+References: <200705180019.35548.rjw@sisk.pl> <200705180021.21953.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1179782957.32496.17.camel@localhost>
+Content-Disposition: inline
+In-Reply-To: <200705180021.21953.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 May 2007 18:29:17 -0300
-Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+On Fri 2007-05-18 00:21:21, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Make the code hibernation code in kernel/power/user.c be functionally equivalent
+> to the corresponding code in kernel/power/disk.c , as it should be.
+> 
+> The calls to the platform functions removed by this patch are incorrect.  They
+> should be replaced with some other "platform" operations that will be
+> introduced in one of the subsequent patches.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> Hi Stephen,
-> 
-> I've noticing a weird behavior on sky2 driver after returning from
-> suspend. 
-> 
-> After returning, the driver works as expected. However, after some usage
-> at the interface, it behaves like if the network were down.
-> 
-> The workaround I'm currently using is manually removing sky2 driver and
-> reinserting.
-> 
-> This bug is present on all kernel versions I tested on this machine,
-> since when I bought it, on Feb, 2007. I'm currently running 2.6.20.7 on
-> this notebook.
-> 
-> The SKY2 hardware is:
-> 
-> 02:00.0 Ethernet controller [0200]: Marvell Technology Group Ltd. 88E8038 PCI-E Fast Ethernet Controller [11ab:4352] (rev 14)
->         Subsystem: Gateway 2000 Unknown device [107b:0367]
->         Flags: bus master, fast devsel, latency 0, IRQ 318
->         Memory at c0200000 (64-bit, non-prefetchable) [size=16K]
->         I/O ports at a000 [size=256]
->         Capabilities: [48] Power Management version 2
->         Capabilities: [50] Vital Product Data
->         Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
->         Capabilities: [e0] Express Legacy Endpoint IRQ 0
->         Capabilities: [100] Advanced Error Reporting
-> 
-
-Which distro? some scripts are different.
-
-Also, check if MSI is being restore properly on resume. There are some BIOS's
-that muck with MSI when ACPI calls them during resume. On Sony VAIO laptop,
-I needed to disable MSI or it resume wouldn't work.
-
-Linus also reported some oddness where the driver couldn't send big packets.
-Could you try:
-	ethtool -r eth0
-That causes a phy renegotiation .
+ACK.
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
