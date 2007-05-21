@@ -1,14 +1,15 @@
-From: Marcus Better <marcus@better.se>
-Subject: Re: fw-ohci breaks suspend-to-RAM
-Date: Mon, 21 May 2007 07:25:51 +0200
-Message-ID: <200705210725.55299.marcus__14062.9976209768$1179725275$gmane$org@better.se>
-References: <200705181207.45868.marcus@better.se>
-	<464DDB85.7080203@s5r6.in-berlin.de>
-	<tkrat.a98b66b055229e9d@s5r6.in-berlin.de>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Can't s2ram 22-rc2 [Was: 2.6.22-rc2 BUG: at
+	slub_def.h:77]
+Date: Mon, 21 May 2007 10:38:21 +0200
+Message-ID: <46515A7D.20003@gmail.com>
+References: <1179728579.11803.1.camel@localhost>	 <465153AF.5030008@gmail.com>
+	<1179736498.4980.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1265423628412775042=="
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <tkrat.a98b66b055229e9d@s5r6.in-berlin.de>
+In-Reply-To: <1179736498.4980.1.camel@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,49 +17,33 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@bitplanet.net>, linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============1265423628412775042==
-Content-Type: multipart/signed; boundary="nextPart3455224.L6gWW4UYf0";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Played with Cc list.
 
---nextPart3455224.L6gWW4UYf0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Soeren Sonnenburg napsal(a):
+> On Mon, 2007-05-21 at 10:09 +0200, Jiri Slaby wrote:
+>> Soeren Sonnenburg napsal(a):
+>>> a regression (well I switched to slub) happens on boot...
+> 
+>>> BUG: at include/linux/slub_def.h:77 kmalloc_index()
+>>>  [<c0176448>] get_slab+0x1c8/0x250
+> [...]
+>> Could you try this patch:
+>> http://lkml.org/lkml/2007/5/19/171
+> 
+> yes, that does fix the issue (at least I don't see the BUG: anymore on
+> boot). however I can no longer s2ram on 22rc2. 
 
-Stefan Richter wrote:
-> Could you test the following patch?
+Whit what kind of error or what happens?
 
-Now it hangs on the second suspend to RAM (at suspend, not resume).
-
-Marcus
-
---nextPart3455224.L6gWW4UYf0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGUS1jXjXn6TzcAQkRAiTMAKCPaUrjFKkFSsSTLxJkdDVVm3DCWQCgmExf
-1nEbstCiBOuZusn3k05W1fs=
-=fkyL
------END PGP SIGNATURE-----
-
---nextPart3455224.L6gWW4UYf0--
-
---===============1265423628412775042==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1265423628412775042==--
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
