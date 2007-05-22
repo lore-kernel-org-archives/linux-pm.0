@@ -1,13 +1,12 @@
-From: "Eugeny S. Mints" <eugeny.mints@gmail.com>
-Subject: Re: Ottawa Linux Power Management Summit
-Date: Tue, 22 May 2007 18:10:46 +0400
-Message-ID: <4652F9E6.4030301@gmail.com>
-References: <200705112313.54744.lenb@kernel.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Singlethread vs. freezable workqueues
+Date: Tue, 22 May 2007 11:03:11 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705221100260.3391-100000@iolanthe.rowland.org>
+References: <20070522124520.GA256@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705112313.54744.lenb@kernel.org>
+In-Reply-To: <20070522124520.GA256@tv-sign.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +16,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+On Tue, 22 May 2007, Oleg Nesterov wrote:
 
-Matt and I would like to attend the PM summit. Our primary interest is unified 
-cross platforms pm API to control pm hardware (covering both x86 and embedded), 
-constraints (including  latencies) engine, pm subsystem/drivers interface, API 
-for use case driven pm.
+> Probably Alan is right? Perhaps it is better to rename it to
+> create_singlethread_freezeable_workqueue(). This way we don't need to audit
+> the users when we add multithread freezable wqs.
+> 
+> Also, this name is more consistent wrt
+> create_workqueue/create_singlethread_workqueue.
 
-Thanks,
-Eugeny
+I already sent in a revised patch and a request to revert the 
+create_singlethread_freezeable_workqueue() macro!
 
-Len Brown wrote:
-> I'd like to conduct a Linux Power Management Summit
-> during the two days preceeding the Ottawa Linux Symposium:
-> 
-> Monday June 25
-> Tuesday June 26
-> 
-> Hopefully the session can benefit from some of the lessons learned
-> by the Storage Summit folks -- according to James they include:
-> 
-> 1. round-table format -- discussion oriented, limited presentations.
-> 2. limit to ~20 attendees to support discussion format
-> 3. prepare agenda and topic list by consensus via e-mail ahead of time.
-> 
-> Please let me know what you think should be on the agenda,
-> and if you are motivated to show up for the discussion.
-> 
-> thanks,
-> -Len
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> 
+Whatever you guys decide, please let Greg and me know as soon as
+possible.  This particular fix is needed before 2.6.22 gets released.
+
+Alan Stern
