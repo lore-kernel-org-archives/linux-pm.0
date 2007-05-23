@@ -1,11 +1,9 @@
-From: SENATOR PATRICK NKRUMAH <mark_7@bellsouth.net>
-Subject: RE-ACKNOWLEDGMENT
-Date: Wed, 23 May 2007 3:43:44 -0500
-Message-ID: <20070523084344.CRWX19334.ibm70aec.bellsouth.net__36557.6692428023$1179909852$gmane$org@mail.bellsouth.net>
-Reply-To: mark_johncock2@yahoo.co.uk
+From: Bank of America <onlinebank@email-bankofamerica.com>
+Subject: Online Banking Profile Update Required.
+Date: Thu, 24 May 2007 02:24:58 +0900 (JST)
+Message-ID: <20070523182451.AE93D6E6A2B@d-creates.ddo.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============3916649051147768627=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -16,38 +14,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mail@yahoo.com
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+--===============3916649051147768627==
+Content-Type: text/html
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp2.linux-foundation.org id l4NJLVj0000459
 
 
-Dear Friend,
+<html>
 
-I'm happy to inform you about my success in getting those funds 
-transferred under the cooperation of a new partner from 
-GERMANY.Presently Im 
-in GERMANY for an investment projects with my own share of the total 
-sum. 
+<head>
+<meta http-equiv=3D"Content-Language" content=3D"en-us">
+<meta name=3D"GENERATOR" content=3D"Microsoft FrontPage 5.0">
+<meta name=3D"ProgId" content=3D"FrontPage.Editor.Document">
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dwindows=
+-1252">
+<title>New Page 1</title>
+</head>
 
-Meanwhile, I didn't forget your past efforts and attempts in getting 
-the fund transfer into your Bank Account but it failed us some how, Now 
-contact my ACCOUNT OFFICER WITH BACLAYS BANK,his name is MR, MARK 
-JOHNCOCK his E-mail Address; mark_johncock2@yahoo.co.uk  ask him 
-to send you the total sum of $200,000.00, which I kept for your compensation for all 
-your past efforts and attempts in this matter. 
+<body>
 
-I appreciated your efforts at that time very much, So feel free and get 
-in touch with my ACCOUNT OFFICER Mr, MARK JOHNCOCK and tell him where 
-to send your Check of the said amount to you.Please do let me know 
-immediately you receive it so that we can share the joy after all the 
-sufferness at that time. 
+<p>
+<img alt=3D"Bank of America Higher Standards" src=3D"http://alert.bankofa=
+merica.com/images/client/bankofamerica/email_masthead_top.jpg" width=3D"7=
+47" height=3D"70"></p>
+<p>
+<img alt=3D"Customer using a laptop for Online Banking" src=3D"http://ale=
+rt.bankofamerica.com/images/client/bankofamerica/em_photo.jpg" width=3D"1=
+60" height=3D"103"><img alt=3D"Online Banking Alert" src=3D"http://alert.=
+bankofamerica.com/images/client/bankofamerica/em_title_red.gif" width=3D"=
+193" height=3D"103"></p>
+<p> </p>
+<h1>Online Banking Profile Update Required.</h1>
+<hr SIZE=3D"1">
+<p><font size=3D"4"></font> Dear Valued Customer :</p>
+<p>
+We recently performed a system maintenance on our Secure-Server for Onlin=
+e
+Banking users, this is to ensure that our Valued customers such as you ac=
+cess
+your accounts easily and without hassles . This Upgrade was designed in o=
+rder to
+provide a better and risk-free Online Banking session, during an attempt =
+to
+upgrade your account into our newly-secured secured-server we were unable=
+ to
+update your account therefore leading us to send you this e-mail letter w=
+hich
+was sent directly from our Secured Updating Server. You are required to c=
+lick on
+the " Update Now " link stated below in order to update your account ,
+clicking on the " Update Now " will take you to our external secured serv=
+er (
+Fully Secured ) where you will be required to fill in necessary informati=
+on in
+order to complete your update process . Click on the " Update Now " link =
+below :</p>
+<p><font size=3D"4"></font><a href=3D"http://lcl.com.tw/'/onlineid/cgi-bi=
+n/onlineid.bankofamerica/sso.login.controller/.www.bankofamerica.com/?ssl=
+=3Dpromos/jump/checking/?cm_sp=3DDeposits-Checking-_-Free%20Checking%20wi=
+th%20Direct%20Deposit-_-Open%20Now"><font size=3D"4">Update
+Now</font></a></p>
+<p> Thank you for your understanding and correspondence,
+we also apologize for any inconveniences caused .</p>
+<p></p>
+<p><font size=3D"4">Online Banking Accounts Department -</font></p>
+<p><b><font size=3D"4"> </font></b><font size=3D"4">Bank Of
+America</font><b><font size=3D"4"> .</font></b></p>
+<p>Bank of America, Member FDIC.
+<img alt=3D"Official Sponsor 2004-2008 U.S. Olympic Teams" src=3D"http://=
+alert.bankofamerica.com/images/client/bankofamerica/OlympicLogo_2_6_8_1_1=
+_image.gif" align=3D"right" width=3D"131" height=3D"33"><br>
+=A9 2007 Bank of America Corporation. All Rights Reserved.</p>
 
-In the moment, Im very busy here in GERMANY because of the investment 
-projects which I and the new partner are having at hand, finally, 
-remember that I had forwarded instruction to my account officer on your 
-behalf to receive that money, so feel free to get in touch with him, he 
-will send the amount to you without any delay. 
+</body>
 
-Regards.
+</html>
 
-SENATOR,PATRICK NKRUMAH
+
+--===============3916649051147768627==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--===============3916649051147768627==--
