@@ -1,15 +1,10 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
-Date: Fri, 25 May 2007 13:36:53 -0700 (PDT)
-Message-ID: <20070525.133653.57156321.davem__12419.3492149518$1180125463$gmane$org@davemloft.net>
-References: <4656CE39.8050800@netunix.com>
-	<alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
-	<46572507.6010800@netunix.com>
+From: "harlan nick" <guillemetteesma@echo-productions.com>
+Subject: Adobe Suite 3 Design $269.90
+Date: Fri, 25 May 2007 17:44:45 -0500
+Message-ID: <05d501c79f1e$4aa39be0$6701a8c0@pc1>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============3362456946471060539=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46572507.6010800@netunix.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +12,80 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: crn@netunix.com
-Cc: cherwin@gmail.com, krh@bitplanet.net, mikpe@it.uu.se, pavel@ucw.cz, sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, alan@redhat.com, linux-pm@lists.linux-foundation.org, clameter@sgi.com, robert.de.rooy@gmail.com, htejun@gmail.com, michal.k.k.piotrowski@gmail.com, linux-pcmcia@lists.infradead.org, marcus@better.se, mingo@elte.hu, gregkh@suse.de, linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de, akpm@linux-foundation.org, arvidjaar@mail.ru, torvalds@linux-foundation.org
+To: renata shepperd <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chris Newport <crn@netunix.com>
-Date: Fri, 25 May 2007 19:03:51 +0100
+This is a multi-part message in MIME format.
 
-> Not really a Solaris feature. This is a feature of the  Openboot  PROM
-> which is also used by several other vendors.
-> The Openboot PROM knows how to write to disk. The same should
-> apply on Apple hardware and others which use the openboot
-> convention.
+--===============3362456946471060539==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0001_01C79EF4.3977A660"
 
-This is totally unusable even if it weren't stupid, and as
-someone who loves OpenBoot I think it's very stupid.
+This is a multi-part message in MIME format.
 
-The reason it's unusable is that PowerPC already and sparc64 soon (in
-order to support LDOMs) totally drops the OBP firmware very soon after
-early kernel boot.  We pull in the device tree and then say "see ya"
-to openboot.
+------=_NextPart_000_0001_01C79EF4.3977A660
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-PowerPC does it because sharing the address space with openboot is
-next to impossible on that cpu, sparc64 will need to do it because
-dynamic-reconfiguration of cpus in an LDOM is too hard to do with
-openboot there.
+Adobe Creative Suite 3 Design Premium software is the designer's dream
+toolkit for print, web, and mobile publishing. It combines all-new
+versions of essential tools for producing everything from professional
+page layouts to rich interactive experiences in a unified, intuitive
+environment.
+Adobe Creative Suite 3 Design Premium
+Retail Price $1799.00
+Our Price $269.90
+You save $1529.10
+http://geocities.com/RickiJustino1119
+Please note, that there will be more special offers available for our
+constant customers. Every effort has been made to ensure the accuracy of
+all information contained herein. DS Team makes no warranty expressed or
+implied with respect to accuracy of the information, including price,
+product editorials or product specifications. Product and manufacturer
+names are used only for the purpose of identification. We appreciate
+your cooperation with us and we'll be glad to see you as our clients in
+the future. 
+ 
+
+------=_NextPart_000_0001_01C79EF4.3977A660
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=#ffffff>
+<DIV><FONT face=Arial size=2>Adobe Creative Suite 3 Design Premium software is 
+the designer's dream toolkit for print, web, and mobile publishing. It combines 
+all-new versions of essential tools for producing everything from professional 
+page layouts to rich interactive experiences in a unified, intuitive 
+environment.<BR>Adobe Creative Suite 3 Design Premium<BR>Retail Price 
+$1799.00<BR>Our Price $269.90<BR>You save $1529.10<BR><A 
+href="http://geocities.com/RickiJustino1119">http://geocities.com/RickiJustino1119</A><BR>Please note, that there will 
+be more special offers available for our constant customers. Every effort has 
+been made to ensure the accuracy of all information contained herein. DS Team 
+makes no warranty expressed or implied with respect to accuracy of the 
+information, including price, product editorials or product specifications. 
+Product and manufacturer names are used only for the purpose of identification. 
+We appreciate your cooperation with us and we'll be glad to see you as our 
+clients in the future.</FONT>
+<DIV><FONT face=Arial size=2></FONT>&nbsp;</DIV></BODY></HTML>
+------=_NextPart_000_0001_01C79EF4.3977A660--
+
+
+--===============3362456946471060539==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3362456946471060539==--
