@@ -1,9 +1,9 @@
-From: "Millard Moser" <ec@beaucoupholdings.com>
-Subject: quality mortgages at low rates
-Date: Fri, 25 May 2007 04:30:08 -0900
-Message-ID: <01c79e85$606af610$6c822ecf@ec>
+From: "chevy eula" <rebekahparnell@iris-chains.com>
+Subject: Adobe Creative Suite 3 $269
+Date: Fri, 25 May 2007 14:41:20 +0900
+Message-ID: <b9d2b01c79e8f$52a8bad0$0200a8c0@server>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5186845002634912373=="
+Content-Type: multipart/mixed; boundary="===============2517818197162813110=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -15,71 +15,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linus@osdl.org
+To: camellia jacintha <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
 
---===============5186845002634912373==
+--===============2517818197162813110==
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0007_01C79ED0.D0529E10"
+	boundary="----=_NextPart_000_B9747_01C79EDA.A6690CB0"
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0007_01C79ED0.D0529E10
+------=_NextPart_000_B9747_01C79EDA.A6690CB0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 7bit
 
-Thank you for your loan request, which we recieved 
-yesterday. We'd like to inform you that we are accepting your=20=
-application.We 
-are ready to give you a $272,000 loan (Approved refinance) for a low=20=
-month 
-payment. Approval process will take only 1 minute. Please visit the=20=
-confirmation 
-link below and fill-out our short 30 second form.=20=
-http://geocities.com/VerieeTodd4269
-------=_NextPart_000_0007_01C79ED0.D0529E10
+Adobe Creative Suite 3 Design Premium software is the designer's dream
+toolkit for print, web, and mobile publishing. It combines all-new
+versions of essential tools for producing everything from professional
+page layouts to rich interactive experiences in a unified, intuitive
+environment.
+Adobe Creative Suite 3 Design Premium
+Retail Price $1799.00
+Our Price $269.90
+You save $1529.10
+http://geocities.com/JenelleRubin8348
+Please note, that there will be more special offers available for our
+constant customers. Every effort has been made to ensure the accuracy of
+all information contained herein. DS Team makes no warranty expressed or
+implied with respect to accuracy of the information, including price,
+product editorials or product specifications. Product and manufacturer
+names are used only for the purpose of identification. We appreciate
+your cooperation with us and we'll be glad to see you as our clients in
+the future. 
+ 
+
+------=_NextPart_000_B9747_01C79EDA.A6690CB0
 Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 7bit
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2670" name=3DGENERATOR>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
 <STYLE></STYLE>
 </HEAD>
-<BODY>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html;=20=
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Thank you for your loan request, which=20=
-we recieved 
-yesterday. We'd like to inform you that we are accepting your=20=
-application.<BR>We 
-are ready to give you a $272,000 loan (Approved refinance) for a low=20=
-month 
-payment. Approval process will take only 1 minute. Please visit the=20=
-confirmation 
-link below and fill-out our short 30 second form. <A 
-href=3D"http://geocities.com/GregNirvana2648">http://geocities.com/VerieeTodd4269</A></FONT></DIV></BODY></HTML>
-</BODY></HTML>
-
-------=_NextPart_000_0007_01C79ED0.D0529E10--
+<BODY bgColor=#ffffff>
+<DIV><FONT face=Arial size=2>Adobe Creative Suite 3 Design Premium software is 
+the designer's dream toolkit for print, web, and mobile publishing. It combines 
+all-new versions of essential tools for producing everything from professional 
+page layouts to rich interactive experiences in a unified, intuitive 
+environment.<BR>Adobe Creative Suite 3 Design Premium<BR>Retail Price 
+$1799.00<BR>Our Price $269.90<BR>You save $1529.10<BR><A 
+href="http://geocities.com/JenelleRubin8348">http://geocities.com/JenelleRubin8348</A><BR>Please note, that there will 
+be more special offers available for our constant customers. Every effort has 
+been made to ensure the accuracy of all information contained herein. DS Team 
+makes no warranty expressed or implied with respect to accuracy of the 
+information, including price, product editorials or product specifications. 
+Product and manufacturer names are used only for the purpose of identification. 
+We appreciate your cooperation with us and we'll be glad to see you as our 
+clients in the future.</FONT>
+<DIV><FONT face=Arial size=2></FONT>&nbsp;</DIV></BODY></HTML>
+------=_NextPart_000_B9747_01C79EDA.A6690CB0--
 
 
---===============5186845002634912373==
+--===============2517818197162813110==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============5186845002634912373==--
+--===============2517818197162813110==--
