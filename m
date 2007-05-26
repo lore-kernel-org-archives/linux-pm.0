@@ -1,16 +1,16 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: fw-ohci breaks suspend-to-RAM
-Date: Sat, 26 May 2007 14:14:00 +0200 (CEST)
-Message-ID: <tkrat.522e284271bb5d02__49250.5319104113$1180181714$gmane$org@s5r6.in-berlin.de>
-References: <200705181207.45868.marcus@better.se>
-	<464DDB85.7080203@s5r6.in-berlin.de>
-	<tkrat.a98b66b055229e9d@s5r6.in-berlin.de>
-	<200705210725.55299.marcus@better.se>
+From: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Re: [2/3] 2.6.22-rc2: known regressions v2
+Date: Sat, 26 May 2007 14:16:19 +0100
+Message-ID: <46583323.40100__7345.82892987436$1180185454$gmane$org@genesi-usa.com>
+References: <46558708.2040803@googlemail.com>
+	<46559B54.80106@googlemail.com>	<Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com>	<alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>	<20070524193740.GA6787@elte.hu>	<alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org>	<20070525101105.GA9268@elte.hu>
+	<4656CE39.8050800@netunix.com>	<alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
+	<46572507.6010800@netunix.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705210725.55299.marcus@better.se>
-Content-Disposition: INLINE
+In-Reply-To: <46572507.6010800@netunix.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,73 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcus Better <marcus@better.se>
-Cc: =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>, linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+To: crn@netunix.com
+Cc: "Cherwin R. Nooitmeer" <cherwin@gmail.com>, Kristian H?gsberg <krh@bitplanet.net>, Mikael Pettersson <mikpe@it.uu.se>, Pavel Machek <pavel@ucw.cz>, sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, Alan Cox <alan@redhat.com>, linux-pm@lists.linux-foundation.org, Christoph Lameter <clameter@sgi.com>, Robert de Rooy <robert.de.rooy@gmail.com>, Tejun Heo <htejun@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pcmcia@lists.infradead.org, Marcus Better <marcus@better.se>, Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Marcus Better wrote:
-> Now it hangs on the second suspend to RAM (at suspend, not resume).
 
-Unless Kristian implements something better before release, we might go
-with the following patch.  Does it abort s2ram as I intend?
+Chris Newport wrote:
+> 
+> Sorry, I did not make myself clear.
+> 
+> Linus Torvalds wrote:
+> 
+>> On Fri, 25 May 2007, Chris Newport wrote:
+>>  
+>>
+>>> Maybe we should take a hint from Solaris.
+>>>   
+>>
+>> No. Solaris is shit. They make their decisions based on "we control
+>> the hardware" kind of setup.
+>>  
+>>
+> Not really a Solaris feature. This is a feature of the  Openboot  PROM
+> which is also used by several other vendors.
+> The Openboot PROM knows how to write to disk. The same should
+> apply on Apple hardware and others which use the openboot
+> convention.
 
-(It does not abort APM suspend, but on the APM notebook I tested with
-2.6.20 and the new firewire drivers, I could unload and reload fw-ohci
-after APM resume without problem.  I still have no machine which
-supports s2ram, and the APM machine is too slow to do driver development
-on it.  I might try to install suspend2 for hibernate-to-swapfile on a
-reasonable machine, but not earlier than in two weeks.  Therefore don't
-expect anything better than the below from me anytime soon.)
+It doesn't, though. It is not part of any specification of Open Firmware
+that you MUST be able to write to any exposed disk. In fact, I know of
+one firmware implementation (ours) where we don't allow it. Apart from
+being a bitch to implement safely (i.e. for people's data) it is also
+quite a security problem to allow the firmware interface to write to
+the disk. You can't make the differentiation between "at the firmware
+console" and "inside a booted OS" unfortunately.
 
- 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: firewire: suspend/resume is unimplemented
+The 'solution' in Solaris is actually that the filesystem and disk
+write handling is done by the OS bootloader and not the PROM. All
+the PROM knows how to do is read off the bootloader (in a special
+partition in a special filesystem format) and execute it after
+probing the hardware and providing the device tree. The first stage
+boot loader then knows how to read UFS filesystems so it can grab
+the kernel and load kernel modules, and write back a kernel dump
+if it needs to.
 
-2.6.22-rc1 reportedly hangs in resume if fw-ohci is loaded.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -1908,6 +1908,19 @@ static void pci_remove(struct pci_dev *d
- 	fw_notify("Removed fw-ohci device.\n");
- }
- 
-+#ifdef CONFIG_PM
-+static int pci_suspend(struct pci_dev *dev, pm_message_t state)
-+{
-+	fw_notify("ERROR: Unload this driver before hibernate or suspend\n");
-+	return -ENOSYS;
-+}
-+
-+static int pci_resume(struct pci_dev *dev)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_PM */
-+
- static struct pci_device_id pci_table[] = {
- 	{ PCI_DEVICE_CLASS(PCI_CLASS_SERIAL_FIREWIRE_OHCI, ~0) },
- 	{ }
-@@ -1920,6 +1933,10 @@ static struct pci_driver fw_ohci_pci_dri
- 	.id_table	= pci_table,
- 	.probe		= pci_probe,
- 	.remove		= pci_remove,
-+#ifdef CONFIG_PM
-+	.suspend	= pci_suspend,
-+	.resume		= pci_resume,
-+#endif
- };
- 
- MODULE_AUTHOR("Kristian Hoegsberg <krh@bitplanet.net>");
-
+That, and Linux drops OF support like a lead weight very early in boot.
+About all you can rely on is the device tree listing all your disks
+present, and even then, Linux will redetect all of these with native
+drivers and give them new names anyway. In fact, Solaris does the
+same (but it is better about associating the device tree entries
+than Linux)
 
 -- 
-Stefan Richter
--=====-=-=== -=-= ==-=-
-http://arcgraph.de/sr/
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
