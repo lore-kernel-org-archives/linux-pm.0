@@ -1,10 +1,16 @@
-From: "kailey robb" <virgilmerna@amacowire.com>
-Subject: Adobe Creative Suite 3 Design Premium ready to download
-Date: Fri, 25 May 2007 20:19:09 -0600
-Message-ID: <10b7fd01c79f3c$3dfc5670$7c03464b@DDRYGD61>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: fw-ohci breaks suspend-to-RAM
+Date: Sat, 26 May 2007 14:14:00 +0200 (CEST)
+Message-ID: <tkrat.522e284271bb5d02__49250.5319104113$1180181714$gmane$org@s5r6.in-berlin.de>
+References: <200705181207.45868.marcus@better.se>
+	<464DDB85.7080203@s5r6.in-berlin.de>
+	<tkrat.a98b66b055229e9d@s5r6.in-berlin.de>
+	<200705210725.55299.marcus@better.se>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2647939521668913049=="
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200705210725.55299.marcus@better.se>
+Content-Disposition: INLINE
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,80 +18,75 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: oates gerrard <linux-pm@osdl.org>
+To: Marcus Better <marcus@better.se>
+Cc: =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>, linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
+Marcus Better wrote:
+> Now it hangs on the second suspend to RAM (at suspend, not resume).
 
---===============2647939521668913049==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_10B219_01C79F09.D5C68DF0"
+Unless Kristian implements something better before release, we might go
+with the following patch.  Does it abort s2ram as I intend?
 
-This is a multi-part message in MIME format.
+(It does not abort APM suspend, but on the APM notebook I tested with
+2.6.20 and the new firewire drivers, I could unload and reload fw-ohci
+after APM resume without problem.  I still have no machine which
+supports s2ram, and the APM machine is too slow to do driver development
+on it.  I might try to install suspend2 for hibernate-to-swapfile on a
+reasonable machine, but not earlier than in two weeks.  Therefore don't
+expect anything better than the below from me anytime soon.)
 
-------=_NextPart_000_10B219_01C79F09.D5C68DF0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-
-Adobe Creative Suite 3 Design Premium software is the designer's dream
-toolkit for print, web, and mobile publishing. It combines all-new
-versions of essential tools for producing everything from professional
-page layouts to rich interactive experiences in a unified, intuitive
-environment.
-Adobe Creative Suite 3 Design Premium
-Retail Price $1799.00
-Our Price $269.90
-You save $1529.10
-http://geocities.com/BronteFizeau1454
-Please note, that there will be more special offers available for our
-constant customers. Every effort has been made to ensure the accuracy of
-all information contained herein. DS Team makes no warranty expressed or
-implied with respect to accuracy of the information, including price,
-product editorials or product specifications. Product and manufacturer
-names are used only for the purpose of identification. We appreciate
-your cooperation with us and we'll be glad to see you as our clients in
-the future. 
  
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: firewire: suspend/resume is unimplemented
 
-------=_NextPart_000_10B219_01C79F09.D5C68DF0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+2.6.22-rc1 reportedly hangs in resume if fw-ohci is loaded.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
-<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=#ffffff>
-<DIV><FONT face=Arial size=2>Adobe Creative Suite 3 Design Premium software is 
-the designer's dream toolkit for print, web, and mobile publishing. It combines 
-all-new versions of essential tools for producing everything from professional 
-page layouts to rich interactive experiences in a unified, intuitive 
-environment.<BR>Adobe Creative Suite 3 Design Premium<BR>Retail Price 
-$1799.00<BR>Our Price $269.90<BR>You save $1529.10<BR><A 
-href="http://geocities.com/BronteFizeau1454">http://geocities.com/BronteFizeau1454</A><BR>Please note, that there will 
-be more special offers available for our constant customers. Every effort has 
-been made to ensure the accuracy of all information contained herein. DS Team 
-makes no warranty expressed or implied with respect to accuracy of the 
-information, including price, product editorials or product specifications. 
-Product and manufacturer names are used only for the purpose of identification. 
-We appreciate your cooperation with us and we'll be glad to see you as our 
-clients in the future.</FONT>
-<DIV><FONT face=Arial size=2></FONT>&nbsp;</DIV></BODY></HTML>
-------=_NextPart_000_10B219_01C79F09.D5C68DF0--
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-ohci.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -1908,6 +1908,19 @@ static void pci_remove(struct pci_dev *d
+ 	fw_notify("Removed fw-ohci device.\n");
+ }
+ 
++#ifdef CONFIG_PM
++static int pci_suspend(struct pci_dev *dev, pm_message_t state)
++{
++	fw_notify("ERROR: Unload this driver before hibernate or suspend\n");
++	return -ENOSYS;
++}
++
++static int pci_resume(struct pci_dev *dev)
++{
++	return -ENOSYS;
++}
++#endif /* CONFIG_PM */
++
+ static struct pci_device_id pci_table[] = {
+ 	{ PCI_DEVICE_CLASS(PCI_CLASS_SERIAL_FIREWIRE_OHCI, ~0) },
+ 	{ }
+@@ -1920,6 +1933,10 @@ static struct pci_driver fw_ohci_pci_dri
+ 	.id_table	= pci_table,
+ 	.probe		= pci_probe,
+ 	.remove		= pci_remove,
++#ifdef CONFIG_PM
++	.suspend	= pci_suspend,
++	.resume		= pci_resume,
++#endif
+ };
+ 
+ MODULE_AUTHOR("Kristian Hoegsberg <krh@bitplanet.net>");
 
 
---===============2647939521668913049==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2647939521668913049==--
+-- 
+Stefan Richter
+-=====-=-=== -=-= ==-=-
+http://arcgraph.de/sr/
