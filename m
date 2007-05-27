@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
 	before hibernation/suspend
-Date: Sun, 27 May 2007 22:31:53 +0200
-Message-ID: <200705272231.54535.rjw__44762.3828230009$1180297889$gmane$org@sisk.pl>
-References: <200705272229.21263.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Date: Sun, 27 May 2007 21:45:35 +0100
+Message-ID: <6BD5252F-96CD-49D9-86C7-18115294D913__34377.9822382659$1180298785$gmane$org@cam.ac.uk>
+References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200705272229.21263.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200705272231.54535.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,99 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On 27 May 2007, at 21:31, Rafael J. Wysocki wrote:
 
-Use a hibernation and suspend notifier to disable the firmware requesting
-mechanism before a hibernation/suspend and enable it after the operation.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Use a hibernation and suspend notifier to disable the firmware  
+> requesting
+> mechanism before a hibernation/suspend and enable it after the  
+> operation.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>
+>  drivers/base/firmware_class.c |   36 ++++++++++++++++++++++++++++++ 
+> ++++++
+>  1 file changed, 36 insertions(+)
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+I don't like this approach, as I feel that the firmware loading  
+interface should be able to detect if a firmware load request is not  
+being handled, due to absence of userspace / hotplug handler presence.
 
- drivers/base/firmware_class.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+Other circumstances in which this can be a problem is during bootup  
+when request_firmware() calls can be made before userspace is up and  
+init has run (even in the presence of an initramfs).
 
-Index: linux-2.6.22-rc3/drivers/base/firmware_class.c
-===================================================================
---- linux-2.6.22-rc3.orig/drivers/base/firmware_class.c	2007-05-27 19:43:03.000000000 +0200
-+++ linux-2.6.22-rc3/drivers/base/firmware_class.c	2007-05-27 19:44:06.000000000 +0200
-@@ -17,6 +17,8 @@
- #include <linux/bitops.h>
- #include <linux/mutex.h>
- #include <linux/kthread.h>
-+#include <linux/notifier.h>
-+#include <linux/suspend.h>
- 
- #include <linux/firmware.h>
- #include "base.h"
-@@ -35,6 +37,9 @@ enum {
- 
- static int loading_timeout = 60;	/* In seconds */
- 
-+/* If set, _request_firmware() will exit immediately returning -EBUSY */
-+static int requesting_firmware_disabled;
-+
- /* fw_lock could be moved to 'struct firmware_priv' but since it is just
-  * guarding for corner cases a global lock should be OK */
- static DEFINE_MUTEX(fw_lock);
-@@ -397,6 +402,9 @@ _request_firmware(const struct firmware 
- 	struct firmware *firmware;
- 	int retval;
- 
-+	if (requesting_firmware_disabled)
-+		return -EBUSY;
-+
- 	if (!firmware_p)
- 		return -EINVAL;
- 
-@@ -568,6 +576,26 @@ request_firmware_nowait(
- 	return 0;
- }
- 
-+static int firmware_class_pm_callback(struct notifier_block *nfb,
-+					unsigned long action,
-+					void *ignored)
-+{
-+	switch (action) {
-+	case PM_PRE_FREEZE:
-+		requesting_firmware_disabled = 1;
-+		return NOTIFY_OK;
-+	case PM_POST_THAW:
-+		requesting_firmware_disabled = 0;
-+		return NOTIFY_OK;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block firmware_class_pm_nb = {
-+	.notifier_call  = firmware_class_pm_callback,
-+};
-+
- static int __init
- firmware_class_init(void)
- {
-@@ -582,6 +610,13 @@ firmware_class_init(void)
- 		printk(KERN_ERR "%s: class_create_file failed\n",
- 		       __FUNCTION__);
- 		class_unregister(&firmware_class);
-+		return error;
-+	}
-+	error = register_pm_notifier(&firmware_class_pm_nb);
-+	if (error) {
-+		printk(KERN_ERR "%s: register_pm_notifier failed\n",
-+		       __FUNCTION__);
-+		class_unregister(&firmware_class);
- 	}
- 	return error;
- 
-@@ -589,6 +624,7 @@ firmware_class_init(void)
- static void __exit
- firmware_class_exit(void)
- {
-+	unregister_pm_notifier(&firmware_class_pm_nb);
- 	class_unregister(&firmware_class);
- }
- 
+(Slightly OT: A particularly nasty race is when an initramfs  
+userspace is present, but firmware loading cannot occur because init  
+has not run, so proc hasn't been mounted, so a hotplug event handler  
+cannot be registered, despite the fact that the firmware is sitting  
+on the ramdisk mounted correctly...)
+
+In short, a more general solution would be preferred, and preferably  
+one which allows firmware loading to *actually* occur once userspace  
+has actually turned up and registered a handler :)
+
+Michael-Luke Jones
