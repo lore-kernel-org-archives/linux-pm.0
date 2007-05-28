@@ -1,19 +1,17 @@
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
 	before hibernation/suspend
-Date: Mon, 28 May 2007 11:41:01 +0100
-Message-ID: <A6BCA565-F147-493B-9DF6-7509F1D60071@cam.ac.uk>
+Date: Mon, 28 May 2007 13:15:54 +0200
+Message-ID: <20070528111554.GF18807@elf.ucw.cz>
 References: <200705272229.21263.rjw@sisk.pl>
 	<20070527220412.GC22687@srcf.ucam.org>
 	<1180304166.3131.66.camel@lov.localdomain>
 	<200705280943.54312.rjw@sisk.pl>
-	<9D3FC259-8391-4C2F-9F0F-AEF6CB3030E8@cam.ac.uk>
-	<1180343171.4242.15.camel@lov.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1180343171.4242.15.camel@lov.localdomain>
+Content-Disposition: inline
+In-Reply-To: <200705280943.54312.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,81 +21,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Rob Landley <rob@landley.net>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Now a technical rather than emotional response...
+Hi!
 
-On 28 May 2007, at 10:06, Kay Sievers wrote:
+> > > > What exactly is the problem we see here? The timeout of the firmware loader?
+> > > > What goes wrong with frozen userspace, usually there is only a netlink
+> > > > message sent from the kernel, which should be received and handled
+> > > > just fine when userspace is running again.
+> > > 
+> > > Driver calls request_firmware in the resume method. The userspace helper 
+> > > can't be run because it's been frozen, so the firmware never gets loaded 
+> > > and the call times out. The driver then fails to resume. While all this 
+> > > is happening, the rest of the kernel is blocking on that resume method. 
+> > > The firmware can be loaded once userspace has been started again, but by 
+> > > that time the driver has given up.
+> > 
+> > Seems, that's just the broken synchronous firmware loading interface
+> > with the useless timeout handling. The nowait version of the same loader
+> > doesn't time out, and should not have that problem. The sync version
+> > should be removed from the kernel, it just causes all sorts of problems
+> > since it exists.
+> > 
+> > Userspace should handle the async request just fine when it comes back
+> > running, regardless of the time it was submitted.
+> 
+> Okay, so the solution is to convert the drivers to use
+> request_firmware_nowait() instead of request_firmware() in their .resume()
+> routines.
 
->> At device driver load, firmware loading must be asynchronous. This is
->> because device driver init can occur before userspace runs and
->> registers a hotplug/uevent event handler. If device use is attempted
->> before firmware loads, a -ENOFIRMWARE call would be great so that
->> userspace and thus the user can be clearly informed what the  
->> problem is.
->
-> Why would a driver create an interface before it has the needed
-> firmware loaded?
+You'll just get deadlock at different level (and more rare).
 
-A valid point. But there should be some kind of error notification if  
-firmware loading hasn't happened correctly rather than a permanent  
-asynchronous wait in which the interface fails to turn up. Possibly a  
-kernel information printk or something, which does not exist at the  
-moment.
+Imagine disk with its firmware on NFS and NFS with its firmware on
+disk.
 
->> However, at 'first use' firmware loading, the synchronous interface
->> should remain. 'ifconfig up' either works or it doesn't, and as I see
->> it, has to just hang around until firmware turns up.
->
-> What kind of network driver does create an interface for a
-> non-functioning device? That sounds like a bug on its own.
+(Or maybe firmware loader doing find /, including both disk and
+NFS). Just don't call request_firmware_* from .resume().
 
-Unclear. My point was that when ifconfig up exits, the interface  
-should be up, not asynchronously waiting for firmware to be loaded,  
-then taken up in the background. Thus, firmware loading in this case  
-should be kept synchronous, in my opinion.
 
-> If a driver binds to a device, it should just have the firmware  
-> already
-> loaded, and not wait until its used. What's the reason for such a
-> behavior, to let a driver pretend it can handle a device, but it  
-> doesn't
-> even know if all the needed pieces are available on the system?
-
-  Basically, you have a device which can carry out different  
-functions depending on the firmware loaded into it. Driver A is  
-specific to this device, and loads the firmware. Driver B uses  
-functions exported by Driver A to carry out one particular function  
-of the device. Driver C uses the same functions to carry out a  
-totally different function on the same device, but with different  
-firmware loaded.
-
-Add in multiple devices handled by Driver A, all with different  
-functionality, and sometimes with combinations of functionality that  
-can coexist, and you see that when Driver A loads it cannot possibly  
-know which firmware to load, but must wait for other Drivers to turn  
-up and be put into use. Thus it 'pretends' to handle all the devices  
-until it's forced to make a choice.
-
-Yes, this is hellishly complicated. Blame Intel :)
-
-> The underlying issue are the driver authors, that's not so easy to
-> fix. :)
-
-Addressed in previous email.
-
-> Well, 10 seconds are just to short for userspace to react on some
-> setups, from tiny boxes which are busy, to 512 CPU boxes enumerating
-> thousands of devices, all had problems here. Any timeout for a
-> firmware-request is just a broken concept, the request should wait
-> forever, to be fulfilled or canceled from userspace when it's ready.
-
-Absolutely. I said this in an earlier email and suggested rejecting  
-this patchset on the grounds that it was another bodge covering over  
-a fundamentally broken area of the kernel :)
-
-> Kay
-
-Michael-Luke Jones
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
