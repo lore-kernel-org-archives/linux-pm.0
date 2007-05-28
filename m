@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
 	before hibernation/suspend
-Date: Mon, 28 May 2007 09:44:00 +0200
-Message-ID: <200705280944.01410.rjw__44115.3110274628$1180337946$gmane$org@sisk.pl>
-References: <200705272229.21263.rjw@sisk.pl> <200705272345.04518.rjw@sisk.pl>
-	<20070527220158.GB22687@srcf.ucam.org>
+Date: Mon, 28 May 2007 18:30:26 +1000
+Message-ID: <1180341026.14749.12.camel@nigel.suspend2.net>
+References: <200705272229.21263.rjw@sisk.pl>
+	<200705272231.54535.rjw@sisk.pl> <20070527204955.GA22202@srcf.ucam.org>
+	<200705272345.04518.rjw@sisk.pl>
+Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2026220539276361525=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070527220158.GB22687@srcf.ucam.org>
-Content-Disposition: inline
+In-Reply-To: <200705272345.04518.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,78 +18,82 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 28 May 2007 00:01, Matthew Garrett wrote:
-> On Sun, May 27, 2007 at 11:45:03PM +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 27 May 2007 22:49, Matthew Garrett wrote:
-> > > If we remove process freezing in STR, this should just work[1] without the
-> > > need to complicate things. 
-> > 
-> > Under the (optimistic, IMO) assumption that the relevant user space task won't
-> > block on I/O with a suspended device involved or something like this.
-> 
-> Yeah, I forgot the footnote that was going to mention that. Clearly 
-> there are issues if this is on some block device that hasn't been 
-> resumed yet.
 
-Or worse.  Suppose, for example, that the device which needs the firmware
-uploaded is your network adapter and the firmware file is on NFS.
+--===============2026220539276361525==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-TeYUmiz5EeRIrG0UU77U"
 
-I don't think there's a solution to the "requesting firmware from .resume()"
-problem other than copying the firmware into memory _before_ the suspend
-and using this copy to upload the firmware in .resume().
 
-> > BTW, I know of two subsystems that want their kernel threads to be frozen for
-> > synchronization purposes.  Please see these messages:
-> > 
-> > 1) https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012592.html
-> > (plus follow up)
-> > 
-> > 2) http://marc.info/?l=linux-kernel&m=117919066830575&w=2
-> 
-> I'm not entirely sold on this. The issue is that there's the possibility 
-> of races during suspend/resume?
+--=-TeYUmiz5EeRIrG0UU77U
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes.
+Hi.
 
-> It sounds like that should be implemented in the driver, rather than
-> depending on a side-effect of process freezing. Otherwise there's no way 
-> of selectively suspending that device.
+On Sun, 2007-05-27 at 23:45 +0200, Rafael J. Wysocki wrote:
+> On Sunday, 27 May 2007 22:49, Matthew Garrett wrote:
+> > On Sun, May 27, 2007 at 10:31:53PM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > >=20
+> > > Use a hibernation and suspend notifier to disable the firmware reques=
+ting
+> > > mechanism before a hibernation/suspend and enable it after the operat=
+ion.
+> >=20
+> > This avoids the problem of .resume methods calling userspace while=20
+> > userspace is frozen and a resulting hang, but does it actually result i=
+n=20
+> > the drivers beginning to work again?
+>=20
+> Well, this was acutally invented before you've decided to remove the free=
+zing
+> of tasks from the suspend code path (which I think is a mistake, but that=
+'s
+> only my personal opinion, so it doesn't matter very much ;-)) and I regar=
+d it
+> as a workaround.
 
-That's true, but we've been using the freezer for so long that at least some
-drivers started to rely on it being used.  That's the reason, IMO, why we can't
-just drop the freezer right now.
+Suspend-to-ram code paths shouldn't assume userspace is unfrozen anyway.
+Doesn't [u]swsusp have a code path like Suspend2 where we can suspend to
+ram after writing the hibernation image? In that case, it will still be
+possible that we seek to enter and leave S3 with processes frozen.
 
-It can be _replaced_ by some other synchronization mechanisms, but not just
-dropped.  Moreover, I think that to implement such mechanisms within device
-drivers we should first stop using the same .suspend() and .resume() routines
-for both hibernation and suspend.
+Apologies if anyone has already mentioned this - I'm just starting to
+play catchup.
 
-This is the plan right now (ie. to stop using .suspend() and .resume() for
-hibernation) and when we're done with that (yes, it'll take some time), then we
-can think of dropping the freezer entirely from the suspend code path.
+Regards,
 
-> > Besides, there's the hibernation that needs to freeze tasks for another reason,
-> > so it needs some way to ensure that drivers won't request firmware while
-> > the user land is frozen.
-> 
-> I agree that that's an issue right now, but I think we should see if 
-> this is repairable without just breaking those drivers.
+Nigel
 
-Well, I don't think we're breaking the drivers.
 
-> One option would be to defer resuming them until userspace is alive again -
-> that would be no worse than the suspend to RAM case without process freezing.
+--=-TeYUmiz5EeRIrG0UU77U
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Please consider the example with a firmware on NFS. :-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-I think the _solution_ would be to fix the drivers.  The other approaches are
-just workarounds, including the $subject patch.
+iD8DBQBGWpMiN0y+n1M3mo0RAsiAAKDgdGSlgBjRl4Yt5qHxrn6DYslkigCfYVXU
+F3kwH+POpwElE+WiSataFXI=
+=oI4M
+-----END PGP SIGNATURE-----
 
-Greetings,
-Rafael
+--=-TeYUmiz5EeRIrG0UU77U--
+
+
+--===============2026220539276361525==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============2026220539276361525==--
