@@ -1,14 +1,13 @@
-From: "Mr Michael David." <adamdeacock@onetel.com>
-Subject: CONGRATULATION
-Date: Mon, 28 May 2007 15:06:46 +0100
-Message-ID: <20070528150646.2h34vftg4cwc0w0w@mailzone.onetel.net.uk>
-Reply-To: shellpromo_021@yahoo.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
+ before hibernation/suspend
+Date: Mon, 28 May 2007 11:55:22 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705281151250.22682-100000@netrider.rowland.org>
+References: <200705272231.54535.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200705272231.54535.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, 27 May 2007, Rafael J. Wysocki wrote:
 
-SHELL LOTTERY INTERNATIONAL.
-Ref: SHL/9420X2/68
-Batch:074/05/ZY36
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Use a hibernation and suspend notifier to disable the firmware requesting
+> mechanism before a hibernation/suspend and enable it after the operation.
 
-We are pleased to inform you today 28th May 2007 of the result of
-the winners of the SHELL LOTTERY INTERNATIONAL ONLINE PROMO
-PROGRAMME, held on  the 30th April 2007. You have therefore
-been approved for a lump sum pay out of $10,000,000.00 (Ten Million
-United State Dollars), in cash credited to file XYL/26510460037/06.
-To file for your claim, please contact our claims agent;
-You are to provide the following
+You're using the PM_PRE_FREEZE and PM_POST_THAW notifiers for both this 
+and the userspace helper change.  Is it your intention that drivers 
+should continue to request these services but encounter an error if the 
+request occurs at the wrong time?  Or do you expect drivers to use the 
+notifier chains to know when they shouldn't make any requests?
 
-1:YOUR FULL NAME
-2:SEX
-3:REF
-4:COUNTRY
-5:AGE
+In the second case you may have a problem, because there's no 
+specification about the order in which the notifiers are sent.  The 
+service may get disabled before the driver learns it isn't available, 
+or the driver may think the service is once again available before it 
+gets enabled.
 
-Shell Award Department
-Contact Name: Mr. Johnson Cole
-Email: shellpromo_021@yahoo.com
-Phone Number: +234-8025-3415-17
-Congratulations once more from all members and staffs of this program.
-
-Yours Truly,
-Mr Michael David.
+Alan Stern
