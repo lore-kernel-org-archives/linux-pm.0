@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend
-	notifiers
-Date: Mon, 28 May 2007 15:12:43 +0200
-Message-ID: <20070528131243.GP18807@elf.ucw.cz>
-References: <200705272229.21263.rjw@sisk.pl> <200705272230.04478.rjw@sisk.pl>
+From: "Mr Michael David." <adamdeacock@onetel.com>
+Subject: CONGRATULATION
+Date: Mon, 28 May 2007 15:06:46 +0100
+Message-ID: <20070528150646.2h34vftg4cwc0w0w@mailzone.onetel.net.uk>
+Reply-To: shellpromo_021@yahoo.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200705272230.04478.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,45 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> Make it possible to register hibernation and suspend notifiers, so that
-> subsystems can perform hibernation-related or suspend-related operations that
-> should not be carried out by device drivers' .suspend() and
-> .resume() routines.
+SHELL LOTTERY INTERNATIONAL.
+Ref: SHL/9420X2/68
+Batch:074/05/ZY36
 
-I believe it adds _way_ too many notifiers.
+We are pleased to inform you today 28th May 2007 of the result of
+the winners of the SHELL LOTTERY INTERNATIONAL ONLINE PROMO
+PROGRAMME, held on  the 30th April 2007. You have therefore
+been approved for a lump sum pay out of $10,000,000.00 (Ten Million
+United State Dollars), in cash credited to file XYL/26510460037/06.
+To file for your claim, please contact our claims agent;
+You are to provide the following
 
-> +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
-> +			be frozen immediately
+1:YOUR FULL NAME
+2:SEX
+3:REF
+4:COUNTRY
+5:AGE
 
-80 columns. Anyway yes, this one is needed.
+Shell Award Department
+Contact Name: Mr. Johnson Cole
+Email: shellpromo_021@yahoo.com
+Phone Number: +234-8025-3415-17
+Congratulations once more from all members and staffs of this program.
 
-> +PM_POST_THAW		Tasks have just been thawed after a resume or restore
-> +			from a hibernation image
-
-Symetrical with the previous one, useful for freeing firmware images, ok.
-
-> +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
-> +			been frozen, memory is going to be freed and devices
-> +			are going to be suspended.
-
-What is this one good for?
-
-> +PM_SNAPSHOT_FAILED	The creation of hibernation image has failed.  Tasks
-> +			will be thawed immediately.
-
-Does this one need to be different from POST_THAW?
-
-I do not see the need for the other chains. Notice that we do not
-_want_ to have too many of them, because changing anything in the
-hibernation will become impossible with 10 chains having intimate
-details of suspend sequence.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yours Truly,
+Mr Michael David.
