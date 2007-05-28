@@ -1,22 +1,11 @@
-From: Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
-Date: Mon, 28 May 2007 09:57:48 +0530
-Message-ID: <20070528042747.GB6367__31499.2258827717$1180326546$gmane$org@in.ibm.com>
-References: <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
-	<20070524193740.GA6787@elte.hu>
-	<alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org>
-	<20070525101105.GA9268@elte.hu> <4656CE39.8050800@netunix.com>
-	<alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
-	<20070525180304.2cc4dae0@the-village.bc.nu>
-	<alpine.LFD.0.98.0705251012200.26602@woody.linux-foundation.org>
-	<20070525103714.092ad631.akpm@linux-foundation.org>
-	<alpine.LFD.0.98.0705251039300.26602@woody.linux-foundation.org>
-Reply-To: vgoyal@in.ibm.com
+From: power throwaway <turionpowerman@yahoo.com>
+Subject: Turion 64 stop-grant question
+Date: Sun, 27 May 2007 22:46:56 -0700 (PDT)
+Message-ID: <735457.98582.qm@web59315.mail.re1.yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705251039300.26602@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,85 +15,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Cherwin R. Nooitmeer" <cherwin@gmail.com>, Kristian H?gsberg <krh@bitplanet.net>, Mikael Pettersson <mikpe@it.uu.se>, Pavel Machek <pavel@ucw.cz>, sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-devel@lists.sourceforge.net, Alan Cox <alan@redhat.com>, linux-pm@lists.linux-foundation.org, Christoph Lameter <clameter@sgi.com>, Robert de Rooy <robert.de.rooy@gmail.com>, Tejun Heo <htejun@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-pcmcia@lists.infradead.org, Marcus Better <marcus@better.se>, Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Chris Newport <crn@netunix.com>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 25, 2007 at 10:50:38AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 25 May 2007, Andrew Morton wrote:
-> >
-> > > > There is an additional factor - dumps contain data which variously is -
-> > > > copyright third parties, protected by privacy laws, just personally
-> > > > private, security sensitive (eg browser history) and so on.
-> > > 
-> > > Yes. 
-> > 
-> > We're uninterested in pagecache and user memory and they should be omitted
-> > from the image (making it enormously smaller too).
-> 
-> The people who would use crash-dumps (big sensitive firms) don't trust 
-> you.
-> 
-> And they'd be right not to trust you. You end up having a _lot_ of 
-> sensitive data even if you avoid user memory and page cache. The network 
-> buffers, the dentries, and just stale data that hasn't been overwritten.
-> 
-> So if you end up having secure data on that machine, you should *never* 
-> send a dump to somebody you don't trust. For the financial companies 
-> (which are practically the only ones that would use dumps) there can even 
-> be legal reasons why they cannot do that!
-> 
-> > That leaves security keys and perhaps filenames, and these could probably
-> > be addressed.
-> 
-> It leaves almost every single kernel allocation, and no, it cannot be 
-> addressed.
-> 
-> How are you going to clear out the network packets that you have in 
-> memory? They're just kmalloc'ed. 
-> 
-> > > I'm sure we've had one or two crashdumps over the years that have actually 
-> > > clarified a bug.
-> > > 
-> > > But I seriously doubt it is more than a handful. 
-> > 
-> > We've had a few more than that, but all the ones I recall actually came
-> > from the kdump developers who were hitting other bugs and who just happened
-> > to know how to drive the thing.
-> 
-> Right, I don't dispute that some _developers_ might use dumping. I dispute 
-> that any user would practically ever use it.
-> 
-> And even for developers, I suspect it's _so_ far down the list of things 
-> you do, that it's practically zero.
-> 
-> > > But 99% of the time, the problem doesn't happen on a developer machine, 
-> > > and even if it does, 90% of the time you really just want the traceback 
-> > > and register info that you get out of an oops.
-> > 
-> > Often we don't even get that: "I was in X and it didn't hit the logs".
-> 
-> Yes. 
-> 
+I am building a low power system. I was looking at the
+Turion 64 or Geode NX1750 processors. I remember that
+with the original Athlon/Athlon XP, Linux was able to
+adjust clock speed and power on the processors that
+supported it, and would make idle calls when idle, but
+could not put it in the stop-grant state when making
+idle calls (which used a fraction of the power of
+other modes). A number of utilities were released to
+deal with the issue (athcool, coolrun, lvcool, fvcool,
+etc.), but nothing supported a broad range of chipsets
+(e.g. nothing for Ali Magick), and the results were
+often unstable. 
 
-Isn't it reason enough for customers to use it? How will a customer 
-capture even an OOPS meesage? Lets say some web server crashed and OOPs 
-message did not make it to logs. I am not expecting a customer to setup
-a console for each and every machine in the network. In this scenario
-customer will have no choice but to reset the machine without any
-information about why did machine crash.
+I have not been able to figure out whether this was
+still an issue for modern Athlon-64 based processors
+like the Turion 64, or whether this has been resolved.
 
-If one can keep kdump configured, upon a crash there are high chances
-that customer will have some debug information to look at. I agree that
-security of data can be a concern. In that case probably one can extract
-a small dump report, like OOPs message, messages in the kernel buffers
-just before crash etc. and report it to service folks. 
 
-Without kdump, customer will most likely have no debug data except a
-complain that system crashed and rebooted or it had to be reset by manual
-intervention.
+If anyone knows if how this is handled on mother
+Turion processors with current Linux kernels, if you
+could let me know, I would appreciate it. 
 
-Thanks
-Vivek
+Background for those who are not familiar with
+stop-grant: 
+
+The stop-grant state powers down the bulk of the CPU,
+but keeps IO open. If an interrupt comes in (the CPU
+has work to do), the CPU wakes up and handles the
+interrupt. It should be entered whenever the processor
+is idle. Unfortunately, most older Athlon processors
+and chipsets did not enter this mode when a cpu-idle
+call was made. Windows and Linux also uses this state
+in lieu of true suspend-to-memory for motherboards
+that do not stably suspend to memory (in conjunction
+with spinning down hard disks, powering down display,
+and lowering power consumption on any other
+peripherals where it could). 
+
+This mode uses between 3 and 15 times less power than
+the lowest P-state. The Turion 64 still uses 7.9 watts
+idle in its minimum P-state, but only 2.2 watts in
+stop-grant mode. Most of the other Athlon 64 chips use
+19-36 watts in their lowest power P-state (clocked to
+800MHz-1GHz, core voltage reduced to 1.1-1.3V), but
+less than 3W in stop-grant. 
+
+- Peter
+
+
+       
+____________________________________________________________________________________Be a better Heartthrob. Get better relationship answers from someone who knows. Yahoo! Answers - Check it out. 
+http://answers.yahoo.com/dir/?link=list&sid=396545433
