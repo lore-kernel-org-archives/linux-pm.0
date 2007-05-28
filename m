@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
 	before hibernation/suspend
-Date: Mon, 28 May 2007 13:22:51 +0200
-Message-ID: <200705281322.52854.rjw@sisk.pl>
-References: <200705272229.21263.rjw@sisk.pl> <200705272345.04518.rjw@sisk.pl>
-	<1180341026.14749.12.camel@nigel.suspend2.net>
+Date: Mon, 28 May 2007 13:28:07 +0200
+Message-ID: <200705281328.08979.rjw@sisk.pl>
+References: <200705272229.21263.rjw@sisk.pl> <200705280943.54312.rjw@sisk.pl>
+	<20070528111554.GF18807@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1180341026.14749.12.camel@nigel.suspend2.net>
+In-Reply-To: <20070528111554.GF18807@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,41 +21,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@nigel.suspend2.net
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 28 May 2007 10:30, Nigel Cunningham wrote:
-> Hi.
+On Monday, 28 May 2007 13:15, Pavel Machek wrote:
+> Hi!
 > 
-> On Sun, 2007-05-27 at 23:45 +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 27 May 2007 22:49, Matthew Garrett wrote:
-> > > On Sun, May 27, 2007 at 10:31:53PM +0200, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > What exactly is the problem we see here? The timeout of the firmware loader?
+> > > > > What goes wrong with frozen userspace, usually there is only a netlink
+> > > > > message sent from the kernel, which should be received and handled
+> > > > > just fine when userspace is running again.
 > > > > 
-> > > > Use a hibernation and suspend notifier to disable the firmware requesting
-> > > > mechanism before a hibernation/suspend and enable it after the operation.
+> > > > Driver calls request_firmware in the resume method. The userspace helper 
+> > > > can't be run because it's been frozen, so the firmware never gets loaded 
+> > > > and the call times out. The driver then fails to resume. While all this 
+> > > > is happening, the rest of the kernel is blocking on that resume method. 
+> > > > The firmware can be loaded once userspace has been started again, but by 
+> > > > that time the driver has given up.
 > > > 
-> > > This avoids the problem of .resume methods calling userspace while 
-> > > userspace is frozen and a resulting hang, but does it actually result in 
-> > > the drivers beginning to work again?
+> > > Seems, that's just the broken synchronous firmware loading interface
+> > > with the useless timeout handling. The nowait version of the same loader
+> > > doesn't time out, and should not have that problem. The sync version
+> > > should be removed from the kernel, it just causes all sorts of problems
+> > > since it exists.
+> > > 
+> > > Userspace should handle the async request just fine when it comes back
+> > > running, regardless of the time it was submitted.
 > > 
-> > Well, this was acutally invented before you've decided to remove the freezing
-> > of tasks from the suspend code path (which I think is a mistake, but that's
-> > only my personal opinion, so it doesn't matter very much ;-)) and I regard it
-> > as a workaround.
+> > Okay, so the solution is to convert the drivers to use
+> > request_firmware_nowait() instead of request_firmware() in their .resume()
+> > routines.
 > 
-> Suspend-to-ram code paths shouldn't assume userspace is unfrozen anyway.
-> Doesn't [u]swsusp have a code path like Suspend2 where we can suspend to
-> ram after writing the hibernation image? In that case, it will still be
-> possible that we seek to enter and leave S3 with processes frozen.
+> You'll just get deadlock at different level (and more rare).
+> 
+> Imagine disk with its firmware on NFS and NFS with its firmware on
+> disk.
 
-That's correct.
+Yeah, I've just given the very same example in another message. :-)
 
-> Apologies if anyone has already mentioned this - I'm just starting to
-> play catchup.
+I believe the only _solution_ would be to load the firmware into memory
+before the suspend and use the in-RAM copy to upload it into the device
+in .resume().
 
-No one has and that's a valid point, I think. :-)
+A PM_PRE_FREEZE notifier could be used for that just fine, BTW.
 
 Greetings,
 Rafael
