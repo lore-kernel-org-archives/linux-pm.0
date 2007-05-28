@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
-	before hibernation/suspend
-Date: Mon, 28 May 2007 19:43:24 +0200
-Message-ID: <200705281943.25129.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705281151250.22682-100000@netrider.rowland.org>
+ before hibernation/suspend
+Date: Mon, 28 May 2007 16:03:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0705281600050.9790-100000@netrider.rowland.org>
+References: <20070528165441.GA1669@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705281151250.22682-100000@netrider.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20070528165441.GA1669@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,41 +17,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 28 May 2007 17:55, Alan Stern wrote:
-> On Sun, 27 May 2007, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Mon, 28 May 2007, Matthew Garrett wrote:
+
+> On Mon, May 28, 2007 at 12:43:36PM -0400, Alan Stern wrote:
+> > On Mon, 28 May 2007, Matthew Garrett wrote:
+> > > On Mon, May 28, 2007 at 12:09:30PM -0400, Alan Stern wrote:
+> > > 
+> > > > I can't speak for the second example, but there's a good reason the
+> > > > first example works this way.  It's not a matter of races; the problem
+> > > > is that the kernel thread's job is to selectively suspend and resume
+> > > > devices.  We don't want it doing this while a system sleep is in 
+> > > > progress; it would (and in fact has, before the thread was made 
+> > > > freezable) cause the sleep transition to abort.
+> > > 
+> > > How does this work on PPC or APM systems?
 > > 
-> > Use a hibernation and suspend notifier to disable the firmware requesting
-> > mechanism before a hibernation/suspend and enable it after the operation.
+> > For hibernation it behaves the same as on other types of systems.
+> > 
+> > For STR it generally works okay.  There was one report of suspends
+> > aborting, and it looked like this was caused by selective resumes
+> > originating from userspace.  This seemed to be unrelated to the kernel
+> > threads; apparently some program was running while the STR was in
+> > progress, and causing the problem.  For example, the lsusb program will
+> > do a selective resume on every USB device as it scans through them all.
+> > However that's just a guess, we haven't fully resolved that bug report.
+> > 
+> > The theoretical answer is that it behaves the way we want.  The kernel 
+> > thread does selective resumes in response to device requests.  If such 
+> > a request comes in while the system is asleep it will awaken the 
+> > system; so it's only logical that a request coming in while the system 
+> > is in the process of going to sleep should abort the suspend.
 > 
-> You're using the PM_PRE_FREEZE and PM_POST_THAW notifiers for both this 
-> and the userspace helper change.  Is it your intention that drivers 
-> should continue to request these services but encounter an error if the 
-> request occurs at the wrong time?  Or do you expect drivers to use the 
-> notifier chains to know when they shouldn't make any requests?
+> Ok, I guess I'm still not clear on this :) If it doesn't cause major 
+> problems on Powermac or APM systems, why is freezing the thread 
+> beneficial on ACPI systems?
 
-In fact, I'd like drivers to use notifiers to actually load the firmware into
-memory before hibernation/suspend.  Namely, if there's PM_PRE_FREEZE, the
-driver calls request_firmware() from within the notifier and saves the firmware
-in memory for future use, if need be.  Later, when PM_POST_THAW comes, the
-memory holding the firmware is released.
+Isn't it true, even on PPC and APM systems, that tasks are frozen for
+hibernation?  The difference is that they aren't frozen for STR.
 
-Unfortunately there are drivers that call request_firmware() directly from
-.resume() which blocks until timeout expires and fails anyway.  I just wanted
-this to fail immediately, without waiting.
+Hence the answer to your question: Not freezing the thread would work 
+okay on ACPI systems for STR.  (In fact, not freezing anything would 
+probably work okay for STR.)  But it doesn't work with hibernation.
 
-> In the second case you may have a problem, because there's no 
-> specification about the order in which the notifiers are sent.  The 
-> service may get disabled before the driver learns it isn't available, 
-> or the driver may think the service is once again available before it 
-> gets enabled.
-
-Yes.
-
-Greetings,
-Rafael
+Alan Stern
