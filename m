@@ -1,17 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Kay Sievers <kay.sievers@vrfy.org>
 Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
 	before hibernation/suspend
-Date: Mon, 28 May 2007 13:28:07 +0200
-Message-ID: <200705281328.08979.rjw@sisk.pl>
-References: <200705272229.21263.rjw@sisk.pl> <200705280943.54312.rjw@sisk.pl>
+Date: Mon, 28 May 2007 13:24:53 +0200
+Message-ID: <1180351493.4242.31.camel@lov.localdomain>
+References: <200705272229.21263.rjw@sisk.pl>
+	<20070527220412.GC22687@srcf.ucam.org>
+	<1180304166.3131.66.camel@lov.localdomain>
+	<200705280943.54312.rjw@sisk.pl>
 	<20070528111554.GF18807@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <20070528111554.GF18807@elf.ucw.cz>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,10 +23,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 28 May 2007 13:15, Pavel Machek wrote:
+On Mon, 2007-05-28 at 13:15 +0200, Pavel Machek wrote:
 > Hi!
 > 
 > > > > > What exactly is the problem we see here? The timeout of the firmware loader?
@@ -57,14 +58,12 @@ On Monday, 28 May 2007 13:15, Pavel Machek wrote:
 > 
 > Imagine disk with its firmware on NFS and NFS with its firmware on
 > disk.
+> 
+> (Or maybe firmware loader doing find /, including both disk and
+> NFS). Just don't call request_firmware_* from .resume().
 
-Yeah, I've just given the very same example in another message. :-)
+A driver for a bootup-critical device like this should just never
+release the firmware after the first load. There is absolutely no point
+in doing that.
 
-I believe the only _solution_ would be to load the firmware into memory
-before the suspend and use the in-RAM copy to upload it into the device
-in .resume().
-
-A PM_PRE_FREEZE notifier could be used for that just fine, BTW.
-
-Greetings,
-Rafael
+Kay
