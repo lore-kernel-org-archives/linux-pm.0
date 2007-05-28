@@ -1,11 +1,18 @@
-From: power throwaway <turionpowerman@yahoo.com>
-Subject: Turion 64 stop-grant question
-Date: Sun, 27 May 2007 22:46:56 -0700 (PDT)
-Message-ID: <735457.98582.qm@web59315.mail.re1.yahoo.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
+	before hibernation/suspend
+Date: Mon, 28 May 2007 09:43:53 +0200
+Message-ID: <200705280943.54312.rjw@sisk.pl>
+References: <200705272229.21263.rjw@sisk.pl>
+	<20070527220412.GC22687@srcf.ucam.org>
+	<1180304166.3131.66.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1180304166.3131.66.camel@lov.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,58 +22,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-I am building a low power system. I was looking at the
-Turion 64 or Geode NX1750 processors. I remember that
-with the original Athlon/Athlon XP, Linux was able to
-adjust clock speed and power on the processors that
-supported it, and would make idle calls when idle, but
-could not put it in the stop-grant state when making
-idle calls (which used a fraction of the power of
-other modes). A number of utilities were released to
-deal with the issue (athcool, coolrun, lvcool, fvcool,
-etc.), but nothing supported a broad range of chipsets
-(e.g. nothing for Ali Magick), and the results were
-often unstable. 
+On Monday, 28 May 2007 00:16, Kay Sievers wrote:
+> On Sun, 2007-05-27 at 23:04 +0100, Matthew Garrett wrote:
+> > On Sun, May 27, 2007 at 11:49:30PM +0200, Kay Sievers wrote:
+> > 
+> > > What exactly is the problem we see here? The timeout of the firmware loader?
+> > > What goes wrong with frozen userspace, usually there is only a netlink
+> > > message sent from the kernel, which should be received and handled
+> > > just fine when userspace is running again.
+> > 
+> > Driver calls request_firmware in the resume method. The userspace helper 
+> > can't be run because it's been frozen, so the firmware never gets loaded 
+> > and the call times out. The driver then fails to resume. While all this 
+> > is happening, the rest of the kernel is blocking on that resume method. 
+> > The firmware can be loaded once userspace has been started again, but by 
+> > that time the driver has given up.
+> 
+> Seems, that's just the broken synchronous firmware loading interface
+> with the useless timeout handling. The nowait version of the same loader
+> doesn't time out, and should not have that problem. The sync version
+> should be removed from the kernel, it just causes all sorts of problems
+> since it exists.
+> 
+> Userspace should handle the async request just fine when it comes back
+> running, regardless of the time it was submitted.
 
-I have not been able to figure out whether this was
-still an issue for modern Athlon-64 based processors
-like the Turion 64, or whether this has been resolved.
+Okay, so the solution is to convert the drivers to use
+request_firmware_nowait() instead of request_firmware() in their .resume()
+routines.
 
-
-If anyone knows if how this is handled on mother
-Turion processors with current Linux kernels, if you
-could let me know, I would appreciate it. 
-
-Background for those who are not familiar with
-stop-grant: 
-
-The stop-grant state powers down the bulk of the CPU,
-but keeps IO open. If an interrupt comes in (the CPU
-has work to do), the CPU wakes up and handles the
-interrupt. It should be entered whenever the processor
-is idle. Unfortunately, most older Athlon processors
-and chipsets did not enter this mode when a cpu-idle
-call was made. Windows and Linux also uses this state
-in lieu of true suspend-to-memory for motherboards
-that do not stably suspend to memory (in conjunction
-with spinning down hard disks, powering down display,
-and lowering power consumption on any other
-peripherals where it could). 
-
-This mode uses between 3 and 15 times less power than
-the lowest P-state. The Turion 64 still uses 7.9 watts
-idle in its minimum P-state, but only 2.2 watts in
-stop-grant mode. Most of the other Athlon 64 chips use
-19-36 watts in their lowest power P-state (clocked to
-800MHz-1GHz, core voltage reduced to 1.1-1.3V), but
-less than 3W in stop-grant. 
-
-- Peter
-
-
-       
-____________________________________________________________________________________Be a better Heartthrob. Get better relationship answers from someone who knows. Yahoo! Answers - Check it out. 
-http://answers.yahoo.com/dir/?link=list&sid=396545433
+Greetings,
+Rafael
