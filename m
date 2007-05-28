@@ -1,15 +1,17 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
-	before hibernation/suspend
-Date: Mon, 28 May 2007 17:54:41 +0100
-Message-ID: <20070528165441.GA1669@srcf.ucam.org>
-References: <20070528161242.GA1063@srcf.ucam.org>
-	<Pine.LNX.4.44L0.0705281237200.22682-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend
+	notifiers
+Date: Mon, 28 May 2007 19:26:59 +0200
+Message-ID: <200705281927.00277.rjw@sisk.pl>
+References: <200705272229.21263.rjw@sisk.pl> <200705272230.04478.rjw@sisk.pl>
+	<20070528131243.GP18807@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070528131243.GP18807@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0705281237200.22682-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +21,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 28, 2007 at 12:43:36PM -0400, Alan Stern wrote:
-> On Mon, 28 May 2007, Matthew Garrett wrote:
-> > On Mon, May 28, 2007 at 12:09:30PM -0400, Alan Stern wrote:
-> > 
-> > > I can't speak for the second example, but there's a good reason the
-> > > first example works this way.  It's not a matter of races; the problem
-> > > is that the kernel thread's job is to selectively suspend and resume
-> > > devices.  We don't want it doing this while a system sleep is in 
-> > > progress; it would (and in fact has, before the thread was made 
-> > > freezable) cause the sleep transition to abort.
-> > 
-> > How does this work on PPC or APM systems?
+On Monday, 28 May 2007 15:12, Pavel Machek wrote:
+> Hi!
 > 
-> For hibernation it behaves the same as on other types of systems.
+> > Make it possible to register hibernation and suspend notifiers, so that
+> > subsystems can perform hibernation-related or suspend-related operations that
+> > should not be carried out by device drivers' .suspend() and
+> > .resume() routines.
 > 
-> For STR it generally works okay.  There was one report of suspends
-> aborting, and it looked like this was caused by selective resumes
-> originating from userspace.  This seemed to be unrelated to the kernel
-> threads; apparently some program was running while the STR was in
-> progress, and causing the problem.  For example, the lsusb program will
-> do a selective resume on every USB device as it scans through them all.
-> However that's just a guess, we haven't fully resolved that bug report.
+> I believe it adds _way_ too many notifiers.
 > 
-> The theoretical answer is that it behaves the way we want.  The kernel 
-> thread does selective resumes in response to device requests.  If such 
-> a request comes in while the system is asleep it will awaken the 
-> system; so it's only logical that a request coming in while the system 
-> is in the process of going to sleep should abort the suspend.
+> > +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
+> > +			be frozen immediately
+> 
+> 80 columns.
 
-Ok, I guess I'm still not clear on this :) If it doesn't cause major 
-problems on Powermac or APM systems, why is freezing the thread 
-beneficial on ACPI systems?
+OK
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> Anyway yes, this one is needed. 
+> 
+> > +PM_POST_THAW		Tasks have just been thawed after a resume or restore
+> > +			from a hibernation image
+> 
+> Symetrical with the previous one, useful for freeing firmware images, ok.
+> 
+> > +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
+> > +			been frozen, memory is going to be freed and devices
+> > +			are going to be suspended.
+> 
+> What is this one good for?
+
+Allocating memory before the hibernation, mainly.  Anything done after freezing
+tasks.
+
+> > +PM_SNAPSHOT_FAILED	The creation of hibernation image has failed.  Tasks
+> > +			will be thawed immediately.
+> 
+> Does this one need to be different from POST_THAW?
+
+Do you mean POST_RESTORE?  Well, maybe not.  Yesterday I thought it would be
+for a specific reason, but now I can't recall what it was. :-(
+
+> I do not see the need for the other chains. Notice that we do not
+> _want_ to have too many of them, because changing anything in the
+> hibernation will become impossible with 10 chains having intimate
+> details of suspend sequence.
+
+I think the two suspend-specific might be handy.
+
+What about:
+
+PM_PRE_FREEZE
+PM_HIBERNATION_PREPARE
+PM_POST_HIBERNATION (handling failed snapshots too)
+PM_POST_THAW
+
+plus PM_RESTORE_PREPARE for the restore and
+
+PM_SUSPEND_PREPARE
+PM_POST_SUSPEND (handling failed suspends too)
+
+for the suspend code path?
+
+Rafael
