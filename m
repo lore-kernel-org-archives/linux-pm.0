@@ -1,12 +1,13 @@
-From: MAUREEN DOUGLASS(NIPPON OIL EXPLORATION LTD.) <webinfo1900@bellsouth.net>
-Subject: COMPANY REPRESENTATIVE REQUIRED IN YOUR REGION...
-Date: Tue, 29 May 2007 5:19:12 -0400
-Message-ID: <20070529091912.TPRZ22805.ibm65aec.bellsouth.net@mail.bellsouth.net>
-Reply-To: nipponofficeuk@yahoo.co.uk
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [3/4] 2.6.22-rc3: known regressions
+Date: Tue, 29 May 2007 14:52:58 +0200
+Message-ID: <465C222A.8060003__1537.39622696794$1180443249$gmane$org@googlemail.com>
+References: <465C188F.9000900@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <465C188F.9000900@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,62 +17,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: no-reply@no-reply.com
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>, linux1394-devel@lists.sourceforge.net, Stefan Richter <stefanr@s5r6.in-berlin.de>, =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@bitplanet.net>, Thomas Gleixner <tglx@linutronix.de>, David Miller <davem@davemloft.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>, linux-usb-devel@lists.sourceforge.net, "art@usfltd.com" <art@usfltd.com>, Greg Kroah-Hartman <gregkh@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Nippon Oil Exploration and Production U.K., Limited
-New Liverpool House / 2nd Floor, 
-15 Eldon Street London
-EC2M 7LD, U.K.
+Hi all,
+
+Here is a list of some known regressions in 2.6.22-rc3.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
 
-ATTN: SIR/MADAM,
 
-Yes you can apply and be appointed,as your province/region covers within the range of North and South America.We seek a representative that can help my company in clearing our payments,this has being occasioned by the wide growth in our market that has expanded our goods and products to your province encompassing---AMERICA,CANADA,MEXICO AND PUERTO RICO. Likewise all exterior axis of EUROPE.
+Suspend
 
-Hence the mergence for a representative/agent who is competent,diligent and trustworthy to handle the responsiblity of receiveing payments on our behalf.Our customers issue out payments in cheques,bankdrafts,bonds etc and we don't run an account presently in your province that will clear this payments.Likewise clearance of our goods within your province.
+Subject    : 2.6.22-rc1 suspend to RAM problem
+References : http://permalink.gmane.org/gmane.linux.power-management.gene=
+ral/5819
+Submitter  : Marcus Better <marcus@better.se>
+Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
+             Kristian H=C3=B8gsberg <krh@bitplanet.net>
+Status     : caused by fw-ohci module
 
-As our representative you will receive 10% of any payments you clear for the company, that is how you will be paid/renumerated by the company then you will remit the balance of 90% to us.This the company's standard mode of operation.
 
-If you are interested in our offer please confirm your complete informations:
 
-1)FULL NAMES/COMPANY NAME
+Timers
 
-2)COMPANY/HOME ADDRESS 
+Subject    : hrtimer overflow bug on 64-bit systems
+References : http://lkml.org/lkml/2007/5/24/391
+Submitter  : David Miller <davem@davemloft.net>
+Status     : problem is being debugged
 
-3)MAILING ADRESS 
 
-4)COUNTRY/STATE
 
-5)PHONE NUMBERS-CELL,HOME,OFFICE ETC(kindly ensure you forward a functional phone number/s) 
+TTY
 
-6)FAX NUMBER
+Subject    : tty-related oops in latest kernel(s)
+References : http://lkml.org/lkml/2007/5/27/104
+Submitter  : Tero Roponen <teanropo@jyu.fi>
+Status     : problem is being debugged
 
-7)ZIP CODE
 
-8)EVIDENCE OF FULL IDENTIFICATION--SCANNED AND FORWARDED COPY OF INTERNATIOAL PASSPORT OR DRIVER"S LICENCE.
 
-9)COMPLETE WORKING EXPERIENCE(WITH DETAILS)
+USB
 
-10)ANNUAL INCOME
+Subject    : usb hotplug/udev cannot correctly register usb/scanners
+References : http://lkml.org/lkml/2007/5/15/205
+Submitter  : art@usfltd.com <art@usfltd.com>
+Status     : Unknown
 
-all these are required for official documentation and record purpose once this is done i will fax it to our customers instructing them that you are our rep/agent and that they should issue out payments to you on behalf of Nippon Company Ltd.
 
-Waiting to hear from you.If you need any other informations do not fail to attention me.i ll instruct my attorney to prepare and send you our company"s statutory memorandum of understanding(M.O.U) via mail/fax. 
 
-Kindly acknowledge reciept of mail by swiftly replying.i need to to hear from you as soon as possible so that the board of management can concess to your appointment.
+Regards,
+Michal
 
-have a nice day.
-
-I await your urgent response to the Regional Coordinator in charge of your region:
-Mr. Tony Johnson
-Regional Coordinator
-N.O.E.P.L.UK
-TEL: +44-704-571-1123
-Email to: nipponofficeuk@yahoo.co.uk
-
-Thanks for your time,
-
-Yours Respectfuly,
-Maureen Douglass
-Regional Secretary
+--
+"Najbardziej brakowa=C5=82o mi twojego milczenia."
+-- Andrzej Sapkowski "Co=C5=9B wi=C4=99cej"
