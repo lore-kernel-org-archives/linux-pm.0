@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend
 	notifiers
-Date: Thu, 31 May 2007 07:42:20 +0200
-Message-ID: <200705310742.21852.rjw__6693.63075071505$1180589865$gmane$org@sisk.pl>
+Date: Thu, 31 May 2007 07:44:43 +0200
+Message-ID: <200705310744.44488.rjw__19826.0779529393$1180589994$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org>
 	<200705302311.40123.rjw@sisk.pl>
-	<20070530222956.GD27309@elf.ucw.cz>
+	<1180563897.6777.11.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070530222956.GD27309@elf.ucw.cz>
+In-Reply-To: <1180563897.6777.11.camel@nigel.suspend2.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,13 +22,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: nigel@nigel.suspend2.net
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 31 May 2007 00:29, Pavel Machek wrote:
-> Hi!
+Hi,
+
+On Thursday, 31 May 2007 00:24, Nigel Cunningham wrote:
+> Hi.
 > 
+> On Wed, 2007-05-30 at 23:11 +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, 30 May 2007 22:44, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > On Wednesday, 30 May 2007 17:37, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > +Suspend notifiers
+> > > > > +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
+> > > > > +
+> > > > > +There are some operations that device drivers may want to carry out in their
+> > > > > +.suspend() routines, but shouldn't, because they can cause the hibernation or
+> > > > > +suspend to fail. For example, a driver may want to allocate a substantial amount
+> > > > > +of memory (like 50 MB) in .suspend(), but that shouldn't be done after the
+> > > > > +swsusp's memory shrinker has run.
+> > > > > +
+> > > > > +Also, there may be some operations, that subsystems want to carry out before a
+> > > > > +hibernation/suspend or after a restore/resume, requiring the system to be fully
+> > > > > +functional, so the drivers' .suspend() and .resume() routines are not suitable
+> > > > > +for this purpose.  For example, device drivers may want to upload firmware to
+> > > > > +their devices after a restore from a hibernation image, but they cannot do it by
+> > > > > +calling request_firmware() from their .resume() routines (user land processes
+> > > > > +are frozen at this point).  The solution may be to load the firmware into
+> > > > > +memory before processes are frozen and upload it from there in the .resume()
+> > > > > +routine.  Of course, a hibernation notifier may be used for this purpose.
+> > > > > +
+> > > > > +The subsystems that have such needs can register suspend notifiers that will be
+> > > > > +called upon the following events by the suspend core:
+> > > > > +
+> > > > > +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
+> > > > > +			be frozen immediately
+> > > > 
+> > > > Hmm, looks like bad idea if we are going to remove freezer from
+> > > > suspend...?
+> > > 
+> > > We need PM_PRE_FREEZE anyway and it's a different question whether or not
+> > > it'll be used for suspend (STR) too.
+> > > 
+> > > The timing is not the best one, but so far the freezer is in the suspend code
+> > > path and I need to take this into account.
+> > >  
+> > > > > +PM_POST_THAW		Tasks have just been thawed after a resume or restore
+> > > > > +			from a hibernation image
+> > > > > +
+> > > > > +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
+> > > > > +			been frozen, memory is going to be freed and devices
+> > > > > +			are going to be suspended.
+> > > > 
+> > > > Is not PRE_FREEZE enough? We can allocate memory for drivers there,
+> > > > too...
+> > > 
+> > > Well, there is a reason for not doing this.  Namely, if the memory if freed on
+> > > PM_POST_HIBERNATION after the image has been created, we can use it for saving
+> > > the image (and speed up the saving).
+> > > 
+> > > Besides, if the freezer is dropped from the suspend code, the notifiers will be
+> > > useful to it anyway IMO, and PRE_FREEZE won't make sense in that case.
+> > > 
 > > > I think the rule should be: If you need to do something _before_ tasks are
 > > > frozen, do it in PM_PRE_FREEZE, but if you can do that after the tasks have
 > > > been frozen, do it on PM_HIBERNATION_PREPARE (or PM_SUSPEND_PREPARE in the
@@ -40,14 +100,11 @@ On Thursday, 31 May 2007 00:29, Pavel Machek wrote:
 > > 
 > > I'll post revised patches in a new thread.
 > 
-> Yes please.
-> 
-> (Hmm, but you may create 4 of them PM_PRE_HIBERNATION, PM_PRE_SUSPEND,
-> PM_POST_HIBERNATION, PM_POST_SUSPEND -- I'd call all of them before
-> freeze and after thaw, but if we drop freezer for suspend, we won't
-> have to rename anything.)
+> I haven't been giving this much attention, so forgive me if I'm about to
+> ask a silly question... which notifiers would you see the avenrun
+> saving/restoring using?
 
-Yes, that's a good idea. :-)
+I'm not sure what you mean.  Could you please clarify?
 
 Greetings,
 Rafael
