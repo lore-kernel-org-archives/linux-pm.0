@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.22-rc3-mm1
-Date: Thu, 31 May 2007 23:34:20 +0200
-Message-ID: <200705312334.20834.rjw__27926.4017510743$1180646952$gmane$org@sisk.pl>
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [PATCH -mm] Freezer: migration_thread should not be freezable
+	(was: Re: Re: 2.6.22-rc3-mm1)
+Date: Thu, 31 May 2007 23:45:17 +0200
+Message-ID: <6bffcb0e0705311445o40eb54bbr318b71d3113ff37b@mail.gmail.com>
 References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-	<200705312158.26560.rjw@sisk.pl>
-	<6bffcb0e0705311425q2e00cc69j5006d95c3f0df158@mail.gmail.com>
+	<465EE9F2.8080905@googlemail.com> <200705312158.26560.rjw@sisk.pl>
+	<200705312330.09157.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <6bffcb0e0705311425q2e00cc69j5006d95c3f0df158@mail.gmail.com>
+In-Reply-To: <200705312330.09157.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,12 +21,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 31 May 2007 23:25, Michal Piotrowski wrote:
-> On 31/05/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On 31/05/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, 31 May 2007 21:58, Rafael J. Wysocki wrote:
 > > On Thursday, 31 May 2007 17:29, Michal Piotrowski wrote:
 > > > Hi,
 > > >
@@ -57,9 +57,25 @@ his, can
 > > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
 > >
 > > applied?
->=20
-> Ok, bug is in suspend tree.
+>
+> Ahem, I broke it. :-(
+>
+> Andrew, the following fix is needed on top of
+> freezer-make-kernel-threads-nonfreezable-by-default.patch
+>
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> migration_thread should not be freezable, or it will break hibernation =
+and
+> suspend on SMP.
+>
 
-Yup.  Please see the message I've just sent (with a fix).
+Problem fixed, suspend to disk works fine. Huge thanks!
 
-Rafael
+Regards,
+Michal
+
+--=20
+"Najbardziej brakowa=B3o mi twojego milczenia."
+-- Andrzej Sapkowski "Co=B6 wi=EAcej"
