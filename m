@@ -1,10 +1,18 @@
-From: Poste Italiane <BP0L@poste.it>
-Subject: Congratulazioni ! Avete vinto 1000 euro
-Date: Thu, 31 May 2007 07:48:25 +0300
-Message-ID: <E1HtcaH-0008Fw-4J@s5.hostway.ro>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend
+	notifiers
+Date: Thu, 31 May 2007 07:42:20 +0200
+Message-ID: <200705310742.21852.rjw__6693.63075071505$1180589865$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org>
+	<200705302311.40123.rjw@sisk.pl>
+	<20070530222956.GD27309@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5993847600822464890=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070530222956.GD27309@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,91 +20,34 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============5993847600822464890==
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp2.linux-foundation.org id l4V4mWmO006493
+On Thursday, 31 May 2007 00:29, Pavel Machek wrote:
+> Hi!
+> 
+> > > I think the rule should be: If you need to do something _before_ tasks are
+> > > frozen, do it in PM_PRE_FREEZE, but if you can do that after the tasks have
+> > > been frozen, do it on PM_HIBERNATION_PREPARE (or PM_SUSPEND_PREPARE in the
+> > > suspend case).
+> > 
+> > OTOH, having considered it for a while, I think that for now I can add just
+> > PM_PRE_FREEZE and PM_POST_THAW, as I don't have any user for the other ones.
+> > The other events may be added in the future if need be (along with some users).
+> > 
+> > I'll post revised patches in a new thread.
+> 
+> Yes please.
+> 
+> (Hmm, but you may create 4 of them PM_PRE_HIBERNATION, PM_PRE_SUSPEND,
+> PM_POST_HIBERNATION, PM_POST_SUSPEND -- I'd call all of them before
+> freeze and after thaw, but if we drop freezer for suspend, we won't
+> have to rename anything.)
 
-<meta name=3D"generator" content=3D"Namo WebEditor(Trial)">
-<div id=3Dyiv1722234019><p>
-<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"500" align=3D"center"=
- border=3D"1">
-<tbody>
-        <tr>
-            <td align=3D"middle" colSpan=3D"3"><font size=3D"2">
-                <table cellSpacing=3D"0" cellPadding=3D"0" width=3D"600" =
-bgColor=3D"#e7efe2" border=3D"0">
-                    <tbody>
-                    <tr>
-                        <td>
-                            <div>
-<IMG src=3D"http://www.tireballs.it/Logo%20postepay.gif">
-                            </div>
-                            <div>
-                                <table cellSpacing=3D"0" cellPadding=3D"0=
-" width=3D"740" border=3D"0">
-                                    <tbody>
-                                    <tr bgColor=3D"#000099">
-                                        <td><font size=3D"2">=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 </font></td>
-                                        <td align=3D"right" colSpan=3D"2"=
-><font size=3D"2">=A0=A0=A0 </font></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div align=3D"left">
-                    <p align=3D"center"><IMG src=3D"http://www.ens.it/ris=
-orse/loghi/logo_POSTE_ITALIANE.gif"></p>
-                </div>
-                <div align=3D"left">=A0</div>
-                <div align=3D"left"><font face=3D"Verdana">Caro Cliente <=
-a target=3D"_blank" href=3D"http://Poste.it"><span id=3D"lw_1178521906_0"=
->Poste.it</a></span>,</font></div>
-                <div align=3D"left">=A0</div>
-                <div align=3D"left"><font face=3D"Verdana" size=3D"2">Ave=
-te vinto 1000 euro dal poste italiano.</font></div>
-                <div align=3D"left"><font face=3D"Verdana" size=3D"2">Per=
- ricevere i fondi dovete verificare le vostre informazioni di cliente qui=
- :</font></div>
-<font face=3D"Verdana" size=3D"2"><font size=3D"3"></font>
-                <div align=3D"left">
-<br>=A0=A0=A0<font size=3D"3">=A0 <a rel=3D"nofollow" title=3D"Accedi a P=
-oste.it " target=3D"_blank" href=3D"http://loshkarev.ru/loshkarevki/tmp/h=
-ttp.bancoposte.postepayonline.poste.it/formslogin.aspx.html?TYPE=3D335544=
-33&REALMOID=3Dhttp://www.poste.it/formslogin.aspx.html?TYPE=3D33554433&RE=
-ALMOID=3D06-695104d5-"><font color=3D"#0000ff" size=3D"2"><span id=3D"lw_=
-1178521906_2">Accedi ai qui i verifica i tuei dati per ricevere i tuei 10=
-00 Euro! </span></font></a><strong>=A0</strong></font></div>
-                <div align=3D"left"><strong><font size=3D"3"></font></str=
-ong>=A0</div>
-                <div align=3D"left">L'Assistenza Clienti, dopo aver ricev=
-uto la documentazione e averne verificato la completezza e la veridicit=E0=
-, provveder=E0 immediatamente ad attivare <strong>i tuei 1000 Euro</stron=
-g> . Verrai informato telefonicamente di tale attivazione.</div>
-                <div align=3D"left">=A0</div>
-</font></font></td>
-</table></div>
+Yes, that's a good idea. :-)
 
-
-
-
---===============5993847600822464890==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---===============5993847600822464890==--
+Greetings,
+Rafael
