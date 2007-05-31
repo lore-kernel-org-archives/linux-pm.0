@@ -1,17 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend
-	notifiers
-Date: Thu, 31 May 2007 22:02:53 +0200
-Message-ID: <200705312202.53945.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org>
-	<200705310744.44488.rjw@sisk.pl>
-	<20070531142357.GK27309@elf.ucw.cz>
+Subject: [PATCH -mm] Freezer: migration_thread should not be freezable (was:
+	Re: Re: 2.6.22-rc3-mm1)
+Date: Thu, 31 May 2007 23:30:08 +0200
+Message-ID: <200705312330.09157.rjw__6433.34273850105$1180646731$gmane$org@sisk.pl>
+References: <20070530235823.793f00d9.akpm@linux-foundation.org>
+	<465EE9F2.8080905@googlemail.com> <200705312158.26560.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070531142357.GK27309@elf.ucw.cz>
+In-Reply-To: <200705312158.26560.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,28 +21,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thursday, 31 May 2007 21:58, Rafael J. Wysocki wrote:
+> On Thursday, 31 May 2007 17:29, Michal Piotrowski wrote:
+> > Hi,
+> >=20
+> > Andrew Morton napisa=C5=82(a):
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.2=
+2-rc3/2.6.22-rc3-mm1/
+> > >=20
+> >=20
+> > FYI suspend to disk doesn't work anymore on my box, system hangs afte=
+r "Suspending console(s)" message.
+> >=20
+> > [  186.297753] Shrinking memory...  =08-=08\=08|=08/=08-=08\=08|=08do=
+ne (113064 pages freed)
+> > [  187.841914] Freed 452256 kbytes in 1.54 seconds (293.67 MB/s)
+> > [  187.847730] Suspending console(s)
+> >=20
+> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-m=
+m1/console.log
+> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-m=
+m1/mm-config
+>=20
+> Hmm, that might be a couple of things, actually.
+>=20
+> To see if the patches directly related to hibernation/suspend cause thi=
+s, can
+> you please test 2.6.22-rc3 with the patch series at
+>=20
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
+>=20
+> applied?
 
-On Thursday, 31 May 2007 16:23, Pavel Machek wrote:
-> Hi!
-> 
-> > > > I'll post revised patches in a new thread.
-> > > 
-> > > I haven't been giving this much attention, so forgive me if I'm about to
-> > > ask a silly question... which notifiers would you see the avenrun
-> > > saving/restoring using?
-> > 
-> > I'm not sure what you mean.  Could you please clarify?
-> 
-> Remember that patch about saving/restoring "load average"? I guess
-> Nigel asks where to hook it.
+Ahem, I broke it. :-(
 
-Ah, okay, thanks.
+Andrew, the following fix is needed on top of
+freezer-make-kernel-threads-nonfreezable-by-default.patch
 
-Hmm, that would be PM_PRE_HIBERNATION, I think.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rafael
+migration_thread should not be freezable, or it will break hibernation an=
+d
+suspend on SMP.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/sched.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+Index: linux-2.6.22-rc3/kernel/sched.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.22-rc3.orig/kernel/sched.c
++++ linux-2.6.22-rc3/kernel/sched.c
+@@ -5157,13 +5157,10 @@ static int migration_thread(void *data)
+ 	BUG_ON(rq->migration_thread !=3D current);
+=20
+ 	set_current_state(TASK_INTERRUPTIBLE);
+-	set_freezable();
+ 	while (!kthread_should_stop()) {
+ 		struct migration_req *req;
+ 		struct list_head *head;
+=20
+-		try_to_freeze();
+-
+ 		spin_lock_irq(&rq->lock);
+=20
+ 		if (cpu_is_offline(cpu)) {
