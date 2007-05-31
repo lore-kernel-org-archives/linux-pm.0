@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.22-rc3-mm1
-Date: Thu, 31 May 2007 21:58:25 +0200
-Message-ID: <200705312158.26560.rjw__7395.87380453504$1180641228$gmane$org@sisk.pl>
-References: <20070530235823.793f00d9.akpm@linux-foundation.org>
-	<465EE9F2.8080905@googlemail.com>
+Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend
+	notifiers
+Date: Thu, 31 May 2007 22:02:53 +0200
+Message-ID: <200705312202.53945.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org>
+	<200705310744.44488.rjw@sisk.pl>
+	<20070531142357.GK27309@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <465EE9F2.8080905@googlemail.com>
+In-Reply-To: <20070531142357.GK27309@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,40 +22,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 31 May 2007 17:29, Michal Piotrowski wrote:
-> Hi,
->=20
-> Andrew Morton napisa=C5=82(a):
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-=
-rc3/2.6.22-rc3-mm1/
-> >=20
->=20
-> FYI suspend to disk doesn't work anymore on my box, system hangs after =
-"Suspending console(s)" message.
->=20
-> [  186.297753] Shrinking memory...  =08-=08\=08|=08/=08-=08\=08|=08done=
- (113064 pages freed)
-> [  187.841914] Freed 452256 kbytes in 1.54 seconds (293.67 MB/s)
-> [  187.847730] Suspending console(s)
->=20
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-mm1=
-/console.log
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc3-mm1=
-/mm-config
+Hi,
 
-Hmm, that might be a couple of things, actually.
+On Thursday, 31 May 2007 16:23, Pavel Machek wrote:
+> Hi!
+> 
+> > > > I'll post revised patches in a new thread.
+> > > 
+> > > I haven't been giving this much attention, so forgive me if I'm about to
+> > > ask a silly question... which notifiers would you see the avenrun
+> > > saving/restoring using?
+> > 
+> > I'm not sure what you mean.  Could you please clarify?
+> 
+> Remember that patch about saving/restoring "load average"? I guess
+> Nigel asks where to hook it.
 
-To see if the patches directly related to hibernation/suspend cause this,=
- can
-you please test 2.6.22-rc3 with the patch series at
+Ah, okay, thanks.
 
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
+Hmm, that would be PM_PRE_HIBERNATION, I think.
 
-applied?
-
-Greetings,
 Rafael
