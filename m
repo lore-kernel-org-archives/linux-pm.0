@@ -1,10 +1,10 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: [RFC] make /sys/bus/pci/devices/foo/power/state work
-Date: Fri, 01 Jun 2007 10:42:45 +0800
-Message-ID: <1180665765.27219.11.camel@sli10-conroe.sh.intel.com>
+From: Nick Hinds <jeromenestor@yahoo.co.nz>
+Subject: Request For Partnership
+Date: Fri, 1 Jun 2007 23:44:11 +1200 (NZST)
+Message-ID: <760492.98531.qm@web57701.mail.re3.yahoo.com>
+Reply-To: nick_hinds566@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============5578419945470655750=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -13,116 +13,49 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
+To: jeromenestor@yahoo.com
 List-Id: linux-pm@vger.kernel.org
 
-the interface /sys/bus/pci/devices/foo/power/state is marked as just for
-test, but actually I need below fix to do test. If the interface will be
-removed soon, please ignore the mail.
+--===============5578419945470655750==
+Content-Type: multipart/alternative; boundary="0-1207384143-1180698251=:98531"
+Content-Transfer-Encoding: 8bit
 
-Index: 2.6.22-rc2/drivers/base/power/sysfs.c
-===================================================================
---- 2.6.22-rc2.orig/drivers/base/power/sysfs.c	2007-05-23 09:15:14.000000000 +0800
-+++ 2.6.22-rc2/drivers/base/power/sysfs.c	2007-05-24 11:48:24.000000000 +0800
-@@ -45,19 +45,15 @@ static ssize_t state_store(struct device
- 	pm_message_t state;
- 	int error = -EINVAL;
+--0-1207384143-1180698251=:98531
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+                                    Attention:Sir/Madam,
+   
+  I am Nick Hinds,funds Manager of fidelity investment international.the world largest fund management company with over 1.2 trillion pounds capital investment funds.
+   
+  Nevertheless,as fidelity Fund Manager,I handle all our investors direct capital funds and secretly extract 3.2% excess maximum returncapital profit (EMRCP) per annum on of the investors magellan capital fund.As am expert,I have made over 49.8 M pounds from the investors EMRCP and hereby looking for someone to trust who i will stand as an investor to receive the funds as an annual investment proceeds from Fidelity magellan capital funds.All confirmable dovcuments to back up the claims will be made available to you prior to your acceptance .
+   
+  Meanwhile,I have worked out the strategies and technicalities whereby the FUND can be claimed in any of our 6 houses without any hitch.Our sharing ration will be 55-40 while 5% will be for expenses during the process of the transaction .should incase you are intrested you are adviced to forward me your direct phone number through my private email address: nick_hinds566@yahoo.co.uk for discussion of this transaction in further details.
+   
+  Your faithfullly,
+   
+  Mr.Nick Hinds
  
--	/* disallow incomplete suspend sequences */
--	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
--		return error;
--
- 	state.event = PM_EVENT_SUSPEND;
- 	/* Older apps expected to write "3" here - confused with PCI D3 */
--	if ((n == 1) && !strcmp(buf, "3"))
-+	if (!strncmp(buf, "3", 1))
- 		error = dpm_runtime_suspend(dev, state);
- 
--	if ((n == 1) && !strcmp(buf, "2"))
-+	if (!strncmp(buf, "2", 1))
- 		error = dpm_runtime_suspend(dev, state);
- 
--	if ((n == 1) && !strcmp(buf, "0")) {
-+	if (!strncmp(buf, "0", 1)) {
- 		dpm_runtime_resume(dev);
- 		error = 0;
- 	}
-Index: 2.6.22-rc2/drivers/base/power/power.h
-===================================================================
---- 2.6.22-rc2.orig/drivers/base/power/power.h	2007-05-23 09:15:14.000000000 +0800
-+++ 2.6.22-rc2/drivers/base/power/power.h	2007-05-24 11:41:51.000000000 +0800
-@@ -56,12 +56,13 @@ extern void dpm_sysfs_remove(struct devi
- extern void dpm_resume(void);
- extern void dpm_power_up(void);
- extern int resume_device(struct device *);
-+extern int resume_device_early(struct device *);
- 
- /*
-  * suspend.c
-  */
- extern int suspend_device(struct device *, pm_message_t);
--
-+extern int suspend_device_late(struct device *, pm_message_t);
- 
- /*
-  * runtime.c
-Index: 2.6.22-rc2/drivers/base/power/runtime.c
-===================================================================
---- 2.6.22-rc2.orig/drivers/base/power/runtime.c	2007-05-24 10:56:47.000000000 +0800
-+++ 2.6.22-rc2/drivers/base/power/runtime.c	2007-05-24 11:43:15.000000000 +0800
-@@ -33,6 +33,9 @@ static void runtime_resume(struct device
- void dpm_runtime_resume(struct device * dev)
- {
- 	down(&dpm_sem);
-+	local_irq_disable();
-+	resume_device_early(dev);
-+	local_irq_enable();
- 	runtime_resume(dev);
- 	up(&dpm_sem);
- }
-@@ -56,8 +59,15 @@ int dpm_runtime_suspend(struct device * 
- 	if (dev->power.power_state.event)
- 		runtime_resume(dev);
- 
--	if (!(error = suspend_device(dev, state)))
--		dev->power.power_state = state;
-+	if (!(error = suspend_device(dev, state))) {
-+		local_irq_disable();
-+		error = suspend_device_late(dev, state);
-+		local_irq_enable();
-+		if (!error)
-+			dev->power.power_state = state;
-+		else
-+			resume_device(dev);
-+	}
-  Done:
- 	up(&dpm_sem);
- 	return error;
-Index: 2.6.22-rc2/drivers/base/power/resume.c
-===================================================================
---- 2.6.22-rc2.orig/drivers/base/power/resume.c	2007-05-24 11:33:23.000000000 +0800
-+++ 2.6.22-rc2/drivers/base/power/resume.c	2007-05-24 11:44:39.000000000 +0800
-@@ -59,7 +59,7 @@ int resume_device(struct device * dev)
- }
- 
- 
--static int resume_device_early(struct device * dev)
-+int resume_device_early(struct device * dev)
- {
- 	int error = 0;
- 
-Index: 2.6.22-rc2/drivers/base/power/suspend.c
-===================================================================
---- 2.6.22-rc2.orig/drivers/base/power/suspend.c	2007-05-24 11:33:19.000000000 +0800
-+++ 2.6.22-rc2/drivers/base/power/suspend.c	2007-05-24 11:44:20.000000000 +0800
-@@ -111,7 +111,7 @@ int suspend_device(struct device * dev, 
-  * running. We can't do down() on a semaphore (and we don't
-  * need the protection)
-  */
--static int suspend_device_late(struct device *dev, pm_message_t state)
-+int suspend_device_late(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
- 
+Request For Partnership
+
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-1207384143-1180698251=:98531
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attention:Sir/Madam,<BR>&nbsp;&nbsp; <BR>&nbsp; I am Nick Hinds,funds Manager of fidelity investment international.the world largest fund management company with over 1.2 trillion pounds capital investment funds.<BR>&nbsp;&nbsp; <BR>&nbsp; Nevertheless,as fidelity Fund Manager,I handle all our investors direct capital funds and secretly extract 3.2% excess maximum returncapital profit (EMRCP) per annum on of the investors magellan capital fund.As am expert,I have made over 49.8 M pounds from the investors EMRCP and hereby looking for someone to trust who i will stand as an investor to receive the funds as an annual investment proceeds from Fidelity magellan capital funds.All confi
+ rmable dovcuments to back up the claims will be made available to you prior to your
+ acceptance .<BR>&nbsp;&nbsp; <BR>&nbsp; Meanwhile,I have worked out the strategies and technicalities whereby the FUND can be claimed in any of our 6 houses without any hitch.Our sharing ration will be 55-40 while 5% will be for expenses during the process of the transaction .should incase you are intrested you are adviced to forward me your direct phone number through my private email address: <A href="mailto:nick_hinds566@yahoo.co.uk">nick_hinds566@yahoo.co.uk</A> for discussion of this transaction in further details.<BR>&nbsp;&nbsp; <BR>&nbsp; Your faithfullly,<BR>&nbsp;&nbsp; <BR>&nbsp; Mr.Nick Hinds<BR>&nbsp;<BR>Request For Partnership<BR><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-1207384143-1180698251=:98531--
+
+--===============5578419945470655750==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============5578419945470655750==--
