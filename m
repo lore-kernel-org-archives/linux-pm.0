@@ -1,10 +1,10 @@
-From: UK NATIONAL LOTTERY DEPARTMENT <mouse4420@cox.net>
-Subject: AWARD DEPT
-Date: Thu, 31 May 2007 19:24:31 -0400
-Message-ID: <26990823.1180653872369.JavaMail.root__39706.0688156218$1180653969$gmane$org@fed1wml06.mgt.cox.net>
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: [RFC] make /sys/bus/pci/devices/foo/power/state work
+Date: Fri, 01 Jun 2007 10:42:45 +0800
+Message-ID: <1180665765.27219.11.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -15,65 +15,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Your ticket number: 56475600545 188 with Serial number 5368/05 drew the=20
-lucky number: 29 Congratulations, you have just won yourself =C2=A3500,00=
-0
-(Five Hundred Thousand Pounds Sterlings) in the satellite software=20
-email lottery conducted by UK NATIONAL LOTTERY in which e-mail=20
-addresses=20
-are picked randomly by software powered by the Internet.=20
-Your email address was amongst those chosen this quarter(no ticket was=20
-sold) and you are to contact our Financial Controller for Clearance.=20
-Here are the contact info:=20
+the interface /sys/bus/pci/devices/foo/power/state is marked as just for
+test, but actually I need below fix to do test. If the interface will be
+removed soon, please ignore the mail.
 
-CLAIMS AGENT=20
-Mrs Mary White
-Email:agentmarywhite_20@yahoo.ie
-
-you are to forward the following details to enable us clear your file=20
-for immediate payment:=20
-1. Full Names: _______________________=20
-2. Address: __________________________=20
-3. Age: _____________________________=20
-4. Sex: __________________________=20
-5. Marital Status: _____________________=20
-6. Occupation: ________________________=20
-7. Phone numbers: ______________________=20
-8. Fax number: ________________________=20
-9. Country: ___________________________=20
-
-Yours faithfully,=20
-PAUL DAVID
-
-
-Your ticket number: 56475600545 188 with Serial number 5368/05 drew the=20
-lucky number: 29 Congratulations, you have just won yourself =C2=A3500,00=
-0
-(Five Hundred Thousand Pounds Sterlings) in the satellite software=20
-email lottery conducted by UK NATIONAL LOTTERY in which e-mail=20
-addresses=20
-are picked randomly by software powered by the Internet.=20
-Your email address was amongst those chosen this quarter(no ticket was=20
-sold) and you are to contact our Financial Controller for Clearance.=20
-Here are the contact info:=20
-
-CLAIMS AGENT=20
-Mrs Mary White
-Email:agentmarywhite_20@yahoo.ie
-
-you are to forward the following details to enable us clear your file=20
-for immediate payment:=20
-1. Full Names: _______________________=20
-2. Address: __________________________=20
-3. Age: _____________________________=20
-4. Sex: __________________________=20
-5. Marital Status: _____________________=20
-6. Occupation: ________________________=20
-7. Phone numbers: ______________________=20
-8. Fax number: ________________________=20
-9. Country: ___________________________=20
-
-Yours faithfully,=20
-PAUL DAVID
+Index: 2.6.22-rc2/drivers/base/power/sysfs.c
+===================================================================
+--- 2.6.22-rc2.orig/drivers/base/power/sysfs.c	2007-05-23 09:15:14.000000000 +0800
++++ 2.6.22-rc2/drivers/base/power/sysfs.c	2007-05-24 11:48:24.000000000 +0800
+@@ -45,19 +45,15 @@ static ssize_t state_store(struct device
+ 	pm_message_t state;
+ 	int error = -EINVAL;
+ 
+-	/* disallow incomplete suspend sequences */
+-	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
+-		return error;
+-
+ 	state.event = PM_EVENT_SUSPEND;
+ 	/* Older apps expected to write "3" here - confused with PCI D3 */
+-	if ((n == 1) && !strcmp(buf, "3"))
++	if (!strncmp(buf, "3", 1))
+ 		error = dpm_runtime_suspend(dev, state);
+ 
+-	if ((n == 1) && !strcmp(buf, "2"))
++	if (!strncmp(buf, "2", 1))
+ 		error = dpm_runtime_suspend(dev, state);
+ 
+-	if ((n == 1) && !strcmp(buf, "0")) {
++	if (!strncmp(buf, "0", 1)) {
+ 		dpm_runtime_resume(dev);
+ 		error = 0;
+ 	}
+Index: 2.6.22-rc2/drivers/base/power/power.h
+===================================================================
+--- 2.6.22-rc2.orig/drivers/base/power/power.h	2007-05-23 09:15:14.000000000 +0800
++++ 2.6.22-rc2/drivers/base/power/power.h	2007-05-24 11:41:51.000000000 +0800
+@@ -56,12 +56,13 @@ extern void dpm_sysfs_remove(struct devi
+ extern void dpm_resume(void);
+ extern void dpm_power_up(void);
+ extern int resume_device(struct device *);
++extern int resume_device_early(struct device *);
+ 
+ /*
+  * suspend.c
+  */
+ extern int suspend_device(struct device *, pm_message_t);
+-
++extern int suspend_device_late(struct device *, pm_message_t);
+ 
+ /*
+  * runtime.c
+Index: 2.6.22-rc2/drivers/base/power/runtime.c
+===================================================================
+--- 2.6.22-rc2.orig/drivers/base/power/runtime.c	2007-05-24 10:56:47.000000000 +0800
++++ 2.6.22-rc2/drivers/base/power/runtime.c	2007-05-24 11:43:15.000000000 +0800
+@@ -33,6 +33,9 @@ static void runtime_resume(struct device
+ void dpm_runtime_resume(struct device * dev)
+ {
+ 	down(&dpm_sem);
++	local_irq_disable();
++	resume_device_early(dev);
++	local_irq_enable();
+ 	runtime_resume(dev);
+ 	up(&dpm_sem);
+ }
+@@ -56,8 +59,15 @@ int dpm_runtime_suspend(struct device * 
+ 	if (dev->power.power_state.event)
+ 		runtime_resume(dev);
+ 
+-	if (!(error = suspend_device(dev, state)))
+-		dev->power.power_state = state;
++	if (!(error = suspend_device(dev, state))) {
++		local_irq_disable();
++		error = suspend_device_late(dev, state);
++		local_irq_enable();
++		if (!error)
++			dev->power.power_state = state;
++		else
++			resume_device(dev);
++	}
+  Done:
+ 	up(&dpm_sem);
+ 	return error;
+Index: 2.6.22-rc2/drivers/base/power/resume.c
+===================================================================
+--- 2.6.22-rc2.orig/drivers/base/power/resume.c	2007-05-24 11:33:23.000000000 +0800
++++ 2.6.22-rc2/drivers/base/power/resume.c	2007-05-24 11:44:39.000000000 +0800
+@@ -59,7 +59,7 @@ int resume_device(struct device * dev)
+ }
+ 
+ 
+-static int resume_device_early(struct device * dev)
++int resume_device_early(struct device * dev)
+ {
+ 	int error = 0;
+ 
+Index: 2.6.22-rc2/drivers/base/power/suspend.c
+===================================================================
+--- 2.6.22-rc2.orig/drivers/base/power/suspend.c	2007-05-24 11:33:19.000000000 +0800
++++ 2.6.22-rc2/drivers/base/power/suspend.c	2007-05-24 11:44:20.000000000 +0800
+@@ -111,7 +111,7 @@ int suspend_device(struct device * dev, 
+  * running. We can't do down() on a semaphore (and we don't
+  * need the protection)
+  */
+-static int suspend_device_late(struct device *dev, pm_message_t state)
++int suspend_device_late(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
