@@ -1,88 +1,67 @@
-From: "Jackie Kramel" <andironflows@zinc.co.nz>
-Subject: Re:
-Date: Sat, 2 Jun 2007 19:28:36 +0000 (UTC)
-Message-ID: <01bf54a8$86abd3f0$6c822ecf@andironflows>
+From: David Greaves <david@dgreaves.com>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
+Date: Sat, 02 Jun 2007 23:31:23 +0100
+Message-ID: <4661EFBB.5010406@dgreaves.com>
+References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1180812460-3969-296"
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Date: Sat, 1 Jan 2000 22:35:38 -0060
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linus@osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763615AbXFBWbe@vger.kernel.org>
+In-Reply-To: <200706020122.49989.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@osdl.org>, xfs@oss.sgi.com
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, netdev@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+This started as a non-regression bug-report about wakeonlan
+During tests I found a real regression and this email is only about 2.6.22-rc3
+without Rafael's patches - which I'll happily come back to later :)
 
-------------=_1180812460-3969-296
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Rafael J. Wysocki wrote:
+> On Saturday, 2 June 2007 00:37, David Greaves wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Friday, 1 June 2007 23:23, David Greaves wrote:
+>> The real situation is worse :(
+> 
+> Ouch.
+>  
+>> 2.6.22-rc3 (no patches) just hangs on suspend at:
+>> Suspending consoles
+>>
+>> console switching works but needs a hard reset to reboot.
+>>
+>> 2.6.22-rc3-skge (with Rafael's patches)
+> Can you set CONFIG_DISABLE_CONSOLE_SUSPEND in .config and see where exactly it
+> fails?
 
-UNIVERSITY DIPLOMAS
+Given that I expected it to fail I unmounted my 1Tb array data before suspending.
+It succeeded... so I started digging...
 
-Obtain a prosperous future, money-earning power and the
-prestige that comes with having the career position you've
-always dreamed of. Diplomas from prestigious non-accredited
-universities based on your present knowledge and life experience.
+So I tried again.
+2.6.22-rc3 (vanilla) suspended OK this time but on resume hung at:
+Stopping tasks done
+Shrinking memory done (0 pages freed)
+Freed 0 kb in 0.0 secs (0.0MB/s)
+Suspending console(s)
 
-If you qualify, no tests, classes, books or examinations will be required.
+Then 2.6.22-rc3 again but CONFIG_DISABLE_CONSOLE_SUSPEND=y
+It suspended again.
+Froze on restore.
+Screen photo here:
+http://www.dgreaves.com/pub/2.6.21-rc3-resume-failure.jpg
 
-Bachelors', Masters', MBA's, Doctorate & Ph.D. degrees available in your field.
+Then 2.6.22-rc3 again but CONFIG_DISABLE_CONSOLE_SUSPEND=y
+This time, before suspending I unmounted my xfs/lvm/raid6 filesystem.
+Just a umount, I left the devices/array up.
+It suspended again.
+This time it resumed without fault.
 
-CONFIDENTIALITY ASSURED
+The machine has another xfs filesystem :
+/dev/hdb2 on /scratch type xfs (rw)
 
-CALL NOW TO RECEIVE YOUR DIPLOMA WITHIN 2 WEEKS
+I've started bisecting... any other info needed?
 
-1-206-338-2427
+David
 
-Call 24HRS, 7 days a week, including Sundays and holidays
-
-
-------------=_1180812460-3969-296
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-
-Spam detection software, running on the system "daredevil.linux-foundation.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  UNIVERSITY DIPLOMAS Obtain a prosperous future,
-  money-earning power and the prestige that comes with having the career
-  position you've always dreamed of. Diplomas from prestigious
-  non-accredited universities based on your present knowledge and life
-  experience. [...] 
-
-Content analysis details:   (6.0 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 2.4 HELO_DYNAMIC_DIALIN    Relay HELO'd using suspicious hostname
-                            (T-Dialin)
- 2.1 DATE_IN_PAST_96_XX     Date: is 96 hours or more before Received: date
- 1.5 PREST_NON_ACCREDITED   BODY: 'Prestigious Non-Accredited Universities'
- 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-                            [score: 0.5000]
-
-
-
-------------=_1180812460-3969-296
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-------------=_1180812460-3969-296--
+Added Linus as it's a regression
+Added xfs as unmounting an xfs filesystem 'fixes' it.
