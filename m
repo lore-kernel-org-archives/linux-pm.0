@@ -1,28 +1,44 @@
-From: "Mr Patrick K.W Chan." <alexandergedike@bellsouth.net>
-Subject: YOUR  SWIFT  RESPONSE  WILL  BE  APPRECIATED
-Date: Sun, 3 Jun 2007 0:19:08 -0400
-Message-ID: <20070603041908.JMVL13855.ibm70aec.bellsouth.net@mail.bellsouth.net>
-Reply-To: pk_3wchan@yahoo.com.hk
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: ehci_hcd causes box to resume immediately after
+	suspend to RAM
+Date: Sun, 3 Jun 2007 12:20:18 +0200
+Message-ID: <200706031220.18854.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: yahoo@yahoo.com
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: linux-pm <linux-pm@lists.osdl.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Friend,
+Hi,
 
-Mr Patrick K. W. Chan.
-(Let me start by introducing myself,i am Mr. Patrick K. W. Chan. Executive Director and Chief 
-Financial Officer of the Hang Seng Bank Ltd.   pk_3wchan@yahoo.com.hk)     
- Contact me on my 
-private email address (pk_3wchan@yahoo.com.hk) for more information
+One of my test boxes suspends to RAM just fine except that if ehci_hcd is
+loaded before the suspend, the box resumes immediately after going to sleep.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
