@@ -1,74 +1,70 @@
-From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-Date: Sun, 03 Jun 2007 23:20:41 +0200
-Message-ID: <87wsykpweu.fsf__41555.1784252331$1180905644$gmane$org@goat.bogus.local>
-References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl>
-	<87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: ehci_hcd causes box to resume immediately
+	after suspend to RAM
+Date: Mon, 4 Jun 2007 00:35:31 +0200
+Message-ID: <200706040035.31605.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Sunday, 3 June 2007 17:31, Alan Stern wrote:
+> On Sun, 3 Jun 2007, Rafael J. Wysocki wrote:
+> 
+> > Hi,
+> > 
+> > One of my test boxes suspends to RAM just fine except that if ehci_hcd is
+> > loaded before the suspend, the box resumes immediately after going to sleep.
+> 
+> Evidently the hardware thinks a wakeup event has occurred.  It is 
+> possible to disable remote wakeup via sysfs, but it would be more 
+> interesting to find out the real reason for the wakeup.
+> 
+> I don't know how to go about doing that, however.  It might be some 
+> interaction at the ACPI level, and it might involve the PCI PME# 
+> signal.
+> 
+> Do you have any USB devices attached when you suspend?
 
-> Second, you can use PM_TRACE (Documentation/power/s2ram.txt) to find the
-> place where it really fails.
+Not that I know of.
 
-First I augmented my minimal config kernel with some TRACE_RESUME()s:
+> You can try using the patch below to see what happens when you manually
+> suspend the controller.  It enables PCI devices to respond to the
+> legacy power/state attribute.  You should look at what "lspci -vv" says
+> about the controller's power management signals, both before and after
+> suspending the PCI device entry.  Maybe also see what ACPI reports.
 
---- a/kernel/power/main.c	2007-05-27 23:48:05.000000000 +0200
-+++ b/kernel/power/main.c	2007-06-03 22:28:46.000000000 +0200
-@@ -223,6 +223,7 @@
- 	pr_debug("PM: Finishing wakeup.\n");
- 	suspend_finish(state);
-  Unlock:
-+	TRACE_RESUME(error);
- 	mutex_unlock(&pm_mutex);
- 	return error;
- }
-@@ -303,6 +304,7 @@
- 		error = enter_state(state);
- 	else
- 		error = -EINVAL;
-+	TRACE_RESUME(error);
- 	return error ? error : n;
- }
- 
-With this test script:
+I'll be able to do this in a couple of days, when I have access to the machine
+again.
 
-#! /bin/sh
+Greetings,
+Rafael
 
-sync
-echo 1 >/sys/power/pm_trace
-echo mem >/sys/power/state
-shutdown -rn now
 
-I got alternating
-  hash matches drivers/base/power/resume.c:58
-and
-  hash matches kernel/power/main.c:307
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
 
-> First, you can check if the patch
->
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/20-ACPI-preserve-the-ebx-value-in-acpi_copy_wakeup_routine.patch
-
-Then I applied this patch, but it doesn't change anything.
-
-But either way the script never reaches "shutdown -rn now". So, it
-seems, that my laptop does a full resume every other reboot, but it
-never returns to userspace.
-
-> Also, please read Documentation/power/basic-pm-debugging.txt .
-
-Regards, Olaf.
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
