@@ -1,66 +1,76 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
-Date: Sun, 03 Jun 2007 16:03:46 +0100
-Message-ID: <4662D852.4000005@dgreaves.com>
-References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: ehci_hcd causes box to resume immediately
+	after suspend to RAM
+Date: Sun, 3 Jun 2007 11:31:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
+References: <200706031220.18854.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753795AbXFCPED@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, netdev@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <200706031220.18854.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-Linus Torvalds wrote:
-> It would be interesting to see what triggered it, since it apparently 
-> worked before. So yes, a bisection would be great.
+On Sun, 3 Jun 2007, Rafael J. Wysocki wrote:
 
-Tejun, all the problematic patches are yours - so adding you.
-Neil, since the problem only occurs whilst an xfs filesystem is mounted on a
-raid6 array, I've cc'ed you too...
+> Hi,
+> 
+> One of my test boxes suspends to RAM just fine except that if ehci_hcd is
+> loaded before the suspend, the box resumes immediately after going to sleep.
 
-OK
-Got as far as I could...
-I've run 9 or 10 kernels/bisects and got to a point with 8 of Tejun's changesets
-where it wouldn't compile:
+Evidently the hardware thinks a wakeup event has occurred.  It is 
+possible to disable remote wakeup via sysfs, but it would be more 
+interesting to find out the real reason for the wakeup.
 
-  CC      drivers/ata/sata_via.o
-drivers/ata/sata_via.c:120: error: `ata_scsi_device_suspend' undeclared here
-(not in a function)
-drivers/ata/sata_via.c:120: error: initializer element is not constant
-drivers/ata/sata_via.c:120: error: (near initialization for `svia_sht.suspend')
-drivers/ata/sata_via.c:121: error: `ata_scsi_device_resume' undeclared here (not
-in a function)
-drivers/ata/sata_via.c:121: error: initializer element is not constant
-drivers/ata/sata_via.c:121: error: (near initialization for `svia_sht.resume')
-make[2]: *** [drivers/ata/sata_via.o] Error 1
+I don't know how to go about doing that, however.  It might be some 
+interaction at the ACPI level, and it might involve the PCI PME# 
+signal.
 
-git bisect visualise gave:
+Do you have any USB devices attached when you suspend?
 
-bad: 48aaae7a2fa46e1ed0d0b7677fde79ccfcb8c963
-bisect: 54936f8b099325992f0f212a5e366fd5257c6c9c
-good: 0a3fd051c7036ef71b58863f8e5da7c3dabd9d3f
+You can try using the patch below to see what happens when you manually
+suspend the controller.  It enables PCI devices to respond to the
+legacy power/state attribute.  You should look at what "lspci -vv" says
+about the controller's power management signals, both before and after
+suspending the PCI device entry.  Maybe also see what ACPI reports.
 
-I used:
-git reset --hard 8575b814097af648dad284bd3087875a11b13d18
-git reset --hard e92351bb53c0849fabfa80be53cbf3b0aa166e54
-git reset --hard 3a32a8e96694a243ec7e7feb6d76dfc4b1fe90c1
-git reset --hard 9666f4009c22f6520ac3fb8a19c9e32ab973e828
-to step through - non compiled
-git reset --hard 1d30c33d8d07868199560b24f10ed6280e78a89c
-compiled and hung on resume.
-
-given the first patch identified is
-9666f4009c22f6520ac3fb8a19c9e32ab973e828: "libata: reimplement suspend/resume
-support using sdev->manage_start_stop"
-That seems a good candidate...
-
-Incidentally, when I compile 1d30c33d8d07868199560b24f10ed6280e78a89c (far side
-of the implicated changesets) if I umount my xfs over raid6 filesystem (no lvm
-as I said in the OP) the resume succeeds.
+Alan Stern
 
 
-David
-PS I hope I've interpreted bisect correctly - first use and all that...
+Index: usb-2.6/drivers/base/power/sysfs.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/sysfs.c
++++ usb-2.6/drivers/base/power/sysfs.c
+@@ -45,10 +45,6 @@ static ssize_t state_store(struct device
+ 	pm_message_t state;
+ 	int error = -EINVAL;
+ 
+-	/* disallow incomplete suspend sequences */
+-	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
+-		return error;
+-
+ 	state.event = PM_EVENT_SUSPEND;
+ 	/* Older apps expected to write "3" here - confused with PCI D3 */
+ 	if ((n == 1) && !strcmp(buf, "3"))
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
