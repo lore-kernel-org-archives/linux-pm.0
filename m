@@ -1,15 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 2/2] PM: Disable usermode helper
-	before hibernation and suspend
-Date: Sun, 3 Jun 2007 16:42:19 +0000
-Message-ID: <20070603164219.GC4093__45003.5373600715$1180888991$gmane$org@ucw.cz>
-References: <200705272229.21263.rjw@sisk.pl> <200706020241.53788.rjw@sisk.pl>
-	<200706020244.50180.rjw@sisk.pl>
+From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Sun, 03 Jun 2007 23:20:41 +0200
+Message-ID: <87wsykpweu.fsf__41555.1784252331$1180905644$gmane$org@goat.bogus.local>
+References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl>
+	<87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200706020244.50180.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +17,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Use a hibernation and suspend notifier to disable the user mode helper before
-> a hibernation/suspend and enable it after the operation.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Second, you can use PM_TRACE (Documentation/power/s2ram.txt) to find the
+> place where it really fails.
 
-ACK.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+First I augmented my minimal config kernel with some TRACE_RESUME()s:
+
+--- a/kernel/power/main.c	2007-05-27 23:48:05.000000000 +0200
++++ b/kernel/power/main.c	2007-06-03 22:28:46.000000000 +0200
+@@ -223,6 +223,7 @@
+ 	pr_debug("PM: Finishing wakeup.\n");
+ 	suspend_finish(state);
+  Unlock:
++	TRACE_RESUME(error);
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+ }
+@@ -303,6 +304,7 @@
+ 		error = enter_state(state);
+ 	else
+ 		error = -EINVAL;
++	TRACE_RESUME(error);
+ 	return error ? error : n;
+ }
+ 
+With this test script:
+
+#! /bin/sh
+
+sync
+echo 1 >/sys/power/pm_trace
+echo mem >/sys/power/state
+shutdown -rn now
+
+I got alternating
+  hash matches drivers/base/power/resume.c:58
+and
+  hash matches kernel/power/main.c:307
+
+> First, you can check if the patch
+>
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/20-ACPI-preserve-the-ebx-value-in-acpi_copy_wakeup_routine.patch
+
+Then I applied this patch, but it doesn't change anything.
+
+But either way the script never reaches "shutdown -rn now". So, it
+seems, that my laptop does a full resume every other reboot, but it
+never returns to userspace.
+
+> Also, please read Documentation/power/basic-pm-debugging.txt .
+
+Regards, Olaf.
