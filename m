@@ -1,47 +1,28 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
-Date: Sat, 2 Jun 2007 15:46:47 -0700 (PDT)
-Message-ID: <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
-References: <46608E3F.4060201@dgreaves.com> <200706012342.45657.rjw@sisk.pl>
- <46609FAD.7010203@dgreaves.com> <200706020122.49989.rjw@sisk.pl>
- <4661EFBB.5010406@dgreaves.com>
+From: "Mr Patrick K.W Chan." <alexandergedike@bellsouth.net>
+Subject: YOUR  SWIFT  RESPONSE  WILL  BE  APPRECIATED
+Date: Sun, 3 Jun 2007 0:19:08 -0400
+Message-ID: <20070603041908.JMVL13855.ibm70aec.bellsouth.net@mail.bellsouth.net>
+Reply-To: pk_3wchan@yahoo.com.hk
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763513AbXFBWrY@vger.kernel.org>
-In-Reply-To: <4661EFBB.5010406@dgreaves.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, netdev@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: yahoo@yahoo.com
 List-Id: linux-pm@vger.kernel.org
 
+Dear Friend,
 
-
-On Sat, 2 Jun 2007, David Greaves wrote:
-> 
-> Then 2.6.22-rc3 again but CONFIG_DISABLE_CONSOLE_SUSPEND=y
-> It suspended again.
-> Froze on restore.
-> Screen photo here:
-> http://www.dgreaves.com/pub/2.6.21-rc3-resume-failure.jpg
-
-Ok, it wasn't a hidden oops. The DISABLE_CONSOLE_SUSPEND=y thing sometimes 
-shows oopses that are otherwise hidden, but at other times it just causes 
-more problems (hard hangs when trying to display something on a device 
-that is suspended, or behind a bridge that got suspended).
-
-In your case, the screen output just shows normal resume output, and it 
-apparently just hung for some unknown reason. It *may* be worth trying to 
-do a SysRQ + 't' thing to see what tasks are running (or rather, not 
-running), but since you won't be able to capture it, it's probably not 
-going to be useful.
-
-> Then 2.6.22-rc3 again but CONFIG_DISABLE_CONSOLE_SUSPEND=y
-> This time, before suspending I unmounted my xfs/lvm/raid6 filesystem.
-> Just a umount, I left the devices/array up.
-> It suspended again.
-> This time it resumed without fault.
-
-It would be interesting to see what triggered it, since it apparently 
-worked before. So yes, a bisection would be great.
-
-			Linus
+Mr Patrick K. W. Chan.
+(Let me start by introducing myself,i am Mr. Patrick K. W. Chan. Executive Director and Chief 
+Financial Officer of the Hang Seng Bank Ltd.   pk_3wchan@yahoo.com.hk)     
+ Contact me on my 
+private email address (pk_3wchan@yahoo.com.hk) for more information
