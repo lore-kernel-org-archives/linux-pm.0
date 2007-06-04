@@ -1,111 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] Add suspend and resume support to uli526x
-Date: Mon, 4 Jun 2007 15:49:10 +0200
-Message-ID: <200706041549.11277.rjw@sisk.pl>
-References: <200706031237.36773.rjw@sisk.pl> <20070604111112.GP4363@elf.ucw.cz>
+From: Olaf Dietsche <olaf.dietsche@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Mon, 04 Jun 2007 18:43:55 +0200
+Message-ID: <87hcpnpt4k.fsf__14004.8868641772$1180975462$gmane$org@goat.bogus.local>
+References: <878xb35sje.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
+	<87wsykpweu.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <20070604111112.GP4363@elf.ucw.cz>
-Content-Disposition: inline
-Sender: netdev-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.osdl.org>, netdev@vger.kernel.org, Valerie Henson <val@nmt.edu>, Nigel Cunningham <nigel@nigel.suspend2.net>, Peer Chen <peer.chen@uli.com.tw>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-On Monday, 4 June 2007 13:11, Pavel Machek wrote:
-> Hi!
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Add suspend/resume support to the uli526x network driver (tested on x86_64,
-> > with 'Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40').
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Looks ok to me.
-> 
-> > +#ifdef CONFIG_PM
-> > +
-> > +/*
-> > + *	Suspend the interface.
-> > + */
-> > +
-> > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +{
-> > +	struct net_device *dev = pci_get_drvdata(pdev);
-> > +
-> > +	ULI526X_DBUG(0, "uli526x_suspend", 0);
-> > +
-> > +	if (dev && netdev_priv(dev)) {
-> > +		if (netif_running(dev)) {
-> > +			netif_device_detach(dev);
-> > +			uli526x_down(dev);
-> > +		}
-> > +		pci_save_state(pdev);
-> > +		pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
-> > +		pci_disable_device(pdev);
-> > +		pci_set_power_state(pdev, pci_choose_state(pdev, state));
-> > +	}
-> > +	return 0;
-> > +}
-> > +
-> > +/*
-> > + *	Resume the interface.
-> > + */
-> > +
-> > +static int uli526x_resume(struct pci_dev *pdev)
-> > +{
-> > +	struct net_device *dev = pci_get_drvdata(pdev);
-> > +	struct uli526x_board_info *db = netdev_priv(dev);
-> > +	int err;
-> > +
-> > +	ULI526X_DBUG(0, "uli526x_resume", 0);
-> > +
-> > +	if (dev && db) {
-> > +		pci_set_power_state(pdev, PCI_D0);
-> > +		err = pci_enable_device(pdev);
-> > +		if (err) {
-> > +			printk(KERN_WARNING "%s: Could not enable device \n",
-> > +				dev->name);
-> > +			return err;
-> > +		}
-> > +		pci_restore_state(pdev);
-> > +		pci_set_master(pdev);
-> > +		if (netif_running(dev)) {
-> > +			uli526x_up(dev);
-> > +			netif_device_attach(dev);
-> > +		}
-> > +	}
-> > +	return 0;
-> > +}
-> > +
-> #else 
-> #define *_resume NULL
-> #define *_suspend NULL
+> On Sunday, 3 June 2007 23:20, Olaf Dietsche wrote:
+>
+>> But either way the script never reaches "shutdown -rn now". So, it
+>> seems, that my laptop does a full resume every other reboot, but it
+>> never returns to userspace.
+>
+> I'm still suspecting that the problem is related to your graphics adapter.
 
-> > +#endif /* CONFIG_PM */
-> 
-> > @@ -1689,6 +1775,10 @@ static struct pci_driver uli526x_driver 
-> >  	.id_table	= uli526x_pci_tbl,
-> >  	.probe		= uli526x_init_one,
-> >  	.remove		= __devexit_p(uli526x_remove_one),
-> > +#ifdef CONFIG_PM
-> > +	.suspend	= uli526x_suspend,
-> > +	.resume		= uli526x_resume,
-> > +#endif
-> 
-> ...so that this ifdef is not needed?
+Maybe it's the most common problem, but why do you think so? Even with
+a black screen the kernel should return to userspace.
 
-OK, why not.
+> What graphics adapter do you have in the box?
 
-Greetings,
-Rafael
+0000:01:00.0 VGA compatible controller: nVidia Corporation: Unknown device 0148 (rev a2) (prog-if 00 [VGA])
+	Subsystem: QUANTA Computer Inc: Unknown device 0729
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin A routed to IRQ 10
+	Region 0: Memory at c4000000 (32-bit, non-prefetchable) [size=64M]
+	Region 1: Memory at d0000000 (64-bit, prefetchable) [size=128M]
+	Region 3: Memory at c1000000 (64-bit, non-prefetchable) [size=16M]
+	Expansion ROM at c2000000 [disabled] [size=128K]
+	Capabilities: [60] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [68] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [78] #10 [0001]
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Regards, Olaf.
