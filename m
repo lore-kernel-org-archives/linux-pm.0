@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
- before hibernation/suspend
-Date: Tue, 5 Jun 2007 14:45:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706051420351.2606-100000__49049.7171100744$1181069271$gmane$org@iolanthe.rowland.org>
-References: <20070604110052.GI4363@elf.ucw.cz>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: Linux 2.6.22-rc4
+Date: Tue, 05 Jun 2007 20:54:33 +0200
+Message-ID: <4665B169.2030803__47047.9319840253$1181069742$gmane$org@googlemail.com>
+References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070604110052.GI4363@elf.ucw.cz>
+In-Reply-To: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,78 +17,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 4 Jun 2007, Pavel Machek wrote:
+Linus Torvalds pisze:
+> So -rc4 is out there now, hopefully shrinking the regression list furth=
+er.=20
+>=20
 
-> > With the USB subsystem I have followed the approach taken by the PM
-> > core, which is that tasks are frozen.  But one can -- and Linus has on
-> > at least one occasion -- make a good case that tasks should be left
-> > running while only I/O is frozen.  This would require the subsystem to
-> > distinguish between a selective device suspend and a system-wide
-> > suspend-to-RAM, so that selective resume could be enabled on demand in
-> > one case but not the other.
-> > 
-> > It's quite doable in principle -- it's just not the technique I used.
-> 
-> I guess we need to do that. Random user should not be able to prevent
-> machine from sleeping.
+It is too stable for me.
 
-Just to be clear about this, let's agree that we're talking about 
-suspend-to-RAM here, not hibernation.
-
-It boils down to whether we want to freeze user tasks.  As I recall,
-Linus said that he didn't have any big objection to freezing user
-threads; he was much more concerned about freezing kernel threads.  
-Thanks to Raphael's new notifier chains this will no longer be an
-issue, since kernel threads will be able to stop themselves when they
-receive a suspend notification.
-
-There may remain some obscure difficulties in discerning whether a 
-particular thread should be classified as user or kernel, but let's 
-ignore them.
-
-Even if we don't actively freeze user threads, approximately the same
-effect can be achieved in the following way: Change the main kernel
-entry points so that any thread performing a system call during a
-suspend will get frozen until the suspend is over.  Threads that run
-entirely in userspace will continue doing useful work as before, and
-kernel threads won't be affected at all.  (Not that I think it's 
-necessary to do this; it's just a way to avoid freezing user tasks
-until they need it.)
-
-One way or another, freezing user tasks should not be a big deal.  
-After all, once the suspend is complete eveything will effectively be 
-frozen anyway.  I suppose there might be issues involving tasks which 
-need to run in order to complete the suspend -- IMO any such issues 
-should be handled by carrying out the necessary actions before the 
-point where we now start up the freezer.
+aio_dio_bugs ok
+aiostress ok
+bash_shared_mapping ok
+cpu_hotplug ok
+fio ok
+fsx ok
+interbench ok
+iozone ok
+isic ok
+linus_stress ok
+the latest ltp ok
 
 
-The alternative is to have drivers take over the burden.  I don't like
-this at all.  The most obvious disadvantage is that the necessary
-checks would have to be duplicated many many times and spread out over
-lots of drivers.
+this looks harmless
 
-It's also harder to handle these things at the driver level.  Suppose a
-driver gets an I/O request while a suspend is underway.  What should it
-do?  Return an error?  Block until the suspend is over?  Both
-approaches have their difficulties:
+[  116.733327] PM: suspend-to-disk mode set to 'shutdown'
+[  116.738849] swsusp: Basic memory bitmaps created
+[  116.745353] Stopping tasks ... WARNING: at /home/devel/linux-git/kerne=
+l/lockdep.c:2414 check_flags()
+[  116.754921]  [<c0404fbf>] show_trace_log_lvl+0x1a/0x2f
+[  116.754937]  [<c0405bd6>] show_trace+0x12/0x14
+[  116.754947]  [<c0405c5d>] dump_stack+0x16/0x18
+[  116.754957]  [<c043c3e5>] check_flags+0x95/0x143
+[  116.754967]  [<c043f158>] lock_acquire+0x29/0x82
+[  116.754977]  [<c06313a7>] _spin_lock+0x35/0x42
+[  116.754990]  [<c044894a>] refrigerator+0x14/0xc6
+[  116.755002]  [<c042d4b3>] get_signal_to_deliver+0x33/0x397
+[  116.755016]  [<c0403597>] do_notify_resume+0x94/0x6ed
+[  116.755029]  [<c0404099>] work_notifysig+0x13/0x1a
+[  116.755044]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+[  116.755052] irq event stamp: 69
+[  116.755060] hardirqs last  enabled at (69): [<c04040f9>] syscall_exit_=
+work+0x11/0x26
+[  116.755084] hardirqs last disabled at (68): [<c0403fdd>] syscall_exit+=
+0x9/0x1a
+[  116.755109] softirqs last  enabled at (0): [<c042150c>] copy_process+0=
+x4dd/0x1286
+[  116.755139] softirqs last disabled at (0): [<00000000>] 0x0
+[  116.945776] done.
 
-Returning an error would mean that suspend is no longer transparent.  
-Even an error like -EAGAIN.
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4/git-d=
+mesg
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4/git-c=
+onfig
 
-Waiting until the suspend is over is likely to be impractical.  At a 
-minimum it would involve adding code to drop a lock or mutex, enter the 
-freezer (or its equivalent), and then restart the I/O operation.  And 
-then, what if the driver was invoked with O_NONBLOCK?
+Regards,
+Michal
 
-I think it is much better overall to stop I/O requests from being
-generated at the source, either by freezing userspace or preventing it
-from making system calls.  It's hard to imagine that anybody would
-miss the small amount of CPU time they'd be giving up by not allowing
-user threads to run during the time that a suspend is underway!
-
-Alan Stern
+--=20
+"Najbardziej brakowa=C5=82o mi twojego milczenia."
+-- Andrzej Sapkowski "Co=C5=9B wi=C4=99cej"
