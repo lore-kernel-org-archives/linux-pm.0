@@ -1,116 +1,226 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC][PATCH] Add suspend and resume support to uli526x
-Date: Tue, 05 Jun 2007 08:55:25 +1000
-Message-ID: <1180997725.4356.77.camel@nigel.suspend2.net>
+From: Valerie Henson <val@nmt.edu>
+Subject: Re: [RFC][PATCH] Add suspend and resume support to
+	uli526x
+Date: Mon, 4 Jun 2007 18:58:28 -0600
+Message-ID: <20070605005828.GA29783@rainbow>
 References: <200706031237.36773.rjw@sisk.pl>
-	 <20070604111112.GP4363@elf.ucw.cz> <200706041549.11277.rjw@sisk.pl>
-	 <1180991794.4356.31.camel@nigel.suspend2.net>
-	 <20070604224146.GE2711@elf.ucw.cz>
-	 <1180997344.4356.74.camel@nigel.suspend2.net>
-	 <20070604225303.GG2711@elf.ucw.cz>
-Reply-To: nigel@nigel.suspend2.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IgQhIv85iwn/HBZtTcuj"
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <20070604225303.GG2711@elf.ucw.cz>
-Sender: netdev-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm <linux-pm@lists.osdl.org>, netdev@vger.kernel.org, Valerie Henson <val@nmt.edu>, Peer Chen <peer.chen@uli.com.tw>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200706031237.36773.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peer Chen <peer.chen@uli.com.tw>, netdev@vger.kernel.org, linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, Jun 03, 2007 at 12:37:35PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Add suspend/resume support to the uli526x network driver (tested on x86_64,
+> with 'Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40').
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
---=-IgQhIv85iwn/HBZtTcuj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Nice work!  Looks good to me.
 
-Hi.
+Signed-off-by: Val Henson <val@nmt.edu>
 
-On Tue, 2007-06-05 at 00:53 +0200, Pavel Machek wrote:
-> On Tue 2007-06-05 08:49:04, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > On Tue, 2007-06-05 at 00:41 +0200, Pavel Machek wrote:
-> > > Hi!
-> > >=20
-> > > > > > > +#endif /* CONFIG_PM */
-> > > > > >=20
-> > > > > > > @@ -1689,6 +1775,10 @@ static struct pci_driver uli526x_drive=
-r=20
-> > > > > > >  	.id_table	=3D uli526x_pci_tbl,
-> > > > > > >  	.probe		=3D uli526x_init_one,
-> > > > > > >  	.remove		=3D __devexit_p(uli526x_remove_one),
-> > > > > > > +#ifdef CONFIG_PM
-> > > > > > > +	.suspend	=3D uli526x_suspend,
-> > > > > > > +	.resume		=3D uli526x_resume,
-> > > > > > > +#endif
-> > > > > >=20
-> > > > > > ...so that this ifdef is not needed?
-> > > > >=20
-> > > > > OK, why not.
-> > > >=20
-> > > > Because it's uglier and #ifdef is the established way of doing thin=
-gs?
-> > >=20
-> > > Actually the way I suggested is nicer, IIRC akpm invented it. It keep=
-s
-> > > ifdefs localized around the block that _needs_ to be ifdefed.
-> >=20
-> > The localised point is true. I'll also admit that 'nicer'/'uglier' is a
-> > matter of aesthetics and therefore personal opinion.
-> >=20
-> > I guess that leaves the question, "What's the precedent to follow?" or
-> > "Is there a driver that's already got this new format?".
->=20
-> for example net/ne.c ...
->=20
-> pavel@amd:/data/l/linux/drivers$ grep "_suspend NULL" */*.c
-> leds/leds-ams-delta.c:#define ams_delta_led_suspend NULL
-> leds/leds-net48xx.c:#define net48xx_led_suspend NULL
-> leds/leds-s3c24xx.c:#define s3c24xx_led_suspend NULL
-> leds/leds-tosa.c:#define tosaled_suspend NULL
-> leds/leds-wrap.c:#define wrap_led_suspend NULL
-> misc/tifm_7xx1.c:#define tifm_7xx1_suspend NULL
-> misc/tifm_core.c:#define tifm_device_suspend NULL
-> net/3c509.c:#define el3_suspend NULL
-> net/forcedeth.c:#define nv_suspend NULL
-> net/ne.c:#define ne_drv_suspend NULL
-> parport/parport_ax88796.c:#define parport_ax88796_suspend NULL
-> rtc/rtc-at91rm9200.c:#define at91_rtc_suspend NULL
-> rtc/rtc-omap.c:#define omap_rtc_suspend NULL
-> rtc/rtc-s3c.c:#define s3c_rtc_suspend NULL
-> serial/8250_pnp.c:#define serial_pnp_suspend NULL
-> serial/atmel_serial.c:#define atmel_serial_suspend NULL
-> serial/s3c2410.c:#define s3c24xx_serial_suspend NULL
-> spi/pxa2xx_spi.c:#define pxa2xx_spi_suspend NULL
-> spi/spi_bfin5xx.c:#define bfin5xx_spi_suspend NULL
-> spi/spi_imx.c:#define spi_imx_suspend NULL
-> spi/spi_s3c24xx.c:#define s3c24xx_spi_suspend NULL
-> spi/spi_s3c24xx_gpio.c:#define s3c2410_spigpio_suspend NULL
-> video/arkfb.c:#define ark_pci_suspend NULL
-> video/au1100fb.c:#define au1100fb_drv_suspend NULL
-> video/s3c2410fb.c:#define s3c2410fb_suspend NULL
-> video/skeletonfb.c:#define xxxfb_suspend NULL
-> video/skeletonfb.c:#define xxxfb_suspend NULL
-> video/sm501fb.c:#define sm501fb_suspend NULL
+-VAL
 
-Cool. That's a lot more than I would have expected. Ok. I'll drop my
-objection then. (Still think it's ugly though :>).
-
-Regards,
-
-Nigel
-
---=-IgQhIv85iwn/HBZtTcuj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGZJhdN0y+n1M3mo0RAhBsAKDVtMJppdfV4oQ1RM2NMnGIQT0/OwCgrqO5
-aEi47cIR7+dSrfNiIhw8B6M=
-=Tq9j
------END PGP SIGNATURE-----
-
---=-IgQhIv85iwn/HBZtTcuj--
-
+>  drivers/net/tulip/uli526x.c |  120 ++++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 105 insertions(+), 15 deletions(-)
+> 
+> Index: linux-2.6.22-rc3/drivers/net/tulip/uli526x.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/drivers/net/tulip/uli526x.c	2007-06-03 12:10:41.000000000 +0200
+> +++ linux-2.6.22-rc3/drivers/net/tulip/uli526x.c	2007-06-03 12:14:33.000000000 +0200
+> @@ -220,6 +220,10 @@ static int mode = 8;
+>  static int uli526x_open(struct net_device *);
+>  static int uli526x_start_xmit(struct sk_buff *, struct net_device *);
+>  static int uli526x_stop(struct net_device *);
+> +#ifdef CONFIG_PM
+> +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state);
+> +static int uli526x_resume(struct pci_dev *pdev);
+> +#endif
+>  static struct net_device_stats * uli526x_get_stats(struct net_device *);
+>  static void uli526x_set_filter_mode(struct net_device *);
+>  static const struct ethtool_ops netdev_ethtool_ops;
+> @@ -425,21 +429,14 @@ static void __devexit uli526x_remove_one
+>  
+>  
+>  /*
+> - *	Open the interface.
+> - *	The interface is opened whenever "ifconfig" activates it.
+> + *	Bring the interface up.
+> + *	Used by uli526x_open and uli526x_resume.
+>   */
+>  
+> -static int uli526x_open(struct net_device *dev)
+> +static void uli526x_up(struct net_device *dev)
+>  {
+> -	int ret;
+>  	struct uli526x_board_info *db = netdev_priv(dev);
+>  
+> -	ULI526X_DBUG(0, "uli526x_open", 0);
+> -
+> -	ret = request_irq(dev->irq, &uli526x_interrupt, IRQF_SHARED, dev->name, dev);
+> -	if (ret)
+> -		return ret;
+> -
+>  	/* system variable init */
+>  	db->cr6_data = CR6_DEFAULT | uli526x_cr6_user_set;
+>  	db->tx_packet_cnt = 0;
+> @@ -467,7 +464,25 @@ static int uli526x_open(struct net_devic
+>  	db->timer.data = (unsigned long)dev;
+>  	db->timer.function = &uli526x_timer;
+>  	add_timer(&db->timer);
+> +}
+> +
+> +
+> +/*
+> + *	Open the interface.
+> + *	The interface is opened whenever "ifconfig" activates it.
+> + */
+>  
+> +static int uli526x_open(struct net_device *dev)
+> +{
+> +	int ret;
+> +
+> +	ULI526X_DBUG(0, "uli526x_open", 0);
+> +
+> +	ret = request_irq(dev->irq, &uli526x_interrupt, IRQF_SHARED, dev->name, dev);
+> +	if (ret)
+> +		return ret;
+> +
+> +	uli526x_up(dev);
+>  	return 0;
+>  }
+>  
+> @@ -613,17 +628,15 @@ static int uli526x_start_xmit(struct sk_
+>  
+>  
+>  /*
+> - *	Stop the interface.
+> - *	The interface is stopped when it is brought.
+> + *	Take the interface down.
+> + *	Used by uli526x_stop and uli526x_suspend.
+>   */
+>  
+> -static int uli526x_stop(struct net_device *dev)
+> +static void uli526x_down(struct net_device *dev)
+>  {
+>  	struct uli526x_board_info *db = netdev_priv(dev);
+>  	unsigned long ioaddr = dev->base_addr;
+>  
+> -	ULI526X_DBUG(0, "uli526x_stop", 0);
+> -
+>  	/* disable system */
+>  	netif_stop_queue(dev);
+>  
+> @@ -634,6 +647,21 @@ static int uli526x_stop(struct net_devic
+>  	outl(ULI526X_RESET, ioaddr + DCR0);
+>  	udelay(5);
+>  	phy_write(db->ioaddr, db->phy_addr, 0, 0x8000, db->chip_id);
+> +}
+> +
+> +
+> +/*
+> + *	Stop the interface.
+> + *	The interface is stopped when it is brought.
+> + */
+> +
+> +static int uli526x_stop(struct net_device *dev)
+> +{
+> +	struct uli526x_board_info *db = netdev_priv(dev);
+> +
+> +	ULI526X_DBUG(0, "uli526x_stop", 0);
+> +
+> +	uli526x_down(dev);
+>  
+>  	/* free interrupt */
+>  	free_irq(dev->irq, dev);
+> @@ -654,6 +682,64 @@ static int uli526x_stop(struct net_devic
+>  }
+>  
+>  
+> +#ifdef CONFIG_PM
+> +
+> +/*
+> + *	Suspend the interface.
+> + */
+> +
+> +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +
+> +	ULI526X_DBUG(0, "uli526x_suspend", 0);
+> +
+> +	if (dev && netdev_priv(dev)) {
+> +		if (netif_running(dev)) {
+> +			netif_device_detach(dev);
+> +			uli526x_down(dev);
+> +		}
+> +		pci_save_state(pdev);
+> +		pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
+> +		pci_disable_device(pdev);
+> +		pci_set_power_state(pdev, pci_choose_state(pdev, state));
+> +	}
+> +	return 0;
+> +}
+> +
+> +/*
+> + *	Resume the interface.
+> + */
+> +
+> +static int uli526x_resume(struct pci_dev *pdev)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	struct uli526x_board_info *db = netdev_priv(dev);
+> +	int err;
+> +
+> +	ULI526X_DBUG(0, "uli526x_resume", 0);
+> +
+> +	if (dev && db) {
+> +		pci_set_power_state(pdev, PCI_D0);
+> +		err = pci_enable_device(pdev);
+> +		if (err) {
+> +			printk(KERN_WARNING "%s: Could not enable device \n",
+> +				dev->name);
+> +			return err;
+> +		}
+> +		pci_restore_state(pdev);
+> +		pci_set_master(pdev);
+> +		if (netif_running(dev)) {
+> +			uli526x_up(dev);
+> +			netif_device_attach(dev);
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +#endif /* CONFIG_PM */
+> +
+> +
+>  /*
+>   *	M5261/M5263 insterrupt handler
+>   *	receive the packet to upper layer, free the transmitted packet
+> @@ -1689,6 +1775,10 @@ static struct pci_driver uli526x_driver 
+>  	.id_table	= uli526x_pci_tbl,
+>  	.probe		= uli526x_init_one,
+>  	.remove		= __devexit_p(uli526x_remove_one),
+> +#ifdef CONFIG_PM
+> +	.suspend	= uli526x_suspend,
+> +	.resume		= uli526x_resume,
+> +#endif
+>  };
+>  
+>  MODULE_AUTHOR("Peer Chen, peer.chen@uli.com.tw");
