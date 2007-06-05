@@ -1,37 +1,39 @@
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] Add suspend and resume support to uli526x
-Date: Mon, 4 Jun 2007 22:56:38 -0700
-Message-ID: <20070604225638.0577a06a@freepuppy>
-References: <200706031237.36773.rjw@sisk.pl>
-	<20070604111112.GP4363@elf.ucw.cz>
-	<200706041549.11277.rjw@sisk.pl>
-	<1180991794.4356.31.camel@nigel.suspend2.net>
-	<20070604224146.GE2711@elf.ucw.cz>
-	<1180997344.4356.74.camel@nigel.suspend2.net>
-	<20070604225303.GG2711@elf.ucw.cz>
-	<1180997725.4356.77.camel@nigel.suspend2.net>
+Date: Tue, 5 Jun 2007 11:31:29 +0200
+Message-ID: <200706051131.30764.rjw@sisk.pl>
+References: <200706031237.36773.rjw@sisk.pl> <1180997725.4356.77.camel@nigel.suspend2.net> <20070604225638.0577a06a@freepuppy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <1180997725.4356.77.camel@nigel.suspend2.net>
+In-Reply-To: <20070604225638.0577a06a@freepuppy>
+Content-Disposition: inline
 Sender: netdev-owner@vger.kernel.org
-To: nigel@nigel.suspend2.net
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm <linux-pm@lists.osdl.org>, netdev@vger.kernel.org, Valerie Henson <val@nmt.edu>, Peer Chen <peer.chen@uli.com.tw>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>, linux-pm <linux-pm@lists.osdl.org>, netdev@vger.kernel.org, Valerie Henson <val@nmt.edu>, Peer Chen <peer.chen@uli.com.tw>
 List-Id: linux-pm@vger.kernel.org
 
-I hope soon to add suspend/resume to the network device class
-and remove driver specific suspend/resume from lots of devices.
+On Tuesday, 5 June 2007 07:56, Stephen Hemminger wrote:
+> I hope soon to add suspend/resume to the network device class
+> and remove driver specific suspend/resume from lots of devices.
+> 
+> The class suspend routine would just be:
+> 	pci_save_state
+> 	dev->stop
+> 
+> resume is
+> 	pci_restore_state
+> 	dev->open
+> 
+> for many devices that is all they need.
 
-The class suspend routine would just be:
-	pci_save_state
-	dev->stop
+Well, that would be nice, but does it mean there's no need for the $subject
+patch?
 
-resume is
-	pci_restore_state
-	dev->open
+Rafael
 
-for many devices that is all they need.
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+"Premature optimization is the root of all evil." - Donald Knuth
