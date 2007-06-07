@@ -1,15 +1,14 @@
-From: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: Linux 2.6.22-rc4
-Date: Thu, 7 Jun 2007 18:54:11 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0706071853080.15778@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
-	<200706071124.30128.gene.heskett@gmail.com>
-	<Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
-	<200706071206.06298.gene.heskett@gmail.com>
+From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Thu, 07 Jun 2007 21:50:28 +0200
+Message-ID: <87y7ivo86z.fsf@goat.bogus.local>
+References: <878xb35sje.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl>
+	<87hcpnpt4k.fsf@goat.bogus.local> <200706042302.45628.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706071206.06298.gene.heskett@gmail.com>
+In-Reply-To: <200706042302.45628.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Mon, 4 Jun 2007 23:02:45 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-On Jun 7 2007 12:06, Gene Heskett wrote:
->
->On Thursday 07 June 2007, Jan Engelhardt wrote:
->>On Jun 7 2007 11:24, Gene Heskett wrote:
->>>>>> It is too stable for me.
->>>>>
->>>>>I wish all our testers were you ;)
->>>>
->>>>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
->>>>(same config but without fc patches).
->>>
->>>Oh its stable allright, but why do I have to turn the monitor off by hand
->>> when I leave.  None of that is working, not even the screen blanker.
->>
->>VC or X?
->
->Regular X
+> You may try to use 's2ram --force --vbe_post --vbe_mode', if you haven't tried
+> that already.
 
-Most likely an X incompatibility then?
+Unfortunately, this doesn't work either.
 
-> fc6 box, amd xp2800.  Using NVIDIA's latest driver, and it works 
->when booted to a 2.6.21 era kernel.
+> Still, if the card is a 7300 or higher, that need not work (at present we don't
+> know what magic is required to make these cards work).
 
-Well, NVIDIA is your first stop then. What about nv?
+It's a GeForce 6600 Go. Anyway, you were right with your assumption.
 
+I installed the nvidia.ko (1.0-9755) kernel module and now the machine
+comes back to life. Although the screen stays black as before, I can
+type blindly "shutdown -r now" or ssh into the laptop.
 
-
-	Jan
--- 
+Regards, Olaf.
