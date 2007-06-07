@@ -1,95 +1,49 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Thu, 07 Jun 2007 16:20:01 +0100
-Message-ID: <46682221.8070705@dgreaves.com>
-References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>	 <4667DE2D.6050903@dgreaves.com> <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com> <46680F69.60105@dgreaves.com> <46681094.4070103@gmail.com> <466817EF.7090707@rtr.ca>
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Linux 2.6.22-rc4
+Date: Thu, 07 Jun 2007 11:24:29 -0400
+Message-ID: <200706071124.30128.gene.heskett__15773.7826965333$1181229934$gmane$org@gmail.com>
+References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
+	<alpine.LFD.0.98.0706051219560.4921@woody.linux-foundation.org>
+	<Pine.LNX.4.61.0706070859501.1547@yvahk01.tjqt.qr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763088AbXFGPUZ@vger.kernel.org>
-In-Reply-To: <466817EF.7090707@rtr.ca>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Lord <lkml@rtr.ca>
-Cc: Tejun Heo <htejun@gmail.com>, Duane Griffin <duaneg@dghda.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-reply-to: <Pine.LNX.4.61.0706070859501.1547@yvahk01.tjqt.qr>
+Content-disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Mark Lord wrote:
-> Tejun Heo wrote:
+On Thursday 07 June 2007, Jan Engelhardt wrote:
+>On Jun 5 2007 12:26, Linus Torvalds wrote:
+>>On Tue, 5 Jun 2007, Michal Piotrowski wrote:
+>>> It is too stable for me.
 >>
->> Can you setup serial console and/or netconsole (not sure whether this
->> would work tho)?
-> 
-> Since he has good console output already, capturable by digicam,
-> I think a better approach might be to provide a patch with extra 
-> instrumentation..
-> You know.. progress messages and the like, so we can see at what step
-> things stop working.  Or would that not help ?
-> 
-> David, does scrollback work on your dead console?
+>>I wish all our testers were you ;)
+>
+>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
+>(same config but without fc patches).
+>
+>
+>
+>	Jan
 
-hmmmm, scrollback doesn't currently _do_ anything.
+Oh its stable allright, but why do I have to turn the monitor off by hand when 
+I leave.  None of that is working, not even the screen blanker.
 
-But the messages didn't scroll there, they just appear (as the memory is 
-restored I assume). The same messages appear during the fail-to-suspend case too.
-
-Linus said at one point:
- > Ok, it wasn't a hidden oops. The DISABLE_CONSOLE_SUSPEND=y thing sometimes
- > shows oopses that are otherwise hidden, but at other times it just causes
- > more problems (hard hangs when trying to display something on a device
- > that is suspended, or behind a bridge that got suspended).
-
- > In your case, the screen output just shows normal resume output, and it
- > apparently just hung for some unknown reason. It *may* be worth trying to
- > do a SysRQ + 't' thing to see what tasks are running (or rather, not
- > running), but since you won't be able to capture it, it's probably not
- > going to be useful.
-
-So I've since removed DISABLE_CONSOLE_SUSPEND=y
-Should I put it back?
-
-I was actually doing the netconsole anyway - but skge is currently a module - 
-I've avoided making any changes to the config during all these tests but what 
-the heck...
-
-And wouldn't you know it.
-Get netconsole working (ie new kernel with skge builtin) and I get the hang on 
-suspend. Here's the netconsole output...
-
-swsusp: Basic memory bitmaps created
-Stopping tasks ... done.
-Shrinking memory... done (0 pages freed)
-Freed 0 kbytes in 0.03 seconds (0.00 MB/s)
-Suspending console(s)
-
-
-Given that moving something from module to builtin changes the behaviour I 
-thought I'd bring these warnings up again (Andrew or Alan mentioned similar 
-warnings being problems in another thread...)
-Now, I have mentioned these before but there's been a lot going on so here you go:
-
-   MODPOST vmlinux
-WARNING: arch/i386/kernel/built-in.o(.text+0x968f): Section mismatch: reference 
-to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0x9781): Section mismatch: reference 
-to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0x9786): Section mismatch: reference 
-to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa25c): Section mismatch: reference 
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa303): Section mismatch: reference 
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa31b): Section mismatch: reference 
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa344): Section mismatch: reference 
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.exit.text+0x19): Section mismatch: 
-reference to .init.text: (between 'cache_remove_dev' and 'powernow_k6_exit')
-WARNING: arch/i386/kernel/built-in.o(.data+0x2160): Section mismatch: reference 
-to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
-WARNING: kernel/built-in.o(.text+0x14502): Section mismatch: reference to 
-.init.text: (between 'kthreadd' and 'init_waitqueue_head')
-
-
-David
-PS Gotta go - back in a couple of hours - let me know if there are any more 
-tests to try.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+I'm not an Iranian!!  I voted for Dianne Feinstein!!
