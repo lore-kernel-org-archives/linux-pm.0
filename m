@@ -1,28 +1,39 @@
-From: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Thu, 07 Jun 2007 10:36:31 -0400
-Message-ID: <466817EF.7090707@rtr.ca>
-References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>	 <4667DE2D.6050903@dgreaves.com> <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com> <46680F69.60105@dgreaves.com> <46681094.4070103@gmail.com>
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: Linux 2.6.22-rc4
+Date: Thu, 7 Jun 2007 16:46:30 +0200 (CEST)
+Message-ID: <Pine.LNX.4.61.0706070859501.1547@yvahk01.tjqt.qr>
+References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
+	<4665B169.2030803@googlemail.com>
+	<alpine.LFD.0.98.0706051219560.4921@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761335AbXFGOgo@vger.kernel.org>
-In-Reply-To: <46681094.4070103@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: David Greaves <david@dgreaves.com>, Duane Griffin <duaneg@dghda.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706051219560.4921@woody.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Tejun Heo wrote:
+
+On Jun 5 2007 12:26, Linus Torvalds wrote:
+>On Tue, 5 Jun 2007, Michal Piotrowski wrote:
+>> 
+>> It is too stable for me.
 >
-> Can you setup serial console and/or netconsole (not sure whether this
-> would work tho)?
+>I wish all our testers were you ;)
 
-Since he has good console output already, capturable by digicam,
-I think a better approach might be to provide a patch with extra instrumentation..
-You know.. progress messages and the like, so we can see at what step
-things stop working.  Or would that not help ?
+It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel 
+(same config but without fc patches).
 
-David, does scrollback work on your dead console?
 
-Cheers
+
+	Jan
+-- 
