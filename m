@@ -1,15 +1,17 @@
-From: Jan Engelhardt <jengelh@computergmbh.de>
+From: Gene Heskett <gene.heskett@gmail.com>
 Subject: Re: Linux 2.6.22-rc4
-Date: Thu, 7 Jun 2007 17:38:34 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
+Date: Thu, 7 Jun 2007 12:06:05 -0400
+Message-ID: <200706071206.06298.gene.heskett@gmail.com>
 References: <alpine.LFD.0.98.0706042040350.23741@woody.linux-foundation.org>
-	<alpine.LFD.0.98.0706051219560.4921@woody.linux-foundation.org>
-	<Pine.LNX.4.61.0706070859501.1547@yvahk01.tjqt.qr>
 	<200706071124.30128.gene.heskett@gmail.com>
+	<Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706071124.30128.gene.heskett@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0706071738240.13101@fbirervta.pbzchgretzou.qr>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gene Heskett <gene.heskett@gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
 Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-On Jun 7 2007 11:24, Gene Heskett wrote:
->>>> It is too stable for me.
+On Thursday 07 June 2007, Jan Engelhardt wrote:
+>On Jun 7 2007 11:24, Gene Heskett wrote:
+>>>>> It is too stable for me.
+>>>>
+>>>>I wish all our testers were you ;)
 >>>
->>>I wish all our testers were you ;)
+>>>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
+>>>(same config but without fc patches).
 >>
->>It [2.6.22-rc4] did not die on me so far, unlike that stock FC7 kernel
->>(same config but without fc patches).
->>
->Oh its stable allright, but why do I have to turn the monitor off by hand when 
->I leave.  None of that is working, not even the screen blanker.
+>>Oh its stable allright, but why do I have to turn the monitor off by hand
+>> when I leave.  None of that is working, not even the screen blanker.
+>
+>VC or X?
+>
+>
+>	Jan
 
-VC or X?
+Regular X, fc6 box, amd xp2800.  Using NVIDIA's latest driver, and it works 
+when booted to a 2.6.21 era kernel.
 
+Just about up to date, seems I have to do the kde stuffs one or two pieces at 
+a time as yumex isn't handling the deps well otherwise.
 
-	Jan
 -- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The inherent vice of capitalism is the unequal sharing of blessings;
+the inherent virtue of socialism is the equal sharing of misery.
+		-- Churchill
