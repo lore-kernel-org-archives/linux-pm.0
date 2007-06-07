@@ -1,30 +1,43 @@
-From: Marcus Better <marcus@better.se>
-Subject: spontaneous second suspend-to-RAM
-Date: Thu, 07 Jun 2007 14:33:35 +0200
-Message-ID: <f48tuv$q57$1@sea.gmane.org>
+From: "Duane Griffin" <duaneg@dghda.com>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+Date: Thu, 7 Jun 2007 14:45:51 +0100
+Message-ID: <e9e943910706070645p29519138i7e76b3a9649d387@mail.gmail.com>
+References: <46608E3F.4060201@dgreaves.com> <46609FAD.7010203@dgreaves.com>
+	 <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
+	 <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+	 <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
+	 <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
+	 <4667DE2D.6050903@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760894AbXFGNqC@vger.kernel.org>
+In-Reply-To: <4667DE2D.6050903@dgreaves.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Greaves <david@dgreaves.com>
+Cc: Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-I'm experiencing a spontaneous suspend to RAM occasionally. It happens about
-thirty seconds after resuming from RAM. It happened a few times today. I'm
-not sure if it's a kernel problem or something else, possibly kpowersave
-which I use to suspend, but I haven't upgraded that in a while. (kpowersave
-uses s2ram.)
+On 07/06/07, David Greaves <david@dgreaves.com> wrote:
+> > How hard does the machine freeze?  Can you use sysrq?  If so, please
+> > dump sysrq-t.
+> I suspect there is a problem writing to the consoles...
+>
+> I recompiled (rc4+patch) with sysrq support, suspended, resumed and tried
+> sysrq-t but got no output.
+>
+> I *can* change VTs and see the various login prompts, bitmap messages and the
+> console messages. Caps/Num lock lights work.
+>
+> Fearing incompetence I tried sysrq-s sysrq-u sysrq-b and got a reboot so sysrq
+> is OK.
 
-This is kernel 2.6.22-rc4 (x86_64) with Debian on a Thinkpad R60, Intel Core
-2 Duo, and uswsusp.
+Try sysrq-9 before the sysrq-t. Probably the messages are not being
+printed to console with your default output level.
 
-Marcus
+Cheers,
+Duane Griffin.
+
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
