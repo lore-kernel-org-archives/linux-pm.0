@@ -1,19 +1,14 @@
-From: David Chinner <dgc@sgi.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
-	(xfs on raid6)
-Date: Thu, 7 Jun 2007 21:07:10 +1000
-Message-ID: <20070607110708.GS86004887@sgi.com>
-References: <200706012342.45657.rjw@sisk.pl> <46609FAD.7010203@dgreaves.com>
-	<200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
-	<alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
-	<4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
-	<46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
-	<4667DE2D.6050903@dgreaves.com>
+From: Marcus Better <marcus@better.se>
+Subject: Re: fw-ohci breaks suspend-to-RAM
+Date: Thu, 7 Jun 2007 13:26:57 +0200
+Message-ID: <200706071327.00327.marcus__8601.91299948401$1181215711$gmane$org@better.se>
+References: <200705181207.45868.marcus@better.se>
+	<59ad55d30706061314s45c86e7eja587244a6ed37812@mail.gmail.com>
+	<466723C7.3090305@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============0450980662090192024=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4667DE2D.6050903@dgreaves.com>
+In-Reply-To: <466723C7.3090305@s5r6.in-berlin.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +16,51 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Greaves <david@dgreaves.com>
-Cc: Tejun Heo <htejun@gmail.com>, Neil Brown <neilb@suse.de>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, Linus Torvalds <torvalds@linux-foundation.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@bitplanet.net>, linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves wrote:
-> Tejun Heo wrote:
-> >Hello,
-> >
-> >David Greaves wrote:
-> >>Just to be clear. This problem is where my system won't resume after s2d
-> >>unless I umount my xfs over raid6 filesystem.
-> >
-> >This is really weird.  I don't see how xfs mount can affect this at all.
-> Indeed.
-> It does :)
+--===============0450980662090192024==
+Content-Type: multipart/signed; boundary="nextPart7529643.Us1zySveoa";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-Ok, so lets determine if it really is XFS.  Does the lockup happen with a
-different filesystem on the md device? Or if you can't test that, does
-any other XFS filesystem you have show the same problem?
+--nextPart7529643.Us1zySveoa
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-If it is xfs that is causing the problem, what happens if you
-remount read-only instead of unmounting before shutting down?
-What about freezing the filesystem?
+Stefan Richter wrote:
+> Marcus could take the time to check whether his machine keeps happily
+> resuming with the new patch applied, that would be good.
 
-Cheers,
+Yes it works, but I didn't check firewire functionality after resume.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Marcus
+
+--nextPart7529643.Us1zySveoa
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGZ+uEXjXn6TzcAQkRAoTsAKCXh6UScPbA06P5i7cUxLR7jC5+qACgmLQm
+wHvY38GOYtnab5a3sSNsm6g=
+=CU4/
+-----END PGP SIGNATURE-----
+
+--nextPart7529643.Us1zySveoa--
+
+--===============0450980662090192024==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0450980662090192024==--
