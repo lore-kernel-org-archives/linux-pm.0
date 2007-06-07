@@ -1,14 +1,15 @@
-From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+From: Olaf Dietsche <olaf.dietsche@olafdietsche.de>
 Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-Date: Thu, 07 Jun 2007 21:50:28 +0200
-Message-ID: <87y7ivo86z.fsf@goat.bogus.local>
-References: <878xb35sje.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl>
-	<87hcpnpt4k.fsf@goat.bogus.local> <200706042302.45628.rjw@sisk.pl>
+Date: Thu, 07 Jun 2007 21:54:51 +0200
+Message-ID: <87tztjo7zo.fsf__27745.688163168$1181246088$gmane$org@goat.bogus.local>
+References: <878xb35sje.fsf@goat.bogus.local> <200706012340.54394.rjw@sisk.pl>
+	<87hcpr2ubl.fsf@goat.bogus.local> <200706020037.16615.rjw@sisk.pl>
+	<87wsykpweu.fsf@goat.bogus.local> <20070607122303.GA8938@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706042302.45628.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon, 4 Jun 2007 23:02:45 +0200")
+In-Reply-To: <20070607122303.GA8938@ucw.cz> (Pavel Machek's message of "Thu, 7
+	Jun 2007 12:23:04 +0000")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Pavel Machek <pavel@ucw.cz> writes:
 
-> You may try to use 's2ram --force --vbe_post --vbe_mode', if you haven't tried
-> that already.
+>> But either way the script never reaches "shutdown -rn now". So, it
+>> seems, that my laptop does a full resume every other reboot, but it
+>> never returns to userspace.
+>
+> But it returns to kernel... can you use more trace points to figure
+> out where it hangs?
 
-Unfortunately, this doesn't work either.
+I haven't looked, but I guess this is somewhere in sysfs.
 
-> Still, if the card is a 7300 or higher, that need not work (at present we don't
-> know what magic is required to make these cards work).
-
-It's a GeForce 6600 Go. Anyway, you were right with your assumption.
-
-I installed the nvidia.ko (1.0-9755) kernel module and now the machine
-comes back to life. Although the screen stays black as before, I can
-type blindly "shutdown -r now" or ssh into the laptop.
+I made some small progress. With the nvidia.ko kernel module loaded,
+my laptop returns to userspace. I'll investigate this further.
 
 Regards, Olaf.
