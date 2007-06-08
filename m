@@ -1,75 +1,98 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk hangs on "Suspending console(s)"
-Date: Fri, 8 Jun 2007 12:05:46 +0200
-Message-ID: <200706081205.46994.rjw@sisk.pl>
-References: <4668F973.5050401@eyra.se>
+From: "Louise Orr" <frkchristenson@grapari.com>
+Subject: Re: Thank you,
+	we are accepting your refinance debt request
+Date: Fri, 8 Jun 2007 12:15:10 +0200
+Message-ID: <001801c7a9c7$507b1c60$063cd074@magorzata>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <4668F973.5050401@eyra.se>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Martin Magnusson <martin@eyra.se>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm <linux-pm@lists.osdl.org>
+Content-Type: multipart/mixed; boundary="===============1625396839720461738=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 8 June 2007 08:38, Martin Magnusson wrote:
-> Hello. I hope this list is the right forum to post questions like this. 
-> If not, please excuse me.
-> 
-> I'm having trouble hibernating my Dell Latitude D800, running Ubuntu 
-> 7.04 and uswsusp version 0.3~cvs20060928-6ubuntu3.
-> 
-> It works around maybe 25% of the time, but when it doesn't work, I get 
-> the following output (using loglevel >=10):
-> 
-> [timestamp] Disabling non-boot CPUs
-> [timestamp] Stopping tasks... done
-> suspend: Snapshotting system
-> [timestamp] Shrinking memory... done (113204 pages freed)
-> [timestamp] Freed 452816 kbytes in 52.79 s (8.57 MB/s)
-> [timestamp] Suspending console(s)
-> 
-> Then, the computer hangs, and I have to reboot. I have 512 MB of RAM and 
-> my swap partition /dev/hda5 is 1 GB. My uswsusp.conf currently looks 
-> like this:
-> 
-> # /etc/uswsusp.conf(8) -- Configuration file for s2disk/s2both
-> resume device = /dev/hda5
-> compress = y
-> image size = 10000001 #242932285
-> #RSA key file = /etc/uswsusp.key
-> shutdown method = platform
-> suspend loglevel = 12
-> max loglevel = 12
-> 
-> Any ideas on what to do, or how to do more troubleshooting?
+--===============1625396839720461738==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0015_01C7A9C7.507B1C60"
 
-This is a kernel problem, so you should report it to one of the kernel-related
-mailing lists (linux-pm, for example, CC-ed).
-
-Now, we've had a couple of similar reports recently and one of them seems
-to indicate a problem with libata (http://lkml.org/lkml/2007/6/3/106).
-
-Have you built the kernel yourself or do you use a distro one?
-
-Rafael
+------=_NextPart_000_0015_01C7A9C7.507B1C60
+Content-Type: text/plain;
+        charset="windows-1250"
+Content-Transfer-Encoding: quoted-printable
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Your credit score doesn't matter to us!
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+If you OWN property and want IMMEDIATE money to spend ANY way you like, =
+or simply wish to LOWER your entire payment by a third or more, here is =
+our best deal we can offer you THIS NIGHT (hurry, this offer will expire =
+THIS EVENING):
+
+$346,000+ loan
+
+AND EVEN MORE: After further review, our lenders have established the =
+lowest monthly payments!
+
+Hurry, when our best deal is gone, it is gone. Simply fill out this =
+elementary form... 
+
+Do not worry about approval, your credit score will not disqualify you!
+
+http://tstyutes.com/
+------=_NextPart_000_0015_01C7A9C7.507B1C60
+Content-Type: text/html;
+        charset="windows-1250"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3D=
+windows-1250">
+<META content=3D"MSHTML 6.00.2462.1081" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Your credit doesn't =
+matter to us!</B></FONT></DIV>
+<DIV align=3Dcenter>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>If your family OWN =
+property and want IMMEDIATE cash to spend ANY way you like, or simply =
+need to LOWER your monthly payments by a third or more, here is our deal =
+we can offer you TONIGHT (hurry, this offer will expire =
+TONIGHT):</FONT></DIV>
+<DIV align=3Dcenter>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>$276,000+ =
+loan</B></FONT></DIV>
+<DIV align=3Dcenter>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>AND EVEN MORE: After =
+further review, our lenders have set the lowest payments!</FONT></DIV>
+<DIV align=3Dcenter>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Hurry, when the deal is =
+gone, it is gone. Simply complete this one-minute form... =
+</B></FONT></DIV>
+<DIV align=3Dcenter>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Do not worry about =
+approval, your credit score will not disqualify you!</FONT></DIV>
+<DIV align=3Dcenter>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><a href=3D=
+"http://tstyutes.com/">http://tstyutes.com/</a></FONT></DIV>
+</BODY></HTML>
+
+------=_NextPart_000_0015_01C7A9C7.507B1C60--
+
+--===============1625396839720461738==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1625396839720461738==--
