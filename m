@@ -1,96 +1,75 @@
-From: "Frank Z. Maximilian" <ljppu@post.harvard.edu>
-Subject: The most common diseases associated with dysmenorrhoea
-	are endometriosis and fibroids.
-Date: Fri, 8 Jun 2007 09:58:24 +0500
-Message-ID: <4668E1F0.7010702@post.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: s2disk hangs on "Suspending console(s)"
+Date: Fri, 8 Jun 2007 12:05:46 +0200
+Message-ID: <200706081205.46994.rjw@sisk.pl>
+References: <4668F973.5050401@eyra.se>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1181289408-3969-118"
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <suspend-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <4668F973.5050401@eyra.se>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
+List-Post: <mailto:suspend-devel@lists.sourceforge.net>
+List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
+	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: suspend-devel-bounces@lists.sourceforge.net
+Errors-To: suspend-devel-bounces@lists.sourceforge.net
+To: Martin Magnusson <martin@eyra.se>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Friday, 8 June 2007 08:38, Martin Magnusson wrote:
+> Hello. I hope this list is the right forum to post questions like this. 
+> If not, please excuse me.
+> 
+> I'm having trouble hibernating my Dell Latitude D800, running Ubuntu 
+> 7.04 and uswsusp version 0.3~cvs20060928-6ubuntu3.
+> 
+> It works around maybe 25% of the time, but when it doesn't work, I get 
+> the following output (using loglevel >=10):
+> 
+> [timestamp] Disabling non-boot CPUs
+> [timestamp] Stopping tasks... done
+> suspend: Snapshotting system
+> [timestamp] Shrinking memory... done (113204 pages freed)
+> [timestamp] Freed 452816 kbytes in 52.79 s (8.57 MB/s)
+> [timestamp] Suspending console(s)
+> 
+> Then, the computer hangs, and I have to reboot. I have 512 MB of RAM and 
+> my swap partition /dev/hda5 is 1 GB. My uswsusp.conf currently looks 
+> like this:
+> 
+> # /etc/uswsusp.conf(8) -- Configuration file for s2disk/s2both
+> resume device = /dev/hda5
+> compress = y
+> image size = 10000001 #242932285
+> #RSA key file = /etc/uswsusp.key
+> shutdown method = platform
+> suspend loglevel = 12
+> max loglevel = 12
+> 
+> Any ideas on what to do, or how to do more troubleshooting?
 
-------------=_1181289408-3969-118
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is a kernel problem, so you should report it to one of the kernel-related
+mailing lists (linux-pm, for example, CC-ed).
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-<img alt="freezer" src="http://cvrhino.com/pansy.gif"><br>
-This page contains basic information.<br>
-Nihilists suggest that there could come a point at which bacteria retake
-the upper hand, and doctors, as in previous centuries, have no answer to
-some bacterial infections.<br>
-Experts believe the virus is rare and only found in Africa.
-Meningococcal meningitis, caused by the bacterium Neisseria
-meningitidis, is the most common in the UK and the source of most recent
-reports.<br>
-The simple form is not usually disabling, but the complicated form
-usually does lead to disability. The characteristic rash described above
-is actually a sign of septicaemia.<br>
-Fertility doctors are worried at what they see as an unwanted side
-effect of IVF.<br>
-</body>
-</html>
+Now, we've had a couple of similar reports recently and one of them seems
+to indicate a problem with libata (http://lkml.org/lkml/2007/6/3/106).
 
+Have you built the kernel yourself or do you use a distro one?
 
-------------=_1181289408-3969-118
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-
-Spam detection software, running on the system "daredevil.linux-foundation.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  This page contains basic information. Nihilists suggest
-  that there could come a point at which bacteria retake the upper hand,
-  and doctors, as in previous centuries, have no answer to some bacterial
-  infections. Experts believe the virus is rare and only found in Africa.
-  Meningococcal meningitis, caused by the bacterium Neisseria
-  meningitidis, is the most common in the UK and the source of most recent
-  reports. The simple form is not usually disabling, but the complicated
-  form usually does lead to disability. The characteristic rash described
-  above is actually a sign of septicaemia. Fertility doctors are worried
-  at what they see as an unwanted side effect of IVF. [...] 
-
-Content analysis details:   (5.1 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 1.1 HTML_20_30             BODY: Message is 20% to 30% HTML
- 2.0 HTML_IMAGE_ONLY_12     BODY: HTML: images with 800-1200 bytes of words
- 0.0 HTML_MESSAGE           BODY: HTML included in message
- 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-                            [score: 0.4989]
- 2.0 MIME_HTML_ONLY         BODY: Message only has text/html MIME parts
+Rafael
 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
 
-------------=_1181289408-3969-118
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-------------=_1181289408-3969-118--
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
