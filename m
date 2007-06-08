@@ -1,66 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk hangs on "Suspending console(s)"
-Date: Fri, 8 Jun 2007 13:52:13 +0200
-Message-ID: <200706081352.14062.rjw@sisk.pl>
-References: <4668F973.5050401@eyra.se> <200706081205.46994.rjw@sisk.pl>
-	<46693A3C.4060303@eyra.se>
+From: Oleg Kechin <okechin@gmail.com>
+Subject: Standby/resume and MTD driver in OMAP5910 CPU
+Date: Fri, 08 Jun 2007 15:38:43 +0300
+Message-ID: <46694DD3.8070606@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <suspend-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <46693A3C.4060303@eyra.se>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=suspend-devel>
-List-Post: <mailto:suspend-devel@lists.sourceforge.net>
-List-Help: <mailto:suspend-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/suspend-devel>,
-	<mailto:suspend-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: suspend-devel-bounces@lists.sourceforge.net
-Errors-To: suspend-devel-bounces@lists.sourceforge.net
-To: Martin Magnusson <martin@eyra.se>
-Cc: suspend-devel@lists.sourceforge.net, linux-pm@lists.osdl.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 8 June 2007 13:15, Martin Magnusson wrote:
-> > On Friday, 8 June 2007 08:38, Martin Magnusson wrote:
-> >> Hello. I hope this list is the right forum to post questions like this. 
-> >> If not, please excuse me.
-> >>
-> >> I'm having trouble hibernating my Dell Latitude D800, running Ubuntu 
-> >> 7.04 and uswsusp version 0.3~cvs20060928-6ubuntu3.
-> >>
-> >> It works around maybe 25% of the time, but when it doesn't work, I get 
-> >> the following output (using loglevel >=10):
-> >>
-> >> [timestamp] Disabling non-boot CPUs
-> >> [timestamp] Stopping tasks... done
-> >> suspend: Snapshotting system
-> >> [timestamp] Shrinking memory... done (113204 pages freed)
-> >> [timestamp] Freed 452816 kbytes in 52.79 s (8.57 MB/s)
-> >> [timestamp] Suspending console(s)
-> 
-> Rafael J. Wysocki wrote:
-> > Now, we've had a couple of similar reports recently and one of them seems
-> > to indicate a problem with libata (http://lkml.org/lkml/2007/6/3/106).
-> > 
-> > Have you built the kernel yourself or do you use a distro one?
-> 
-> I use the distro kernel: 2.6.20-16-generic.
+Hi
+I run 2.6.20-rt8 kernel on board like innovator1510 (OMAP5910 cpu ARM925 
+v4)
+In  case to enter in standby mode board enter Deep Sleep mode cleanly, 
+and it is OK,
+but in resume there is a problem.
+(I use echo -n standby > /sys/power/state command)
+When it wakes up,  some times I get string:
 
-Then I think you should report the problem to the distributor in the first
-place.
+omapflash.0: Waiting for chip to be ready timed out. Status 3068
+Write of 68 bytes at 0x00945628 failed. returned -5, retlen 0
+Not marking the space at 0x00945628 as dirty because the flash driver 
+returned retlen zero
+Matter here is flash go to standby in one state, but return in another. 
+Mtd driver has functions
+for such cases  - suspend and resume (cfi_intelext_suspend() & 
+cfi_intelext_resume()),
+but both of this functions are not calling in suspend/resume process.
+I notice, that suspend/resume command are executed on elements that have 
+node state in /sys file system,
+but mtd doesn't.
 
-Greetings,
-Rafael
+Can anyone help me?
+PS. flash added like that:
+static struct flash_platform_data innovator_flash_data = {
+        .map_name       = "cfi_probe",
+        .width          = 2,
+        .parts          = innovator_partitions,
+        .nr_parts       = ARRAY_SIZE(innovator_partitions),
+};
+static struct resource innovator_flash_resource = {
+        .start          = OMAP_CS0_PHYS,
+        .end            = OMAP_CS0_PHYS + SZ_32M - 1,
+        .flags          = IORESOURCE_MEM,
+};
+static struct platform_device innovator_flash_device = {
+        .name           = "omapflash",
+        .id             = 0,
+        .dev            = {
+                .platform_data  = &innovator_flash_data,
+        },
+        .num_resources  = 1,
+        .resource       = &innovator_flash_resource,
+}
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+Oleg Kechin
