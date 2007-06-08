@@ -1,132 +1,96 @@
-From: David Chinner <dgc@sgi.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Fri, 8 Jun 2007 08:28:13 +1000
-Message-ID: <20070607222813.GG85884050@sgi.com>
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com>
+From: "Frank Z. Maximilian" <ljppu@post.harvard.edu>
+Subject: The most common diseases associated with dysmenorrhoea
+	are endometriosis and fibroids.
+Date: Fri, 8 Jun 2007 09:58:24 +0500
+Message-ID: <4668E1F0.7010702@post.harvard.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S937685AbXFGW3F@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <46680F5E.6070806@dgreaves.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Content-Type: multipart/mixed; boundary="----------=_1181289408-3969-118"
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 07, 2007 at 02:59:58PM +0100, David Greaves wrote:
-> David Chinner wrote:
-> >On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves wrote:
-> >>Tejun Heo wrote:
-> >>>Hello,
-> >>>
-> >>>David Greaves wrote:
-> >>>>Just to be clear. This problem is where my system won't resume after s2d
-> >>>>unless I umount my xfs over raid6 filesystem.
-> >>>This is really weird.  I don't see how xfs mount can affect this at all.
-> >>Indeed.
-> >>It does :)
-> >
-> >Ok, so lets determine if it really is XFS.
-> Seems like a good next step...
-> 
-> >Does the lockup happen with a
-> >different filesystem on the md device? Or if you can't test that, does
-> >any other XFS filesystem you have show the same problem?
-> It's a rather full 1.2Tb raid6 array - can't reformat it - sorry :)
+This is a multi-part message in MIME format...
 
-I suspected as much :/
+------------=_1181289408-3969-118
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> I only noticed the problem when I umounted the fs during tests to prevent 
-> corruption - and it worked. I'm doing a sync each time it hibernates (see 
-> below) and a couple of paranoia xfs_repairs haven't shown any problems.
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<img alt="freezer" src="http://cvrhino.com/pansy.gif"><br>
+This page contains basic information.<br>
+Nihilists suggest that there could come a point at which bacteria retake
+the upper hand, and doctors, as in previous centuries, have no answer to
+some bacterial infections.<br>
+Experts believe the virus is rare and only found in Africa.
+Meningococcal meningitis, caused by the bacterium Neisseria
+meningitidis, is the most common in the UK and the source of most recent
+reports.<br>
+The simple form is not usually disabling, but the complicated form
+usually does lead to disability. The characteristic rash described above
+is actually a sign of septicaemia.<br>
+Fertility doctors are worried at what they see as an unwanted side
+effect of IVF.<br>
+</body>
+</html>
 
-sync just guarantees that metadata changes are logged and data is
-on disk - it doesn't stop the filesystem from doing anything after
-the sync...
 
-> I do have another xfs filesystem on /dev/hdb2 (mentioned when I noticed the 
-> md/XFS correlation). It doesn't seem to have/cause any problems.
+------------=_1181289408-3969-118
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
 
-Ok, so it's not an obvious XFS problem...
+Spam detection software, running on the system "daredevil.linux-foundation.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
 
-> >If it is xfs that is causing the problem, what happens if you
-> >remount read-only instead of unmounting before shutting down?
-> Yes, I'm happy to try these tests.
-> nb, the hibernate script is:
-> ethtool -s eth0 wol g
-> sync
-> echo platform > /sys/power/disk
-> echo disk > /sys/power/state
-> 
-> So there has always been a sync before any hibernate.
-> 
-> 
-> cu:~# mount -oremount,ro /huge
-.....
-> [this works and resumes]
+Content preview:  This page contains basic information. Nihilists suggest
+  that there could come a point at which bacteria retake the upper hand,
+  and doctors, as in previous centuries, have no answer to some bacterial
+  infections. Experts believe the virus is rare and only found in Africa.
+  Meningococcal meningitis, caused by the bacterium Neisseria
+  meningitidis, is the most common in the UK and the source of most recent
+  reports. The simple form is not usually disabling, but the complicated
+  form usually does lead to disability. The characteristic rash described
+  above is actually a sign of septicaemia. Fertility doctors are worried
+  at what they see as an unwanted side effect of IVF. [...] 
 
-Ok.
+Content analysis details:   (5.1 points, 5.0 required)
 
-> cu:~# mount -oremount,rw /huge
-> cu:~# /usr/net/bin/hibernate
-> [this works and resumes too !]
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 1.1 HTML_20_30             BODY: Message is 20% to 30% HTML
+ 2.0 HTML_IMAGE_ONLY_12     BODY: HTML: images with 800-1200 bytes of words
+ 0.0 HTML_MESSAGE           BODY: HTML included in message
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.4989]
+ 2.0 MIME_HTML_ONLY         BODY: Message only has text/html MIME parts
 
-Interesting. That means something in the generic remount code
-is affecting this.
 
-> cu:~# touch /huge/tst
-> cu:~# /usr/net/bin/hibernate
-> [but this doesn't even hibernate]
 
-Ok, so a clean inode is sufficient to prevent hibernate from working.
+------------=_1181289408-3969-118
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-So, what's different between a sync and a remount?
 
-do_remount_sb() does:
-
-    599         shrink_dcache_sb(sb);
-    600         fsync_super(sb);
-
-of which a sync does neither. sync does what fsync_super() does in
-different sort of way, but does not call sync_blockdev() on each
-block device. It looks like that is the two main differences between
-sync and remount - remount trims the dentry cache and syncs the blockdev,
-sync doesn't.
-
-> > What about freezing the filesystem?
-> cu:~# xfs_freeze -f /huge
-> cu:~# /usr/net/bin/hibernate
-> [but this doesn't even hibernate - same as the 'touch']
-
-I suspect that the frozen filesystem might cause other problems
-in the hibernate process. However, while a freeze calls sync_blockdev()
-it does not trim the dentry cache.....
-
-So, rather than a remount before hibernate, lets see if we can 
-remove the dentries some other way to determine if removing excess
-dentries/inodes from the caches makes a difference. Can you do:
-
-# touch /huge/foo
-# sync
-# echo 1 > /proc/sys/vm/drop_caches
-# hibernate
-
-# touch /huge/bar
-# sync
-# echo 2 > /proc/sys/vm/drop_caches
-# hibernate
-
-# touch /huge/baz
-# sync
-# echo 3 > /proc/sys/vm/drop_caches
-# hibernate
-
-And see if any of those survive the suspend/resume?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+------------=_1181289408-3969-118--
