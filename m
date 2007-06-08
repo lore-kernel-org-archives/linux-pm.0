@@ -1,11 +1,15 @@
-From: Oleg Kechin <okechin@gmail.com>
-Subject: Standby/resume and MTD driver in OMAP5910 CPU
-Date: Fri, 08 Jun 2007 15:38:43 +0300
-Message-ID: <46694DD3.8070606@gmail.com>
+From: Olaf Dietsche <olaf.dietsche@olafdietsche.de>
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+Date: Fri, 08 Jun 2007 15:07:27 +0200
+Message-ID: <877iqeoar4.fsf__5225.72979466549$1181308035$gmane$org@goat.bogus.local>
+References: <878xb35sje.fsf@goat.bogus.local> <200706041013.49428.rjw@sisk.pl>
+	<87hcpnpt4k.fsf@goat.bogus.local> <200706042302.45628.rjw@sisk.pl>
+	<87y7ivo86z.fsf@goat.bogus.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <87y7ivo86z.fsf@goat.bogus.local> (Olaf Dietsche's message of
+	"Thu, 07 Jun 2007 21:50:28 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,52 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi
-I run 2.6.20-rt8 kernel on board like innovator1510 (OMAP5910 cpu ARM925 
-v4)
-In  case to enter in standby mode board enter Deep Sleep mode cleanly, 
-and it is OK,
-but in resume there is a problem.
-(I use echo -n standby > /sys/power/state command)
-When it wakes up,  some times I get string:
+Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de> writes:
 
-omapflash.0: Waiting for chip to be ready timed out. Status 3068
-Write of 68 bytes at 0x00945628 failed. returned -5, retlen 0
-Not marking the space at 0x00945628 as dirty because the flash driver 
-returned retlen zero
-Matter here is flash go to standby in one state, but return in another. 
-Mtd driver has functions
-for such cases  - suspend and resume (cfi_intelext_suspend() & 
-cfi_intelext_resume()),
-but both of this functions are not calling in suspend/resume process.
-I notice, that suspend/resume command are executed on elements that have 
-node state in /sys file system,
-but mtd doesn't.
+> I installed the nvidia.ko (1.0-9755) kernel module and now the machine
+> comes back to life. Although the screen stays black as before, I can
+> type blindly "shutdown -r now" or ssh into the laptop.
 
-Can anyone help me?
-PS. flash added like that:
-static struct flash_platform_data innovator_flash_data = {
-        .map_name       = "cfi_probe",
-        .width          = 2,
-        .parts          = innovator_partitions,
-        .nr_parts       = ARRAY_SIZE(innovator_partitions),
-};
-static struct resource innovator_flash_resource = {
-        .start          = OMAP_CS0_PHYS,
-        .end            = OMAP_CS0_PHYS + SZ_32M - 1,
-        .flags          = IORESOURCE_MEM,
-};
-static struct platform_device innovator_flash_device = {
-        .name           = "omapflash",
-        .id             = 0,
-        .dev            = {
-                .platform_data  = &innovator_flash_data,
-        },
-        .num_resources  = 1,
-        .resource       = &innovator_flash_resource,
-}
+Here's an update: when I additionally install the complete nvidia
+package, including the binary X server modules, my screen becomes
+active on resume.
 
-Oleg Kechin
+This is not really satisfactory, since my console stays black. Anyway,
+this is another step forward, nonetheless.
+
+Regards, Olaf.
