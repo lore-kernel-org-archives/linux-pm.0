@@ -1,15 +1,12 @@
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions with patches v2
-Date: Sat, 9 Jun 2007 23:57:57 +0200
-Message-ID: <6bffcb0e0706091457w3c88ae60x8c1aa32a3de3fb73@mail.gmail.com>
-References: <466AE54A.3040902@googlemail.com> <466AE619.2000706@googlemail.com>
-	<200706092205.43420.rjw@sisk.pl>
+From: dmckay1@stny.rr.com
+Subject: GET BACK TO US ASAP.
+Date: Sat, 09 Jun 2007 23:23:36 +0100
+Message-ID: <f7b4e7be308f0.308f0f7b4e7be@nyroc.rr.com>
+Reply-To: agent_consultant_xiaojun@yahoo.com.hk
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="Boundary_(ID_U8g3YPZeU1ih5QVjtW2sqQ)"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706092205.43420.rjw@sisk.pl>
-Content-Disposition: inline
+Content-language: en
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,65 +16,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Tejun Heo <htejun@gmail.com>, linux-usb-devel@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>, linux-ide@vger.kernel.org, Simon <sg02r@ecs.soton.ac.uk>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@redhat.com>, Eric Paris <eparis@parisplace.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Jean-Luc Coulon <jean.luc.coulon@gmail.com>, Paulo Pereira <pfmp.404@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/06/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, 9 June 2007 19:40, Michal Piotrowski wrote:
-> > Hi all,
-> >
-> > Here is a list of some known regressions in 2.6.22-rc4
-> > with patches available.
-> >
-> > Feel free to add new regressions/remove fixed etc.
-> > http://kernelnewbies.org/known_regressions
-> >
-> >
-> >
-> > SATA/PATA
-> >
-> > Subject    : disk on promise pdc20378 disabled at boot
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8587
-> > Submitter  : Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-> > Handled-By : Tejun Heo <htejun@gmail.com>
-> > Caused-By  : Tejun Heo <htejun@gmail.com>
-> >              commit 464cf177df7727efcc5506322fc5d0c8b896f545
-> > Patch      : http://lkml.org/lkml/2007/6/6/112
-> > Status     : patch available
-> >
-> >
-> >
-> > SELinux
-> >
-> > Subject    : very high non-preempt latency in context_struct_compute_=
-av()
-> > References : http://lkml.org/lkml/2007/6/4/78
-> > Submitter  : Ingo Molnar <mingo@elte.hu>
-> > Handled-By : Stephen Smalley <sds@tycho.nsa.gov>
-> >              James Morris <jmorris@namei.org>
-> > Patch      : http://lkml.org/lkml/2007/6/7/334
-> > Status     : patch available
-> >
-> >
-> >
-> > Suspend
-> >
-> > Subject    : panic on s3 resume with uhci_hcd module
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8565
-> > Submitter  : Simon <sg02r@ecs.soton.ac.uk>
-> > Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-> > Patch      : http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22=
--rc3/patches/21-firewire-implement-suspend-resume-hooks.patch
-> > Status     : patch available
->
-> The patch is already in 2.6.22-rc4, AFAICS.
+This is a multi-part message in MIME format.
 
-I suck... I forgot about "git-bisect reset"...
+--Boundary_(ID_U8g3YPZeU1ih5QVjtW2sqQ)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
 
-Regards,
-Michal
 
---=20
-"Najbardziej brakowa=B3o mi twojego milczenia."
--- Andrzej Sapkowski "Co=B6 wi=EAcej"
+
+Dear Sir/Madam, 
+First, as a way of introduction, I am Mr. Xiao Jun (hails from Taiwan) 
+Managing Director of Solenoids Industrial Co Ltd.Taichung Taiwan. We 
+are Taiwanese based investors, We are into Calcite, Barytes, Manganese 
+Dioxide , Dolomite, Mica , China Clay, MangneseDioxide,Ferrous(Iron ) 
+Oxide,Paints, Rubber, Plastics,Construction chemicals and we export 
+from Asia and export into Europe,America and Australia. 
+We are also into export and import of the above mentioned 
+products /equipments.
+our company "Solenoids Industrial Co Ltd.We are interested in employing 
+your services, to work with us as ourpayment agent who can help us 
+eastablish a medium of recieving payment on our behalf for Goods and 
+raw materials we supplied to our customers in Europe, South and North 
+America,Australia e.t.c If you are interested in transacting business 
+with us. 
+we will be very glad.Subject to your satisfaction you will be given the 
+opportunity to negotiate your mode of payment which we will pay for 
+your services as our representative in Europe, America, Australia 
+e.t.c. 
+Thank you as we await your further response. 
+Sincerely 
+Xiao Jun 
+Director; 
+Solenoids Industrial Co Ltd. 
+55 An Suing East 9th Street, 
+Taichung, Taiwan 
+Tel:/fax 886-9162278842 
+
+
+--Boundary_(ID_U8g3YPZeU1ih5QVjtW2sqQ)
+Content-type: text/x-vcard; name="dmckay1@stny.rr.com.vcf";
+	charset=windows-1252
+Content-transfer-encoding: 7BIT
+Content-disposition: attachment; filename="dmckay1@stny.rr.com.vcf"
+Content-description: Card for <dmckay1@stny.rr.com>
+
+begin:vcard
+
+version:2.1
+end:vcard
+
+
+--Boundary_(ID_U8g3YPZeU1ih5QVjtW2sqQ)
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--Boundary_(ID_U8g3YPZeU1ih5QVjtW2sqQ)--
