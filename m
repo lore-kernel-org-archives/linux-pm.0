@@ -1,78 +1,74 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions with patches v2
-Date: Sat, 9 Jun 2007 22:05:40 +0200
-Message-ID: <200706092205.43420.rjw__12099.7681435712$1181419243$gmane$org@sisk.pl>
-References: <466AE54A.3040902@googlemail.com> <466AE619.2000706@googlemail.com>
+Subject: Re: ehci_hcd causes box to resume immediately
+	after suspend to RAM
+Date: Sat, 9 Jun 2007 23:10:15 +0200
+Message-ID: <200706092310.16264.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <466AE619.2000706@googlemail.com>
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Tejun Heo <htejun@gmail.com>, linux-usb-devel@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>, linux-ide@vger.kernel.org, Simon <sg02r@ecs.soton.ac.uk>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@redhat.com>, Eric Paris <eparis@parisplace.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Jean-Luc Coulon <jean.luc.coulon@gmail.com>, Paulo Pereira <pfmp.404@gmail.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 9 June 2007 19:40, Michal Piotrowski wrote:
-> Hi all,
+On Sunday, 3 June 2007 17:31, Alan Stern wrote:
+> On Sun, 3 Jun 2007, Rafael J. Wysocki wrote:
 > 
-> Here is a list of some known regressions in 2.6.22-rc4
-> with patches available.
+> > Hi,
+> > 
+> > One of my test boxes suspends to RAM just fine except that if ehci_hcd is
+> > loaded before the suspend, the box resumes immediately after going to sleep.
 > 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
+> Evidently the hardware thinks a wakeup event has occurred.  It is 
+> possible to disable remote wakeup via sysfs, but it would be more 
+> interesting to find out the real reason for the wakeup.
 > 
+> I don't know how to go about doing that, however.  It might be some 
+> interaction at the ACPI level, and it might involve the PCI PME# 
+> signal.
 > 
+> Do you have any USB devices attached when you suspend?
 > 
-> SATA/PATA
-> 
-> Subject    : disk on promise pdc20378 disabled at boot
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8587
-> Submitter  : Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-> Handled-By : Tejun Heo <htejun@gmail.com>
-> Caused-By  : Tejun Heo <htejun@gmail.com>
->              commit 464cf177df7727efcc5506322fc5d0c8b896f545
-> Patch      : http://lkml.org/lkml/2007/6/6/112
-> Status     : patch available
-> 
-> 
-> 
-> SELinux
-> 
-> Subject    : very high non-preempt latency in context_struct_compute_av()
-> References : http://lkml.org/lkml/2007/6/4/78
-> Submitter  : Ingo Molnar <mingo@elte.hu>
-> Handled-By : Stephen Smalley <sds@tycho.nsa.gov>
->              James Morris <jmorris@namei.org>
-> Patch      : http://lkml.org/lkml/2007/6/7/334
-> Status     : patch available
-> 
-> 
-> 
-> Suspend
-> 
-> Subject    : panic on s3 resume with uhci_hcd module
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8565
-> Submitter  : Simon <sg02r@ecs.soton.ac.uk>
-> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-> Patch      : http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/21-firewire-implement-suspend-resume-hooks.patch
-> Status     : patch available
+> You can try using the patch below to see what happens when you manually
+> suspend the controller.  It enables PCI devices to respond to the
+> legacy power/state attribute.  You should look at what "lspci -vv" says
+> about the controller's power management signals, both before and after
+> suspending the PCI device entry.
 
-The patch is already in 2.6.22-rc4, AFAICS.
+It works as expected, AFAICS.  That is, after I echo '2' to the 'state' file,
+it shows that the controller is in D3.
 
-Greetings,
+I've tried to suspend with the controller in that state, but it's resumed
+immediately, as before.
+
+> Maybe also see what ACPI reports.
+
+How can I see that?
+
 Rafael
 
 
 -- 
 "Premature optimization is the root of all evil." - Donald Knuth
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
