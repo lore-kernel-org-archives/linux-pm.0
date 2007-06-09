@@ -1,74 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: ehci_hcd causes box to resume immediately
-	after suspend to RAM
-Date: Sat, 9 Jun 2007 23:10:15 +0200
-Message-ID: <200706092310.16264.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] ehci_hcd causes box to resume
+ immediately after suspend to RAM
+Date: Sat, 9 Jun 2007 17:26:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706091721270.30086-100000@netrider.rowland.org>
+References: <200706092310.16264.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0706031120560.23975-100000@netrider.rowland.org>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: Alan Stern <stern@rowland.harvard.edu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706092310.16264.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 3 June 2007 17:31, Alan Stern wrote:
-> On Sun, 3 Jun 2007, Rafael J. Wysocki wrote:
+On Sat, 9 Jun 2007, Rafael J. Wysocki wrote:
+
+> > You can try using the patch below to see what happens when you manually
+> > suspend the controller.  It enables PCI devices to respond to the
+> > legacy power/state attribute.  You should look at what "lspci -vv" says
+> > about the controller's power management signals, both before and after
+> > suspending the PCI device entry.
 > 
-> > Hi,
-> > 
-> > One of my test boxes suspends to RAM just fine except that if ehci_hcd is
-> > loaded before the suspend, the box resumes immediately after going to sleep.
+> It works as expected, AFAICS.  That is, after I echo '2' to the 'state' file,
+> it shows that the controller is in D3.
+
+At that point, does "lspci -vv" show that the controller is trying to 
+signal a wakeup event?  That is, is the PME# signal asserted?
+
+(Not that knowing this will help very much -- I'm not sure what we 
+could do with that information, and in any case there are other ways 
+besides PME# for on-board devices to report wakeup requests.  I ask 
+mainly out of curiousity.)
+
+> I've tried to suspend with the controller in that state, but it's resumed
+> immediately, as before.
 > 
-> Evidently the hardware thinks a wakeup event has occurred.  It is 
-> possible to disable remote wakeup via sysfs, but it would be more 
-> interesting to find out the real reason for the wakeup.
+> > Maybe also see what ACPI reports.
 > 
-> I don't know how to go about doing that, however.  It might be some 
-> interaction at the ACPI level, and it might involve the PCI PME# 
-> signal.
-> 
-> Do you have any USB devices attached when you suspend?
-> 
-> You can try using the patch below to see what happens when you manually
-> suspend the controller.  It enables PCI devices to respond to the
-> legacy power/state attribute.  You should look at what "lspci -vv" says
-> about the controller's power management signals, both before and after
-> suspending the PCI device entry.
+> How can I see that?
 
-It works as expected, AFAICS.  That is, after I echo '2' to the 'state' file,
-it shows that the controller is in D3.
+I wish I knew.  Maybe you can try asking on the ACPI mailing list.
 
-I've tried to suspend with the controller in that state, but it's resumed
-immediately, as before.
+The simplest workaround should be to disable remote wakeup for that 
+controller:
 
-> Maybe also see what ACPI reports.
+	echo disable >/sys/bus/pci/devices/.../power/wakeup
 
-How can I see that?
-
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+Alan Stern
