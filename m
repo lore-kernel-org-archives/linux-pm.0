@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 1/2] PM: Reduce code duplication in the
-	core suspend code
-Date: Sun, 10 Jun 2007 18:42:54 +0200
-Message-ID: <200706101842.54871.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0706101053510.29131-100000@netrider.rowland.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Remove saved_state from
+	dev_pm_info
+Date: Sun, 10 Jun 2007 19:10:44 +0200
+Message-ID: <200706101910.44409.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0706101018430.29131-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0706101053510.29131-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0706101018430.29131-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,23 +24,53 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 10 June 2007 16:55, Alan Stern wrote:
-> On Sun, 10 Jun 2007, Rafael J. Wysocki wrote:
+On Sunday, 10 June 2007 16:32, Alan Stern wrote:
+> On Sat, 9 Jun 2007, Rafael J. Wysocki wrote:
 > 
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > Reduce code duplication in drivers/base/suspend.c by introducing an inline
-> > function for printing diagnostic messages.
+> > The saved_state member of struct dev_pm_info, defined in include/linux/pm.h, is
+> > not used anywhere, so it can be removed.
 > 
-> Could you save object-code space by making the function non-inline?  
-> It looks complicated enough.
+> Along the same lines, feature_removal_schedule.txt says that 
+> dev->power.power_state will be removed next month.  In preparation, 
+> you could consider removing the prev_state member now.  As far as I 
+> know, it isn't used for anything other than avoiding resume method 
+> calls to devices that were already suspended when a system sleep 
+> began.
 
-I thought I would do that, but then I thought I'd want it to be compiled out if
-dev_dbg() were a noop (like when the debugging is off).
+Yes, I considered that too, but I decided to leave if for now in case something
+depended on it.
 
-> Or is the compiler supposed to figure such things out for itself?
+I'll take another look. ;-)
 
-I think it is.  I'll remove this 'inline'.
+> I suggest that suspend and resume always be called for every device
+> during a system sleep transition, regardless of the device's state.
+
+That's reasonable, I think.
+
+> That will have to done anyway once dev->power.power_state is gone.
+
+Besides, that would fix the issue with the current code that if
+dev->class->suspend() changes dev->power.power_state.event  to 'off',
+then dev->bus->suspend() is not called, but dev->bus->resume() will be called
+during the subsequent resume.
+
+> The idea is that drivers should regard these method calls as
+> notifications that the system is about to go to sleep or has just woken
+> up, rather than as directives to put their device into a particular
+> state.
+> 
+> Thus, if a driver knows that its device was already in a low-power
+> state before the system sleep then it need not respond to a resume
+> method call by switching the device to a high-power state.  Instead the
+> driver should be free to take whatever action it thinks is appropriate.
+> This is already explained in Documentation/power/devices.txt.
+
+OK
+
+I'll prepare a patch to remove the dev->power.power_state.event checks from the
+suspend core code.
 
 Greetings,
 Rafael
