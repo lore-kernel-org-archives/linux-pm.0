@@ -1,14 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 2/2] PM: Remove suspend and resume
-	support from struct device_type
-Date: Sun, 10 Jun 2007 21:22:41 +0200
-Message-ID: <20070610192241.GB25138@elf.ucw.cz>
-References: <200706101519.50588.rjw@sisk.pl> <200706101522.23816.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/2] PM: Reduce code duplication in the
+	core suspend code
+Date: Sun, 10 Jun 2007 16:37:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706101635510.31578-100000@netrider.rowland.org>
+References: <200706101842.54871.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200706101522.23816.rjw@sisk.pl>
+In-Reply-To: <200706101842.54871.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sun, 10 Jun 2007, Rafael J. Wysocki wrote:
 
-> The suspend and resume support in struct device_type (include/linux/device.h)
-> is not used anywhere.  It is also undocumented, so it can be removed.
+> On Sunday, 10 June 2007 16:55, Alan Stern wrote:
+> > On Sun, 10 Jun 2007, Rafael J. Wysocki wrote:
+> > 
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Reduce code duplication in drivers/base/suspend.c by introducing an inline
+> > > function for printing diagnostic messages.
+> > 
+> > Could you save object-code space by making the function non-inline?  
+> > It looks complicated enough.
+> 
+> I thought I would do that, but then I thought I'd want it to be compiled out if
+> dev_dbg() were a noop (like when the debugging is off).
 
-I guess you should cc gregkh on this one.. and the previous series
-that touches driver model. And perhaps cc lkml is good idea.
+You can always do something like this:
 
-							Pavel
+#ifdef DEBUG
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+static void print_msg(...)
+{
+...
+}
+
+#else
+
+static inline void print_msg(...)
+{ }
+#endif
+
+Alan Stern
