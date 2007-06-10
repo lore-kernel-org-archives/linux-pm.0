@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 1/2] PM: Reduce code duplication in the core
-	suspend code
-Date: Sun, 10 Jun 2007 15:21:14 +0200
-Message-ID: <200706101521.15105.rjw@sisk.pl>
+Subject: [RFC][PATCH 2/2] PM: Remove suspend and resume support
+	from struct device_type
+Date: Sun, 10 Jun 2007 15:22:23 +0200
+Message-ID: <200706101522.23816.rjw@sisk.pl>
 References: <200706101519.50588.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,93 +26,60 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Reduce code duplication in drivers/base/suspend.c by introducing an inline
-function for printing diagnostic messages.
+The suspend and resume support in struct device_type (include/linux/device.h)
+is not used anywhere.  It is also undocumented, so it can be removed.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/suspend.c |   49 +++++++++++++++----------------------------
- 1 file changed, 18 insertions(+), 31 deletions(-)
+ drivers/base/power/resume.c  |    5 -----
+ drivers/base/power/suspend.c |    7 -------
+ include/linux/device.h       |    2 --
+ 3 files changed, 14 deletions(-)
 
+Index: linux-2.6.22-rc4/drivers/base/power/resume.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/base/power/resume.c	2007-06-10 15:00:23.000000000 +0200
++++ linux-2.6.22-rc4/drivers/base/power/resume.c	2007-06-10 15:02:04.000000000 +0200
+@@ -41,11 +41,6 @@ int resume_device(struct device * dev)
+ 		error = dev->bus->resume(dev);
+ 	}
+ 
+-	if (!error && dev->type && dev->type->resume) {
+-		dev_dbg(dev,"resuming\n");
+-		error = dev->type->resume(dev);
+-	}
+-
+ 	if (!error && dev->class && dev->class->resume) {
+ 		dev_dbg(dev,"class resume\n");
+ 		error = dev->class->resume(dev);
 Index: linux-2.6.22-rc4/drivers/base/power/suspend.c
 ===================================================================
---- linux-2.6.22-rc4.orig/drivers/base/power/suspend.c	2007-06-10 13:30:45.000000000 +0200
-+++ linux-2.6.22-rc4/drivers/base/power/suspend.c	2007-06-10 15:00:40.000000000 +0200
-@@ -40,6 +40,14 @@ static inline char *suspend_verb(u32 eve
- }
- 
- 
-+static inline void
-+suspend_device_dbg(struct device * dev, pm_message_t state, char *info)
-+{
-+	dev_dbg(dev, "%s%s%s\n", info, suspend_verb(state.event),
-+		((state.event == PM_EVENT_SUSPEND) && device_may_wakeup(dev)) ?
-+		", may wakeup" : "");
-+}
-+
- /**
-  *	suspend_device - Save state of one device.
-  *	@dev:	Device.
-@@ -66,37 +74,21 @@ int suspend_device(struct device * dev, 
- 	dev->power.prev_state = dev->power.power_state;
- 
- 	if (dev->class && dev->class->suspend && !dev->power.power_state.event) {
--		dev_dbg(dev, "class %s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+		suspend_device_dbg(dev, state, "class ");
- 		error = dev->class->suspend(dev, state);
+--- linux-2.6.22-rc4.orig/drivers/base/power/suspend.c	2007-06-10 15:00:40.000000000 +0200
++++ linux-2.6.22-rc4/drivers/base/power/suspend.c	2007-06-10 15:02:04.000000000 +0200
+@@ -79,13 +79,6 @@ int suspend_device(struct device * dev, 
  		suspend_report_result(dev->class->suspend, error);
  	}
  
--	if (!error && dev->type && dev->type->suspend && !dev->power.power_state.event) {
--		dev_dbg(dev, "%s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+	if (!error && dev->type && dev->type->suspend
-+	    && !dev->power.power_state.event) {
-+		suspend_device_dbg(dev, state, "type ");
- 		error = dev->type->suspend(dev, state);
- 		suspend_report_result(dev->type->suspend, error);
- 	}
+-	if (!error && dev->type && dev->type->suspend
+-	    && !dev->power.power_state.event) {
+-		suspend_device_dbg(dev, state, "type ");
+-		error = dev->type->suspend(dev, state);
+-		suspend_report_result(dev->type->suspend, error);
+-	}
+-
+ 	if (!error && dev->bus && dev->bus->suspend
+ 	    && !dev->power.power_state.event) {
+ 		suspend_device_dbg(dev, state, "");
+Index: linux-2.6.22-rc4/include/linux/device.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/linux/device.h	2007-06-10 15:00:23.000000000 +0200
++++ linux-2.6.22-rc4/include/linux/device.h	2007-06-10 15:02:04.000000000 +0200
+@@ -343,8 +343,6 @@ struct device_type {
+ 	int (*uevent)(struct device *dev, char **envp, int num_envp,
+ 		      char *buffer, int buffer_size);
+ 	void (*release)(struct device *dev);
+-	int (*suspend)(struct device * dev, pm_message_t state);
+-	int (*resume)(struct device * dev);
+ };
  
--	if (!error && dev->bus && dev->bus->suspend && !dev->power.power_state.event) {
--		dev_dbg(dev, "%s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+	if (!error && dev->bus && dev->bus->suspend
-+	    && !dev->power.power_state.event) {
-+		suspend_device_dbg(dev, state, "");
- 		error = dev->bus->suspend(dev, state);
- 		suspend_report_result(dev->bus->suspend, error);
- 	}
-@@ -114,14 +106,9 @@ static int suspend_device_late(struct de
- {
- 	int error = 0;
- 
--	if (dev->bus && dev->bus->suspend_late && !dev->power.power_state.event) {
--		dev_dbg(dev, "LATE %s%s\n",
--			suspend_verb(state.event),
--			((state.event == PM_EVENT_SUSPEND)
--					&& device_may_wakeup(dev))
--				? ", may wakeup"
--				: ""
--			);
-+	if (dev->bus && dev->bus->suspend_late
-+	    && !dev->power.power_state.event) {
-+		suspend_device_dbg(dev, state, "LATE ");
- 		error = dev->bus->suspend_late(dev, state);
- 		suspend_report_result(dev->bus->suspend_late, error);
- 	}
+ /* interface for exporting device attributes */
