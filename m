@@ -1,11 +1,19 @@
-From: Johnny <eyg@centurytel.net>
-Subject: flawless handbook
-Date: Tue, 12 Jun 2007 15:37:57 +0300
-Message-ID: <466E93A5.3040306@centurytel.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
+	(xfs on raid6)
+Date: Sun, 10 Jun 2007 18:43:48 +0000
+Message-ID: <20070610184348.GA4417@ucw.cz>
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
+	<alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
+	<4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
+	<46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
+	<4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com>
+	<46680F5E.6070806@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <46680F5E.6070806@dgreaves.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,48 +23,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: David Greaves <david@dgreaves.com>
+Cc: Tejun Heo <htejun@gmail.com>, Neil Brown <neilb@suse.de>, David Chinner <dgc@sgi.com>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-News Hits! New R&D Facility Engaged!
+Hi!
 
-Chan-On International Inc.
-Symbol: CAON
-Close: $0.73
+> >On Thu, Jun 07, 2007 at 11:30:05AM +0100, David Greaves 
+> >wrote:
+> >>Tejun Heo wrote:
+> >>>Hello,
+> >>>
+> >>>David Greaves wrote:
+> >>>>Just to be clear. This problem is where my system 
+> >>>>won't resume after s2d
+> >>>>unless I umount my xfs over raid6 filesystem.
+> >>>This is really weird.  I don't see how xfs mount can 
+> >>>affect this at all.
+> >>Indeed.
+> >>It does :)
+> >
+> >Ok, so lets determine if it really is XFS.
+> Seems like a good next step...
+> 
+> >Does the lockup happen with a
+> >different filesystem on the md device? Or if you can't 
+> >test that, does
+> >any other XFS filesystem you have show the same problem?
+> It's a rather full 1.2Tb raid6 array - can't reformat it 
+> - sorry :)
+> I only noticed the problem when I umounted the fs during 
+> tests to prevent corruption - and it worked. I'm doing a 
+> sync each time it hibernates (see below) and a couple of 
+> paranoia xfs_repairs haven't shown any problems.
+> 
+> I do have another xfs filesystem on /dev/hdb2 (mentioned 
+> when I noticed the md/XFS correlation). It doesn't seem 
+> to have/cause any problems.
+> 
+> >If it is xfs that is causing the problem, what happens 
+> >if you
+> >remount read-only instead of unmounting before shutting 
+> >down?
+> Yes, I'm happy to try these tests.
+> nb, the hibernate script is:
+> ethtool -s eth0 wol g
+> sync
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> 
+> So there has always been a sync before any hibernate.
+> 
+> 
+> cu:~# mount -oremount,ro /huge
+> cu:~# mount
+> /dev/hda2 on / type xfs (rw)
+> proc on /proc type proc (rw)
+> sysfs on /sys type sysfs (rw)
+> usbfs on /proc/bus/usb type usbfs (rw)
+> tmpfs on /dev/shm type tmpfs (rw)
+> devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+> nfsd on /proc/fs/nfsd type nfsd (rw)
+> /dev/hda1 on /boot type ext3 (rw)
+> /dev/md0 on /huge type xfs (ro)
+> /dev/hdb2 on /scratch type xfs (rw)
+> tmpfs on /dev type tmpfs (rw,size=10M,mode=0755)
+> rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs 
+> (rw)
+> cu:(pid2862,port1022) on /net type nfs 
+> (intr,rw,port=1022,toplvl,map=/usr/share/am-utils/amd.net,noac)
+> elm:/space on /amd/elm/root/space type nfs 
+> (rw,vers=3,proto=tcp)
+> elm:/space-backup on /amd/elm/root/space-backup type nfs 
+> (rw,vers=3,proto=tcp)
+> elm:/usr/src on /amd/elm/root/usr/src type nfs 
+> (rw,vers=3,proto=tcp)
+> cu:~# /usr/net/bin/hibernate
+> [this works and resumes]
+> 
+> cu:~# mount -oremount,rw /huge
+> cu:~# /usr/net/bin/hibernate
+> [this works and resumes too !]
+> 
+> cu:~# touch /huge/tst
+> cu:~# /usr/net/bin/hibernate
+> [but this doesn't even hibernate]
 
-News hits today on CAON and trading continues to warm up. Hitting highs
-of $0.90 today, we can see this building. Read the release and get on
-CAON first thing Tuesday. We can see this climbing all week!
+This is very probably separate problem... and you should have enough
+data in dmesg to do something with it.
 
-The Bakweri are an indigenous African nation.
+							Pavel
 
-Watch France: "Quand ca va pourir, on va le sentir! Remember Operation
-Artemis.
-
-Bate BesongBate Besong, award-winning firebrand poet and playwright. I
-am glad naked gunboat diplomacy is back. Could you help me, please? This
-has tremendously strengthened their economic and political independence.
-
-It has shown that what is considered by the West is not morality or
-right, but might. Mbarika's research interests are in the areas of
-information infrastructure diffusion in developing countries and
-multimedia learning.
-
-and should worry themselves with food and getting medication.
-
-After disarming them,it handed them over to their executioners. So the
-French and Francophone Belgium are firmly back in control of events in
-the DRC, and they are not shy to about it. One can make a case that
-French commercial interests are threatened by non-French involvement in
-African economies, but this is no recipe or excuse for the brutality of
-French military activity.
-
-This is just a the tip of the iceberg of what France does in Sub-Saharan
-Africa to prolong the suffering of the masses and their immiserization.
-French foreign policy in Ivory Coast is not led by the Foreign Affairs
-department.
-Since this show has aired, the press has remained silent about the
-General's scandalous role in the fall of Srebrenica.
-Mladic it might be useful to reflect on the French role.
-
-The press dubbed him 'General Courage'.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
