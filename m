@@ -1,12 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Remove prev_state from dev_pm_info
-Date: Mon, 11 Jun 2007 10:14:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706111013220.11888-100000@iolanthe.rowland.org>
-References: <200706110131.54904.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 2/7] PM: Remove saved_state from struct
+	dev_pm_info
+Date: Mon, 11 Jun 2007 16:58:27 +0200
+Message-ID: <200706111658.28675.rjw@sisk.pl>
+References: <200706111655.50022.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706110131.54904.rjw@sisk.pl>
+In-Reply-To: <200706111655.50022.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,22 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.osdl.org>, Pavel Machek <pavel@ucw.cz>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: USB development list <linux-usb-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Jun 2007, Rafael J. Wysocki wrote:
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> > Along the same lines, feature_removal_schedule.txt says that 
-> > dev->power.power_state will be removed next month.  In preparation, 
-> > you could consider removing the prev_state member now.  As far as I 
-> > know, it isn't used for anything other than avoiding resume method 
-> > calls to devices that were already suspended when a system sleep 
-> > began.
-> 
-> Patch for that is appended.
+The saved_state member of struct dev_pm_info, defined in include/linux/pm.h, is
+not used anywhere, so it can be removed.
 
-It looks good.  The USB portion might generate a merge conflict because 
-of other ongoing changes, but they will be easy to fix.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/pm.h |    1 -
+ 1 file changed, 1 deletion(-)
 
-Alan Stern
+Index: linux-2.6.22-rc4/include/linux/pm.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/linux/pm.h	2007-06-09 21:12:45.000000000 +0200
++++ linux-2.6.22-rc4/include/linux/pm.h	2007-06-09 22:26:13.000000000 +0200
+@@ -236,7 +236,6 @@ struct dev_pm_info {
+ #ifdef	CONFIG_PM
+ 	unsigned		should_wakeup:1;
+ 	pm_message_t		prev_state;
+-	void			* saved_state;
+ 	struct list_head	entry;
+ #endif
+ };
