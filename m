@@ -1,163 +1,62 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Tue, 12 Jun 2007 13:31:28 +0100
-Message-ID: <466E9220.5050507@dgreaves.com>
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com>
+From: Johnny <eyg@centurytel.net>
+Subject: flawless handbook
+Date: Tue, 12 Jun 2007 15:37:57 +0300
+Message-ID: <466E93A5.3040306@centurytel.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756296AbXFLMbw@vger.kernel.org>
-In-Reply-To: <20070607222813.GG85884050@sgi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Chinner <dgc@sgi.com>
-Cc: Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-[RESEND since I sent this late last friday and it's probably been buried by now.]
+News Hits! New R&D Facility Engaged!
 
-I had this as a PS, then I thought, we could all be wasting our time...
+Chan-On International Inc.
+Symbol: CAON
+Close: $0.73
 
-I don't like these "Section mismatch" warnings but that's because I'm paranoid
-rather than because I know what they mean. I'll be happier when someone says
-"That's OK, I know about them, they're not the problem"
+News hits today on CAON and trading continues to warm up. Hitting highs
+of $0.90 today, we can see this building. Read the release and get on
+CAON first thing Tuesday. We can see this climbing all week!
 
-WARNING: arch/i386/kernel/built-in.o(.text+0x968f): Section mismatch: reference
-to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0x9781): Section mismatch: reference
-to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0x9786): Section mismatch: reference
-to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa25c): Section mismatch: reference
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa303): Section mismatch: reference
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa31b): Section mismatch: reference
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.text+0xa344): Section mismatch: reference
-to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
-WARNING: arch/i386/kernel/built-in.o(.exit.text+0x19): Section mismatch:
-reference to .init.text: (between 'cache_remove_dev' and 'powernow_k6_exit')
-WARNING: arch/i386/kernel/built-in.o(.data+0x2160): Section mismatch: reference
-to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
-WARNING: kernel/built-in.o(.text+0x14502): Section mismatch: reference to
-.init.text: (between 'kthreadd' and 'init_waitqueue_head')
+The Bakweri are an indigenous African nation.
 
-I'm paranoid because Andrew Morton said a couple of weeks ago:
-> Could the people who write these bugs, please, like, fix them?
-> It's not trivial noise.  These things lead to kernel crashes.
+Watch France: "Quand ca va pourir, on va le sentir! Remember Operation
+Artemis.
 
-Anyhow...
+Bate BesongBate Besong, award-winning firebrand poet and playwright. I
+am glad naked gunboat diplomacy is back. Could you help me, please? This
+has tremendously strengthened their economic and political independence.
 
-David Chinner wrote:
-> sync just guarantees that metadata changes are logged and data is
-> on disk - it doesn't stop the filesystem from doing anything after
-> the sync...
-No, but there are no apps accessing the filesystem. It's just available for NFS
-serving. Seems safer before potentially hanging the machine?
+It has shown that what is considered by the West is not morality or
+right, but might. Mbarika's research interests are in the areas of
+information infrastructure diffusion in developing countries and
+multimedia learning.
 
+and should worry themselves with food and getting medication.
 
-Also I made these changes to the kernel:
-cu:/boot# diff config-2.6.22-rc4-TejuTst-dbg3-dirty
-config-2.6.22-rc4-TejuTst-dbg1-dirty
-3,4c3,4
-< # Linux kernel version: 2.6.22-rc4-TejuTst-dbg3
-< # Thu Jun  7 20:00:34 2007
----
-> # Linux kernel version: 2.6.22-rc4-TejuTst3
-> # Thu Jun  7 10:59:21 2007
-242,244c242
-< CONFIG_PM_DEBUG=y
-< CONFIG_DISABLE_CONSOLE_SUSPEND=y
-< # CONFIG_PM_TRACE is not set
----
-> # CONFIG_PM_DEBUG is not set
+After disarming them,it handed them over to their executioners. So the
+French and Francophone Belgium are firmly back in control of events in
+the DRC, and they are not shy to about it. One can make a case that
+French commercial interests are threatened by non-French involvement in
+African economies, but this is no recipe or excuse for the brutality of
+French military activity.
 
-positive: I can now get sysrq-t :)
-negative: if I build skge into the kernel the behaviour changes so I can't run
-netconsole
+This is just a the tip of the iceberg of what France does in Sub-Saharan
+Africa to prolong the suffering of the masses and their immiserization.
+French foreign policy in Ivory Coast is not led by the Foreign Affairs
+department.
+Since this show has aired, the press has remained silent about the
+General's scandalous role in the fall of Srebrenica.
+Mladic it might be useful to reflect on the French role.
 
-Just to be sure I tested and this kernel suspends/restores with /huge unmounted.
-It also hangs without an umount so the behaviour is the same.
-
-> Ok, so a clean inode is sufficient to prevent hibernate from working.
-> 
-> So, what's different between a sync and a remount?
-> 
-> do_remount_sb() does:
-> 
->     599         shrink_dcache_sb(sb);
->     600         fsync_super(sb);
-> 
-> of which a sync does neither. sync does what fsync_super() does in
-> different sort of way, but does not call sync_blockdev() on each
-> block device. It looks like that is the two main differences between
-> sync and remount - remount trims the dentry cache and syncs the blockdev,
-> sync doesn't.
-> 
->>> What about freezing the filesystem?
->> cu:~# xfs_freeze -f /huge
->> cu:~# /usr/net/bin/hibernate
->> [but this doesn't even hibernate - same as the 'touch']
-> 
-> I suspect that the frozen filesystem might cause other problems
-> in the hibernate process. However, while a freeze calls sync_blockdev()
-> it does not trim the dentry cache.....
-> 
-> So, rather than a remount before hibernate, lets see if we can 
-> remove the dentries some other way to determine if removing excess
-> dentries/inodes from the caches makes a difference. Can you do:
-> 
-> # touch /huge/foo
-> # sync
-> # echo 1 > /proc/sys/vm/drop_caches
-> # hibernate
-success
-> 
-> # touch /huge/bar
-> # sync
-> # echo 2 > /proc/sys/vm/drop_caches
-> # hibernate
-success
-> 
-> # touch /huge/baz
-> # sync
-> # echo 3 > /proc/sys/vm/drop_caches
-> # hibernate
-success
-
-So I added
-# touch /huge/bork
-# sync
-# hibernate
-
-And it still succeeded - sigh.
-
-So I thought a bit and did:
-rm /huge/b* /huge/foo
-
-> Clean boot
-> # touch /huge/bar
-> # sync
-> # echo 2 > /proc/sys/vm/drop_caches
-> # hibernate
-hangs on suspend (sysrq-b doesn't work)
-
-> Clean boot
-> # touch /huge/baz
-> # sync
-> # echo 3 > /proc/sys/vm/drop_caches
-> # hibernate
-hangs on suspend (sysrq-b doesn't work)
-
-So I rebooted and hibernated to make sure I'm not having random behaviour - yep,
-hang on resume (as per usual).
-
-Now I wonder if any other mounts have an effect...
-reboot and umount /dev/hdb2 xfs fs, - hang on hibernate
-
-
-I'm confused. I'm going to order chinese takeaway and then find a serial cable...
-
-David
-PS 2.6.21.1 works fine.
-PPS the takeaway was nice.
+The press dubbed him 'General Courage'.
