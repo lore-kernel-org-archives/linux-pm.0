@@ -1,81 +1,163 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] Re: ehci_hcd causes box to resume
-	immediately after suspend to RAM
-Date: Tue, 12 Jun 2007 14:16:15 +0200
-Message-ID: <200706121416.15800.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0706091721270.30086-100000@netrider.rowland.org>
-	<1181613041.6629.5.camel@localhost.localdomain>
-	<200706121359.28888.rjw@sisk.pl>
+From: David Greaves <david@dgreaves.com>
+Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
+Date: Tue, 12 Jun 2007 13:31:28 +0100
+Message-ID: <466E9220.5050507@dgreaves.com>
+References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com> <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <200706121359.28888.rjw@sisk.pl>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: linux-pm@lists.linux-foundation.org
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756296AbXFLMbw@vger.kernel.org>
+In-Reply-To: <20070607222813.GG85884050@sgi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Chinner <dgc@sgi.com>
+Cc: Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 12 June 2007 13:59, Rafael J. Wysocki wrote:
-> On Tuesday, 12 June 2007 03:50, Zhang Rui wrote:
-> > > > > I've tried to suspend with the controller in that state, but it's resumed
-> > > > > immediately, as before.
-> > > > > 
-> > > > > > Maybe also see what ACPI reports.
-> > > > > 
-> > > > > How can I see that?
-> > > > 
-> > > > I wish I knew.  Maybe you can try asking on the ACPI mailing list.
-> > > > 
-> > > > The simplest workaround should be to disable remote wakeup for that 
-> > > > controller:
-> > > > 
-> > > > 	echo disable >/sys/bus/pci/devices/.../power/wakeup
-> > > 
-> > > I tried that but it didn't help.  Namely, the box resumed right after
-> > > suspending as it had done before.
-> > > 
-> > > The only way to prevent it from resuming immediately after the suspend is to
-> > > 'rmmod ehci_hcd' before the suspend.
-> > > 
-> > > Interestingly enough, I have no such problems with EHCI on the other test box
-> > > that is able to suspend to RAM and resume.
-> > > 
-> > What's the kernel version you are using?
-> > Is it the same problem shown here?
-> > http://lkml.org/lkml/2007/5/18/55
-> > 2.6.22-rc1-mm1 may have this problem.
+[RESEND since I sent this late last friday and it's probably been buried by now.]
+
+I had this as a PS, then I thought, we could all be wasting our time...
+
+I don't like these "Section mismatch" warnings but that's because I'm paranoid
+rather than because I know what they mean. I'll be happier when someone says
+"That's OK, I know about them, they're not the problem"
+
+WARNING: arch/i386/kernel/built-in.o(.text+0x968f): Section mismatch: reference
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9781): Section mismatch: reference
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9786): Section mismatch: reference
+to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa25c): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa303): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa31b): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.text+0xa344): Section mismatch: reference
+to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: arch/i386/kernel/built-in.o(.exit.text+0x19): Section mismatch:
+reference to .init.text: (between 'cache_remove_dev' and 'powernow_k6_exit')
+WARNING: arch/i386/kernel/built-in.o(.data+0x2160): Section mismatch: reference
+to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
+WARNING: kernel/built-in.o(.text+0x14502): Section mismatch: reference to
+.init.text: (between 'kthreadd' and 'init_waitqueue_head')
+
+I'm paranoid because Andrew Morton said a couple of weeks ago:
+> Could the people who write these bugs, please, like, fix them?
+> It's not trivial noise.  These things lead to kernel crashes.
+
+Anyhow...
+
+David Chinner wrote:
+> sync just guarantees that metadata changes are logged and data is
+> on disk - it doesn't stop the filesystem from doing anything after
+> the sync...
+No, but there are no apps accessing the filesystem. It's just available for NFS
+serving. Seems safer before potentially hanging the machine?
+
+
+Also I made these changes to the kernel:
+cu:/boot# diff config-2.6.22-rc4-TejuTst-dbg3-dirty
+config-2.6.22-rc4-TejuTst-dbg1-dirty
+3,4c3,4
+< # Linux kernel version: 2.6.22-rc4-TejuTst-dbg3
+< # Thu Jun  7 20:00:34 2007
+---
+> # Linux kernel version: 2.6.22-rc4-TejuTst3
+> # Thu Jun  7 10:59:21 2007
+242,244c242
+< CONFIG_PM_DEBUG=y
+< CONFIG_DISABLE_CONSOLE_SUSPEND=y
+< # CONFIG_PM_TRACE is not set
+---
+> # CONFIG_PM_DEBUG is not set
+
+positive: I can now get sysrq-t :)
+negative: if I build skge into the kernel the behaviour changes so I can't run
+netconsole
+
+Just to be sure I tested and this kernel suspends/restores with /huge unmounted.
+It also hangs without an umount so the behaviour is the same.
+
+> Ok, so a clean inode is sufficient to prevent hibernate from working.
 > 
-> Yes, I remeber this thread.
-
-s/remeber/remember/
-
-> The kernel is 2.6.22-rc4 with the patches from
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc4/patches/
-> applied.
+> So, what's different between a sync and a remount?
 > 
-> Greetings,
-> Rafael
- 
+> do_remount_sb() does:
+> 
+>     599         shrink_dcache_sb(sb);
+>     600         fsync_super(sb);
+> 
+> of which a sync does neither. sync does what fsync_super() does in
+> different sort of way, but does not call sync_blockdev() on each
+> block device. It looks like that is the two main differences between
+> sync and remount - remount trims the dentry cache and syncs the blockdev,
+> sync doesn't.
+> 
+>>> What about freezing the filesystem?
+>> cu:~# xfs_freeze -f /huge
+>> cu:~# /usr/net/bin/hibernate
+>> [but this doesn't even hibernate - same as the 'touch']
+> 
+> I suspect that the frozen filesystem might cause other problems
+> in the hibernate process. However, while a freeze calls sync_blockdev()
+> it does not trim the dentry cache.....
+> 
+> So, rather than a remount before hibernate, lets see if we can 
+> remove the dentries some other way to determine if removing excess
+> dentries/inodes from the caches makes a difference. Can you do:
+> 
+> # touch /huge/foo
+> # sync
+> # echo 1 > /proc/sys/vm/drop_caches
+> # hibernate
+success
+> 
+> # touch /huge/bar
+> # sync
+> # echo 2 > /proc/sys/vm/drop_caches
+> # hibernate
+success
+> 
+> # touch /huge/baz
+> # sync
+> # echo 3 > /proc/sys/vm/drop_caches
+> # hibernate
+success
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+So I added
+# touch /huge/bork
+# sync
+# hibernate
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
-_______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+And it still succeeded - sigh.
+
+So I thought a bit and did:
+rm /huge/b* /huge/foo
+
+> Clean boot
+> # touch /huge/bar
+> # sync
+> # echo 2 > /proc/sys/vm/drop_caches
+> # hibernate
+hangs on suspend (sysrq-b doesn't work)
+
+> Clean boot
+> # touch /huge/baz
+> # sync
+> # echo 3 > /proc/sys/vm/drop_caches
+> # hibernate
+hangs on suspend (sysrq-b doesn't work)
+
+So I rebooted and hibernated to make sure I'm not having random behaviour - yep,
+hang on resume (as per usual).
+
+Now I wonder if any other mounts have an effect...
+reboot and umount /dev/hdb2 xfs fs, - hang on hibernate
+
+
+I'm confused. I'm going to order chinese takeaway and then find a serial cable...
+
+David
+PS 2.6.21.1 works fine.
+PPS the takeaway was nice.
