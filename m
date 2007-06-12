@@ -1,45 +1,78 @@
-From: castet.matthieu@free.fr
-Subject: airo suspend problem
-Date: Tue, 12 Jun 2007 13:23:08 +0200
-Message-ID: <1181647388.466e821cb546d@imp.free.fr>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] Re: ehci_hcd causes box to resume
+	immediately after suspend to RAM
+Date: Tue, 12 Jun 2007 13:59:28 +0200
+Message-ID: <200706121359.28888.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0706091721270.30086-100000@netrider.rowland.org>
+	<200706112115.54395.rjw@sisk.pl>
+	<1181613041.6629.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <1181613041.6629.5.camel@localhost.localdomain>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-usb-devel>
+List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
+	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-usb-devel-bounces@lists.sourceforge.net
+Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm <linux-pm@lists.osdl.org>, Alan Stern <stern@rowland.harvard.edu>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tuesday, 12 June 2007 03:50, Zhang Rui wrote:
+> > > > I've tried to suspend with the controller in that state, but it's resumed
+> > > > immediately, as before.
+> > > > 
+> > > > > Maybe also see what ACPI reports.
+> > > > 
+> > > > How can I see that?
+> > > 
+> > > I wish I knew.  Maybe you can try asking on the ACPI mailing list.
+> > > 
+> > > The simplest workaround should be to disable remote wakeup for that 
+> > > controller:
+> > > 
+> > > 	echo disable >/sys/bus/pci/devices/.../power/wakeup
+> > 
+> > I tried that but it didn't help.  Namely, the box resumed right after
+> > suspending as it had done before.
+> > 
+> > The only way to prevent it from resuming immediately after the suspend is to
+> > 'rmmod ehci_hcd' before the suspend.
+> > 
+> > Interestingly enough, I have no such problems with EHCI on the other test box
+> > that is able to suspend to RAM and resume.
+> > 
+> What's the kernel version you are using?
+> Is it the same problem shown here?
+> http://lkml.org/lkml/2007/5/18/55
+> 2.6.22-rc1-mm1 may have this problem.
 
-the airo driver (drivers/net/wireless/airo.c) does in its suspend routine [1].
-But not all the pci cards support power management and cause
-pci_enable_wake/pci_set_power_state to return errors.
+Yes, I remeber this thread.
 
-On pci card that don't support PM, what should be done ?
-Don't call pci_enable_wake/pci_set_power_state ?
+The kernel is 2.6.22-rc4 with the patches from
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc4/patches/
+applied.
 
-
-Thanks
-
-Matthieu
+Greetings,
+Rafael
 
 
-PS : after the failed suspend to ram due to airo driver, I tried to unload airo
-driver and it hanged. After a reset, I got my ext3 root fs corrupted :(
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
 
-
-
-
-[1]
-pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
-pci_save_state(pdev);
-return pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
+_______________________________________________
+linux-usb-devel@lists.sourceforge.net
+To unsubscribe, use the last form field at:
+https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
