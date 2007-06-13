@@ -1,23 +1,12 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression
- (xfs on raid6)
-Date: Wed, 13 Jun 2007 15:12:58 -0700 (PDT)
-Message-ID: <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org>
-References: <200706020122.49989.rjw@sisk.pl> <4661EFBB.5010406@dgreaves.com>
-	<alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org>
-	<4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com>
-	<46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com>
-	<4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com>
-	<46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com>
-	<4669A965.20403@dgreaves.com>
-	<alpine.LFD.0.98.0706121123550.14121@woody.linux-foundation.org>
-	<466FD214.9070603@dgreaves.com>
-	<alpine.LFD.0.98.0706131344550.14121@woody.linux-foundation.org>
-	<46706968.7000703@dgreaves.com>
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Date: Wed, 13 Jun 2007 23:25:20 +0100 (BST)
+Message-ID: <Pine.LNX.4.61.0706132320200.26751__46381.6903335557$1181773576$gmane$org@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46706968.7000703@dgreaves.com>
+In-Reply-To: <46704C44.8020602@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,91 +16,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Greaves <david@dgreaves.com>
-Cc: Tejun Heo <htejun@gmail.com>, Neil Brown <neilb@suse.de>, David Chinner <dgc@sgi.com>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, Jeff Garzik <jgarzik@pobox.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: discuss@x86-64.org, linux-usb-devel@lists.sourceforge.net, Mikael Pettersson <mikpe@it.uu.se>, Dan Aloni <da-x@monatomic.org>, Greg Kroah-Hartman <gregkh@suse.de>, Netdev <netdev@vger.kernel.org>, Stephen Hemminger <shemminger@linux-foundation.org>, Jay Vosburgh <fubar@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Alex Riesen <raa.lkml@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, David Miller <davem@davemloft.net>, Ioan Ionita <opslynx@gmail.com>, Chad Tindel <ctindel@users.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
+Hi all,
 
+The random seg faults on x86_64 is interesting as I have been getting 
+random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have 
+not yet tried to track it down. All I know at present is that it is not a 
+problem on 2.6.20.9.
 
-On Wed, 13 Jun 2007, David Greaves wrote:
+Regards
+ 	Mark Fortescue.
+
+On Wed, 13 Jun 2007, Michal Piotrowski wrote:
+
+> Hi all,
 >
-> > I'm not seeing anything really obvious. The traces would probably look
-> > better if you enabled CONFIG_FRAME_POINTER, though. That should cut down on
-> > some of the noise and make the traces a bit more readable.
-> 
-> I can do that...
-
-Thanks. That makes a big difference to the readability of the traces.
-
-That said, I'm so used to reading even the messy ones that this didn't 
-actually tell me anything new (it made it clear that the SCSI error 
-handler noise was just noise), but for people who aren't quite as used to 
-seeing crap backtraces, your new trace might hopefully put them on the 
-right track.
-
-I threw out the parts that didn't look all that relevant, and left the
-ata_aux/md0_raid5/hibernate traces here for others to look at without all 
-the other noise. Those _seem_ to be the primary suspects in this saga.
-
-		Linus
----
-> ata_aux       D F7945000     0   122      2 (L-TLB)
->        c19f7ce0 00000046 f7ea23b8 f7945000 c19f7ca0 c0121d67 c198d800 f7ea23b8
->        c19f7cb0 c02261b7 f6af7964 f7ea23b8 c19f7cc0 c0293942 f7e865d0 c1a026bc
->        c19f7cf0 000003ae 2dae0756 00000009 c19f7cf0 c19f7dc8 f6af7964 c19f7cfc
-> Call Trace:
->  [<c0364fa4>] wait_for_completion+0x64/0xa0
->  [<c021bb7d>] blk_execute_rq+0x8d/0xb0
->  [<c02b7a88>] scsi_execute+0xb8/0x110
->  [<c02b7b48>] scsi_execute_req+0x68/0x90
->  [<c02bdefd>] sd_spinup_disk+0x6d/0x400
->  [<c02bf25b>] sd_revalidate_disk+0x6b/0x160
->  [<c02bdc1f>] sd_rescan+0x1f/0x30
->  [<c02bb002>] scsi_rescan_device+0x42/0x50
->  [<c02c9e10>] ata_scsi_dev_rescan+0x60/0x70
->  [<c0127ebd>] run_workqueue+0x4d/0xf0
->  [<c012806d>] worker_thread+0xcd/0xf0
->  [<c012b247>] kthread+0x67/0x70
->  [<c01049fb>] kernel_thread_helper+0x7/0x4c
-
-> md0_raid5     D F7F4D000     0   836      2 (L-TLB)
->        f78a3da0 00000046 f7f4d000 f7f4d000 f78a3da0 c01454b6 c048b0e0 f6ba0ad0
->        f78a3d70 c0116be1 00010ad0 d5658227 f78a3d90 f7853000 f70c4ae0 f7f5617c
->        f78a3de0 00003440 1be4a921 00000009 00000246 f7853000 f78a3dc8 f785313c
-> Call Trace:
->  [<c02f1287>] md_super_wait+0x77/0xc0
->  [<c02f993f>] write_sb_page+0x4f/0x80
->  [<c02f9a72>] write_page+0x102/0x110
->  [<c02f9db9>] bitmap_update_sb+0x89/0x90
->  [<c02f3353>] md_update_sb+0x123/0x2a0
->  [<c02f93c2>] md_check_recovery+0x302/0x340
->  [<c02ec1f2>] raid5d+0x12/0xf0
->  [<c02f7746>] md_thread+0x56/0x110
->  [<c012b247>] kthread+0x67/0x70
->  [<c01049fb>] kernel_thread_helper+0x7/0x4c
-
-> hibernate     D F7945000     0  3874   2622 (NOTLB)
->        f6723c60 00000086 f7ea23b8 f7945000 f6723c20 c0121d67 c198d800 f7ea23b8
->        f6723c30 c02261b7 28ccc170 00000009 00003a03 00000000 c19615d0 f6ba0bdc
->        0000006e 0006a677 28ccc170 00000009 f6723c70 f6723d48 f6af7804 f6723c7c
-> Call Trace:
->  [<c0364fa4>] wait_for_completion+0x64/0xa0
->  [<c021bb7d>] blk_execute_rq+0x8d/0xb0
->  [<c02b7a88>] scsi_execute+0xb8/0x110
->  [<c02b7b48>] scsi_execute_req+0x68/0x90
->  [<c02bf80f>] sd_start_stop_device+0x6f/0x120
->  [<c02bfb9a>] sd_resume+0x6a/0xa0
->  [<c02bbe59>] scsi_bus_resume+0x69/0x80
->  [<c0299932>] resume_device+0x132/0x190
->  [<c0299aab>] dpm_resume+0xbb/0xc0
->  [<c0299ace>] device_resume+0x1e/0x40
->  [<c013bfd6>] hibernate+0x106/0x1a0
->  [<c013b193>] state_store+0xc3/0xf0
->  [<c019353b>] subsys_attr_store+0x3b/0x40
->  [<c019370e>] flush_write_buffer+0x2e/0x40
->  [<c0193781>] sysfs_write_file+0x61/0x70
->  [<c015e858>] vfs_write+0x88/0x110
->  [<c015e991>] sys_write+0x41/0x70
->  [<c0103ee0>] syscall_call+0x7/0xb
->  =======================
-> 
+> Here is a list of some known regressions in 2.6.22-rc4.
+>
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+>
+>
+>
+> Networking
+>
+> Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the 
+> bonding driver
+> References : http://lkml.org/lkml/2007/6/13/65
+> Submitter  : Dan Aloni <da-x@monatomic.org>
+> Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
+> Status     : Unknown
+>
+>
+>
+> Sparc64
+>
+> Subject    : 2.6.22-rc broke X on Ultra5
+> References : http://lkml.org/lkml/2007/5/22/78
+> Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+> Handled-By : David Miller <davem@davemloft.net>
+> Status     : problem is being debugged
+>
+>
+>
+> Suspend
+>
+> Subject    : hibernate(?) fails totally - regression
+> References : http://lkml.org/lkml/2007/6/1/401
+> Submitter  : David Greaves <david@dgreaves.com>
+> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+> Caused-By  : Tejun Heo <htejun@gmail.com>
+>            commit 9666f4009c22f6520ac3fb8a19c9e32ab973e828
+> Status     : problem is being debugged
+>
+>
+>
+> TTY
+>
+> Subject    : OOPS (NULL pointer dereference) in v2.6.22-rc3
+> References : http://lkml.org/lkml/2007/6/1/389
+>            http://bugzilla.kernel.org/show_bug.cgi?id=8473
+>            http://bugzilla.kernel.org/show_bug.cgi?id=8574
+> Submitter  : Alex Riesen <raa.lkml@gmail.com>
+> Status     : problem is being debugged
+>
+>
+>
+> x86-64
+>
+> Subject    : x86-64 2.6.22-rc2 random segfaults
+> References : http://lkml.org/lkml/2007/5/24/275
+> Submitter  : Ioan Ionita <opslynx@gmail.com>
+> Status     : Unknown
+>
+>
+>
+> Regards,
+> Michal
+>
+> -- 
+> LOG
+> http://www.stardust.webpages.pl/log/
+> -
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
