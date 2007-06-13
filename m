@@ -1,58 +1,73 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Tue, 12 Jun 2007 23:31:59 +0200
-Message-ID: <20070612213159.GB13747@elf.ucw.cz>
-References: <alpine.LFD.0.98.0706021538360.23741@woody.linux-foundation.org> <4662D852.4000005@dgreaves.com> <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070610184348.GA4417@ucw.cz> <466EDF24.2000806@dgreaves.com>
+From: "ONLINE CYBER LOTTERY" <onlinecyber@onlinecyber.com>
+Subject: Congratulations Final Payment Release.
+Date: Wed, 13 Jun 2007 03:08:58 -0400 (EDT)
+Message-ID: <13544.41.204.245.106.1181718538.squirrel@bodegadearticulos.com>
+Reply-To: mr.johnnicole@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754578AbXFLVcX@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <466EDF24.2000806@dgreaves.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Dear Winner,
 
-> >>cu:~# mount -oremount,ro /huge
-> >>cu:~# /usr/net/bin/hibernate
-> >>[this works and resumes]
-> >>
-> >>cu:~# mount -oremount,rw /huge
-> >>cu:~# /usr/net/bin/hibernate
-> >>[this works and resumes too !]
-> >>
-> >>cu:~# touch /huge/tst
-> >>cu:~# /usr/net/bin/hibernate
-> >>[but this doesn't even hibernate]
-> >
-> >This is very probably separate problem... and you should have enough
-> >data in dmesg to do something with it.
-> 
-> What makes you say it's a different problem - it's hanging at the same 
-> point visually - it's just that one is pre suspend, one is post suspend.
+We Apologies, for the delay of your payment and all the Inconveniences
+And Inflict that we might have indulge you through.
 
-Ok, I did not see the visuals.
+However, we  are Having some minor problems with our payment system,
+this is Inexplicable, And have held us stranded and Indolent, not
+having the Aspiration to devote our 100% Assiduity in accrediting
+foreign payments. We Apologies once again from the Records of
+outstanding winners due for payment With {ONLINE CYBERPROMOTION} your
+name and Particular was discovered as next on the list of the
+outstanding winners who are Yet to received their payments.
 
-> It all feels very related to me - the behaviour all hinges around the same 
-> patch too.
-> 
-> I'll take a look in dmesg though...
-> 
-> David
-> 
-> PS, looks like some mail holdups somewhere...
-> Received: from spitz.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-> 	by mail.ukfsn.org (Postfix) with ESMTP id A9125E6AE9
-> 	for <david@dgreaves.com>; Tue, 12 Jun 2007 15:41:23 +0100 (BST)
-> Received: by spitz.ucw.cz (Postfix, from userid 0)
-> 	id E05FC279F2; Sun, 10 Jun 2007 18:43:48 +0000 (UTC)
-> Date: Sun, 10 Jun 2007 18:43:48 +0000
 
-Yep, that's normal, spitz is 0.3kg machine connected over gprs. Okay,
-I should probably try to sync it more often than once in two days.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  Emails were selected anonymously through a Computer ballot system
+from over 35,000 companies and 70,000 individual E-mail addresses all
+over the world and your e-mail address emerged as the winner of the 11
+selected email address. This program is promoted and sponsored by
+Orient software corporation (Orient Networks) in collaboration with
+The Online CyberInternational.
+
+  I wish to inform you now that the square peg is now in
+Square whole and can be voguish for  your payment is being processed
+and will be released to you as soon as you respond to this letter.
+Also note that from our record in ourFile, your outstanding winning
+payment is S$950.215.00 (NINE HUNDRED AND FIFTY THOUSAND, TWO
+HUNDREDAND FIFTEEN DOLLARS).Payment will be made to you in a certified
+bank draft or wire transfer into a nominated bank Account of your
+choice, as soon as you get in touched with.
+
+Mr. John Nicole
+E-mail:john_nicole60@yahoo.es
+
+Provide him with the following details, as this will enable him to
+process and release of your cash prize without any delay.
+
+Your Full Name:..................................
+Telephone and fax Numbers:.........................
+Residential Address:...............................
+
+Your urgent reply will help him process the release of your price
+money.
+
+Mr. John Nicole.
+
+Will effect the speedy release of your cash prize to you within
+48hours.
+
+Yours Sincerely,
+
+Mrs. Jane Phillips
+
+Vice President
