@@ -1,470 +1,369 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Thu, 14 Jun 2007 16:19:28 +0100
-Message-ID: <46715C80.7010402@dgreaves.com>
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com>
+From: "Derek Hayes" <o2ka.com@wauf.com>
+Subject: Why be an average guy any longer
+Date: Thu, 14 Jun 2007 17:24:20 +0100
+Message-ID: <000001c7ae9f$4096b480$0100007f@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753823AbXFNPUU@vger.kernel.org>
-In-Reply-To: <46714ECF.8080203@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>, Jeff Garzik <jgarzik@pobox.com>
+Content-Type: multipart/mixed; boundary="===============3445224605412567647=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Tejun Heo wrote:
-> They're waiting for the commands they issued to complete.  ata_aux is
-> trying to revalidate the scsi device after libata EH finished waking up
-> the port and hibernate is trying to resume scsi disk device.  ata_aux is
-> issuing either TEST UNIT READY or START STOP.  hibernate is issuing
-> START STOP.
-> 
-> This can be caused by one of the followings.
-> 
-> 1. SCSI EH thread (ATA EH runs off it) for the SCSI device hasn't
-> finished yet.  All commands are deferred while EH is in progress.
-> 
-> 2. request_queue is stuck - somehow somebody forgot to kick the queue at
-> some point.
-> 
-> 3. command is stuck somewhere in SCSI/ATA land.
-> 
-> #1 doesn't seem to be the case as all scsi_eh threads seems idle.  I'm
-> looking at the code but can't find anything which could cause #2 or #3.
->  Also, these code paths are traveled really frequently.
-> 
-> I'm also trying to reproduce the problem here with xfs over RAID-6 array
-> but haven't been successful yet.
-> 
-> David, do you store the hibernation image on the RAID-6 array?
-No, swap is on a pata disk.
+This is a multi-part message in MIME format.
 
->  Can you post the captured kernel log when it locks up?
+--===============3445224605412567647==
+Content-Type: multipart/related;
+	boundary="----=_NextPart_000_0001_01C7AE9F.4096B480"
 
-Sure... this was still on the serial terminal screen from the sysrq-t trace from 
-this morning:
+This is a multi-part message in MIME format.
 
-[run hibernate script here]
+------=_NextPart_000_0001_01C7AE9F.4096B480
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_001_000E_01C7AE9F.4096B480"
 
-swsusp: Basic memory bitmaps created
-Stopping tasks ... done.
-Shrinking memory... done (0 pages freed)
-Freed 0 kbytes in 0.04 seconds (0.00 MB/s)
-sd 5:0:0:0: [sdf] Synchronizing SCSI cache
-sd 4:0:0:0: [sde] Synchronizing SCSI cache
-sd 3:0:0:0: [sdd] Synchronizing SCSI cache
-sd 2:0:0:0: [sdc] Synchronizing SCSI cache
-sd 1:0:0:0: [sdb] Synchronizing SCSI cache
-sd 0:0:0:0: [sda] Synchronizing SCSI cache
-pnp: Device 00:09 disabled.
-pnp: Device 00:08 activated.
-pnp: Device 00:09 activated.
-pnp: Failed to activate device 00:0a.
-pnp: Failed to activate device 00:0b.
-ATA: abnormal status 0x7F on port 0x0001a407
-ATA: abnormal status 0x7F on port 0x0001a407
-ATA: abnormal status 0x7F on port 0x0001b007
-ATA: abnormal status 0x7F on port 0x0001b007
-ata5.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata5.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata5.00: configured for UDMA/133
-sd 0:0:0:0: [sda] Starting disk
-ata6.00: ata_hpa_resize 1: sectors = 781422768, hpa_sectors = 781422768
-sd 1:0:0:0: [sdb] Starting disk
-sd 2:0:0:0: [sdc] Starting disk
-ata6.00: ata_hpa_resize 1: sectors = 781422768, hpa_sectors = 781422768
-ata6.00: configured for UDMA/133
-sd 3:0:0:0: [sdd] Starting disk
-sd 4:0:0:0: [sde] Starting disk
-sd 5:0:0:0: [sdf] Starting disk
-sd 4:0:0:0: [sde] 490234752 512-byte hardware sectors (251000 MB)
-sd 4:0:0:0: [sde] Write Protect is off
-sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 5:0:0:0: [sdf] 781422768 512-byte hardware sectors (400088 MB)
-sd 5:0:0:0: [sdf] Write Protect is off
-sd 5:0:0:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-Saving image data pages (36338 pages) ...  19%<6>skge eth0: Link is up at 1000 
-Mbps, full duplex, flow control both
-done
-Wrote 145352 kbytes in 8.49 seconds (17.12 MB/s)
-S|
-md: stopping all md devices.
-md: md0 still in use.
-sd 5:0:0:0: [sdf] Synchronizing SCSI cache
-sd 5:0:0:0: [sdf] Stopping disk
-sd 4:0:0:0: [sde] Synchronizing SCSI cache
-sd 4:0:0:0: [sde] Stopping disk
-sd 3:0:0:0: [sdd] Synchronizing SCSI cache
-sd 3:0:0:0: [sdd] Stopping disk
-sd 2:0:0:0: [sdc] Synchronizing SCSI cache
-sd 2:0:0:0: [sdc] Stopping disk
-sd 1:0:0:0: [sdb] Synchronizing SCSI cache
-sd 1:0:0:0: [sdb] Stopping disk
-sd 0:0:0:0: [sda] Synchronizing SCSI cache
-sd 0:0:0:0: [sda] Stopping disk
-Shutdown: hdb
-Shutdown: hda
-ACPI: PCI interrupt for device 0000:00:09.0 disabled
 
-[power off/on]
+------=_NextPart_001_000E_01C7AE9F.4096B480
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Linux version 2.6.21-g9666f400-dirty (root@cu.dgreaves.com) (gcc version 3.3.5 
-(Debian 1:3.3.5-13)) #23 Wed Jun 13 22:51:26 BST 2007
-BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 000000000009c400 (usable)
-  BIOS-e820: 000000000009c400 - 00000000000a0000 (reserved)
-  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-  BIOS-e820: 0000000000100000 - 000000003fffc000 (usable)
-  BIOS-e820: 000000003fffc000 - 000000003ffff000 (ACPI data)
-  BIOS-e820: 000000003ffff000 - 0000000040000000 (ACPI NVS)
-  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-  BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-127MB HIGHMEM available.
-896MB LOWMEM available.
-Zone PFN ranges:
-   DMA             0 ->     4096
-   Normal       4096 ->   229376
-   HighMem    229376 ->   262140
-early_node_map[1] active PFN ranges
-     0:        0 ->   262140
-DMI 2.3 present.
-ACPI: RSDP 000F62A0, 0014 (r0 ASUS  )
-ACPI: RSDT 3FFFC000, 0030 (r1 ASUS   A7V600   42302E31 MSFT 31313031)
-ACPI: FACP 3FFFC0B2, 0074 (r1 ASUS   A7V600   42302E31 MSFT 31313031)
-ACPI: DSDT 3FFFC126, 2C4F (r1   ASUS A7V600       1000 MSFT  100000B)
-ACPI: FACS 3FFFF000, 0040
-ACPI: BOOT 3FFFC030, 0028 (r1 ASUS   A7V600   42302E31 MSFT 31313031)
-ACPI: APIC 3FFFC058, 005A (r1 ASUS   A7V600   42302E31 MSFT 31313031)
-ACPI: PM-Timer IO Port: 0xe408
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-Processor #0 6:10 APIC version 16
-ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 2, version 3, address 0xfec00000, GSI 0-23
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl edge)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-Enabling APIC mode:  Flat.  Using 1 I/O APICs
-Using ACPI (MADT) for SMP configuration information
-Allocating PCI resources starting at 50000000 (gap: 40000000:bec00000)
-Built 1 zonelists.  Total pages: 260093
-Kernel command line: root=/dev/hda2 ro log_buf_len=128k console=tty0 
-console=ttyS0,115200
-log_buf_len: 131072
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-Detected 1999.872 MHz processor.
-Console: colour VGA+ 80x25
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 1034872k/1048560k available (2459k kernel code, 13036k reserved, 915k 
-data, 196k init, 131056k highmem)
-virtual kernel memory layout:
-     fixmap  : 0xfffaa000 - 0xfffff000   ( 340 kB)
-     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-     vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
-     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-       .init : 0xc044e000 - 0xc047f000   ( 196 kB)
-       .data : 0xc0366dc7 - 0xc044bb90   ( 915 kB)
-       .text : 0xc0100000 - 0xc0366dc7   (2459 kB)
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-Calibrating delay using timer specific routine.. 4003.08 BogoMIPS (lpj=8006174)
-Mount-cache hash table entries: 512
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 512K (64 bytes/line)
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#0.
-Compat vDSO mapped to ffffe000.
-CPU: AMD Athlon(TM) MP stepping 00
-Checking 'hlt' instruction... OK.
-ACPI: Core revision 20070126
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: PCI BIOS revision 2.10 entry at 0xf1970, last bus=1
-PCI: Using configuration type 1
-Setting up standard PCI resources
-ACPI: Interpreter enabled
-ACPI: (supports S0 S1 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: enabled onboard AC97/MC97 devices
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 *11 12)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 9 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 9 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 *5 6 7 9 10 11 12)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 *5 6 7 9 10 11 12)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 *6 7 9 10 11 12)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 9 10 11 12) *15, disabled.
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 14 devices
-ACPI: ACPI bus type pnp unregistered
-SCSI subsystem initialized
-PCI: Using ACPI for IRQ routing
-PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-pnp: 00:00: iomem range 0x0-0x9ffff could not be reserved
-pnp: 00:00: iomem range 0xf0000-0xfffff could not be reserved
-pnp: 00:00: iomem range 0x100000-0x3fffffff could not be reserved
-pnp: 00:00: iomem range 0xfec00000-0xfec000ff could not be reserved
-pnp: 00:02: ioport range 0xe400-0xe47f has been reserved
-pnp: 00:02: ioport range 0xe800-0xe81f has been reserved
-pnp: 00:02: iomem range 0xfff80000-0xffffffff could not be reserved
-pnp: 00:02: iomem range 0xffb80000-0xffbfffff has been reserved
-pnp: 00:0d: ioport range 0x290-0x297 has been reserved
-pnp: 00:0d: ioport range 0x370-0x375 has been reserved
-Time: tsc clocksource has been installed.
-PCI: Bridge: 0000:00:01.0
-   IO window: disabled.
-   MEM window: disabled.
-   PREFETCH window: disabled.
-NET: Registered protocol family 2
-IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
-TCP bind hash table entries: 65536 (order: 6, 262144 bytes)
-TCP: Hash tables configured (established 131072 bind 65536)
-TCP reno registered
-Simple Boot Flag at 0x3a set to 0x1
-Machine check exception polling timer started.
-highmem bounce pool size: 64 pages
-SGI XFS with ACLs, no debug enabled
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-PCI: Bypassing VIA 8237 APIC De-Assert Message
-atyfb: using auxiliary register aperture
-atyfb: 3D RAGE II+ (Mach64 GU) [0x4755 rev 0x9a]
-atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-atyfb: BIOS frequency table:
-atyfb: PCLK_min_freq 926, PCLK_max_freq 22216, ref_freq 1432, ref_divider 33
-atyfb: MCLK_pwd 4200, MCLK_max_freq 6000, XCLK_max_freq 6000, SCLK_freq 5000
-atyfb: 4M EDO, 14.31818 MHz XTAL, 222 MHz PLL, 60 Mhz MCLK, 60 MHz XCLK
-Console: switching to colour frame buffer device 80x30
-atyfb: fb0: ATY Mach64 frame buffer device on PCI
-input: Power Button (FF) as /class/input/input0
-ACPI: Power Button (FF) [PWRF]
-input: Power Button (CM) as /class/input/input1
-ACPI: Power Button (CM) [PWRB]
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-PCI: Enabling device 0000:00:09.0 (0014 -> 0017)
-ACPI: PCI Interrupt 0000:00:09.0[A] -> GSI 18 (level, low) -> IRQ 16
-skge 1.11 addr 0xf6000000 irq 16 chip Yukon rev 1
-skge eth0: addr 00:0c:6e:f6:47:ee
-netconsole: not configured, aborting
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-VP_IDE: IDE controller at PCI slot 0000:00:0f.1
-ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20 (level, low) -> IRQ 17
-VP_IDE: chipset revision 6
-VP_IDE: not 100% native mode: will probe irqs later
-VP_IDE: VIA vt8237 (rev 00) IDE UDMA133 controller on pci0000:00:0f.1
-     ide0: BM-DMA at 0x9000-0x9007, BIOS settings: hda:DMA, hdb:DMA
-     ide1: BM-DMA at 0x9008-0x900f, BIOS settings: hdc:pio, hdd:DMA
-Switched to high resolution mode on CPU 0
-hda: ST320420A, ATA DISK drive
-hdb: Maxtor 5A300J0, ATA DISK drive
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-hdd: PLEXTOR CD-R PX-W2410A, ATAPI CD/DVD-ROM drive
-ide1 at 0x170-0x177,0x376 on irq 15
-hda: max request size: 128KiB
-hda: 39851760 sectors (20404 MB) w/2048KiB Cache, CHS=39535/16/63, UDMA(66)
-hda: cache flushes not supported
-  hda: hda1 hda2 hda3
-hdb: max request size: 512KiB
-hdb: 585940320 sectors (300001 MB) w/2048KiB Cache, CHS=36473/255/63, UDMA(133)
-hdb: cache flushes supported
-  hdb: hdb1 hdb2
-hdd: ATAPI 40X CD-ROM CD-R/RW drive, 4096kB Cache, UDMA(33)
-Uniform CD-ROM driver Revision: 3.20
-ACPI: PCI Interrupt 0000:00:0d.0[A] -> GSI 16 (level, low) -> IRQ 18
-scsi0 : sata_promise
-scsi1 : sata_promise
-scsi2 : sata_promise
-scsi3 : sata_promise
-ata1: SATA max UDMA/133 cmd 0xf880a200 ctl 0xf880a238 bmdma 0x00000000 irq 0
-ata2: SATA max UDMA/133 cmd 0xf880a280 ctl 0xf880a2b8 bmdma 0x00000000 irq 0
-ata3: SATA max UDMA/133 cmd 0xf880a300 ctl 0xf880a338 bmdma 0x00000000 irq 0
-ata4: SATA max UDMA/133 cmd 0xf880a380 ctl 0xf880a3b8 bmdma 0x00000000 irq 0
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata1.00: ATA-7: Maxtor 6B250S0, BANC19J0, max UDMA/133
-ata1.00: 490234752 sectors, multi 0: LBA48 NCQ (depth 0/32)
-ata1.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata1.00: configured for UDMA/133
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata2.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata2.00: ATA-7: Maxtor 7Y250M0, YAR51EW0, max UDMA/133
-ata2.00: 490234752 sectors, multi 0: LBA48
-ata2.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata2.00: configured for UDMA/133
-ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata3.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata3.00: ATA-7: Maxtor 7Y250M0, YAR51EW0, max UDMA/133
-ata3.00: 490234752 sectors, multi 0: LBA48
-ata3.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata3.00: configured for UDMA/133
-ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata4.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata4.00: ATA-7: Maxtor 6B250S0, BANC1980, max UDMA/133
-ata4.00: 490234752 sectors, multi 0: LBA48 NCQ (depth 0/32)
-ata4.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata4.00: configured for UDMA/133
-scsi 0:0:0:0: Direct-Access     ATA      Maxtor 6B250S0   BANC PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 490234752 512-byte hardware sectors (251000 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 0:0:0:0: [sda] 490234752 512-byte hardware sectors (251000 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sda: sda1
-sd 0:0:0:0: [sda] Attached SCSI disk
-scsi 1:0:0:0: Direct-Access     ATA      Maxtor 7Y250M0   YAR5 PQ: 0 ANSI: 5
-sd 1:0:0:0: [sdb] 490234752 512-byte hardware sectors (251000 MB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 1:0:0:0: [sdb] 490234752 512-byte hardware sectors (251000 MB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sdb: sdb1
-sd 1:0:0:0: [sdb] Attached SCSI disk
-scsi 2:0:0:0: Direct-Access     ATA      Maxtor 7Y250M0   YAR5 PQ: 0 ANSI: 5
-sd 2:0:0:0: [sdc] 490234752 512-byte hardware sectors (251000 MB)
-sd 2:0:0:0: [sdc] Write Protect is off
-sd 2:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 2:0:0:0: [sdc] 490234752 512-byte hardware sectors (251000 MB)
-sd 2:0:0:0: [sdc] Write Protect is off
-sd 2:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sdc: sdc1
-sd 2:0:0:0: [sdc] Attached SCSI disk
-scsi 3:0:0:0: Direct-Access     ATA      Maxtor 6B250S0   BANC PQ: 0 ANSI: 5
-sd 3:0:0:0: [sdd] 490234752 512-byte hardware sectors (251000 MB)
-sd 3:0:0:0: [sdd] Write Protect is off
-sd 3:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 3:0:0:0: [sdd] 490234752 512-byte hardware sectors (251000 MB)
-sd 3:0:0:0: [sdd] Write Protect is off
-sd 3:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sdd: sdd1
-sd 3:0:0:0: [sdd] Attached SCSI disk
-ACPI: PCI Interrupt 0000:00:0f.0[B] -> GSI 20 (level, low) -> IRQ 17
-sata_via 0000:00:0f.0: routed to hard irq line 0
-scsi4 : sata_via
-scsi5 : sata_via
-ata5: SATA max UDMA/133 cmd 0x0001b000 ctl 0x0001a802 bmdma 0x00019800 irq 0
-ata6: SATA max UDMA/133 cmd 0x0001a400 ctl 0x0001a002 bmdma 0x00019808 irq 0
-ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ATA: abnormal status 0x7F on port 0x0001b007
-ATA: abnormal status 0x7F on port 0x0001b007
-ata5.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata5.00: ATA-7: Maxtor 7B250S0, BANC1980, max UDMA/133
-ata5.00: 490234752 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata5.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata5.00: configured for UDMA/133
-ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ATA: abnormal status 0x7F on port 0x0001a407
-ATA: abnormal status 0x7F on port 0x0001a407
-ata6.00: ata_hpa_resize 1: sectors = 781422768, hpa_sectors = 781422768
-ata6.00: ATA-7: ST3400620AS, 3.AAK, max UDMA/133
-ata6.00: 781422768 sectors, multi 16: LBA48 NCQ (depth 0/32)
-ata6.00: ata_hpa_resize 1: sectors = 781422768, hpa_sectors = 781422768
-ata6.00: configured for UDMA/133
-scsi 4:0:0:0: Direct-Access     ATA      Maxtor 7B250S0   BANC PQ: 0 ANSI: 5
-sd 4:0:0:0: [sde] 490234752 512-byte hardware sectors (251000 MB)
-sd 4:0:0:0: [sde] Write Protect is off
-sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 4:0:0:0: [sde] 490234752 512-byte hardware sectors (251000 MB)
-sd 4:0:0:0: [sde] Write Protect is off
-sd 4:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sde: sde1
-sd 4:0:0:0: [sde] Attached SCSI disk
-scsi 5:0:0:0: Direct-Access     ATA      ST3400620AS      3.AA PQ: 0 ANSI: 5
-sd 5:0:0:0: [sdf] 781422768 512-byte hardware sectors (400088 MB)
-sd 5:0:0:0: [sdf] Write Protect is off
-sd 5:0:0:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 5:0:0:0: [sdf] 781422768 512-byte hardware sectors (400088 MB)
-sd 5:0:0:0: [sdf] Write Protect is off
-sd 5:0:0:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sdf: sdf1 sdf2
-sd 5:0:0:0: [sdf] Attached SCSI disk
-PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-input: AT Translated Set 2 keyboard as /class/input/input2
-md: linear personality registered for level -1
-md: raid0 personality registered for level 0
-md: raid1 personality registered for level 1
-raid6: int32x1    636 MB/s
-raid6: int32x2    787 MB/s
-raid6: int32x4    627 MB/s
-raid6: int32x8    606 MB/s
-raid6: mmxx1     1583 MB/s
-raid6: mmxx2     2557 MB/s
-raid6: sse1x1    1592 MB/s
-raid6: sse1x2    2631 MB/s
-raid6: using algorithm sse1x2 (2631 MB/s)
-md: raid6 personality registered for level 6
-md: raid5 personality registered for level 5
-md: raid4 personality registered for level 4
-raid5: automatically using best checksumming function: pIII_sse
-    pIII_sse  :  4289.000 MB/sec
-raid5: using function: pIII_sse (4289.000 MB/sec)
-device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
-TCP cubic registered
-Using IPI Shortcut mode
-swsusp: Basic memory bitmaps created
-Stopping tasks ... <6>input: ImPS/2 Logitech Wheel Mouse as /class/input/input3
-done.
-Loading image data pages (36338 pages) ... done
-Read 145352 kbytes in 8.34 seconds (17.42 MB/s)
-sd 5:0:0:0: [sdf] Synchronizing SCSI cache
-sd 4:0:0:0: [sde] Synchronizing SCSI cache
-sd 3:0:0:0: [sdd] Synchronizing SCSI cache
-sd 2:0:0:0: [sdc] Synchronizing SCSI cache
-sd 1:0:0:0: [sdb] Synchronizing SCSI cache
-sd 0:0:0:0: [sda] Synchronizing SCSI cache
-pnp: Device 00:09 disabled.
-pnp: Device 00:08 activated.
-pnp: Device 00:09 activated.
-pnp: Failed to activate device 00:0a.
-pnp: Failed to activate device 00:0b.
-sd 0:0:0:0: [sda] Starting disk
-sd 1:0:0:0: [sdb] Starting disk
-sd 2:0:0:0: [sdc] Starting disk
-sd 3:0:0:0: [sdd] Starting disk
-sd 4:0:0:0: [sde] Starting disk
-ATA: abnormal status 0x7F on port 0x0001b007
-ATA: abnormal status 0x7F on port 0x0001b007
-ATA: abnormal status 0x7F on port 0x0001a407
-ATA: abnormal status 0x7F on port 0x0001a407
-ata5.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata5.00: ata_hpa_resize 1: sectors = 490234752, hpa_sectors = 490234752
-ata5.00: configured for UDMA/133
-ata6.00: ata_hpa_resize 1: sectors = 781422768, hpa_sectors = 781422768
-ata6.00: ata_hpa_resize 1: sectors = 781422768, hpa_sectors = 781422768
-ata6.00: configured for UDMA/133
-Clocksource tsc unstable (delta = 4327743507262 ns)
-Time: acpi_pm clocksource has been installed.
-skge eth0: Link is up at 1000 Mbps, full duplex, flow control both
+See attach.
+http://www.karel.hk/
+
+-----
+Why did you let her think Edga
+For the same reason you soften
+Gavin grinned. Aye, we are. Th
+Shes a beautiful child, Elizab
+
+
+
+------=_NextPart_001_000E_01C7AE9F.4096B480
+Content-Type: text/html;
+    charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>Hi</TITLE>
+<META http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii">
+<STYLE> textarea { display:none; } </STYLE></HEAD>
+<BODY>
+<DIV><A href=3D"http://www.karel.hk/">
+<IMG src=3D"cid:img010.jpg@14917857.23654824" border=3D0>
+</A></DIV><br><br>
+<textarea>The garment barely covered her
+</textarea><textarea>She took an infinitely long ti
+</textarea><textarea>Duncan had no idea what was go
+</textarea><textarea>His tone was arrogant. Madelyn
+</textarea><textarea>Was she baiting him? Duncan de
+</textarea><textarea>His mouth settled on hers in a
+</textarea><textarea>Duncan captured her sigh when 
+</textarea><textarea>Madelyne wanted to get a littl
+</textarea><textarea>He lifted his head to look at 
+</textarea><textarea>The kiss turned fierce and hot
+</textarea><textarea>Madelyne moaned and moved clos
+</textarea><textarea>Duncan stopped her restless mo
+</textarea><textarea>He couldnt get enough of her. 
+</textarea><textarea>Madelyne squirmed within his h
+</textarea><textarea>Duncan realized she was fright
+</textarea><textarea>Madelyne knew she should stop 
+</textarea><textarea>He called her beautiful, told 
+</textarea> 
+</BODY></HTML>
+
+------=_NextPart_001_000E_01C7AE9F.4096B480--
+
+------=_NextPart_000_0001_01C7AE9F.4096B480
+Content-Type: image/jpeg;
+	name="pic68.jpg"
+Content-Transfer-Encoding: base64
+Content-ID: <img010.jpg@14917857.23654824>
+
+/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAACgAA/+4AIUFkb2JlAGTAAAAA
+AQMAEAMCAwYAAApHAAAZIAAAOCX/2wCEABQQEBkSGScXFycyJh8mMi4mJiYmLj41NTU1NT5E
+QUFBQUFBREREREREREREREREREREREREREREREREREREREQBFRkZIBwgJhgYJjYmICY2RDYr
+KzZERERCNUJERERERERERERERERERERERERERERERERERERERERERERERERERP/CABEIAKoC
+gAMBIgACEQEDEQH/xADIAAACAwEBAQAAAAAAAAAAAAAABAIDBQYBBwEBAQEBAQAAAAAAAAAA
+AAAAAAECAwQQAAICAgEDAgYCAgICAwAAAAECAwQAEQUQIRIxEyAwMxQVBkA0IjJQQSUWQiND
+EQACAQIDBAUIBgkEAQQDAAABAhEAAyExEkFRYTIQcYEiEyCRobHB0TME8OFCUiM0MEDxYnKC
+orJDknODRBRQU2MkwvIVEgAABQMCBwEBAAAAAAAAAAAAEAERISBAUDCBYDFRYZESIgID/9oA
+DAMBAAIRAxEAAADswBTlY4GprdR8+9j6wYG/KAAAAAAAAAAAEFTKa6I5306GrFtNqOHqJW9i
+C7HuBYbphRN8xkzpTnOgRRzn/Gujqxq06KrKrN4w9pEncDxrojM0mfQEAAAAAAAAAAMmfC50
+RTnK7JVmUT6S3O+b12OcufqnuHudeQAEZInAqaK+ivt1udqfQuIYPohzesy8HiegAAAAAAAL
+Rb8Mf3XFzl9kMPVu9Mi7QDIjteGJPY9XAp37DK1JepnR0gxL9T0xp63hnvTEx/NkXL1AT08D
+08D08D0AAAAAA4DC04c+qGop22dLbFLOBTOuaV4/sedtR+lfIPq3o8zIFh56EOQ7JVeGX6fN
+ay7e15uaT9rpm+s3PnGzefXizN5gBXSxjWMsLXnnuewW+og9KuBcq3QXXZrZ6IsF1S955etW
+P1zoLpI+Gh6jaEGFSzy7PL5JuVbZ4rDRXSNVXIjCt9FM+rMRpe+eyhFTOnVsjLd+gt5azlqt
+JlGZv6jnenmlI5Des7q9/LY0zkWIdeR9T4PvunICNkgzR+rg1K+nnC9vE+a6Ti20F7VM9JS8
+8G+2+e9ncbwF5gAB4elNCuikhkRqNMRgmiZ/o+I+D5kNjgp4OeJpGyYda9CYTyPB6eQsCEzw
+9jkWWaUufZNcyoGwRxpdsx7bNMCWvltrjs9bblOhwIbC/n78uk5VuaPQ8j1I37VO5lj6+Wq3
+L9Rxu89R2nFdrrmY2zx2p1vz/ouO1nyF0T3vuJ+h15x/W8XnadDVWd1zg5SfZcl11xvBVefu
+aporXNa0X08ho90sFgdZxbDSSvzk3jI9LtDDYXQWXWNtCMDRx7Hjnnp5FurRXdOjWtiDlvng
+nvilQz6mrZpioM+TqG0oYJ01aTg97k+HvJdjxkrHUZOp5vU4tcjlzlGwlphdlhM6z0UsWmb1
+FM7NK/VtDfLX7XjuwiHC7eHVGZ7Htycdlbnpd2qbl5r8T2PGTpFZhTG4auVbrMOvyutuGMPa
+yrhukzVaXW9qMLLlU8brI+SkQPYnttNhOsgjFK9srk872xjxUl2EVJXNGxkWtPQrrl6Rui5j
+Bq6KFnNt7QZWf0oZNO5I5+no5GJ7teGVDZDM5PvuPmtO9B7yeypHXy7FblF+mNb1zCh6rzQM
+tPbWs5x3VoifbcRv6zztVbedxWlR0z0+9xO/rG2BedXDdtx86KKML56e9jxfX6x0IF5JryVW
+lW6mrymuW27VfTNm+Il64CQ6CUXwz/NEVCOiIjHQBGGiGaaQZiHRByuvpenh6Hi7NRnMxqs9
+ez2Ra0qIsL2h5LPOg9hOUAE0tnO59YVyPP6cTJ2sneOo5LrYojtWYWueVt6MWsSOYzawpbBK
+tBN/nvFpk36ON3SYunvO/WryzNqeb7uWLTgR1sm3OvqIuxnK2QzoLFfREyXmAAAAAACMgAAA
+AACJIFxgqmSIeFgvYWFUiQLjBTaeivoyKr1pEMuNjxJ0PQAAEXlc7RlVPyevOnV0PbjROfiZ
+eh6vnU82nLqiW3h231ypuXm12eXTntBfz1+ZvxFxazY3I+de9VzXfj5V7CyUoSl7Xex9jlqE
+wgAMxPQlZn+P2mW5ZMzfX5GVHXpqhTZyiXj9kY92nEzqtgIYXSJil7Fpl17FZhNuzrLueqL8
+Ppc+FW53k0tGmXxOfljuTo0nr1N8voAABVaGJZXd4/fk7WbPfNumZEIwrszXeiy95VyNXKzt
+SFnm+epdCfDsid2evycR02iWACHOdGVwUPoBqcAd+Qk6Y+da9efUu0LUo/CaQ1PHZHxeA2J1
+j/iiBueV1pO7Fva0xXxGxSA8Z7JeUVjZkapKlekeuydMnTQmuyK1o8JTGjJ1CQhYNisS67Fd
+V0BkAMeGr5x75vukS5q21WmT0B724ldhZkcr9BQz04B7rLs3nvejMbbA7+cAAAAAAAAEH8tV
+WoUzVV16q7mVsYlyjp+qzRczQV30eIx543TOS1QkZUWLUXzlWYSZSRTeTXaUq53O1UwH0pzT
+DaOnc4bid017bakir+jiK7q5Olc4d62jNUxiIXeVGtGmFy7Yq0gAAAAAAAAAAAAB/9oACAEC
+AAEFAP8AgSc1hzy1infwHN5v+dvWM2DDiHuPhI6b+Htnbr2ztnbO3Tt8Hbr2ztnboWAwk4xI
+wHD6kdgNkDRHwnqP4Ws1mumunjsu2sODD67w4uId4x0M30Ob6D+DrNHO+d8A6a6Odk98A0D3
+wDPHD2EeOehHQ9R/B3m83m83m830Pouum+p74nbGODqcGD+L2zt8Djti+g7Ed87b6HAN5rBn
+jvPADCvf+Sw2Mj74w0fTBgO+hwdsJ3gxe+HofXpvN9N5vBm83m8BzebzebwHN/IOI3jhOyBv
+HXFw9hmuoOs8jnkf5ZjJPtnPbOAa6eIwqSPbP/E//9oACAEDAAEFAPlgbzxOazWjrPHPHPHC
+NYVzWa7kYVwjXyAM3nrnhvGXXwawDPHCCPkbzebzebObzyzebzeb6bOHv8jx3irhxRj+nUHN
+4p30K/K7/PVS2LCq4RGc9D6AHZ2MY7B+FRs76N6ddZrNfHr4d5vN9N9EkKYo8iCMODuNYuSa
+xxrEGzms1rEzXRvTNdDhz/r4BrPTAc9Qeu+u+m+iDQXsW9V2DoHGOsHcy5GMPfAcJ2Uw9GPw
+a6azWEZrNawjO+s3hPbNZrNZrNdRmtHDms9M9cHbJO+KMOMo1iYcb0z/AKzeb+Hfy++d/gjY
+7xhh9MBJ6HBhOE7GsDawuSA3bP8Ar+Oh02SnWA7HrmsI1hwYe+AaxiCD8eums101ms1h6azX
+Q/J/6dfLANAkDEfGOepzyOb66zWAbzWaPQjvrNHNdCM0c0c0c1hGs1hGAZo5o4RrNHNHNdRK
+APdGe4MJ2cDnA437o+MYeg9D64c/+Qw9Tg9D64fXD6f9np/1nb5X/9oACAEBAAEFAOnIXkox
+W/2axMIufuRnjv2CC6f4EsqwpFylWVupsRiXJJFjVeWqscllWFEcOvxNy9VSjq4xbEbSZNYj
+gHT8xUxHWRf4PM8t+PWSydrLvFcNmycdNjTIykA8DeFOyCCPh/Y7hnssc3gbOE59La/P5X+p
+M73IFvCy6ci/tOLEVZ7UjWOOnd3vHdajccQn3p7kk8giSaWw0xsVZ47UiGOvZljTk5lgluis
+EcOKtr2lq/cLlj7ipKitDagjntx8iZ/tJjNSIO8pXI61aEWKtXj55LLD5/LcsnHpfvPYkLE4
+usWXvCDJlbh5GUcKgy1xg9ty6Z+u8qLsPwO3gtpy7tiJ5l4SuKWU8JfNuD516Fp4IIiiCrPU
+Zqs8sMlVnqtQl9yOrYklnjMsFdLcKx1nSzPQkZjTmiaStasSx0/GOKawkFOm8tfwuTZGusp1
+Xgy1TlEs1a1ZkWmTPDFbqrNSmkgvVXsRpkfGn7Z6tiwlOq9aQfP/AGFzHb9cUbzjuJe9lb9f
+rR5FXjiDaAbJl3nMQe0/AciKFr4OWlMVWSlNr7UnBGY2IGgMglaM1OblQVOThtN83WazQzWF
+c8c1njnjms8c8c8cNSIkRgZ49CN5rPHNZrPHNZrNZrNdN5vN5vN5v5PMQtFPWprZrw1/NqSC
+GNLMTMD2bG3kuc6VEUXfKBLVupAOSRrKvJcXJUaRNFxrFG8UYpJAk8DxXMe5h+GaUQo16JZJ
+bhOVJmkDcgq41+NW/JpubkBEZeREbSXlU1bDtUi5GViOQVlr2BOG5BVJ5BARfVcn5FkjnvMI
+5L4Q3bJhrG+seG+ERbo1JcSNoLXuPYlENv72zGhtWpZF5CSwv5OSNa/JEy0LM9kTXfaZuQHk
+eQVhSsNNX/Krj3Vdrt+WWvLyTCR+SLBSSPgmvQwluYjJWyZM5GuJpOOYQTUU8rcxRA1qpIBL
+JARJsWbYgR57VrOZLqvG1TamRAi/DeqC3HZ4CRRW4uS1L+GqeNuh7DP2wtrFlIyjzskGVbsV
+perqGH4qXwlpyPJVgaLDxRUtUmMsUM86WeNnnz7SQha1iFqlZoYKtOZDJxbk0azQKeJIMlB5
+IhxbMHhtWEkozSiXi2Lz1mkrtVmcx8fKipx0yCWhNYylTMMlimZpfs7UiQVnicQtTyCu9sQV
+5/co12rxW6Msz1KskLQVLFUUYHgifipNpRdY3oWvZm45xLHSdHX0x3CCxfEAs81I4m3Go8mz
+3DGJZi2SgKOLf3blislmOemlSPjKbYY/FLtmQtN7oTkQ4f8AVU8rnR3CL0eRYwL0BPXl7Clm
+OPnlrA2V7bwNxN03Yf5ms10khjlCRKg6FwD7i76E66bzfTebyb/Xkre3ZzJkYZ8goCMWIDk6
+6EsLMOCOo4XxolcBVQSfTNdZVHFRR5y0nu2v1ke3N05+17cWcryQprbvPOwkIPGczPWeKVZk
+J0LZ9x5m8c98ElehOs/VTur8U1mKALytRj+Rr+RtayTkkQ/eWmxbkumvygpdlyS+yYOTi3Jy
+PZ+SsRCG8XDchCufk6xH5Stl3kRIV8mVhJtL9mJYuThYb38Jx78sZSzJKaqOVjsTSFbUqSXp
+HlZD2W3IHE8/ti3IZPXNZzkjxV5FaRvufJuJp+ynhvLKaHK6QxuAvHWlhsodYHOf65MR4JKA
+3I3lhjj3I/Hn226cvP79yeZYE5C41iRmzeIc4KwZqt2T2oZGyY7JTAdYI2cFSM/VP6nSaZIF
+/MGbFm5B8kSyU46nDKHpRSCpWSrOIUGcgPGFJAVa5ArTnR6Xf/rsZH3Xj/8AOP2ky7Xjrj2t
+5ylN4yt0qIrBLyxrK3ue8alpq6wzLMnwPTicirGMioxRY9GFh+Ph8Px8AVVCgcbCpWpH4JVb
+7hfTYz9gAas1jecfCZpa57A5ZPbkAAIgWikJVuKvC3C1r2inIVrC2WMiNPFCtyy1qStGPKJd
+KDsTzLBGpMj/ALFeCo75EgbGgPnFB45Ti9mDkYzLXkJ0Uxl1nqYBpJG8j+q/1csTrXjDlpG+
+/JlM8pNOoixxVlmMdVcaKqtk1aYyerWMcM9QZ9woy7DACIJDhownLFCAIICAIrByOtG1g8fE
+uSVZ5FUy+cUKxLyFD3yrOjV3/wAQCzmKECIvVkUgjLd37cwX2kccvGIZ7lhbo5N3lfkpWana
+W3Fbu+w0fIuxWeVasFwVIqt/3ZIuVlsDgrMk1fmK7TQOucdXCQwHWFwokse6bPtqZIFVVqqT
+CnsEXX04hlEqwgW7JIXsKabPbSDS/sPIsuR9s5Gz7kjNlNjoDOFi87mXJfahl7swyQ4vcxyx
+14mOfqf9TOYneaSvTERmt+40k/kpl8C86lzbJDTgsXbZm2HnBH3YGC8FMVwRj75SDaGvdMeL
+cOSWGZkutn3bY8wklr2hDn5CMi37MuB+0cjlJlLYy+C8a5etnLxhLNT7czuXaWzYjW3x/wBb
+7kSngTqty0YS1QWB7AH/AIuw32s8cy3bnC963AyKa/PuUrEGRqwHtxHWX3IElrwyNfPJI0zw
+UZ7XljQDPYxowcm41Hx6ksRqLrIyXPpnJ2/vbMXcuWbFXeVOGtyxV6U80lLj4qa5ygJrY+SZ
+CpLaMjU/1mzNlSpFTjZgo4uH3JOQs9vcVcawzFaUzn7aIqsiASFHc2FGJb0WmXyMxONIrL7w
+ZPZhYBK3ka8WvYgJ+3hxo4tLCjBq4BMSLgrxnPtk1JEkBry+25ss7NJsU4fYhxlBAiAzwBwx
+g4EGNECRGBjKGAiAzwGeAOCMDAms9sbmhSdZeNnryVH8WjySISrLxRUAtGffZm5iFZIK98si
+2t5TrNbF2AVZGj3mwR7ZhaWyZHv83HHF46yvHrHVEEUEbyR89JG0UyzL0sjcXjj+j9yzeA/X
+acKV+nIy+1BUY1qDMFzw90x+Qzc3lJIN1eJmnyPhayD8RVz8XVz8ZWz8XWz8XWwcXWGHh6mH
+h6pA4WsM/E18/DVd/ia2fh6ufioM/DV8/C18PDVzh4SAifg5FK8Va8qfFJDhOs8c1l+R4q4s
+2ferXhYL8noQyGRI+RmcC9IUfktqtvzMXISOG5GQLvfwPxtdmKmNwckPbkeyj0B9+K7G0Frj
+eDkLWrcdSOXk5Ls6cXZkjilLZK5OFfFZhif5ZCMmfvHL4tY0w/Xnbw6XW8YGISKV9Be3T9Zs
+KY+nNAmvcl8Y3VpMbUZeYuI1aSSlxq1T/KsRe9FDWdHWjJDn2UiR0oPto0pe2svHMxTjypjp
+GNlpERNHK2J8N9SHU447cgu1OhlLvXbjxLYnspAnF3m5O1Dx1em0lhpTBL4lJsQNKZchXvGM
+mPfeV4pCnBp4Jk0yQJf/AGN7MlokHaEyMXyM6PDWPZu9LwUw05p569aosAscYsrrw+sr1I64
+/wCCGa6aGa+HkBikYx7Xe4T9djtVoE8FaQILPHvyORCKnG3nazlJGaqiMqn/ACEZdFZt5AO0
+eSN5GrEowHtwspMt3kY6uctyf3JVxsnedtM3nhGL/kKVoXIc5eR2ypXFaL5TuqD5DuqDBdrl
+pbEUOJIsiySpEIpo5h97X8pZ44cFmIq0qId4l6u7TW4YCrBxeurUWhYaxBdnliENyeOxLIY0
++9twGS2y2wd/FfXcQXeN6XTocewatYAR1CnJphGFiMh5jlJI1ozOYJ41khK9y+s3toxoR9sU
+eRjPiGnCiK9JDhckx8a90Im8BJOvHDroufq5JrZ7a+XXkAz2JbEsCwtNC8PnEsjzSDjJgVsP
+LPYDyzY7Msd2RmwlrNicu9SzJLPYV5pi4dYLMks9hXmmywD9tOyQ17quKdiN3n4mVdcj7j3Y
+/KvNZVvspo3klVBPBUsDkLXISxx1uQWRIJ4nNniJUaGz9LiP6ty0lVKtWQySTLBHykaorRM1
+lfT4bCecaHNdro7cO4+zmk95vcePIrWzbtgLNXllo1aiokmgZk8ZZjo1285EG8HbIIvFGm3h
+beUuOnu4n63YJ47jEoD9g4TZaPWONhVIAB3n62zNR+G7S+6lXj4hFFxscRFNPGTjopBXprXF
+njorDLTRcalG2ScVDIyVFRrHGSztPx8c7R0Y0w0YmSfjop2SjEmNRidVrqIxwlUCbjIZ8r0o
+6y2qUVpYeNhgA4SqBNxkMwSqKacZRetFJEsqfha4E/GRTtXqrXVlDBKyxx/iopIa/EV68kFQ
+RmPiYIn+1QyAfHrwbtqynuZUgaKP0xdbnCpkHHy3RFVjihlQxF8BLtY9aKf5oOn/AK/ez8Bf
+yP8AXrmcRWkrQ9eY4Mys369fOf8Arl/P/XeQwfrvIDOKrPVq4SAIrEU3wSSpEIpUmX4SQoVl
+cYSFEVmKY/MFqIvHailbotqJ3+U1qJH+G2Qky7fNAZvCdZNP4DjaRtt0mhWYWeOkGS+ULSPv
+KC/4D5/LzBJYqie/XnWtarXYrMf5SLWPfjbOFlWKkOUjAntpC0d+J0j5BXccrEWjsR8hBamk
+4+vDL7qz3EhejIGunmoAJLyKw5GAwxX0eRuUiWVOWicVbcdtLNpKyxXkkanyDvM7rGq8pGxt
+KBfiAHJyyrCiclGzWHWHkqt6Oyx5OPJ+ShhjnvJBJY5B0uI3ksnKRxhr6LMl5Hml5GOM8nNG
+5i5KOSX4JKsUh+1iz7WLPtYsNSI43HV3xVCj4JeIqTMf1+gcTiKkY/G18/G1/nWLMZsGotK9
+QINyFS9WOKGxU0fDhJUjropfiuWljel4NFdlgqxCMT05apH3/Fke7znaJWDZCwi5Ko6tyHG+
+LywLq7OYKUEna8pH5Ojr77hdZylj2jX7cjQkVbN6UQwWX3FbYffxn/yfIzCCvZY+UpA5OZTP
+f4mWOOk0brxXKTRtJZYLyIIOFGjhtSg2RIjcnxBQLdMQy9r74WYmlS5DIIJ0nT+dyX+3DZD/
+ALcd9SP+5lr+5xuUf7PLfSr/ANPi/rRfU4/6vIfR4z6PMf6x/Uo/W5n0b+k39df7MHrx31OW
++iP97P8Abm+nH9Bv9k/sWfpJ/Wuf7cR9K7/Yt/Qi+jyP06/0/wD9eY+lF9Tkv7F3/ax/un9y
+v/pQ+h/B/9oACAECAgY/AOCoE4OR8jnIkueDdTcObhcGxSa4heCVJSYOuFUOICYR6Yxf/9oA
+CAEDAgY/ANZqIobTe5gn1WQTpxc/If8Asvr2Hwi7hylMH88+of8AUhgwY/VAltIixS3bSWtD
+dL5loda3vUJA4mqcCwkNY9yixRDcpD6M9CUb0KewXY/IQ/IQ/On/AP/aAAgBAQEGPwDoN18d
+ijea02wLfEYmp8Qn+KDWhvw7mxWOBk/ZO05YQDun9RNxzCjEmgiv3jlIInzjyPBnvxqjh0F2
+MKoJPUKADkzl3G93QbjmFGJNBlxBEjyypeCDB7rZ+agymQciOhrQPfUAkdfQGuGASFHWenn4
+cre6gyGVORH6koQA3GynIAb9uOzt3QSeZjjjv31LNPAZVgKjZWdSKxwVvQai6dKONJ3Hdh9M
+6kZeUUHLb7o69vkCz8wYvZA7H9x3+cbh+nufw1bsW7bg9zvssARtBpmu3zaQEhETA9Zq9bFz
+WUXUlwbvqofM+MxuABypjT1RQNvM2NYX96lPjFmg+LauZz+7V3+B/VVtBacjSo1YR66u2vFZ
+LaBTC54gV8z8tcYvoA0sc4O+k+WtsbarbVnYZ5ZCrSi6zWnYc2fnq/8AMO7FbbOqW9nbQutf
+YXSNQAjQOEUqs8XHuMpdvsgRNC5Z+YN0gjUj4yOG6gwyONXrfhu83H5Vle00nyQbw9Kl7jDM
+SchVoLdZrTuoOrPPfuNXXNxjoUMcu9AyNeM95kZsVVOUDjvpFvEeILi95du40l3xWcFgrq2W
+O7d0fiAkMzgACZ4Ut1ZXQxc2z9w7Kb5hiRbbC2nAbev9QgQ15uVfa3D15DaQbtwy53ZCpOVS
+cqwqEGo8K1XYBOysfTRWtE8uVeG/xEz6vJLHYJosTJJk9GJgVhiKGw0ouEeKohh7f0721zYQ
+JpUOYAHophYAe2x1aWMFT7quC4wLuMFHKtGyObSFoMDpi14cjMNVt72keH9oZtT21zZWUdop
+belIUATqPuq7eMaX0R2Cr7CIuhQvYNtJesxrChHU5NFW7tzSqo06Aavi9yuzPhu99QjW2QCB
+dJIgcRv+mNK6mLiuzoT7euKCtptr9plMk9W7ocPHeuM4jcYofMfLkawNLK2TCrdy5pVUYHSD
+5zVy40aHULXhWwrqORmMR10qM2u4HDsTgOylVIkOrY7h0H5e7EklgRs3Ulq8RpB/FIPNGXn2
+06iPBJ1KNx3dX6hcBJOUSSYwmBwknCpqdlazgm+pcFzxyqLahRwFR06hkaDt8N+6/b9fo8ly
+uZGnz1qZCF3kdEHEGgB0BlJBGRFAXe8PTWhTDbj+tyUXzVh+u3FbEq23bOM0zLPiLP1Utvfn
+QXIAVpDCfJ4yKIq0TmUT1eRjsoowkEQaBBlWPd+vyY2UCMxiCKFq+cfsv7D7/KNxslEmKa2c
+0TxCdkfT113CwOqxKsBgHOXmz9FPqMw7qOoGi2hjbB0m5hpmY3zE7YooQdYYJo2mdo4bZ4Gm
+Oh9CsUd4EAgxvmOIFMTbcomDPhA9MnsFOoR28PnIiAInacahFZ4AZisYA9ZHmGNLebvOUDGN
+pjsqySjHXbLFBpxbu454DE7eylKKzOxYeHhI04NMmBHXRIBUqdLK2YNFtDG2DpNzDTMxvmOM
+U/dbSh0s+ETuGMmeqj4ytbhS/ejEDPlJx4Z07eE6sEZ01AQY6jszIOMZU5XUri2r6WC4SxHH
+HDqiNtNCMypzusQPTJjbAp71vEhZX307OGGlUJQhcNRIG3M7ZMZcaZ7iMpUqNJjHVlBmPTht
+r8RGQ6lSDGbZYgxFMpBlAmQz1kgAccKNt0ZHA1Q0YjgQSK8Rslsux7GWlv3VTwjEqJ1KG27j
+xq4lkIBbMS844A7PX6KtiwFDuniNrmFGWzPGrvjqoe2yoIOBLbZOQ28BS2rj2n1zBstkRjiJ
+PnoXbgQWyDAE6pBjqjOmC23cKJZliB5yJ7K020e4dKv3Y5WneRuypfCVrmpQ8LGCnfJHmzoX
+T3mOojZtMVY7vxs8eXIf3GNlKCkgXvDVtUYhTJ7MopnRItEgK4bvc2cbj10yWlVgmDFnC45w
+KteAms3QzDUdMaYzz30Cc/JhmE7qgGK7r4dlXWY4zMmgpwW4NDduXpog7CRQNwSBWltNA2D4
+lvahOI/hNA76LnGNgqZFpfOaS2xBzOrfS2h9ohaCrkBA8rRMEGQa/BIcbjgfdXhDAA987vrr
+T4YyiadQZCmOmRQW5LLWq23Zt8gqcQRBpQzAtq753pAEdcKvppnEQWtN/oMn6qbV9p2bz0VF
+u0wLEi43NBM4iMSOuv8AyZHiAwo+zo3ZZnOd+GVXLMKLb3LktJkDUZwjHgZq4pCsWJ0uzNgN
+g05Yb+2r+X4uX+gLj5qJtaTqVQ2onAqInLHqwpbLRIXSYq2XgeHbNrAzPLjkN1ByqOQ1w6Xy
+Idp3YEdW+iCqrJnSmQ99FRbtMCxIuNzQTOIjE7M6u22jvvrG0bCJ7RjTA27dqVKymJnfkMOF
+NbuaUBRl7pnUSInIQKYnSC1tUiZxVid3GnIt231nUGfNZ7MeGIprCwCV0jdlVxyEl1QaW7y9
+0tM4ZGacKqKrBfwiS64HHPKeAolAqAMjLb1FllTjjsngKuNc0S3h6VxI7hODYYzNG54du2Ii
+ExPngeai5jQbb2jv7xFL8vd0eGIlxOpgvDZO3GrrNEO2oeYD2VZUOgvKhUh50ss7DGw1flgW
+LqVdeXUoHnAyoNcW2ir9zEse0YCltvEicuunkKytylmbuCPu5HHGiWjFLaYb0mfXSm3pY6Ft
+uCSBKzBGHE4UqPBYTJGWJmrxUiG+F+73tZn+bdVlARNtw7nfgZ9Jo/KqU8MHusZmJmMvTTul
+u3cDmfxBip8xkcKst3Ytq4aBGLRkOzpk1qIw3VptroB2zJ7KDN9rKpOAqRNY4TnUiN9awO6R
+J66Nt8jurQbOu7J7zOYK7I40GTUFI7ytjB/dO6id1ankLPdwpXS6G1/ZxBpVu4EL66UxgoJ9
+HSWYwAJJ6ZcgDjUC4s9fkOgzkejyQyGCK8RswdJ8w/8AQIuKGG5hNQoAA2DpCkiTkN9ASJOI
+G+OnHy+2mE4LsqQcDQtDvNsFS3eb0CpAB4UZPVUGmQ8yn0HoxAqFFGtJFatopgMQsLSn70r6
+OlbC81w4/wAI9/v6NK/EbLgN9GWJqRQUEuhPIfZuNB0yNTTNvPRHkN/uH+1fLm6wUcTUC6vn
+rQr6m3IC3qmsEYjsH9xFBNLFzyjDHtmPTUraAG4tj6BFY2WnrFaVtHVuJFd+yf5SPbFYWmPa
+o9taXDK0TGkt/bNfgIXJ+93B/VHorU1tGG3S+I7CPVXfQr2q3qM+isSR/I3uqRcU9WfmrmP+
+lvdQSy3czZlMH3iiwZoH3mONGLjqV2Fz6BWpitxd5GmhrlGOwj25eWqE423PimBimoAehgey
+kIaFuNd04DBQO7s/m7d1fKqLhH4b4gCQO5gMPSZpfly5B1XAbgA1EJHZOO7ZQsltUXQhaBJU
+oWg8Z3RTIHIC3bEQBtjhvx+qsTltq24d2DuFMoBbg/dw1dRxofMG4cLmjRA06fE044TPGaHy
+8/ieJnA+Hzeru9ModJLAE8MaBfC3PaeuoVYVfOa1vjcbFvd06qh8QeU+ylBwV+57vT0QK7x6
+CBlvosdlScyZNW23Mp9PS25Itjsz9NG42QFF2zJ8gahiuE7+NO3Cp8iRsqCIpv8AcP8AavSX
+uEKo2mv/AK1l7i/eyFfCRR+83uo+LdVTGAtrGPWxPqrXom6DDte7zA9X7K0sBG4KKb5ZR3CN
+a7xvE7q5R5qLgd5IZaDExIBrSzqDumvFXNbgjqPTZuDMkoeroPWaKuJKMUx3CuUeah8zbEMC
+AdOEgmMakMwHXXjglhk2Hej20VJwIw3ULjgNIwG1eqakSp5u8YA6htqH0/vLOPWRQAUlDMLn
+hw4UHQyD5LMVxcaW4ilgcmC8MIoaAe7IWSTAMYDhgKgiO8XkEg6jtmvDjCdUyZ1b5zmioB7x
+DE6jMjIzMzWn10IBOkgqC7ELG4Th9BlXhx3Z1RO3Vq9dNfeJjQun7szjx6ROQcE+Y1kBRuNy
+jZx8hicSa0nI41HmoFudcH69/bWIJG0iu44MeiinihAc98V4doghRsqAe6Mq6uk3HIVQMzRd
+sSTJ6zXgqcdvRqOImKIGVY50lvaFFOozifNjUVPSa4Cn/wBw/wBq9DXX5VEml+c+ZUsXMfL2
+RmONSPCA3EsfZX/2GHhjD8AmJ/eOB81QbaniczTq9sacNH3errqPCX/SKAdBocd2MIIrkjtP
+vo+Gg1YR9JoW1VVaMiomaieylfSRqaXKYHrw3UI+YuaNmWXXU3C7/wAVxq12wV095u82Qz7a
+DWr9wKRI1Qw9NR42nqQT66e3fLtMQSYDeaMeFTaZ7Z/cc+ozRtvfJU//ABia8C/8xpIHd0gL
+qHXvrSpY7ZY6jXiWoV/tTk3XWnODBUijdVisHuieX9tEaLmgjEaQS3aTh2UNKHVyhWxPrNeI
+vU68KkZHoW2iG5dadKLhgNpOwUbN62bd2NSqWBDdTCmuspDq2g2vtatgq2vhmNPKHwMxJ/ly
+prNq0X0NpY6gABv+qmHy9hriqdJYsFy3A50t1AQDsOyKW1bQ3LrCQgww3k7BTW3tFbwGpbeo
+HUODZU90W21NqBva/wB7d6KREsnxbh7tvVJMbSdlGxetm1dA1aSZBHAitVmwWUSCdYGI3b6H
+ig4TDkzqlj6q0ocdQPrrS2DTFa9rY9nRLGBWlB2moUAnaa4HZU6Z6612xpORiiGxBollIcjm
+FYmW+7Xh28B9o764mgOgTur/AMRQRq5idozwoUYx3nojZRNJhIEseGHv6GbhHnoxv8gkjVcP
+KuwcT7Oh/wDcb+1ehPk7OLMe9tgceFeJcYvciNTewZCiqsAgzxHf6uHGtCd0ERlQgknbjTkk
+RIBBqFMgbc674LE8uBmK1OrHiQZrTDAn901lG9SNvsqNXZnU4REVCt3Rsn1e6pn0iiA2JFDQ
+wA2jZ9XZWLARubCifsmOB1DbwqGYmdu47q5sa/EAYFYolJwwZDjq4ifZ0F0wfhtoMp7wznZQ
+YXcNmAx9lRBa42GoyFA4ZTxNMNoGe/z1bYmSVHQl+6XW0U0FrZjSZnGNhoXLTXHFsMxd27q4
+ca//AKYQeGDGmMSuWv6fXVm8x7jIwDbMa+Y/jHqpv/JvXFuBiPBtyOoZY0BuLSO2lvXmdbTJ
+o12ycCDtjZQay1y5pB77GVE7Mac8W/vq18y4Ph6CjN92lu2cbdtWl4wJbZQ/if8AuNC0D30n
+Wu6WNBlMHWPbSgk/togYQY6FjImvDB2S3VuqTtoCcNtQOjq6O+JFfgnsrvKYqaCjaQOhroBC
+r3FnhnQqejxbad3ZOBPVXghSH2hsI66AUAvtc548d3Q8Vj0zsFBVBJOEDaaDXotqdn2o6tnr
+oWrIhR699FjkKufOtm5hOC0bS/znhurDds9VAJLNwFd8hd+00zEHUG214YIO8rurXcIAiNP1
+0Vkt+9OzjvoBgxjI4eufZRYSpbYcQ3mmiFDBdkKJ9daSrccFB9dQ1sD97D00dekk5RgBQlVE
+DGDnRLQAduqCPf6K5gB2xWBOO4zUF8TljUaj21KNOzOoZ2XgYrFyRvrn6qBB1A57wajEgYgC
+ix1boX31pE44Y0lv7ojog1h0QeidvRBrDpgdEitFxQynYaXUpjUMfphT22OJJI6NDUSG1Mcc
+RHZWlhBFADaQKlBFxBKEcKGrOoOVagNKfeO3qpUmVflPVsNYVpfHjQdYMb8RQuFQhw5MpFT8
+uwdzh1dfQKgCKE5TjFBLqqQDB0nHrrWhkdLz90+qmbcY6NIzNaFoXgAbrE6mOYxiBuw6WI3U
+hmGjCd5rUeY46t9d5tKZztbqG2vwVW2D94yxoh3GkfdGfnqLZbUcMO9Wq4xtr1d6oYFus+6u
+T+pvfXIPOa5PSffXJh/EffUaP6m99cn9Te+uT0n31Gn01kfPWR85qdPpNcvprBY7TWE/6jUw
+Z66+156+1/qqJaOz3V+EQyjYTBqFWOLNQe737g27B1fX5Fx7fMqsR7+zPjWlVBPhoxBfug6m
+2xmeqlGmNSa88sYikhVUubgm4+le42nODid1BmGkkZTPpq2wtCLo7nf2xOPdyicp6qkINYc2
+2l4URtmMuygzELouhXKtqUjTOf0xq0SsC4x097ZpJBI4xlszpLjWwLbnRzS0nbEZds0Lotg2
+iwQHV3sW0zEZdvk+IFAfGGxwoq2Y6SwzFTPezpHb7SgxTJ9lzqHCaF35hvwxiqr9rr4UWuEK
+ooPpnZbSJP7TWq44Vtie81gMsDRUAUJGdYChQ6JoXQYy1ew06EzEH6ebpuH900BtYz0az1Cp
+p7H2gdfWDh6I9PSYqyT8PT6aBgnXgijM+4caxxO+oGFC2gknz1qJ1PviI9P629qY1qyz1iK8
+R2BbSqd0QO6TxO+kNpwGVSh1LIIJneMe2ltq4aNeoXElW1NOUjEULczEnKMzOA2DdVldU+Dw
+z7pXszrUGBOtn0usriIynZsNSzA99bnLGQiPp6aSG7iMzKsZSpEemR5qt2tXIytMZwZoWF1h
+A4OkpgAGnnyI3bcvKVthEeb9vSaDZiKtznpFLfucqjl3mjccwFEmnL2tdiIGoAgHjPqo3LKB
+WPo6t1FbfKOZzkOrjRKywkwTtxz7aLHM1q+yNtY11eQD/Sdopgwhpw/h6DcuEKozJoW7I02S
+dJnNp9VBRkBXfOFRsrSeyrc4y2kfzYe3pbVlFD5eyuI7rXDktSSWc5u2LeetamJ2HKsWzqFG
+O1tv/oeX6FTxPSaVlcq7CeGNBGA1KApA4VJoC4xS1MlRm1C3bARFyFYkra9Le4U62cLKnQzL
+6qDDlrA1GQ6JodGojHoKbImo5n+6KHiEgbEEEA9dd0AGsTRodCn00t9RAYZdWB6FsW8SxpbY
+2fo5YgDLHj+h1OQANp6NAupqyjWJoeK6pOWpgPXQZCGU5EGRWq4wVd7GBWq2wYb1M1o8VNUx
+GsTQN11WctRA9dBw66WOlTqGJ3DjQViAW5QTn1dHhrcUtuDCgLrqpOWoxQZTIORFZFnadCDb
+HqA20l141MJMUq2F1O5iTyrxND5f5nSdYLIySMswQaZwCxAJ0jM8Ktv8wE0XGVdKzqXVlnnx
+pLAjQysx34eXO4g1PTbK5aQPNnWsnPCpzqdu6vEv/wAqbuvjWixgDI1+6j8mZ0u4fzZ+eBRt
+AQRivWKFR5EdJ8MwWETtqSZNXPCnWiho+9v+qiDzCobAdGFYdDTlqgdGuBq3+RZta2RWFzUF
+Mao0/Tz1csW2ZgLltFbV3gHEkaj5gTlNMNLohRjFy4HxGRGJPXXy17xHZrhVX1MSCGUnLhTB
+WLRecaNelmUDJTwzimt9+VOK3cSs8do3VcULcZbZVV8O4EiRM5iT6K+WS47KW8TXobmjLFcK
+uWixZUv2wuoyYlTE1euIbrFNUOG0Imkbpx44Y0iu7BfCDkKxXvTwp/m/FdbstkxAHejTH0M1
+cQK7Lb0hRbuBMxM5ieGzCrFu67LIu69Lc2mIkrt39tXrniPqsuwt944AHb97t2VcQK7KmnSL
+dwJmJnMTw2YV8vbuuyk+IH0tiwGUldu+r9osxW3cXTLGYOnCdudN4hYoqkHHvEde+vhW7duF
+0yZf1Z/XS3bJR7gtgG3d3bxVy2Lfhsrd9ZkSd3uq2ihGAtllF2dOqcctsVcuXjbUG2daWSZ/
+i2Y7Jru2bdu1AILGX4bMzVu7aKNdFsTbu44bxxq/ZW34V5GFwgGRqzBHXFLf+zatj/W+fowq
+412SkQQuBxwpZtW7Shl0wZfzx56uXbHh3SQoe3czXDZ11pRCmhmUrMwduNP/AAt6qtfw1qaS
+SdKqM2J2Cj8z8x8VhCqMkXd17zRuXDCqJO2l+etsWYFSikypmBgNm/CkubAjg+dfLZeHkISc
+tU/6jU/ZGVd3EVLDGiBiaF3MW7jSeB+ulJGOBmhFMuwGpoDt6fFbCcuqoHRNpZAzY4CoZlA7
+aMHUzZtR+c+XEnO4g/uHt89TsqPIUMIALAcRM+snyrbESih5xggnTEeajZ09xsWBxk75zmiV
+BJI0ksxJjdiaRYwtwUxygQPRRUrm2uQTOo7ZohBE4kkyT1k1rYHVEEqxWRxjOkhY0SE4TRle
+Zg5xPMIj1UWZZ1YsNRgnfExNBwMQugGfs0ym0oLH4ocxG/R96PTWtwQ2UqxBjdhSwsaAQsbJ
+zprZHdcksJOJNa3B1REqSpjdhSaRHhzo4TnTqRhcxfHP6Rsrwjisae9jhRGmRlixMdWOFDWM
+VEKQSDHXWm0IEzQW6JjI5EdtMEXm5pxJ89EaZGUEkx1Y4UoZeUQpBII7aPgW5MzAOJ7WNd8A
+OxLsBsnZ2UbbiVIgiiuiRxYmOrHDsrW697KQSPVQS2NKjZRU5ERXhIIQCAJ+hq3ZvLq8MYYk
+DHt9dC7bSGGR1H31dkCLjFiM9kbd/wBVB1TEcssSB1AmhdI76ggGdh/QFdxI6IXGtBaROqNn
+RjRYGK18ls/aOZHAe0+mhYUdwDTHr89FDsy6q4UWO3oLbsOn4f8AWvvr4X9a++pdOzUvvopc
+Gk6iY/Z5AufKpiZ1KCB2418L+tffXwv6099fC/rT31Ph/wBae+ktXOYDHhOJGZmDt6JOVHwm
+DRnpM+RquMFG9jFarZDLvHlScAKDKQQciOiTgBRFt1YjPSZ/S+EHUv8AdnHCilt1ZhjCmenw
+1dS/3Qcf0Yts6hzhpnHHym7D6Kk+RhXjXsbYPdU5MfcPT06Wo+FDCMicfdTW2wKkqesdE7zP
+6hZW9PgGdcbeurd/5Qjwu9rCnu8pgxXzI0sxJQhUWTkZo3UMKJ1asIjfQYhhbJgXCvd9/bHQ
+6qrXFXByokD39k1rcwoLEmlZ1dEbBXYd31+sUEgs7ZKgk07mV8PnVhiKS2UdS86SwEYCd9Nb
+CuXX7GnGnFuRIZCGwIMVZsoGDApqIGG2V65rVpZeDiDQtQWuHEIgxj1V8wwUr3V7pGNMSH7p
+hhpy66CKGdo1QgyHHKKPzEwgwOGIO6N9CyysjsNS6wMeqCaNkq+sbNOfVR0q5cZ29Pe+nbXi
+W8pgzmDQL/aOlQMyaa3pZbiDUUYYkcIJq6rK5GoBRp5eui7GFAkmkBVgtwwjkDSfTPnFfLna
+Rc/tp422vatG45hVEk0ilWUXORmAg+Yn00rQTNvJRJJk0yKCrrzI4g0zIrui4M6ju+vHspbx
+lkbJlFJacNLkKpjCTSWwr6YbUoXm4jhQaCJEwc6ZtDsiEhnUCJHb9VLYIbU/KYw30fl4YOBO
+IwimADP4Yl9AwXrkj0V8tfB7utWnhhXgFXRiJXWsT1eTqdZNcvpNZek1y1ivpNd5J7T76AAg
+DAAeSXe3LEyTLe+vhf1N760rbgDiffXJ6T765PSff+mHyl4Aq6Bhq3ycPdVofLEgPOtJyA+n
+nr5nrT1Gvm1TPW2A3Upu3n0aVlZXAjZyz1VC5xhNFHIVkZtYOFEJ9l5YcPpjULB16fDA24jK
+lW67W9VpVVhGYjDEGrxuXHfUEFw4YSYBwAE+zZVq27i9acwkjvLhmOzjlXzG+Lfqr5kD/wBw
+1bJyF1fUalSD1VdFwwXVdE7Rh9Oyr8EGQnoAr5kGD+JlV9HuNbZirLGnvDtBy99XPD/G1OA3
+iYrqOOwAV8vruB2hpiABhs6+NEf/ABf/AJCvmY/cq/H/ALrVaQKpZ27rOJC8evGiC+s+HicM
+5ywr5lWIB1LnTuy6gBy76+Xd3XF0YW0gKo9eFfL47LnpFP8A7XtFO7LrAHKcscK+VZ3BJdDo
+SAqjDt85pJ22va1N4P2bRViPvGY9ld8gaNQedmJrvbX1DqmvliGB/EVs9kjGrLMYBRhPnqRT
+fNfKXAbJlms3BI4j6vTXyl1hpBB7JAwrAg/hxntmr1i9GvW2sNtB+hr5XwsLYuiN2B9XGvlv
+56NgN+IBJWnZWBFvn4RQuWzKnI/r5+Dyj42efq9tN8L/AI+bt4bqP5Plfkz5T6PvfuzR/L8v
++DmzHo9sV/189mf/AO3t6B8DZz837d1N+X5f8Of81f8AX28mf8tD4ef+b2caPweZcuTMc3H6
+qPwcv8efZwr/AKn2uXmyP0PCa/62R+Bzfso8n/Ly/t3V/jz/AMPL+2l+Fn/lz7PbQ/K5DLm5
+dnD2UPyu34PP2Uvwv+Xm/lr/AA5f8f09tJ+W5jnlkPTv7K/6vP8A8mf93to/lOVuTq2/u/e4
+Ufy/L/g5sx6PbFf48/8ALl2casfl9mWfN9j6c1D8vmOfn/bu7KbLI8/L28N9P+WzHV2+ztof
+lMl5s8h9Bwiv+rz7PiZ/3e2m5cv8nL28KP5bmHV+3dwmh8H4dvn625PZR+Hn/i9vGj+XzHPn
+/Nx3U3Jl9vk7aH5Xm+1llt41b+Bl/ky/l4fVS8uQ5OXs4Uv5bMfQ8d1D4ef+X2fTKrX5XJP4
+szycfbQ+Bs+Ln28N1L+W5B8bPs/d3V/1Ml58+Uejdwin+HyjL4mzPh9VXvg5tyZZfb9vbS8m
+34XLns9vH9S//9k=
+
+------=_NextPart_000_0001_01C7AE9F.4096B480--
+
+
+--===============3445224605412567647==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3445224605412567647==--
