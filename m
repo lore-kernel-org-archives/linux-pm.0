@@ -1,10 +1,14 @@
-From: "Juliana Sheldon" <Nadiainhibitorplaintiff@worstlobby.eu>
-Subject: baptist annapolis wish
-Date: Thu, 14 Jun 2007 03:28:32 -0700
-Message-ID: <200706141028.l5EASWWO015147@smtp1.linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Date: Thu, 14 Jun 2007 11:30:25 +0100 (BST)
+Message-ID: <Pine.LNX.4.61.0706141123160.28903__39210.031546145$1181817194$gmane$org@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+	<Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+	<20070614020055.GL15426@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070614020055.GL15426@holomorphy.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,23 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: discuss@x86-64.org, linux-usb-devel@lists.sourceforge.net, Mikael Pettersson <mikpe@it.uu.se>, Dan Aloni <da-x@monatomic.org>, Greg Kroah-Hartman <gregkh@suse.de>, Netdev <netdev@vger.kernel.org>, Stephen Hemminger <shemminger@linux-foundation.org>, Jay Vosburgh <fubar@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Alex Riesen <raa.lkml@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Chad Tindel <ctindel@users.sourceforge.net>, Linus Torvalds <torvalds@linux-foundation.org>, David Miller <davem@davemloft.net>, Ioan Ionita <opslynx@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-As a business you have been preapproved to receive 50719 USD TODAY!
+Hi All,
 
-No hassle at all, completely unsecured.
-There are no hidden costs or fees.
-Worried that your credit is less than perfect? Not an issue.
+They apear as soon as simpleinit starts up. Somtimes I get to a login 
+prompt before seeing any. Other times, commands in the simpleinit rc 
+script fail.
 
-Give us a ring, now..
+They do apear to be random. If a command failes, you re-run the command 
+and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
 
-1-877-482.4956
+The test I did use the same binaries with both the OK and problem kernels 
+so it is not a change to the application code, it is definatly a kernel 
+issue.
 
-Turn your dream, into a reality, is that not worth two minutes of your time?
+Regards
+ 	Mark Fortescue.
 
-1-877-482.4956
+On Wed, 13 Jun 2007, William Lee Irwin III wrote:
 
-The view of this open square was interrupted by only one building: a neat red barn. But both had discovered that good advice was sometimes easier to give than receive.
-
-Deanne Gifford
+> On Wed, Jun 13, 2007 at 11:25:20PM +0100, Mark Fortescue wrote:
+>> The random seg faults on x86_64 is interesting as I have been getting
+>> random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have
+>> not yet tried to track it down. All I know at present is that it is not a
+>> problem on 2.6.20.9.
+>
+> Very interesting. Any hints as to how to test or how long to wait
+> before the illegal instructions happen?
+>
+>
+> -- wli
+>
