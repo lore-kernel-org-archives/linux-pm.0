@@ -1,58 +1,35 @@
-From: David Chinner <dgc@sgi.com>
-Subject: Re: 2.6.22-rc3 hibernate(?) fails totally - regression (xfs on raid6)
-Date: Thu, 14 Jun 2007 10:28:23 +1000
-Message-ID: <20070614002823.GY85884050@sgi.com>
-References: <46667160.80905@gmail.com> <46668EE0.2030509@dgreaves.com> <46679D56.7040001@gmail.com> <4667DE2D.6050903@dgreaves.com> <20070607110708.GS86004887@sgi.com> <46680F5E.6070806@dgreaves.com> <20070607222813.GG85884050@sgi.com> <4669A965.20403@dgreaves.com> <alpine.LFD.0.98.0706121123550.14121@woody.linux-foundation.org> <466FD214.9070603@dgreaves.com>
+From: William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Date: Wed, 13 Jun 2007 19:00:55 -0700
+Message-ID: <20070614020055.GL15426__47456.7934791141$1181786634$gmane$org@holomorphy.com>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+	<Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756765AbXFNA3M@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <466FD214.9070603@dgreaves.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>, Jeff Garzik <jgarzik@pobox.com>
+In-Reply-To: <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Cc: discuss@x86-64.org, linux-usb-devel@lists.sourceforge.net, Mikael Pettersson <mikpe@it.uu.se>, Dan Aloni <da-x@monatomic.org>, Greg Kroah-Hartman <gregkh@suse.de>, Netdev <netdev@vger.kernel.org>, Stephen Hemminger <shemminger@linux-foundation.org>, Jay Vosburgh <fubar@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Alex Riesen <raa.lkml@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Chad Tindel <ctindel@users.sourceforge.net>, Linus Torvalds <torvalds@linux-foundation.org>, David Miller <davem@davemloft.net>, Ioan Ionita <opslynx@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 12:16:36PM +0100, David Greaves wrote:
-> Linus Torvalds wrote:
-> >
-> >On Fri, 8 Jun 2007, David Greaves wrote:
-> >>positive: I can now get sysrq-t :)
-> >
-> >Ok, so color me confused,
-> So what do you think that makes me <grin>
-> 
-> >and maybe I have missed some of the emails or 
-> >skimmed over them too fast (there's been too many of them ;),
-> 
-> You may have missed these 'tests' with rc4+Tejun's fix:
-> * clean boot, unmounting the xfs fs : normal hibernate/resume
-> * clean boot, remount ro xfs fs : normal hibernate/resume
-> * clean boot, touch; sync; echo 1 > /proc/sys/vm/drop_caches: normal 
-> hibernate/resume
-> * clean boot, touch; sync; echo 2 > /proc/sys/vm/drop_caches: hang 
-> hibernating
-> * clean boot, touch; sync; echo 3 > /proc/sys/vm/drop_caches: hang 
-> hibernating
-> 
-> Dave asked me to do them but hasn't responded yet.
+On Wed, Jun 13, 2007 at 11:25:20PM +0100, Mark Fortescue wrote:
+> The random seg faults on x86_64 is interesting as I have been getting 
+> random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have 
+> not yet tried to track it down. All I know at present is that it is not a 
+> problem on 2.6.20.9.
 
-Sorry 'bout that. Bit busy ATM.
+Very interesting. Any hints as to how to test or how long to wait
+before the illegal instructions happen?
 
-What I was effectively looking for was whether it was data or metadata
-that was causing the problems. From the above, it would appear that
-dropping the page cache (echo 1 > drop caches) allows a successful
-hibernate/resume. Next step would have been to isolate which cache
-being dropped made the difference (e.g. a file or a bdev cache?).
 
-However, it is clear from the back traces that there is something
-unwell with md/sata code, so I don't think this needs to be tracked
-any further from the filesystem perspective.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-- wli
