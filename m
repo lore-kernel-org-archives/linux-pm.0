@@ -1,58 +1,28 @@
-From: Online Notification Desk <coueyb@bellsouth.net>
-Subject: **OFFICIAL PRIZE NOTIFICATION**
-Date: Fri, 15 Jun 2007 6:27:02 -0500
-Message-ID: <20070615112702.NMRN26452.ibm67aec.bellsouth.net@mail.bellsouth.net>
-Reply-To: agentferdinand@yahoo.com.hk
+From: David Greaves <david@dgreaves.com>
+Subject: Re: [PATCH] block: always requeue !fs requests at the front
+Date: Fri, 15 Jun 2007 14:58:56 +0100
+Message-ID: <46729B20.309@dgreaves.com>
+References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: info@bellsouth.net
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754758AbXFON71@vger.kernel.org>
+In-Reply-To: <20070615094246.GN29122@htj.dyndns.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>, Jeff Garzik <jgarzik@pobox.com>, jens.axboe@oracle.com
 List-Id: linux-pm@vger.kernel.org
 
-GUINNESS GLOBAL ONLINE PROMOTION
-SW1V 3DW UNITED KINGDOM=20
+> David, please test this.  Jens, does it look okay?
 
-WINNING NOTIFICATION
+Phew!
 
-Introducing our Newly Branded Drink, (GUINNESS EXTRA STOUT)=20
-your email was among the 20 Lucky winners who won a lump sum of Two=20
-Hundred Thousand Pounds (=A3200,000:00)=20
+Works for me.
 
-However the results were released on the 10th 0f June, 2007 and your=20
-email was attached to ticket number (CC/7PWYZ2007) and ballot number=20
-(CC/BT:12052006/20)=20
+I applied it to 2.6.22-rc4 (along with 
+sata_promise_use_TF_interface_for_polling_NODATA_commands.patch) hibernate and 
+resume worked.
 
-Fill out the Claims Verification form below for Verification and=20
-Remittance Of your Winning to you immediately.
+Thanks for digging it out Tejun (and everyone else!) :)
 
-1.Name............................
-2.Address.........................
-3.Age...............................
-4.Sex...............................
-5.Occupation....................
-6.Country Of Residence.......
-7.Nationality......................
-8.Tel/Fax
-Fiduciary Agent:=20
-Ferdinard Lampard
-E-mail: agentferdinand@yahoo.com.hk=20
-Tel: +44 703 590 1657
-
-Guinness Staff are not allowed to participate
-
-Yours Faithfully,
-Online Co-ordinators
-Guinness Global Online Promotion
-
-Copyright =A9 2007 Guinness Global Online Promotion=AE. All rights reserv=
-ed.
+David
