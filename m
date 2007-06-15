@@ -1,70 +1,58 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] block: always requeue !fs requests at the front
-Date: Fri, 15 Jun 2007 13:21:37 +0200
-Message-ID: <20070615112137.GT6149@kernel.dk>
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk> <20070615111728.GO29122@htj.dyndns.org>
+From: Online Notification Desk <coueyb@bellsouth.net>
+Subject: **OFFICIAL PRIZE NOTIFICATION**
+Date: Fri, 15 Jun 2007 6:27:02 -0500
+Message-ID: <20070615112702.NMRN26452.ibm67aec.bellsouth.net@mail.bellsouth.net>
+Reply-To: agentferdinand@yahoo.com.hk
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753989AbXFOLVg@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070615111728.GO29122@htj.dyndns.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: David Greaves <david@dgreaves.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>, Jeff Garzik <jgarzik@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: info@bellsouth.net
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 15 2007, Tejun Heo wrote:
-> SCSI marks internal commands with REQ_PREEMPT and push it at the front
-> of the request queue using blk_execute_rq().  When entering suspended
-> or frozen state, SCSI devices are quiesced using
-> scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
-> are processed.  This is how SCSI blocks other requests out while
-> suspending and resuming.  As all internal commands are pushed at the
-> front of the queue, this usually works.
-> 
-> Unfortunately, this interacts badly with ordered requeueing.  To
-> preserve request order on requeueing (due to busy device, active EH or
-> other failures), requests are sorted according to ordered sequence on
-> requeue if IO barrier is in progress.
-> 
-> The following sequence deadlocks.
-> 
-> 1. IO barrier sequence issues.
-> 
-> 2. Suspend requested.  Queue is quiesced with part or all of IO
->    barrier sequence at the front.
-> 
-> 3. During suspending or resuming, SCSI issues internal command which
->    gets deferred and requeued for some reason.  As the command is
->    issued after the IO barrier in #1, ordered requeueing code puts the
->    request after IO barrier sequence.
-> 
-> 4. The device is ready to process requests again but still is in
->    quiesced state and the first request of the queue isn't
->    REQ_PREEMPT, so command processing is deadlocked -
->    suspending/resuming waits for the issued request to complete while
->    the request can't be processed till device is put back into
->    running state by resuming.
-> 
-> This can be fixed by always putting !fs requests at the front when
-> requeueing.
-> 
-> The following thread reports this deadlock.
-> 
->   http://thread.gmane.org/gmane.linux.kernel/537473
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Jenn Axboe <jens.axboe@oracle.com>
-> Cc: David Greaves <david@dgreaves.com>
-> ---
-> > Yep looks good, except for the bad multi-line comment style, but that's
-> > minor stuff ;-)
-> 
-> That's how Jeff likes it in libata and my fingers are hardcoded to it,
-> but I do appreciate the paramount importance of each maintainer's
-> right to his/her own comment style, so here's the respinned patch.  :-)
+GUINNESS GLOBAL ONLINE PROMOTION
+SW1V 3DW UNITED KINGDOM=20
 
-Thanks a lot! I'll pass it right on for 2.6.22.
+WINNING NOTIFICATION
 
--- 
-Jens Axboe
+Introducing our Newly Branded Drink, (GUINNESS EXTRA STOUT)=20
+your email was among the 20 Lucky winners who won a lump sum of Two=20
+Hundred Thousand Pounds (=A3200,000:00)=20
+
+However the results were released on the 10th 0f June, 2007 and your=20
+email was attached to ticket number (CC/7PWYZ2007) and ballot number=20
+(CC/BT:12052006/20)=20
+
+Fill out the Claims Verification form below for Verification and=20
+Remittance Of your Winning to you immediately.
+
+1.Name............................
+2.Address.........................
+3.Age...............................
+4.Sex...............................
+5.Occupation....................
+6.Country Of Residence.......
+7.Nationality......................
+8.Tel/Fax
+Fiduciary Agent:=20
+Ferdinard Lampard
+E-mail: agentferdinand@yahoo.com.hk=20
+Tel: +44 703 590 1657
+
+Guinness Staff are not allowed to participate
+
+Yours Faithfully,
+Online Co-ordinators
+Guinness Global Online Promotion
+
+Copyright =A9 2007 Guinness Global Online Promotion=AE. All rights reserv=
+ed.
