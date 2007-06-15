@@ -1,7 +1,7 @@
 From: "UK NATIONAL LOTTERY INTERNATIONAL" <williams_helena45@yahoo.co.uk>
 Subject: INVESTOR NEEDED
-Date: Fri, 15 Jun 2007 05:27:59 -0000 (GMT)
-Message-ID: <53737.80.255.59.242.1181885279.squirrel@webmail.blueridge.net>
+Date: Fri, 15 Jun 2007 06:04:04 -0000 (GMT)
+Message-ID: <53194.80.255.59.242.1181887444.squirrel@webmail.blueridge.net>
 Reply-To: lazeak_claimsagent@yahoo.co.uk
 Mime-Version: 1.0
 Content-Type: text/plain;charset=iso-8859-1
