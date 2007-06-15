@@ -1,9 +1,11 @@
-From: "Teri Mccauley" <Antoniapersonalhewett@moderatevoters.org>
-Subject: alia
-Date: Thu, 14 Jun 2007 16:37:12 -0700
-Message-ID: <200706142337.l5ENbCqq018531@smtp2.linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+From: "Azize Kebe" <azize_ford007@yahoo.co.uk>
+Subject: INVESTOR NEEDED
+Date: Fri, 15 Jun 2007 03:18:36 -0000 (GMT)
+Message-ID: <52357.80.255.59.242.1181877516.squirrel@webmail.blueridge.net>
+Reply-To: azize_ford007@yahoo.co.uk
+Mime-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -14,23 +16,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-As a business you have been preapproved to receive 52466 USD TODAY!
+INVESTOR NEEDED
 
-No hassle at all, completely unsecured.
-There are no hidden costs or fees.
-Worried that your credit is less than perfect? Not an issue.
-
-Give us a ring, now..
-
-877-482.4956
-
-Turn your dream, into a reality, is that not worth two minutes of your time?
-
-877-482.4956
-
-Paul regarded this a moment, then opened his pad, picked up a pencil, and found the hole in the paper. He washed two of the caps down with Pepsi and then leaned back, feeling the dull throb in his kidneys.
-
-Mona Waddell
+ Dear Good Friend, I am Azize Kebe and i am in search of a trustworthy
+investor.
+ I inherited 3million us dollars and i need a fund Manager,that will asist
+me for reterive of the fund and transfer into your account.
+ Also help me invest this amount as i do not have any knowledge in
+Financial investments.
+ As soon as i hear from you, i will forward to you all the doccuments that
+covered the fund.
+ For Further details please get back to me as soon as possible with your,
+Full Names. Cellphone.
+ Contact Address. Tel/Fax Numbers. I await your urgent response.
+ Yours Sincerely, Azize Kebe
+ (azize_ford007@yahoo.co.uk)
+  phone:+447045731218
