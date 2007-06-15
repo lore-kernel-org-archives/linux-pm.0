@@ -1,57 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.22-rc4 hibernate disables skge wol
-Date: Sat, 16 Jun 2007 00:04:30 +0200
-Message-ID: <200706160004.30932.rjw@sisk.pl>
-References: <467309B8.2060001@dgreaves.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Date: Fri, 15 Jun 2007 16:26:09 -0700 (PDT)
+Message-ID: <alpine.LFD.0.98.0706151624340.14121__8758.92765257067$1181950227$gmane$org@woody.linux-foundation.org>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <467309B8.2060001@dgreaves.com>
-Content-Disposition: inline
-Sender: netdev-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org, linux-pm <linux-pm@lists.osdl.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <46704C44.8020602@googlemail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: discuss@x86-64.org, Mikael Pettersson <mikpe@it.uu.se>, Dan Aloni <da-x@monatomic.org>, Greg Kroah-Hartman <gregkh@suse.de>, Netdev <netdev@vger.kernel.org>, linux-usb-devel@lists.sourceforge.net, Jay Vosburgh <fubar@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Alex Riesen <raa.lkml@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Stephen Hemminger <shemminger@linux-foundation.org>, David Miller <davem@davemloft.net>, Ioan Ionita <opslynx@gmail.com>, Chad Tindel <ctindel@users.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 15 June 2007 23:50, David Greaves wrote:
-> I've started a new thread here since the old one got somewhat hijacked.
+
+
+On Wed, 13 Jun 2007, Michal Piotrowski wrote:
 > 
-> Rafael J. Wysocki wrote:
->  > On Friday, 1 June 2007 23:23, David Greaves wrote:
->  >> Not a regression though, it does it in 2.6.21
->  >>
->  >> If I cause the system to save state to disk then whilst off it no longer
->  >> responds to g-wol.
->  >
->  > Can you please try with the hibernation and suspend patch series from
->  >
->  > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
->  >
->  > applied?
->  >
->  > Greetings,
->  > Rafael
->  >
->  >
-> Now, IIRC, some time ago you asked me to try some patches :)
-> 
-> So I applied them (and Tejun's fixes as per the old thread) to rc4 (which seems 
-> to include a couple already).
-> 
-> Hibernate/resume works but although WOL works on an init 0, it doesn't work on a 
-> hibernated system :(
+> Subject    : hibernate(?) fails totally - regression
+> References : http://lkml.org/lkml/2007/6/1/401
+> Submitter  : David Greaves <david@dgreaves.com>
+> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+> Caused-By  : Tejun Heo <htejun@gmail.com>
+>             commit 9666f4009c22f6520ac3fb8a19c9e32ab973e828
+> Status     : problem is being debugged
 
-Well, I have one idea, but I'd like the recent paches currently in -mm to
-settle down before trying it. ;-)
+Ahh. This is fixed (fix by Tejun, confirmed by David), and the fix has 
+been merged. It's commit bc90ba093a, in case anybody cares.
 
-In the meantime, you may want to open a bugzilla entry related to this issue
-(please add my address to the CC list if you do that).
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+		Linus
