@@ -1,8 +1,7 @@
-From: "Azize Kebe" <azize_ford007@yahoo.co.uk>
+From: narrowway@blueridge.net
 Subject: INVESTOR NEEDED
-Date: Fri, 15 Jun 2007 03:18:36 -0000 (GMT)
-Message-ID: <52357.80.255.59.242.1181877516.squirrel@webmail.blueridge.net>
-Reply-To: azize_ford007@yahoo.co.uk
+Date: Fri, 15 Jun 2007 04:06:48 -0000 (GMT)
+Message-ID: <52642.80.255.59.242.1181880408.squirrel@webmail.blueridge.net>
 Mime-Version: 1.0
 Content-Type: text/plain;charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
