@@ -1,62 +1,51 @@
-From: David Robinson <zxvdr.au@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Sun, 17 Jun 2007 08:29:51 +1000
-Message-ID: <4674645F.5000906@gmail.com>
+Date: Sun, 17 Jun 2007 00:47:19 +0200
+Message-ID: <200706170047.20559.rjw@sisk.pl>
 References: <46744065.6060605@dgreaves.com>
-Reply-To: LVM general discussion and development <linux-lvm@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-lvm-bounces@redhat.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <46744065.6060605@dgreaves.com>
-List-Unsubscribe: <https://www.redhat.com/mailman/listinfo/linux-lvm>,
-	<mailto:linux-lvm-request@redhat.com?subject=unsubscribe>
-List-Archive: <https://www.redhat.com/archives/linux-lvm>
-List-Post: <mailto:linux-lvm@redhat.com>
-List-Help: <mailto:linux-lvm-request@redhat.com?subject=help>
-List-Subscribe: <https://www.redhat.com/mailman/listinfo/linux-lvm>,
-	<mailto:linux-lvm-request@redhat.com?subject=subscribe>
-Sender: linux-lvm-bounces@redhat.com
-Errors-To: linux-lvm-bounces@redhat.com
-To: LVM general discussion and development <linux-lvm@redhat.com>
-Cc: linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: David Greaves <david@dgreaves.com>
+Cc: LVM general discussion and development <linux-lvm@redhat.com>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
 List-Id: linux-pm@vger.kernel.org
 
-David Greaves wrote:
+On Saturday, 16 June 2007 21:56, David Greaves wrote:
 > This isn't a regression.
 > 
-> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited to 
-> try it).
+> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited to try it).
 > I tried 2.6.22-rc4 (with Tejun's patches) to see if it had improved - no.
 > 
 > Note this is a different (desktop) machine to that involved my recent bugs.
 > 
-> The machine will work for days (continually powered up) without a 
-> problem and then exhibits a filesystem failure within minutes of a resume.
+> The machine will work for days (continually powered up) without a problem and 
+> then exhibits a filesystem failure within minutes of a resume.
 > 
 > I know xfs/raid are OK with hibernate. Is lvm?
+> 
+> The root filesystem is xfs on raid1 and that doesn't seem to have any problems.
 
-I have LVM working with hibernate w/o any problems (w/ ext3). If there 
-were a problem it wouldn't be with LVM but with device-mapper, and I 
-doubt there's a problem with either. The stack trace shows that you're 
-within XFS code (but it's likely its hibernate).
+What is the partition that's showing problems?  How's it set up, on how many
+drives etc.?
 
-You can easily check whether its LVM/device-mapper:
+Also, is the dmesg output below from right after the resume?
 
-1) check "dmsetup table" - it should be the same before hibernating and 
-after resuming.
+Greetings,
+Rafael
 
-2) read directly from the LV - ie, "dd if=/dev/mapper/video_vg-video_lv 
-of=/dev/null bs=10M count=200".
 
-If dmsetup shows the same info and you can read directly from the LV I 
-doubt it would be a LVM/device-mapper problem.
-
-Cheers,
-Dave
-
-_______________________________________________
-linux-lvm mailing list
-linux-lvm@redhat.com
-https://www.redhat.com/mailman/listinfo/linux-lvm
-read the LVM HOW-TO at http://tldp.org/HOWTO/LVM-HOWTO/
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
