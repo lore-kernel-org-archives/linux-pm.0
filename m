@@ -1,118 +1,77 @@
-From: "MR.Greg Allen" <greg_allen51@strompost.com>
-Subject: Good News Contact Greg Allen Immediately
-Date: Fri, 15 Jun 2007 08:05:11 -0500 (CDT)
-Message-ID: <1689.82.128.6.206.1181912711.squirrel@www.bercihost.com>
-Reply-To: greg_allen51@yahoo.it
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] block: always requeue !fs requests at the front
+Date: Sat, 16 Jun 2007 20:54:01 +0100
+Message-ID: <20070616195401.GA6929@infradead.org>
+References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1181960063-3969-283"
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756105AbXFPTyp@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20070615110544.GR6149@kernel.dk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Tejun Heo <htejun@gmail.com>, David Greaves <david@dgreaves.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Fri, Jun 15, 2007 at 01:05:44PM +0200, Jens Axboe wrote:
+> On Fri, Jun 15 2007, Tejun Heo wrote:
+> > SCSI marks internal commands with REQ_PREEMPT and push it at the front
+> > of the request queue using blk_execute_rq().  When entering suspended
+> > or frozen state, SCSI devices are quiesced using
+> > scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
+> > are processed.  This is how SCSI blocks other requests out while
+> > suspending and resuming.  As all internal commands are pushed at the
+> > front of the queue, this usually works.
+> > 
+> > Unfortunately, this interacts badly with ordered requeueing.  To
+> > preserve request order on requeueing (due to busy device, active EH or
+> > other failures), requests are sorted according to ordered sequence on
+> > requeue if IO barrier is in progress.
+> > 
+> > The following sequence deadlocks.
+> > 
+> > 1. IO barrier sequence issues.
+> > 
+> > 2. Suspend requested.  Queue is quiesced with part of all of IO
+> >    barrier sequence at the front.
+> > 
+> > 3. During suspending or resuming, SCSI issues internal command which
+> >    gets deferred and requeued for some reason.  As the command is
+> >    issued after the IO barrier in #1, ordered requeueing code puts the
+> >    request after IO barrier sequence.
+> > 
+> > 4. The device is ready to process requests again but still is in
+> >    quiesced state and the first request of the queue isn't
+> >    REQ_PREEMPT, so command processing is deadlocked -
+> >    suspending/resuming waits for the issued request to complete while
+> >    the request can't be processed till device is put back into
+> >    running state by resuming.
+> > 
+> > This can be fixed by always putting !fs requests at the front when
+> > requeueing.
+> > 
+> > The following thread reports this deadlock.
+> > 
+> >   http://thread.gmane.org/gmane.linux.kernel/537473
+> > 
+> > Signed-off-by: Tejun Heo <htejun@gmail.com>
+> > Cc: Jenn Axboe <jens.axboe@oracle.com>
+> > Cc: David Greaves <david@dgreaves.com>
+> > ---
+> > Okay, it took a lot of hours of debugging but boiled down to two liner
+> > fix.  I feel so empty. :-) RAID6 triggers this reliably because it
+> > uses BIO_BARRIER heavily to update its superblock.  The recent ATA
+> > suspend/resume rewrite is hit by this because it uses SCSI internal
+> > commands to spin down and up the drives for suspending and resuming.
+> > 
+> > David, please test this.  Jens, does it look okay?
+> 
+> Yep looks good, except for the bad multi-line comment style, but that's
+> minor stuff ;-)
+> 
+> Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-------------=_1181960063-3969-283
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-
-Good News Contact Greg Allen Immediately
-
-Dear Friend,
-
-How are you today? Hope all is well with you and your family? I hope
-this mail meets you in a perfect condition. I am using this
-opportunity to thank you for your great effort to our unfinished
-transfer of fund into your account due to
-one reason or the other best known to you.
-
-But I want to inform you that I have successfully transferred the fund
-out of my bank to someone else account who was capable of assisting me
-in this great venture.
-
-Due to your effort, sincerity, courage and trust worthiness you showed
-at the course of the transaction I want to compensate you and show my
-gratitude to you with the sum of $1,000.000.00 (One Million United
-States Dollars) I have
-authorized the finance house where I deposited my money to issue you
-international certified bank draft cashable at your bank.
-
-My dear friend I will like you to contact the finance house for the
-collection of this international certified bank draft.
-
-The name and contact address of the Person with your Cheque MR. Greg
-Allen  is as follows.
-
-MR.Greg Allen
-Email:  greg_allen51@yahoo.it
-
-At the moment, I'm very busy here because of the investment projects
-which myself and my new partner are having at hand.Finally, remember
-that I have forwarded instruction to the finance house on your behalf
-to send the bank draft to you as soon as you contact them without
-delay.
-
-Please I will like you to accept this token with good faith as this is
-from the bottom of my heart.
-
-Thanks and God bless you and your family.
-
-Hope to hear from you soon.
-
-Best Regards,
-PAUL SMITH.
-
-------------=_1181960063-3969-283
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-
-Spam detection software, running on the system "daredevil.linux-foundation.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  Good News Contact Greg Allen Immediately Dear Friend,
-  How are you today? Hope all is well with you and your family? I hope
-  this mail meets you in a perfect condition. I am using this opportunity
-  to thank you for your great effort to our unfinished transfer of fund
-  into your account due to one reason or the other best known to you.
-  [...] 
-
-Content analysis details:   (6.6 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 0.7 UNDISC_RECIPS          Valid-looking To "undisclosed-recipients"
- 0.3 FROM_HAS_ULINE_NUMS    From: contains an underline and numbers/letters
- 0.1 OSDL_NIGERIAN_FUNDS    BODY: "fun*ds"
- 0.2 OSDL_DEAR_FRIEND       BODY: "Dear*Friend" greeting
- 2.8 MILLION_USD            BODY: Talks about millions of dollars
- 1.0 DEAR_FRIEND            BODY: Dear Friend? That's not very dear!
- 0.2 US_DOLLARS_3           BODY: Mentions millions of $ ($NN,NNN,NNN.NN)
- 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-                            [score: 0.4923]
- 1.2 ADVANCE_FEE_2          Appears to be advance fee fraud (Nigerian 419)
- 0.1 ADVANCE_FEE_1          Appears to be advance fee fraud (Nigerian 419)
-
-
-
-------------=_1181960063-3969-283
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-------------=_1181960063-3969-283--
+I'd much much prefer having a description of the problem in the actual
+comment then a hyperlink.  There's just too much chance of the latter
+breaking over time, and it's impossible to update it when things change
+that should be reflected in the comment.
