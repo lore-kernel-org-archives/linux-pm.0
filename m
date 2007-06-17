@@ -1,100 +1,61 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Sun, 17 Jun 2007 12:38:31 +0100
-Message-ID: <46751D37.5020608@dgreaves.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com>
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Date: Sun, 17 Jun 2007 12:35:32 +0100 (BST)
+Message-ID: <Pine.LNX.4.61.0706171223160.3680__36636.4835565493$1182080382$gmane$org@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+	<Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+	<20070614020055.GL15426@holomorphy.com>
+	<Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
+	<20070614142146.GN15426@holomorphy.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <4674645F.5000906@gmail.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: David Robinson <zxvdr.au@gmail.com>
-Cc: LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070614142146.GN15426@holomorphy.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: discuss@x86-64.org, linux-usb-devel@lists.sourceforge.net, Mikael Pettersson <mikpe@it.uu.se>, Dan Aloni <da-x@monatomic.org>, Greg Kroah-Hartman <gregkh@suse.de>, Netdev <netdev@vger.kernel.org>, Stephen Hemminger <shemminger@linux-foundation.org>, Jay Vosburgh <fubar@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Alex Riesen <raa.lkml@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Chad Tindel <ctindel@users.sourceforge.net>, Linus Torvalds <torvalds@linux-foundation.org>, David Miller <davem@davemloft.net>, Ioan Ionita <opslynx@gmail.com>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-David Robinson wrote:
-> David Greaves wrote:
->> This isn't a regression.
->>
->> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited 
->> to try it).
->> I tried 2.6.22-rc4 (with Tejun's patches) to see if it had improved - no.
->>
->> Note this is a different (desktop) machine to that involved my recent 
->> bugs.
->>
->> The machine will work for days (continually powered up) without a 
->> problem and then exhibits a filesystem failure within minutes of a 
->> resume.
->>
->> I know xfs/raid are OK with hibernate. Is lvm?
-> 
-> I have LVM working with hibernate w/o any problems (w/ ext3). If there 
-> were a problem it wouldn't be with LVM but with device-mapper, and I 
-> doubt there's a problem with either. The stack trace shows that you're 
-> within XFS code (but it's likely its hibernate).
+Hi all,
 
-Thanks - that's good to know.
-The suspicion arises because I have xfs on raid1 as root and have *never* had a 
-problem with that filesystem. It's *always* xfs on lvm on raid5. I also have 
-another system (previously discussed) that reliably hibernated xfs on raid6.
+I have been investigating the random invalid instruction occourances on 
+sparc32 (sun4c) and identified that the problem was introduced 
+pre-v2.6.22-rc1. v2.6.21 is OK. The first time I have observed the issue 
+so far is after commit b46b8f19c9cd435ecac4d9d12b39d78c137ecd66:
+Increase slab redzone to 64bits.
 
-(Clearly raid5 is in my suspect list)
+Prior to this commit there apears to be a problem with the memory 
+management (depmod -a causes the system to run out of memory!) that may be 
+masking the issue. As a result of this, I am going to try to find the 
+'last known good' commit after v2.6.21 to see if this helps narrow down 
+the cause.
 
-> You can easily check whether its LVM/device-mapper:
-> 
-> 1) check "dmsetup table" - it should be the same before hibernating and 
-> after resuming.
-> 
-> 2) read directly from the LV - ie, "dd if=/dev/mapper/video_vg-video_lv 
-> of=/dev/null bs=10M count=200".
-> 
-> If dmsetup shows the same info and you can read directly from the LV I 
-> doubt it would be a LVM/device-mapper problem.
+Regards
+ 	Mark Fortescue.
 
-OK, that gave me an idea.
+On Thu, 14 Jun 2007, William Lee Irwin III wrote:
 
-Freeze the filesystem
-md5sum the lvm
-hibernate
-resume
-md5sum the lvm
-
-so:
-
-
-haze:~# xfs_freeze -f /scratch/
-
-Without this sync, the next two md5sums differed..
-haze:~# sync
-haze:~# dd if=/dev/video_vg/video_lv bs=10M count=200 | md5sum
-200+0 records in
-200+0 records out
-2097152000 bytes (2.1 GB) copied, 41.2495 seconds, 50.8 MB/s
-f42539366bb4269623fa4db14e8e8be2  -
-haze:~# dd if=/dev/video_vg/video_lv bs=10M count=200 | md5sum
-200+0 records in
-200+0 records out
-2097152000 bytes (2.1 GB) copied, 41.8111 seconds, 50.2 MB/s
-f42539366bb4269623fa4db14e8e8be2  -
-
-
-haze:~# echo platform > /sys/power/disk
-haze:~# echo disk > /sys/power/state
-
-
-haze:~# dd if=/dev/video_vg/video_lv bs=10M count=200 | md5sum
-200+0 records in
-200+0 records out
-2097152000 bytes (2.1 GB) copied, 42.0478 seconds, 49.9 MB/s
-f42539366bb4269623fa4db14e8e8be2  -
-haze:~# xfs_freeze -u /scratch/
-
-So the lvm and below looks OK...
-
-I'll see how it behaves now the filesystem has been frozen/thawed over the 
-hibernate...
-
-David
-
+> On Thu, Jun 14, 2007 at 11:30:25AM +0100, Mark Fortescue wrote:
+>> They apear as soon as simpleinit starts up. Somtimes I get to a login
+>> prompt before seeing any. Other times, commands in the simpleinit rc
+>> script fail.
+>> They do apear to be random. If a command failes, you re-run the command
+>> and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
+>> The test I did use the same binaries with both the OK and problem kernels
+>> so it is not a change to the application code, it is definatly a kernel
+>> issue.
+>
+> This sounds like it may be addressed by benh's ptep_set_access_flags()
+> fixes. Those fixes are still in -mm, hopefully to hit mainline by 2.6.22.
+>
+>
+> -- wli
+>
