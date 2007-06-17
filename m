@@ -1,31 +1,76 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] block: always requeue !fs requests at the front
-Date: Sun, 17 Jun 2007 17:03:23 +0900
-Message-ID: <4674EACB.90509@gmail.com>
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk> <20070616195401.GA6929@infradead.org> <20070617072957.GJ6149@kernel.dk>
+From: David Greaves <david@dgreaves.com>
+Subject: Re: 2.6.22-rc4 XFS fails after hibernate/resume
+Date: Sun, 17 Jun 2007 12:37:16 +0100
+Message-ID: <46751CEC.5090308@dgreaves.com>
+References: <46744065.6060605@dgreaves.com> <200706170047.20559.rjw@sisk.pl>
+Reply-To: LVM general discussion and development <linux-lvm@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757366AbXFQIE6@vger.kernel.org>
-In-Reply-To: <20070617072957.GJ6149@kernel.dk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>, David Greaves <david@dgreaves.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>, Jeff Garzik <jgarzik@pobox.com>
+Return-path: <linux-lvm-bounces@redhat.com>
+In-Reply-To: <200706170047.20559.rjw@sisk.pl>
+List-Unsubscribe: <https://www.redhat.com/mailman/listinfo/linux-lvm>,
+	<mailto:linux-lvm-request@redhat.com?subject=unsubscribe>
+List-Archive: <https://www.redhat.com/archives/linux-lvm>
+List-Post: <mailto:linux-lvm@redhat.com>
+List-Help: <mailto:linux-lvm-request@redhat.com?subject=help>
+List-Subscribe: <https://www.redhat.com/mailman/listinfo/linux-lvm>,
+	<mailto:linux-lvm-request@redhat.com?subject=subscribe>
+Sender: linux-lvm-bounces@redhat.com
+Errors-To: linux-lvm-bounces@redhat.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LVM general discussion and development <linux-lvm@redhat.com>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
 List-Id: linux-pm@vger.kernel.org
 
-Jens Axboe wrote:
->> I'd much much prefer having a description of the problem in the actual
->> comment then a hyperlink.  There's just too much chance of the latter
->> breaking over time, and it's impossible to update it when things change
->> that should be reflected in the comment.
+Rafael J. Wysocki wrote:
+> On Saturday, 16 June 2007 21:56, David Greaves wrote:
+>> This isn't a regression.
+>>
+>> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited to try it).
+>> I tried 2.6.22-rc4 (with Tejun's patches) to see if it had improved - no.
+>>
+>> Note this is a different (desktop) machine to that involved my recent bugs.
+>>
+>> The machine will work for days (continually powered up) without a problem and 
+>> then exhibits a filesystem failure within minutes of a resume.
+>>
+>> I know xfs/raid are OK with hibernate. Is lvm?
+>>
+>> The root filesystem is xfs on raid1 and that doesn't seem to have any problems.
 > 
-> The actual commit text is very good though, but I agree - I don't think
-> the url comment is worth anything. I did consider just killing it.
-> However, the comment does describe the problem, so I think it's still
-> ok.
+> What is the partition that's showing problems?  How's it set up, on how many
+> drives etc.?
+I did put that in the OP :)
+Here's a recap...
+/dev/mapper/video_vg-video_lv on /scratch type xfs (rw)
 
-I thought the whole story was too long for the comment.  Feel free to
-kill or edit it.
+md1 : active raid5 sdd1[0] sda1[2] sdc1[1]
+       390716672 blocks level 5, 64k chunk, algorithm 2 [3/3] [UUU]
 
--- 
-tejun
+haze:~# pvdisplay
+   --- Physical volume ---
+   PV Name               /dev/md1
+   VG Name               video_vg
+   PV Size               372.62 GB / not usable 3.25 MB
+   Allocatable           yes (but full)
+   PE Size (KByte)       4096
+   Total PE              95389
+   Free PE               0
+   Allocated PE          95389
+   PV UUID               IUig5k-460l-sMZc-23Iz-MMFl-Cfh9-XuBMiq
+
+> 
+> Also, is the dmesg output below from right after the resume?
+
+It runs OK for a few minutes - just enough to think "hey, maybe it'll work this 
+time".  Not more than an hour of normal use.
+Then you notice when some app fails because the filesystem went away.
+The dmesg comes from that point.
+
+David
+
+_______________________________________________
+linux-lvm mailing list
+linux-lvm@redhat.com
+https://www.redhat.com/mailman/listinfo/linux-lvm
+read the LVM HOW-TO at http://tldp.org/HOWTO/LVM-HOWTO/
