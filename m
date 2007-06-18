@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm] PM: Prevent frozen user mode helpers
-	from failing the freezing of tasks
-Date: Mon, 18 Jun 2007 23:29:58 +0200
-Message-ID: <200706182329.58917.rjw__23613.0711775788$1182201845$gmane$org@sisk.pl>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC][PATCH -mm] PM: Prevent frozen user mode
+	helpers from failing the freezing of tasks
+Date: Tue, 19 Jun 2007 08:15:13 +1000
+Message-ID: <200706190815.18292.nigel__46406.0389706448$1182204994$gmane$org@nigel.suspend2.net>
+References: <200706182329.58917.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2887913195291817479=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200706182329.58917.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,151 +15,78 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Uli Luckas <u.luckas@road.de>, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+--===============2887913195291817479==
+Content-Type: multipart/signed; boundary="nextPart1281076.UZUROANAlK";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-At present, if a user mode helper is running while usermodehelper_pm_callback()
-is executed, the helper may be frozen and the completion in
-call_usermodehelper_exec() won't be completed until user space processes are
-thawed.  As a result, the freezing of kernel threads may fail, which is not
-desirable.
+--nextPart1281076.UZUROANAlK
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Prevent this from happening by introducing a counter of running user mode
-helpers and allowing usermodehelper_pm_callback() to succeed for
-action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
-are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
-RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
-fails if that doesn't happen.]
+Hi.
 
-Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-versions of this patch and for very useful comments.
+On Tuesday 19 June 2007 07:29:58 Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>=20
+> At present, if a user mode helper is running while=20
+usermodehelper_pm_callback()
+> is executed, the helper may be frozen and the completion in
+> call_usermodehelper_exec() won't be completed until user space processes =
+are
+> thawed.  As a result, the freezing of kernel threads may fail, which is n=
+ot
+> desirable.
+>=20
+> Prevent this from happening by introducing a counter of running user mode
+> helpers and allowing usermodehelper_pm_callback() to succeed for
+> action =3D PM_HIBERNATION_PREPARE or action =3D PM_SUSPEND_PREPARE only i=
+f there
+> are no helpers running.  [Namely, usermodehelper_pm_callback() waits for =
+at=20
+most
+> RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero =
+and
+> fails if that doesn't happen.]
+>=20
+> Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> versions of this patch and for very useful comments.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/kmod.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 58 insertions(+), 10 deletions(-)
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
 
-Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c	2007-06-18 22:11:08.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/kernel/kmod.c	2007-06-18 22:15:57.000000000 +0200
-@@ -41,14 +41,6 @@ extern int max_threads;
- 
- static struct workqueue_struct *khelper_wq;
- 
--/*
-- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
-- * immediately returning -EBUSY.  Used for preventing user land processes from
-- * being created after the user land has been frozen during a system-wide
-- * hibernation or suspend operation.
-- */
--static int usermodehelper_disabled;
--
- #ifdef CONFIG_KMOD
- 
- /*
-@@ -275,6 +267,29 @@ static void __call_usermodehelper(struct
- 	}
- }
- 
-+#ifdef CONFIG_PM
-+/*
-+ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
-+ * (used for preventing user land processes from being created after the user
-+ * land has been frozen during a system-wide hibernation or suspend operation).
-+ */
-+static int usermodehelper_disabled;
-+
-+/* Number of helpers running */
-+static atomic_t running_helpers = ATOMIC_INIT(0);
-+
-+/*
-+ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
-+ * helpers to finish.
-+ */
-+static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
-+
-+/*
-+ * Time to wait for running_helpers to become zero before the setting of
-+ * usermodehelper_disabled in usermodehelper_pm_callback() fails
-+ */
-+#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
-+
- static int usermodehelper_pm_callback(struct notifier_block *nfb,
- 					unsigned long action,
- 					void *ignored)
-@@ -283,7 +298,15 @@ static int usermodehelper_pm_callback(st
- 	case PM_HIBERNATION_PREPARE:
- 	case PM_SUSPEND_PREPARE:
- 		usermodehelper_disabled = 1;
--		return NOTIFY_OK;
-+		wait_event_timeout(running_helpers_waitq,
-+					atomic_read(&running_helpers) == 0,
-+					RUNNING_HELPERS_TIMEOUT);
-+		if (atomic_read(&running_helpers) == 0) {
-+			return NOTIFY_OK;
-+		} else {
-+			usermodehelper_disabled = 0;
-+			return NOTIFY_BAD;
-+		}
- 	case PM_POST_HIBERNATION:
- 	case PM_POST_SUSPEND:
- 		usermodehelper_disabled = 0;
-@@ -293,6 +316,29 @@ static int usermodehelper_pm_callback(st
- 	return NOTIFY_DONE;
- }
- 
-+static void new_helper(void)
-+{
-+	atomic_inc(&running_helpers);
-+}
-+
-+static void helper_finished(void)
-+{
-+	if (atomic_dec_and_test(&running_helpers))
-+		wake_up(&running_helpers_waitq);
-+}
-+
-+static void register_pm_notifier_callback(void)
-+{
-+	pm_notifier(usermodehelper_pm_callback, 0);
-+}
-+#else /* CONFIG_PM */
-+#define usermodehelper_disabled	0
-+
-+static inline void new_helper(void) {}
-+static inline void helper_finished(void) {}
-+static inline void register_pm_notifier_callback(void) {}
-+#endif /* CONFIG_PM */
-+
- /**
-  * call_usermodehelper_setup - prepare to call a usermode helper
-  * @path - path to usermode executable
-@@ -397,6 +443,7 @@ int call_usermodehelper_exec(struct subp
- 	DECLARE_COMPLETION_ONSTACK(done);
- 	int retval;
- 
-+	new_helper();
- 	if (sub_info->path[0] == '\0') {
- 		retval = 0;
- 		goto out;
-@@ -418,6 +465,7 @@ int call_usermodehelper_exec(struct subp
- 
-   out:
- 	call_usermodehelper_freeinfo(sub_info);
-+	helper_finished();
- 	return retval;
- }
- EXPORT_SYMBOL(call_usermodehelper_exec);
-@@ -459,5 +507,5 @@ void __init usermodehelper_init(void)
- {
- 	khelper_wq = create_singlethread_workqueue("khelper");
- 	BUG_ON(!khelper_wq);
--	pm_notifier(usermodehelper_pm_callback, 0);
-+	register_pm_notifier_callback();
- }
+Regards,
+
+Nigel
+
+--nextPart1281076.UZUROANAlK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGdwP2N0y+n1M3mo0RArmbAKDepNuT82mHy+8n6DEGlEDn6xY1UQCgy8bX
+wl+3pKR8e1Q9jrB16K/8bkk=
+=/xR+
+-----END PGP SIGNATURE-----
+
+--nextPart1281076.UZUROANAlK--
+
+--===============2887913195291817479==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============2887913195291817479==--
