@@ -1,64 +1,259 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Mon, 18 Jun 2007 20:14:06 +0100
-Message-ID: <4676D97E.4000403@dgreaves.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] PM: Remove code duplication between main.c
+	and user.c
+Date: Mon, 18 Jun 2007 22:31:03 +0200
+Message-ID: <200706182231.04203.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <20070618145007.GE85884050@sgi.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: David Chinner <dgc@sgi.com>
-Cc: David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-OK, just an quick ack
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-When I resumed tonight (having done a freeze/thaw over the suspend) some libata 
-errors threw up during the resume and there was an eventual hard hang. Maybe I 
-spoke to soon?
+The SNAPSHOT_S2RAM ioctl code is outdated and it should not duplicate the
+suspend code in kernel/power/main.c.  Fix that.
 
-I'm going to have to do some more testing...
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/main.c  |   79 +++++++++++++++++++++++++++++----------------------
+ kernel/power/power.h |    3 +
+ kernel/power/user.c  |   38 +++---------------------
+ 3 files changed, 53 insertions(+), 67 deletions(-)
 
-David Chinner wrote:
-> On Mon, Jun 18, 2007 at 08:49:34AM +0100, David Greaves wrote:
->> David Greaves wrote:
->> So doing:
->> xfs_freeze -f /scratch
->> sync
->> echo platform > /sys/power/disk
->> echo disk > /sys/power/state
->> # resume
->> xfs_freeze -u /scratch
->>
->> Works (for now - more usage testing tonight)
-> 
-> Verrry interesting.
-Good :)
-
-
-> What you were seeing was an XFS shutdown occurring because the free space
-> btree was corrupted. IOWs, the process of suspend/resume has resulted
-> in either bad data being written to disk, the correct data not being
-> written to disk or the cached block being corrupted in memory.
-That's the kind of thing I was suspecting, yes.
-
-> If you run xfs_check on the filesystem after it has shut down after a resume,
-> can you tell us if it reports on-disk corruption? Note: do not run xfs_repair
-> to check this - it does not check the free space btrees; instead it simply
-> rebuilds them from scratch. If xfs_check reports an error, then run xfs_repair
-> to fix it up.
-OK, I can try this tonight...
-
-> FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
-> filesystem for a suspend/resume to work safely and have argued that the only
-> safe thing to do is freeze the filesystem before suspend and thaw it after
-> resume. This is why I originally asked you to test that with the other problem
-> that you reported. Up until this point in time, there's been no evidence to
-> prove either side of the argument......
-> 
-> Cheers,
-> 
-> Dave.
-
+Index: linux-2.6.22-rc5/kernel/power/main.c
+===================================================================
+--- linux-2.6.22-rc5.orig/kernel/power/main.c	2007-06-17 12:49:49.000000000 +0200
++++ linux-2.6.22-rc5/kernel/power/main.c	2007-06-17 23:57:30.000000000 +0200
+@@ -71,11 +71,9 @@ static inline void pm_finish(suspend_sta
+  *	suspend_prepare - Do prep work before entering low-power state.
+  *	@state:		State we're entering.
+  *
+- *	This is common code that is called for each state that we're 
+- *	entering. Allocate a console, stop all processes, then make sure
+- *	the platform can enter the requested state.
++ *	This is common code that is called for each state that we're entering.
++ *	Run suspend notifiers, allocate a console and stop all processes.
+  */
+-
+ static int suspend_prepare(suspend_state_t state)
+ {
+ 	int error;
+@@ -95,38 +93,18 @@ static int suspend_prepare(suspend_state
+ 		goto Thaw;
+ 	}
+ 
+-	if ((free_pages = global_page_state(NR_FREE_PAGES))
+-			< FREE_PAGE_NUMBER) {
++	free_pages = global_page_state(NR_FREE_PAGES);
++	if (free_pages < FREE_PAGE_NUMBER) {
+ 		pr_debug("PM: free some memory\n");
+ 		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
+ 		if (nr_free_pages() < FREE_PAGE_NUMBER) {
+ 			error = -ENOMEM;
+ 			printk(KERN_ERR "PM: No enough memory\n");
+-			goto Thaw;
+ 		}
+ 	}
+-
+-	suspend_console();
+-	error = device_suspend(PMSG_SUSPEND);
+-	if (error) {
+-		printk(KERN_ERR "Some devices failed to suspend\n");
+-		goto Resume_console;
+-	}
+-	if (pm_ops->prepare) {
+-		if ((error = pm_ops->prepare(state)))
+-			goto Resume_devices;
+-	}
+-
+-	error = disable_nonboot_cpus();
+ 	if (!error)
+ 		return 0;
+ 
+-	enable_nonboot_cpus();
+-	pm_finish(state);
+- Resume_devices:
+-	device_resume();
+- Resume_console:
+-	resume_console();
+  Thaw:
+ 	thaw_processes();
+ 	pm_restore_console();
+@@ -147,6 +125,12 @@ void __attribute__ ((weak)) arch_suspend
+ 	local_irq_enable();
+ }
+ 
++/**
++ *	suspend_enter - enter the desired system sleep state.
++ *	@state:		state to enter
++ *
++ *	This function should be called after devices have been suspended.
++ */
+ int suspend_enter(suspend_state_t state)
+ {
+ 	int error = 0;
+@@ -166,6 +150,41 @@ int suspend_enter(suspend_state_t state)
+ 	return error;
+ }
+ 
++/**
++ *	suspend_suspend - suspend devices and enter the desired system sleep
++ *			  state.
++ *	@state:		  state to enter
++ */
++int suspend_suspend(suspend_state_t state)
++{
++	int error;
++
++	if (!pm_ops)
++		return -ENOSYS;
++
++	suspend_console();
++	error = device_suspend(PMSG_SUSPEND);
++	if (error) {
++		printk(KERN_ERR "Some devices failed to suspend\n");
++		goto Resume_console;
++	}
++	if (pm_ops->prepare) {
++		error = pm_ops->prepare(state);
++		if (error)
++			goto Resume_devices;
++	}
++	error = disable_nonboot_cpus();
++	if (!error)
++		suspend_enter(state);
++
++	enable_nonboot_cpus();
++	pm_finish(state);
++ Resume_devices:
++	device_resume();
++ Resume_console:
++	resume_console();
++	return error;
++}
+ 
+ /**
+  *	suspend_finish - Do final work before exiting suspend sequence.
+@@ -174,13 +193,8 @@ int suspend_enter(suspend_state_t state)
+  *	Call platform code to clean up, restart processes, and free the 
+  *	console that we've allocated. This is not called for suspend-to-disk.
+  */
+-
+ static void suspend_finish(suspend_state_t state)
+ {
+-	enable_nonboot_cpus();
+-	pm_finish(state);
+-	device_resume();
+-	resume_console();
+ 	thaw_processes();
+ 	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+@@ -215,7 +229,6 @@ static inline int valid_state(suspend_st
+  *	Then, do the setup for suspend, enter the state, and cleaup (after
+  *	we've woken up).
+  */
+-
+ static int enter_state(suspend_state_t state)
+ {
+ 	int error;
+@@ -230,7 +243,7 @@ static int enter_state(suspend_state_t s
+ 		goto Unlock;
+ 
+ 	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+-	error = suspend_enter(state);
++	error = suspend_suspend(state);
+ 
+ 	pr_debug("PM: Finishing wakeup.\n");
+ 	suspend_finish(state);
+Index: linux-2.6.22-rc5/kernel/power/power.h
+===================================================================
+--- linux-2.6.22-rc5.orig/kernel/power/power.h	2007-06-17 12:49:49.000000000 +0200
++++ linux-2.6.22-rc5/kernel/power/power.h	2007-06-17 23:47:10.000000000 +0200
+@@ -170,7 +170,6 @@ extern int swsusp_resume(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+ extern void swsusp_close(void);
+-extern int suspend_enter(suspend_state_t state);
+ 
+ struct timeval;
+ /* kernel/power/swsusp.c */
+@@ -178,6 +177,8 @@ extern void swsusp_show_speed(struct tim
+ 				unsigned int, char *);
+ 
+ /* kernel/power/main.c */
++extern int suspend_enter(suspend_state_t state);
++extern int suspend_suspend(suspend_state_t state);
+ extern struct blocking_notifier_head pm_chain_head;
+ 
+ static inline int pm_notifier_call_chain(unsigned long val)
+Index: linux-2.6.22-rc5/kernel/power/user.c
+===================================================================
+--- linux-2.6.22-rc5.orig/kernel/power/user.c	2007-06-17 12:49:49.000000000 +0200
++++ linux-2.6.22-rc5/kernel/power/user.c	2007-06-17 23:56:24.000000000 +0200
+@@ -255,47 +255,19 @@ static int snapshot_ioctl(struct inode *
+ 		break;
+ 
+ 	case SNAPSHOT_S2RAM:
+-		if (!pm_ops) {
+-			error = -ENOSYS;
+-			break;
+-		}
+-
+ 		if (!data->frozen) {
+ 			error = -EPERM;
+ 			break;
+ 		}
+-
+ 		if (!mutex_trylock(&pm_mutex)) {
+ 			error = -EBUSY;
+ 			break;
+ 		}
+-
+-		if (pm_ops->prepare) {
+-			error = pm_ops->prepare(PM_SUSPEND_MEM);
+-			if (error)
+-				goto OutS3;
+-		}
+-
+-		/* Put devices to sleep */
+-		suspend_console();
+-		error = device_suspend(PMSG_SUSPEND);
+-		if (error) {
+-			printk(KERN_ERR "Failed to suspend some devices.\n");
+-		} else {
+-			error = disable_nonboot_cpus();
+-			if (!error) {
+-				/* Enter S3, system is already frozen */
+-				suspend_enter(PM_SUSPEND_MEM);
+-				enable_nonboot_cpus();
+-			}
+-			/* Wake up devices */
+-			device_resume();
+-		}
+-		resume_console();
+-		if (pm_ops->finish)
+-			pm_ops->finish(PM_SUSPEND_MEM);
+-
+- OutS3:
++		/*
++		 * Tasks are frozen and the notifiers have been called with
++		 * PM_HIBERNATION_PREPARE
++		 */
++		error = suspend_suspend(PM_SUSPEND_MEM);
+ 		mutex_unlock(&pm_mutex);
+ 		break;
+ 
