@@ -1,72 +1,54 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Mon, 18 Jun 2007 08:49:34 +0100
-Message-ID: <4676390E.6010202@dgreaves.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com>
+From: Kelly Agu <kellyagu@yahoo.com>
+Subject: CONTACT HIM IMMEDIATELY
+Date: Mon, 18 Jun 2007 21:19:06 +0900
+Message-ID: <200706181219.l5ICJ6Dv018915@ns.webhostingkorea.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <46751D37.5020608@dgreaves.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: David Robinson <zxvdr.au@gmail.com>
-Cc: LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-David Greaves wrote:
-> David Robinson wrote:
->> David Greaves wrote:
->>> This isn't a regression.
->>>
->>> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited 
->>> to try it).
->>> I tried 2.6.22-rc4 (with Tejun's patches) to see if it had improved - 
->>> no.
->>>
->>> Note this is a different (desktop) machine to that involved my recent 
->>> bugs.
->>>
->>> The machine will work for days (continually powered up) without a 
->>> problem and then exhibits a filesystem failure within minutes of a 
->>> resume.
-
-<snip>
-
-> OK, that gave me an idea.
-> 
-> Freeze the filesystem
-> md5sum the lvm
-> hibernate
-> resume
-> md5sum the lvm
-<snip>
-> So the lvm and below looks OK...
-> 
-> I'll see how it behaves now the filesystem has been frozen/thawed over 
-> the hibernate...
-
-
-And it appears to behave well. (A few hours compile/clean cycling kernel builds 
-on that filesystem were OK).
+Attn;My dear  ,
+I'm happy to inform you about my success in getting
+those funds transffered under the cooperation of
+a new partner from paraguay.
+Presently i'm in paraguay for investment projects with
+my own share of the total sum.meanwhile,i
+didn't forget your past efforts and attempts to assit
+me in transffering those funds despite that it failed us
+somehow.
+Now contact my secretary in BENIN his
+name is  JOS EZE,his email;joseze009@yahoo.fr
+ask him to send you the total $800.000.00 (EIGTH HUNDRED THOUSAND US DOLLARS )certified bank draft which i raised in your favour
+ for your compensation for all the past efforts
+and attempts to assist me in this matter.i appreciated
+your efforts at that time very much.so feel free and get
+intouched with my secretary   JOS EZE and give him youraddress
+where to send
+the draft to you.
+Please do let me know immediately you receive it so that
+we can share the joy after all the sufferness at
+that time.in the moment, i'm very busy here because of
+the
+investment projects which me and the new partner are
+having
+at hand, finally,remember that i had forwarded
+instruction
+to the secretary on your behalf to receive that
+money,so feel free to get intouch with   JOS without any delay.
+ best regards,
+ BARRISTER  kelly agu 
 
 
-Historically I've done:
-sync
-echo platform > /sys/power/disk
-echo disk > /sys/power/state
-# resume
 
-and had filesystem corruption (only on this machine, my other hibernating xfs 
-machines don't have this problem)
-
-So doing:
-xfs_freeze -f /scratch
-sync
-echo platform > /sys/power/disk
-echo disk > /sys/power/state
-# resume
-xfs_freeze -u /scratch
-
-Works (for now - more usage testing tonight)
-
-David
+ 
