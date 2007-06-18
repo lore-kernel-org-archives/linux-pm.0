@@ -1,13 +1,12 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC][PATCH -mm] PM: Prevent frozen user mode
-	helpers from failing the freezing of tasks
-Date: Tue, 19 Jun 2007 08:15:13 +1000
-Message-ID: <200706190815.18292.nigel__46406.0389706448$1182204994$gmane$org@nigel.suspend2.net>
-References: <200706182329.58917.rjw@sisk.pl>
+From: Andy Gunn <ahpce@npitaly.np.ge.com>
+Subject: Anita Nevyas-Wallace pleaded a case for the medical
+	necessity for refractive eye surgery for Ms.
+Date: Tue, 19 Jun 2007 01:22:48 +0300
+Message-ID: <467705B8.4070405@npitaly.np.ge.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2887913195291817479=="
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706182329.58917.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,78 +14,116 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Uli Luckas <u.luckas@road.de>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============2887913195291817479==
-Content-Type: multipart/signed; boundary="nextPart1281076.UZUROANAlK";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+SREA Jumps 25% After News Releases!
 
---nextPart1281076.UZUROANAlK
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Score One Inc.
+SREA
+$0.25 UP 25%
 
-Hi.
+SREA announced its plan to develop a $75 Million project duplicates a
+successful plan in 2006 than returned over $100 million in profits.
+Investors are getting in fast. Read the news and get all over SREA
+Tuesday!
 
-On Tuesday 19 June 2007 07:29:58 Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->=20
-> At present, if a user mode helper is running while=20
-usermodehelper_pm_callback()
-> is executed, the helper may be frozen and the completion in
-> call_usermodehelper_exec() won't be completed until user space processes =
-are
-> thawed.  As a result, the freezing of kernel threads may fail, which is n=
-ot
-> desirable.
->=20
-> Prevent this from happening by introducing a counter of running user mode
-> helpers and allowing usermodehelper_pm_callback() to succeed for
-> action =3D PM_HIBERNATION_PREPARE or action =3D PM_SUSPEND_PREPARE only i=
-f there
-> are no helpers running.  [Namely, usermodehelper_pm_callback() waits for =
-at=20
-most
-> RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero =
-and
-> fails if that doesn't happen.]
->=20
-> Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-> versions of this patch and for very useful comments.
->=20
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+I was thrilled to death. Donnenfeld of TLC Laser Center.
+While weighing going under the laser, Post did his homework, spending a
+year researching the surgery and the surgeons.
 
-Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+Anita Nevyas-Wallace, M. Fiorelli was still not driving at night and
+still complained of subjective halos and poor vision from the right eye.
+Donnenfeld may have performed laser surgery on defendant Giuseppe
+Dellorusso, a local pediatrician. Everything done before was completely
+unregulated by protocol, and possibly much done after.
 
-Regards,
+Gayton said patients he has performed Lasik on have experienced
+inflammation of the cornea, infection and other complications.
+You must be absolutely sure about the person who is going to do your
+surgery.
 
-Nigel
+There has been a lot of difficulty accepting that this really is the end
+of my career. A silicone-plate haptic intraocular lens was selected and
+placed into Ms.
+Joseph Dello Russo he endorsed their services.
+, one of the Defendants in this action.
 
---nextPart1281076.UZUROANAlK
-Content-Type: application/pgp-signature
+Since the airing of the commercial, there has been a significant decline
+in the number of plaintiff's patients from Long Island, New York.
+Excerpt:   Patient personalities. Anita Nevyas-Wallace, Dr. His
+attorneys, Robert Beal and Michael Redhair, contend the defendants were
+negligent in evaluating him and failing to properly explain the risks
+associated with LASIK.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+The services of defendants Dr.
 
-iD8DBQBGdwP2N0y+n1M3mo0RArmbAKDepNuT82mHy+8n6DEGlEDn6xY1UQCgy8bX
-wl+3pKR8e1Q9jrB16K/8bkk=
-=/xR+
------END PGP SIGNATURE-----
+Cheryl Fiorelli back for a follow-up examination.
 
---nextPart1281076.UZUROANAlK--
+The concern was that people wouldn't be able to do their jobs if
+something went wrong with the surgery, Mauger said.
+Apparently, a registered nurse, Deborah Shelton, was in control of the
+foot pedals of the microkeratome that was used to create the LASIK flap.
+The plate haptic intraocular lens was then decentered.
 
---===============2887913195291817479==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Thompson said it's "really unreasonable" to say Lasik is too dangerous.
+Instead, Gayton is offering a newer procedure called Lasek, a variation
+of an older refractive surgery called PRK, or photorefractive
+keratectomy. Post has sued University Physicians, The LASIK Center and
+its LASIK team.
 
+"I don't see it as being useful," he said.
 
---===============2887913195291817479==--
+The risk is so great, Gayton maintained, that he wouldn't have the
+surgery himself. , one of the Defendants in this action.
+
+The Air Force is now offering PRK on a trial basis for some air crew and
+special duty personnel, but only when performed through a program at
+Lackland Air Force Base in Texas. Fiorelli was evaluated at the Nevyas
+Eye Associates by Dr. info for details on George Biagi vs. Wallace
+requested Ms. Donnenfeld and TLC are direct competitors of plaintiff,
+and have the same potential patient or customer base in the same
+geographical area. If a rogue device were to gain entry to this billion
+dollar market, where improper data could lead to it being used in favor
+of properly approved LASIK devices, the damages could be unimaginable.
+Thomas Tooma Sued by Jerry Lehrer for Professional Negligence and Fraud
+at USAEyes.
+
+Ajay Sanan, a Tucson eye surgeon who underwent yearlong specialty
+training in LASIK and other corneal surgeries.
+
+Donnenfeld of TLC Laser Center. The number of cases is increasing. If
+the Nevyas Excimer Laser gains market approval from the FDA on the basis
+of improper data submission from its sole investigator, Nevyas, the
+results could be catastrophic. info for details on Frank Soya vs.
+Everything done before was completely unregulated by protocol, and
+possibly much done after. You must be absolutely sure about the person
+who is going to do your surgery. This Excimer Laser ablation resulted in
+a markedly significant overcorrection and a post-operative topography
+indicating a significantly decentered ablation.
+
+"But that happens in such a small minority of patients.
+
+Ajay Sanan, a Tucson eye surgeon who underwent yearlong specialty
+training in LASIK and other corneal surgeries. I had it done myself and
+I would do it again.
+
+Following detailed review of these medical records, I have been provided
+with a copy of the transcripts from the sworn depositions of Dr. Upon
+information and belief, defendant Giuseppe Dellorusso may have had laser
+eye surgery performed by Dr. "When I first realized the problems were
+not going away, as they said they would, I was in a lot of turmoil,"
+said Post. No one else at TLC or TLC Garden City ever performed laser
+surgery on plaintiff. There was the previously noted supero-nasal
+decentration of the ablation.
+Anita Nevyas-Wallace then elected to proceed with performing a clear
+lens extraction in Ms. One week following this appointment, a letter was
+written by Dr.
+Donnenfeld and TLC are endorsed, sponsored , or approved by plaintiff.
+
+The corneal topographic analysis disclosed a significantly decentered
+Excimer Laser ablation in the right eye. Anita Nevyas-Wallace, M.
+
+The complete article is available at:  www.
