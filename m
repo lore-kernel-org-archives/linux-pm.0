@@ -1,83 +1,72 @@
-From: Yahoo! <yahoo_onlinelottery1@adelphia.net>
-Subject: Yahoo! Lucky Winner
-Date: Sun, 17 Jun 2007 10:01:46 -0700
-Message-ID: <3388222.1182099706626.JavaMail.root@web19>
-Reply-To: email_anthonywalker@yahoo.dk
+From: David Greaves <david@dgreaves.com>
+Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
+Date: Mon, 18 Jun 2007 08:49:34 +0100
+Message-ID: <4676390E.6010202@dgreaves.com>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-audit@redhat.com, linux-cifs-client@lists.samba.org, linux-crypto@vger.kernel.org, linux-decnet-user@lists.sourceforge.net, linux-driver@qlogic.com, linux-dvb@linuxtv.org, linux-eata@i-connect.net, linux-fbdev-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, linux-hams@vger.kernel.org, linux-hippi@sunsite.dk, linux-ia64@vger.ker, linux-ia64@vger.kernel.org, linux-ide@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz, linux-joystick@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org, linux-laptop@vger.kernel.org, linux-m68k@vger.kernel.org, linux-mac68k@mac.linux-m68k.org, linux-mips@linux-mips.org, linux-mm@kvack.org, linux-mtd@lists.infradead.org, linux-ntfs-dev@lists.sourceforge.net, linux-nvidia@lists.surfsouth.com, linux-parport@lists.infradead.orglin
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-raid-owner@vger.kernel.org>
+In-Reply-To: <46751D37.5020608@dgreaves.com>
+Sender: linux-raid-owner@vger.kernel.org
+To: David Robinson <zxvdr.au@gmail.com>
+Cc: LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Esteemed Winner,
-We are pleased to inform you of the result of the YAHOO! International=20
-Promotions Program held on the 15th of April, 2007.Your e-mail address=20
-attached to ticket number 883734657492-5319 with serial number=20
-7263-267, batch number 8254297137 drew the lucky numbers=20
-14-22-28-37-40-44 which consequently won in the 1st category,you have=20
-therefore been approved for a lump sum pay out of =C2=A3500,000.00 (i.e F=
-ive=20
-Hundred=20
-Thousand United Kingdom Pounds Sterling) in cash credited to file=20
-REF:YAHOO6/315116127/27. This is from total prize money of=20
-US$20,400,000.00 shared among the seventeen international winners in
-this category. To claim your kindly submit the completed form to your=20
-verification unit by email:VERIFICATION FORM BELOW: *Name of Winner:=20
-*Address:*City/State: *Nationlity:*Sex:*EmailAddress*Phone=20
-no:*Occupation:*Age:*Amount won:.The claims officer contact email is:=20
-Name: Mr Anthony Walker
-E-mail:email_anthonywalker@yahoo.dk
-Yours Sincerely,
-Mrs. Amelia Hunts
+David Greaves wrote:
+> David Robinson wrote:
+>> David Greaves wrote:
+>>> This isn't a regression.
+>>>
+>>> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited 
+>>> to try it).
+>>> I tried 2.6.22-rc4 (with Tejun's patches) to see if it had improved - 
+>>> no.
+>>>
+>>> Note this is a different (desktop) machine to that involved my recent 
+>>> bugs.
+>>>
+>>> The machine will work for days (continually powered up) without a 
+>>> problem and then exhibits a filesystem failure within minutes of a 
+>>> resume.
 
-Dear Esteemed Winner,
-We are pleased to inform you of the result of the YAHOO! International=20
-Promotions Program held on the 15th of April, 2007.Your e-mail address=20
-attached to ticket number 883734657492-5319 with serial number=20
-7263-267, batch number 8254297137 drew the lucky numbers=20
-14-22-28-37-40-44 which consequently won in the 1st category,you have=20
-therefore been approved for a lump sum pay out of =C2=A3500,000.00 (i.e F=
-ive=20
-Hundred=20
-Thousand United Kingdom Pounds Sterling) in cash credited to file=20
-REF:YAHOO6/315116127/27. This is from total prize money of=20
-US$20,400,000.00 shared among the seventeen international winners in
-this category. To claim your kindly submit the completed form to your=20
-verification unit by email:VERIFICATION FORM BELOW: *Name of Winner:=20
-*Address:*City/State: *Nationlity:*Sex:*EmailAddress*Phone=20
-no:*Occupation:*Age:*Amount won:.The claims officer contact email is:=20
-Name: Mr Anthony Walker
-E-mail:email_anthonywalker@yahoo.dk
-Yours Sincerely,
-Mrs. Amelia Hunts
+<snip>
 
-Dear Esteemed Winner,
-We are pleased to inform you of the result of the YAHOO! International=20
-Promotions Program held on the 15th of April, 2007.Your e-mail address=20
-attached to ticket number 883734657492-5319 with serial number=20
-7263-267, batch number 8254297137 drew the lucky numbers=20
-14-22-28-37-40-44 which consequently won in the 1st category,you have=20
-therefore been approved for a lump sum pay out of =C2=A3500,000.00 (i.e F=
-ive=20
-Hundred=20
-Thousand United Kingdom Pounds Sterling) in cash credited to file=20
-REF:YAHOO6/315116127/27. This is from total prize money of=20
-US$20,400,000.00 shared among the seventeen international winners in
-this category. To claim your kindly submit the completed form to your=20
-verification unit by email:VERIFICATION FORM BELOW: *Name of Winner:=20
-*Address:*City/State: *Nationlity:*Sex:*EmailAddress*Phone=20
-no:*Occupation:*Age:*Amount won:.The claims officer contact email is:=20
-Name: Mr Anthony Walker
-E-mail:email_anthonywalker@yahoo.dk
-Yours Sincerely,
-Mrs. Amelia Hunts
+> OK, that gave me an idea.
+> 
+> Freeze the filesystem
+> md5sum the lvm
+> hibernate
+> resume
+> md5sum the lvm
+<snip>
+> So the lvm and below looks OK...
+> 
+> I'll see how it behaves now the filesystem has been frozen/thawed over 
+> the hibernate...
+
+
+And it appears to behave well. (A few hours compile/clean cycling kernel builds 
+on that filesystem were OK).
+
+
+Historically I've done:
+sync
+echo platform > /sys/power/disk
+echo disk > /sys/power/state
+# resume
+
+and had filesystem corruption (only on this machine, my other hibernating xfs 
+machines don't have this problem)
+
+So doing:
+xfs_freeze -f /scratch
+sync
+echo platform > /sys/power/disk
+echo disk > /sys/power/state
+# resume
+xfs_freeze -u /scratch
+
+Works (for now - more usage testing tonight)
+
+David
