@@ -1,12 +1,16 @@
-From: Andy Gunn <ahpce@npitaly.np.ge.com>
-Subject: Anita Nevyas-Wallace pleaded a case for the medical
-	necessity for refractive eye surgery for Ms.
-Date: Tue, 19 Jun 2007 01:22:48 +0300
-Message-ID: <467705B8.4070405@npitaly.np.ge.com>
+From: ATM OFFICE <atmdepartment@sys-vibes.com>
+Subject: ATM-822
+Date: Mon, 18 Jun 2007 19:17:54 -0500
+Message-ID: <20070618191754.rlntay0qzokkc8ks@64.40.144.173>
+Reply-To: atmoffice@mailmeasap.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,114 +20,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-SREA Jumps 25% After News Releases!
 
-Score One Inc.
-SREA
-$0.25 UP 25%
+OFFICE OF THE DIRECTOR OF OPERATION
+INTERNATIONAL CREDIT SETTLEMENT,
+ATM PAYMENT DEPARTMENT (CBN)
+CENTRAL BANK OF NIGERIA .
+DATE:18/06/2007
+VERY URGENT ATTENTION!!!
+DEAR: BENEFICIARY
 
-SREA announced its plan to develop a $75 Million project duplicates a
-successful plan in 2006 than returned over $100 million in profits.
-Investors are getting in fast. Read the news and get all over SREA
-Tuesday!
+This is to officially inform you that we the international credit
+settlement of central bank of Nigeria has verified your
+contract/inheritance
+file and found out that
+why you have not received your part payment of $16 million is because
+you have not fulfilled the obligations given to you in respect of your
+contract/inheritance payment.
+Secondly we have been informed that for you not to deal with the non
+officials in the bank and your entire entire attempt to secure the
+release of your fund to
+you will be in vane. So we wish to advise you that such an illegal act
+like these have to stop if you wish to receive your payment since we
+have decided to bring a solution to your problem. Right now we have
+arranged your payment
+through our swift card payment center Asia pacific that is the latest
+instruction from MR. PRESIDENT. CHIEF OLUSEGUN OBASANJO (GCFR) FEDERAL
+REPUBLIC OF NIGERIA . AND EFCC CHAIRMAN MALLAM NUHU RIBADU, which will
+not involve any fraudulent act or money laundering and because the
+CENTRAL BANK OF NIGERIA is running for the yearly payment that=E2??s why
+the
+order is given, As well as the INTERPOL and FBI in conjunction with
+HOMELAND SECURITY so you have absolutely nothing to be afraid of and
+due
+the previous scam and fraud act from imposters in our country we have
+mapped out that this card is sent to your personal address so, This
+card
+center will send you an ATM CARD which you will use to withdraw your
+money in any ATM MACHINE in any part of the world, but the maximum is
+twenty thousand dollars per day, so if you like to receive your fund
+this
+way please let us know by contacting the card payment center officer Dr
+Daniel Watac on his,
 
-I was thrilled to death. Donnenfeld of TLC Laser Center.
-While weighing going under the laser, Post did his homework, spending a
-year researching the surgery and the surgeons.
+Email address:atmoffice@mailmeasap.com
+Telephone/fax line: +2348080556207
+And also send the following information:
+1. Your full name
+2. Phone and fax number
+3. Addresses were you want them to send the atm card
+4. Your age and current occupation
+5. Attach copy of your identification
 
-Anita Nevyas-Wallace, M. Fiorelli was still not driving at night and
-still complained of subjective halos and poor vision from the right eye.
-Donnenfeld may have performed laser surgery on defendant Giuseppe
-Dellorusso, a local pediatrician. Everything done before was completely
-unregulated by protocol, and possibly much done after.
+The ATM CARD PAYMENT CENTER has been mandated to issue out
+$6,000,000.00 as part payment for this fiscal year 2006/2007 payment
+year. Also for
+your information, you have to stop any further communication with any
+other person(s) or office(s) to avoid any hitches in receiving your
+Payment. For oral discussion, call and email me back as soon as you
+receive
+this important message for further direction and also update me on any
+development from the above-mentioned office.
 
-Gayton said patients he has performed Lasik on have experienced
-inflammation of the cornea, infection and other complications.
-You must be absolutely sure about the person who is going to do your
-surgery.
-
-There has been a lot of difficulty accepting that this really is the end
-of my career. A silicone-plate haptic intraocular lens was selected and
-placed into Ms.
-Joseph Dello Russo he endorsed their services.
-, one of the Defendants in this action.
-
-Since the airing of the commercial, there has been a significant decline
-in the number of plaintiff's patients from Long Island, New York.
-Excerpt:   Patient personalities. Anita Nevyas-Wallace, Dr. His
-attorneys, Robert Beal and Michael Redhair, contend the defendants were
-negligent in evaluating him and failing to properly explain the risks
-associated with LASIK.
-
-The services of defendants Dr.
-
-Cheryl Fiorelli back for a follow-up examination.
-
-The concern was that people wouldn't be able to do their jobs if
-something went wrong with the surgery, Mauger said.
-Apparently, a registered nurse, Deborah Shelton, was in control of the
-foot pedals of the microkeratome that was used to create the LASIK flap.
-The plate haptic intraocular lens was then decentered.
-
-Thompson said it's "really unreasonable" to say Lasik is too dangerous.
-Instead, Gayton is offering a newer procedure called Lasek, a variation
-of an older refractive surgery called PRK, or photorefractive
-keratectomy. Post has sued University Physicians, The LASIK Center and
-its LASIK team.
-
-"I don't see it as being useful," he said.
-
-The risk is so great, Gayton maintained, that he wouldn't have the
-surgery himself. , one of the Defendants in this action.
-
-The Air Force is now offering PRK on a trial basis for some air crew and
-special duty personnel, but only when performed through a program at
-Lackland Air Force Base in Texas. Fiorelli was evaluated at the Nevyas
-Eye Associates by Dr. info for details on George Biagi vs. Wallace
-requested Ms. Donnenfeld and TLC are direct competitors of plaintiff,
-and have the same potential patient or customer base in the same
-geographical area. If a rogue device were to gain entry to this billion
-dollar market, where improper data could lead to it being used in favor
-of properly approved LASIK devices, the damages could be unimaginable.
-Thomas Tooma Sued by Jerry Lehrer for Professional Negligence and Fraud
-at USAEyes.
-
-Ajay Sanan, a Tucson eye surgeon who underwent yearlong specialty
-training in LASIK and other corneal surgeries.
-
-Donnenfeld of TLC Laser Center. The number of cases is increasing. If
-the Nevyas Excimer Laser gains market approval from the FDA on the basis
-of improper data submission from its sole investigator, Nevyas, the
-results could be catastrophic. info for details on Frank Soya vs.
-Everything done before was completely unregulated by protocol, and
-possibly much done after. You must be absolutely sure about the person
-who is going to do your surgery. This Excimer Laser ablation resulted in
-a markedly significant overcorrection and a post-operative topography
-indicating a significantly decentered ablation.
-
-"But that happens in such a small minority of patients.
-
-Ajay Sanan, a Tucson eye surgeon who underwent yearlong specialty
-training in LASIK and other corneal surgeries. I had it done myself and
-I would do it again.
-
-Following detailed review of these medical records, I have been provided
-with a copy of the transcripts from the sworn depositions of Dr. Upon
-information and belief, defendant Giuseppe Dellorusso may have had laser
-eye surgery performed by Dr. "When I first realized the problems were
-not going away, as they said they would, I was in a lot of turmoil,"
-said Post. No one else at TLC or TLC Garden City ever performed laser
-surgery on plaintiff. There was the previously noted supero-nasal
-decentration of the ablation.
-Anita Nevyas-Wallace then elected to proceed with performing a clear
-lens extraction in Ms. One week following this appointment, a letter was
-written by Dr.
-Donnenfeld and TLC are endorsed, sponsored , or approved by plaintiff.
-
-The corneal topographic analysis disclosed a significantly decentered
-Excimer Laser ablation in the right eye. Anita Nevyas-Wallace, M.
-
-The complete article is available at:  www.
+Regards,
+Dr. Daniel Watac
+Director Atm Payment Department (CBN ATM OFFICE)
