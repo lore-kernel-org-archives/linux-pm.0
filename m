@@ -1,16 +1,15 @@
-From: Jens Axboe <olpc-devel@kernel.dk>
-Subject: Re: Power Mangement Interfaces
-Date: Tue, 19 Jun 2007 21:17:17 +0200
-Message-ID: <20070619191717.GL18863__33454.7032988214$1182280724$gmane$org@kernel.dk>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200703312001.55231.david-b@pacbell.net>
-	<20070401165601.GA13389@cosmic.amd.com>
-	<200704011728.10966.david-b@pacbell.net>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: RE: Re: Power Mangement Interfaces
+Date: Tue, 19 Jun 2007 14:41:14 -0500
+Message-ID: <3B6D69C3A9EBCA4BA5DA60D913027429013872D0@dlee13.ent.ti.com>
+References: <20070330235759.GC4252@cosmic.amd.com><200703312001.55231.david-b@pacbell.net><20070401165601.GA13389@cosmic.amd.com><200704011728.10966.david-b@pacbell.net>
 	<20070619170048.GA342@dmt.media.mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 In-Reply-To: <20070619170048.GA342@dmt.media.mit.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,30 +20,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcelo Tosatti <marcelo@kvack.org>
+To: Marcelo Tosatti <marcelo@kvack.org>, David Brownell <david-b@pacbell.net>
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 19 2007, Marcelo Tosatti wrote:
-> > > > I see /sys/devices/acpi_system:00/button_power:00 on this system; and
-> > > > /sys/devices/acpi_system:00/device:00/PNP0C0D:00 has path \_SB_.LID_ ...
-> > > > such device nodes already exist, even though they're not really hooked
-> > > > up to anything much.  Notably, their "wakeup" state is not initialized.
-> > > > 
-> > > > And while it seems that the three USB controllers on this system show up
-> > > > as /sys/devices/acpi_system:00/device:00/PNP0A03:00/device:{01,02,03} I
-> > > > have no idea which one is /sys/devices/pci0000:00/0000:00:02.2 versus
-> > > > 0000:00:02.1 or 0000:00:02.0 ... I know that USB0 is device:01 and so
-> > > > on (by reading "path"), but associating one with a PCI device seems to
-> > > > involve pure guesswork.
-> > > 
-> > > I guess we'll probably have to do something similar for our OLPC PM code
-> > > - but thats the sort of platform specific fragmentation thing I was trying
-> > > to avoid.
-> > 
-> > Since OLPC isn't using ACPI,  it can be more like embedded Linux,
-> > and just Do The Right Thing ... create platform devices, etc.  :)
-> 
 > As you know we want user configuration of enabled wakeup events (unlike
 > embedded platforms where this is hardcoded). It seems that the current
 > interface available for that is /sys/devices/../power/wakeup hook (when
@@ -53,14 +32,24 @@ On Tue, Jun 19 2007, Marcelo Tosatti wrote:
 > However there are several wakeup capable devices in OLPC which do not
 > have drivers, thus no platform devices:
 > 
-> - power button 
+> - power button
 > - lid
 > 
 > It seems that creating platform devices for these two just for the
 > purpose of a having an interface for enabling wakeup events is overkill.
+> 
+> Given that, we probably want something similar to what was initially
+> described in http://wiki.laptop.org/go/Power_Management_Interface ?
+> 
+> The downside of doing that is a non-unified interface: platform
+> devices via /sys/devices/../power/wakeup and otherwise
+> /sys/whatever/wakeup/source?
+ 
+Perhaps it is over kill, but is it really very expensive for handful of devices?  I am curious as to others experiences here.
 
-I'll go ahead and disagree with that, I think a platform device is
-clearly the best way to go. It's the cleanest approach.
+In hacks for embedded in the past I've sprinkled some extra device/bus registrations around to provide a common way to enable wake ups and idle states.  I don't know that it was the best way to do it, but it could be made to work.
 
--- 
-Jens Axboe
+A dev structure is a handy thing to have around and provides symmetry.  Having a sysfs entry provides for an easy way to set and test from user space.  You can always export the function in the kernel also to get a secondary path to the function.  All that seems nicer than adding ioctrls and the like per driver.
+
+Regards,
+Richard W.
