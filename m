@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Tue, 19 Jun 2007 10:20:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706191019090.3674-100000@iolanthe.rowland.org>
-References: <20070619100919.GA4016@inferi.kami.home>
+From: David Greaves <david@dgreaves.com>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after
+	hibernate/resume
+Date: Tue, 19 Jun 2007 16:31:45 +0100
+Message-ID: <4677F6E1.50108@dgreaves.com>
+References: <46744065.6060605@dgreaves.com> <4676D97E.4000403@dgreaves.com>
+	<4677A0C7.4000306@dgreaves.com> <200706191321.07278.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070619100919.GA4016@inferi.kami.home>
+In-Reply-To: <200706191321.07278.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,33 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mattia Dongili <malattia@linux.it>
-Cc: linux-acpi@vger.kernel.org, David Brownell <dbrownell@users.sourceforge.net>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>, LVM general discussion and development <linux-lvm@redhat.com>, David Robinson <zxvdr.au@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 19 Jun 2007, Mattia Dongili wrote:
-
-> > Try to enable the wakeup GPE for all the USB devices first.
-> > e.g. "#echo USB1 >/proc/acpi/wakeup" will enable GPE for USB1.
-> > USB1      S3     disabled  pci:0000:00:1d.0
-> > USB2      S3     disabled  pci:0000:00:1d.1
-> > USB3      S3     disabled  pci:0000:00:1d.2
-> > USB4      S3     disabled  pci:0000:00:1d.3
-> > USB7      S3     disabled  pci:0000:00:1d.7
-> > 
-> > Try STR and check if it resumes immediately after suspend.
-> > I think the same problem will happen without this patch.
+Rafael J. Wysocki wrote:
+>> This is on 2.6.22-rc5
 > 
-> only after enabling USB7 the broken behaviour showed.
+> Is the Tejun's patch
 > 
-> 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc5/patches/30-block-always-requeue-nonfs-requests-at-the-front.patch
 > 
-> Quite consistent with the other findings.
+> applied on top of that?
 
-Just as with Raphael, I suggest you build a kernel with 
-CONFIG_USB_DEBUG turned on and then post the dmesg log showing the USB 
-debugging messages during the suspend and immediate resume.  To reduce 
-the amount of clutter you might want to rmmod uhci-hcd before starting 
-the test.
+2.6.22-rc5 includes it.
 
-Alan Stern
+(but, when I was testing rc4, I did apply this patch)
+
+David
