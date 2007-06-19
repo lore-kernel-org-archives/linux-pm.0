@@ -1,19 +1,17 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Tue, 19 Jun 2007 18:30:34 +0900
-Message-ID: <20070619093033.GA3507__39247.7144407623$1182245797$gmane$org@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070518002240.bc08e811.akpm@linux-foundation.org>
-	<20070519064829.GA15518@inferi.kami.home>
-	<20070519000413.75badb6f.akpm@linux-foundation.org>
-	<20070520061408.GA3325@inferi.kami.home>
-	<1182243475.5411.101.camel@localhost.localdomain>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after
+	hibernate/resume
+Date: Tue, 19 Jun 2007 18:44:54 +0900
+Message-ID: <4677A596.7090404@gmail.com>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com>
+	<46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com>
+	<20070618145007.GE85884050@sgi.com>
+	<4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1182243475.5411.101.camel@localhost.localdomain>
+In-Reply-To: <4677A0C7.4000306@dgreaves.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,67 +21,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+To: David Greaves <david@dgreaves.com>
+Cc: David Chinner <dgc@sgi.com>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>, LVM general discussion and development <linux-lvm@redhat.com>, David Robinson <zxvdr.au@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 04:57:55PM +0800, Zhang Rui wrote:
-> On Sun, 2007-05-20 at 15:14 +0900, Mattia Dongili wrote:
-> > On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> > > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > > 
-> > > > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
-> > > > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > > > > 
-> > > > > > Hello,
-> > > > > > 
-> > > > > > After finally catching fw-{ohci,core} to be problematic during resume,
-> > > > > > I'm now experiencing an immediate resume after suspending.
-> > > > > > 
-> > > > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
-> > > > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
-> > > > > > 2.6.21-rc6-mm* after the cpuidle fixes).
-> > > > > > 
-> > > > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
-> > > > > > and a str cycle with PM_DEBUG=y:
-> > > > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
-> > > > ...
-> > > > > > Any idea where to start from? (bisecting is ok, but it'll take some
-> > > > > > time...)
-> > > > > 
-> > > > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
-> > > > 
-> > > > ok, git-acpi.patch is not the bad boy :)
-> > 
-> > but very very close:
-> > acpi-driver-model-flags-and-platform_enable_wake.patch
-> > 
-> Hi, Mattia,
-> 
-> I tested this patch on several platforms but can not reproduce the bug.
-> Could you please help me do a simple test please?
-> 
-> Any kernel release later than 2.6.22-rc1 is ok. You don't need to apply 
-> acpi-driver-model-flags-and-platform_enable_wake.patch.
-> 
-> Try to enable the wakeup GPE for all the USB devices first.
-> e.g. "#echo USB1 >/proc/acpi/wakeup" will enable GPE for USB1.
-> USB1      S3     disabled  pci:0000:00:1d.0
-> USB2      S3     disabled  pci:0000:00:1d.1
-> USB3      S3     disabled  pci:0000:00:1d.2
-> USB4      S3     disabled  pci:0000:00:1d.3
-> USB7      S3     disabled  pci:0000:00:1d.7
-> 
-> Try STR and check if it resumes immediately after suspend.
-> I think the same problem will happen without this patch.
+Hello,
 
-ok, building right now.
-Anyway, I don't remember the details but ehci and uhci were already
-spotted as being part of the problem. See the rest of the thread
-starting here http://lkml.org/lkml/2007/5/20/223
+David Greaves wrote:
+>> Good :)
+> Now, not so good :)
 
-Anyway I'm currently on 22-rc4-mm1 and having problems (=not even
-suspending) but lack the necessary time to investigate/bisect
+Oh, crap.  :-)
+
+> So I hibernated last night and resumed this morning.
+> Before hibernating I froze and sync'ed. After resume I thawed it. (Sorry
+> Dave)
+> 
+> Here are some photos of the screen during resume. This is not 100%
+> reproducable - it seems to occur only if the system is shutdown for
+> 30mins or so.
+> 
+> Tejun, I wonder if error handling during resume is problematic? I got
+> the same errors in 2.6.21. I have never seen these (or any other libata)
+> errors other than during resume.
+> 
+> http://www.dgreaves.com/pub/2.6.22-rc5-resume-failure.jpg
+> (hard to read, here's one from 2.6.21
+> http://www.dgreaves.com/pub/2.6.21-resume-failure.jpg
+
+Your controller is repeatedly reporting PHY readiness changed exception.
+ Are you reading the system image from the device attached to the first
+SATA port?
+
+> I _think_ I've only seen the xfs problem when a resume shows these errors.
+
+The error handling itself tries very hard to ensure that there is no
+data corruption in case of errors.  All commands which experience
+exceptions are retried but if the drive itself is doing something
+stupid, there's only so much the driver can do.
+
+How reproducible is the problem?  Does the problem go away or occur more
+often if you change the drive you write the memory image to?
+
 -- 
-mattia
-:wq!
+tejun
