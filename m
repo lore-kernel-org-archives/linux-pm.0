@@ -1,60 +1,72 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Tue, 19 Jun 2007 19:09:19 +0900
-Message-ID: <20070619100919.GA4016__25047.2780819566$1182248262$gmane$org@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070518002240.bc08e811.akpm@linux-foundation.org>
-	<20070519064829.GA15518@inferi.kami.home>
-	<20070519000413.75badb6f.akpm@linux-foundation.org>
-	<20070520061408.GA3325@inferi.kami.home>
-	<1182243475.5411.101.camel@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+Date: Tue, 19 Jun 2007 13:21:06 +0200
+Message-ID: <200706191321.07278.rjw@sisk.pl>
+References: <46744065.6060605@dgreaves.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-raid-owner@vger.kernel.org>
+In-Reply-To: <4677A0C7.4000306@dgreaves.com>
 Content-Disposition: inline
-In-Reply-To: <1182243475.5411.101.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+Sender: linux-raid-owner@vger.kernel.org
+To: David Greaves <david@dgreaves.com>
+Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 04:57:55PM +0800, Zhang Rui wrote:
-...
-> I tested this patch on several platforms but can not reproduce the bug.
-> Could you please help me do a simple test please?
->
-> Any kernel release later than 2.6.22-rc1 is ok. You don't need to apply 
-> acpi-driver-model-flags-and-platform_enable_wake.patch.
-
-2.6.22-rc5 *without* the patch
-
-> Try to enable the wakeup GPE for all the USB devices first.
-> e.g. "#echo USB1 >/proc/acpi/wakeup" will enable GPE for USB1.
-> USB1      S3     disabled  pci:0000:00:1d.0
-> USB2      S3     disabled  pci:0000:00:1d.1
-> USB3      S3     disabled  pci:0000:00:1d.2
-> USB4      S3     disabled  pci:0000:00:1d.3
-> USB7      S3     disabled  pci:0000:00:1d.7
+On Tuesday, 19 June 2007 11:24, David Greaves wrote:
+> David Greaves wrote:
+> > I'm going to have to do some more testing...
+> done
 > 
-> Try STR and check if it resumes immediately after suspend.
-> I think the same problem will happen without this patch.
+> 
+> > David Chinner wrote:
+> >> On Mon, Jun 18, 2007 at 08:49:34AM +0100, David Greaves wrote:
+> >>> David Greaves wrote:
+> >>> So doing:
+> >>> xfs_freeze -f /scratch
+> >>> sync
+> >>> echo platform > /sys/power/disk
+> >>> echo disk > /sys/power/state
+> >>> # resume
+> >>> xfs_freeze -u /scratch
+> >>>
+> >>> Works (for now - more usage testing tonight)
+> >>
+> >> Verrry interesting.
+> > Good :)
+> Now, not so good :)
+> 
+> 
+> >> What you were seeing was an XFS shutdown occurring because the free space
+> >> btree was corrupted. IOWs, the process of suspend/resume has resulted
+> >> in either bad data being written to disk, the correct data not being
+> >> written to disk or the cached block being corrupted in memory.
+> > That's the kind of thing I was suspecting, yes.
+> > 
+> >> If you run xfs_check on the filesystem after it has shut down after a 
+> >> resume,
+> >> can you tell us if it reports on-disk corruption? Note: do not run 
+> >> xfs_repair
+> >> to check this - it does not check the free space btrees; instead it 
+> >> simply
+> >> rebuilds them from scratch. If xfs_check reports an error, then run 
+> >> xfs_repair
+> >> to fix it up.
+> > OK, I can try this tonight...
+> 
+> 
+> This is on 2.6.22-rc5
 
-only after enabling USB7 the broken behaviour showed.
+Is the Tejun's patch
 
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc5/patches/30-block-always-requeue-nonfs-requests-at-the-front.patch
 
-Quite consistent with the other findings.
+applied on top of that?
 
-Cheers
+Rafael
+
+
 -- 
-mattia
-:wq!
+"Premature optimization is the root of all evil." - Donald Knuth
