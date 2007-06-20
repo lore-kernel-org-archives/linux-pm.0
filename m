@@ -1,66 +1,66 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-Date: Wed, 20 Jun 2007 17:03:34 +0900
-Message-ID: <4678DF56.1020903@gmail.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com>
+From: Uli Luckas <u.luckas@road.de>
+Subject: Re: [RFC][PATCH -mm] PM: Prevent frozen user mode
+	helpers from failing the freezing of tasks
+Date: Wed, 20 Jun 2007 11:14:35 +0200
+Message-ID: <200706201114.35876.u.luckas__21879.0296967656$1182331027$gmane$org@road.de>
+References: <200706182329.58917.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <4677E496.3080506@dgreaves.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706182329.58917.rjw@sisk.pl>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-David Greaves wrote:
-> Tejun Heo wrote:
->> Your controller is repeatedly reporting PHY readiness changed exception.
->>  Are you reading the system image from the device attached to the first
->> SATA port?
-> 
-> Yes if you mean 1st as in the one after the zero-th ...
+On Monday, 18. June 2007, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> At present, if a user mode helper is running while
+> usermodehelper_pm_callback() is executed, the helper may be frozen and the
+> completion in
+> call_usermodehelper_exec() won't be completed until user space processes
+> are thawed.  As a result, the freezing of kernel threads may fail, which is
+> not desirable.
+>
+> Prevent this from happening by introducing a counter of running user mode
+> helpers and allowing usermodehelper_pm_callback() to succeed for
+> action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if
+> there are no helpers running.  [Namely, usermodehelper_pm_callback() waits
+> for at most RUNNING_HELPERS_TIMEOUT for the number of running helpers to
+> become zero and fails if that doesn't happen.]
+>
+> Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> versions of this patch and for very useful comments.
+>
 
-I meant the first first (0th).
+Acked-by: Uli Luckas <u.luckas@road.de>
 
->> How reproducible is the problem?  Does the problem go away or occur more
->> often if you change the drive you write the memory image to?
-> 
-> I don't think there should be activity on the sda drive during resume
-> itself.
-> 
-> [I broke my / md mirror and am using some of that for swap/resume for now]
-> 
-> I did change the swap/resume device to sdd2 (different controller,
-> onboard sata_via) and there was no EH during resume. The system seemed
-> OK, wrote a few Gb of video and did a kernel compile.
-> I repeated this test, no EH during resume, no problems.
-> I even ran xfs_fsr, the defragment utility, to stress the fs.
-> 
-> I retain this configuration and try again tonight but it looks like
-> there _may_ be a link between EH during resume and my problems...
-> 
-> Of course, I don't understand why it *should* EH during resume, it
-> doesn't during boot or normal operation...
-
-EH occurs during boot, suspend and resume all the time.  It just runs in
-quiet mode to avoid disturbing the users too much.  In your case, EH is
-kicking in due to actual exception conditions so it's being verbose to
-give clue about what's going on.
-
-It's really weird tho.  The PHY RDY status changed events are coming
-from the device which is NOT used while resuming and it's before any
-actual PM events are triggered.  Your kernel just boots, swsusp realizes
-it's resuming and tries to read memory image from the swap device.
-While reading, the disk controller raises consecutive PHY readiness
-changed interrupts.  EH recovers them alright but the end result seems
-to indicate that the loaded image is corrupt.
-
-So, there's no device suspend/resume code involved at all.  The kernel
-just booted and is trying to read data from the drive.  Please try with
-only the first drive attached and see what happens.
-
-Thanks.
+Regards,
+Uli
 
 -- 
-tejun
+
+------- ROAD ...the handyPC Company - - -  ) ) )
+
+Uli Luckas
+Software Development
+
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing directors: Hans-Peter Constien, Hubertus von Streit
