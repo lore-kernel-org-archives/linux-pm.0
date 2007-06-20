@@ -1,55 +1,63 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: RE: Re: Power Mangement Interfaces
-Date: Tue, 19 Jun 2007 14:41:14 -0500
-Message-ID: <3B6D69C3A9EBCA4BA5DA60D913027429013872D0@dlee13.ent.ti.com>
-References: <20070330235759.GC4252@cosmic.amd.com><200703312001.55231.david-b@pacbell.net><20070401165601.GA13389@cosmic.amd.com><200704011728.10966.david-b@pacbell.net>
-	<20070619170048.GA342@dmt.media.mit.edu>
+From: David Chinner <dgc@sgi.com>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+Date: Wed, 20 Jun 2007 10:18:50 +1000
+Message-ID: <20070620001850.GV86004887@sgi.com>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20070619170048.GA342@dmt.media.mit.edu>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcelo Tosatti <marcelo@kvack.org>, David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-raid-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4677A0C7.4000306@dgreaves.com>
+Sender: linux-raid-owner@vger.kernel.org
+To: David Greaves <david@dgreaves.com>
+Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-> As you know we want user configuration of enabled wakeup events (unlike
-> embedded platforms where this is hardcoded). It seems that the current
-> interface available for that is /sys/devices/../power/wakeup hook (when
-> !ACPI).
+On Tue, Jun 19, 2007 at 10:24:23AM +0100, David Greaves wrote:
+> David Greaves wrote:
+> so I cd'ed out of /scratch and umounted.
 > 
-> However there are several wakeup capable devices in OLPC which do not
-> have drivers, thus no platform devices:
+> I then tried the xfs_check.
 > 
-> - power button
-> - lid
+> haze:~# xfs_check /dev/video_vg/video_lv
+> ERROR: The filesystem has valuable metadata changes in a log which needs to
+> be replayed.  Mount the filesystem to replay the log, and unmount it before
+> re-running xfs_check.  If you are unable to mount the filesystem, then use
+> the xfs_repair -L option to destroy the log and attempt a repair.
+> Note that destroying the log may cause corruption -- please attempt a mount
+> of the filesystem before doing this.
+> haze:~# mount /scratch/
+> haze:~# umount /scratch/
+> haze:~# xfs_check /dev/video_vg/video_lv
 > 
-> It seems that creating platform devices for these two just for the
-> purpose of a having an interface for enabling wakeup events is overkill.
-> 
-> Given that, we probably want something similar to what was initially
-> described in http://wiki.laptop.org/go/Power_Management_Interface ?
-> 
-> The downside of doing that is a non-unified interface: platform
-> devices via /sys/devices/../power/wakeup and otherwise
-> /sys/whatever/wakeup/source?
- 
-Perhaps it is over kill, but is it really very expensive for handful of devices?  I am curious as to others experiences here.
+> Message from syslogd@haze at Tue Jun 19 08:47:30 2007 ...
+> haze kernel: Bad page state in process 'xfs_db'
 
-In hacks for embedded in the past I've sprinkled some extra device/bus registrations around to provide a common way to enable wake ups and idle states.  I don't know that it was the best way to do it, but it could be made to work.
+I think we can safely say that your system is hosed at this point ;)
 
-A dev structure is a handy thing to have around and provides symmetry.  Having a sysfs entry provides for an easy way to set and test from user space.  You can always export the function in the kernel also to get a secondary path to the function.  All that seems nicer than adding ioctrls and the like per driver.
+> ugh. Try again
+> haze:~# xfs_check /dev/video_vg/video_lv
+> haze:~#
 
-Regards,
-Richard W.
+zero output means no on-disk corruption was found. Everything is
+consistent on disk, so that seems to indicate something in memory has been
+crispy fried by the suspend/resume....
+
+> Dave, I ran xfs_check -v... but I got bored when it reached 122M of bz2 
+> compressed output with no sign of stopping... still got it if it's any 
+> use...
+
+No, not useful. It's a log of every operation it does and so is really
+only useful for debugging xfs-check problems ;)
+
+> I then rebooted and ran a repair which didn't show any damage.
+
+Not surprising as your first check showed no damage.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
