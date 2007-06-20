@@ -2,7 +2,7 @@ From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: [RFD] How to tell ACPI drivers what the target sleep
 	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
 Date: Wed, 20 Jun 2007 13:32:24 +0200
-Message-ID: <200706201332.25486.rjw__14695.5722746954$1182338797$gmane$org@sisk.pl>
+Message-ID: <200706201332.25486.rjw__31039.6330933601$1182347966$gmane$org@sisk.pl>
 References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
 	<200706191352.16913.rjw@sisk.pl>
 	<1182320280.30540.4.camel@sli10-conroe.sh.intel.com>
