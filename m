@@ -1,63 +1,93 @@
-From: David Chinner <dgc@sgi.com>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-Date: Wed, 20 Jun 2007 10:18:50 +1000
-Message-ID: <20070620001850.GV86004887@sgi.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
+	resumes after STR
+Date: Wed, 20 Jun 2007 09:52:39 +0800
+Message-ID: <1182304359.5411.122.camel__12518.6714380563$1182304331$gmane$org@localhost.localdomain>
+References: <20070518071523.GA3195@inferi.kami.home>
+	<20070619093033.GA3507@inferi.kami.home>
+	<1182246940.5411.116.camel@localhost.localdomain>
+	<200706191326.10320.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-raid-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4677A0C7.4000306@dgreaves.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: David Greaves <david@dgreaves.com>
-Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706191326.10320.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <dbrownell@users.sourceforge.net>, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Mattia Dongili <malattia@linux.it>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 10:24:23AM +0100, David Greaves wrote:
-> David Greaves wrote:
-> so I cd'ed out of /scratch and umounted.
+On Tue, 2007-06-19 at 13:26 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, 19 June 2007 11:55, Zhang Rui wrote:
+> > On Tue, 2007-06-19 at 18:30 +0900, Mattia Dongili wrote:
+> > > On Tue, Jun 19, 2007 at 04:57:55PM +0800, Zhang Rui wrote:
+> > > > On Sun, 2007-05-20 at 15:14 +0900, Mattia Dongili wrote:
+> > > > > On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
+> > > > > > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
+> > > > > > 
+> > > > > > > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
+> > > > > > > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
+> > > > > > > > 
+> > > > > > > > > Hello,
+> > > > > > > > > 
+> > > > > > > > > After finally catching fw-{ohci,core} to be problematic during resume,
+> > > > > > > > > I'm now experiencing an immediate resume after suspending.
+> > > > > > > > > 
+> > > > > > > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
+> > > > > > > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
+> > > > > > > > > 2.6.21-rc6-mm* after the cpuidle fixes).
+> > > > > > > > > 
+> > > > > > > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
+> > > > > > > > > and a str cycle with PM_DEBUG=y:
+> > > > > > > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
+> > > > > > > ...
+> > > > > > > > > Any idea where to start from? (bisecting is ok, but it'll take some
+> > > > > > > > > time...)
+> > > > > > > > 
+> > > > > > > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
+> > > > > > > 
+> > > > > > > ok, git-acpi.patch is not the bad boy :)
+> > > > > 
+> > > > > but very very close:
+> > > > > acpi-driver-model-flags-and-platform_enable_wake.patch
+> > > > > 
+> > > > Hi, Mattia,
+> > > > 
+> > > > I tested this patch on several platforms but can not reproduce the bug.
+> > > > Could you please help me do a simple test please?
+> > > > 
+> > > > Any kernel release later than 2.6.22-rc1 is ok. You don't need to apply 
+> > > > acpi-driver-model-flags-and-platform_enable_wake.patch.
+> > > > 
+> > > > Try to enable the wakeup GPE for all the USB devices first.
+> > > > e.g. "#echo USB1 >/proc/acpi/wakeup" will enable GPE for USB1.
+> > > > USB1      S3     disabled  pci:0000:00:1d.0
+> > > > USB2      S3     disabled  pci:0000:00:1d.1
+> > > > USB3      S3     disabled  pci:0000:00:1d.2
+> > > > USB4      S3     disabled  pci:0000:00:1d.3
+> > > > USB7      S3     disabled  pci:0000:00:1d.7
+> > > > 
+> > > > Try STR and check if it resumes immediately after suspend.
+> > > > I think the same problem will happen without this patch.
+> > > 
+> > > ok, building right now.
+> > > Anyway, I don't remember the details but ehci and uhci were already
+> > > spotted as being part of the problem. See the rest of the thread
+> > > starting here http://lkml.org/lkml/2007/5/20/223
 > 
-> I then tried the xfs_check.
+> Slightly off-topic, but I have a test box that resumes immediately after an STR
+> is ehci_hcd is loaded and suspends correctly otherwise (with an Intel chipset).
 > 
-> haze:~# xfs_check /dev/video_vg/video_lv
-> ERROR: The filesystem has valuable metadata changes in a log which needs to
-> be replayed.  Mount the filesystem to replay the log, and unmount it before
-> re-running xfs_check.  If you are unable to mount the filesystem, then use
-> the xfs_repair -L option to destroy the log and attempt a repair.
-> Note that destroying the log may cause corruption -- please attempt a mount
-> of the filesystem before doing this.
-> haze:~# mount /scratch/
-> haze:~# umount /scratch/
-> haze:~# xfs_check /dev/video_vg/video_lv
-> 
-> Message from syslogd@haze at Tue Jun 19 08:47:30 2007 ...
-> haze kernel: Bad page state in process 'xfs_db'
+Did you manually override /proc/acpi/wakeup?
+Attaching the content of /proc/acpi/wakeup may be helpful. :)
 
-I think we can safely say that your system is hosed at this point ;)
-
-> ugh. Try again
-> haze:~# xfs_check /dev/video_vg/video_lv
-> haze:~#
-
-zero output means no on-disk corruption was found. Everything is
-consistent on disk, so that seems to indicate something in memory has been
-crispy fried by the suspend/resume....
-
-> Dave, I ran xfs_check -v... but I got bored when it reached 122M of bz2 
-> compressed output with no sign of stopping... still got it if it's any 
-> use...
-
-No, not useful. It's a log of every operation it does and so is really
-only useful for debugging xfs-check problems ;)
-
-> I then rebooted and ran a repair which didn't show any damage.
-
-Not surprising as your first check showed no damage.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Thanks,
+Rui
