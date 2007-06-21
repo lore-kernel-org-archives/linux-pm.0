@@ -1,13 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [RFD] How to tell ACPI drivers what the target
-	sleep state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
-Date: Thu, 21 Jun 2007 11:56:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706211148210.3547-100000@iolanthe.rowland.org>
-References: <200706210004.03544.david-b@pacbell.net>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
+	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 09:35:58 -0700
+Message-ID: <200706210935.59004.david-b__41562.8837225542$1182443773$gmane$org@pacbell.net>
+References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
+	<20070621130312.GB18392@elf.ucw.cz>
+	<200706211646.06594.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706210004.03544.david-b@pacbell.net>
+In-Reply-To: <200706211646.06594.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,34 +22,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 21 Jun 2007, David Brownell wrote:
+On Thursday 21 June 2007, Rafael J. Wysocki wrote:
 
-> If drivers actually need a handle on that state, that'd be a fair
-> approach; make it an opaque type though, platform-specific.
-> 
-> But actually I don't see much point to having such a struct.  What
-> matters is the attributes of the target state (what resources will
-> be present, especially), and that rarely needs to be indicated by
-> any kind of cookie.
+> So, can we make pm_message_t consist only of the target state?
 
-Your meaning isn't clear.  You just said there isn't much point in 
-having a struct, and now you say that there rarely needs to be a 
-cookie.  Did you mean to say that a cookie can do a better job of 
-encapsulating the information than a struct can?
-
-System suspend is different from runtime suspend in that the 
-requirements are passed from the top down: "The whole system is going 
-to enter this state, so prepare yourself".  Not "All your children are 
-in low-power states, so feel free to reduce your own power level".  A 
-driver can't rely on purely local information to know what will happen.
-
-If a driver wants to find out whether some resource will be available
-in the target system state, the only way is to ask the resource's
-provider.  Hence the driver needs to have some cookie (representing the
-target state) that it can pass to the provider.
-
-Alan Stern
+Let's just finally get rid of pm_message_t.
