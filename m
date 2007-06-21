@@ -1,10 +1,10 @@
-From: LOTTERY BOARD <handyrh@bellsouth.net>
-Subject: Certified Winner
-Date: Wed, 20 Jun 2007 22:33:58 -0500
-Message-ID: <20070621033358.EXXK26350.ibm67aec.bellsouth.net@mail.bellsouth.net>
+From: Kathleen Andersen <fqyo@net.com>
+Subject: As a nation, we're going bankrupt.
+Date: Thu, 21 Jun 2007 08:34:11 +0200
+Message-ID: <467A1BE3.1070601@net.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -15,51 +15,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: resultonlinegames@info.co.uk
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-THE LOTTERY DEPARTMENT UK.
-22 Garden Close,PE9 2YP, London
-REF N0:UK NL-L/200-26937
-BATCH N0:14/0017/1PD
+Frenzy Pushes SREA Up 46.6%
 
- THE BRITISH OFFICIAL PRIZE   NOTIFICATION  =20
+Score One Inc. (SREA)
+$0.44 UP 46.6%
 
-We are pleased to inform you of the result of the just concluded annual=20
-final draws held on the (18th,June 2007) by THE UK LOTTERY DEPARTMENT =20
-Worldwide Promotions, The selection process was carried out through=20
-random selection in our computerized email,Your email was among the 5=20
-Lucky winners who won 1,000,000.00 each on THE BRITISH LOTTERY=20
-DEPARTMENT UK.
+SREA is in a frenzy as investor buying pushed it Up over 46% by close
+Wed. Up 427% in just over a week. Get all over SREA Thursday!
 
-However the results were released on (20th,June 2007) And your email =20
-was attached to ticket number (7PWYZ2007) and BATCH N0 (14/0017/1PD) In=20
-other to claim your 1,000,000.00 prize winning,which has been deposited=20
-in a designated bank. However,you will have to fill the form below and=20
-send it to the Promotion manager of THE UK LOTTERY DEPARTMENT for=20
-verification and then you will be directed to the bank where a cheque=20
-of 1,000,000.00 has already  been deposited in your favour.
+"Statins are sometimes perceived by their recipients as a credit card to
+eat indiscriminately," said Dr. They agreed to co-operate with the
+prosecution under a novel "witness accomplice" programme, the first such
+strategy in a large-scale fraud investigation.
 
-NAME:.......................
-AGE:...........................
-SEX:.male.................
-ADDRESS:................
-EMAIL:........................
-PHONE:.....................
-OCCUPATION:.........
-COMPANY:................
-COUNTRY:................
- =20
-(CONTACT PROMOTION MANAGER)
-Name: Thompson Fraser.
-Phone # :+447045702389=20
-FAX # : +447075055658
-E MAIL: fiduciarylotterydept@yahoo.com.hk
+According to one expert on liver disease quoted by Critser, "In the
+United States drug-induced liver disease is the most common cause of
+acute liver failure. Ryan believes children with severe depression can
+benefit from antidepressants, but children using these powerful drugs
+need careful monitoring.
 
-Accept my hearty congratulations once again!=20
+Build up the croquet mallet handles with padding to make them easier to
+grip.
 
-Yours faithfully,
-Mrs. Stella Ellis.
-Sweepstakes International Program.
-Copyright =A9 1994-2007 The UK National Lottery Inc.All rights reserved.=20
-Terms  of Service - Guideline.
+Don't wait until the last minute to pack for a trip. Holding hands with
+wife Mary, Humeston limped into the courthouse Wednesday morning,
+favoring the damaged knee that earned him a Purple Heart and later
+prompted his doctor to recommend Vioxx.
+
+Take an extra watch with you that is set to your home time, so that you
+can take your pills at the appropriate time.
+
+Of course, all these drug companies say they need the money to "find a
+cure for cancer. This is one of the reasons jobs are increasingly
+shifting overseas. Spigelman's paper, published in the Annals of the
+Royal College of Surgeons, says the time has come to re-evaluate using
+antibiotics and scrubbing hands and wounds with antiseptic soaps.
+
+It's all that added sugar and white flour, and all those refined
+carbohydrates. See more articles and news on statinsTrack news on
+statins at StatinWatch.
+
+We've got hospitals serving hamburgers and fries.
+Build up the croquet mallet handles with padding to make them easier to
+grip. They're all saying, "Hey, don't mention the foods.
+
+At times, you may have to stay longer to get your job done. Use tongs
+instead of a fork to turn food, such as chicken breasts, during cooking
+or grilling.
+
+See more articles and news on olive oilTrack news on olive oil at
+GoodFatsNews. It's all a show; it's just theater designed to keep people
+occupied so that nobody has to talk about the real issues.
+You can only solve the problem by making people healthier. These cheeses
+come in resealable plastic bags, and will save your hands from strenuous
+grating. Hiking can be an enjoyable and leisurely form of exercise.
+
+It's the only approach that makes any sense. Divide into twos and let
+your partner handle cards, dice, play money or game pieces while you
+help with strategy. Try opening jars with a rubber jar opener. It's all
+a show; it's just theater designed to keep people occupied so that
+nobody has to talk about the real issues. "We are very pleased with the
+verdict," one of the lawyers for the company said in a press conference
+following the verdict.
+
+The drugs you buy in the United States are perfectly safe, but if you
+buy the exact same chemica Gee, what would people do for jobs if so many
+people weren't so sick? It's the only approach that makes any sense.
+
+This puts you both at the same height and makes dressing easier.
+
+The low sides make it easier to turn food with a spatula, or to slide it
+off the griddle and onto a platter.
+
+Get out of the car, stretch and have a snack. Former New England Journal
+of Medicine Editor Marcia.
+
+Store these meals in paper sacks in the refrigerator if the items are
+perishable.
