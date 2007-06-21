@@ -1,11 +1,15 @@
-From: Kathleen Andersen <fqyo@net.com>
-Subject: As a nation, we're going bankrupt.
-Date: Thu, 21 Jun 2007 08:34:11 +0200
-Message-ID: <467A1BE3.1070601@net.com>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
+	resumes after STR
+Date: Thu, 21 Jun 2007 15:42:15 +0900
+Message-ID: <20070621064215.GB9050__43405.6929233067$1182408195$gmane$org@inferi.kami.home>
+References: <20070620144532.GA3761@inferi.kami.home>
+	<Pine.LNX.4.44L0.0706201220150.3518-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0706201220150.3518-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,83 +19,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-acpi@vger.kernel.org, David Brownell <dbrownell@users.sourceforge.net>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Frenzy Pushes SREA Up 46.6%
+On Wed, Jun 20, 2007 at 12:33:04PM -0400, Alan Stern wrote:
+> On Wed, 20 Jun 2007, Mattia Dongili wrote:
+> 
+> > > Just as with Raphael, I suggest you build a kernel with 
+> > > CONFIG_USB_DEBUG turned on and then post the dmesg log showing the USB 
+> > > debugging messages during the suspend and immediate resume.  To reduce 
+> > > the amount of clutter you might want to rmmod uhci-hcd before starting 
+> > > the test.
+> > 
+> > here we go:
+> > http://www.linux.it/~malattia/logs/dmesg-suspend-ehci-debug-log
+> > 
+> > and by the way:
+> > 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
+> > 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 02)
+> > 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 02)
+> > 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 02)
+> > 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
+> > 
+> > with ehci only:
+> > Bus 005 Device 007: ID 054c:0281 Sony Corp. 
+> > Bus 005 Device 004: ID 05ca:1830 Ricoh Co., Ltd 
+> > Bus 005 Device 001: ID 0000:0000  
+> 
+> The log shows suspicious behavior on the part of the Sony UMH-U09
+> device, the first one in your ehci-only list above.  When it was
+> suspended it apparently disconnected itself from the USB bus, thereby
+> triggering a wakeup signal.  If at all possible, try unplugging the USB
+> cable to that device and then see what happens when you suspend.
 
-Score One Inc. (SREA)
-$0.44 UP 46.6%
+wow, spotted!
 
-SREA is in a frenzy as investor buying pushed it Up over 46% by close
-Wed. Up 427% in just over a week. Get all over SREA Thursday!
+This device is an express card (SD/MMC reader). Do you have any
+suggestion to make suspend work without any workarounds?
 
-"Statins are sometimes perceived by their recipients as a credit card to
-eat indiscriminately," said Dr. They agreed to co-operate with the
-prosecution under a novel "witness accomplice" programme, the first such
-strategy in a large-scale fraud investigation.
+I mean, all of this started by enabling wakeup on the ehci controller
+USB1	  S3	 disabled  pci:0000:00:1d.0
+USB2	  S3	 disabled  pci:0000:00:1d.1
+USB3	  S3	 disabled  pci:0000:00:1d.2
+USB4	  S3	 disabled  pci:0000:00:1d.3
+USB7	  S3	 enabled   pci:0000:00:1d.7
 
-According to one expert on liver disease quoted by Critser, "In the
-United States drug-induced liver disease is the most common cause of
-acute liver failure. Ryan believes children with severe depression can
-benefit from antidepressants, but children using these powerful drugs
-need careful monitoring.
+and this was triggered when trying to understand if enabling wakeup by
+default on PCI devices was good or not (and the patch itself was
+responsible or not for problems).
+So, from my POV it's either not good or there has to be some way of
+dealing with disconnecting devices on suspend.
 
-Build up the croquet mallet handles with padding to make them easier to
-grip.
+Just to simplify, in this situation, if I had an usb mouse attached to
+this usb controller and removed the mouse while suspended, would the
+laptop wakeup?
+If so that's not what I most probably want. :)
 
-Don't wait until the last minute to pack for a trip. Holding hands with
-wife Mary, Humeston limped into the courthouse Wednesday morning,
-favoring the damaged knee that earned him a Purple Heart and later
-prompted his doctor to recommend Vioxx.
+> You also ought to be able to prevent this immediate resume by disabling
+> wakeup on the EHCI controller.  For example:
+> 
+> 	echo disable >/sys/bus/usb/devices/usb5/power/wakeup
+> 	echo disable >/sys/bus/usb/devices/usb5/../power/wakeup
 
-Take an extra watch with you that is set to your home time, so that you
-can take your pills at the appropriate time.
+that doesn't seem to work very well (on -rc5 at least):
+$ echo disable > /sys/bus/usb/devices/usb2/power/wakeup
+echo: write error: invalid argument
 
-Of course, all these drug companies say they need the money to "find a
-cure for cancer. This is one of the reasons jobs are increasingly
-shifting overseas. Spigelman's paper, published in the Annals of the
-Royal College of Surgeons, says the time has come to re-evaluate using
-antibiotics and scrubbing hands and wounds with antiseptic soaps.
+The only value that seems to be accepted is 0 but reading the value
+gives always "enabled".
 
-It's all that added sugar and white flour, and all those refined
-carbohydrates. See more articles and news on statinsTrack news on
-statins at StatinWatch.
-
-We've got hospitals serving hamburgers and fries.
-Build up the croquet mallet handles with padding to make them easier to
-grip. They're all saying, "Hey, don't mention the foods.
-
-At times, you may have to stay longer to get your job done. Use tongs
-instead of a fork to turn food, such as chicken breasts, during cooking
-or grilling.
-
-See more articles and news on olive oilTrack news on olive oil at
-GoodFatsNews. It's all a show; it's just theater designed to keep people
-occupied so that nobody has to talk about the real issues.
-You can only solve the problem by making people healthier. These cheeses
-come in resealable plastic bags, and will save your hands from strenuous
-grating. Hiking can be an enjoyable and leisurely form of exercise.
-
-It's the only approach that makes any sense. Divide into twos and let
-your partner handle cards, dice, play money or game pieces while you
-help with strategy. Try opening jars with a rubber jar opener. It's all
-a show; it's just theater designed to keep people occupied so that
-nobody has to talk about the real issues. "We are very pleased with the
-verdict," one of the lawyers for the company said in a press conference
-following the verdict.
-
-The drugs you buy in the United States are perfectly safe, but if you
-buy the exact same chemica Gee, what would people do for jobs if so many
-people weren't so sick? It's the only approach that makes any sense.
-
-This puts you both at the same height and makes dressing easier.
-
-The low sides make it easier to turn food with a spatula, or to slide it
-off the griddle and onto a platter.
-
-Get out of the car, stretch and have a snack. Former New England Journal
-of Medicine Editor Marcia.
-
-Store these meals in paper sacks in the refrigerator if the items are
-perishable.
+Thanks
+-- 
+mattia
+:wq!
