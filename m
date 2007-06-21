@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Thu, 21 Jun 2007 11:45:36 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706211132470.3547-100000__40961.1466610388$1182440783$gmane$org@iolanthe.rowland.org>
-References: <20070621064215.GB9050@inferi.kami.home>
+Subject: Re: Re: [RFD] How to tell ACPI drivers what the target
+	sleep state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 11:56:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706211148210.3547-100000@iolanthe.rowland.org>
+References: <200706210004.03544.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070621064215.GB9050@inferi.kami.home>
+In-Reply-To: <200706210004.03544.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,73 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mattia Dongili <malattia@linux.it>
-Cc: linux-acpi@vger.kernel.org, David Brownell <dbrownell@users.sourceforge.net>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 21 Jun 2007, Mattia Dongili wrote:
+On Thu, 21 Jun 2007, David Brownell wrote:
 
-> > The log shows suspicious behavior on the part of the Sony UMH-U09
-> > device, the first one in your ehci-only list above.  When it was
-> > suspended it apparently disconnected itself from the USB bus, thereby
-> > triggering a wakeup signal.  If at all possible, try unplugging the USB
-> > cable to that device and then see what happens when you suspend.
+> If drivers actually need a handle on that state, that'd be a fair
+> approach; make it an opaque type though, platform-specific.
 > 
-> wow, spotted!
-> 
-> This device is an express card (SD/MMC reader). Do you have any
-> suggestion to make suspend work without any workarounds?
+> But actually I don't see much point to having such a struct.  What
+> matters is the attributes of the target state (what resources will
+> be present, especially), and that rarely needs to be indicated by
+> any kind of cookie.
 
-You mean, do I have any suggestion about how to make the card reader 
-behave properly?  No.  That needs more than a software change...  :-)
+Your meaning isn't clear.  You just said there isn't much point in 
+having a struct, and now you say that there rarely needs to be a 
+cookie.  Did you mean to say that a cookie can do a better job of 
+encapsulating the information than a struct can?
 
-> I mean, all of this started by enabling wakeup on the ehci controller
-> USB1	  S3	 disabled  pci:0000:00:1d.0
-> USB2	  S3	 disabled  pci:0000:00:1d.1
-> USB3	  S3	 disabled  pci:0000:00:1d.2
-> USB4	  S3	 disabled  pci:0000:00:1d.3
-> USB7	  S3	 enabled   pci:0000:00:1d.7
-> 
-> and this was triggered when trying to understand if enabling wakeup by
-> default on PCI devices was good or not (and the patch itself was
-> responsible or not for problems).
-> So, from my POV it's either not good or there has to be some way of
-> dealing with disconnecting devices on suspend.
+System suspend is different from runtime suspend in that the 
+requirements are passed from the top down: "The whole system is going 
+to enter this state, so prepare yourself".  Not "All your children are 
+in low-power states, so feel free to reduce your own power level".  A 
+driver can't rely on purely local information to know what will happen.
 
-There _is_ a way: Disable wakeup on that USB controller.
-
-> Just to simplify, in this situation, if I had an usb mouse attached to
-> this usb controller and removed the mouse while suspended, would the
-> laptop wakeup?
-
-If the USB controller was enabled for wakeup and was working correctly,
-it would wake up the laptop.  USB wakeup events are defined as: new
-connection, disconnection, overcurrent, plus any wakeup requests
-received from devices on the USB bus.
-
-> If so that's not what I most probably want. :)
-
-Maybe we should change the kernel so that the default wakeup setting 
-for USB controllers is disabled.  Then people would have to enable 
-wakeup explicitly if they wanted to be able to start up their system by 
-typing on a USB keyboard, for instance.
-
-> > You also ought to be able to prevent this immediate resume by disabling
-> > wakeup on the EHCI controller.  For example:
-> > 
-> > 	echo disable >/sys/bus/usb/devices/usb5/power/wakeup
-> > 	echo disable >/sys/bus/usb/devices/usb5/../power/wakeup
-> 
-> that doesn't seem to work very well (on -rc5 at least):
-> $ echo disable > /sys/bus/usb/devices/usb2/power/wakeup
-> echo: write error: invalid argument
-> 
-> The only value that seems to be accepted is 0 but reading the value
-> gives always "enabled".
-
-Whoops, yes, it should be "disabled" instead of "disable".  And of 
-course you have to use the correct USB bus number in the path -- I 
-wrote usb5 because that was the bus number of the EHCI controller in 
-your log.
+If a driver wants to find out whether some resource will be available
+in the target system state, the only way is to ask the resource's
+provider.  Hence the driver needs to have some cookie (representing the
+target state) that it can pass to the provider.
 
 Alan Stern
