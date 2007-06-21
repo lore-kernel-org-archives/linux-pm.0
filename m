@@ -1,12 +1,18 @@
-From: UK National Lottery <notice_board02@bellsouth.net>
-Subject: REFERENCE NUMBER UK/9420X2/68
-Date: Thu, 21 Jun 2007 9:43:35 -0400
-Message-ID: <20070621134335.XIAO27632.ibm58aec.bellsouth.net@mail.bellsouth.net>
-Reply-To: ukclaimoffice_uknationallottery@yahoo.co.uk
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
+	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 16:46:05 +0200
+Message-ID: <200706211646.06594.rjw__37196.6073908426$1182436809$gmane$org@sisk.pl>
+References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
+	<200706211442.41140.rjw@sisk.pl>
+	<20070621130312.GB18392@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070621130312.GB18392@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,32 +22,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: info@uknationallotteryprogramme.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-I am pleased to inform you of the final announcement of the UK National L=
-ottery Online thunderball Programme with draw numbers (#628) 09, 14,  24,=
- 25 ,34, 10 held on 7th of June,2007, which subsequently won you, the lot=
-tery of the Jackpot Prize of the amount of =A3753,437.00 British=20
-pounds sterlings.
+On Thursday, 21 June 2007 15:03, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > Not. Could pm_message_t have a member indicating the suspend state?
+> > > > 
+> > > > Well, I thought about that, but I did't know what people on linux-pm would
+> > > > think about that.
+> > > 
+> > > Let's get rid of pm_message_t entirely.  Didn't we already discuss
+> > > how the main reasons for it will vanish if drivers get new PM methods?
+> > > 
+> > >  
+> > > > Alternatively, we could introduce a pm_target() global PM operation that will
+> > > > set the target sleep state for the entire system.
+> > > 
+> > > I hope you mean "get the target state"!!
+> > > 
+> > > If drivers actually need a handle on that state, that'd be a fair
+> > > approach; make it an opaque type though, platform-specific.
+> > > 
+> > > But actually I don't see much point to having such a struct.  What
+> > > matters is the attributes of the target state (what resources will
+> > > be present, especially), and that rarely needs to be indicated by
+> > > any kind of cookie.  Consider the "current" task ... it's implicit,
+> > > always present (except in IRQ contexts), and hardly ever accessed
+> > > despite being more fundamental than "target PM state".
+> > 
+> > The issue at hand is that some device drivers may need to know what the
+> > target sleep state of the system will be when their .suspend() routines are
+> > being executed.  Currently, there's no means of passing that information to the
+> > drivers and my question is how to do this.
+> > 
+> > IMO it can be done in two different ways:
+> > 1) via a .suspend() argument
+> > 2) via a global variable that the drivers can read.
+> 
+> Just do 1). Global variables are ugly, and we already have space in
+> pm_message_t. 
 
-Please contact: MRS JANELL CHARLTON(fiduciary agent)
-Email:ukclaimoffice_uknationallottery@yahoo.co.uk
-provide details for filing of claims.
-1.Name:=20
-2.Address=20
-3.Marital Status:=20
-4.Occupation:=20
-5.Age:=20
-6.Sex:=20
-7.Nationality:=20
-8.Country Of Residence:=20
-9.Telephone Number:=20
-10.Fax Number:=20
-11.Email Address:=20
-12.Draw Number above:=20
+Well, this is what Len voted for, I think.  David is against it.
 
-Yours faithfully=20
-Sir Steven Smith
-online coordinator
+I also think that the cleanest way would be to pass that as an argument
+to .suspend(), but currently pm_message_t. is passed by value and if we
+made it a real struct (ie. with more than one field), that would also become
+ugly, IMHO.
+
+So, can we make pm_message_t consist only of the target state?
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
