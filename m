@@ -1,16 +1,17 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: [RFD] How to tell ACPI drivers what the target
-	sleep state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
-Date: Thu, 21 Jun 2007 13:32:22 -0700
-Message-ID: <200706211332.23466.david-b__18599.7120840058$1182458074$gmane$org@pacbell.net>
-References: <Pine.LNX.4.44L0.0706211424170.14859-100000@iolanthe.rowland.org>
-	<200706212219.52699.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
+	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 22:41:31 +0200
+Message-ID: <200706212241.32704.rjw__36855.7133399465$1182458233$gmane$org@sisk.pl>
+References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
+	<200706212204.36999.rjw@sisk.pl>
+	<200706211322.06557.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706212219.52699.rjw@sisk.pl>
+In-Reply-To: <200706211322.06557.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,41 +22,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 21 June 2007, Rafael J. Wysocki wrote:
-
-> platform->lowest_power_state_the_device_can_be_in(dev, wakeup)
+On Thursday, 21 June 2007 22:22, David Brownell wrote:
+> On Thursday 21 June 2007, Rafael J. Wysocki wrote:
+> > On Thursday, 21 June 2007 16:48, David Brownell wrote:
 > 
-> and
+> > > They really don't care what the state is.  The $SUBJECT patch isn't
+> > > driver code ... it's for platform hooks that expose attributes to
+> > > the drivers.  Specifically, it's ACPI code, talking to drivers that
+> > > must run on non-ACPI systems.  Any driver that thinks it needs to
+> > > understand anything about ACPI states is sadly broken.
+> > 
+> > But finally it has to place the device into a specific state and that state
+> > needs to be determined somehow. 
 > 
-> platform->highest_power_state_the_device_can_be_in(dev)
+> I suppose I'm still thinking that the approach in my original
+> patch works Just Fine.  Layering is kind of like this, going
+> from top to bottom (and omitting the go-to-pci-hardware stack,
+> and the initial ACPI pm hook before suspension starts):
+
+We're missing that hook right now. ;-)
+
+> 	PM infrastructure ... calling suspend() for everything
 > 
-> where 'wakeup' tells the platform whether we want this device to be able to
-> wake up the system.
+> 	PCI bus support ... translates to PCI-specific typed call
+> 
+> 	PCI driver ... suspend() calling pci_choose_state()
+> 
+> 	ACPI support for PCI ... implementing choose_state()
+> 
+> 	ACPI core code ... remembering ACPI_STATE_Sx, calling AML
+> 
+> That is, ACPI gets invoked at various points, but the driver and
+> core code doesn't need to know ACPI from Rumpelstiltskin.
 
-That won't work well except with ACPI, since few systems centralize
-that knowledge.  Like ACPI does with AML ... but mostly for PCI.
+I agree with that, but we need to add a mechanism to tell the ACPI core
+what it needs to know (ie. the target system sleep state) before we suspend
+devices or while we are suspending them.
 
-Look at your average SOC chip spec and you'll see a lot of information
-that lives most naturally in the device drivers, or sometimes in the
-clock framework.
+Greetings,
+Rafael
 
 
-
-> pm_ops->prepare() is now called after the drivers' .suspend() routines have
-> been executed, so the ACPI core, for example, has no means of learning what
-> the next system state will be until all devices have been suspended.
-
-Well that's a design mistake.  Remember that those suspend() methods
-need to know the target system states, so that they can call the right
-"_SxD" and "_SxW" methods.  There needs to be *SOME* call into the
-platform code that can be used to track "x" for ACPI ... or whatever
-is needed on other platforms.
-
-What is "now" by the way ... something in the MM tree?  Or did that
-sneak in while I wasn't looking?
-
-- Dave
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
