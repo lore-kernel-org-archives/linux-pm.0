@@ -1,111 +1,110 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-Date: Thu, 21 Jun 2007 19:06:29 +0100
-Message-ID: <467ABE25.7060303@dgreaves.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [RFD] How to tell ACPI drivers what the target
+	sleep state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 14:51:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706211424170.14859-100000__8755.85928229175$1182451994$gmane$org@iolanthe.rowland.org>
+References: <200706211102.37724.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <4678DF56.1020903@gmail.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706211102.37724.david-b@pacbell.net>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-been away, back now...
+On Thu, 21 Jun 2007, David Brownell wrote:
 
-Tejun Heo wrote:
-> David Greaves wrote:
->> Tejun Heo wrote:
->>> How reproducible is the problem?  Does the problem go away or occur more
->>> often if you change the drive you write the memory image to?
->> I don't think there should be activity on the sda drive during resume
->> itself.
->>
->> [I broke my / md mirror and am using some of that for swap/resume for now]
->>
->> I did change the swap/resume device to sdd2 (different controller,
->> onboard sata_via) and there was no EH during resume. The system seemed
->> OK, wrote a few Gb of video and did a kernel compile.
->> I repeated this test, no EH during resume, no problems.
->> I even ran xfs_fsr, the defragment utility, to stress the fs.
->>
->> I retain this configuration and try again tonight but it looks like
->> there _may_ be a link between EH during resume and my problems...
-Having retained this new configuration for a couple of days now I haven't had 
-any problems.
-This is good but not really ideal since / isn't mirrored anymore :(
+> On Thursday 21 June 2007, Alan Stern wrote:
+> > On Thu, 21 Jun 2007, David Brownell wrote:
+> >=20
+> > > > If a driver wants to find out whether some resource will be avail=
+able
+> > > > in the target system state, the only way is to ask the resource's
+> > > > provider.  Hence the driver needs to have some cookie (representi=
+ng the
+> > > > target state) that it can pass to the provider.
+> > >=20
+> > > Not true.  The provider knows the target state.  Just ask it whethe=
+r
+> > > the resource will be available.  It doesn't need a cookie to distin=
+guish
+> > > between multiple target states, since there can be only one.
+> >=20
+> > _How_ does the provider know what the next target state is?
+>=20
+> That's an interface between the provider and the platform's PM code.
+> Remember those two patches?
+>=20
+> =A0 http://lkml.org/lkml/2007/3/22/241
+> =A0 http://lkml.org/lkml/2007/3/22/242
+>=20
+> The second one does that by coupling one platform's pm_ops to its
+> clock framework using an internal interface.  That will be typical
+> for any SOC system, where the difference between states is mostly
+> just which oscillators/PLLs are active ... pm_ops being essentially
+> tasked with turning some stuff off.
 
->> Of course, I don't understand why it *should* EH during resume, it
->> doesn't during boot or normal operation...
-> 
-> EH occurs during boot, suspend and resume all the time.  It just runs in
-> quiet mode to avoid disturbing the users too much.  In your case, EH is
-> kicking in due to actual exception conditions so it's being verbose to
-> give clue about what's going on.
-I was trying to say that I don't actually see any errors being handled in normal 
-operation.
-I'm not sure if you are saying that these PHY RDY events are normally handled 
-quietly (which would explain it).
+Now we're getting back to the question which started this thread. =20
+That patch takes care of one platform, but now consider an ACPI system. =20
+How should the ACPI core learn what the next target system state will
+be?  And once it possess that knowledge, what's the best way for it to
+tell various subsystems which device states/functions will be
+supported?
 
+> Of course, I believe we need to move away from "suspend_state_t"
+> being effectively just "standby" or "STR" (or "ON") so that more
+> of the hardware capabilities can be exposed.   Systems that have,
+> say, seven different hardware states can't fit into Linux today.
 
-> It's really weird tho.  The PHY RDY status changed events are coming
-> from the device which is NOT used while resuming
-yes - but the erroring device which is not being used is on the same controller 
-as the device with the in-use resume partition.
+I agree that the list of system states should be configurable and=20
+perhaps even adjustable at runtime.  However this is somewhat OT.
 
-> and it's before any
-> actual PM events are triggered.  Your kernel just boots, swsusp realizes
-> it's resuming and tries to read memory image from the swap device.
-yes
+> (Related, I think that target *run* states are under-appreciated.
+> That's the general runtime PM issue.  Interfaces should work for
+> run-state transitions as well as sleep-state ones...)
 
-> While reading, the disk controller raises consecutive PHY readiness
-> changed interrupts.  EH recovers them alright but the end result seems
-> to indicate that the loaded image is corrupt.
-Yes, that's consistent with what I'm seeing.
+Perhaps something like this: Resource providers have an API whereby
+drivers can find out what resources either are currently available or
+will be available in the next system state (a little awkward to specify
+which is needed).  Then drivers decide on a new device state based on
+the type of change requested and the available resources, and notify
+the providers via a second API about any change in resource usage.
 
-When I move the swap/resume partition to a different controller (ie when I broke 
-the / mirror and used the freed space) the problem seems to go away.
+> > There could be a global next_pm_system_state() routine.  It would hav=
+e
+> > to return _something_ -- and I think a cookie would be better than a
+> > struct.
+>=20
+> But *should* there be such a routine?  Interpreting it would
+> necessarily be very platform-specific.  Why should anyone care
+> about platform-specific calls ... except people writing the
+> platform-specific code to implement and use those calls?
 
-I am seeing messages in dmesg though:
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ata1.00: configured for UDMA/100
-ata2.00: revalidation failed (errno=-2)
-ata2: failed to recover some devices, retrying in 5 secs
-sd 0:0:0:0: [sda] 390721968 512-byte hardware sectors (200050 MB)
+You forgot one thing.  Yes, the code that makes those calls and uses
+the results would be platform-specific.  But the code that gets called
+would be part of the PM core and hence not platform-specific -- even
+though the values it returns are.
 
-sd 0:0:0:0: resuming
-sd 0:0:0:0: [sda] Starting disk
-ATA: abnormal status 0x7F on port 0x00019807
-ATA: abnormal status 0x7F on port 0x00019007
-ATA: abnormal status 0x7F on port 0x00019007
-ATA: abnormal status 0x7F on port 0x00019807
+Now perhaps I'm beating a dead horse and the existing pm_ops callbacks=20
+already provide the necessary notifications.  If so I'll shut up.
 
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ATA: abnormal status 0xD0 on port 0xf881e0c7
-ata1.00: configured for UDMA/100
-ata2.00: revalidation failed (errno=-2)
-ata2: failed to recover some devices, retrying in 5 secs
+> I still disagree.  Has anyone even proposed an example of a driver
+> caring about "what the target sleep state is"?  Every example we
+> have seen in the past several years is an example where the relevant
+> detail is something *else* ... something which is only loosely
+> associated with that state, in a very platform-specific way.
 
+Granted that the association is loose and platform-specific. =20
+Nevertheless, it is non-zero.
 
-> So, there's no device suspend/resume code involved at all.  The kernel
-> just booted and is trying to read data from the drive.  Please try with
-> only the first drive attached and see what happens.
-That's kinda hard; swap and root are on different drives...
-
-Does it help that although the errors above appear, the system seems OK when I 
-just use the other controller?
-
-I have to be cautious what I do with this machine as it's the wife's active 
-desktop box <grin>.
-
-David
+Alan Stern
