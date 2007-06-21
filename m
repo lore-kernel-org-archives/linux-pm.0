@@ -1,17 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
 	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
-Date: Thu, 21 Jun 2007 00:04:02 -0700
-Message-ID: <200706210004.03544.david-b@pacbell.net>
-References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
-	<1182320280.30540.4.camel@sli10-conroe.sh.intel.com>
-	<200706201332.25486.rjw@sisk.pl>
+Date: Wed, 20 Jun 2007 23:57:49 -0700
+Message-ID: <200706202357.50690.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0706201006190.3311-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706201332.25486.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0706201006190.3311-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,47 +20,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 20 June 2007, Rafael J. Wysocki wrote:
-> On Wednesday, 20 June 2007 08:18, Shaohua Li wrote:
-> > On Tue, 2007-06-19 at 13:52 +0200, Rafael J. Wysocki wrote:
-> > > On Tuesday, 19 June 2007 04:33, Shaohua Li wrote:
-> > > > Based on David's patch
-> > > > http://marc.info/?l=linux-acpi&m=117873972806360&w=2
-> > > > I slightly changed it.
-> > > > 
-> > > > Add a helper routine, which gets the sleep state of a ACPI device.
-> > > 
-> > > Is it going to work with the recent code ordering changes?  I mean,
-> > > acpi_pm_prepare() is now called after device_suspend() (and analogously for
-> > > the hibernation), so the target ACPI state is not known when the drivers'
-> > > .suspend() routines are being called.
->
-> > Not. Could pm_message_t have a member indicating the suspend state?
+On Wednesday 20 June 2007, Alan Stern wrote:
+> On Wed, 20 Jun 2007, Rafael J. Wysocki wrote:
 > 
-> Well, I thought about that, but I did't know what people on linux-pm would
-> think about that.
+> Pardon me for asking what may be a dumb question.  Why does ACPI (or
+> anything else) need to know the target system state in order to decide
+> how a device should be suspended or whether wakeup should be enabled?
 
-Let's get rid of pm_message_t entirely.  Didn't we already discuss
-how the main reasons for it will vanish if drivers get new PM methods?
+Because the things that distinguish different states are
+the particular resources that are available in that state.
 
- 
-> Alternatively, we could introduce a pm_target() global PM operation that will
-> set the target sleep state for the entire system.
+A device that needs resource X to be active (e.g. to wake
+that part of the system) can't stay active in states where
+X is unavailable.  A device that won't issue wakeup events
+can probably enter lower power states.
 
-I hope you mean "get the target state"!!
+I think it'd be pure confusion to care about whether wakeup
+"should" be enabled in this state versus that one.  Enable it
+when it's requested and possible, but otherwise there's nothing
+to be done.  Runtime PM policies will mostly avoid device states
+where wakeup can't work (unless it's disabled for that device),
+but if the system enters a state where it can't, tough!
 
-If drivers actually need a handle on that state, that'd be a fair
-approach; make it an opaque type though, platform-specific.
 
-But actually I don't see much point to having such a struct.  What
-matters is the attributes of the target state (what resources will
-be present, especially), and that rarely needs to be indicated by
-any kind of cookie.  Consider the "current" task ... it's implicit,
-always present (except in IRQ contexts), and hardly ever accessed
-despite being more fundamental than "target PM state".
+One canonical example is portions of the clock tree that
+are available in one state but not another.  My pet example
+being the USB clock, often 48 MHz, not being available in
+deeper sleep states ... e.g.
+
+  http://lkml.org/lkml/2007/3/22/241
+  http://lkml.org/lkml/2007/3/22/242
+
+It's routine for system power states to care about clocks
+like that.  PXA 25x docs are probably where I first ran
+across that issue, but docs for pretty much any SOC will
+talk first about clocks when discussing power management.
+(Current flows when clocks tick ...)
+
+
+Another is power domains.  ACPI talks about those (but not
+clocks!) as board level things ... e.g. turn off this power
+supply on the mainboard.  Newer SOCs must manage these for
+on-chip devices too, since newer manufacturing processes
+(with smaller feature sizes) involve higher leakage current
+(flowing even when clocks don't tick).
 
 - Dave
