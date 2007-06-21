@@ -1,16 +1,17 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Power Mangement Interfaces
-Date: Wed, 20 Jun 2007 18:30:51 -0700
-Message-ID: <200706201830.52277.david-b__35282.7073111714$1182390602$gmane$org@pacbell.net>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200704011728.10966.david-b@pacbell.net>
-	<20070619170048.GA342@dmt.media.mit.edu>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
+	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Wed, 20 Jun 2007 21:51:14 -0400
+Message-ID: <200706202151.15056.lenb__12556.3253103339$1182390727$gmane$org@kernel.org>
+References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
+	<1182320280.30540.4.camel@sli10-conroe.sh.intel.com>
+	<200706201332.25486.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070619170048.GA342@dmt.media.mit.edu>
+In-Reply-To: <200706201332.25486.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,53 +22,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcelo Tosatti <marcelo@kvack.org>
-Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, linux-acpi@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, dbrownell@users.sourceforge.net, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 19 June 2007, Marcelo Tosatti wrote:
->
-> > Since OLPC isn't using ACPI,  it can be more like embedded Linux,
-> > and just Do The Right Thing ... create platform devices, etc.  :)
+On Wednesday 20 June 2007 07:32, Rafael J. Wysocki wrote:
+> On Wednesday, 20 June 2007 08:18, Shaohua Li wrote:
+> > On Tue, 2007-06-19 at 13:52 +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, 19 June 2007 04:33, Shaohua Li wrote:
+> > > > Based on David's patch
+> > > > http://marc.info/?l=linux-acpi&m=117873972806360&w=2
+> > > > I slightly changed it.
+> > > > 
+> > > > Add a helper routine, which gets the sleep state of a ACPI device.
+> > > 
+> > > Is it going to work with the recent code ordering changes?  I mean,
+> > > acpi_pm_prepare() is now called after device_suspend() (and analogously for
+> > > the hibernation), so the target ACPI state is not known when the drivers'
+> > > .suspend() routines are being called.
+> > Not. Could pm_message_t have a member indicating the suspend state?
 > 
-> As you know we want user configuration of enabled wakeup events (unlike
-> embedded platforms where this is hardcoded). It seems that the current
-> interface available for that is /sys/devices/../power/wakeup hook (when
-> !ACPI).
-
-And, when some issues get sorted, for ACPI too.  Patches have circulated
-which make it all behave properly ... except for some platform-specific
-oddities that haven't gotten sorted out yet.  (As I recall, there was
-one instance of the "EHCI wrongly issues wakeups" problems; and then the
-mess with PCI init sequence on powerpc vs most other systems.)
-
-
-> However there are several wakeup capable devices in OLPC which do not
-> have drivers, thus no platform devices:
+> Well, I thought about that, but I did't know what people on linux-pm would
+> think about that.
 > 
-> - power button 
-> - lid
+> Alternatively, we could introduce a pm_target() global PM operation that will
+> set the target sleep state for the entire system.
 > 
-> It seems that creating platform devices for these two just for the
-> purpose of a having an interface for enabling wakeup events is overkill.
+> I think we should discuss that on linux-pm before any decision is made.
 
-What Jens said.  ;)  
+okay, this thread include linux-pm....
 
-I'll disagree.  Not just because ACPI already creates devices for
-those two cases, but because creating normal device nodes there is
-the Right Thing To Do.  It's cheap, and won't surprise anyone. 
+I support the proposal that pm_message_t include the target state
+in addition to the phase of entering that state.
+The reasoning is simple, device drivers that receive a pm_message_t
+will do different things depending on the target state.
+The example at hand is ACPI devices that need to know how deep a D-state
+to go into based on the S-state, and this in-turn depends on if they
+are enabled as wakeup devices or not.
 
-
-> Given that, we probably want something similar to what was initially    
-> described in http://wiki.laptop.org/go/Power_Management_Interface ?     
-> 
-> The downside of doing that is a non-unified interface: platform
-> devices via /sys/devices/../power/wakeup and otherwise
-> /sys/whatever/wakeup/source?
-
-That's exactly why "we" do *NOT* want something like what was
-sketched in that Wiki.  Gratuitous divergence hurts ... and in
-this case, it's trivial to adopt that common solution (just add
-platform device, managed the usual way) and not diverge.
-
-- Dave
+thanks,
+-Len
