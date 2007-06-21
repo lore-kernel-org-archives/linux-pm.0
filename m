@@ -1,18 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
-	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
-Date: Thu, 21 Jun 2007 08:37:29 -0700
-Message-ID: <200706210837.29857.david-b__19750.0569200658$1182440270$gmane$org@pacbell.net>
-References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
-	<200706211442.41140.rjw@sisk.pl>
-	<20070621130312.GB18392@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
+	resumes after STR
+Date: Thu, 21 Jun 2007 11:45:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706211132470.3547-100000__40961.1466610388$1182440783$gmane$org@iolanthe.rowland.org>
+References: <20070621064215.GB9050@inferi.kami.home>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070621130312.GB18392@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <20070621064215.GB9050@inferi.kami.home>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,52 +17,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
+To: Mattia Dongili <malattia@linux.it>
+Cc: linux-acpi@vger.kernel.org, David Brownell <dbrownell@users.sourceforge.net>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 21 Jun 2007, Mattia Dongili wrote:
 
-> > IMO it can be done in two different ways:
-> > 1) via a .suspend() argument
-> > 2) via a global variable that the drivers can read.
+> > The log shows suspicious behavior on the part of the Sony UMH-U09
+> > device, the first one in your ehci-only list above.  When it was
+> > suspended it apparently disconnected itself from the USB bus, thereby
+> > triggering a wakeup signal.  If at all possible, try unplugging the USB
+> > cable to that device and then see what happens when you suspend.
+> 
+> wow, spotted!
+> 
+> This device is an express card (SD/MMC reader). Do you have any
+> suggestion to make suspend work without any workarounds?
 
-For sufficiently small values of "two" that is.  
+You mean, do I have any suggestion about how to make the card reader 
+behave properly?  No.  That needs more than a software change...  :-)
 
-Other solutions that have been described on the PM list include
+> I mean, all of this started by enabling wakeup on the ehci controller
+> USB1	  S3	 disabled  pci:0000:00:1d.0
+> USB2	  S3	 disabled  pci:0000:00:1d.1
+> USB3	  S3	 disabled  pci:0000:00:1d.2
+> USB4	  S3	 disabled  pci:0000:00:1d.3
+> USB7	  S3	 enabled   pci:0000:00:1d.7
+> 
+> and this was triggered when trying to understand if enabling wakeup by
+> default on PCI devices was good or not (and the patch itself was
+> responsible or not for problems).
+> So, from my POV it's either not good or there has to be some way of
+> dealing with disconnecting devices on suspend.
 
-  3) Providing accessors to the information actually needed
-     in drivers ... e.g. say whether this clock or power domain
-     will be available in that target state.
+There _is_ a way: Disable wakeup on that USB controller.
 
-  4) Act more like "current" ... there's a function returning
-     whatever "state" struct is settled on.  (But ideally
-     without the pseudo-global.)
+> Just to simplify, in this situation, if I had an usb mouse attached to
+> this usb controller and removed the mouse while suspended, would the
+> laptop wakeup?
 
-I'm amused that nobody really reacted to the technical comments in
-my previous posts on this thread.  That's unfortunate, since from
-where I sit it feels to me like everyone else is a johnny-come-lately
-on this issue, and is now grasping at the quickest and dirtiest ways
-to work around the issue instead of coming to grasp with the various
-underlying issues.
+If the USB controller was enabled for wakeup and was working correctly,
+it would wake up the laptop.  USB wakeup events are defined as: new
+connection, disconnection, overcurrent, plus any wakeup requests
+received from devices on the USB bus.
 
-IMO #3 is strongly preferable.
+> If so that's not what I most probably want. :)
 
+Maybe we should change the kernel so that the default wakeup setting 
+for USB controllers is disabled.  Then people would have to enable 
+wakeup explicitly if they wanted to be able to start up their system by 
+typing on a USB keyboard, for instance.
 
-> Just do 1). Global variables are ugly, and we already have space in
-> pm_message_t. 
+> > You also ought to be able to prevent this immediate resume by disabling
+> > wakeup on the EHCI controller.  For example:
+> > 
+> > 	echo disable >/sys/bus/usb/devices/usb5/power/wakeup
+> > 	echo disable >/sys/bus/usb/devices/usb5/../power/wakeup
+> 
+> that doesn't seem to work very well (on -rc5 at least):
+> $ echo disable > /sys/bus/usb/devices/usb2/power/wakeup
+> echo: write error: invalid argument
+> 
+> The only value that seems to be accepted is 0 but reading the value
+> gives always "enabled".
 
-There is no space in the ugly pm_message_t structure.  Adding to
-that would involve creating a **larger** structure and passing it
-around on the stack all the time.
+Whoops, yes, it should be "disabled" instead of "disable".  And of 
+course you have to use the correct USB bus number in the path -- I 
+wrote usb5 because that was the bus number of the EHCI controller in 
+your log.
 
-Pavel, I know that for some perverse reason you actually like
-that structure, and the notion of passing it around *BY VALUE*
-instead of by reference.  But that approach has never been
-universally acclaimed, and has in fact always had opposition;
-the only way you got it merged in the first place was to send
-in mountains of patches and ignore the negative feedback.
-
-But I really thought the discussion on new PM methods, back a
-couple months now, was going to finally get rid of that.
-
-- Dave
+Alan Stern
