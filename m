@@ -1,17 +1,17 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
 	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
-Date: Thu, 21 Jun 2007 07:48:47 -0700
-Message-ID: <200706210748.48781.david-b__43403.5845603377$1182440268$gmane$org@pacbell.net>
+Date: Thu, 21 Jun 2007 08:37:29 -0700
+Message-ID: <200706210837.29857.david-b__19750.0569200658$1182440270$gmane$org@pacbell.net>
 References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
-	<200706210004.03544.david-b@pacbell.net>
 	<200706211442.41140.rjw@sisk.pl>
+	<20070621130312.GB18392@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706211442.41140.rjw@sisk.pl>
+In-Reply-To: <20070621130312.GB18392@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,31 +22,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 21 June 2007, Rafael J. Wysocki wrote:
-> The issue at hand is that some device drivers may need to know what the
-> target sleep state of the system will be when their .suspend() routines=
- are
-> being executed. =A0Currently, there's no means of passing that informat=
-ion to the
-> drivers and my question is how to do this.
 
-Actually what they need to know is some *attribute* of that state.
+> > IMO it can be done in two different ways:
+> > 1) via a .suspend() argument
+> > 2) via a global variable that the drivers can read.
 
-They really don't care what the state is.  The $SUBJECT patch isn't
-driver code ... it's for platform hooks that expose attributes to
-the drivers.  Specifically, it's ACPI code, talking to drivers that
-must run on non-ACPI systems.  Any driver that thinks it needs to
-understand anything about ACPI states is sadly broken.
+For sufficiently small values of "two" that is.  
 
-Remember also that the Linux "states" (in /sys/power/state) are an
-inadequate representation of what most hardware can do.  Common
-hardware can support a lot more low power sleep modes than the two
-states Linux currently defines ... a limitation inherited from
-first APM, and them more recently ACPI, which doesn't fit embedded
-systems well at all.
+Other solutions that have been described on the PM list include
+
+  3) Providing accessors to the information actually needed
+     in drivers ... e.g. say whether this clock or power domain
+     will be available in that target state.
+
+  4) Act more like "current" ... there's a function returning
+     whatever "state" struct is settled on.  (But ideally
+     without the pseudo-global.)
+
+I'm amused that nobody really reacted to the technical comments in
+my previous posts on this thread.  That's unfortunate, since from
+where I sit it feels to me like everyone else is a johnny-come-lately
+on this issue, and is now grasping at the quickest and dirtiest ways
+to work around the issue instead of coming to grasp with the various
+underlying issues.
+
+IMO #3 is strongly preferable.
+
+
+> Just do 1). Global variables are ugly, and we already have space in
+> pm_message_t. 
+
+There is no space in the ugly pm_message_t structure.  Adding to
+that would involve creating a **larger** structure and passing it
+around on the stack all the time.
+
+Pavel, I know that for some perverse reason you actually like
+that structure, and the notion of passing it around *BY VALUE*
+instead of by reference.  But that approach has never been
+universally acclaimed, and has in fact always had opposition;
+the only way you got it merged in the first place was to send
+in mountains of patches and ignore the negative feedback.
+
+But I really thought the discussion on new PM methods, back a
+couple months now, was going to finally get rid of that.
 
 - Dave
