@@ -1,17 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Remove code duplication between
-	main.c and user.c
-Date: Thu, 21 Jun 2007 17:07:12 +0200
-Message-ID: <200706211707.13331.rjw@sisk.pl>
-References: <200706182231.04203.rjw@sisk.pl>
-	<20070621132815.GF18392@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [RFD] How to tell ACPI drivers what the target
+	sleep state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 11:23:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706211110480.3547-100000__23132.5964363807$1182439447$gmane$org@iolanthe.rowland.org>
+References: <200706211646.06594.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070621132815.GF18392@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200706211646.06594.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,44 +17,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 21 June 2007 15:28, Pavel Machek wrote:
-> Hi!
+On Thu, 21 Jun 2007, Rafael J. Wysocki wrote:
+
+> > Just do 1). Global variables are ugly, and we already have space in
+> > pm_message_t. 
 > 
-> > The SNAPSHOT_S2RAM ioctl code is outdated and it should not duplicate the
-> > suspend code in kernel/power/main.c.  Fix that.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Well, this is what Len voted for, I think.  David is against it.
 > 
-> Mostly works ok, but
+> I also think that the cleanest way would be to pass that as an argument
+> to .suspend(), but currently pm_message_t. is passed by value and if we
+> made it a real struct (ie. with more than one field), that would also become
+> ugly, IMHO.
 > 
-> > +/**
-> > + *	suspend_suspend - suspend devices and enter the desired system sleep
-> > + *			  state.
-> > + *	@state:		  state to enter
-> > + */
-> > +int suspend_suspend(suspend_state_t state)
-> 
-> This is really horrible name.
+> So, can we make pm_message_t consist only of the target state?
 
-Yes, I just couldn't invent anything else.
+You're both repeating the mistakes from two years ago.
 
-> Maybe this should be suspend_enter, and suspend_enter should become
-> __suspend_enter, or something?
+You can't use a simple type to describe a target system state.  While 
+it might work for ACPI states, it won't work on general (i.e., 
+non-ACPI) systems.  It's probably a mistake even to use a data 
+structure to describe a system state, since the requirements are so 
+complex.  The only reasonable approach is to describe it in code.
 
-Well, suspend_enter() is called from a couple of places and I wouldn't like
-to change that.
+What you can do is this: Pick a small enumerated set of labels for some 
+selected system states.  For example:
 
-I would like to call it pm_suspend(), but that one is already used.
+enum pm_system_state {
+	PM_STATE_RUNNING,
+	PM_STATE_STANDBY,
+	PM_STATE_SUSPEND,
+	PM_STATE_HIBERNATE,
+};
 
-I have two candidates: __suspend() and suspend_devices_and_enter().
+(It might be preferable to make the list more configurable, perhaps 
+even allow changes at runtime.  Never mind all that for now.)
 
-Greetings,
-Rafael
+These are merely labels, they don't actually describe anything.  To use 
+them, you would have to pass them to a subsystem routine for 
+interpretation.  For example, pci_select_state() might pass one of 
+these things to an ACPI routine, which would know what ACPI state 
+corresponded to the given pm_system_state and would be able to say what 
+D-state would be appropriate for a given PCI device.  On a non-ACPI 
+platform, pci_select_state() would have to call a different routine -- 
+something platform-dependent -- to do the same job.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+On the other hand, maybe you don't need anything like this at all.  
+What would happen if a PCI driver put its device into a D-state which 
+wasn't supported under the target ACPI state?  Would it be so terrible?
+I can imagine that the requested wakeup functionality might not be 
+available, but would it prevent the device from working properly when 
+it was resumed?
+
+Alan Stern
