@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Re: [RFD] How to tell ACPI drivers what the target
 	sleep state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
-Date: Thu, 21 Jun 2007 22:35:23 +0200
-Message-ID: <200706212235.23947.rjw__42479.8795640983$1182457765$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0706211424170.14859-100000@iolanthe.rowland.org>
-	<200706211251.52952.david-b@pacbell.net>
+Date: Thu, 21 Jun 2007 22:37:27 +0200
+Message-ID: <200706212237.28305.rjw__14586.6608633243$1182457902$gmane$org@sisk.pl>
+References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
+	<20070621185910.GH18481@elf.ucw.cz>
+	<200706211303.25004.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706211251.52952.david-b@pacbell.net>
+In-Reply-To: <200706211303.25004.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,100 +23,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: David Brownell <david-b@pacbell.net>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+Cc: linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 21 June 2007 21:51, David Brownell wrote:
-> On Thursday 21 June 2007, Alan Stern wrote:
-> > On Thu, 21 Jun 2007, David Brownell wrote:
-> > > On Thursday 21 June 2007, Alan Stern wrote:
-> > > > 
-> > > > _How_ does the provider know what the next target state is?
+On Thursday, 21 June 2007 22:03, David Brownell wrote:
+> On Thursday 21 June 2007, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > > IMO it can be done in two different ways:
+> > > > > 1) via a .suspend() argument
+> > > > > 2) via a global variable that the drivers can read.
 > > > 
-> > > That's an interface between the provider and the platform's PM code.
-> > > Remember those two patches?
-> > > ...
+> > > For sufficiently small values of "two" that is.  
+> > > 
+> > > Other solutions that have been described on the PM list include
+> > > 
+> > >   3) Providing accessors to the information actually needed
+> > >      in drivers ... e.g. say whether this clock or power domain
+> > >      will be available in that target state.
+> > > 
+> > >   4) Act more like "current" ... there's a function returning
+> > >      whatever "state" struct is settled on.  (But ideally
+> > >      without the pseudo-global.)
+> > > 
+> > > I'm amused that nobody really reacted to the technical comments in
+> > > my previous posts on this thread.  That's unfortunate, since from
+> > > where I sit it feels to me like everyone else is a johnny-come-lately
+> > > on this issue, and is now grasping at the quickest and dirtiest ways
+> > > to work around the issue instead of coming to grasp with the various
+> > > underlying issues.
 > > 
-> > Now we're getting back to the question which started this thread.  
-> > That patch takes care of one platform, but now consider an ACPI system.  
-> > How should the ACPI core learn what the next target system state will
-> > be? 
+> > Well, rest of the word is still using PC here, so johny-come-lately
+> > may not be completely unexpected.
 > 
-> The original patch -- to which the previous $SUBJECT patch was
-> an update -- did more or less the same thing:  pm_ops recorded
-> the ACPI target state ...
+> True.  I could hardly escape noticing this problem though, given
+> what it takes to get USB remote wakeup working on various systems.
+> We've had a few years now to get that infrastructure in place.
 > 
 > 
-> > And once it possess that knowledge, what's the best way for it to 
-> > tell various subsystems which device states/functions will be
-> > supported?
+> > Could you push framework for some embedded system you care about? OLPC
+> > by chance?
 > 
-> ... and then exposed a method returning ACPI_STATE_Sx values,
-> called by non-core ACPI code.
-
-But we have changed the suspend code ordering and the state
-recorded by pm_ops only becomes known to ACPI _after_ we have suspended
-devices.
-
-That's what this thread is all about, BTW.
-
-> At which point your narrative falters.  What it's exposed to is
-> not a subsystem ... but ACPI versions of hooks invoked by the
-> subsystem.  For PCI, to be specific.
+> I'll probably push those two patches (clock core, AT91 implementation)
+> since there seemed to be no objections.  I don't work on OLPC.  :)
 > 
-> That is, the knowledge of that target sleep state never leaves
-> that platform's PM code.  (In this case, ACPI; including its PCI
-> support, which lives in drivers/pci not drivers/acpi.)  Because
-> no subsystem other than ACPI itself should care how ACPI does any
-> of its PM stuff.
-
-All of this is fine, but we need some way to tell ACPI what the next sleep
-state will be, because currently _we_ _have_ _not_ one.
-
-So, do we introduce an additional pm_op to do that or are we going to do
-something else?
- 
-> > > Of course, I believe we need to move away from "suspend_state_t"
-> > > being effectively just "standby" or "STR" (or "ON") so that more
-> > > of the hardware capabilities can be exposed.   Systems that have,
-> > > say, seven different hardware states can't fit into Linux today.
+> 
+> > > IMO #3 is strongly preferable.
 > > 
-> > I agree that the list of system states should be configurable and 
-> > perhaps even adjustable at runtime.  However this is somewhat OT.
-> 
-> Only slightly; remember, a main reason Linux has so few states is
-> that PCs don't use any more.  There are a number of PC-specific
-> models and assumptions lurking in this area.  One of them is that
-> the target sleep state is anything more than a stepping-stone to
-> the important platform-specific information.
-
-As far as my original question is concerned, this is OT.
-
-> > > (Related, I think that target *run* states are under-appreciated.
-> > > That's the general runtime PM issue.  Interfaces should work for
-> > > run-state transitions as well as sleep-state ones...)
+> > 3) actually looks ok to me. For acpi it would mean
 > > 
-> > Perhaps something like this: Resource providers have an API whereby
-> > drivers can find out what resources either are currently available or
-> > will be available in the next system state (a little awkward to specify
-> > which is needed).  Then drivers decide on a new device state based on
-> > the type of change requested and the available resources, and notify
-> > the providers via a second API about any change in resource usage.
+> > int acpi_state_we_are_entering(void)
+> > 
+> > returning S1..S4, right?
 > 
-> Resource providers have interfaces (*) they expose; yes.  *IF* those
-> resources change availability based on system states, there must be
-> interfaces drivers can use to notice that.  The providers already have
-> interfaces to manage resources, and won't need new cals for that. 
+> My original patch included acpi_get_target_sleep_state()
+> returning ACPI_STATE_Sx values, yes.  However, that was
+> purely internal to ACPI-aware logic ... it was used to
+> implement pci_choose_state().
 > 
-> The calls to expose whether a given in-use resource must be released
-> or modified would be simplest if they're just query calls made by
-> driver suspend()/resume() methods, but there's also something to be
-> said for callbacks in certain contexts.
+> Drivers would never make such ACPI calls themselves, they'd
+> use pci_choose_state() instead.
 > 
-> (*) "API" == "Application Programming Interface", a userspace thing.
->     So I avoid using that TLA for anything inside the OS kernel.
+> 
+> And the clk_must_disable() call is another instance of the
+> same approach as pci_choose_state():  drivers getting access
+> to the PM-reated information they need, without needing to
+> use platform-specific calls or care about "what the target
+> sleep state is".
+> 
+>  
+> > > But I really thought the discussion on new PM methods, back a
+> > > couple months now, was going to finally get rid of that.
+> > 
+> > Umm, well, when someone gets to implement that...
+> 
+> Oh.  *THAT* little problem.  Sorry, I thought it was in the works.
 
-Agreed.
+In fact it is, but I had no time to complete it yet.
 
 Greetings,
 Rafael
