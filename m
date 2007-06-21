@@ -1,16 +1,18 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B)
-	immediately resumes after STR
-Date: Thu, 21 Jun 2007 15:28:46 +0800
-Message-ID: <1182410926.5411.142.camel__20973.2756637552$1182410896$gmane$org@localhost.localdomain>
-References: <20070620144532.GA3761@inferi.kami.home>
-	<Pine.LNX.4.44L0.0706201220150.3518-100000@iolanthe.rowland.org>
-	<20070621064215.GB9050@inferi.kami.home>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFD] How to tell ACPI drivers what the target sleep
+	state is (was: Re: [PATCH 1/2] acpi choose sleep state help)
+Date: Thu, 21 Jun 2007 00:04:02 -0700
+Message-ID: <200706210004.03544.david-b@pacbell.net>
+References: <1182220394.14837.9.camel@sli10-conroe.sh.intel.com>
+	<1182320280.30540.4.camel@sli10-conroe.sh.intel.com>
+	<200706201332.25486.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070621064215.GB9050@inferi.kami.home>
+In-Reply-To: <200706201332.25486.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,88 +22,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mattia Dongili <malattia@linux.it>
-Cc: "linux-acpi@vger" <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, David Brownell <dbrownell@users.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-06-21 at 15:42 +0900, Mattia Dongili wrote:
-> On Wed, Jun 20, 2007 at 12:33:04PM -0400, Alan Stern wrote:
-> > On Wed, 20 Jun 2007, Mattia Dongili wrote:
-> > 
-> > > > Just as with Raphael, I suggest you build a kernel with 
-> > > > CONFIG_USB_DEBUG turned on and then post the dmesg log showing the USB 
-> > > > debugging messages during the suspend and immediate resume.  To reduce 
-> > > > the amount of clutter you might want to rmmod uhci-hcd before starting 
-> > > > the test.
+On Wednesday 20 June 2007, Rafael J. Wysocki wrote:
+> On Wednesday, 20 June 2007 08:18, Shaohua Li wrote:
+> > On Tue, 2007-06-19 at 13:52 +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, 19 June 2007 04:33, Shaohua Li wrote:
+> > > > Based on David's patch
+> > > > http://marc.info/?l=linux-acpi&m=117873972806360&w=2
+> > > > I slightly changed it.
+> > > > 
+> > > > Add a helper routine, which gets the sleep state of a ACPI device.
 > > > 
-> > > here we go:
-> > > http://www.linux.it/~malattia/logs/dmesg-suspend-ehci-debug-log
-> > > 
-> > > and by the way:
-> > > 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
-> > > 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 02)
-> > > 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 02)
-> > > 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 02)
-> > > 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
-> > > 
-> > > with ehci only:
-> > > Bus 005 Device 007: ID 054c:0281 Sony Corp. 
-> > > Bus 005 Device 004: ID 05ca:1830 Ricoh Co., Ltd 
-> > > Bus 005 Device 001: ID 0000:0000  
-> > 
-> > The log shows suspicious behavior on the part of the Sony UMH-U09
-> > device, the first one in your ehci-only list above.  When it was
-> > suspended it apparently disconnected itself from the USB bus, thereby
-> > triggering a wakeup signal.  If at all possible, try unplugging the USB
-> > cable to that device and then see what happens when you suspend.
+> > > Is it going to work with the recent code ordering changes?  I mean,
+> > > acpi_pm_prepare() is now called after device_suspend() (and analogously for
+> > > the hibernation), so the target ACPI state is not known when the drivers'
+> > > .suspend() routines are being called.
+>
+> > Not. Could pm_message_t have a member indicating the suspend state?
 > 
-> wow, spotted!
-> 
-> This device is an express card (SD/MMC reader). Do you have any
-> suggestion to make suspend work without any workarounds?
-> 
-> I mean, all of this started by enabling wakeup on the ehci controller
-> USB1	  S3	 disabled  pci:0000:00:1d.0
-> USB2	  S3	 disabled  pci:0000:00:1d.1
-> USB3	  S3	 disabled  pci:0000:00:1d.2
-> USB4	  S3	 disabled  pci:0000:00:1d.3
-> USB7	  S3	 enabled   pci:0000:00:1d.7
-> 
-> and this was triggered when trying to understand if enabling wakeup by
-> default on PCI devices was good or not (and the patch itself was
-> responsible or not for problems).
-> So, from my POV it's either not good or there has to be some way of
-> dealing with disconnecting devices on suspend.
-> 
-Without this patch, users need to manually override /proc/acpi/wakeup
-to enable the wakeup ability of a given device.
-With this patch applied, /sys/.../power/wakeup is used to enable/disable
-device's wakeup ability, while they are all enabled by default.
+> Well, I thought about that, but I did't know what people on linux-pm would
+> think about that.
 
-The change log of this patch is quite clear about this:
-http://marc.info/?l=linux-acpi&m=117580342513025&w=2
+Let's get rid of pm_message_t entirely.  Didn't we already discuss
+how the main reasons for it will vanish if drivers get new PM methods?
 
-> Just to simplify, in this situation, if I had an usb mouse attached to
-> this usb controller and removed the mouse while suspended, would the
-> laptop wakeup?
-> If so that's not what I most probably want. :)
-> 
-> > You also ought to be able to prevent this immediate resume by disabling
-> > wakeup on the EHCI controller.  For example:
-> > 
-> > 	echo disable >/sys/bus/usb/devices/usb5/power/wakeup
-> > 	echo disable >/sys/bus/usb/devices/usb5/../power/wakeup
-> that doesn't seem to work very well (on -rc5 at least):
-> $ echo disable > /sys/bus/usb/devices/usb2/power/wakeup
-> echo: write error: invalid argument
-> 
-"$ echo disabled > /sys/bus/usb/devices/usb2/power/wakeup"
-should work. :)
-
-Thanks,
-Rui
  
-> The only value that seems to be accepted is 0 but reading the value
-> gives always "enabled".
-> 
-> Thanks
+> Alternatively, we could introduce a pm_target() global PM operation that will
+> set the target sleep state for the entire system.
+
+I hope you mean "get the target state"!!
+
+If drivers actually need a handle on that state, that'd be a fair
+approach; make it an opaque type though, platform-specific.
+
+But actually I don't see much point to having such a struct.  What
+matters is the attributes of the target state (what resources will
+be present, especially), and that rarely needs to be indicated by
+any kind of cookie.  Consider the "current" task ... it's implicit,
+always present (except in IRQ contexts), and hardly ever accessed
+despite being more fundamental than "target PM state".
+
+- Dave
