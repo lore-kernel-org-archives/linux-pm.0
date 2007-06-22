@@ -1,18 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Fri, 22 Jun 2007 03:08:26 -0700
-Message-ID: <200706220308.27447.david-b__43755.1665156663$1182506953$gmane$org@pacbell.net>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<1182304359.5411.122.camel@localhost.localdomain>
-	<200706202339.20188.rjw@sisk.pl>
+From: markson <william666@3darenanet.com>
+Subject: ATTENTION PLEASE.
+Date: Fri, 22 Jun 2007 15:47:35 +0300
+Message-ID: <decd049f3edf891d5c5bb655787f992e__5983.80855885825$1182516735$gmane$org@3darenanet.com>
+Reply-To: marksonwilliamm@inmail24.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706202339.20188.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,32 +16,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Mattia Dongili <malattia@linux.it>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 20 June 2007, Rafael J. Wysocki wrote:
+Manchester M27 5FX,
+United Kingdom.
+Tel:+44 702 402 6648
+marksonwilliamm@inmail24.com
 
-> Well, there's nothing interesting in there, AFAICS:
-> 
-> Device	S-state	  Status   Sysfs node
-> P0P4	  S4	 disabled  pci:0000:00:1e.0
-> BNIC	  S4	 disabled  pci:0000:02:05.0
-> USB1	  S4	 disabled  pci:0000:00:1d.0
-> USB2	  S4	 disabled  pci:0000:00:1d.1
-> USB3	  S4	 disabled  pci:0000:00:1d.2
-> EUSB	  S4	 disabled  pci:0000:00:1d.7
-> PS2K	  S4	 disabled  pnp:00:0b
-> PS2M	  S4	 disabled  pnp:00:0c
+An official notification of funds deposited.
 
-The interesting thing there is that all those devices are
-able to wake from S4 state ... including USB controllers.
+This is to inform you that i will like you to be part of this great transaction worth of US$8 Million it has been approved for 
+immediate Payment, Though the money is with Royal Exchange Bank here in London. For the purpose of clarification of who I am dealing send all these:-
 
-That's not very common for USB.  EHCI ("EUSB" above) at
-least has a spec for how that should work ... it relies on
-the PCI Vaux power well to maintain power sessions, though
-I don't know that the EHCI code has been tested against
-that part of the spec.  UHCI likely relies on black magic
-to achieve that effect.
+Your Full Name: _________
 
-- Dave
+Your Address:__________
+
+Your Telephone Number:________
+
+Your Fax Number: _________
+
+Your Mobile Number:___________
+
+The Name of the Closest Airport to your City of
+Residence:________
+
+Your Age:________
+
+Your Country:______
+
+Sex : ____________
+
+Job: _________
+
+
+On receipt of your information I will send you the full details of the consignment. Awaiting your early response.
+
+Markson B Williams
