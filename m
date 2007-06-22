@@ -1,15 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Platform-specific system power states
-Date: Fri, 22 Jun 2007 12:49:28 -0700
-Message-ID: <200706221249.29068.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0706211635450.2553-100000@iolanthe.rowland.org>
+From: Online Coordinator <info_lottery24@bellsouth.net>
+Subject: Lottery Claims Confirm Receipt  (REF
+	=?iso-8859-1?q?N=BA=2E=3A?= UK L/74 -A0802742007)
+Date: Fri, 22 Jun 2007 16:54:18 -0400
+Message-ID: <20070622205418.HLUJ11014.ibm64aec.bellsouth.net__47846.3369342082$1182545883$gmane$org@mail.bellsouth.net>
+Reply-To: contact_onlineclaimsoffice11@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0706211635450.2553-100000@iolanthe.rowland.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,105 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: info@lotteryonlinedepartment.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 21 June 2007, Alan Stern wrote:
-> 
-> I'd be perfectly happy to have the list of supported system power 
-> states be exported by the platform code instead of predetermined by the 
-> PM core.  It would still be necessary to add a method whereby the PM 
-> core could inform the platform about the new target state at the 
-> beginning of a state change.  And of course there would have to be a 
-> way for drivers or subsystems to query the platform, to see what 
-> resources would be available.
+The Camelot Group,:=20
+operators of The National Lottery.=20
+3b Olympic Way, Sefton Business Park,=20
+Aintree, Liverpool , L30 1RD=20
 
-Rafael will propose the new method, I guess; and as for querying,
-the many power-related resources involved would seem to be clocks
-and power domains.  ACPI has an internal notion of the latter, but
-skips the former.  You've seen my proposal for what seems to be
-sufficient in the case of clocks.  (And one of these days I'm sure
-I'll push it upstream.  After that new method lands, to replace
-the now-missing functionality...)
+                            WINNING NOTIFICATION=20
 
+The Camelot Group,organisers of National Lottery online draw wishes to in=
+form you that the results of the E-mail address ballot lottery internatio=
+nal program held on the 26th of may 2007. Your mail account have been pic=
+ked as a winner of a lump sum pay total sum of =A31,23O,310 (One Million =
+Two Hundred and Thirty Thousand Three Hundred and Ten Pounds Sterling) . =
+This is from a total cash prize of =A38,612,170GBP shared amongst the (7)=
+lucky winners in this category i.e Match 6 plus bonus. All participants f=
+or the online version were selected randomly from World Wide Web through =
+computer balloting system drawn from over 100,000 names database, union a=
+ssociations and corporate bodies that are listed online.This promotion is=
+ this year's United Kingdom National Lottery New Year bonanza.=20
 
-> > > Perhaps something like this: Resource providers have an API whereby
-> > > drivers can find out what resources either are currently available or
-> > > will be available in the next system state (a little awkward to specify
-> > > which is needed).  Then drivers decide on a new device state based on
-> > > the type of change requested and the available resources, and notify
-> > > the providers via a second API about any change in resource usage.
-> > 
-> > Resource providers have interfaces (*) they expose; yes.  *IF* those
-> > resources change availability based on system states, there must be
-> > interfaces drivers can use to notice that.  The providers already have
-> > interfaces to manage resources, and won't need new cals for that. 
-> > 
-> > The calls to expose whether a given in-use resource must be released
-> > or modified would be simplest if they're just query calls made by
-> > driver suspend()/resume() methods, but there's also something to be
-> > said for callbacks in certain contexts.
-> 
-> I'm not sure how the callback approach would work.
+All winning must be claimed not later than 14 working days from this noti=
+fication. After this time all unclaimed funds will be returned to Europea=
+n Union Treasury as unclaimed. Please note in order to avoid unnecessary =
+delays and complications please remember to quote your reference number i=
+n all correspondence. Be advice to keep your winning information confiden=
+tial until your claims has been processed and your money remitted to you.=
+ This is part of our security protocol to avoid double claiming and unwar=
+ranted abuse of this program. Your winning details are :- Ticket N=BA: 22=
+-1356-4096-988, Serial N=BA: A069-07,Lucky N=BA: 35-08-11-17-30-32-41-(47=
+ AS BONUSBALL), File REF N=BA.: UKL/74-A0802742007,BATCH N=BA.: 2007UKL-0=
+1=20
 
-One old example comes from early "DPM" support.  When a system's
-base clock rate changes, derived clocks may need to change.  When
-that involves for example a USART clock, the external bit rate
-must remain the same ... which means adjusting dividers.  In fact
-it might even mean needing to reject proposed clock rate changes,
-if they can't support the necessary frequency.
+To Process and claim your prize, do contact our overseas winners claim ag=
+ent below for validation and funds release:=20
 
+Mr Charles McCoy.=20
+PROCESSING DEPARTMENT=20
+26 Stanhope Road=20
+Kent CT14 6AD London=20
+United Kingdom=20
+contact_onlineclaimsoffice11@yahoo.co.uk=20
+Tel:+447045709332=20
 
-> Fortunately so far 
-> none of this has been needed in USB programming; only the host
-> controllers (PCI and non-PCI each in their own ways) have to worry
-> about it.  That might change in a more generalized setting; conceivably 
-> there could be multiple system power states in which USB devices are 
-> allowed to run.  Then the platform would need an interface to tell the 
-> USB subsystem whether the devices must be suspended in the new state.
+He will brief you on steps to be taken for due processing and remittance =
+of your prize money.Send him your details as outlined in the form below:=20
 
-The usual situation with USB is there are two modes other than
-"fully operational".  One is where everything's suspended but
-the USB functional clock is available.  (Maybe the register
-interface isn't clocked though.)  The other is where that clock
-isn't available.  In some cases that implies controller reset.
-In other cases it doesn't; and if it doesn't, potentially the
-key power session state can be maintained with help from the
-PHY ... and, on the host side, something supplying VBUS.
+VERIFICATION AND FUNDS RELEASE FORM=20
+1.FULLNAMES:________2.ADDRESS:__________City________State_________Postcod=
+e______Country3.SEX:_______4.AGE:________
 
+5.OCCUPATION:__________6.TELEPHONE NUMBER:__________=20
 
-> > (*) "API" == "Application Programming Interface", a userspace thing.
-> >     So I avoid using that TLA for anything inside the OS kernel.
-> 
-> Strong agreement -- I abhor the term "API".  I use it because it is so 
-> convenient; "interface" is much longer and is overloaded with other 
-> meanings.
+Congratulations from me and members of staff of THE NATIONAL LOTTERY.=20
 
-I recall Sun talking lots about a "Device Driver Interface" or DDI.
-Presumably there are other names for such stuff.  I'm not sure any
-better acronym could catch on.  ;)
+Sincerely,=20
+Mr.James Irvin.=20
+Online Coordinator,=20
+CAMELOT GROUP,=20
+Operator of The National Lottery.=20
 
- 
-> When you come down to it, "Application" is itself short for 
-> "Application Program" which AFAIK originated in Apple (that could 
-> easily be wrong).
-
-I'm quite certain that terminology predates Apple by many decades!
-
-
-> But it is used to mean _any_ program, application or  
-> otherwise, and as such it is a misnomer.  Strictly speaking, utility 
-> programs aren't applications -- they are utilities.  Same goes for 
-> system management programs and other categories.  Remember MS-DOS and 
-> TSRs?  Or the old Mac OS and desk accessories?
-> 
-> So if a user library has an API, does that mean the library can't be 
-> used by utilities or other non-application programs?  :-)
-
-Well, from the perspective of hardware *all* software is "application". :)
-
-- Dave
-
-
- 
+NOTE: You are to contact your claims officer immediately. In order to avo=
+id unnecessary delays and complications, please remember to quote your re=
+ference number in every one of your correspondences.
