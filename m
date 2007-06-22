@@ -1,17 +1,17 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
+Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
 	resumes after STR
-Date: Fri, 22 Jun 2007 03:02:10 -0700
-Message-ID: <200706220302.11081.david-b__16222.4006410272$1182506581$gmane$org@pacbell.net>
-References: <200706191326.10320.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0706191019090.3674-100000@iolanthe.rowland.org>
-	<20070620144532.GA3761@inferi.kami.home>
+Date: Fri, 22 Jun 2007 03:08:26 -0700
+Message-ID: <200706220308.27447.david-b__43755.1665156663$1182506953$gmane$org@pacbell.net>
+References: <20070518071523.GA3195@inferi.kami.home>
+	<1182304359.5411.122.camel@localhost.localdomain>
+	<200706202339.20188.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070620144532.GA3761@inferi.kami.home>
+In-Reply-To: <200706202339.20188.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,36 +22,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mattia Dongili <malattia@linux.it>, Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Mattia Dongili <malattia@linux.it>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 20 June 2007, Mattia Dongili wrote:
+On Wednesday 20 June 2007, Rafael J. Wysocki wrote:
 
-> http://www.linux.it/~malattia/logs/dmesg-suspend-ehci-debug-log
+> Well, there's nothing interesting in there, AFAICS:
+> 
+> Device	S-state	  Status   Sysfs node
+> P0P4	  S4	 disabled  pci:0000:00:1e.0
+> BNIC	  S4	 disabled  pci:0000:02:05.0
+> USB1	  S4	 disabled  pci:0000:00:1d.0
+> USB2	  S4	 disabled  pci:0000:00:1d.1
+> USB3	  S4	 disabled  pci:0000:00:1d.2
+> EUSB	  S4	 disabled  pci:0000:00:1d.7
+> PS2K	  S4	 disabled  pnp:00:0b
+> PS2M	  S4	 disabled  pnp:00:0c
 
-which includes
+The interesting thing there is that all those devices are
+able to wake from S4 state ... including USB controllers.
 
-> [18014387.734703] psmouse serio1: resuming
-> [18014388.257990] usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
-> [18014388.257994] usb_endpoint usbdev5.1_ep81: PM: resume from 0, parent 5-0:1.0 still 2
-> [18014388.258004] usb_endpoint usbdev5.2_ep00: PM: resume from 0, parent 5-4 still 2
-> [18014388.258007] usb_endpoint usbdev5.4_ep00: PM: resume from 0, parent 5-6 still 2
-> [18014388.258011] usb_endpoint usbdev5.4_ep81: PM: resume from 0, parent 5-6:1.0 still 2
-> [18014388.258014] usb_endpoint usbdev5.4_ep86: PM: resume from 0, parent 5-6:1.0 still 2
-> [18014388.258019] sony-laptop sony-laptop: resuming 
-> [18014388.258022] platform bluetooth: resuming
-> [18014388.258034] usb_endpoint usbdev5.2_ep02: PM: resume from 0, parent 5-4:1.0 still 2
-> [18014388.258037] usb_endpoint usbdev5.2_ep82: PM: resume from 0, parent 5-4:1.0 still 2
-> [18014388.310276] Restarting tasks ... <7>usb usb5: usb resume
-> [18014388.310514] usb usb5: finish resume
-> [18014388.310524] ehci_hcd 0000:00:1d.7: resume root hub
-> [18014388.312058] done.
-> [18014388.437263] hub 5-0:1.0: hub_resume
-> [18014388.437314] hub 5-0:1.0: state 7 ports 8 chg 0000 evt 0000
+That's not very common for USB.  EHCI ("EUSB" above) at
+least has a spec for how that should work ... it relies on
+the PCI Vaux power well to maintain power sessions, though
+I don't know that the EHCI code has been tested against
+that part of the spec.  UHCI likely relies on black magic
+to achieve that effect.
 
-That looks pretty darn goofy.  Resumes out of order:  endpoints for child
-devices, then the downstream root hub, then finally the PCI dev.  Which
-is completely the reverse of the correct direction.
-
-Or am I missing something?
+- Dave
