@@ -1,14 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers
-	from failing the freezing of tasks
-Date: Fri, 22 Jun 2007 21:07:50 +0000
-Message-ID: <20070622210750.GA4267__33122.5277543583$1182546527$gmane$org@ucw.cz>
-References: <200706221647.50509.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: Platform-specific system power states
+Date: Fri, 22 Jun 2007 23:30:35 +0200
+Message-ID: <200706222330.35829.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0706211635450.2553-100000@iolanthe.rowland.org>
+	<200706221249.29068.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706221249.29068.david-b@pacbell.net>
 Content-Disposition: inline
-In-Reply-To: <200706221647.50509.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,46 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday, 22 June 2007 21:49, David Brownell wrote:
+> On Thursday 21 June 2007, Alan Stern wrote:
+> > 
+> > I'd be perfectly happy to have the list of supported system power 
+> > states be exported by the platform code instead of predetermined by the 
+> > PM core.  It would still be necessary to add a method whereby the PM 
+> > core could inform the platform about the new target state at the 
+> > beginning of a state change.  And of course there would have to be a 
+> > way for drivers or subsystems to query the platform, to see what 
+> > resources would be available.
 > 
-> At present, if a user mode helper is running while usermodehelper_pm_callback()
-> is executed, the helper may be frozen and the completion in
-> call_usermodehelper_exec() won't be completed until user space processes are
-> thawed.  As a result, the freezing of kernel threads may fail, which is not
-> desirable.
-> 
-> Prevent this from happening by introducing a counter of running user mode
-> helpers and allowing usermodehelper_pm_callback() to succeed for
-> action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
-> are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
-> RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
-> fails if that doesn't happen.]
-> 
-> Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-> versions of this patch and for very useful comments.
-...
-> Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> Rafael will propose the new method, I guess;
 
-Eh, not sure this header is worth anything. Sometimes I'm lazy and
-stop when I see first problem.
+Yes, I will.
 
->  	switch (action) {
->  	case PM_HIBERNATION_PREPARE:
->  	case PM_SUSPEND_PREPARE:
->  		usermodehelper_disabled = 1;
-> -		return NOTIFY_OK;
-> +		retval = wait_event_timeout(running_helpers_waitq,
-> +					atomic_read(&running_helpers) == 0,
+Still, for now, I'm going to make it take an integer argument equal to either
+PM_SUSPEND_STANDBY or PM_SUSPEND_MEM, since these are the only two sleep states
+known to the core right now.
 
-Are you sure here? What happens when atomic variable changes between
-the atomic_read and the function call?
-						Pavel
+I think, however, that in the long run the better solution would be to make
+the platform tell the PM core, during the initialization, what system sleep
+states are available.  Then, before the transition, the PM core will tell the
+platform which state is the target one.  IMO for this purpose the sleep will
+need to be identified in a universal way and perhaps it's a good idea to
+discuss that for a while. ;-)
+
+> and as for querying, the many power-related resources involved would seem to
+> be clocks and power domains.  ACPI has an internal notion of the latter, but 
+> skips the former.  You've seen my proposal for what seems to be sufficient in
+> the case of clocks.  (And one of these days I'm sure I'll push it upstream.
+> After that new method lands, to replace the now-missing functionality...)
+
+In fact the ACPI spec regards clock sources as power resources.  More
+precisely, it defines a power resource as "resources (for example, power planes
+and clock sources) that a device requires to operate in a given power state"
+(Section 2.1 in the 3.0b spec).  Perhaps we also could use a general notion of
+"power resource" in a similar fashion?
+
+Greetings,
+Rafael
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
