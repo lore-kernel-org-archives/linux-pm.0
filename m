@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
 	resumes after STR
-Date: Fri, 22 Jun 2007 10:07:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706220959530.3290-100000__44903.3709861853$1182521285$gmane$org@iolanthe.rowland.org>
-References: <200706220243.56056.david-b@pacbell.net>
+Date: Fri, 22 Jun 2007 10:22:12 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0706221007180.3290-100000__26172.4809221507$1182522265$gmane$org@iolanthe.rowland.org>
+References: <200706220302.11081.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706220243.56056.david-b@pacbell.net>
+In-Reply-To: <200706220302.11081.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,41 +23,60 @@ List-Id: linux-pm@vger.kernel.org
 
 On Fri, 22 Jun 2007, David Brownell wrote:
 
-> > > Maybe we should change the kernel so that the default wakeup setting 
-> > > for USB controllers is disabled. 
+> On Wednesday 20 June 2007, Mattia Dongili wrote:
 > 
-> I'd rather not go that route.  It may well be that there's
-> something odd in the current handling of wakeup events with
-> EHCI.  I've not personally touched that particular code in
-> several years now, and a lot of code round it has changed
-> since then.
+> > http://www.linux.it/~malattia/logs/dmesg-suspend-ehci-debug-log
+> 
+> which includes
+> 
+> > [18014387.734703] psmouse serio1: resuming
+> > [18014388.257990] usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
+> > [18014388.257994] usb_endpoint usbdev5.1_ep81: PM: resume from 0, parent 5-0:1.0 still 2
+> > [18014388.258004] usb_endpoint usbdev5.2_ep00: PM: resume from 0, parent 5-4 still 2
+> > [18014388.258007] usb_endpoint usbdev5.4_ep00: PM: resume from 0, parent 5-6 still 2
+> > [18014388.258011] usb_endpoint usbdev5.4_ep81: PM: resume from 0, parent 5-6:1.0 still 2
+> > [18014388.258014] usb_endpoint usbdev5.4_ep86: PM: resume from 0, parent 5-6:1.0 still 2
+> > [18014388.258019] sony-laptop sony-laptop: resuming 
+> > [18014388.258022] platform bluetooth: resuming
+> > [18014388.258034] usb_endpoint usbdev5.2_ep02: PM: resume from 0, parent 5-4:1.0 still 2
+> > [18014388.258037] usb_endpoint usbdev5.2_ep82: PM: resume from 0, parent 5-4:1.0 still 2
+> > [18014388.310276] Restarting tasks ... <7>usb usb5: usb resume
+> > [18014388.310514] usb usb5: finish resume
+> > [18014388.310524] ehci_hcd 0000:00:1d.7: resume root hub
+> > [18014388.312058] done.
+> > [18014388.437263] hub 5-0:1.0: hub_resume
+> > [18014388.437314] hub 5-0:1.0: state 7 ports 8 chg 0000 evt 0000
+> 
+> That looks pretty darn goofy.  Resumes out of order:  endpoints for child
+> devices, then the downstream root hub, then finally the PCI dev.  Which
+> is completely the reverse of the correct direction.
+> 
+> Or am I missing something?
 
-We have indeed seen some strange behavior recently.  It hasn't been 
-clear whether it was caused by bad hardware, poor ACPI integration, 
-EHCI driver bugs, or something else.  In fact, different bug reports 
-probably had different causes.
+You are.  I've seen lots of logs like this, and it all makes sense even 
+if the logic isn't obvious.
 
->  Plus of course, problems that don't reproduce
-> on my hardware can't get much attention from me ... there's
-> something like a factor of ten or more in terms of effort
-> to do that sort of remote debugging.
+First, note that the portion of the log you excerpted doesn't include
+the resume message for the PCI device.  If you look higher up, you'll
+see that 0000:00:1d.7 does indeed get resumed as expected.  The
+appearance of the PCI name above is an artifact caused by calling
+ehci_dbg(ehci) instead of dev_dbg(&hcd->root_hub.dev) in
+ehci_bus_resume().
 
-Absolutely.  But sometimes it's unavoidable.
+Second, bear in mind that the PM core doesn't try to resume devices if
+they were already asleep at the time of the system suspend.  That
+explains why usb5 and its child devices aren't resumed when you might
+expect.
 
-> A userspace tool would certainly be doable.  That's part of why
-> the sysfs wakeup attributes exist:  to cope with hardware oddities
-> the kernel doesn't know about, or to cope with user preferences.
+Next, bear in mind that the endpoint pseudo-devices don't have any
+suspend/resume support at all.  That's why you see "resume from 0"  
+above.
 
-Agreed.  We should simply pick the "most useful" default setting, 
-whatever that may be, and allow userspace to modify it at will.
-
-A common case to consider is USB devices (such as keyboards or mice)
-plugged into laptops.  The user puts the laptop to sleep, unplugs the 
-USB devices, and packs everything up.  In that situation we don't want 
-the unplug events to waken the laptop.
-
-Adopting a user's point of view, I get the feeling that plug and unplug
-aren't useful wakeup events.  But I may be wrong...  and desktop users 
-are likely to have different requirements from laptop users.
+Finally, bear in mind that root-hub remote wakeup events are handled by 
+a kernel thread which is frozen during hibernation.  When tasks get 
+restarted the thread is able to run, and it then does a remote-wakeup 
+resume of the usb5 root hub.  The first three messages following 
+"Restarting tasks..." show this, and the last two lines show the root 
+hub's interface being resumed.
 
 Alan Stern
