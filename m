@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately
-	resumes after STR
-Date: Fri, 22 Jun 2007 10:33:43 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0706221022190.3290-100000__21681.3547340736$1182522873$gmane$org@iolanthe.rowland.org>
-References: <200706220308.27447.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RC][PATCH -mm] PM: Prevent frozen user mode helpers
+	from failing the freezing of tasks
+Date: Fri, 22 Jun 2007 16:47:49 +0200
+Message-ID: <200706221647.50509.rjw__34842.5553915606$1182523299$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706220308.27447.david-b@pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,50 +18,155 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: "linux-acpi@vger" <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Mattia Dongili <malattia@linux.it>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 22 Jun 2007, David Brownell wrote:
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> On Wednesday 20 June 2007, Rafael J. Wysocki wrote:
-> 
-> > Well, there's nothing interesting in there, AFAICS:
-> > 
-> > Device	S-state	  Status   Sysfs node
-> > P0P4	  S4	 disabled  pci:0000:00:1e.0
-> > BNIC	  S4	 disabled  pci:0000:02:05.0
-> > USB1	  S4	 disabled  pci:0000:00:1d.0
-> > USB2	  S4	 disabled  pci:0000:00:1d.1
-> > USB3	  S4	 disabled  pci:0000:00:1d.2
-> > EUSB	  S4	 disabled  pci:0000:00:1d.7
-> > PS2K	  S4	 disabled  pnp:00:0b
-> > PS2M	  S4	 disabled  pnp:00:0c
-> 
-> The interesting thing there is that all those devices are
-> able to wake from S4 state ... including USB controllers.
-> 
-> That's not very common for USB.  EHCI ("EUSB" above) at
-> least has a spec for how that should work ... it relies on
-> the PCI Vaux power well to maintain power sessions, though
-> I don't know that the EHCI code has been tested against
-> that part of the spec.  UHCI likely relies on black magic
-> to achieve that effect.
+At present, if a user mode helper is running while usermodehelper_pm_callback()
+is executed, the helper may be frozen and the completion in
+call_usermodehelper_exec() won't be completed until user space processes are
+thawed.  As a result, the freezing of kernel threads may fail, which is not
+desirable.
 
-"Black magic"?  Intel's datasheet for the ICH4 board documents a 
-non-standard PCI register in the UHCI configuration space at address 
-0xc4 called "USB_RES USB Resume Enable Register".  The two low-order 
-bits determine whether or not the UHCI controller will monitor the two 
-USB ports for wakeup events.
+Prevent this from happening by introducing a counter of running user mode
+helpers and allowing usermodehelper_pm_callback() to succeed for
+action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+fails if that doesn't happen.]
 
-But the datasheet says nothing about supplying suspend current to the
-ports -- presumably they do remain powered even in S4 or else how could
-they generate wakeup events?  And the datasheet says nothing about 
-_how_ these events are reported.  The lspci output doesn't show any 
-power management capabilities.
+Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+versions of this patch and for very useful comments.
 
-I haven't added support for this register to uhci-hcd.  Partly because 
-the issue has never arisen and partly because it wasn't clear whether 
-the ACPI code would handle it already.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+Acked-by: Uli Luckas <u.luckas@road.de>
+Reviewed-by: Pavel Machek <pavel@ucw.cz>
+---
+ kernel/kmod.c |   70 +++++++++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 60 insertions(+), 10 deletions(-)
 
-Alan Stern
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -41,14 +41,6 @@ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+ 
+-/*
+- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
+- * immediately returning -EBUSY.  Used for preventing user land processes from
+- * being created after the user land has been frozen during a system-wide
+- * hibernation or suspend operation.
+- */
+-static int usermodehelper_disabled;
+-
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -275,15 +267,48 @@ static void __call_usermodehelper(struct
+ 	}
+ }
+ 
++#ifdef CONFIG_PM
++/*
++ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
++ * (used for preventing user land processes from being created after the user
++ * land has been frozen during a system-wide hibernation or suspend operation).
++ */
++static int usermodehelper_disabled;
++
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
++ * helpers to finish.
++ */
++static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ static int usermodehelper_pm_callback(struct notifier_block *nfb,
+ 					unsigned long action,
+ 					void *ignored)
+ {
++	long retval;
++
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		retval = wait_event_timeout(running_helpers_waitq,
++					atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (retval) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -293,6 +318,29 @@ static int usermodehelper_pm_callback(st
+ 	return NOTIFY_DONE;
+ }
+ 
++static void new_helper(void)
++{
++	atomic_inc(&running_helpers);
++}
++
++static void helper_finished(void)
++{
++	if (atomic_dec_and_test(&running_helpers))
++		wake_up(&running_helpers_waitq);
++}
++
++static void register_pm_notifier_callback(void)
++{
++	pm_notifier(usermodehelper_pm_callback, 0);
++}
++#else /* CONFIG_PM */
++#define usermodehelper_disabled	0
++
++static inline void new_helper(void) {}
++static inline void helper_finished(void) {}
++static inline void register_pm_notifier_callback(void) {}
++#endif /* CONFIG_PM */
++
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+  * @path - path to usermode executable
+@@ -397,6 +445,7 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	new_helper();
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+@@ -418,6 +467,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	helper_finished();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+@@ -459,5 +509,5 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	pm_notifier(usermodehelper_pm_callback, 0);
++	register_pm_notifier_callback();
+ }
