@@ -1,11 +1,15 @@
-From: "diarra nadege" <nadege80@latinmail.com>
-Subject: projet
-Date: Sat, 23 Jun 2007 11:54:24 +0200 (CEST)
-Message-ID: <20070623095424.DD920CD4E7A@smtp.latinmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: Platform-specific system power states
+Date: Sat, 23 Jun 2007 22:20:05 +0200
+Message-ID: <200706232220.06142.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0706222130440.11186-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="latinmail.com_ltwebml02.localdomain_935cd257f5ea34532c15dbbc8c5f363f"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0706222130440.11186-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,51 +19,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "nadege80@latinmail.com" <nadege80@latinmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Saturday, 23 June 2007 03:32, Alan Stern wrote:
+> On Fri, 22 Jun 2007, Rafael J. Wysocki wrote:
+> 
+> > On Friday, 22 June 2007 21:49, David Brownell wrote:
+> > > On Thursday 21 June 2007, Alan Stern wrote:
+> > > > 
+> > > > I'd be perfectly happy to have the list of supported system power 
+> > > > states be exported by the platform code instead of predetermined by the 
+> > > > PM core.  It would still be necessary to add a method whereby the PM 
+> > > > core could inform the platform about the new target state at the 
+> > > > beginning of a state change.  And of course there would have to be a 
+> > > > way for drivers or subsystems to query the platform, to see what 
+> > > > resources would be available.
+> > > 
+> > > Rafael will propose the new method, I guess;
+> > 
+> > Yes, I will.
+> > 
+> > Still, for now, I'm going to make it take an integer argument equal to either
+> > PM_SUSPEND_STANDBY or PM_SUSPEND_MEM, since these are the only two sleep states
+> > known to the core right now.
+> > 
+> > I think, however, that in the long run the better solution would be to make
+> > the platform tell the PM core, during the initialization, what system sleep
+> > states are available.  Then, before the transition, the PM core will tell the
+> > platform which state is the target one.  IMO for this purpose the sleep will
+> > need to be identified in a universal way and perhaps it's a good idea to
+> > discuss that for a while. ;-)
+> 
+> A good way to identify a sleep state would be a pointer to a string 
+> containing the state's name.  The PM core could use these pointers to 
+> export the states in sysfs.
 
---latinmail.com_ltwebml02.localdomain_935cd257f5ea34532c15dbbc8c5f363f
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Well, I thought of exactly the same thing.
 
-Diarra nadege
-C=F4te d'ivoire=20
-Abidjan=20
-Afrique occidentale=20
+Perhaps we can generalize it a bit by defining:
 
-Bonjour ,
+struct pm_sleep_state {
+	char *name;
+};
 
-Je souhaiterais votre aide pour l'ex=E9cution d'une transaction financi=
-=E8re. Je d=E9sire investir dans la fabrication et la gestion de biens =
-immobiliers mais aussi continuer mes =E9tudes dans votre pays.=20
-J'ai =E0 pr=E9sent cinq million d=92euros ( 5.000.000 EUROS) h=E9rit=E9=
-s de mon p=E8re d=E9funt que je d=E9sire investir .
-je voudrais bien solliciter votre aide en recevant ces fonds sur votre =
-compte ou un compte quelconque que tu ouvriras =E0 cet effet dans votre=
- pays.=20
-En contre partie, Je suis pr=EAt=E9 =E0 vous c=E9der 15% de toute la so=
-mme comme commission et efforts que vous fournirez si vous acceptez de =
-m'assister dans cette op=E9ration. Si vous d=E9sirez davantage d=92info=
-rmations, veuillez bien me contacter imm=E9diatement sur mon adresse pr=
-iv=E9e :=20
+and make the platforms give us a NULL-terminated array of such things during
+the initializatiion.
 
-E-mail: nadege_diarra80@yahoo.fr
+Then, if it turns out to be convenient to add another field to this structure,
+there won't be any problems with that.  Also, the platforms will be able to
+embed a struct pm_sleep_state in their internal structures representing system
+sleep states, if need be.
 
-En attendant votre r=E9ponse imm=E9diates=20
-Que Dieu vous b=E9nisse=20
-Respectueusement=20
-
-Nadege
+Greetings,
+Rafael
 
 
-=A1Vive la pasi=F3n del f=FAtbol! Toda la Copa Am=E9rica, en Starmedia =
-http://pan.segundosfuera.com/copaamerica/
---latinmail.com_ltwebml02.localdomain_935cd257f5ea34532c15dbbc8c5f363f
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---latinmail.com_ltwebml02.localdomain_935cd257f5ea34532c15dbbc8c5f363f--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
