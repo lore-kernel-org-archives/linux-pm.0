@@ -1,16 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers
-	from failing the freezing of tasks
-Date: Sun, 24 Jun 2007 22:21:32 +0200
-Message-ID: <20070624202132.GC21757__18342.5915697173$1182716546$gmane$org@elf.ucw.cz>
-References: <200706221647.50509.rjw@sisk.pl> <200706222347.55717.rjw@sisk.pl>
-	<20070624170514.GA21757@elf.ucw.cz>
-	<200706242226.39665.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC/RFT][PATCH -mm 0/4] PM: Rework struct pm_ops and
+	related things
+Date: Sun, 24 Jun 2007 22:39:04 +0200
+Message-ID: <200706242239.05678.rjw__28781.3920331702$1182720625$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200706242226.39665.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi,
 
-> > > > > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-> > > > > versions of this patch and for very useful comments.
-> > > > ...
-> > > > > Reviewed-by: Pavel Machek <pavel@ucw.cz>
-> > > > 
-> > > > Eh, not sure this header is worth anything. Sometimes I'm lazy and
-> > > > stop when I see first problem.
-> > > > 
-> > > > >  	switch (action) {
-> > > > >  	case PM_HIBERNATION_PREPARE:
-> > > > >  	case PM_SUSPEND_PREPARE:
-> > > > >  		usermodehelper_disabled = 1;
-> > > > > -		return NOTIFY_OK;
-> > > > > +		retval = wait_event_timeout(running_helpers_waitq,
-> > > > > +					atomic_read(&running_helpers) == 0,
-> > > > 
-> > > > Are you sure here? What happens when atomic variable changes between
-> > > > the atomic_read and the function call?
-> > > 
-> > > Er, this is a macro. :-)
-> > > 
-> > > In fact we rely only on atomic_read(&running_helpers) being still zero after
-> > > helper_finished() has woken us up, but I think that's acceptable.
-> > > 
-> > > IOW, if the wait_event_timeout() returns with retval different from zero, this
-> > > means that atomic_read(&running_helpers) returned zero at one point after
-> > > we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
-> > 
-> > Ok, can you write short comment explaining that? /* We have set
-> > usermodehelper_disabled, so any new usermode helpers are not a problem
-> > */.
-> 
-> OK, please have a look at the updated patch below.
+I had some time to create patches implementing my suggestions from the previous
+thread "PM: Introduce set_target method in pm_ops".  For completness I also
+include the first patch that introduces .set_target() into the series.
 
-ACK, and thanks for your patience.
-									Pavel
+The following series of patches:
+* introduces the .set_target() method in 'struct pm_ops' so that the platform
+  code knows in advance what sleep state the system is going to enter (this
+  is necessary for ACPI and at91)
+* moves the definition of 'struct pm_ops' to <include/suspend.h>
+* changes the name of 'struct pm_ops' to 'struct platform_suspend_operations'
+  and modified the names of some related functions and global variables
+  accordingly
+* modifies 'struct platform_suspend_operations' so that .prepare() and
+  .finish() don't take arguments (.enter() still takes the state argument, 
+  because some platforms don't implement the other callbacks)
+
+I was only able to compile the patches on a PC, so if you can point me to
+any tools I can use for testing them on the other affected architectures,
+I'd be grateful.
+
+Comments welcome.
+
+Greetings,
+Rafael
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
