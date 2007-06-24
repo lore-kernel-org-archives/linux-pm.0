@@ -1,15 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers
-	from failing the freezing of tasks
-Date: Sun, 24 Jun 2007 19:05:14 +0200
-Message-ID: <20070624170514.GA21757__34312.4972693205$1182704831$gmane$org@elf.ucw.cz>
-References: <200706221647.50509.rjw@sisk.pl> <20070622210750.GA4267@ucw.cz>
-	<200706222347.55717.rjw@sisk.pl>
+From: "Elmer G. Hendrickson" <giowr@gotadsl.co.uk>
+Subject: fastener
+Date: Sun, 24 Jun 2007 10:04:28 -0700
+Message-ID: <467EA41C.4030607@gotadsl.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200706222347.55717.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +15,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+SREA Acquires $75 Million Dollar Asset!
 
-> > > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-> > > versions of this patch and for very useful comments.
-> > ...
-> > > Reviewed-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > Eh, not sure this header is worth anything. Sometimes I'm lazy and
-> > stop when I see first problem.
-> > 
-> > >  	switch (action) {
-> > >  	case PM_HIBERNATION_PREPARE:
-> > >  	case PM_SUSPEND_PREPARE:
-> > >  		usermodehelper_disabled = 1;
-> > > -		return NOTIFY_OK;
-> > > +		retval = wait_event_timeout(running_helpers_waitq,
-> > > +					atomic_read(&running_helpers) == 0,
-> > 
-> > Are you sure here? What happens when atomic variable changes between
-> > the atomic_read and the function call?
-> 
-> Er, this is a macro. :-)
-> 
-> In fact we rely only on atomic_read(&running_helpers) being still zero after
-> helper_finished() has woken us up, but I think that's acceptable.
-> 
-> IOW, if the wait_event_timeout() returns with retval different from zero, this
-> means that atomic_read(&running_helpers) returned zero at one point after
-> we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
+Score One Inc.(SREA)
+$0.30
 
-Ok, can you write short comment explaining that? /* We have set
-usermodehelper_disabled, so any new usermode helpers are not a problem
-*/.
+News hit just after close. SREA has acquired the $75 Million peace of
+land for the new "Recreation Town" in Dalian. This new project mimics a
+Facility in "Shui On" that profited more than $100 Million USD. SREA is
+going to go through the roof after this hits investors this weekend. Get
+on SREA at open on Monday!
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+FeedForAll, for example, has a wizard that walks you through the
+creation of RSS feeds, whether you want to publish a plain RSS feed, a
+podcast feed, or a podcast with iTunes support. Obviously, the larger
+files might intimidate listeners with a slow connection.
+
+Helping students learn writing and reporting skills while understanding
+how to use technology. Over time, the number of companies using the
+"shareware" model has increased dramatically.
+Take the podcast quiz and test your knowledge. What started as a hobby
+for many, has turned into a lucrative profession for some. htm Why Niche
+RSS Feeds Matter? , is a complete solution for creating podcasts. Over
+time, the number of companies using the "shareware" model has increased
+dramatically. Reduce extraneous noise by turning off fans or any
+equipment. The Shareware Industry Awards are selected by a group of
+industry professionals that nominate and vote based on a programs
+merits.
+
+By adopting good podcasting practices, you will be on the path to
+podcasting success.
+
+The answer to creation according to Apple: Feed publishers can use a
+type of application called a generator to create the RSS markup that
+makes your feed available. RSSFilter can be used in conjunction with
+RSSmesh to filter and merge multiple RSS feeds as well.
+
+Consider hanging a note on the door, so that you will not be disturbed
+while recording. The most popular software for creating feeds currently
+is FeedForAll and can be found at feedforall.
+
+Instructors have used blogging as a teaching tool.
