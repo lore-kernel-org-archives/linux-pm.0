@@ -1,14 +1,16 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: Re: [RFC][PATCH -mm] PM: Introduce set_target
-	method in pm_ops
-Date: Sun, 24 Jun 2007 14:49:48 +0300
-Message-ID: <1182685788.10929.28.camel__4510.67773760787$1182685855$gmane$org@Dogbert.NOE.nokia.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] PM: Introduce set_target method in
+	pm_ops
+Date: Sun, 24 Jun 2007 14:57:20 +0200
+Message-ID: <200706241457.21237.rjw__18462.125110864$1182689960$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.0706232026460.9663-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <Pine.LNX.4.44L0.0706232026460.9663-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Sat, 2007-06-23 at 20:28 -0400, ext Alan Stern wrote:
+On Sunday, 24 June 2007 02:28, Alan Stern wrote:
 > On Sun, 24 Jun 2007, Rafael J. Wysocki wrote:
 > 
-> > > Is this design okay with system states in which the CPU is able to
-> run?
+> > > Is this design okay with system states in which the CPU is able to run?
 > > 
 > > Do you mean the patch or the suggestions above?
 > 
 > The suggestions.
 > 
-> > > Right now the states we have are On, Standby, and Suspend, and the
-> CPU
+> > > Right now the states we have are On, Standby, and Suspend, and the CPU
 > > > runs only in the On state.  But on some platforms there could be
-> > > multiple states in which the CPU is able to run, albeit with
-> degraded 
+> > > multiple states in which the CPU is able to run, albeit with degraded 
 > > > performance.
 > > 
-> > I wouldn't call those system sleep states.  For example, ACPI
-> defines system
-> > sleep states as the states in which no instructions are executed by
-> any CPUs
+> > I wouldn't call those system sleep states.  For example, ACPI defines system
+> > sleep states as the states in which no instructions are executed by any CPUs
 > > and I think that's reasonable.
 > > 
 > > Moreover, the ACPI spec insists that transitions between different sleep
@@ -54,41 +50,17 @@ On Sat, 2007-06-23 at 20:28 -0400, ext Alan Stern wrote:
 > tell the system to go to a low-performance run state?  Or should that 
 > be handled automatically within the kernel?
 
-That's how we do it since Nokia IT 770 where we have:
- 
-/sys/power/sleep_while_idle
+I think that the /sys/power/state interface should be restricted to system
+sleep states only and we should introduce another one for handling non-sleep
+low-power states.
 
-and if that's set to 1 (default), then in the idle loop we try to hit
-SoC retention.
+IMHO, the kernel can automatically transition to non-sleep low-power states,
+but the users should be able to define the conditions for that.  Also, the user
+should be able to force the transition if necessary/desired.
 
-Retention can be achieved if all the clocks have been released by their
-respective users. If not all the clocks are free, the system oscillator
-is not stopped and thereffore only some part will be in clock stop mode.
-This, still, yelds significant power saving.
-
-There is also an architecture specific (OMAP1 vs OMAP2) way to control
-latency.
-
-It's very rudimental and partially hackish: in OMAP2 it's mostly used to
-workaround some missing wakeup dependencies (some are not provided by
-the hw, some are not implemented properly by sw and should be fixed).
-
-OMAP1: select ARM idle vs Big Sleep vs Deep Sleep
-
-OMAP2: select ARM idle vs ARM retention, vs SoC retention
-
-That's nice both from user's perspective (no need to worry about runtime
-pm, it just works) and driver developer's perspective (if your driver is
-for hw that has been properly wired, then using the clock fw interface
-is enough).
-
-So if you want to implement dependencies betweeen userspace and
-kernelspace because your architecture has them builtin, it's ok, but
-they should not be forced upon those arch that don't need them.
+Greetings,
+Rafael
 
 
 -- 
-Cheers, Igor
-
-Igor Stoppa <igor.stoppa@nokia.com>
-(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
+"Premature optimization is the root of all evil." - Donald Knuth
