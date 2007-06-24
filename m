@@ -1,11 +1,17 @@
-From: "Elmer G. Hendrickson" <giowr@gotadsl.co.uk>
-Subject: fastener
-Date: Sun, 24 Jun 2007 10:04:28 -0700
-Message-ID: <467EA41C.4030607@gotadsl.co.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers
+	from failing the freezing of tasks
+Date: Sun, 24 Jun 2007 22:26:38 +0200
+Message-ID: <200706242226.39665.rjw__39006.0531361543$1182716445$gmane$org@sisk.pl>
+References: <200706221647.50509.rjw@sisk.pl> <200706222347.55717.rjw@sisk.pl>
+	<20070624170514.GA21757@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070624170514.GA21757@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,47 +21,201 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SREA Acquires $75 Million Dollar Asset!
+Hi,
 
-Score One Inc.(SREA)
-$0.30
+On Sunday, 24 June 2007 19:05, Pavel Machek wrote:
+> Hi!
+> 
+> > > > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> > > > versions of this patch and for very useful comments.
+> > > ...
+> > > > Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> > > 
+> > > Eh, not sure this header is worth anything. Sometimes I'm lazy and
+> > > stop when I see first problem.
+> > > 
+> > > >  	switch (action) {
+> > > >  	case PM_HIBERNATION_PREPARE:
+> > > >  	case PM_SUSPEND_PREPARE:
+> > > >  		usermodehelper_disabled = 1;
+> > > > -		return NOTIFY_OK;
+> > > > +		retval = wait_event_timeout(running_helpers_waitq,
+> > > > +					atomic_read(&running_helpers) == 0,
+> > > 
+> > > Are you sure here? What happens when atomic variable changes between
+> > > the atomic_read and the function call?
+> > 
+> > Er, this is a macro. :-)
+> > 
+> > In fact we rely only on atomic_read(&running_helpers) being still zero after
+> > helper_finished() has woken us up, but I think that's acceptable.
+> > 
+> > IOW, if the wait_event_timeout() returns with retval different from zero, this
+> > means that atomic_read(&running_helpers) returned zero at one point after
+> > we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
+> 
+> Ok, can you write short comment explaining that? /* We have set
+> usermodehelper_disabled, so any new usermode helpers are not a problem
+> */.
 
-News hit just after close. SREA has acquired the $75 Million peace of
-land for the new "Recreation Town" in Dalian. This new project mimics a
-Facility in "Shui On" that profited more than $100 Million USD. SREA is
-going to go through the roof after this hits investors this weekend. Get
-on SREA at open on Monday!
+OK, please have a look at the updated patch below.
 
-FeedForAll, for example, has a wizard that walks you through the
-creation of RSS feeds, whether you want to publish a plain RSS feed, a
-podcast feed, or a podcast with iTunes support. Obviously, the larger
-files might intimidate listeners with a slow connection.
+Greetings,
+Rafael
 
-Helping students learn writing and reporting skills while understanding
-how to use technology. Over time, the number of companies using the
-"shareware" model has increased dramatically.
-Take the podcast quiz and test your knowledge. What started as a hobby
-for many, has turned into a lucrative profession for some. htm Why Niche
-RSS Feeds Matter? , is a complete solution for creating podcasts. Over
-time, the number of companies using the "shareware" model has increased
-dramatically. Reduce extraneous noise by turning off fans or any
-equipment. The Shareware Industry Awards are selected by a group of
-industry professionals that nominate and vote based on a programs
-merits.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-By adopting good podcasting practices, you will be on the path to
-podcasting success.
+At present, if a user mode helper is running while usermodehelper_pm_callback()
+is executed, the helper may be frozen and the completion in
+call_usermodehelper_exec() won't be completed until user space processes are
+thawed.  As a result, the freezing of kernel threads may fail, which is not
+desirable.
 
-The answer to creation according to Apple: Feed publishers can use a
-type of application called a generator to create the RSS markup that
-makes your feed available. RSSFilter can be used in conjunction with
-RSSmesh to filter and merge multiple RSS feeds as well.
+Prevent this from happening by introducing a counter of running user mode
+helpers and allowing usermodehelper_pm_callback() to succeed for
+action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+fails if that doesn't happen.]
 
-Consider hanging a note on the door, so that you will not be disturbed
-while recording. The most popular software for creating feeds currently
-is FeedForAll and can be found at feedforall.
+Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+versions of this patch and for very useful comments.
 
-Instructors have used blogging as a teaching tool.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/kmod.c |   76 ++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 66 insertions(+), 10 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -41,14 +41,6 @@ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+ 
+-/*
+- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
+- * immediately returning -EBUSY.  Used for preventing user land processes from
+- * being created after the user land has been frozen during a system-wide
+- * hibernation or suspend operation.
+- */
+-static int usermodehelper_disabled;
+-
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -275,15 +267,54 @@ static void __call_usermodehelper(struct
+ 	}
+ }
+ 
++#ifdef CONFIG_PM
++/*
++ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
++ * (used for preventing user land processes from being created after the user
++ * land has been frozen during a system-wide hibernation or suspend operation).
++ */
++static int usermodehelper_disabled;
++
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
++ * helpers to finish.
++ */
++static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ static int usermodehelper_pm_callback(struct notifier_block *nfb,
+ 					unsigned long action,
+ 					void *ignored)
+ {
++	long retval;
++
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		/*
++		 * From now on call_usermodehelper_exec() won't start any new
++		 * helpers, so it is sufficient if running_helpers turns out to
++		 * be zero at one point (it may be increased later, but that
++		 * doesn't matter).
++		 */
++		retval = wait_event_timeout(running_helpers_waitq,
++					atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (retval) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -293,6 +324,29 @@ static int usermodehelper_pm_callback(st
+ 	return NOTIFY_DONE;
+ }
+ 
++static void new_helper(void)
++{
++	atomic_inc(&running_helpers);
++}
++
++static void helper_finished(void)
++{
++	if (atomic_dec_and_test(&running_helpers))
++		wake_up(&running_helpers_waitq);
++}
++
++static void register_pm_notifier_callback(void)
++{
++	pm_notifier(usermodehelper_pm_callback, 0);
++}
++#else /* CONFIG_PM */
++#define usermodehelper_disabled	0
++
++static inline void new_helper(void) {}
++static inline void helper_finished(void) {}
++static inline void register_pm_notifier_callback(void) {}
++#endif /* CONFIG_PM */
++
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+  * @path - path to usermode executable
+@@ -397,6 +451,7 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	new_helper();
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+@@ -418,6 +473,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	helper_finished();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+@@ -459,5 +515,5 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	pm_notifier(usermodehelper_pm_callback, 0);
++	register_pm_notifier_callback();
+ }
