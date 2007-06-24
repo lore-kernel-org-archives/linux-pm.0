@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFC][PATCH -mm] PM: Introduce set_target method
-	in pm_ops
-Date: Sun, 24 Jun 2007 15:04:40 +0200
-Message-ID: <200706241504.41009.rjw__19111.9387666278$1182690064$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0706232026460.9663-100000@netrider.rowland.org>
-	<1182685788.10929.28.camel@Dogbert.NOE.nokia.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Ottawa Linux Power Management Summit, June 25-26, 2007
+Date: Sun, 24 Jun 2007 13:08:07 -0400
+Message-ID: <200706241308.07646.lenb__32933.6377130405$1182704772$gmane$org@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1182685788.10929.28.camel@Dogbert.NOE.nokia.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,85 +17,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Igor Stoppa <igor.stoppa@nokia.com>
-Cc: Len Brown <len.brown@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, linux acpi <linux-acpi@vger.kernel.org>
+To: Dave Jones <davej@redhat.com>, Adam Belay <abelay@novell.com>, Mark Gross <mgross@linux.intel.com>, Marcelo Tosatti <marcelo@kvack.org>, Mischa Jonker <mischa.jonker@tass.nl>, Tariq Shureih <tariq.shureih@intel.com>, "Pedersen Klaus.K (Nokia-M/Helsinki)" <klaus.k.pedersen@nokia.com>, Igor Stoppa <igor.stoppa@nokia.com>, Poussa Sakari <sakari.poussa@nokia.com>, Matthew Locke <matt@nomadgs.com>, "Eugeny S. Mints" <eugeny.mints@gmail.com>, "Scott E. Preece" <preece@motorola.com>, Vivek Kashyap <kashyapv@us.ibm.com>, Kevin Hilman <khilman@mvista.com>, Kenneth <kenroz@us.ibm.com>, Seshadri@d975xbx2
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 24 June 2007 13:49, Igor Stoppa wrote:
-> Hi,
-> On Sat, 2007-06-23 at 20:28 -0400, ext Alan Stern wrote:
-> > On Sun, 24 Jun 2007, Rafael J. Wysocki wrote:
-> > 
-> > > > Is this design okay with system states in which the CPU is able to
-> > run?
-> > > 
-> > > Do you mean the patch or the suggestions above?
-> > 
-> > The suggestions.
-> > 
-> > > > Right now the states we have are On, Standby, and Suspend, and the
-> > CPU
-> > > > runs only in the On state.  But on some platforms there could be
-> > > > multiple states in which the CPU is able to run, albeit with
-> > degraded 
-> > > > performance.
-> > > 
-> > > I wouldn't call those system sleep states.  For example, ACPI
-> > defines system
-> > > sleep states as the states in which no instructions are executed by
-> > any CPUs
-> > > and I think that's reasonable.
-> > > 
-> > > Moreover, the ACPI spec insists that transitions between different sleep
-> > > states should be made through the On state.
-> > 
-> > Okay.  But on non-ACPI systems, do we want to restrict the 
-> > /sys/power/state interface to sleep states?  How then should the user 
-> > tell the system to go to a low-performance run state?  Or should that 
-> > be handled automatically within the kernel?
-> 
-> That's how we do it since Nokia IT 770 where we have:
->  
-> /sys/power/sleep_while_idle
-> 
-> and if that's set to 1 (default), then in the idle loop we try to hit
-> SoC retention.
-> 
-> Retention can be achieved if all the clocks have been released by their
-> respective users. If not all the clocks are free, the system oscillator
-> is not stopped and thereffore only some part will be in clock stop mode.
-> This, still, yelds significant power saving.
-> 
-> There is also an architecture specific (OMAP1 vs OMAP2) way to control
-> latency.
-> 
-> It's very rudimental and partially hackish: in OMAP2 it's mostly used to
-> workaround some missing wakeup dependencies (some are not provided by
-> the hw, some are not implemented properly by sw and should be fixed).
-> 
-> OMAP1: select ARM idle vs Big Sleep vs Deep Sleep
-> 
-> OMAP2: select ARM idle vs ARM retention, vs SoC retention
-> 
-> That's nice both from user's perspective (no need to worry about runtime
-> pm, it just works) and driver developer's perspective (if your driver is
-> for hw that has been properly wired, then using the clock fw interface
-> is enough).
-> 
-> So if you want to implement dependencies betweeen userspace and
-> kernelspace because your architecture has them builtin, it's ok, but
-> they should not be forced upon those arch that don't need them.
+Monday, June 25th
 
-Sure, if your platform core is not going to give the user any control over
-the runtime PM, it should be able to tell the PM core about that, in which case
-the top-level runtime PM interface should be inactive.
+  9AM - 6PM Garden Suite in Les Suites Ottawa
 
-This is one of the reasons why I think that /sys/power/state should cover
-system sleep states only.
+	A couple of people have prepared some slides
+	to guide discussion.  OLPC and Nokia come to mind.
+	We'll have an LCD projector available this day only
+	to accommodate them.
 
-Greetings,
-Rafael
+	working lunch in the room.
+
+  6:45 PM Dinner, courtesy Intel
+
+	Friday's Road Beef House
+	150 Elgin St, Ottawa
+
+Tuesday, June 26th
+
+  9AM - 6PM Garden Suite in Les Suites Ottawa
+
+	round-table discussions
+
+	working lunch in the room
+
+  (10AM-8PM is OLS registration)
+  (bring OLS badge to pre-OLS pub nite)
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Meeting Memory
+
+I volunteer to take notes.
+After the meetings I'll send them to the attendees for review.
+With Mark, I also volunteer to present them at the OLS PM BOF,
+(currently Thursday 6PM) and send them to linux-pm, and LWN.
+
+Expected Attendees: (please send any corrections to me)
+
+Marcelo Tosatti <marcelo@kvack.org> 
+
+	One Laptop Per Child
+
+Len Brown <len.brown@intel.com>
+
+	Linux Kernel ACPI Maintainer
+
+Dave Jones <davej@redhat.com>
+
+	Fedora Maintainer, Linux Kernel Cpufreq Maintainer
+
+Adam Belay <abelay@novell.com>
+
+	Linux Kernel PNP Maintainer, cpuidle developer
+	
+Mark Gross <mgross@linux.intel.com>
+
+	Intel OTC embedded Linux team
+
+Tariq Shureih <tariq.shureih@intel.com>
+
+	Intel OTC MID power policy manager
+
+"Pedersen Klaus.K (Nokia-M/Helsinki)" <klaus.k.pedersen@nokia.com>
+Igor Stoppa <igor.stoppa@nokia.com>
+Poussa Sakari <sakari.poussa@nokia.com>
+	Will make a short presentation about latest developments
+	in Nokia N800 power management area.
+
+Matthew Locke <matt@nomadgs.com>
+"Eugeny S. Mints" <eugeny.mints@gmail.com>
+
+	Our primary interest is unified 
+	cross platforms pm API to control pm hardware (covering both x86 and embedded), 
+	constraints (including  latencies) engine, pm subsystem/drivers interface, API 
+	for use case driven pm.
+
+"Scott E. Preece" <preece@motorola.com>
+
+	I would love to see agreement on a way to structure PM so that different
+	kinds of systems could better meet their different goals...
+
+Vivek Kashyap <kashyapv@us.ibm.com>
+Kenneth <kenroz@us.ibm.com>
+
+	We are interested in cross 
+	platform (PowerPC, x86) power management, pm controls and policies, 
+	pm based scheduling, pm in presence of hypervisors, and power scaled 
+	cpu utilization statistics.
+
+Paul Mundt <lethal@linux-sh.org>
+
+	Linux Kernel Super-H Maintainer
+
+Kevin Hilman <khilman@mvista.com>
+
+	MontaVista
+
+Mischa Jonker <mischa.jonker@tass.nl>
+
+	NXP Semiconductors
+
+Seshadri, Harinarayanan" <harinarayanan.seshadri@intel.com>
+
+	Intel, Ultra Mobile Group
