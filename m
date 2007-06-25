@@ -1,16 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH -mm] PM: Introduce set_target method in
-	pm_ops
-Date: Sun, 24 Jun 2007 17:01:52 -0700
-Message-ID: <200706241701.53971.david-b__48127.8131287128$1182731804$gmane$org@pacbell.net>
-References: <Pine.LNX.4.44L0.0706232026460.9663-100000@netrider.rowland.org>
-	<200706241457.21237.rjw@sisk.pl>
+Subject: Re: Re: Platform-specific system power states
+Date: Sun, 24 Jun 2007 17:26:20 -0700
+Message-ID: <200706241726.21206.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0706211635450.2553-100000@iolanthe.rowland.org>
+	<200706221249.29068.david-b@pacbell.net>
+	<200706222330.35829.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706241457.21237.rjw@sisk.pl>
+In-Reply-To: <200706222330.35829.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,82 +22,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 24 June 2007, Rafael J. Wysocki wrote:
-> On Sunday, 24 June 2007 02:28, Alan Stern wrote:
-> > On Sun, 24 Jun 2007, Rafael J. Wysocki wrote:
-> > 
-> > > > Right now the states we have are On, Standby, and Suspend, and the CPU
-> > > > runs only in the On state.  But on some platforms there could be
-> > > > multiple states in which the CPU is able to run, albeit with degraded 
-> > > > performance.
+On Friday 22 June 2007, Rafael J. Wysocki wrote:
+> On Friday, 22 June 2007 21:49, David Brownell wrote:
 
-That starts to get into those cpufreq/"operating point" discussions".
-
-
-> > > I wouldn't call those system sleep states.  For example, ACPI defines system
-> > > sleep states as the states in which no instructions are executed by any CPUs
-> > > and I think that's reasonable.
-
-Its Embedded Controller surely executes instructions!
-
-
-> > > Moreover, the ACPI spec insists that transitions between different sleep
-> > > states should be made through the On state.
-
-Not that the world should feel compelled to restrict itself to what
-ACPI envisions of course...
-
-
-> > Okay.  But on non-ACPI systems, do we want to restrict the 
-> > /sys/power/state interface to sleep states?  How then should the user 
-> > tell the system to go to a low-performance run state?  Or should that 
-> > be handled automatically within the kernel?
+> > and as for querying, the many power-related resources involved would seem to
+> > be clocks and power domains.  ACPI has an internal notion of the latter, but 
+> > skips the former.  You've seen my proposal for what seems to be sufficient in
+> > the case of clocks.  (And one of these days I'm sure I'll push it upstream.
+> > After that new method lands, to replace the now-missing functionality...)
 > 
-> I think that the /sys/power/state interface should be restricted to system
-> sleep states only and we should introduce another one for handling non-sleep
-> low-power states.
+> In fact the ACPI spec regards clock sources as power resources.  More
+> precisely, it defines a power resource as "resources (for example, power planes
+> and clock sources) that a device requires to operate in a given power state"
+> (Section 2.1 in the 3.0b spec).  Perhaps we also could use a general notion of
+> "power resource" in a similar fashion?
 
-Then /sys/power/state would more accurately be named something
-like /sys/power/sleep_state, right?
-
-The core reason it would make sense to have such a bifurcation is
-IMO that those lower power operating states mostly shouldn't involve
-walking the device tree and suspending everything.  They involve some
-set of hardware (possibly including CPUs) entering low power states.
-But not *every* bit of hardware.
-
-Another aspect here is what idle state is used.  Sometimes that
-can be all but indistinguishable from a "sleep" state.
+The problem with claiming that ACPI has a notion of clocks is that it
+doesn't have any clock-like semantics.  Like getting/setting rates,
+reparenting, and so forth ... everything the clk_*() interfaces do.
+At best it has "stuff that can be enabled/disabled".
 
 
-> IMHO, the kernel can automatically transition to non-sleep low-power states,
-> but the users should be able to define the conditions for that.  Also, the user
-> should be able to force the transition if necessary/desired.
+Related:  Linux doesn't even expose the limited notion of power resource
+that ACPI packages.  And, as shown by some comments on one patch I posted,
+even that notion needs work before it behaves.  ISTR the issue was that
+the ACPI power methods apply to PCI functions, but the resources applied
+to PCI devices.  So in the absense of refcounting, powering down one
+function would surprisingly enough power them all down... absolutely
+contrary to the intent of powering down just that function.
 
-There are several ways those lowpower run states can be entered.
-But I'm not keen on userspace being able to "force" transitions
-like that.
+There's probably some generalizable notion lurking there, but clearly it's
+not cooked in today's Linux ACPI stack.
 
-IMO it's strongly preferable if the platform code -- perhaps its
-custom idle loop -- inventories the system regularly to see if
-it's eligible to enter one of the states.
+And suffice it to say that I've seen work with such "general notions"
+blow up so regularly (the basic crime being loss of contact with real
+world problems, leading to useless code bloat) that my first reaction
+is almost always "no, don't generalize yet, solve some problems first".
 
-As a rule, if certain resources are in use that means related
-power states can't be entered.  If they're in use, then userspace
-trying to force a transition means breaking something -- else
-those resources would stay used!
-
-The similarity with cpufreq is obvious:  cpufreq inventories the
-CPU usage regularly to see if the CPU should be revved up or down.
-
-Now, inputs to that inventory can come from userspace ... there's
-information about upcoming usage that the kernel could otherwise
-only guess at.  User exiting the video playback app, vs just pausing
-it, might suggest more aggressive savings are appropriate; etc.
-Userspace can also provide tuning parameters.  I have no problems
-with that model.
+Hence my ongoing belief that we need voltage abstractions (both producer
+and consumer) resembling the current clock abstraction, before we start
+to think about grouping the two under some umbrella.
 
 - Dave
