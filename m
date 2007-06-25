@@ -1,13 +1,13 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC/RFT][PATCH -mm 1/4] PM: Introduce set_target
-	method in pm_ops
-Date: Mon, 25 Jun 2007 23:28:06 +0200
-Message-ID: <1182806886.6644.4.camel__31540.2862070643$1182848305$gmane$org@johannes.berg>
-References: <200706242239.05678.rjw@sisk.pl> <200706242240.40476.rjw@sisk.pl>
+Subject: Re: [RFC/RFT][PATCH -mm 4/4] PM: Rework struct
+	platform_suspend_operations
+Date: Mon, 25 Jun 2007 23:30:06 +0200
+Message-ID: <1182807006.6644.8.camel__29808.11808161$1182848692$gmane$org@johannes.berg>
+References: <200706242239.05678.rjw@sisk.pl> <200706242244.51335.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2987917411278841932=="
+Content-Type: multipart/mixed; boundary="===============1313749849278229142=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706242240.40476.rjw@sisk.pl>
+In-Reply-To: <200706242244.51335.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,53 +23,71 @@ Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pa
 List-Id: linux-pm@vger.kernel.org
 
 
---===============2987917411278841932==
+--===============1313749849278229142==
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-iFdJk4Krnt1acqwwI3oo"
+	boundary="=-I0E39rlipgsmZnVo2kvI"
 
 
---=-iFdJk4Krnt1acqwwI3oo
+--=-I0E39rlipgsmZnVo2kvI
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2007-06-24 at 22:40 +0200, Rafael J. Wysocki wrote:
+On Sun, 2007-06-24 at 22:44 +0200, Rafael J. Wysocki wrote:
 
-> + * @set_target: Tell the platform which system sleep state is going to b=
-e
-> + *	entered.  The information passed to @set_target should be disregarded
-> + *	by the platform as soon as @finish() is executed and if	@prepare()
-> + *	fails.
-> + *	This callback is optional.  However, if it is implemented, the
-> + *	argument passed to @prepare(), @enter and @finish() must be ignored.
+> There is no reason why the .prepare() and .finish() methods in 'struct
+> platform_suspend_operations' should take any arguments, since architectur=
+es
+> don't use these methods' argument in any practically meaningful way (ie. =
+either
+> the target system sleep state is conveyed to the platform by .set_target(=
+), or
+> there is only one suspend state supported and it is indicated to the PM c=
+ore by
+> .valid(), or .prepare() and .finish() aren't defined at all).  There also=
+ is
+> no reason why .finish() should return any result.
 
-I don't understand the point in mandating that then the argument to
-enter() is to be ignored, why bother? It doesn't look as though we can
-possibly do anything with the semantics here that would mean the state
-set by set_target is different to the state passed to enter(), can we?
+Nice cleanups, I'd wanted to do them when I was doing all that pm_ops
+stuff but then didn't get around. Good stuff.
+=20
+> --- linux-2.6.22-rc5.orig/arch/powerpc/platforms/52xx/mpc52xx_pm.c	2007-0=
+6-24 20:45:21.000000000 +0200
+> +++ linux-2.6.22-rc5/arch/powerpc/platforms/52xx/mpc52xx_pm.c	2007-06-24 =
+21:07:41.000000000 +0200
+
+> -int mpc52xx_pm_prepare(suspend_state_t state)
+> +static int mpc52xx_pm_prepare(void)
+>  {
+> -	if (state !=3D PM_SUSPEND_STANDBY)
+> -		return -EINVAL;
+> -
+
+Hm. I thought I'd told them to leave that out before it went in. Oh
+well.
 
 johannes
 
---=-iFdJk4Krnt1acqwwI3oo
+--=-I0E39rlipgsmZnVo2kvI
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGgDNl/ETPhpq3jKURAuJbAJ9zYP1R2qiqbOPgGJ603QoLXMdajACgqVmf
-VmagcPbeGDoXqcyKWOjrdzw=
-=/rIH
+iD8DBQBGgDPe/ETPhpq3jKURAsb7AJ9Xii9PyJQ3WChhthH6DmlnypjG9gCfWazk
+z5VOjmbWYTiBZJyNkdLiPB4=
+=Z3hn
 -----END PGP SIGNATURE-----
 
---=-iFdJk4Krnt1acqwwI3oo--
+--=-I0E39rlipgsmZnVo2kvI--
 
 
---===============2987917411278841932==
+--===============1313749849278229142==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============2987917411278841932==--
+--===============1313749849278229142==--
