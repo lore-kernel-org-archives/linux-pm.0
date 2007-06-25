@@ -1,15 +1,16 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: Re: Platform-specific system power states
-Date: Sun, 24 Jun 2007 17:10:52 -0700
-Message-ID: <200706241710.53494.david-b@pacbell.net>
-References: <Pine.LNX.4.44L0.0706222130440.11186-100000@netrider.rowland.org>
-	<200706232220.06142.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] PM: Introduce set_target method in
+	pm_ops
+Date: Sun, 24 Jun 2007 17:01:52 -0700
+Message-ID: <200706241701.53971.david-b__48127.8131287128$1182731804$gmane$org@pacbell.net>
+References: <Pine.LNX.4.44L0.0706232026460.9663-100000@netrider.rowland.org>
+	<200706241457.21237.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706232220.06142.rjw@sisk.pl>
+In-Reply-To: <200706241457.21237.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,38 +22,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 23 June 2007, Rafael J. Wysocki wrote:
-> On Saturday, 23 June 2007 03:32, Alan Stern wrote:
+On Sunday 24 June 2007, Rafael J. Wysocki wrote:
+> On Sunday, 24 June 2007 02:28, Alan Stern wrote:
+> > On Sun, 24 Jun 2007, Rafael J. Wysocki wrote:
+> > 
+> > > > Right now the states we have are On, Standby, and Suspend, and the CPU
+> > > > runs only in the On state.  But on some platforms there could be
+> > > > multiple states in which the CPU is able to run, albeit with degraded 
+> > > > performance.
 
-> > A good way to identify a sleep state would be a pointer to a string 
-> > containing the state's name.  The PM core could use these pointers to 
-> > export the states in sysfs.
+That starts to get into those cpufreq/"operating point" discussions".
+
+
+> > > I wouldn't call those system sleep states.  For example, ACPI defines system
+> > > sleep states as the states in which no instructions are executed by any CPUs
+> > > and I think that's reasonable.
+
+Its Embedded Controller surely executes instructions!
+
+
+> > > Moreover, the ACPI spec insists that transitions between different sleep
+> > > states should be made through the On state.
+
+Not that the world should feel compelled to restrict itself to what
+ACPI envisions of course...
+
+
+> > Okay.  But on non-ACPI systems, do we want to restrict the 
+> > /sys/power/state interface to sleep states?  How then should the user 
+> > tell the system to go to a low-performance run state?  Or should that 
+> > be handled automatically within the kernel?
 > 
-> Well, I thought of exactly the same thing.
+> I think that the /sys/power/state interface should be restricted to system
+> sleep states only and we should introduce another one for handling non-sleep
+> low-power states.
 
-There's an echo in the room ...
+Then /sys/power/state would more accurately be named something
+like /sys/power/sleep_state, right?
+
+The core reason it would make sense to have such a bifurcation is
+IMO that those lower power operating states mostly shouldn't involve
+walking the device tree and suspending everything.  They involve some
+set of hardware (possibly including CPUs) entering low power states.
+But not *every* bit of hardware.
+
+Another aspect here is what idle state is used.  Sometimes that
+can be all but indistinguishable from a "sleep" state.
 
 
-> Perhaps we can generalize it a bit by defining:
-> 
-> struct pm_sleep_state {
-> 	char *name;
-> };
+> IMHO, the kernel can automatically transition to non-sleep low-power states,
+> but the users should be able to define the conditions for that.  Also, the user
+> should be able to force the transition if necessary/desired.
 
-I suppose having the core use only the name would be a bit radical;
-but on the other hand, I really like the resulting notion that the
-generic code must accordingly know *NOTHING* about the semantics
-of any such states.  Having a struct sort of begs that it someday
-be expanded.
+There are several ways those lowpower run states can be entered.
+But I'm not keen on userspace being able to "force" transitions
+like that.
 
+IMO it's strongly preferable if the platform code -- perhaps its
+custom idle loop -- inventories the system regularly to see if
+it's eligible to enter one of the states.
 
-> and make the platforms give us a NULL-terminated array of such things during
-> the initializatiion.
+As a rule, if certain resources are in use that means related
+power states can't be entered.  If they're in use, then userspace
+trying to force a transition means breaking something -- else
+those resources would stay used!
 
-And conceptually "typedef struct pm_sleep_state *suspend_state_t;"?
-Though eventually "suspend_state_t" should vanish.
+The similarity with cpufreq is obvious:  cpufreq inventories the
+CPU usage regularly to see if the CPU should be revved up or down.
+
+Now, inputs to that inventory can come from userspace ... there's
+information about upcoming usage that the kernel could otherwise
+only guess at.  User exiting the video playback app, vs just pausing
+it, might suggest more aggressive savings are appropriate; etc.
+Userspace can also provide tuning parameters.  I have no problems
+with that model.
 
 - Dave
