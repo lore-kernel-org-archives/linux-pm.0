@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC/RFT][PATCH -mm 1/4] PM: Introduce set_target
-	method in pm_ops
-Date: Tue, 26 Jun 2007 00:06:06 +0200
-Message-ID: <200706260006.10246.rjw__13671.5750013993$1182809025$gmane$org@sisk.pl>
-References: <200706242239.05678.rjw@sisk.pl> <200706242240.40476.rjw@sisk.pl>
-	<200706241911.18201.david-b@pacbell.net>
+Subject: Re: [RFC][PATCH -mm] PM: Introduce set_target method in
+	pm_ops
+Date: Tue, 26 Jun 2007 00:14:20 +0200
+Message-ID: <200706260014.21642.rjw__29139.9737274789$1182809293$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0706232026460.9663-100000@netrider.rowland.org>
+	<200706241457.21237.rjw@sisk.pl>
+	<200706241701.53971.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706241911.18201.david-b@pacbell.net>
+In-Reply-To: <200706241701.53971.david-b@pacbell.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,65 +26,90 @@ To: David Brownell <david-b@pacbell.net>
 Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 25 June 2007 04:11, David Brownell wrote:
+On Monday, 25 June 2007 02:01, David Brownell wrote:
 > On Sunday 24 June 2007, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > On Sunday, 24 June 2007 02:28, Alan Stern wrote:
+> > > On Sun, 24 Jun 2007, Rafael J. Wysocki wrote:
+> > > 
+> > > > > Right now the states we have are On, Standby, and Suspend, and the CPU
+> > > > > runs only in the On state.  But on some platforms there could be
+> > > > > multiple states in which the CPU is able to run, albeit with degraded 
+> > > > > performance.
+> 
+> That starts to get into those cpufreq/"operating point" discussions".
+> 
+> 
+> > > > I wouldn't call those system sleep states.  For example, ACPI defines system
+> > > > sleep states as the states in which no instructions are executed by any CPUs
+> > > > and I think that's reasonable.
+> 
+> Its Embedded Controller surely executes instructions!
+
+Oh, I don't think that they regard the EC as a CPU, but never mind. :-)
+
+> > > > Moreover, the ACPI spec insists that transitions between different sleep
+> > > > states should be made through the On state.
+> 
+> Not that the world should feel compelled to restrict itself to what
+> ACPI envisions of course...
+
+Sure, but if ACPI does something in a reasonable way, then why not?
+ 
+> > > Okay.  But on non-ACPI systems, do we want to restrict the 
+> > > /sys/power/state interface to sleep states?  How then should the user 
+> > > tell the system to go to a low-performance run state?  Or should that 
+> > > be handled automatically within the kernel?
 > > 
-> > Some drivers may need to use ACPI to determine the low power states in which
-> > to place their devices, but to provide the drivers with this information the
-> > ACPI core needs to know what sleep state the system is going to enter.
+> > I think that the /sys/power/state interface should be restricted to system
+> > sleep states only and we should introduce another one for handling non-sleep
+> > low-power states.
 > 
-> It also needs to export that to things like the ACPI-to-PCI glue
-> code.  So it would be good if you defined the missing routine now,
-> saving the effort of patching it in later:
+> Then /sys/power/state would more accurately be named something
+> like /sys/power/sleep_state, right?
+
+Yes, but there's user land that uses this interface.  Let's not confuse it.
+
+> The core reason it would make sense to have such a bifurcation is
+> IMO that those lower power operating states mostly shouldn't involve
+> walking the device tree and suspending everything.  They involve some
+> set of hardware (possibly including CPUs) entering low power states.
+> But not *every* bit of hardware.
 > 
-> 	int acpi_get_target_sleep_state(void);
+> Another aspect here is what idle state is used.  Sometimes that
+> can be all but indistinguishable from a "sleep" state.
+
+Yes.  I think we can define a 'system sleep state' as a state that requires
+the main code path in kernel/power/main.c (starting from enter_state()) to be
+executed in order for the system to enter it.
+
+> > IMHO, the kernel can automatically transition to non-sleep low-power states,
+> > but the users should be able to define the conditions for that.  Also, the user
+> > should be able to force the transition if necessary/desired.
 > 
-> It doesn't need EXPORT_SYMBOL().
-
-I'd rather like to add this as a separate patch in the same series.  Will do.
-
-> > Namely, the device's state should not be too high power for given system sleep
-> > state and, if the device is supposed to be able to wake up the system, its state
-> > should not be too low power for the wake up to be possible).  However,
-> > pm_ops->prepare() is only called after the drivers' .suspend() callbacks have
-> > been executed, 
+> There are several ways those lowpower run states can be entered.
+> But I'm not keen on userspace being able to "force" transitions
+> like that.
 > 
-> That's a critical point that should show up in your doc updates.
-
-Yes, will add that.
-
-> > so we need an additional means to pass the information of the 
-> > target system sleep state to the ACPI core.  For this purpose, we can introduce
-> > an additional member function in 'struct pm_ops'.
-> > 
-> > Additionally, the at91 platform code incorrectly assumes that pm_ops->prepare()
-> > will be called before devices are suspended and uses it for setting the target
-> > system sleep state, so pm_ops->prepare() should to be replaced with the new
-> > operation, pm_ops->set_target(), for this architecture.
+> IMO it's strongly preferable if the platform code -- perhaps its
+> custom idle loop -- inventories the system regularly to see if
+> it's eligible to enter one of the states.
 > 
-> That was originally correct ... but as you pointed out, the
-> semantics there changed in RC5.
+> As a rule, if certain resources are in use that means related
+> power states can't be entered.  If they're in use, then userspace
+> trying to force a transition means breaking something -- else
+> those resources would stay used!
 > 
-> Which means this patch is a *BUGFIX*, preventing what would
-> otherwise be a regression in 2.6.22 ... and so it should
-> be merged for RC6 or so.
+> The similarity with cpufreq is obvious:  cpufreq inventories the
+> CPU usage regularly to see if the CPU should be revved up or down.
+> 
+> Now, inputs to that inventory can come from userspace ... there's
+> information about upcoming usage that the kernel could otherwise
+> only guess at.  User exiting the video playback app, vs just pausing
+> it, might suggest more aggressive savings are appropriate; etc.
+> Userspace can also provide tuning parameters.  I have no problems
+> with that model.
 
-In that case I'd separate the addition of set_target() and the at91 from
-the rest of the series and push it to Andrew ASAP (there's a little time left
-before 2.6.22, it seems).
-
-> Another way to describe the changes is that set_target() now
-> does what prepare() used to do, while prepare() serves a
-> new role.  A role which still needs to be well-described in
-> the documentation you provided, by the way... it seems to
-> do whatever needs to be done after devices suspend but
-> before nonboot CPUs are disabled.
-
-Yes, exactly.
-
-I have the updated series of patches almost ready.  I'll send it in a new
-thread in a while.
+OK
 
 Greetings,
 Rafael
