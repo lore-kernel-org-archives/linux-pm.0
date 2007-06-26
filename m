@@ -1,15 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/RFT][PATCH -mm 8/8] PM: Rename hibernation_ops
-	to platform_hibernation_operations
-Date: Tue, 26 Jun 2007 10:54:23 +0200
-Message-ID: <20070626085423.GC4594@elf.ucw.cz>
-References: <200706242239.05678.rjw@sisk.pl> <200706260039.17530.rjw@sisk.pl>
-	<200706260052.28206.rjw@sisk.pl>
+Subject: Re: Re: [Bugme-new] [Bug 8678] New: Kernel OOPSes when
+	suspend/resume
+Date: Wed, 27 Jun 2007 00:34:16 +0200
+Message-ID: <20070626223416.GB1998__29429.5140928172$1182897341$gmane$org@elf.ucw.cz>
+References: <bug-8678-10286@http.bugzilla.kernel.org/>
+	<200706261942.14722.cijoml@volny.cz>
+	<200706262159.05917.rjw@sisk.pl>
+	<200706262316.15007.cijoml@volny.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200706260052.28206.rjw@sisk.pl>
+In-Reply-To: <200706262316.15007.cijoml@volny.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +21,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: CIJOML <cijoml@volny.cz>
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@kernel-bugs.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Rename 'struct hibernation_ops' to 'struct platform_hibernation_operations' in
-> analogy with 'struct platform_suspend_operations'.
+> > > > > PREEMPT
+> > > > > Modules linked in: michael_mic arc4 ecb blkcipher
+> > > > > ieee80211_crypt_tkip xt_TCPMSS xt_tcpmss xt_tcpudp iptable_mangle
+> > > > > ip_tables x_table s ppp_deflate zlib_deflate bsd_comp ppp_async
+> > > > > crc_ccitt ppp_generic slhc mt2060 dvb_usb_dib0700 dib7000m dib7000p
+> > > > > dvb_usb dvb_core di b3000mc dibx000_common bnep rfcomm hidp hid l2cap
+> > > > > capability commoncap eeprom sr_mod sbp2 scsi_mod 8250_pci 8250
+> > > > > serial_core eth1394 hci_usb bluetooth snd_intel8x0m snd_intel8x0
+> > > > > snd_ac97_codec snd_seq_oss ac97_bus snd_seq_midi_event snd_seq
+> > > > > snd_seq_device snd_pcm_os s snd_mixer_oss ipw2200 8139too ieee80211
+> > > > > ieee80211_crypt snd_pcm snd_timer iTCO_wdt ehci_hcd mii ohci1394
+> > > > > ieee1394 rtc uhci_hcd snd snd_page_alloc ide_cd i2c_i801 pcspkr cdrom
 
-Can I NAK it because it gets too long? platform_hibernation_ops /
-platform_suspend_ops is long but maybe acceptable, 'struct
-platform_hibernation_operations' is too long.
-							Pavel
+> > > > Good heavens.
+> > > >
+> > > > Does it oops every time?  And does the oops trace always look like
+> > > > this?
+> > >
+> > > Hi Andrew,
+> > >
+> > > let's guess why I marked it Critical ;)
+> >
+> > Can you please retest without DRM?
+> >
+> > Greetings,
+> > Rafael
+> 
+> Ehm What is DRM??? Digital Right Management????
 
-> @@ -185,14 +185,15 @@ extern void swsusp_set_page_free(struct 
->  extern void swsusp_unset_page_free(struct page *);
->  extern unsigned long get_safe_page(gfp_t gfp_mask);
->  
-> -extern void hibernation_set_ops(struct hibernation_ops *ops);
-> +extern void hibernation_set_ops(struct platform_hibernation_operations *ops);
->  extern int hibernate(void);
+(Direct Rendering M... part of 3d acceleration)
+
+Just try to unload as many modules as possible, perhaps we'll find the
+one causing it.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
