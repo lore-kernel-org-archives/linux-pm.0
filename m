@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC/RFT][PATCH -mm 1/4] PM: Introduce set_target
-	method in pm_ops
-Date: Tue, 26 Jun 2007 11:41:33 +0200
-Message-ID: <200706261141.35071.rjw__14128.7321261645$1182850821$gmane$org@sisk.pl>
-References: <200706242239.05678.rjw@sisk.pl> <200706242240.40476.rjw@sisk.pl>
-	<1182806886.6644.4.camel@johannes.berg>
+Subject: [RFC/RFT][PATCH -mm 3/8] ACPI: Add
+	acpi_pm_device_sleep_state helper routine (updated)
+Date: Tue, 26 Jun 2007 12:00:28 +0200
+Message-ID: <200706261200.29421.rjw__7762.61643409288$1182851963$gmane$org@sisk.pl>
+References: <200706242239.05678.rjw@sisk.pl> <200706260039.17530.rjw@sisk.pl>
+	<200706260045.51039.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1182806886.6644.4.camel@johannes.berg>
+In-Reply-To: <200706260045.51039.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,36 +21,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 25 June 2007 23:28, Johannes Berg wrote:
-> On Sun, 2007-06-24 at 22:40 +0200, Rafael J. Wysocki wrote:
-> 
-> > + * @set_target: Tell the platform which system sleep state is going to be
-> > + *	entered.  The information passed to @set_target should be disregarded
-> > + *	by the platform as soon as @finish() is executed and if	@prepare()
-> > + *	fails.
-> > + *	This callback is optional.  However, if it is implemented, the
-> > + *	argument passed to @prepare(), @enter and @finish() must be ignored.
-> 
-> I don't understand the point in mandating that then the argument to
-> enter() is to be ignored, why bother? It doesn't look as though we can
-> possibly do anything with the semantics here that would mean the state
-> set by set_target is different to the state passed to enter(), can we?
+[The previous version wouldn't work correctly.]
+---
+From: Shaohua Li <shaohua.li@intel.com>, Rafael J. Wysocki <rjw@sisk.pl>
 
-In principle we can't, but I think that it should be "either, or".  Either the
-platform implements set_target() and uses the value provided by it, or it
-uses the argument passed to the other functions.
+Based on the David Brownell's patch at
+http://marc.info/?l=linux-acpi&m=117873972806360&w=2
 
-Alternatively, I could write that the argument passed to .enter() etc. is
-guaranteed to be the same as the one passed to .set_target(), but I didn't want
-to say that. :-)
+Add a helper routine returning the lowest power (highest number) ACPI device
+power state that given device can be in while the system is in the sleep state
+indicated by acpi_target_sleep_state .
 
-Greetings,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c |   51 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_bus.h   |    2 +
+ 2 files changed, 53 insertions(+)
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Index: linux-2.6.22-rc6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.22-rc6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6.22-rc6/drivers/acpi/sleep/main.c
+@@ -262,6 +262,57 @@ static struct hibernation_ops acpi_hiber
+ };
+ #endif				/* CONFIG_SOFTWARE_SUSPEND */
+ 
++/**
++ *	acpi_pm_device_sleep_state - return the lowest power (highest number)
++ *				     ACPI device power state given device can be
++ *				     in while the system is in the sleep state
++ *				     indicated by %acpi_target_sleep_state
++ *	@handle: Represents the device the state is evaluated for
++ */
++
++int acpi_pm_device_sleep_state(acpi_handle handle)
++{
++	char acpi_method[] = "_SxD";
++	unsigned long d_min, d_max;
++	struct acpi_device *dev;
++
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev)))
++		printk(KERN_ERR "ACPI handle has no context!\n");
++		return -ENODEV;
++	}
++	acpi_method[2] = '0' + acpi_target_sleep_state;
++	/*
++	 * If the sleep state is S0, we will return D3, but if the device has
++	 * _S0W, we will use the value from _S0W
++	 */
++	d_min = ACPI_STATE_D3;
++	d_max = ACPI_STATE_D3;
++	/*
++	 * If present, _SxD methods give the minimum D-state we may use
++	 * for each S-state ... with lowest latency state switching.
++	 *
++	 * We rely on acpi_evaluate_integer() not clobbering the integer
++	 * provided -- that's our fault recovery, we ignore retval.
++	 */
++	if (acpi_target_sleep_state > ACPI_STATE_S0)
++		acpi_evaluate_integer(handle, acpi_method, NULL, &d_min);
++
++	/*
++	 * If _PRW says we can wake from the upcoming system state, the _SxD
++	 * value can wake ... and we'll assume a wakeup-aware driver.  If _SxW
++	 * methods exist (ACPI 3.x), they give the lowest power D-state that
++	 * can also wake the system.  _S0W can be valid.
++	 */
++	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
++	    (dev->wakeup.state.enabled &&
++	     dev->wakeup.sleep_state <= acpi_target_sleep_state)) {
++		d_max = d_min;
++		acpi_method[3] = 'W';
++		acpi_evaluate_integer(handle, acpi_method, NULL, &d_max);
++	}
++	return d_max;
++}
++
+ /*
+  * Toshiba fails to preserve interrupts over S1, reinitialization
+  * of 8259 is needed after S1 resume.
+Index: linux-2.6.22-rc6/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.22-rc6.orig/include/acpi/acpi_bus.h
++++ linux-2.6.22-rc6/include/acpi/acpi_bus.h
+@@ -364,6 +364,8 @@ acpi_handle acpi_get_child(acpi_handle, 
+ acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
+ #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+ 
++int acpi_pm_device_sleep_state(acpi_handle handle);
++
+ #endif				/* CONFIG_ACPI */
+ 
+ #endif /*__ACPI_BUS_H__*/
