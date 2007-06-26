@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: [RFC/RFT][PATCH -mm 3/8] ACPI: Add
-	acpi_pm_device_sleep_state helper routine (updated)
-Date: Tue, 26 Jun 2007 12:00:28 +0200
-Message-ID: <200706261200.29421.rjw__7762.61643409288$1182851963$gmane$org@sisk.pl>
-References: <200706242239.05678.rjw@sisk.pl> <200706260039.17530.rjw@sisk.pl>
-	<200706260045.51039.rjw@sisk.pl>
+	acpi_pm_device_sleep_state helper routine (updated 2x)
+Date: Tue, 26 Jun 2007 12:34:20 +0200
+Message-ID: <200706261234.22073.rjw__32594.4296703257$1182854043$gmane$org@sisk.pl>
+References: <200706242239.05678.rjw@sisk.pl> <200706260045.51039.rjw@sisk.pl>
+	<200706261200.29421.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200706260045.51039.rjw@sisk.pl>
+In-Reply-To: <200706261200.29421.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,11 +25,11 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-[The previous version wouldn't work correctly.]
+[The previous version didn't compile.  Sorry for the mess.]
 ---
 From: Shaohua Li <shaohua.li@intel.com>, Rafael J. Wysocki <rjw@sisk.pl>
 
-Based on the David Brownell's patch at
+Based on David Brownell's patch at
 http://marc.info/?l=linux-acpi&m=117873972806360&w=2
 
 Add a helper routine returning the lowest power (highest number) ACPI device
@@ -37,7 +37,7 @@ power state that given device can be in while the system is in the sleep state
 indicated by acpi_target_sleep_state .
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+
  drivers/acpi/sleep/main.c |   51 ++++++++++++++++++++++++++++++++++++++++++++++
  include/acpi/acpi_bus.h   |    2 +
  2 files changed, 53 insertions(+)
@@ -64,7 +64,7 @@ Index: linux-2.6.22-rc6/drivers/acpi/sleep/main.c
 +	unsigned long d_min, d_max;
 +	struct acpi_device *dev;
 +
-+	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev)))
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
 +		printk(KERN_ERR "ACPI handle has no context!\n");
 +		return -ENODEV;
 +	}
