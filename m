@@ -1,17 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [Bugme-new] [Bug 8678] New: Kernel OOPSes when
-	suspend/resume
-Date: Wed, 27 Jun 2007 00:34:16 +0200
-Message-ID: <20070626223416.GB1998__29429.5140928172$1182897341$gmane$org@elf.ucw.cz>
-References: <bug-8678-10286@http.bugzilla.kernel.org/>
-	<200706261942.14722.cijoml@volny.cz>
-	<200706262159.05917.rjw@sisk.pl>
-	<200706262316.15007.cijoml@volny.cz>
+From: "Florine Barrow" <brucem@brynnetaylor.com>
+Subject: Ever wanted to ejaculate 5 times more?
+Date: Tue, 26 Jun 2007 23:49:52 +0600
+Message-ID: <01c7b84c$b0f4d890$c8291147@brucem>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="----------=_1182902043-3969-271"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200706262316.15007.cijoml@volny.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,46 +14,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: CIJOML <cijoml@volny.cz>
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@kernel-bugs.osdl.org>
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+This is a multi-part message in MIME format...
 
-> > > > > PREEMPT
-> > > > > Modules linked in: michael_mic arc4 ecb blkcipher
-> > > > > ieee80211_crypt_tkip xt_TCPMSS xt_tcpmss xt_tcpudp iptable_mangle
-> > > > > ip_tables x_table s ppp_deflate zlib_deflate bsd_comp ppp_async
-> > > > > crc_ccitt ppp_generic slhc mt2060 dvb_usb_dib0700 dib7000m dib7000p
-> > > > > dvb_usb dvb_core di b3000mc dibx000_common bnep rfcomm hidp hid l2cap
-> > > > > capability commoncap eeprom sr_mod sbp2 scsi_mod 8250_pci 8250
-> > > > > serial_core eth1394 hci_usb bluetooth snd_intel8x0m snd_intel8x0
-> > > > > snd_ac97_codec snd_seq_oss ac97_bus snd_seq_midi_event snd_seq
-> > > > > snd_seq_device snd_pcm_os s snd_mixer_oss ipw2200 8139too ieee80211
-> > > > > ieee80211_crypt snd_pcm snd_timer iTCO_wdt ehci_hcd mii ohci1394
-> > > > > ieee1394 rtc uhci_hcd snd snd_page_alloc ide_cd i2c_i801 pcspkr cdrom
+------------=_1182902043-3969-271
+Content-Type: text/plain; format=flowed; charset="iso-8859-2";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> > > > Good heavens.
-> > > >
-> > > > Does it oops every time?  And does the oops trace always look like
-> > > > this?
-> > >
-> > > Hi Andrew,
-> > >
-> > > let's guess why I marked it Critical ;)
-> >
-> > Can you please retest without DRM?
-> >
-> > Greetings,
-> > Rafael
-> 
-> Ehm What is DRM??? Digital Right Management????
+Rock hard erections
+http://parufly.com
 
-(Direct Rendering M... part of 3d acceleration)
 
-Just try to unload as many modules as possible, perhaps we'll find the
-one causing it.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+------------=_1182902043-3969-271
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+
+Spam detection software, running on the system "daredevil.linux-foundation.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  Rock hard erections http://parufly.com [...] 
+
+Content analysis details:   (6.7 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 3.8 HELO_DYNAMIC_IPADDR2   Relay HELO'd using suspicious hostname (IP addr
+                            2)
+ 0.9 DATE_IN_PAST_06_12     Date: is 6 to 12 hours before Received: date
+ 2.0 BAYES_80               BODY: Bayesian spam probability is 80 to 95%
+                            [score: 0.9332]
+
+
+
+------------=_1182902043-3969-271
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+------------=_1182902043-3969-271--
