@@ -1,54 +1,32 @@
-From: Uli Luckas <u.luckas@road.de>
-Subject: Why schedule in thaw_processes
-Date: Thu, 28 Jun 2007 15:53:48 +0200
-Message-ID: <200706281553.48897.u.luckas@road.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
+Date: Wed, 27 Jun 2007 20:49:24 +0000
+Message-ID: <20070627204924.GA4777@ucw.cz>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-raid-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+In-Reply-To: <20070618145007.GE85884050@sgi.com>
+Sender: linux-raid-owner@vger.kernel.org
+To: David Chinner <dgc@sgi.com>
+Cc: David Greaves <david@dgreaves.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear PM Team,
-i am working my way through the Linux power managemen subsystem, trying to 
-understand, benchmark and improve our ARM based device's suspend/resume 
-cycles.
-I measure the time from a wakeup event until suspend_finish() returns.
-I was very confused, why this interval varies between 150ms and 300ms. Walking 
-the code I found the difference between 150ms wakeups and 300ms wakeups to 
-come from a call to schedule() in thaw_processes().
-I do realise, that these extra 150ms are not wasted, as they are spent in 
-other threads, doing what these threads need to do any way. Still an unneeded 
-schedule() is overhead in itself and probably would not have been introduced 
-without reason.
+Hi!
 
-So, can anyone explain, why this schedule() is of any benefit?
+> FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
+> filesystem for a suspend/resume to work safely and have argued that the only
 
-regards,
-Uli
+Hmm, so XFS writes to disk even when its threads are frozen?
 
+> safe thing to do is freeze the filesystem before suspend and thaw it after
+> resume. This is why I originally asked you to test that with the other problem
+
+Could you add that to the XFS threads if it is really required? They
+do know that they are being frozen for suspend.
+
+							Pavel
 -- 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing directors: Hans-Peter Constien, Hubertus von Streit
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
