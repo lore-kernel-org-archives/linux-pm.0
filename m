@@ -1,12 +1,17 @@
-From: BRITISHWEBLOTTERY6/49 <paulvidrine@charter.net>
-Subject: ACKNOWLEDGE RECEIPT
-Date: Wed, 27 Jun 2007 8:24:24 -0700
-Message-ID: <690511366.1182957866127.JavaMail.root__44785.2221121595$1182957888$gmane$org@fepweb09>
-Reply-To: agentrichard_parker@yahoo.co.uk
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC/RFT][PATCH -mm 1/8][bugfix] PM: Introduce
+	set_target method in pm_ops
+Date: Wed, 27 Jun 2007 22:27:54 +0200
+Message-ID: <200706272227.55983.rjw__12758.2798748792$1182975674$gmane$org@sisk.pl>
+References: <200706242239.05678.rjw@sisk.pl> <200706260039.17530.rjw@sisk.pl>
+	<200706260041.20561.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706260041.20561.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,45 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, 26 June 2007 00:41, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The at91 platform code incorrectly assumes that pm_ops->prepare() will be called
+> before devices are suspended and uses it to make the PM core set the target
+> system sleep state used by the platform when suspending devices.  Thus, at91
+> needs a new member function in 'struct pm_ops' that will be used by the PM core
+> to convey the target system sleep state to the platform code before devices are
+> suspended.
+> 
+> Moreover, in the future some drivers may need to use ACPI to determine the low
+> power states in which to place their devices, but to provide the drivers with
+> this information the ACPI core needs to know what sleep state the system is
+> going to enter.  Namely, the device's state should not be too high power for
+> given system sleep state and, if the device is supposed to be able to wake up
+> the system, its state should not be too low power for the wake up to be
+> possible).  However, pm_ops->prepare() is only called after the drivers'
+> .suspend() callbacks have been executed, so we need an additional means to
+> convey the target system sleep state to the ACPI core.  The new member function
+> in 'struct pm_ops', set_target(), can be used for this purpose.
 
-BRITISH LOTTERY6/49
-12 Whitehall , London SW1A 2DY, United Kingdom.
-27th June 2007.
+If there are no objections to this patch, I'd like to push it for merging into
+2.6.22, because at91 suspend will be broken without it.
 
-Dear Recipient
-
-
-We wish to congratulate you over your email success in our FREE BRITISH
-WEB LOTTERY computer balloting held on 26Th June, 2007. This=20
-is a Millennium Scientific Computer Game in which email addresses were
-used. It is our promotional lottery program aimed at encouraging internet=
-=20
-users; therefore you do not need to buy ticket to enter for it. You have
-been approved for the star prize of 1,006.168 GBP(One million six=20
-thousand one hundred and sixty-eight Pound Sterling)=20
-
-To claim your winning prize you are to contact the appointed agent as=20
-soon as possible for the immediate release of your winnings:=20
-
-Ticket no: 025-1146-1992-750
-Serial no:2113-05
-Lucky no: 13-15-22-37-39-43
-REF NO:BRLFGP2551256/03
-Amount won: =C2=A31,006,168.00
-
-You are to contact: Mr. Richard Parker
-Email:agentrichard_parker@yahoo.co.uk
-
-You must contact the appointed agent with your Full Names, Contact=20
-Telephone Numbers (Home, Office and Mobile Number and also Fax Number)=20
-via email to process the immediate payment of your prize. The Validity=20
-period of the winnings is for 30 working days hence you are expected=20
-to make your claims immediately.=20
-
-Once again congratulations!!!
+Greetings,
+Rafael
 
 
-Sincerely,
-Mr. George Scherrer
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
