@@ -1,17 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC/RFT][PATCH -mm 8/8] PM: Rename hibernation_ops
-	to platform_hibernation_operations
-Date: Wed, 27 Jun 2007 17:19:56 +0200
-Message-ID: <200706271719.57337.rjw__5481.16552313349$1182957190$gmane$org@sisk.pl>
-References: <200706242239.05678.rjw@sisk.pl> <200706260052.28206.rjw@sisk.pl>
-	<20070626085423.GC4594@elf.ucw.cz>
+From: BRITISHWEBLOTTERY6/49 <paulvidrine@charter.net>
+Subject: ACKNOWLEDGE RECEIPT
+Date: Wed, 27 Jun 2007 8:24:24 -0700
+Message-ID: <690511366.1182957866127.JavaMail.root__44785.2221121595$1182957888$gmane$org@fepweb09>
+Reply-To: agentrichard_parker@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070626085423.GC4594@elf.ucw.cz>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +16,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 26 June 2007 10:54, Pavel Machek wrote:
-> Hi!
-> 
-> > Rename 'struct hibernation_ops' to 'struct platform_hibernation_operations' in
-> > analogy with 'struct platform_suspend_operations'.
-> 
-> Can I NAK it because it gets too long? platform_hibernation_ops /
-> platform_suspend_ops is long but maybe acceptable, 'struct
-> platform_hibernation_operations' is too long.
 
-Okay, I can change both to platform_suspend_ops and platform_hibernation_ops
-(should be mutually consistent IMO).
+BRITISH LOTTERY6/49
+12 Whitehall , London SW1A 2DY, United Kingdom.
+27th June 2007.
 
-Greetings,
-Rafael
+Dear Recipient
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+We wish to congratulate you over your email success in our FREE BRITISH
+WEB LOTTERY computer balloting held on 26Th June, 2007. This=20
+is a Millennium Scientific Computer Game in which email addresses were
+used. It is our promotional lottery program aimed at encouraging internet=
+=20
+users; therefore you do not need to buy ticket to enter for it. You have
+been approved for the star prize of 1,006.168 GBP(One million six=20
+thousand one hundred and sixty-eight Pound Sterling)=20
+
+To claim your winning prize you are to contact the appointed agent as=20
+soon as possible for the immediate release of your winnings:=20
+
+Ticket no: 025-1146-1992-750
+Serial no:2113-05
+Lucky no: 13-15-22-37-39-43
+REF NO:BRLFGP2551256/03
+Amount won: =C2=A31,006,168.00
+
+You are to contact: Mr. Richard Parker
+Email:agentrichard_parker@yahoo.co.uk
+
+You must contact the appointed agent with your Full Names, Contact=20
+Telephone Numbers (Home, Office and Mobile Number and also Fax Number)=20
+via email to process the immediate payment of your prize. The Validity=20
+period of the winnings is for 30 working days hence you are expected=20
+to make your claims immediately.=20
+
+Once again congratulations!!!
+
+
+Sincerely,
+Mr. George Scherrer
