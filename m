@@ -1,46 +1,83 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-Date: Fri, 29 Jun 2007 09:20:45 +0100
-Message-ID: <4684C0DD.4080702@dgreaves.com>
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com> <467ABE25.7060303@dgreaves.com>
+From: "Marcelino Sosa" <alternativesShana@veryspeedy.net>
+Subject: Reproduction and ED problems
+Date: Fri, 29 Jun 2007 08:40:01 +0000 (UTC)
+Message-ID: <01c7be27$a9b2fc70$6c822ecf@alternativesShana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <467ABE25.7060303@dgreaves.com>
-Sender: linux-raid-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>
-Cc: David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: multipart/mixed; boundary="===============9052859257811800716=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Date: Wed, 4 Jul 2007 10:39:56 +0000
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-David Greaves wrote:
-> been away, back now...
-again...
+This is a multi-part message in MIME format.
 
-David Greaves wrote:
-> When I move the swap/resume partition to a different controller (ie when 
-> I broke the / mirror and used the freed space) the problem seems to go 
-> away.
-No, it's not gone away - but it's taking longer to show up.
-I can try and put together a test loop that does work, hibernates, resumes and 
-repeats but since I know it crashes at some point there doesn't seem much point 
-unless I'm looking for something.
-There's not much in the logs - is there any other instrumentation that people 
-could suggest?
-DaveC, given this is happening without (obvious) libata errors do you think it 
-may be something in the XFS/md/hibernate area?
+--===============9052859257811800716==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0006_01C7BE30.0B776470"
 
-If there's anything to be tried then I'll also move to 2.6.22-rc6.
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0006_01C7BE30.0B776470
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+Dear customer.Do you shop for drugs on the Web regularly? If yes, read this letter to the end since it contains the information you will definitely find useful.CanadianPharmacy #1 Canadian discount Web pharmacy. Save a lot with CanadianPharmacy and its laughable prices for top-quality generic medications purchased straight from the manufacturer. The quality of the medications we sell is constantly monitored by FDA that's why it always stays indubitable.CanadianPharmacy your #1 source for cheap generic drugs from Canada.Yours,Marcelino Sosa
 
 
- > Tejun Heo wrote:
- >> It's really weird tho.  The PHY RDY status changed events are coming
- >> from the device which is NOT used while resuming
 
-There is an obvious problem there though Tejun (the errors even when sda isn't 
-involved in the OS boot) - can I start another thread about that issue/bug 
-later? I need to reshuffle partitions so I'd rather get the hibernate working 
-first and then go back to it if that's OK?
+------=_NextPart_000_0006_01C7BE30.0B776470
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-David
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
+hemas-microsoft-com:office:word" xmlns=3D"http://www.w3.org/TR/REC-html40">
 
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+</head>
+<body>
+<html>
+<body>
+<p><font face=3D"Verdana" size=3D"2" color=3D"#000000">Dear customer.</font=
+></p>
+<p><font face=3D"Verdana" size=3D"2">Do you shop for drugs on the Web regul=
+arly? If yes, read this letter to the end since it contains the information=
+ you will definitely find useful.</font></p>
+<p><font face=3D"Verdana" size=3D"2"><a href=3D"">CanadianPharmacy</a> #1 C=
+anadian discount Web pharmacy. Save a lot with CanadianPharmacy and its lau=
+ghable prices for top-quality generic medications purchased straight from t=
+he manufacturer. The quality of the medications we sell is constantly monit=
+ored by FDA that's why it always stays indubitable.</font></p>
+<p><font face=3D"Verdana" size=3D"2"><a href=3D"">CanadianPharmacy</a> your=
+ #1 source for cheap generic drugs from Canada.</font></p>
+<p><font face=3D"Verdana" size=3D"2">Yours,<br>Marcelino Sosa</font></p>
+</body>
+</html>
+
+</body>
+</html>
+
+------=_NextPart_000_0006_01C7BE30.0B776470--
+
+
+--===============9052859257811800716==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============9052859257811800716==--
