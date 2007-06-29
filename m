@@ -1,41 +1,100 @@
-From: David Greaves <david@dgreaves.com>
-Subject: Re: [linux-pm] Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-Date: Fri, 29 Jun 2007 14:30:19 +0100
-Message-ID: <4685096B.9000400@dgreaves.com>
-References: <46744065.6060605@dgreaves.com> <20070629074322.GT31489@sgi.com> <4684BAA4.4010905@dgreaves.com> <200706291518.18072.rjw@sisk.pl>
+From: "MyPostcards.Com" <krgdz@hp.com>
+Subject: You've received a postcard from a family member!
+Date: Fri, 29 Jun 2007 15:59:56 +0200
+Message-ID: <000601c7ba55$c6634710$bf2eafbe@orn.tolw>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <200706291518.18072.rjw@sisk.pl>
-Sender: linux-raid-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Chinner <dgc@sgi.com>, Pavel Machek <pavel@ucw.cz>, linux-pm <linux-pm@lists.osdl.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, LinuxRaid <linux-raid@vger.kernel.org>, LVM general discussion and development <linux-lvm@redhat.com>, David Robinson <zxvdr.au@gmail.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Content-Type: multipart/mixed; boundary="----------=_1183125601-3969-149"
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Friday, 29 June 2007 09:54, David Greaves wrote:
->> David Chinner wrote:
->>> On Fri, Jun 29, 2007 at 08:40:00AM +0100, David Greaves wrote:
->>>> What happens if a filesystem is frozen and I hibernate?
->>>> Will it be thawed when I resume?
->>> If you froze it yourself, then you'll have to thaw it yourself.
->> So hibernate will not attempt to re-freeze a frozen fs and, during resume, it 
->> will only thaw filesystems that were frozen by the suspend?
-> 
-> Right now it doesn't freeze (or thaw) any filesystems.  It just sync()s them
-> before creating the hibernation image.
-Thanks. Yes I realise that :)
-I wasn't clear, I should have said:
-So hibernate should not attempt to re-freeze a frozen fs and, during resume, it
-should only thaw filesystems that were frozen by the suspend.
+This is a multi-part message in MIME format...
+
+------------=_1183125601-3969-149
+Content-Type: text/plain; format=flowed; charset="Windows-1252";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Good day.
+
+Your family member has sent you an ecard from MyPostcards.Com.
+
+Send free ecards from MyPostcards.Com with your choice of colors, words and music.
+
+Your ecard will be available with us for the next 30 days. If you wish to keep 
+the ecard longer, you may save it on your computer or take a print.
+
+To view your ecard, choose from any of the following options:
+
+--------
+OPTION 1
+--------
+
+Click on the following Internet address or
+copy & paste it into your browser's address box.
+
+http://81.215.208.37/?019a1823497b969c2b1c85da46
+
+--------
+OPTION 2
+--------
+
+Copy & paste the ecard number in the "View Your Card" box at 
+http://81.215.208.37/
+
+Your ecard number is
+019a1823497b969c2b1c85da46
+
+Best wishes,
+Postmaster,
+MyPostcards.Com
 
 
-> However, the fact that you've seen corruption with the XFS filesystems frozen
-> before the hibernation indicates that the problem occurs on a lower level.
-And that was why I chimed in - I don't think freezing fixes the problem (though 
-it may make sense for other reasons).
+------------=_1183125601-3969-149
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
 
-David
+Spam detection software, running on the system "daredevil.linux-foundation.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  Good day. Your family member has sent you an ecard from
+  MyPostcards.Com. Send free ecards from MyPostcards.Com with your choice
+  of colors, words and music. [...] 
+
+Content analysis details:   (7.8 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 3.8 HELO_DYNAMIC_DHCP      Relay HELO'd using suspicious hostname (DHCP)
+ 3.9 HELO_DYNAMIC_IPADDR    Relay HELO'd using suspicious hostname (IP addr
+                            1)
+ 0.2 NORMAL_HTTP_TO_IP      URI: Uses a dotted-decimal IP address in URL
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.5000]
 
 
+
+------------=_1183125601-3969-149
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+------------=_1183125601-3969-149--
