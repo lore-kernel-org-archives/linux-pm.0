@@ -1,11 +1,10 @@
-From: infrastructure <alxo@abbinc.com>
-Subject: EFL cabby
-Date: Sat, 30 Jun 2007 07:31:20 -0700
-Message-ID: <46866938.8030802@abbinc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: linux@horizon.com
+Subject: Re: 2.6.22-rcX Transmeta/APM regression
+Date: 30 Jun 2007 14:57:06 -0400
+Message-ID: <20070630185706.3979.qmail@science.horizon.com>
+References: <200706301126.41179.ak@suse.de>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200706301126.41179.ak@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,49 +14,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: ak@suse.de, akpm@linux-foundation.org, linux@horizon.com
+Cc: bk@suse.de, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com, hpa@zytor.com
 List-Id: linux-pm@vger.kernel.org
 
-ERMX Jumps Into Huge Advanced Nitride Super Conductors!
+Responding to various proposed fixes:
 
-EntreMetrix Inc. (ERMX)
-$0.16
+> Index: linux/arch/i386/kernel/cpu/mtrr/main.c
+> ===================================================================
+> --- linux.orig/arch/i386/kernel/cpu/mtrr/main.c
+> +++ linux/arch/i386/kernel/cpu/mtrr/main.c
+> @@ -734,8 +734,11 @@ void mtrr_ap_init(void)
+>   */
+>  void mtrr_save_state(void)
+>  {
+> -	int cpu = get_cpu();
+> +	int cpu;
+>  
+> +	if (!cpu_has_mtrr)
+> +		return;
+> +	cpu  = get_cpu();
+>  	if (cpu == 0)
+>  		mtrr_save_fixed_ranges(NULL);
+>  	else
 
-ERMX has just announced it involvement in a joint venture to manufacture
-Advanced Nitride Devices. These have Military application as well as
-Energy Super Conductors. This takes ERMX to a whole new level. Google
-"Nitride Devices" and get on ERMX first thing Monday!
+This does not change the symptoms in any way.
 
-The meaning of linkbaiting Of course the straightforward meaning of
-linkbaiting is encouraging others to link to you.
-Please make sure that you only participate if you have something
-worthwhile to say.
+> --- a/arch/i386/kernel/cpu/mtrr/generic.c~i386-mtrr-crash-fix
+> +++ a/arch/i386/kernel/cpu/mtrr/generic.c
+> @@ -65,7 +65,8 @@ get_fixed_ranges(mtrr_type * frs)
+>  
+>  void mtrr_save_fixed_ranges(void *info)
+>  {
+> -	get_fixed_ranges(mtrr_state.fixed_ranges);
+> +	if (cpu_has_mtrr)
+> +		get_fixed_ranges(mtrr_state.fixed_ranges);
+>  }
+>  
+>  static void print_fixed(unsigned base, unsigned step, const mtrr_type*types)
 
-If your posts talks about the current state of affairs and if you do
-that in your unique style people will put your link on their blogs and
-websites. Il territorio nazionale trova qui la sua fine geografica ed un
-braccio di mare di poche decine di miglia lo separa dall'altra sponda
-dello Ionio. Another thing that is very important in website copywriting
-is, make your text scannable.
-Ci avrebbe fatto da guida il Dr.
-
-Missouri Lance Mannion Mamalogues konagod Welcome to Pottersville
-Translate This! Plus it's cool having something made from recycled
-materials. By Amrit Hallan Online copywriting is not a passion, it's a
-practice.
-
-Make people think: Posts that force you to think and that tickle your
-intellectual buds get linked to a lot.
-For instance, I write content for web pages. Mention the benefits in
-clear language, simple words. Stay away from jargons and cliches.
-
-You are directly addressing the person sitting in front of the computer
-screen, laptop, or accessing your copy through any device that can
-browse the Internet.
-
-Home Security News: Shopping for a Security System for Your Business
-Home Security News Covering home security, alarms, home automation,
-homeowner's insurance, and more. In questo modo, il Salento, pur non
-presentando fiumi, ne raccoglie gli effetti in profondi segni che hanno
-anche condizionato la nascita e la crescita dei centri abitati. Mention
-the benefits in clear language, simple words.
+This works great, thanks!  Please consider the regression diagnosed and fixed.
