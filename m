@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 9/9] PM: Rename hibernation_ops to
-	platform_hibernation_ops
-Date: Sun, 1 Jul 2007 01:06:39 +0200
-Message-ID: <20070630230639.GE1855@elf.ucw.cz>
-References: <200706302257.17556.rjw@sisk.pl> <200706302311.59630.rjw@sisk.pl>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [RFC][PATCH -mm 0/9] PM: Update global suspend and
+	hibernation operations framework
+Date: Sun, 1 Jul 2007 00:22:22 +0100
+Message-ID: <20070630232222.GA8100__35025.8721541197$1183245958$gmane$org@flint.arm.linux.org.uk>
+References: <200706302257.17556.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200706302311.59630.rjw@sisk.pl>
+In-Reply-To: <200706302257.17556.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2007-06-30 23:11:58, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sat, Jun 30, 2007 at 10:57:16PM +0200, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> Rename 'struct hibernation_ops' to 'struct platform_hibernation_ops' in analogy
-> with 'struct platform_suspend_ops'.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> This series of patches implements changes that are possible/necessary/desirable
+> (IMO) after the introduction of the .set_target() method in 'struct pm_ops'
+> (the patch that introduces it is in -mm,
+> http://marc.info/?l=linux-mm-commits&m=118306698814722&w=2).
 
-ACK.
+I suggest you have a look in:
+
+ http://ftp.arm.linux.org.uk/pub/linux/arm/kernel/git-cur/arm:pxa2.diff
+
+since there's some duplication and clashes between your patch set and mine.
+I'm intending submitting the pxa2 branch when the next merge window opens.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
