@@ -1,14 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-rcX Transmeta/APM regression
-Date: Sat, 30 Jun 2007 12:08:03 -0700
-Message-ID: <20070630120803.99a124e4.akpm__19137.1146044277$1183230558$gmane$org@linux-foundation.org>
-References: <200706301126.41179.ak@suse.de>
-	<20070630185706.3979.qmail@science.horizon.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 2/9] ACPI: Add
+	acpi_pm_device_sleep_state helper routine
+Date: Sat, 30 Jun 2007 22:59:47 +0200
+Message-ID: <200706302259.48700.rjw__35904.864993836$1183237642$gmane$org@sisk.pl>
+References: <200706302257.17556.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070630185706.3979.qmail@science.horizon.com>
+In-Reply-To: <200706302257.17556.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +20,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux@horizon.com
-Cc: bk@suse.de, michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org, ak@suse.de, hpa@zytor.com, linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 30 Jun 2007 14:57:06 -0400 linux@horizon.com wrote:
+From: Shaohua Li <shaohua.li@intel.com>, Rafael J. Wysocki <rjw@sisk.pl>
 
-> > --- a/arch/i386/kernel/cpu/mtrr/generic.c~i386-mtrr-crash-fix
-> > +++ a/arch/i386/kernel/cpu/mtrr/generic.c
-> > @@ -65,7 +65,8 @@ get_fixed_ranges(mtrr_type * frs)
-> >  
-> >  void mtrr_save_fixed_ranges(void *info)
-> >  {
-> > -	get_fixed_ranges(mtrr_state.fixed_ranges);
-> > +	if (cpu_has_mtrr)
-> > +		get_fixed_ranges(mtrr_state.fixed_ranges);
-> >  }
-> >  
-> >  static void print_fixed(unsigned base, unsigned step, const mtrr_type*types)
-> 
-> This works great, thanks!  Please consider the regression diagnosed and fixed.
+Based on the David Brownell's patch at
+http://marc.info/?l=linux-acpi&m=117873972806360&w=2
 
-OK, thanks.  I'll scoot that linuswards later today.
+Add a helper routine returning the lowest power (highest number) ACPI device
+power state that given device can be in while the system is in the sleep state
+indicated by acpi_target_sleep_state .
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c |   51 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_bus.h   |    2 +
+ 2 files changed, 53 insertions(+)
+
+Index: linux-2.6.22-rc6-mm1/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/drivers/acpi/sleep/main.c	2007-06-30 12:18:47.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/acpi/sleep/main.c	2007-06-30 12:18:58.000000000 +0200
+@@ -255,6 +255,57 @@ static struct hibernation_ops acpi_hiber
+ };
+ #endif				/* CONFIG_SOFTWARE_SUSPEND */
+ 
++/**
++ *	acpi_pm_device_sleep_state - return the lowest power (highest number)
++ *				     ACPI device power state given device can be
++ *				     in while the system is in the sleep state
++ *				     indicated by %acpi_target_sleep_state
++ *	@handle: Represents the device the state is evaluated for
++ */
++
++int acpi_pm_device_sleep_state(acpi_handle handle)
++{
++	char acpi_method[] = "_SxD";
++	unsigned long d_min, d_max;
++	struct acpi_device *dev;
++
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
++		printk(KERN_ERR "ACPI handle has no context!\n");
++		return -ENODEV;
++	}
++	acpi_method[2] = '0' + acpi_target_sleep_state;
++	/*
++	 * If the sleep state is S0, we will return D3, but if the device has
++	 * _S0W, we will use the value from _S0W
++	 */
++	d_min = ACPI_STATE_D3;
++	d_max = ACPI_STATE_D3;
++	/*
++	 * If present, _SxD methods give the minimum D-state we may use
++	 * for each S-state ... with lowest latency state switching.
++	 *
++	 * We rely on acpi_evaluate_integer() not clobbering the integer
++	 * provided -- that's our fault recovery, we ignore retval.
++	 */
++	if (acpi_target_sleep_state > ACPI_STATE_S0)
++		acpi_evaluate_integer(handle, acpi_method, NULL, &d_min);
++
++	/*
++	 * If _PRW says we can wake from the upcoming system state, the _SxD
++	 * value can wake ... and we'll assume a wakeup-aware driver.  If _SxW
++	 * methods exist (ACPI 3.x), they give the lowest power D-state that
++	 * can also wake the system.  _S0W can be valid.
++	 */
++	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
++	    (dev->wakeup.state.enabled &&
++	     dev->wakeup.sleep_state <= acpi_target_sleep_state)) {
++		d_max = d_min;
++		acpi_method[3] = 'W';
++		acpi_evaluate_integer(handle, acpi_method, NULL, &d_max);
++	}
++	return d_max;
++}
++
+ /*
+  * Toshiba fails to preserve interrupts over S1, reinitialization
+  * of 8259 is needed after S1 resume.
+Index: linux-2.6.22-rc6-mm1/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/include/acpi/acpi_bus.h	2007-06-28 21:56:24.000000000 +0200
++++ linux-2.6.22-rc6-mm1/include/acpi/acpi_bus.h	2007-06-30 12:18:58.000000000 +0200
+@@ -364,6 +364,8 @@ acpi_handle acpi_get_child(acpi_handle, 
+ acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
+ #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+ 
++int acpi_pm_device_sleep_state(acpi_handle handle);
++
+ #endif				/* CONFIG_ACPI */
+ 
+ #endif /*__ACPI_BUS_H__*/
