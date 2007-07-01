@@ -1,11 +1,13 @@
-From: Polly <nkpd@geraldgambleco.com>
-Subject: blasphemy
-Date: Sun, 1 Jul 2007 13:41:45 +0300
-Message-ID: <468784E9.6010008@geraldgambleco.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 0/2] PM: Update system power off code
+Date: Sun, 1 Jul 2007 20:51:47 +0200
+Message-ID: <200707012051.48338.rjw__12686.1835750335$1183315724$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,33 +17,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-ERMX Gets into Nitride Devices! Applications Are Amazing!
+Hi,
 
-EntreMetrix Inc. (ERMX)
-$0.16
+The following two patches update the system power off code.  They:
+* remove the (unnecessary) call to acpi_sleep_prepare(ACPI_STATE_S4) from
+  acpi_shutdown()
+* remove acpi_sysclass and device_acpi that are only defined to register the
+  ACPI power off preparation callback in acpi_shutdown() and introduce more
+  general mechanism instead
+The details are in the changelogs.
 
-Nitride Wafers are the next level in super technology. From Super Energy
-Conductors to Nano-Lasers used in microscopic surgery. ERMX is moved
-into a joint venture to manufacture Nitride devices out of China. This
-is huge get on ERMX Monday!
+Comments welcome.
 
-The API key was deactivated for a few hours while we made those changes
-and now that we have, it is live again. All details and contact
-information here at Worldwide Stock Photo Industry Jobs.
-I find this normalisation of RF micro photography rather a counter
-productive way of challenging the threat of cannibalisation. "We feel
-the microstock industry is still at the top of the first inning.
-Klein says is still deciding whether to call his new acquisition Pump
-Audio by Getty Images or Getty Audio.
-Klein says is still deciding whether to call his new acquisition Pump
-Audio by Getty Images or Getty Audio. Shake to shoot an advertisement,
-shipping a tire to his home for the shot. Coburn supplies shots to five
-microstock sites, shooting people, objects and interiors. Sie sind
-insbesondere nicht berechtigt, den Inhalt dieser Website auf einer
-anderen Website oder in einem anderen Medium zu kopieren.
+Greetings,
+Rafael
 
-Die Produkte und erprobten Vorgehensweisen von IBM Rational bilden die
-Grundlage der IBM Rational Software Delivery Platform.
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
