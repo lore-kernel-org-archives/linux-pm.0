@@ -1,17 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 0/9] PM: Update global suspend and
-	hibernation operations framework
-Date: Mon, 2 Jul 2007 22:17:36 +0200
-Message-ID: <200707022217.37759.rjw__12791.5719444447$1183407293$gmane$org@sisk.pl>
-References: <200706302257.17556.rjw@sisk.pl> <200707021628.27139.rjw@sisk.pl>
-	<20070702143632.GC32096@flint.arm.linux.org.uk>
+From: "Robin Chamberlain" <X4qfIYg@businessfacilities.com>
+Subject: rostrum bread assam -
+Date: Mon, 2 Jul 2007 18:00:44 +0500
+Message-ID: <200707022202.l62M2c2E013654@smtp1.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070702143632.GC32096@flint.arm.linux.org.uk>
-Content-Disposition: inline
+MIME-Version: 1.0
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +15,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 2 July 2007 16:36, Russell King wrote:
-> On Mon, Jul 02, 2007 at 04:28:25PM +0200, Rafael J. Wysocki wrote:
-> > BTW, Russell, is there any chance that your patchest will be in -mm before
-> > it's merged?  My patches will go through -mm anyway ...
-> 
-> If akpm picks up the devel branch from the ARM tree (which I believe he
-> does) he'll get the PXA stuff with that next time around.
-> 
+Shatter the glass ceiling that's keeping you back.
+Achieve the prestige and awards you deserve..
+Promotion Opportunities passing you by? No more!
 
-OK, thanks.
+Turn your dream, into a reality, is that not worth two minutes of your time?
 
-I'll push my patches to Andrew when the PXA update hits -mm.
+1206 888 2083
 
-Greetings,
-Rafael
+No classes to attend. No tests to write.
 
+Give us a ring, now..
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+1206 888 2083
+
+A non-accredited university degree
+Based on your work and life achievements
+
+Shows like any traditional degree
+What YOU know and CAN DO!
+Confidentiality assured
+ 
+24 HOURS A DAY, 7 DAYS A WEEK
+
+1206 888 2083
+
+Although the picture accompanying the obit was even grainier and fuzzier than usual, Paul saw that Paulette Simeaux made "QueenieBeaulifant look like Thumbelina. They want the same two things they always want - for you to cute up while the tapes running and for someone else to buy the martinis when Happy Hour rolls around.
