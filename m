@@ -1,108 +1,72 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH -mm 2/9] ACPI: Add
-	acpi_pm_device_sleep_state helper routine
-Date: Mon, 2 Jul 2007 10:24:57 -0700
-Message-ID: <200707021024.58693.david-b__25953.0115094551$1183397396$gmane$org@pacbell.net>
-References: <200706302257.17556.rjw@sisk.pl>
-	<200707012249.14143.david-b@pacbell.net>
-	<200707021017.01295.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+Date: Mon, 2 Jul 2007 22:15:11 +0200
+Message-ID: <200707022215.12200.rjw@sisk.pl>
+References: <46744065.6060605@dgreaves.com> <200707021712.50323.rjw@sisk.pl> <4689298B.2000407@dgreaves.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707021017.01295.rjw@sisk.pl>
+Return-path: <linux-raid-owner@vger.kernel.org>
+In-Reply-To: <4689298B.2000407@dgreaves.com>
 Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+Sender: linux-raid-owner@vger.kernel.org
+To: David Greaves <david@dgreaves.com>
+Cc: Tejun Heo <htejun@gmail.com>, David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 02 July 2007, Rafael J. Wysocki wrote:
-> On Monday, 2 July 2007 07:49, David Brownell wrote:
-
-> > Also, recall that this was originally PCI-specific.  A generalized
-> > approach would return a range of states, not a single state that
-> > embeds a particular policy that may not be universally appropriate...
-> 
-> Via pointers and the return value equal to 0 on success?
-
-It could as easily be one pointer:  "int minmax[2]".
-Then min == minmax[0] and max == minmax[1], and the
-ACPI calls could write the caller's data directly.
-
-But in general, yes -- pointer, not single return value.
-
-
-> > The logic was that PCI devices can all support PCI_D0 and PCI_D3.
-> > For non-PCI devices we can't actually know that.  So "min" should
-> > probably default to ACPI_STATE_D0.  If this returns a range, then
-> > such issues can stay out of this code.
-> 
-> The ACPI spec says that all devices must support D0 and D3.
-
-ISTR that it actually says they must "recognize" D3.  That's
-not the same as actually implementing a software controllable
-power-off state ... and not the same as imposing a "use the
-biggest numbered D-state" policy at this level.
-
-
-> > > +	/*
-> > > +	 * If _PRW says we can wake from the upcoming system state, the _SxD
-> > > +	 * value can wake ... and we'll assume a wakeup-aware driver.  If _SxW
-> > > +	 * methods exist (ACPI 3.x), they give the lowest power D-state that
-> > > +	 * can also wake the system.  _S0W can be valid.
-> > > +	 */
-> > > +	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
-> > > +	    (dev->wakeup.state.enabled &&
+On Monday, 2 July 2007 18:36, David Greaves wrote:
+> Rafael J. Wysocki wrote:
+> > On Monday, 2 July 2007 16:32, David Greaves wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> On Monday, 2 July 2007 12:56, Tejun Heo wrote:
+> >>>> David Greaves wrote:
+> >>>>>> Tejun Heo wrote:
+> >>>>>>> It's really weird tho.  The PHY RDY status changed events are coming
+> >>>>>>> from the device which is NOT used while resuming
+> >>>>> There is an obvious problem there though Tejun (the errors even when sda
+> >>>>> isn't involved in the OS boot) - can I start another thread about that
+> >>>>> issue/bug later? I need to reshuffle partitions so I'd rather get the
+> >>>>> hibernate working first and then go back to it if that's OK?
+> >>>> Yeah, sure.  The problem is that we don't know whether or how those two
+> >>>> are related.  It would be great if there's a way to verify memory image
+> >>>> read from hibernation is intact.  Rafael, any ideas?
+> >>> Well, s2disk has an option to compute an MD5 checksum of the image during
+> >>> the hibernation and verify it while reading the image.
+> >> (Assuming you mean the mainline version)
+> >>
+> >> Sounds like a good think to try next...
+> >> Couldn't see anything on this in ../Documentation/power/*
+> >> How do I enable it?
 > > 
-> > This used device_may_wakeup() before.  That ACPI flag is not a
-> > direct analogue ... without looking again at the issues, I'd
-> > say the right solution is to phase out the ACPI-only flags in
-> > new code.
+> > Add 'compute checksum = y' to the s2disk's configuration file.
 > 
-> Hm, I'm not sure.  This is an ACPI routine after all ...
-
-It's in the Linux kernel, talking about Linux devices.
-Some of them have ACPI support; many don't.  (Like the
-USB device nodes, and anything else layered on top of
-mainboard devices.)
-
-
-> > Maybe just expect the caller to pass the results 
-> > of device_may_wakeup() in ... or update the signature to accept
-> > a "struct device", and fetch the handle from there.  (That'd
-> > be a better match for most callers, I'd think...)
+> Ah, right - that's uswsusp isn't it? Which isn't what I'm having problems with 
+> AFAIK?
 > 
-> In that case it would be nicer to pass 'struct acpi_device *' rahter than
-> 'struct device *', IMO.
+> My suspend procedure is:
+> 
+> xfs_freeze -f /scratch
+> sync
+> echo platform > /sys/power/disk
+> echo disk > /sys/power/state
+> xfs_freeze -u /scratch
+> 
+> Which should work (actually it should work without the sync/xfs_freeze too).
+> 
+> So to debug the problem I'd like to minimally extend this process rather than 
+> replace it with another approach.
 
-I'll disagree.  Outside of the ACPI code, virtually nothing
-has any reason to see an "acpi_device" ... but virtually
-everything has reason to see a "device".  Even ACPI code
-can rely on there being a "device" inside "acpi_device"!
+Well, this is not entirely "another approach".  Only the saving of the image is
+done differently, the rest is the same.
+
+> I take it there isn't an 'echo y > /sys/power/do_image_checksum'?
+
+No, there is not anything like that.
+
+Greetings,
+Rafael
 
 
-This touches on a different problem.  The ACPI device tree
-is parallel to the "real" tree.  In the cases there's a
-one-to-one correspondence, there's no confusion; any
-acpi_device corresponds to one "real" device, and vice
-versa.  BUT ... there are cases where the correspondence
-isn't one-to-one.  Those cases need to be addressed, by
-moving towards a one-to-one correspondence.
-
-Cases like PCI bridges can be easily dealt with now, given
-some resequencing of init logic:  use the PNP node instead
-of faking out a toplevel /sys/devices/pci0000:00 node.
-
-But things like PS2 keyboard and mouse nodes are funkier.
-
-- Dave
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
