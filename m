@@ -1,206 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 2/9] ACPI: Add
-	acpi_pm_device_sleep_state helper routine
-Date: Mon, 2 Jul 2007 10:17:00 +0200
-Message-ID: <200707021017.01295.rjw__13303.5064595335$1183364007$gmane$org@sisk.pl>
-References: <200706302257.17556.rjw@sisk.pl> <200706302259.48700.rjw@sisk.pl>
-	<200707012249.14143.david-b@pacbell.net>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+Date: Mon, 02 Jul 2007 19:56:50 +0900
+Message-ID: <4688D9F2.6020000@gmail.com>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com> <467ABE25.7060303@dgreaves.com> <4684C0DD.4080702@dgreaves.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707012249.14143.david-b@pacbell.net>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+Return-path: <linux-raid-owner@vger.kernel.org>
+In-Reply-To: <4684C0DD.4080702@dgreaves.com>
+Sender: linux-raid-owner@vger.kernel.org
+To: David Greaves <david@dgreaves.com>
+Cc: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>, LVM general discussion and development <linux-lvm@redhat.com>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>, LinuxRaid <linux-raid@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 2 July 2007 07:49, David Brownell wrote:
-> On Saturday 30 June 2007, Rafael J. Wysocki wrote:
-> > From: Shaohua Li <shaohua.li@intel.com>, Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Based on the David Brownell's patch at
-> > http://marc.info/?l=linux-acpi&m=117873972806360&w=2
+David Greaves wrote:
+>> Tejun Heo wrote:
+>>> It's really weird tho.  The PHY RDY status changed events are coming
+>>> from the device which is NOT used while resuming
 > 
-> I hope someone's going to refresh the PCI glue calling this, then...
-> making pci_choose_state() work was the goal of that patch!!
-> 
-> Also the updates to teach how the PCI root bridge wakeup capabilities
-> fit into the equation, for non-mainboard devices (all kinds of add-on
-> cards that talk PCI) ... that stuff was unclear to me, which is most
-> of why I left it out of that patch.
-> 
-> Correct me if I'm wrong here, but nothing else in this patch set
-> depends on this particular patch ... yes?
+> There is an obvious problem there though Tejun (the errors even when sda
+> isn't involved in the OS boot) - can I start another thread about that
+> issue/bug later? I need to reshuffle partitions so I'd rather get the
+> hibernate working first and then go back to it if that's OK?
 
-That's correct.
+Yeah, sure.  The problem is that we don't know whether or how those two
+are related.  It would be great if there's a way to verify memory image
+read from hibernation is intact.  Rafael, any ideas?
 
-> > Add a helper routine returning the lowest power (highest number) ACPI device
-> > power state that given device can be in while the system is in the sleep state
-> > indicated by acpi_target_sleep_state .
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/acpi/sleep/main.c |   51 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  include/acpi/acpi_bus.h   |    2 +
-> >  2 files changed, 53 insertions(+)
-> > 
-> > Index: linux-2.6.22-rc6-mm1/drivers/acpi/sleep/main.c
-> > ===================================================================
-> > --- linux-2.6.22-rc6-mm1.orig/drivers/acpi/sleep/main.c	2007-06-30 12:18:47.000000000 +0200
-> > +++ linux-2.6.22-rc6-mm1/drivers/acpi/sleep/main.c	2007-06-30 12:18:58.000000000 +0200
-> > @@ -255,6 +255,57 @@ static struct hibernation_ops acpi_hiber
-> >  };
-> >  #endif				/* CONFIG_SOFTWARE_SUSPEND */
-> >  
-> > +/**
-> > + *	acpi_pm_device_sleep_state - return the lowest power (highest number)
-> > + *				     ACPI device power state given device can be
-> > + *				     in while the system is in the sleep state
-> > + *				     indicated by %acpi_target_sleep_state
-> > + *	@handle: Represents the device the state is evaluated for
-> > + */
-> > +
-> > +int acpi_pm_device_sleep_state(acpi_handle handle)
-> 
-> Yeah, moving this from the PCI glue to the ACPI core is probably
-> better.  But I'd like to see the comment use standard kerneldoc ...
-> that is, the descriptive paragraph follows a set of (one line)
-> summaries of the function and its parameter(s).  The description
-> needs to cover the fault returns too.
-
-OK
-
-> Also, recall that this was originally PCI-specific.  A generalized
-> approach would return a range of states, not a single state that
-> embeds a particular policy that may not be universally appropriate...
-
-Via pointers and the return value equal to 0 on success?
-
-> > +{
-> > +	char acpi_method[] = "_SxD";
-> > +	unsigned long d_min, d_max;
-> > +	struct acpi_device *dev;
-> > +
-> > +	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
-> > +		printk(KERN_ERR "ACPI handle has no context!\n");
-> 
-> The description above should cover this fault return ... the caller
-> would normally need some default to apply in such cases, too.
-> 
-> (Example:  PCI could just look at the PCI PM resource and see what
-> states are supported there.  Choosing PCI_D2, where it's available,
-> could eliminate various driver re-initialization problems.  That
-> might make some video code work better, from what I'm told ...)
-
-OK
- 
-> > +		return -ENODEV;
-> > +	}
-> > +	acpi_method[2] = '0' + acpi_target_sleep_state;
-> > +	/*
-> > +	 * If the sleep state is S0, we will return D3, but if the device has
-> > +	 * _S0W, we will use the value from _S0W
-> 
-> There was also the assumption that if it can wake, it can do
-> so from D3 *or* there will be an _SxD method... remembering
-> that lots of systems don't have ACPI 3.0 _SxW methods.
-> 
-> But returning D3 is not necessarily best, here...
-> 
-> 
-> > +	 */
-> > +	d_min = ACPI_STATE_D3;
-> > +	d_max = ACPI_STATE_D3;
-> 
-> Other than the lack of empty lines separating code paragraphs ...
-> I recall choosing "d_min = ACPI_STATE_D3" with specific reference
-> to PCI.  It's not clear to me that's appropriate for non-PCI
-> devices.
->
-> The logic was that PCI devices can all support PCI_D0 and PCI_D3.
-> For non-PCI devices we can't actually know that.  So "min" should
-> probably default to ACPI_STATE_D0.  If this returns a range, then
-> such issues can stay out of this code.
-
-The ACPI spec says that all devices must support D0 and D3.
- 
-> > +	/*
-> > +	 * If present, _SxD methods give the minimum D-state we may use
-> > +	 * for each S-state ... with lowest latency state switching.
-> > +	 *
-> > +	 * We rely on acpi_evaluate_integer() not clobbering the integer
-> > +	 * provided -- that's our fault recovery, we ignore retval.
-> > +	 */
-> > +	if (acpi_target_sleep_state > ACPI_STATE_S0)
-> > +		acpi_evaluate_integer(handle, acpi_method, NULL, &d_min);
-> 
-> ... "lowest latency" implies avoiding ACPI D3.  Thing is, in my
-> testing with PCI, most devices didn't have _SxD methods, so the
-> only way to return anything other than PCI_D0 (i.e. some state
-> that saved power) was to force a different default.  D3 was the
-> only option that always worked.
-
-I think that usually D3 will be returned here.
-
-> > +
-> > +	/*
-> > +	 * If _PRW says we can wake from the upcoming system state, the _SxD
-> > +	 * value can wake ... and we'll assume a wakeup-aware driver.  If _SxW
-> > +	 * methods exist (ACPI 3.x), they give the lowest power D-state that
-> > +	 * can also wake the system.  _S0W can be valid.
-> > +	 */
-> > +	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
-> > +	    (dev->wakeup.state.enabled &&
-> 
-> This used device_may_wakeup() before.  That ACPI flag is not a
-> direct analogue ... without looking again at the issues, I'd
-> say the right solution is to phase out the ACPI-only flags in
-> new code.
-
-Hm, I'm not sure.  This is an ACPI routine after all ...
-
-> Maybe just expect the caller to pass the results 
-> of device_may_wakeup() in ... or update the signature to accept
-> a "struct device", and fetch the handle from there.  (That'd
-> be a better match for most callers, I'd think...)
-
-In that case it would be nicer to pass 'struct acpi_device *' rahter than
-'struct device *', IMO.
-
-> > +	     dev->wakeup.sleep_state <= acpi_target_sleep_state)) {
-> > +		d_max = d_min;
-> 
-> None of my systems happend to have _SxW methods to execute.
-> So with few _SxD methods, most of the time d_max never changed.
-> All the more reason to return both min and max...
-> 
-> 
-> > +		acpi_method[3] = 'W';
-> > +		acpi_evaluate_integer(handle, acpi_method, NULL, &d_max);
-> > +	}
-> > +	return d_max;
-> 
-> ... so there's a range of from d_min to d_max that would be OK
-> with ACPI, but this particular routine is only showing one end
-> of the range.  For a general purpose routine, that doesn't seem
-> like it's obviously the best answer.
-
-We can return a range.
-
-Greetings,
-Rafael
-
+Thanks.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+tejun
