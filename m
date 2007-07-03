@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 23:20:19 +0200
-Message-ID: <200707032320.20334.rjw__31517.4286523417$1183497505$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org>
-	<E1I5oq4-0004sc-00@dorka.pomaz.szeredi.hu>
+Date: Wed, 04 Jul 2007 07:14:49 +1000
+Message-ID: <1183497290.3388.4.camel__33112.2259529822$1183497625$gmane$org@localhost.localdomain>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707031608.06348.nigel@nigel.suspend2.net>
+	<1183447184.10386.102.camel@localhost.localdomain>
+	<200707031456.40890.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I5oq4-0004sc-00@dorka.pomaz.szeredi.hu>
-Content-Disposition: inline
+In-Reply-To: <200707031456.40890.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +21,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 3 July 2007 22:19, Miklos Szeredi wrote:
-> > > Well, but you did remove sys_sync() from the freezer, which is
-> > > and must be called in the hibernate path.
-> > 
-> > That's not really true.  We _want_ to call sys_sync() in both the 
-> > hibernate and suspend paths (in case the batteries run down), to help 
-> > avoid filesystem problems if something goes wrong with the resume.  But 
-> > it isn't a hard requirement.
-> > 
-> > > > I'm not sure why this can't be made atomic, but assuming, that it
-> > > > can't, fuse should still not need to be implicated.  If it is, that's
-> > > > an indication about something wrong in the suspend procedure.
-> > > 
-> > > Nope, something's wrong in fuse. You must be able to deal with sync
-> > > until every task is frozen.
-> > 
-> > That's ridiculous.  FUSE itself runs partially as a user task.  How can
-> > you expect it to carry out a sync or anything else when it is frozen?
-> > 
-> > I suppose you could "deal" with it by having the kernel portion return
-> > an error if the userspace part is frozen.  If the hibernate/suspend 
-> > code bothered to check the return value, it would immediately abort 
-> > the suspend.
 
-Er, do_sync() doesn't return a result.
+> >  - For STR, don't do the freezer thing.
+> 
+> In the long run, I agree.
+> 
+> Still, can you please read this post from Alan Stern:
+> 
+> https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
+> 
+> ?  I don't think I'm able to repeat the arguments given in there in a
+> convincing way.
 
-> I strongly believe, that we don't want to deal with it.  If we want to
-> call sync(), do it while the system is fully operational.  It's a best
-> effort thing anyway, and you can loose data in other ways if resume
-> fails.
+That's the same crackpot I've been hearing for the past 3 years or
+so ...
 
-The requirement of syncing when the system (including the user space) is fully
-operational is FUSE-specific.  Thus we'd rather like to sync FUSE filesystems
-before freezing the user space and freeze the other filesystems after freezing
-the user space.
+Both Paulus and I think the freezer is just a way to try to put your
+head in the sand and ignore the problem. It causes as many problems as
+it solves on its own, and is just not a solution that will be of any use
+once you start implementing dynamic PM schemes etc...
 
-Greetings,
-Rafael
+In many cases, having proper support for "live" suspend of devices is
+just a matter of having a couple of helpers in whatever subsystem those
+drivers hookup with. In the case of network, for example, it's mostly
+trivial (stop the queue). For block, it's not terribly hard neither,
+though you want to have some orderign/atomicity between the blocking of
+the incoming request queue and the sending of things like spindown &
+flush commands to the disk. For old-style IDE, that was fairly easily
+solved by piping suspend/resume command down the request queue itself
+and have the queue block/unblbock itself after processing them. Some of
+that logic could maybe be moved to the block layer for all block drivers
+to benefit.
 
+But yes, overall, there is work to do on drivers and I'm doing the ones
+I hit on the platforms I use. I don't think the freezer is any kind of
+remotely good solution, just a way to continue avoiding the problem.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Ben.
