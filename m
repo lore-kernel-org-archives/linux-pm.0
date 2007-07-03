@@ -1,15 +1,16 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 21:23:29 +0100
-Message-ID: <20070703202329.GA27927__10392.2835937285$1183494503$gmane$org@srcf.ucam.org>
-References: <20070703194247.GB27098@srcf.ucam.org>
-	<Pine.LNX.4.44L0.0707031553020.7671-100000@iolanthe.rowland.org>
+Date: Tue, 3 Jul 2007 22:45:43 +0200
+Message-ID: <200707032245.44087.oliver__11601.7453642145$1183495825$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707031556160.7671-100000@iolanthe.rowland.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707031553020.7671-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +21,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 03:54:55PM -0400, Alan Stern wrote:
-> On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> > There's nothing wrong with it as such, it's just that our implementation 
-> > appears to suck in a myriad of small ways that keep cropping up and 
-> > biting people. Even without the sys_sync(), freezing processes results 
-> > in the suspend failing because syslog is stuck in D state and won't go 
-> > into the refrigerator.
+Am Dienstag, 3. Juli 2007 schrieben Sie:
+> On Tue, 3 Jul 2007, Oliver Neukum wrote:
 > 
-> Okay, I can believe that.  The proper response then is to fix the 
-> freezer, not eliminate it.  Has the syslog problem been reported on 
-> linux-pm?  I don't recall hearing of it before.
+> > Well, but you did remove sys_sync() from the freezer, which is
+> > and must be called in the hibernate path.
+> 
+> That's not really true.  We _want_ to call sys_sync() in both the 
+> hibernate and suspend paths (in case the batteries run down), to help 
+> avoid filesystem problems if something goes wrong with the resume.  But 
+> it isn't a hard requirement.
 
-See the start of this thread. It's just not clear what the freezer buys 
-us - removing it gets rid of a load of subtle issues and complexity, and 
-turns system suspend into something that looks more like runtime 
-suspend (which might then encourage people to get runtime suspend 
-right...)
+But the ability to launder pages is needed. During hibernation we need
+to shrink memory. I don't see how this would be fundamentally different
+from calling sync.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> > > I'm not sure why this can't be made atomic, but assuming, that it
+> > > can't, fuse should still not need to be implicated.  If it is, that's
+> > > an indication about something wrong in the suspend procedure.
+> > 
+> > Nope, something's wrong in fuse. You must be able to deal with sync
+> > until every task is frozen.
+> 
+> That's ridiculous.  FUSE itself runs partially as a user task.  How can
+> you expect it to carry out a sync or anything else when it is frozen?
+
+I don't and it might point to a fundamental problem.
+But I cannot help but notice that syscalls may happen while the system
+is partially frozen. It must be dealt with.
+
+> I suppose you could "deal" with it by having the kernel portion return
+> an error if the userspace part is frozen.  If the hibernate/suspend 
+> code bothered to check the return value, it would immediately abort 
+> the suspend.
+
+Where exactly would that code notice the errors?
+
+	Regards
+		Oliver
