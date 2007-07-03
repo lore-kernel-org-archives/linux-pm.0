@@ -1,17 +1,17 @@
 From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 13:50:00 +0200
-Message-ID: <200707031350.01111.oliver@neukum.org>
+Date: Tue, 3 Jul 2007 13:55:49 +0200
+Message-ID: <200707031355.51028.oliver__2129.51223734326$1183464043$gmane$org@neukum.org>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031327.56577.oliver@neukum.org>
-	<1183463113.10386.114.camel@localhost.localdomain>
+	<200707031307.41366.oliver@neukum.org>
+	<1183463053.10386.112.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183463113.10386.114.camel@localhost.localdomain>
+In-Reply-To: <1183463053.10386.112.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,21 +27,31 @@ Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.
 List-Id: linux-pm@vger.kernel.org
 
 Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Tue, 2007-07-03 at 13:27 +0200, Oliver Neukum wrote:
-> > > You are talking about hibernate, right? =C2=A0Suspending (to ram) i=
-s
-> > > instantaneous, in that _after_ suspend no CPU is active obviously.
-> >=20
-> > If that is so, why do you care? If it is really atomic, fuse has no
-> > chance
-> > to call out to its component in user space either. Removing the
-> > freezer
-> > cannot make a difference.
->=20
-> It's not atomic. You will get called after suspend() in drivers. The
-> thing is ... you just have to deal with it :-)
+> > Now device drivers have a guaranteed temporal sequence:
+> > 
+> > last io -> suspend() -> resume() [or disconnect()] -> new io
+> 
+> No, that's always been bullshit. You can have IOs emitted by kernel
+> threads (think knfsd, and that's just one among many others). Beside,
 
-So you are volunteering to go through all drivers >:-> ?
+That's why we have the problem of freezing the kernel threads or not.
+Short of knfsd very few kernel threads really operate on their own and
+those can use the new notifier chain.
+
+> relying on having userland frozen means that your driver will be unable
+> to be "live" suspended/resumed for more ambitious dynamic power
+> management schemes.
+
+Only if they work without cooperation and idle detection in the drivers.
+
+> So it's always been wrong, imho, to rely on that. I've had powermac STR
+> work fine without the freezer for years, and few drivers have been a
+> problem, and we just fixed them.
+
+Powermacs are somewhat limited in hardware used with them (OK, powerbook
+have PCMCIA, but how often is that used?)
+
+You want to have all that pain for fuse?
 
 	Regards
 		Oliver
