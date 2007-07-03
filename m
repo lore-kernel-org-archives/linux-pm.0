@@ -1,15 +1,15 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Miklos Szeredi <miklos@szeredi.hu>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 20:42:47 +0100
-Message-ID: <20070703194247.GB27098@srcf.ucam.org>
-References: <20070703170233.GA25129@srcf.ucam.org>
-	<Pine.LNX.4.44L0.0707031529130.7671-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 03 Jul 2007 21:47:43 +0200
+Message-ID: <E1I5oLf-0004lk-00@dorka.pomaz.szeredi.hu>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707032026.34649.oliver@neukum.org>
+	<E1I5no4-0004fU-00@dorka.pomaz.szeredi.hu>
+	<200707032132.20731.oliver@neukum.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707031529130.7671-100000@iolanthe.rowland.org>
+In-reply-to: <200707032132.20731.oliver@neukum.org> (message from Oliver
+	Neukum on Tue, 3 Jul 2007 21:32:20 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: oliver@neukum.org
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 03, 2007 at 03:33:40PM -0400, Alan Stern wrote:
-> On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> 
-> > On Tue, Jul 03, 2007 at 12:57:17PM -0400, Alan Stern wrote:
-> > > On Tue, 3 Jul 2007, Matthew Garrett wrote:
-> > > > For the suspend to RAM case, that sounds absolutely fine.
-> > > 
-> > > It's not so good when your suspend process has to wait for the call to 
-> > > complete!
+> Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
+> > > And a further question. The freezer is not atomic. What do you do
+> > > if a task not yet frozen calls sys_sync(), but fuse is already frozen?
 > > 
-> > Why would it have to? Sorry, I suspect I'm missing something obvious 
-> > here.
+> > What do you do if a task not yet frozen writes to a pipe, on the other
+> > end of which is a task already frozen?
 > 
-> Well, the sys_sync() that caused your original problem did exactly 
-> that.  It's the reason you get deadlocks, right?
+> The same as you do with a pipe when the reader is not ready.
 
-The sys_sync is unnecessary in the first case. There shouldn't be 
-anything in the suspend path that's going to require userspace access to 
-a device after that device has been suspended.
+Yes.  And if the fuse process is not ready, what will sys_sync() do?
 
-> I agree that in general the suspend process should not have to wait for 
-> a userspace callback to complete.  Indeed, there's no particular 
-> reason that anything running during STR should have to wait for 
-> something in userspace to complete.  Given that fact, I don't see 
-> anything wrong with freezing userspace when doing STR.
+(As a side note, sys_sync() actually does nothing in fuse, so these
+examples are slightly silly, but the concept applies to any filesystem
+operation).
 
-There's nothing wrong with it as such, it's just that our implementation 
-appears to suck in a myriad of small ways that keep cropping up and 
-biting people. Even without the sys_sync(), freezing processes results 
-in the suspend failing because syslog is stuck in D state and won't go 
-into the refrigerator.
+> > It doesn't matter.  The only thing that should matter during suspend
+> > (not hibernate) is saving the state of devices to ram, and putting the
+> > devices to sleep.
+> 
+> Well, but you did remove sys_sync() from the freezer, which is
+> and must be called in the hibernate path.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Since I don't know why sync() needs to be called from hibernate, I
+can't argue about this.  But for _suspend_ it definitely should not be
+needed.
+
+> > I'm not sure why this can't be made atomic, but assuming, that it
+> > can't, fuse should still not need to be implicated.  If it is, that's
+> > an indication about something wrong in the suspend procedure.
+> 
+> Nope, something's wrong in fuse. You must be able to deal with sync
+> until every task is frozen.
+
+Why exactly?  That's like saying the pipe must be able to deal with
+writes until every task is frozen.
+
+As I've said, fuse is just special kind of IPC.  The task calling into
+fuse can assume nothing about when it's request will be served.  Just
+like a task writing into a pipe can assume nothing about when that
+write will return.
+
+Miklos
