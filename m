@@ -1,13 +1,13 @@
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc7: known regressions
-Date: Tue, 03 Jul 2007 18:45:16 +0200
-Message-ID: <468A7D1C.4060701@googlemail.com>
-References: <468A7BF3.1090001@googlemail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Tue, 3 Jul 2007 12:57:17 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707031255420.3936-100000@iolanthe.rowland.org>
+References: <20070703160526.GA24334@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: quoted-printable
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <468A7BF3.1090001@googlemail.com>
+In-Reply-To: <20070703160526.GA24334@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,59 +17,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: discuss@x86-64.org, Ioan Ionita <opslynx@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+On Tue, 3 Jul 2007, Matthew Garrett wrote:
 
-Here is a list of some known regressions in 2.6.22-rc7.
+> On Tue, Jul 03, 2007 at 12:03:33PM -0400, Alan Stern wrote:
+> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
+> > 
+> > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> > > a screaming nightmare - either the suspend fails because syslog (for 
+> > > instance) can't be frozen, or the machine deadlocks for some other 
+> > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> > > and just not use the freezer.
+> > 
+> > Quite apart from the sync() matter, _any_ synchronous call to a FUSE 
+> > filesystem during STR will cause trouble.  Even if the user task 
+> > implementing the filesystem isn't frozen, when it tries to carry out 
+> > some I/O to a suspended device it will either:
+> > 
+> > 	block until the system wakes up, or
+> 
+> For the suspend to RAM case, that sounds absolutely fine.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+It's not so good when your suspend process has to wait for the call to 
+complete!
 
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Hugh Dickins                           2
-Andi Kleen                             1
-Andrew Morton                          1
-Benjamin Herrenschmidt                 1
-Bj=F6rn Steinbrink                       1
-Bjorn Helgaas                          1
-Jean Delvare                           1
-Olaf Hering                            1
-Siddha, Suresh B                       1
-Trent Piepho                           1
-Ville Syrj=E4l=E4                          1
-
-
-
-Suspend
-
-Subject         : reiserfs/libata sporadically hangs on resume from hiber=
-nation
-References      : http://lkml.org/lkml/2007/6/30/5
-Last known good : ?
-Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
-
-
-
-x86-64
-
-Subject    : x86-64 2.6.22-rc2 random segfaults
-References : http://lkml.org/lkml/2007/5/24/275
-Submitter  : Ioan Ionita <opslynx@gmail.com>
-Status     : Unknown
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+Alan Stern
