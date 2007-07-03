@@ -1,17 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 04 Jul 2007 07:14:49 +1000
-Message-ID: <1183497290.3388.4.camel__33112.2259529822$1183497625$gmane$org@localhost.localdomain>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031608.06348.nigel@nigel.suspend2.net>
-	<1183447184.10386.102.camel@localhost.localdomain>
-	<200707031456.40890.rjw@sisk.pl>
+Date: Tue, 3 Jul 2007 22:20:02 +0100
+Message-ID: <20070703212002.GA28895@srcf.ucam.org>
+References: <20070703211227.GA28758@srcf.ucam.org>
+	<Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707031456.40890.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0707031713530.8010-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,44 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-> >  - For STR, don't do the freezer thing.
+On Tue, Jul 03, 2007 at 05:16:37PM -0400, Alan Stern wrote:
+> On Tue, 3 Jul 2007, Matthew Garrett wrote:
+> > But that's fine - "Are we undergoing a systemwide suspend" is an easy 
+> > question to ask. Freezing processes instead means that most of those 
+> > paths will never be tested.
 > 
-> In the long run, I agree.
-> 
-> Still, can you please read this post from Alan Stern:
-> 
-> https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
-> 
-> ?  I don't think I'm able to repeat the arguments given in there in a
-> convincing way.
+> The question is easy to ask, but it's not so easy to figure out what
+> you should do if the answer is Yes.  Freezing processes instead means
+> that those "untested" paths -- in many, many drivers -- won't have to 
+> exist at all.
 
-That's the same crackpot I've been hearing for the past 3 years or
-so ...
+We're used to the idea of applications blocking when a resource they're 
+using goes away - NFS has done it forever. 
 
-Both Paulus and I think the freezer is just a way to try to put your
-head in the sand and ignore the problem. It causes as many problems as
-it solves on its own, and is just not a solution that will be of any use
-once you start implementing dynamic PM schemes etc...
-
-In many cases, having proper support for "live" suspend of devices is
-just a matter of having a couple of helpers in whatever subsystem those
-drivers hookup with. In the case of network, for example, it's mostly
-trivial (stop the queue). For block, it's not terribly hard neither,
-though you want to have some orderign/atomicity between the blocking of
-the incoming request queue and the sending of things like spindown &
-flush commands to the disk. For old-style IDE, that was fairly easily
-solved by piping suspend/resume command down the request queue itself
-and have the queue block/unblbock itself after processing them. Some of
-that logic could maybe be moved to the block layer for all block drivers
-to benefit.
-
-But yes, overall, there is work to do on drivers and I'm doing the ones
-I hit on the platforms I use. I don't think the freezer is any kind of
-remotely good solution, just a way to continue avoiding the problem.
-
-Ben.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
