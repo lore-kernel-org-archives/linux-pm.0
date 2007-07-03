@@ -1,18 +1,17 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Tue, 3 Jul 2007 13:46:56 +0200
-Message-ID: <200707031346.57613.oliver@neukum.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Tue, 03 Jul 2007 21:45:12 +1000
+Message-ID: <1183463113.10386.114.camel__7862.28089496053$1183463399$gmane$org@localhost.localdomain>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707030944.18702.oliver@neukum.org>
-	<1183462826.10386.107.camel@localhost.localdomain>
+	<200707031307.41366.oliver@neukum.org>
+	<E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
+	<200707031327.56577.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183462826.10386.107.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <200707031327.56577.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,39 +21,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Tue, 2007-07-03 at 09:44 +0200, Oliver Neukum wrote:
-> > Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > So to summarize, the plan that makes things work with fuse is:
-> > > 
-> > >  - For STR, don't do the freezer thing.
-> > > 
-> > >  - For STD, don't sys_sync() after you froze
-> > > 
-> > > There might be -other- issues, but that should get you through some of
-> > 
-> > At the risk of repeating myself. Character device drivers are written
-> > with the assumption that normal io and suspend/resume do not race
-> > with each other due to the freezer.
-> > What do you intend to do about that?
+On Tue, 2007-07-03 at 13:27 +0200, Oliver Neukum wrote:
+> > You are talking about hibernate, right?  Suspending (to ram) is
+> > instantaneous, in that _after_ suspend no CPU is active obviously.
 > 
-> Ugh ... "character devices" ... that's a pretty wide statement...
-> there's lots of those and very different one from the other...
+> If that is so, why do you care? If it is really atomic, fuse has no
+> chance
+> to call out to its component in user space either. Removing the
+> freezer
+> cannot make a difference.
 
-That is a good summary of the problem ;-(
+It's not atomic. You will get called after suspend() in drivers. The
+thing is ... you just have to deal with it :-)
 
-> Any sane device-driver will have to cope with being suspended in a
-> "live" system. I've demonstrated multiple times in the past why this is
-> necessary anyway, for things like dynamic power management, among
-> others.
-
-That is an interesting notion. I'd rather see device drivers reporting
-their devices idle and requsting to be suspended.
-But in any case it doesn't solve the problem.
-
-	Regards
-		Oliver
+Ben.
