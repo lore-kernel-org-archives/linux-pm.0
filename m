@@ -1,17 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 04 Jul 2007 07:35:55 +1000
-Message-ID: <1183498555.3388.14.camel__37369.4851216443$1183499004$gmane$org@localhost.localdomain>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031456.40890.rjw@sisk.pl>
-	<1183497290.3388.4.camel@localhost.localdomain>
-	<200707032332.49694.rjw@sisk.pl>
+Date: Tue, 3 Jul 2007 23:47:01 +0200
+Message-ID: <200707032347.01936.oliver__26045.460967771$1183499597$gmane$org@neukum.org>
+References: <20070703211227.GA28758@srcf.ucam.org>
+	<200707032337.52544.rjw@sisk.pl>
+	<20070703213639.GA29149@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707032332.49694.rjw@sisk.pl>
+In-Reply-To: <20070703213639.GA29149@srcf.ucam.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,18 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-07-03 at 23:32 +0200, Rafael J. Wysocki wrote:
+Am Dienstag, 3. Juli 2007 schrieb Matthew Garrett:
+> On Tue, Jul 03, 2007 at 11:37:51PM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, 3 July 2007 23:20, Matthew Garrett wrote:
+> > > We're used to the idea of applications blocking when a resource they're 
+> > > using goes away - NFS has done it forever. 
+> > 
+> > Now, please tell me how many driver writers even thought that something
+> > might try to access their devices after .suspend() had been executed (or
+> > even whilie it was being executed)?
 > 
-> Still, do you really think that we're ready to drop it _right_ _now_
-> (I'm
-> referring to suspend only) and if so than on what basis (except that
-> you
-> don't like it, which falls short of being a techical argument)?
+> Every single driver that fails under those conditions is already broken, 
+> and has been forever. It's likely that they're broken under run-time 
+> suspend, too.
 
-Works fine for me without it ;-)
+There _is_ no runtime syspend in working condition. The interface
+to do that has been scheduled for removal.
 
-Ben.
+	Oliver
