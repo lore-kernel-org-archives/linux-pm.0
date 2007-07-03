@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 14:56:39 +0200
-Message-ID: <200707031456.40890.rjw__633.379913824861$1183467047$gmane$org@sisk.pl>
+Date: Tue, 3 Jul 2007 14:58:15 +0200
+Message-ID: <200707031458.16132.rjw__6964.49262691221$1183467108$gmane$org@sisk.pl>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031608.06348.nigel@nigel.suspend2.net>
-	<1183447184.10386.102.camel@localhost.localdomain>
+	<E1I5fug-0003ZS-00@dorka.pomaz.szeredi.hu>
+	<200707031307.41366.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183447184.10386.102.camel@localhost.localdomain>
+In-Reply-To: <200707031307.41366.oliver@neukum.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,94 +22,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 3 July 2007 09:19, Benjamin Herrenschmidt wrote:
-> On Tue, 2007-07-03 at 16:08 +1000, Nigel Cunningham wrote:
-> > 
-> > > So I think Matthew is totally right. In fact, the presence of the
-> > > freezer is the main reason why Paulus so far NACKed Johannes attempts at
-> > > merging the PPC PM code with the generic code in kernel/power.c
-> > > 
-> > > We've been doing fine without it so far and intend to continue to do so.
-> > 
-> > Fuse depends on !PPC?
-> 
-> No, that's not what I'm saying. I'm saying we've been doing STR without
-> the freezer and that's the way to go imho.
-> 
-> > > As for suspend-to-disk, I refer you to the discussions we had in the
-> > > past with Linus, where he explains I think quite clearly how wrong the
-> > > current implementation of STR is :-)
-> > 
-> > I assume you mean STD.
-> 
-> Oops, yeah, sorry.
-> 
-> > The problem there is that Linus doesn't care about STD. 
-> > If he did, I dare say he'd think through the issues more thoroughly than he 
-> > apparently has.
-> 
-> Heh, that might be the case :-)
->  
-> > > Thing is, if you're going to do snapshots, you should probably not sync
-> > > after you have "frozen" anyway.
-> > 
-> > Fully agree. But how do you stop things syncing while you're writing the image 
-> > if you don't have a freezer or equivalent? (scheduler based, kexec.. they're 
-> > all workarounds for this issue).
-> 
-> Well, I was saying that in the context of the -current- snapshotting
-> mechanism which is based on the freezer, then you should not
-> sys_sync(). 
-> 
-> Some random user or kernel thread doing a sync is not a problem. It will
-> stop in the middle of sync and resume on wakeup.
-> 
-> The problem is currently because STD -itself- attempts to sync after it
-> has frozen things.
+On Tuesday, 3 July 2007 13:07, Oliver Neukum wrote:
+> Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
+> > > > So to summarize, the plan that makes things work with fuse is:
+> > > >=20
+> > > > =C2=A0- For STR, don't do the freezer thing.
+> > > >=20
+> > > > =C2=A0- For STD, don't sys_sync() after you froze
+> > > >=20
+> > > > There might be -other- issues, but that should get you through so=
+me of
+> > >=20
+> > > At the risk of repeating myself. Character device drivers are writt=
+en
+> > > with the assumption that normal io and suspend/resume do not race
+> > > with each other due to the freezer.
+> > > What do you intend to do about that?
+> >=20
+> > Oliver, can you please explain your worries in a bit more detail?
+> >=20
+> > I don't claim to know anything about how STR or hibernate works, but
+> > neither seem to have any problem with I/O on the fuse device "racing"
+> > with them.
+>=20
+> The problem is not with fuse. The problem is generic in nature.
+>=20
+> If you remove the freezer, user space remains active until the last CPU
+> goes into suspend. It can do syscalls. Or do you know a clean way to ex=
+empt
+> only the tasks fuse might use?
+>=20
+> Now device drivers have a guaranteed temporal sequence:
+>=20
+> last io -> suspend() -> resume() [or disconnect()] -> new io
+>=20
+> This is because suspend() is called after the freezer goes into action.=
+ If
+> you remove the freezer, you need to deal with
+>=20
+> 1. io to suspended devices
+> 2. resume() assuming that the device is in the state suspend() left it
+> 3. io changing a device's state while suspend is saving it
+>=20
+> and you need to fix this for all device drivers, not just those fuse is
+> involved with. Removing the freezer means doing a more or less full
+> audit of every driver and additional locking in many drivers.
 
-To be precise, it tries to sync after it has frozen the user land.
- 
-> I think that should be changed. If you want to sync for whatever reason,
-> (mostly save RAM ?) do it before the freeze. That means you may get new
-> dirty data in memory that isn't written out by the sync before you
-> freeze, but that's allright, that data will be in the suspend image
-> anyway. If you fail to wakeup, that's akin to a normal crash, the user
-> will only lose the last data written at the time of the suspend and
-> journaling fs'es should take care of fs metadata integrity.
-> 
-> So to summarize, the plan that makes things work with fuse is:
-> 
->  - For STR, don't do the freezer thing.
+Agreed.
 
-In the long run, I agree.
-
-Still, can you please read this post from Alan Stern:
-
-https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
-
-?  I don't think I'm able to repeat the arguments given in there in a
-convincing way.
-
->  - For STD, don't sys_sync() after you froze
-
-Yeah, I think we can move the syncing before the freezing, so to speak.
-
-And it need not be called from within the freezer, BTW.
-
-> There might be -other- issues, but that should get you through some of
-> them at least. Of course, you'll be in trouble if you try to do things
-> like STD-to-a-file which sits on a fuse FS but there's a limit to
-> insanity :-)
-
-Yes. :-)
-
-Ggreetings,
+Greetings,
 Rafael
 
 
--- 
+--=20
 "Premature optimization is the root of all evil." - Donald Knuth
