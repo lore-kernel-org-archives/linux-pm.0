@@ -1,17 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Miklos Szeredi <miklos@szeredi.hu>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 17:22:12 +0200
-Message-ID: <200707031722.13165.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0707031026260.3720-100000@iolanthe.rowland.org>
-	<1183474748.3722.33.camel@johannes.berg>
+Date: Tue, 03 Jul 2007 17:46:23 +0200
+Message-ID: <E1I5ka7-0004Au-00__1785.80012075162$1183477961$gmane$org@dorka.pomaz.szeredi.hu>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707030944.18702.oliver@neukum.org>
+	<E1I5fug-0003ZS-00@dorka.pomaz.szeredi.hu>
+	<200707031307.41366.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183474748.3722.33.camel@johannes.berg>
-Content-Disposition: inline
+In-reply-to: <200707031307.41366.oliver@neukum.org> (message from Oliver
+	Neukum on Tue, 3 Jul 2007 13:07:39 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,91 +22,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: oliver@neukum.org
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 3 July 2007 16:59, Johannes Berg wrote:
-> On Tue, 2007-07-03 at 10:50 -0400, Alan Stern wrote:
-> 
-> > Time for me to jump in.
-> 
-> :)
-> 
-> > USB already implements runtime PM.  If a device is suspended at runtime
-> > and a task tries to access it, the device is automatically resumed.  
-> > No problem there.
-> 
-> Right.
-> 
-> > The problem comes when the system is doing a STR.  Right now the code
-> > doesn't keep track of the difference between a runtime suspend and a
-> > system suspend -- once the device is suspended, it's suspended, period.  
-> > Consequently, a non-frozen user task trying to do I/O to a suspended
-> > device during STR will cause that device to resume, thereby forcing the
-> > system suspend to abort.  Something much like this has actually
-> > happened and been reported as a bug on LKML (I don't have a URL handy,
-> > and it was actually a non-frozen kernel thread interfering with
-> > hibernate rather than a non-frozen user task interfering with STR, but
-> > the principle is the same).
-> 
-> Yeah, I can see that happen.
-> 
-> > Yes, the code could be changed to keep track of the reason for a device
-> > suspend.  But that just raises the old problem of what to do when
-> > there's an I/O request for a suspended device during STR.
-> > 
-> > > I think the core of the discussion isn't appreciated by everybody here
-> > > yet---we need to solve both run-time and suspend-to-ram-time device
-> > > suspend, not just one of them.
-> > 
-> > Runtime suspend isn't a problem.  Only STR.
-> 
-> Ah but for all those character devices people were saying are the
-> problem we haven't even solved runtime suspend as far as I can tell from
-> the discussion.
-> 
-> > Consider a particularly troublesome case: During STR, a non-frozen task
-> > writes to /sys/bus/BBB/drivers/DDD/bind.  The sysfs core grabs the
-> > device semaphore and calls the driver's probe routine.  If the driver
-> > isn't PM-aware it simply tries to initialize the device and fails
-> > because the device is already suspended.  That's no good; it isn't
-> > transparent.
-> > 
-> > So assume the driver is PM-aware.  It tries to resume the device, which
-> > fails because STR is underway.  Now what can it do?  There's only one 
-> > possibility: It must block until the resume call can succeed.  But when 
-> > is that?
-> > 
-> > It has to be before the PM core tries to resume the device, because the 
-> > core will try to acquire the device semaphore and will block waiting 
-> > for the probe call to complete.  But it has to be after the PM core 
-> > resumes the device's parent, because obviously the device can't resume 
-> > until its parent is awake.
-> > 
-> > As you can see, this is a very difficult problem to solve.
-> 
-> Indeed. Actually, one could argue that it's impossible to solve the
-> problem as long as we try to call out to userspace during suspend and
-> need to wait until that's finished, like in the case of sys_sync() and
-> fuse filesystems, and probably other cases. Maybe we should make *those*
-> calls return a failure so that the suspend isn't transparent inside the
-> kernel but is transparent to userspace.
+> > > > So to summarize, the plan that makes things work with fuse is:
+> > > >=20
+> > > > =C2=A0- For STR, don't do the freezer thing.
+> > > >=20
+> > > > =C2=A0- For STD, don't sys_sync() after you froze
+> > > >=20
+> > > > There might be -other- issues, but that should get you through so=
+me of
+> > >=20
+> > > At the risk of repeating myself. Character device drivers are writt=
+en
+> > > with the assumption that normal io and suspend/resume do not race
+> > > with each other due to the freezer.
+> > > What do you intend to do about that?
+> >=20
+> > Oliver, can you please explain your worries in a bit more detail?
+> >=20
+> > I don't claim to know anything about how STR or hibernate works, but
+> > neither seem to have any problem with I/O on the fuse device "racing"
+> > with them.
+>=20
+> The problem is not with fuse. The problem is generic in nature.
+>=20
+> If you remove the freezer, user space remains active until the last CPU
+> goes into suspend. It can do syscalls. Or do you know a clean way to ex=
+empt
+> only the tasks fuse might use?
+>=20
+> Now device drivers have a guaranteed temporal sequence:
+>=20
+> last io -> suspend() -> resume() [or disconnect()] -> new io
+>=20
+> This is because suspend() is called after the freezer goes into action.=
+ If
+> you remove the freezer, you need to deal with
+>=20
+> 1. io to suspended devices
+> 2. resume() assuming that the device is in the state suspend() left it
+> 3. io changing a device's state while suspend is saving it
+>=20
+> and you need to fix this for all device drivers, not just those fuse is
+> involved with.
 
-Well, it generally needs more consideration. :-)
+Fuse is not involved with _any_ device drivers.  It is fully unaware
+of suspend issues and I think that's how it should stay ;)
 
-I think that we should introduce mechanisms that will allow us to notify all
-kernel subsystems, including FUSE and similar, that the system is going to
-enter a sleep state (one of those is the notifier chain introduced recently).
+> Removing the freezer means doing a more or less full
+> audit of every driver and additional locking in many drivers.
 
-Then, they may react to such a notification by entering a "suspend" mode
-of operation in which they will return errors from some callbacks that
-otherwise should have succeeded etc.  That depends on the subsystem in
-question.
+How about a "CONFIG_NOFREEZE (experimental): only turn this on if you
+want to fix buggy drivers that can fail during suspend with the
+freezer turned off"?
 
-Greetings,
-Rafael
+I'm guessing quite a few kernel developers would be willing to turn on
+such an option.
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Miklos
