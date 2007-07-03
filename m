@@ -1,18 +1,17 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Tue, 3 Jul 2007 13:27:55 +0200
-Message-ID: <200707031327.56577.oliver__46053.2630947002$1183462361$gmane$org@neukum.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Tue, 03 Jul 2007 21:40:26 +1000
+Message-ID: <1183462826.10386.107.camel@localhost.localdomain>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031307.41366.oliver@neukum.org>
-	<E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
+	<200707031608.06348.nigel@nigel.suspend2.net>
+	<1183447184.10386.102.camel@localhost.localdomain>
+	<200707030944.18702.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
-Content-Disposition: inline
+In-Reply-To: <200707030944.18702.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,51 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
-> > > > > So to summarize, the plan that makes things work with fuse is:
-> > > > >=20
-> > > > > =C2=A0- For STR, don't do the freezer thing.
-> > > > >=20
-> > > > > =C2=A0- For STD, don't sys_sync() after you froze
-> > > > >=20
-> > > > > There might be -other- issues, but that should get you through =
-some of
-> > > >=20
-> > > > At the risk of repeating myself. Character device drivers are wri=
-tten
-> > > > with the assumption that normal io and suspend/resume do not race
-> > > > with each other due to the freezer.
-> > > > What do you intend to do about that?
-> > >=20
-> > > Oliver, can you please explain your worries in a bit more detail?
-> > >=20
-> > > I don't claim to know anything about how STR or hibernate works, bu=
-t
-> > > neither seem to have any problem with I/O on the fuse device "racin=
-g"
-> > > with them.
-> >=20
-> > The problem is not with fuse. The problem is generic in nature.
-> >=20
-> > If you remove the freezer, user space remains active until the last C=
-PU
-> > goes into suspend. It can do syscalls. Or do you know a clean way to =
-exempt
-> > only the tasks fuse might use?
->=20
-> You are talking about hibernate, right? =C2=A0Suspending (to ram) is
-> instantaneous, in that _after_ suspend no CPU is active obviously.
+On Tue, 2007-07-03 at 09:44 +0200, Oliver Neukum wrote:
+> Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > So to summarize, the plan that makes things work with fuse is:
+> > 
+> >  - For STR, don't do the freezer thing.
+> > 
+> >  - For STD, don't sys_sync() after you froze
+> > 
+> > There might be -other- issues, but that should get you through some of
+> 
+> At the risk of repeating myself. Character device drivers are written
+> with the assumption that normal io and suspend/resume do not race
+> with each other due to the freezer.
+> What do you intend to do about that?
 
-If that is so, why do you care? If it is really atomic, fuse has no chanc=
-e
-to call out to its component in user space either. Removing the freezer
-cannot make a difference.
+Ugh ... "character devices" ... that's a pretty wide statement...
+there's lots of those and very different one from the other...
 
-Something is fishy here.
+Any sane device-driver will have to cope with being suspended in a
+"live" system. I've demonstrated multiple times in the past why this is
+necessary anyway, for things like dynamic power management, among
+others.
 
-	Regards
-		Oliver
+The whole freezer thing is a hack job to avoid fixing drivers that need
+fixing. Unfortunately, I believe in that area, it's simply not
+sustainable. Besides, getting drivers to behave properly isn't very hard
+in most cases.
+
+Ben.
