@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 15:07:52 +0200
-Message-ID: <200707031507.52875.rjw@sisk.pl>
+Date: Tue, 3 Jul 2007 15:08:45 +0200
+Message-ID: <200707031508.45595.rjw__27152.2503266626$1183467720$gmane$org@sisk.pl>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<1183441748.10386.75.camel@localhost.localdomain>
+	<1183441887.10386.77.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183441748.10386.75.camel@localhost.localdomain>
+In-Reply-To: <1183441887.10386.77.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,11 +21,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 3 July 2007 07:49, Benjamin Herrenschmidt wrote:
+On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
 > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
 > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
 > > a screaming nightmare - either the suspend fails because syslog (for 
@@ -33,14 +33,11 @@ On Tuesday, 3 July 2007 07:49, Benjamin Herrenschmidt wrote:
 > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
 > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
 > > and just not use the freezer.
-> > 
-> > Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
 > 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> (And with much pleasure :-)
+> The main reason for deadlocks is because we do a sys_sync() after the
+> freeze, which we shouldn't do.
 
-Clashes with some code already in -mm.
+So why don't we remove the sys_sync() from freeze_processes() instead?
 
 Greetings,
 Rafael
