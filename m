@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 15:08:45 +0200
-Message-ID: <200707031508.45595.rjw__27152.2503266626$1183467720$gmane$org@sisk.pl>
+Date: Tue, 3 Jul 2007 15:09:39 +0200
+Message-ID: <200707031509.39683.rjw__2987.39660433984$1183467783$gmane$org@sisk.pl>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<1183441887.10386.77.camel@localhost.localdomain>
+	<200707030813.53481.oliver@neukum.org>
+	<20070703121313.GA21318@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183441887.10386.77.camel@localhost.localdomain>
+In-Reply-To: <20070703121313.GA21318@srcf.ucam.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,25 +22,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
-> On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
-> > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
-> > a screaming nightmare - either the suspend fails because syslog (for 
-> > instance) can't be frozen, or the machine deadlocks for some other 
-> > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
-> > could do what we do for suspend to RAM on other platforms (PPC and APM) 
-> > and just not use the freezer.
+On Tuesday, 3 July 2007 14:13, Matthew Garrett wrote:
+> On Tue, Jul 03, 2007 at 08:13:53AM +0200, Oliver Neukum wrote:
 > 
-> The main reason for deadlocks is because we do a sys_sync() after the
-> freeze, which we shouldn't do.
+> > Only if you want to audit all character devices' read() and write()
+> > methods for races against suspend().
+> > / on fuse is a bad idea.
+> 
+> Any driver that assumes that userspace will be frozen during suspend has 
+> been broken forever. That behaviour has never been guaranteed.
 
-So why don't we remove the sys_sync() from freeze_processes() instead?
+Can we please fix those drivers _first_, then?
 
-Greetings,
 Rafael
 
 
