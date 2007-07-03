@@ -1,18 +1,13 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 00:04:15 +0200
-Message-ID: <200707040004.16357.oliver__8646.9346810647$1183500561$gmane$org@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707032348.42796.oliver@neukum.org>
-	<1183499792.3388.16.camel@localhost.localdomain>
+Date: Tue, 3 Jul 2007 18:21:42 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707031814440.8010-100000__35040.6339545318$1183501584$gmane$org@iolanthe.rowland.org>
+References: <20070703212002.GA28895@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183499792.3388.16.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <20070703212002.GA28895@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,29 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Tue, 2007-07-03 at 23:48 +0200, Oliver Neukum wrote:
-> > Am Dienstag, 3. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > On Tue, 2007-07-03 at 21:32 +0200, Oliver Neukum wrote:
-> > > > > I'm not sure why this can't be made atomic, but assuming, that it
-> > > > > can't, fuse should still not need to be implicated.  If it is,
-> > > > that's
-> > > > > an indication about something wrong in the suspend procedure.
-> > > > 
-> > > > Nope, something's wrong in fuse. You must be able to deal with sync
-> > > > until every task is frozen. 
-> > > 
-> > > Pipe dream
+On Tue, 3 Jul 2007, Matthew Garrett wrote:
+
+> On Tue, Jul 03, 2007 at 05:16:37PM -0400, Alan Stern wrote:
+> > On Tue, 3 Jul 2007, Matthew Garrett wrote:
+> > > But that's fine - "Are we undergoing a systemwide suspend" is an easy 
+> > > question to ask. Freezing processes instead means that most of those 
+> > > paths will never be tested.
 > > 
-> > Then tell me how you want to avoid that condition.
+> > The question is easy to ask, but it's not so easy to figure out what
+> > you should do if the answer is Yes.  Freezing processes instead means
+> > that those "untested" paths -- in many, many drivers -- won't have to 
+> > exist at all.
 > 
-> Don't freeze :-)
+> We're used to the idea of applications blocking when a resource they're 
+> using goes away - NFS has done it forever. 
 
-Then you will have to deal with all syscalls unfrozen tasks can make.
+You persist in evading my point.  I'm not worried about applications;  
+I'm worried about drivers.
 
-	Regards
-		Oliver
+Let me put it explicitly: You're writing a driver.  You're working on
+the read, write, or probe method.  You add code to check if a system
+sleep is underway.  Suppose the answer is Yes -- what does your driver
+do next?
+
+Make your answer as detailed as you reasonably can.  And be careful to 
+arrange things so that an ongoing I/O operation doesn't get messed up 
+when your suspend method is called.
+
+Alan Stern
