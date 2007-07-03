@@ -1,16 +1,15 @@
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 03 Jul 2007 14:03:07 +0200
-Message-ID: <E1I5h64-0000fs-34__8430.80948475308$1183464516$gmane$org@be1.lrz>
-References: <8CIbE-3y1-1@gated-at.bofh.it> <8CJKt-62G-35@gated-at.bofh.it>
-	<8CKZS-7Ur-3@gated-at.bofh.it> <8CLjc-8iq-29@gated-at.bofh.it>
-	<8CO7m-4k4-11@gated-at.bofh.it>
-Reply-To: 7eggert@gmx.de
+Date: Tue, 3 Jul 2007 13:13:13 +0100
+Message-ID: <20070703121313.GA21318__22388.254342559$1183465433$gmane$org@srcf.ucam.org>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707030813.53481.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200707030813.53481.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +19,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>, oliver@neukum.org, linux-pm@lists.linux-foundation.org, benh@kernel.crashing.org, nigel@nigel.suspend2.net, mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Tue, Jul 03, 2007 at 08:13:53AM +0200, Oliver Neukum wrote:
 
->> > So to summarize, the plan that makes things work with fuse is:
->> >=20
->> > - For STR, don't do the freezer thing.
->> >=20
->> > - For STD, don't sys_sync() after you froze
->> >=20
->> > There might be -other- issues, but that should get you through some =
-of
->>=20
->> At the risk of repeating myself. Character device drivers are written
->> with the assumption that normal io and suspend/resume do not race
->> with each other due to the freezer.
->> What do you intend to do about that?
->=20
-> Oliver, can you please explain your worries in a bit more detail?
+> Only if you want to audit all character devices' read() and write()
+> methods for races against suspend().
+> / on fuse is a bad idea.
 
-Try suspending while printing.
---=20
-What's worse than a Male Chauvinist Pig?
-A woman that won't do what she's told.
-
-Fri=DF, Spammer: tgyvaxz@.qcLz7l.7eggert.dyndns.org
+Any driver that assumes that userspace will be frozen during suspend has 
+been broken forever. That behaviour has never been guaranteed.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
