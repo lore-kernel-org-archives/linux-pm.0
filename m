@@ -1,17 +1,18 @@
-From: Paul Mackerras <paulus@samba.org>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 21:23:32 +1000
-Message-ID: <18058.12724.163599.707035__7037.39448586038$1183462118$gmane$org@cargo.ozlabs.ibm.com>
+Date: Tue, 3 Jul 2007 13:27:55 +0200
+Message-ID: <200707031327.56577.oliver__46053.2630947002$1183462361$gmane$org@neukum.org>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031608.06348.nigel@nigel.suspend2.net>
-	<1183447184.10386.102.camel@localhost.localdomain>
-	<200707030944.18702.oliver@neukum.org>
+	<200707031307.41366.oliver@neukum.org>
+	<E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707030944.18702.oliver@neukum.org>
+In-Reply-To: <E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +22,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
 List-Id: linux-pm@vger.kernel.org
 
-Oliver Neukum writes:
+Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
+> > > > > So to summarize, the plan that makes things work with fuse is:
+> > > > >=20
+> > > > > =C2=A0- For STR, don't do the freezer thing.
+> > > > >=20
+> > > > > =C2=A0- For STD, don't sys_sync() after you froze
+> > > > >=20
+> > > > > There might be -other- issues, but that should get you through =
+some of
+> > > >=20
+> > > > At the risk of repeating myself. Character device drivers are wri=
+tten
+> > > > with the assumption that normal io and suspend/resume do not race
+> > > > with each other due to the freezer.
+> > > > What do you intend to do about that?
+> > >=20
+> > > Oliver, can you please explain your worries in a bit more detail?
+> > >=20
+> > > I don't claim to know anything about how STR or hibernate works, bu=
+t
+> > > neither seem to have any problem with I/O on the fuse device "racin=
+g"
+> > > with them.
+> >=20
+> > The problem is not with fuse. The problem is generic in nature.
+> >=20
+> > If you remove the freezer, user space remains active until the last C=
+PU
+> > goes into suspend. It can do syscalls. Or do you know a clean way to =
+exempt
+> > only the tasks fuse might use?
+>=20
+> You are talking about hibernate, right? =C2=A0Suspending (to ram) is
+> instantaneous, in that _after_ suspend no CPU is active obviously.
 
-> At the risk of repeating myself. Character device drivers are written
-> with the assumption that normal io and suspend/resume do not race
-> with each other due to the freezer.
-> What do you intend to do about that?
+If that is so, why do you care? If it is really atomic, fuse has no chanc=
+e
+to call out to its component in user space either. Removing the freezer
+cannot make a difference.
 
-Going back to the old powerbook sleep code, we had a two-phase
-suspend: drivers got notified once when userspace is still running,
-with interrupts enabled, in process context; and then a second time
-with interrupts disabled and with only one CPU up, so the process
-that is initiating the suspend is the only process running (since
-interrupts are disabled and nothing it does can sleep, no other
-process can get to run).
+Something is fishy here.
 
-I still believe that is the right way to go, although we currently
-only have a single-phase suspend.
-
-Most drivers suspended their hardware in the second call.  If they are
-in the middle of a conversation with their device that *has* to be
-completed, they can do that by polling.  If it's a character device, a
-better approach would be to set a flag or whatever in the first
-suspend call to make sure that no new conversations get started with
-the device, sleeping if necessary.
-
-I'm actually having a hard time thinking of how to test your assertion
-since there are so few things on a typical computer that are plain
-character devices driving real hardware.  A serial port would be about
-the only one; keyboards and mice (and serial ports :) are USB these
-days, or ADB on older powerbooks.
-
-Or did you mean to include drivers for pseudo-devices (e.g. ptys)?  I
-don't see why they would have a suspend method at all.
-
-Paul.
+	Regards
+		Oliver
