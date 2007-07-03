@@ -1,13 +1,17 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 03 Jul 2007 19:38:49 +0200
-Message-ID: <E1I5mKv-0004TM-00@dorka.pomaz.szeredi.hu>
-References: <Pine.LNX.4.44L0.0707031026260.3720-100000@iolanthe.rowland.org>
-	<1183474748.3722.33.camel@johannes.berg>
-	<200707031722.13165.rjw@sisk.pl>
+Date: Tue, 3 Jul 2007 20:26:34 +0200
+Message-ID: <200707032026.34649.oliver@neukum.org>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707031508.45595.rjw@sisk.pl> <200707031709.29968.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200707031722.13165.rjw@sisk.pl>
+In-Reply-To: <200707031709.29968.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,40 +21,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> > Indeed. Actually, one could argue that it's impossible to solve the
-> > problem as long as we try to call out to userspace during suspend and
-> > need to wait until that's finished, like in the case of sys_sync() and
-> > fuse filesystems, and probably other cases. Maybe we should make *those*
-> > calls return a failure so that the suspend isn't transparent inside the
-> > kernel but is transparent to userspace.
+Am Dienstag, 3. Juli 2007 schrieb Rafael J. Wysocki:
+> > > The main reason for deadlocks is because we do a sys_sync() after the
+> > > freeze, which we shouldn't do.
+> > 
+> > So why don't we remove the sys_sync() from freeze_processes() instead?
 > 
-> Well, it generally needs more consideration. :-)
-> 
-> I think that we should introduce mechanisms that will allow us to notify all
-> kernel subsystems, including FUSE and similar, that the system is going to
-> enter a sleep state (one of those is the notifier chain introduced recently).
+> The patch follows (untested).
 
-Ugh, please no.
+And a further question. The freezer is not atomic. What do you do
+if a task not yet frozen calls sys_sync(), but fuse is already frozen?
 
-Believe me, fuse is doing _nothing_ out of the ordinary, and should
-not need special treatment during suspend/resume.  If suspend itself
-is doing something that triggers fuse activity, then that's a bug,
-such as the sync() thing that started this thread.
-
-> Then, they may react to such a notification by entering a "suspend" mode
-> of operation in which they will return errors from some callbacks that
-> otherwise should have succeeded etc.  That depends on the subsystem in
-> question.
-
-Sounds horrible.
-
-Why do we need to deal with subsystem interdependencies during
-suspend?  Isn't it about saving device state to ram?  That definitely
-_should not_ need to trigger anything that touches filesystems or
-other subsystems.
-
-Miklos
+	Regards
+		Oliver
