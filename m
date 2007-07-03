@@ -1,16 +1,17 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 04 Jul 2007 07:35:18 +1000
-Message-ID: <1183498518.3388.12.camel__4051.56622077829$1183498890$gmane$org@localhost.localdomain>
+Date: Wed, 04 Jul 2007 07:35:55 +1000
+Message-ID: <1183498555.3388.14.camel__37369.4851216443$1183499004$gmane$org@localhost.localdomain>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031709.29968.rjw@sisk.pl> <200707031920.59940.oliver@neukum.org>
-	<200707032259.59714.rjw@sisk.pl>
+	<200707031456.40890.rjw@sisk.pl>
+	<1183497290.3388.4.camel@localhost.localdomain>
+	<200707032332.49694.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707032259.59714.rjw@sisk.pl>
+In-Reply-To: <200707032332.49694.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,15 +25,14 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-> I don't think that would matter.
+On Tue, 2007-07-03 at 23:32 +0200, Rafael J. Wysocki wrote:
 > 
-> Still, I can remove the sync from the suspend code path only, leaving it in
-> the hibernation code path.  The patch will be bigger, but well.
-> 
-> Any objection to that?
+> Still, do you really think that we're ready to drop it _right_ _now_
+> (I'm
+> referring to suspend only) and if so than on what basis (except that
+> you
+> don't like it, which falls short of being a techical argument)?
 
-Makes sense to sync before suspend tho, to limit the amount of dirty
-non-written pages in case things go wrong.
+Works fine for me without it ;-)
 
 Ben.
