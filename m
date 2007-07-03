@@ -1,11 +1,12 @@
-From: "Robin Chamberlain" <X4qfIYg@businessfacilities.com>
-Subject: rostrum bread assam -
-Date: Mon, 2 Jul 2007 18:00:44 +0500
-Message-ID: <200707022202.l62M2c2E013654@smtp1.linux-foundation.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Tue, 3 Jul 2007 05:29:18 +0100
+Message-ID: <20070703042916.GA17240__18354.3043131523$1183437254$gmane$org@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-MIME-Version: 1.0
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,32 +16,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Shatter the glass ceiling that's keeping you back.
-Achieve the prestige and awards you deserve..
-Promotion Opportunities passing you by? No more!
+Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+a screaming nightmare - either the suspend fails because syslog (for 
+instance) can't be frozen, or the machine deadlocks for some other 
+reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+could do what we do for suspend to RAM on other platforms (PPC and APM) 
+and just not use the freezer.
 
-Turn your dream, into a reality, is that not worth two minutes of your time?
+Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
 
-1206 888 2083
-
-No classes to attend. No tests to write.
-
-Give us a ring, now..
-
-1206 888 2083
-
-A non-accredited university degree
-Based on your work and life achievements
-
-Shows like any traditional degree
-What YOU know and CAN DO!
-Confidentiality assured
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 8812985..5f109d5 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -19,7 +19,6 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/resume-trace.h>
+-#include <linux/freezer.h>
+ #include <linux/vmstat.h>
  
-24 HOURS A DAY, 7 DAYS A WEEK
+ #include "power.h"
+@@ -81,11 +80,6 @@ static int suspend_prepare(suspend_state_t state)
+ 
+ 	pm_prepare_console();
+ 
+-	if (freeze_processes()) {
+-		error = -EAGAIN;
+-		goto Thaw;
+-	}
+-
+ 	if ((free_pages = global_page_state(NR_FREE_PAGES))
+ 			< FREE_PAGE_NUMBER) {
+ 		pr_debug("PM: free some memory\n");
+@@ -93,7 +87,7 @@ static int suspend_prepare(suspend_state_t state)
+ 		if (nr_free_pages() < FREE_PAGE_NUMBER) {
+ 			error = -ENOMEM;
+ 			printk(KERN_ERR "PM: No enough memory\n");
+-			goto Thaw;
++			goto Restore_console;
+ 		}
+ 	}
+ 
+@@ -118,8 +112,7 @@ static int suspend_prepare(suspend_state_t state)
+ 	device_resume();
+  Resume_console:
+ 	resume_console();
+- Thaw:
+-	thaw_processes();
++ Restore_console:
+ 	pm_restore_console();
+ 	return error;
+ }
+@@ -170,7 +163,6 @@ static void suspend_finish(suspend_state_t state)
+ 	pm_finish(state);
+ 	device_resume();
+ 	resume_console();
+-	thaw_processes();
+ 	pm_restore_console();
+ }
 
-1206 888 2083
-
-Although the picture accompanying the obit was even grainier and fuzzier than usual, Paul saw that Paulette Simeaux made "QueenieBeaulifant look like Thumbelina. They want the same two things they always want - for you to cute up while the tapes running and for someone else to buy the martinis when Happy Hour rolls around.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
