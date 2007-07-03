@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Tue, 3 Jul 2007 23:25:41 +0200
-Message-ID: <200707032325.41952.rjw__15665.4428611093$1183497787$gmane$org@sisk.pl>
+Date: Tue, 3 Jul 2007 23:32:48 +0200
+Message-ID: <200707032332.49694.rjw__43290.8792201944$1183498199$gmane$org@sisk.pl>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031709.29968.rjw@sisk.pl> <20070703192729.GA2125@elf.ucw.cz>
+	<200707031456.40890.rjw@sisk.pl>
+	<1183497290.3388.4.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070703192729.GA2125@elf.ucw.cz>
+In-Reply-To: <1183497290.3388.4.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,44 +22,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 3 July 2007 21:27, Pavel Machek wrote:
-> Hi!
+On Tuesday, 3 July 2007 23:14, Benjamin Herrenschmidt wrote:
 > 
-> > > > The main reason for deadlocks is because we do a sys_sync() after the
-> > > > freeze, which we shouldn't do.
-> > > 
-> > > So why don't we remove the sys_sync() from freeze_processes() instead?
+> > >  - For STR, don't do the freezer thing.
 > > 
-> > The patch follows (untested).
+> > In the long run, I agree.
 > > 
-> > Greetings,
-> > Rafael
+> > Still, can you please read this post from Alan Stern:
 > > 
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2007-June/012847.html
 > > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > We shouldn't sync filesystems from within the freezer, because it's not needed
-> > for suspend to RAM and leads to problems with FUSE.
+> > ?  I don't think I'm able to repeat the arguments given in there in a
+> > convincing way.
 > 
-> Actually... It is not _needed_ for suspend to disk, either. Snapshot is
-> atomic, so it should be okay to suspend with filesystems dirty.
+> That's the same crackpot I've been hearing for the past 3 years or
+> so ...
 > 
-> _But_, if anything goes wrong, we'd prefer to have at least
-> filesystems synced. Battery running out during s2ram is not quite
-> uncommon, so we perhaps should do sync somewhere there. (But we can do
-> it before freezer just fine).
+> Both Paulus and I think the freezer is just a way to try to put your
+> head in the sand and ignore the problem. It causes as many problems as
+> it solves on its own, and is just not a solution that will be of any use
+> once you start implementing dynamic PM schemes etc...
+> 
+> In many cases, having proper support for "live" suspend of devices is
+> just a matter of having a couple of helpers in whatever subsystem those
+> drivers hookup with. In the case of network, for example, it's mostly
+> trivial (stop the queue). For block, it's not terribly hard neither,
+> though you want to have some orderign/atomicity between the blocking of
+> the incoming request queue and the sending of things like spindown &
+> flush commands to the disk. For old-style IDE, that was fairly easily
+> solved by piping suspend/resume command down the request queue itself
+> and have the queue block/unblbock itself after processing them. Some of
+> that logic could maybe be moved to the block layer for all block drivers
+> to benefit.
+> 
+> But yes, overall, there is work to do on drivers and I'm doing the ones
+> I hit on the platforms I use. I don't think the freezer is any kind of
+> remotely good solution, just a way to continue avoiding the problem.
 
-OK
+Still, do you really think that we're ready to drop it _right_ _now_ (I'm
+referring to suspend only) and if so than on what basis (except that you
+don't like it, which falls short of being a techical argument)?
 
-So, should I add the sync() to suspend_prepare(), before freeze_processes()
-(in analogy with hibernate())?
-
-Greetings
+Greetings,
 Rafael
 
 
