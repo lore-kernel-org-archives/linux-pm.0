@@ -1,13 +1,10 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Wed, 4 Jul 2007 11:57:14 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707041152350.25704-100000__45753.0239633799$1183564678$gmane$org@netrider.rowland.org>
-References: <20070704145818.GA7784@srcf.ucam.org>
+Subject: Wakeup settings for USB hubs?
+Date: Wed, 4 Jul 2007 14:43:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707041432250.9446-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070704145818.GA7784@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,29 +14,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 4 Jul 2007, Matthew Garrett wrote:
+Here's a question that has been bothering me for a while.  Should we 
+enable remote wakeup on USB hubs?
 
-> On Wed, Jul 04, 2007 at 10:38:47AM -0400, Alan Stern wrote:
-> 
-> > Okay, I agree that (1) can be handled without too much effort.  But 
-> > doing it adds an extra test to _every_ driver's I/O pathway.  Freezing 
-> > userspace does not incur all this additional overhead.
-> 
-> For runtime PM to work it's already necessary to have a test in that 
-> path to check if the device is suspended. I can't see how this adds any 
-> overhead to the common case.
+On the face of it the answer is obviously Yes.  And certainly we want
+remote wakeup enabled during a runtime suspend; otherwise the system
+would never know when the user unplugged a device from the hub or
+plugged in a new one.
 
-Actually it isn't necessary to have a test to check if the device is 
-suspended.  We simply call the autoresume routine; if the device isn't 
-suspended that routine doesn't have to do anything.
+But consider STR, say in the case of a laptop with a USB mouse
+attached.  The user suspends the laptop.  Then he prepares to pack it
+away and in the process unplugs the mouse.  Pow! -- the laptop
+springs back to life.  That's not what we want.
 
-I agree that that the extra test (for system-wide suspend underway) is
-needed only if the autoresume fails, which isn't part of the main
-pathway.  So it doesn't add runtime overhead -- but handling it does
-add code overhead.
+On the other hand, the user might indeed want to awaken the laptop by
+clicking the USB mouse.  So what should we do?  The question is made
+even more difficult by the fact that, if the hub is already
+runtime-suspended when the system suspend occurs, we would have to
+resume the hub just in order to turn off remote wakeup!
+
+Right now we more or less ignore all these issues by relying on the 
+wakeup settings in sysfs.  Is that a reasonable approach?  Is there 
+anything else we can do?
 
 Alan Stern
