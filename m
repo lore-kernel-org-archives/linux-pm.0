@@ -1,14 +1,17 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
+From: Theodore Tso <tytso@mit.edu>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 04 Jul 2007 13:51:03 +0200
-Message-ID: <E1I63Nv-0006Z9-00__18147.125063888$1183549918$gmane$org@dorka.pomaz.szeredi.hu>
+Date: Wed, 4 Jul 2007 08:41:33 -0400
+Message-ID: <20070704124133.GA5836__32928.5566615455$1183552959$gmane$org@thunk.org>
 References: <20070703211227.GA28758@srcf.ucam.org>
 	<200707041242.59552.rjw@sisk.pl>
 	<18059.32111.58643.97174@cargo.ozlabs.ibm.com>
 	<200707041325.55779.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200707041325.55779.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200707041325.55779.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +21,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> Still, my position is this:
+On Wed, Jul 04, 2007 at 01:25:55PM +0200, Rafael J. Wysocki wrote:
+> > Don't know what exactly?
 > 
-> 1) The freezer (in the modified form, with the freezing of kernel threads
-> limited to the ones that want to be frozen) is needed for hibernation.
-> 
-> 2) The freezer is generally not needed for suspend, _but_ there are drivers
-> in the tree that rely on it being used.  Thus, at some point in time we can
-> remove the freezer from the suspend code path, _but_ no sooner than we are
-> sure that the majority of drivers is prepared for that.
+> How many drivers will be adversely affected by the $subject change.
 
-And we won't know if drivers are OK until we remove the freezer,
-catch-22.
+Ok, so how about a CONFIG option which removes the freezer, so we can
+find out experimentally how many people without it?  We can make it be
+experimental at first, or (my preference) make it be the default
+initially, and if people complain that their laptop's suspend feature
+is broken, we can tell them how to turn back on the
+CONFIG_FREEZER_DEPRECATED option.
 
-So I think we need to disable the freezer at least in -mm and/or
-optionally in -linus.
-
-I applied Matthew's patch, and suspend did in fact stop working
-(thinkpad t60), but there was nothing catastrophic.  Here's the dmesg
-if somebody is interested:
-
-Suspending console(s)
-usb_endpoint usbdev5.3_ep83: PM: suspend 0->2, parent 5-2:1.0 already 2
-usb_endpoint usbdev5.3_ep02: PM: suspend 0->2, parent 5-2:1.0 already 2
-usb_endpoint usbdev5.3_ep81: PM: suspend 0->2, parent 5-2:1.0 already 2
-hub 2-0:1.0: suspend error -16
-suspend_device(): usb_suspend+0x0/0x1c() returns -16
-Could not suspend device usb2: error -16
-usb_endpoint usbdev5.3_ep81: PM: resume from 0, parent 5-2:1.0 still 2
-usb_endpoint usbdev5.3_ep02: PM: resume from 0, parent 5-2:1.0 still 2
-usb_endpoint usbdev5.3_ep83: PM: resume from 0, parent 5-2:1.0 still 2
-Some devices failed to suspend
-
-Miklos
+							- Ted
