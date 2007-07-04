@@ -1,17 +1,13 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: The big suspend mess
-Date: Thu, 5 Jul 2007 00:19:53 +0200
-Message-ID: <20070704221952.GM3492__30527.6846782819$1183587617$gmane$org@stusta.de>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031456.40890.rjw@sisk.pl>
-	<1183497290.3388.4.camel@localhost.localdomain>
-	<200707032332.49694.rjw@sisk.pl>
-	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync from within the
+	freezer during suspend to RAM
+Date: Thu, 5 Jul 2007 08:48:15 +1000
+Message-ID: <200707050848.16163.nigel__7634.3250497759$1183589341$gmane$org@nigel.suspend2.net>
+References: <200707041658.59588.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/mixed; boundary="===============1075091870521018173=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+In-Reply-To: <200707041658.59588.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +15,96 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 04, 2007 at 01:29:49PM +1000, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
-> 
-> > Still, do you really think that we're ready to drop it _right_ _now_ (I'm
-> > referring to suspend only) and if so than on what basis (except that you
-> > don't like it, which falls short of being a techical argument)?
-> 
-> The basis is that it (the freezer) causes more deadlocks and other
-> problems than it avoids, so it's a net win to remove it.
+--===============1075091870521018173==
+Content-Type: multipart/signed; boundary="nextPart7692759.9nY2pkrZJM";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-You forget one important point:
-Regressions are much worse than normal bugs.
+--nextPart7692759.9nY2pkrZJM
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It's not about the question whether the driver was "correct" or
-"buggy" - for a user the important question is whether it worked in 
-practice, and if yes, whether it continues to work.
+Hi.
 
-And my impression is that every time someone touches some part of the 
-suspend code some drivers break.
+On Thursday 05 July 2007 00:58:58 Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>=20
+> The syncing of filesystems from within the freezer in not needed for susp=
+end=20
+to
+> RAM.  Change freeze_processes() so that it doesn't execute sys_sync() and
+> introduce the "syncing" version of it to be called from the hibernation c=
+ode
+> paths.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  include/linux/freezer.h |   14 ++++++++++++--
+>  kernel/power/disk.c     |    2 +-
+>  kernel/power/main.c     |    6 ++++++
+>  kernel/power/process.c  |    8 +++++---
+>  kernel/power/user.c     |    2 +-
+>  5 files changed, 25 insertions(+), 7 deletions(-)
 
-During 2.6.21-rc, it wasn't unusual for users to run with one kernel 
-into up to three distinct suspend regressions on one machine.
+Looks ok, except that I wonder if you want the following fragment. It looks=
+ to=20
+me (looking at rc6) like with this code, you'll currently call sys_sync twi=
+ce=20
+when suspending to ram. Maybe I'm misreading it. Also, shouldn't it be done=
+=20
+after taking the mutex?
 
-And no, it wasn't always the same set of distinct regressions.
+Regards,
 
-IMHO the suspend code is currently way too much of a moving target which 
-results in this mess.
+Nigel
 
-The correct order seems to be:
-1. agree on what the suspend code as a whole should look like
-2. implement this
-3. fix ALL drivers to work at least as good as they do today
-4. get it tested in -mm
-5. fix all bugs people run into
-6. submit it for inclusion in Linus' tree
-7. quickly work on the most likely big amount of bug reports
+> @@ -231,6 +232,11 @@ static int enter_state(suspend_state_t s
+> =20
+>  	if (!valid_state(state))
+>  		return -ENODEV;
+> +
+> +	printk("Syncing filesystems ... ");
+> +	sys_sync();
+> +	printk("done.\n");
+> +
+>  	if (!mutex_trylock(&pm_mutex))
+>  		return -EBUSY;
+> =20
 
-Step 1 is the most important one - evolving code is often something 
-good, but in this case with different people trying to evolve the 
-suspend code in different directions it simply results in a big mess.
 
-> Paul.
+=2D-=20
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
 
-cu
-Adrian
+--nextPart7692759.9nY2pkrZJM
+Content-Type: application/pgp-signature
 
--- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+iD8DBQBGjCOwN0y+n1M3mo0RAmW9AJ9NzS9aCKFkpdexUPU0UzOQ3RIncACePJvx
+gxoZJun4JnpmzDREKDC43Fc=
+=iP8p
+-----END PGP SIGNATURE-----
+
+--nextPart7692759.9nY2pkrZJM--
+
+--===============1075091870521018173==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1075091870521018173==--
