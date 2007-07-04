@@ -1,8 +1,8 @@
 From: Paul Mackerras <paulus@samba.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 21:24:20 +1000
-Message-ID: <18059.33636.66185.902453@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 21:25:19 +1000
+Message-ID: <18059.33695.858520.478179__16287.2056513608$1183548378$gmane$org@cargo.ozlabs.ibm.com>
 References: <20070703042916.GA17240@srcf.ucam.org>
 	<200707041233.18199.rjw@sisk.pl>
 	<18059.31464.183382.358931@cargo.ozlabs.ibm.com>
@@ -27,14 +27,15 @@ List-Id: linux-pm@vger.kernel.org
 
 Rafael J. Wysocki writes:
 
-> BTW, does your platform's suspend work on SMP systems?
+> > > So, I gather, you're volunteering to handle suspend-related bug reports
+> > > from the point in which we drop the freezer from the suspend code path?
+> > 
+> > Ben and I are happy to handle all the ones for the platform we
+> > maintain, which currently does suspend without freezing processes. :)
+> 
+> I mean all platforms.  After all, the $subject change won't affect yours.
 
-Yes; currently we require userspace to offline all cpus other than the
-boot cpu before initiating the suspend.
-
-The main difficulty is actually that SMP powermacs that can suspend
-tend to have video cards that get powered off in suspend.  We know how
-to re-initialize one (the Radeon RV100 QW) but not others.  That's an
-orthogonal issue to the issues we have been discussing, though.
+Well, I can't commit to handling all bug reports, but I am happy to
+help out where I can...
 
 Paul.
