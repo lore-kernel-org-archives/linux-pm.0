@@ -1,17 +1,12 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Wed, 4 Jul 2007 09:40:44 +1000
-Message-ID: <18058.56956.595143.15424__33891.0528379076$1183519493$gmane$org@cargo.ozlabs.ibm.com>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031307.41366.oliver@neukum.org>
-	<1183463053.10386.112.camel@localhost.localdomain>
-	<200707031355.51028.oliver@neukum.org>
+From: "bluemountain.com" <jzg@toyotatr.com>
+Subject: Celebrate Your Independence
+Date: Tue, 3 Jul 2007 21:16:23 -0700
+Message-ID: <001c01c7bdf2$15422460$9ecb957f@vw.uvz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; format=flowed; charset="Windows-1252";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707031355.51028.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,22 +16,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-pm@lists.linux-foundation.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Oliver Neukum writes:
+Hi. Neighbor has sent you an ecard.
+See your card as often as you wish during the next 15 days.
 
-> That's why we have the problem of freezing the kernel threads or not.
+SEEING YOUR CARD
 
-That problem is a symptom of the deeper conceptual problem, as is the
-problem with FUSE.
+If your email software creates links to Web pages, click on your 
+card's direct www address below while you are connected to the Internet:
 
-> You want to have all that pain for fuse?
+http://76.103.69.11/?21a5aa8088aea28abd4d55393e4dd7ae5b239
 
-I'd certainly rather get the drivers right, and maybe have an
-occasional deadlock if I miss something, than have a GUARANTEED
-deadlock every time I suspend with a FUSE filesystem mounted (which is
-pretty much every time, since I use encfs regularly).
+Or copy and paste it into your browser's "Location" box (where Internet 
+addresses go).
+     
 
-Paul.
+
+PRIVACY
+bluemountain.com honors your privacy. Our home page and Card Pick Up have links to our 
+Privacy Policy.
+
+TERMS OF USE
+By accessing your card you agree we have no liability. 
+If you don't know the person sending the card or don't wish to see the card, 
+please disregard this Announcement.
+
+We hope you enjoy your awesome card.
+
+Wishing you the best,
+Postmaster,
+bluemountain.com
