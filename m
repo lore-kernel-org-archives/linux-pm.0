@@ -1,18 +1,17 @@
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 10:12:48 -0400
-Message-ID: <d120d5000707040712g76c4835bif2e226fe4710351f__3140.77965817905$1183558421$gmane$org@mail.gmail.com>
-References: <20070703211227.GA28758@srcf.ucam.org>
-	<200707041242.59552.rjw@sisk.pl>
-	<18059.32111.58643.97174@cargo.ozlabs.ibm.com>
-	<200707041325.55779.rjw@sisk.pl>
-	<18059.34264.421573.246262@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 16:30:29 +0200
+Message-ID: <200707041630.30048.rjw__1565.53272759101$1183559081$gmane$org@sisk.pl>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707041310.11336.rjw@sisk.pl>
+	<18059.33636.66185.902453@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18059.34264.421573.246262@cargo.ozlabs.ibm.com>
+In-Reply-To: <18059.33636.66185.902453@cargo.ozlabs.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,41 +23,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 7/4/07, Paul Mackerras <paulus@samba.org> wrote:
+On Wednesday, 4 July 2007 13:24, Paul Mackerras wrote:
 > Rafael J. Wysocki writes:
->
-> > They are mostly related to kernel threads, that we've already agreed no to
-> > freeze (except for the ones that want that, but they will be responsible for
-> > getting everything right).  The initial patches for that are in -mm and more
-> > will come.
->
-> Serious question: which kernel threads would actually want to be
-> frozen?
->
-> Threads that do no I/O at all don't care about suspend/resume and
-> don't need to be frozen in any case.  Threads that issue I/O requests
-> in order to service incoming I/O requests can't be frozen because of
-> the possibility of deadlock.  Which leaves threads that do I/O just
-> for the fun of it. :)
->
-> What am I missing?
->
+> 
+> > BTW, does your platform's suspend work on SMP systems?
+> 
+> Yes; currently we require userspace to offline all cpus other than the
+> boot cpu before initiating the suspend.
 
-I like kseriod and kgameportd to be frozen. If fast resume of serio
-port fails we kick the task of full resume to kseriod. But when we
-hibernate and all the devices are resumed again so snapshot can be
-written I don't care if touchpad failed to resume - it can be dealt
-with later, when system is actually resumes. So I like that by
-freezing I do not delay hibernation and all requests get simply
-discarded as they are not in the image. This mostly affects
-hibernation though.
+This is incompatible with the code in kernel/power/main.c, since we only
+disable the nonboot CPUs after devices have been suspended.  Do you think that
+your framework can be modified to work without disabling the nonboot CPUs
+by the user space?
 
-Having these threads frozen also guarantees that serio/gameport device
-tree is stable during susped/resume and I can process outstanding
-requests later, when system is fully up.
+> The main difficulty is actually that SMP powermacs that can suspend
+> tend to have video cards that get powered off in suspend.  We know how
+> to re-initialize one (the Radeon RV100 QW) but not others.  That's an
+> orthogonal issue to the issues we have been discussing, though.
+
+Sure.
+
+Greetings,
+Rafael
+
 
 -- 
-Dmitry
+"Premature optimization is the root of all evil." - Donald Knuth
