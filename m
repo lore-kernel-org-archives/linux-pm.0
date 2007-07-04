@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 11:42:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
-References: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
+Date: Wed, 4 Jul 2007 11:57:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707041152350.25704-100000__45753.0239633799$1183564678$gmane$org@netrider.rowland.org>
+References: <20070704145818.GA7784@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <20070704145818.GA7784@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: mjg59@srcf.ucam.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 4 Jul 2007, Miklos Szeredi wrote:
+On Wed, 4 Jul 2007, Matthew Garrett wrote:
 
-> And we won't know if drivers are OK until we remove the freezer,
-> catch-22.
+> On Wed, Jul 04, 2007 at 10:38:47AM -0400, Alan Stern wrote:
 > 
-> So I think we need to disable the freezer at least in -mm and/or
-> optionally in -linus.
+> > Okay, I agree that (1) can be handled without too much effort.  But 
+> > doing it adds an extra test to _every_ driver's I/O pathway.  Freezing 
+> > userspace does not incur all this additional overhead.
 > 
-> I applied Matthew's patch, and suspend did in fact stop working
-> (thinkpad t60), but there was nothing catastrophic.  Here's the dmesg
-> if somebody is interested:
-> 
-> Suspending console(s)
-> usb_endpoint usbdev5.3_ep83: PM: suspend 0->2, parent 5-2:1.0 already 2
-> usb_endpoint usbdev5.3_ep02: PM: suspend 0->2, parent 5-2:1.0 already 2
-> usb_endpoint usbdev5.3_ep81: PM: suspend 0->2, parent 5-2:1.0 already 2
-> hub 2-0:1.0: suspend error -16
-> suspend_device(): usb_suspend+0x0/0x1c() returns -16
-> Could not suspend device usb2: error -16
-> usb_endpoint usbdev5.3_ep81: PM: resume from 0, parent 5-2:1.0 still 2
-> usb_endpoint usbdev5.3_ep02: PM: resume from 0, parent 5-2:1.0 still 2
-> usb_endpoint usbdev5.3_ep83: PM: resume from 0, parent 5-2:1.0 still 2
-> Some devices failed to suspend
+> For runtime PM to work it's already necessary to have a test in that 
+> path to check if the device is suspended. I can't see how this adds any 
+> overhead to the common case.
 
-Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-wanting to resume devices during a system suspend transition?  This is
-exactly what happens when those threads aren't frozen.
+Actually it isn't necessary to have a test to check if the device is 
+suspended.  We simply call the autoresume routine; if the device isn't 
+suspended that routine doesn't have to do anything.
+
+I agree that that the extra test (for system-wide suspend underway) is
+needed only if the autoresume fails, which isn't part of the main
+pathway.  So it doesn't add runtime overhead -- but handling it does
+add code overhead.
 
 Alan Stern
