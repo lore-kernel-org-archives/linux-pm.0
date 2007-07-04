@@ -1,17 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 12:08:40 +0200
-Message-ID: <200707041208.40735.oliver__42180.2434525036$1183543765$gmane$org@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707041039.30015.oliver@neukum.org>
-	<18059.26259.765791.62319@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Jul 2007 12:21:04 +0200
+Message-ID: <200707041221.04708.rjw__5359.71469148553$1183544072$gmane$org@sisk.pl>
+References: <fa.ftLWBLCc+XqdYjiuxoPg+qyuUOE@ifi.uio.no>
+	<468AE700.7080102@shaw.ca> <20070704003424.GA30958@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18059.26259.765791.62319@cargo.ozlabs.ibm.com>
+In-Reply-To: <20070704003424.GA30958@srcf.ucam.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,30 +21,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Robert Hancock <hancockr@shaw.ca>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
-> Oliver Neukum writes:
->=20
-> > > It's not lost, it's sitting in RAM, and will be sent out when you
-> > > resume.
-> >=20
-> > Unfortunately this is not the case. The URB will error out.
->=20
-> So the higher-level driver needs to do the sensible thing, i.e.,
-> resubmit the URB after resume. =A0It's not rocket science. =A0The data =
-is
-> not lost, it's sitting in RAM, and the higher-level driver will send
-> it out when you resume. =A0If not, then we fix the higher-level driver.
+On Wednesday, 4 July 2007 02:34, Matthew Garrett wrote:
+> On Tue, Jul 03, 2007 at 06:17:04PM -0600, Robert Hancock wrote:
+> > Matthew Garrett wrote:
+> > >Leave the process blocked and defer any i/o until after resume. Why does 
+> > >it need to be any more complicated than that?
+> > 
+> > It gets complicated when this has to be added and TESTED in EVERY 
+> > driver. The implied contract for drivers previously was that their 
+> > device would not get accessed after it was suspended until it had been 
+> > resumed first. This proposed change violates that.
+> 
+> No, that's only ever been true for ACPI systems.
 
-You cannot simply restart the URB without thinking.
-The device after resumption may or may not be in the stage
-you left it. It needs to be rechecked and some settings must be
-renewed. You cannot simple throw an URB from an arbitrary
-stage of the protocol at it.
-Suspension of devices can only happen at some points
-in the protocol.
+Sorry, but you're mistaken.
 
-	Oliver
+Some ARM platforms also use the suspend code in kernel/power and the 52xx
+powerpc too (BTW, I don't know of any ARM platforms that support suspend and
+don't use it).
+
+> It's never been true elsewhere, and it won't be true for anything
+> implementing any sort of runtime power management.
+
+There are not many drivers in the tree supporting that right now.
+
+> > I don't think this sort of handling is something that individual drivers 
+> > should have to deal with (at least not ones that are part of a framework 
+> > like USB, libata, etc.)
+> 
+> I'd agree there. Driver midlayers (where they exist) are the appropriate 
+> place to handle this.
+
+So perhaps we should modify them first and we can drop the freezer?
+
+Perhaps we can schedule the freezer removal (from the suspend code path), so
+that people have the time to rework the driver midlayers to take that into
+account?
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
