@@ -1,11 +1,17 @@
-From: "Shelby Grove" <0fesWoi@weblogs.com>
-Subject: irksome pearl so;
-Date: Wed, 4 Jul 2007 06:57:03 +0500
-Message-ID: <200707041057.l64AvrMc026391@smtp2.linux-foundation.org>
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Wed, 4 Jul 2007 20:48:08 +1000
+Message-ID: <18059.31464.183382.358931__30347.5205357701$1183546783$gmane$org@cargo.ozlabs.ibm.com>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707032332.49694.rjw@sisk.pl>
+	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+	<200707041233.18199.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-MIME-Version: 1.0
+In-Reply-To: <200707041233.18199.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,31 +21,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
-Start improving your life!
+Rafael J. Wysocki writes:
 
-Bachelors, Masters, MBA and/or Doctorate (PhD)
+> So, I gather, you're volunteering to handle suspend-related bug reports
+> from the point in which we drop the freezer from the suspend code path?
 
-NO ONE is turned down.
-7 days a week.
-Give us a ring..
+Ben and I are happy to handle all the ones for the platform we
+maintain, which currently does suspend without freezing processes. :)
 
-12068882083
-
-You Need a Better Degree, and we can Help!
-Obtain degrees from prestigious non ac Universities based on you life experience.
-NO ONE is turned down.
-7 days a week, 24 hours a day.
-
-Do it now..
-
-12068882083
-
-Regards,
-Professor. Stacie Street
-
-
-
-and he was coming more and more awake all the time, and at every second the dull sorrow settled more deeply over him, the awareness that his darling was gone. And had her heart risen up when Misery told Ian she was pregnant and Ian had crushed her to him, tears flowing from his eyes, muttering "My dear, oh, my dear!
+Paul.
