@@ -1,18 +1,18 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 04 Jul 2007 10:26:59 +0200
-Message-ID: <E1I60CR-00066n-00__44082.5953650803$1183537786$gmane$org@dorka.pomaz.szeredi.hu>
+Date: Wed, 4 Jul 2007 10:39:29 +0200
+Message-ID: <200707041039.30015.oliver__222.573805558746$1183538481$gmane$org@neukum.org>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031307.41366.oliver@neukum.org>
-	<1183463053.10386.112.camel@localhost.localdomain>
-	<200707031355.51028.oliver@neukum.org>
-	<18058.56956.595143.15424@cargo.ozlabs.ibm.com>
-	<E1I5ysv-0005xf-00@dorka.pomaz.szeredi.hu>
-	<18059.21555.317415.928416@cargo.ozlabs.ibm.com>
+	<200707041011.33279.oliver@neukum.org>
+	<18059.23015.860618.268754@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <18059.21555.317415.928416@cargo.ozlabs.ibm.com> (message from
-	Paul Mackerras on Wed, 4 Jul 2007 18:02:59 +1000)
+In-Reply-To: <18059.23015.860618.268754@cargo.ozlabs.ibm.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,37 +22,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulus@samba.org
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> > That's weird, I never had a suspend problem due to a fuse mount,
-> > though I have them all the time.  And I suspect, that even the sync()
-> 
-> Well, I don't either, because we don't freeze processes on
-> powerbooks.  But I have heard that other people have problems with
-> suspending with a fuse filesystem mounted.  Maybe the difference is
-> whether or not the filesystem is writable?
-> 
-> > thing that suspend does is not the real cause, because sync() actually
-> > does nothing in fuse filesystems.
-> 
-> It's not the filesystem sync method, as I understand it, it's that if
-> there are dirty pages in the page cache for files on the fuse
-> filesystem,
+Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
+> Oliver Neukum writes:
+>=20
+> > > Indeed, and the USB framework has code to know when the host
+> > > controller is suspended and avoid trying to send out urbs in that
+> > > case. =A0Or at least it did last time I looked at it in any detail;=
+ it's
+> > > been "just working" - including suspending and resuming, without th=
+e
+> > > freezer - for quite a while now.
+> >=20
+> > And what happens to that IO? I suspended and lost data is not an
+> > acceptable behavior.
+>=20
+> It's not lost, it's sitting in RAM, and will be sent out when you
+> resume.
 
-Currently fuse doesn't produce dirty pages.  Normal writes are done
-synchronously, and writable mmap is not supported.  So sync() should
-really be a no-op for fuse.
+Unfortunately this is not the case. The URB will error out.
 
-> the system will initiate a write-out on them and wait for it to
-> finish.  But if the fuse userspace is frozen, the write-out will
-> never complete.
-
-Maybe there is some other fs operation being done, possibly not
-directly, but by waiting for a kernel thread, that does that.
-
-It would be nice, if someone who can reproduce the deadlock could
-debug it.  Does sysrq still work during suspend?
-
-Miklos
+	Oliver
