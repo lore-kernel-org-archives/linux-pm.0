@@ -1,17 +1,16 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 09:11:43 +1000
-Message-ID: <18058.55215.185633.434117__584.865807513957$1183504901$gmane$org@cargo.ozlabs.ibm.com>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707030944.18702.oliver@neukum.org>
-	<18058.12724.163599.707035@cargo.ozlabs.ibm.com>
-	<200707031342.14295.oliver@neukum.org>
+Date: Tue, 03 Jul 2007 18:17:04 -0600
+Message-ID: <468AE700.7080102__3182.29115005142$1183508543$gmane$org@shaw.ca>
+References: <fa.ftLWBLCc+XqdYjiuxoPg+qyuUOE@ifi.uio.no>
+	<fa.Oxrm8HYXTOF4jv5LrTjEe16lCE0@ifi.uio.no>
+	<fa.d3GOse+YbAb42uYwLymWkJiH9Fw@ifi.uio.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707031342.14295.oliver@neukum.org>
+In-reply-to: <fa.d3GOse+YbAb42uYwLymWkJiH9Fw@ifi.uio.no>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,18 +20,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Oliver Neukum writes:
+Matthew Garrett wrote:
+> On Tue, Jul 03, 2007 at 06:21:42PM -0400, Alan Stern wrote:
+>> On Tue, 3 Jul 2007, Matthew Garrett wrote:
+>>> We're used to the idea of applications blocking when a resource they're 
+>>> using goes away - NFS has done it forever. 
+>> You persist in evading my point.  I'm not worried about applications;  
+>> I'm worried about drivers.
+>>
+>> Let me put it explicitly: You're writing a driver.  You're working on
+>> the read, write, or probe method.  You add code to check if a system
+>> sleep is underway.  Suppose the answer is Yes -- what does your driver
+>> do next?
+> 
+> Leave the process blocked and defer any i/o until after resume. Why does 
+> it need to be any more complicated than that?
 
-> USB devices certainly have suspend methods.
+It gets complicated when this has to be added and TESTED in EVERY 
+driver. The implied contract for drivers previously was that their 
+device would not get accessed after it was suspended until it had been 
+resumed first. This proposed change violates that.
 
-Indeed, and the USB framework has code to know when the host
-controller is suspended and avoid trying to send out urbs in that
-case.  Or at least it did last time I looked at it in any detail; it's
-been "just working" - including suspending and resuming, without the
-freezer - for quite a while now.
+I don't think this sort of handling is something that individual drivers 
+should have to deal with (at least not ones that are part of a framework 
+like USB, libata, etc.)
 
-Paul.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
