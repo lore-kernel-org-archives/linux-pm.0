@@ -1,18 +1,12 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Wed, 4 Jul 2007 10:39:29 +0200
-Message-ID: <200707041039.30015.oliver__222.573805558746$1183538481$gmane$org@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707041011.33279.oliver@neukum.org>
-	<18059.23015.860618.268754@cargo.ozlabs.ibm.com>
+From: "Laurence Wiley" <pthompson@alivemedical.com>
+Subject: However you shouldnt consume more than 2 pills in 8hrs
+	and never consume more than 4 pills in a single day. The
+	ultimate semen enhancement product.
+Date: Wed, 4 Jul 2007 08:41:55 -0900
+Message-ID: <01c7be17$2d1d03f0$5450f73d@pthompson>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="----------=_1183538514-3969-254"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18059.23015.860618.268754@cargo.ozlabs.ibm.com>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +16,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linus@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
-> Oliver Neukum writes:
->=20
-> > > Indeed, and the USB framework has code to know when the host
-> > > controller is suspended and avoid trying to send out urbs in that
-> > > case. =A0Or at least it did last time I looked at it in any detail;=
- it's
-> > > been "just working" - including suspending and resuming, without th=
-e
-> > > freezer - for quite a while now.
-> >=20
-> > And what happens to that IO? I suspended and lost data is not an
-> > acceptable behavior.
->=20
-> It's not lost, it's sitting in RAM, and will be sent out when you
-> resume.
+This is a multi-part message in MIME format...
 
-Unfortunately this is not the case. The URB will error out.
+------------=_1183538514-3969-254
+Content-Type: text/plain; format=flowed; charset="windows-1250";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-	Oliver
+Go beyond all previous sexual highs. Consequently the volume of my sperm increased drastically.
+http://btseach.com
+
+
+------------=_1183538514-3969-254
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+
+Spam detection software, running on the system "daredevil.linux-foundation.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  Go beyond all previous sexual highs. Consequently the
+  volume of my sperm increased drastically. http://btseach.com [...] 
+
+Content analysis details:   (5.4 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 1.9 DATE_IN_FUTURE_06_12   Date: is 6 to 12 hours after Received: date
+ 3.5 BAYES_99               BODY: Bayesian spam probability is 99 to 100%
+                            [score: 0.9910]
+
+
+
+------------=_1183538514-3969-254
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+------------=_1183538514-3969-254--
