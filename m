@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 13:10:10 +0200
-Message-ID: <200707041310.11336.rjw__25961.9483528242$1183547049$gmane$org@sisk.pl>
+Date: Wed, 4 Jul 2007 13:02:58 +0200
+Message-ID: <200707041303.00016.oliver__6224.19997021115$1183547087$gmane$org@neukum.org>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707041233.18199.rjw@sisk.pl>
-	<18059.31464.183382.358931@cargo.ozlabs.ibm.com>
+	<200707041253.33154.oliver@neukum.org>
+	<18059.32169.906914.258802@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18059.31464.183382.358931@cargo.ozlabs.ibm.com>
+In-Reply-To: <18059.32169.906914.258802@cargo.ozlabs.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,24 +23,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Paul Mackerras <paulus@samba.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 4 July 2007 12:48, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
+Am Mittwoch, 4. Juli 2007 schrieb Paul Mackerras:
+> Oliver Neukum writes:
 > 
-> > So, I gather, you're volunteering to handle suspend-related bug reports
-> > from the point in which we drop the freezer from the suspend code path?
+> > They can't. Device specific protocols are known to the drivers only.
+> > The fact remains, remove the freezer and you need to go through
+> > all drivers.
 > 
-> Ben and I are happy to handle all the ones for the platform we
-> maintain, which currently does suspend without freezing processes. :)
+> The freezer does not actually mean that you don't have to get the
+> drivers right, because kernel threads can issue I/O requests.
 
-I mean all platforms.  After all, the $subject change won't affect yours.
+Kernel threads do not issue requests for the hell of it. And yes,
+kernel threads must be aware of suspension. Threads are few,
+drivers many.
 
-BTW, does your platform's suspend work on SMP systems?
-
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	Oliver
