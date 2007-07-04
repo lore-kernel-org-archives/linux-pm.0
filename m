@@ -1,10 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Wakeup settings for USB hubs?
-Date: Wed, 4 Jul 2007 14:43:36 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707041432250.9446-100000@netrider.rowland.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Wed, 4 Jul 2007 15:07:52 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707041506020.13486-100000__22166.1628493623$1183576219$gmane$org@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0707041126290.25704-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707041126290.25704-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,30 +17,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Here's a question that has been bothering me for a while.  Should we 
-enable remote wakeup on USB hubs?
+On Wed, 4 Jul 2007, Alan Stern wrote:
 
-On the face of it the answer is obviously Yes.  And certainly we want
-remote wakeup enabled during a runtime suspend; otherwise the system
-would never know when the user unplugged a device from the hub or
-plugged in a new one.
+> > Threads that do no I/O at all don't care about suspend/resume and
+> > don't need to be frozen in any case.  Threads that issue I/O requests
+> > in order to service incoming I/O requests can't be frozen because of
+> > the possibility of deadlock.  Which leaves threads that do I/O just
+> > for the fun of it. :)
+> > 
+> > What am I missing?
+> 
+> Those two threads will try to resume USB devices in response to wakeup
+> requests.  Such requests arrive during a suspend or resume transition
+> more often than one would expect.
+> 
+> If the resume attempt occurs before the host controller has been 
+> suspended, it will abort the system suspend.  If it occurs after the 
+> host controller is suspended (and before the controller resumes) it 
+> will fail and try to unregister the USB device -- something else we 
+> don't like happening while the sytem is only partially up (not to 
+> mention the annoyance caused by the unregistration of a perfectly 
+> functional device).
 
-But consider STR, say in the case of a laptop with a USB mouse
-attached.  The user suspends the laptop.  Then he prepares to pack it
-away and in the process unplugs the mouse.  Pow! -- the laptop
-springs back to life.  That's not what we want.
-
-On the other hand, the user might indeed want to awaken the laptop by
-clicking the USB mouse.  So what should we do?  The question is made
-even more difficult by the fact that, if the hub is already
-runtime-suspended when the system suspend occurs, we would have to
-resume the hub just in order to turn off remote wakeup!
-
-Right now we more or less ignore all these issues by relying on the 
-wakeup settings in sysfs.  Is that a reasonable approach?  Is there 
-anything else we can do?
+Actually the situation may not be quite this bad any more.  It's been a 
+while since I tried suspending a system without freezing khubd and 
+ksuspend_usbd.  But Miklos's mail shows that problems can and will 
+occur.
 
 Alan Stern
