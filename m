@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Wed, 4 Jul 2007 23:36:57 +0200
-Message-ID: <200707042336.58466.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
-	<E1I6ATN-0007QS-00@dorka.pomaz.szeredi.hu>
+Subject: Re: [RFC][PATCH 1/2] ACPI: Do not prepare for
+	hibernation in acpi_shutdown
+Date: Wed, 4 Jul 2007 23:40:39 +0200
+Message-ID: <200707042340.40008.rjw__27575.4046896056$1183584824$gmane$org@sisk.pl>
+References: <200707012051.48338.rjw@sisk.pl> <200707012053.08663.rjw@sisk.pl>
+	<20070704194905.GH2728@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I6ATN-0007QS-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <20070704194905.GH2728@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,66 +21,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 4 July 2007 21:25, Miklos Szeredi wrote:
-> > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> > wanting to resume devices during a system suspend transition?  This is
-> > exactly what happens when those threads aren't frozen.
+On Wednesday, 4 July 2007 21:49, Pavel Machek wrote:
+> Hi!
 > 
-> OK, let me summarize the situation as I see it now: there are two
-> camps, the pro-freezers and the anti-freezers.
+> > Since we are now explicitly calling hibernation_ops->prepare() before
+> > hibernation_ops->enter() in hibernation_platform_enter() (defined in
+> > kernel/power/disk.c), ACPI should not call acpi_sleep_prepare(ACPI_STATE_S4)
+> > from acpi_shutdown().
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/acpi/sleep/poweroff.c |    3 ---
+> >  1 file changed, 3 deletions(-)
+> > 
+> > Index: linux-2.6.22-rc6/drivers/acpi/sleep/poweroff.c
+> > ===================================================================
+> > --- linux-2.6.22-rc6.orig/drivers/acpi/sleep/poweroff.c	2007-07-01 15:08:54.000000000 +0200
+> > +++ linux-2.6.22-rc6/drivers/acpi/sleep/poweroff.c	2007-07-01 15:10:07.000000000 +0200
+> > @@ -54,9 +54,6 @@ static int acpi_shutdown(struct sys_devi
+> >  	case SYSTEM_POWER_OFF:
+> >  		/* Prepare to power off the system */
+> >  		return acpi_sleep_prepare(ACPI_STATE_S5);
+> > -	case SYSTEM_SUSPEND_DISK:
+> > -		/* Prepare to suspend the system to disk */
+> > -		return acpi_sleep_prepare(ACPI_STATE_S4);
+> >  	default:
+> >  		return 0;
 > 
-> Pro-freezers say:
-> 
->   - don't remove the freezer, otherwise we'll have to deal with
->     numerous problems in drivers
+> Hmm, I do not see why this is unneccessary... acpi wants to be
+> notified of poweroff, and hooks in a pretty reasonable
+> way. kernel/power does not seem to call acpi_sleep_prepare(). Hmm?
 
-And these problems will generally be difficult to reproduce reliably and debug.
+Please look at -mm.
 
-> Anti-freezers say:
-> 
->   - let's remove the freezer, which causes numerous problems
-> 
-> Alan summerized the pro-freezer arguments well I think.  What are the
-> anti-freezer arguments then?
-> 
-> After having looked at the freezer and done some experiments with it,
-> the most obvious problem looks to be, that it can get stuck on a
-> process doing uninterruptible sleep.
+We have
 
-That's correct.
+int hibernation_platform_enter(void)
+{
+	int error;
 
-> And yes, this can happen if a fuse filesystem daemon is frozen before a
-> filesystem user is.  And this is not something that can be fixed in fuse,
-> some filesystem calls (rename(2) for example) are simply not restartable.
->
-> This doesn't explain the deadlocks, but it could cause failure to
-> suspend which would be pretty annoying.
+	if (hibernation_ops) {
+		kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+		/*
+		 * We have cancelled the power transition by running
+		 * hibernation_ops->finish() before saving the image, so we
+		 * should let the firmware know that we're going to enter the
+		 * sleep state after all
+		 */
+		error = hibernation_ops->prepare();
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		if (!error)
+			error = hibernation_ops->enter();
+	} else {
+		error = -ENOSYS;
+	}
+	return error;
+}
 
-I think the only thing that can deadlock in that context is the sync.  At
-least, I don't see anything else.
+in there, which is exactly that.
 
-> Does this affect other things than fuse?
-
-Not that I know of.  It may affect user space drivers, but there's no data on
-that.
-
-> Can this be fixed?
-> 
-> It seems to be a fundamental problem with the freezer: while it does
-> make sure that user processes are not calling into drivers during
-> suspend, it also disallows perfectly harmless non-driver calls as
-> well.
-
-The problem is that when the freezer was designed (I didn't do that, BTW),
-there was no FUSE and similar things, so it's not prepared to cope with
-such interdependencies between user space tasks.
-
-We had an analogous problem with vfork() and it was solved by using the
-PF_FREEZER_SKIP flag.  Perhaps we can do similar thing with FUSE.
+The patch is necessary. :-)  Otherwise ->prepare() will be called twice in a row.
 
 Greetings,
 Rafael
