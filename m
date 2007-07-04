@@ -1,15 +1,18 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 15:58:18 +0100
-Message-ID: <20070704145818.GA7784__41120.4629847363$1183561578$gmane$org@srcf.ucam.org>
-References: <20070703224215.GA30081@srcf.ucam.org>
-	<Pine.LNX.4.44L0.0707041030540.25704-100000@netrider.rowland.org>
+Date: Wed, 4 Jul 2007 17:03:21 +0200
+Message-ID: <200707041703.21808.oliver__10484.9656964236$1183561906$gmane$org@neukum.org>
+References: <20070703211227.GA28758@srcf.ucam.org>
+	<200707041641.58883.rjw@sisk.pl>
+	<E1I666o-0006wu-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <E1I666o-0006wu-00@dorka.pomaz.szeredi.hu>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707041030540.25704-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +22,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 04, 2007 at 10:38:47AM -0400, Alan Stern wrote:
+Am Mittwoch, 4. Juli 2007 schrieb Miklos Szeredi:
+> > > And we won't know if drivers are OK until we remove the freezer,
+> > > catch-22.
+> >=20
+> > I disagree. =C2=A0We can learn that by auditing the drivers.
+>=20
+> In theory, yes. =C2=A0But it scales far worse than letting everyone
+> experiment/report/fix problems as they crop up.
 
-> Okay, I agree that (1) can be handled without too much effort.  But 
-> doing it adds an extra test to _every_ driver's I/O pathway.  Freezing 
-> userspace does not incur all this additional overhead.
+You will open many but small races. This would be very painfull
+to debug.
 
-For runtime PM to work it's already necessary to have a test in that 
-path to check if the device is suspended. I can't see how this adds any 
-overhead to the common case.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Regards
+		Oliver
