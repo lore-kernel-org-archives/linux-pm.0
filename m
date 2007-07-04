@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 16:40:12 +0200
-Message-ID: <200707041640.12832.rjw__25955.4992699579$1183559602$gmane$org@sisk.pl>
+Date: Wed, 4 Jul 2007 16:41:58 +0200
+Message-ID: <200707041641.58883.rjw@sisk.pl>
 References: <20070703211227.GA28758@srcf.ucam.org>
-	<200707041325.55779.rjw@sisk.pl> <20070704124133.GA5836@thunk.org>
+	<200707041325.55779.rjw@sisk.pl>
+	<E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070704124133.GA5836@thunk.org>
+In-Reply-To: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,28 +22,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Theodore Tso <tytso@mit.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 4 July 2007 14:41, Theodore Tso wrote:
-> On Wed, Jul 04, 2007 at 01:25:55PM +0200, Rafael J. Wysocki wrote:
-> > > Don't know what exactly?
+On Wednesday, 4 July 2007 13:51, Miklos Szeredi wrote:
+> > Still, my position is this:
 > > 
-> > How many drivers will be adversely affected by the $subject change.
+> > 1) The freezer (in the modified form, with the freezing of kernel threads
+> > limited to the ones that want to be frozen) is needed for hibernation.
+> > 
+> > 2) The freezer is generally not needed for suspend, _but_ there are drivers
+> > in the tree that rely on it being used.  Thus, at some point in time we can
+> > remove the freezer from the suspend code path, _but_ no sooner than we are
+> > sure that the majority of drivers is prepared for that.
 > 
-> Ok, so how about a CONFIG option which removes the freezer, so we can
-> find out experimentally how many people without it?  We can make it be
-> experimental at first, or (my preference) make it be the default
-> initially, and if people complain that their laptop's suspend feature
-> is broken, we can tell them how to turn back on the
-> CONFIG_FREEZER_DEPRECATED option.
+> And we won't know if drivers are OK until we remove the freezer,
+> catch-22.
 
-The freezer is generally still necessary for hibernation, so I won't call
-it "DEPRECATED'.
+I disagree.  We can learn that by auditing the drivers.
 
-Moreover, I'd prefer to make drivers use different callbacks for hibernation
-and suspend before we do that.
+> So I think we need to disable the freezer at least in -mm and/or
+> optionally in -linus.
+> 
+> I applied Matthew's patch, and suspend did in fact stop working
+> (thinkpad t60), but there was nothing catastrophic.  Here's the dmesg
+> if somebody is interested:
+> 
+> Suspending console(s)
+> usb_endpoint usbdev5.3_ep83: PM: suspend 0->2, parent 5-2:1.0 already 2
+> usb_endpoint usbdev5.3_ep02: PM: suspend 0->2, parent 5-2:1.0 already 2
+> usb_endpoint usbdev5.3_ep81: PM: suspend 0->2, parent 5-2:1.0 already 2
+> hub 2-0:1.0: suspend error -16
+> suspend_device(): usb_suspend+0x0/0x1c() returns -16
+> Could not suspend device usb2: error -16
+> usb_endpoint usbdev5.3_ep81: PM: resume from 0, parent 5-2:1.0 still 2
+> usb_endpoint usbdev5.3_ep02: PM: resume from 0, parent 5-2:1.0 still 2
+> usb_endpoint usbdev5.3_ep83: PM: resume from 0, parent 5-2:1.0 still 2
+> Some devices failed to suspend
+
+No, it's not catastrophic, but something like this will result in a bug report
+with "regression" in the subject.
 
 Greetings,
 Rafael
