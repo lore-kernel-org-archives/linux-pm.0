@@ -1,12 +1,14 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Wed, 04 Jul 2007 21:25:09 +0200
-Message-ID: <E1I6ATN-0007QS-00__8718.44449216059$1183577256$gmane$org@dorka.pomaz.szeredi.hu>
-References: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 1/2] ACPI: Do not prepare for
+	hibernation in acpi_shutdown
+Date: Wed, 4 Jul 2007 21:49:05 +0200
+Message-ID: <20070704194905.GH2728__2366.79334561831$1183578595$gmane$org@elf.ucw.cz>
+References: <200707012051.48338.rjw@sisk.pl> <200707012053.08663.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
-	(message from Alan Stern on Wed, 4 Jul 2007 11:42:03 -0400 (EDT))
+Content-Disposition: inline
+In-Reply-To: <200707012053.08663.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,46 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> wanting to resume devices during a system suspend transition?  This is
-> exactly what happens when those threads aren't frozen.
+Hi!
 
-OK, let me summarize the situation as I see it now: there are two
-camps, the pro-freezers and the anti-freezers.
+> Since we are now explicitly calling hibernation_ops->prepare() before
+> hibernation_ops->enter() in hibernation_platform_enter() (defined in
+> kernel/power/disk.c), ACPI should not call acpi_sleep_prepare(ACPI_STATE_S4)
+> from acpi_shutdown().
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/acpi/sleep/poweroff.c |    3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> Index: linux-2.6.22-rc6/drivers/acpi/sleep/poweroff.c
+> ===================================================================
+> --- linux-2.6.22-rc6.orig/drivers/acpi/sleep/poweroff.c	2007-07-01 15:08:54.000000000 +0200
+> +++ linux-2.6.22-rc6/drivers/acpi/sleep/poweroff.c	2007-07-01 15:10:07.000000000 +0200
+> @@ -54,9 +54,6 @@ static int acpi_shutdown(struct sys_devi
+>  	case SYSTEM_POWER_OFF:
+>  		/* Prepare to power off the system */
+>  		return acpi_sleep_prepare(ACPI_STATE_S5);
+> -	case SYSTEM_SUSPEND_DISK:
+> -		/* Prepare to suspend the system to disk */
+> -		return acpi_sleep_prepare(ACPI_STATE_S4);
+>  	default:
+>  		return 0;
 
-Pro-freezers say:
+Hmm, I do not see why this is unneccessary... acpi wants to be
+notified of poweroff, and hooks in a pretty reasonable
+way. kernel/power does not seem to call acpi_sleep_prepare(). Hmm?
 
-  - don't remove the freezer, otherwise we'll have to deal with
-    numerous problems in drivers
-
-Anti-freezers say:
-
-  - let's remove the freezer, which causes numerous problems
-
-Alan summerized the pro-freezer arguments well I think.  What are the
-anti-freezer arguments then?
-
-After having looked at the freezer and done some experiments with it,
-the most obvious problem looks to be, that it can get stuck on a
-process doing uninterruptible sleep.  And yes, this can happen if a
-fuse filesystem daemon is frozen before a filesystem user is.  And
-this is not something that can be fixed in fuse, some filesystem calls
-(rename(2) for example) are simply not restartable.
-
-This doesn't explain the deadlocks, but it could cause failure to
-suspend which would be pretty annoying.
-
-Does this affect other things than fuse?
-
-Can this be fixed?
-
-It seems to be a fundamental problem with the freezer: while it does
-make sure that user processes are not calling into drivers during
-suspend, it also disallows perfectly harmless non-driver calls as
-well.
-
-Miklos
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
