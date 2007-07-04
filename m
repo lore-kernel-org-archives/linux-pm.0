@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm] PM: Do not sync from within the freezer
-	during suspend to RAM
-Date: Wed, 4 Jul 2007 16:58:58 +0200
-Message-ID: <200707041658.59588.rjw__8702.0309096717$1183560747$gmane$org@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Wed, 4 Jul 2007 10:57:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707041045150.25704-100000__44102.9288959273$1183561078$gmane$org@netrider.rowland.org>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,137 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, 4 Jul 2007, Paul Mackerras wrote:
 
-The syncing of filesystems from within the freezer in not needed for suspend to
-RAM.  Change freeze_processes() so that it doesn't execute sys_sync() and
-introduce the "syncing" version of it to be called from the hibernation code
-paths.
+> Alan Stern writes:
+> 
+> > I disagree.  The problem isn't the kernel calling userspace; it's
+> > userspace trying to do I/O at a time when everything is supposed to be
+> > quiescing.  Detecting that and blocking it in drivers is hard and
+> > error-prone; preventing it by freezing userspace is easy and cheap.
+> 
+> And unreliable, and prone to deadlocks, and invasive - requiring
+> changes to kernel threads that have nothing to do with drivers or
+> suspend/resume.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/freezer.h |   14 ++++++++++++--
- kernel/power/disk.c     |    2 +-
- kernel/power/main.c     |    6 ++++++
- kernel/power/process.c  |    8 +++++---
- kernel/power/user.c     |    2 +-
- 5 files changed, 25 insertions(+), 7 deletions(-)
+Let's agree the kernel threads and the freezer are a separate issue.  
+In the most recent kernels, the freezer does not suspend kernel threads 
+by default.
 
-Index: linux-2.6.22-rc7/include/linux/freezer.h
-===================================================================
---- linux-2.6.22-rc7.orig/include/linux/freezer.h	2007-07-04 00:21:26.000000000 +0200
-+++ linux-2.6.22-rc7/include/linux/freezer.h	2007-07-04 00:22:37.000000000 +0200
-@@ -62,7 +62,7 @@ static inline int thaw_process(struct ta
- }
- 
- extern void refrigerator(void);
--extern int freeze_processes(void);
-+extern int __freeze_processes(int sync_filesystems);
- extern void thaw_processes(void);
- 
- static inline int try_to_freeze(void)
-@@ -134,7 +134,7 @@ static inline void clear_freeze_flag(str
- static inline int thaw_process(struct task_struct *p) { return 1; }
- 
- static inline void refrigerator(void) {}
--static inline int freeze_processes(void) { BUG(); return 0; }
-+static inline int __freeze_processes(int s) { BUG(); return 0; }
- static inline void thaw_processes(void) {}
- 
- static inline int try_to_freeze(void) { return 0; }
-@@ -145,4 +145,14 @@ static inline int freezer_should_skip(st
- static inline void set_freezable(void) {}
- #endif
- 
-+static inline int freeze_processes(void)
-+{
-+	return __freeze_processes(0);
-+}
-+
-+static inline int freeze_processes_with_sync(void)
-+{
-+	return __freeze_processes(1);
-+}
-+
- #endif	/* FREEZER_H_INCLUDED */
-Index: linux-2.6.22-rc7/kernel/power/disk.c
-===================================================================
---- linux-2.6.22-rc7.orig/kernel/power/disk.c	2007-07-04 00:21:26.000000000 +0200
-+++ linux-2.6.22-rc7/kernel/power/disk.c	2007-07-04 00:21:44.000000000 +0200
-@@ -281,7 +281,7 @@ static int prepare_processes(void)
- 	int error = 0;
- 
- 	pm_prepare_console();
--	if (freeze_processes()) {
-+	if (freeze_processes_with_sync()) {
- 		error = -EBUSY;
- 		unprepare_processes();
- 	}
-Index: linux-2.6.22-rc7/kernel/power/main.c
-===================================================================
---- linux-2.6.22-rc7.orig/kernel/power/main.c	2007-07-04 00:21:26.000000000 +0200
-+++ linux-2.6.22-rc7/kernel/power/main.c	2007-07-04 00:23:40.000000000 +0200
-@@ -20,6 +20,7 @@
- #include <linux/resume-trace.h>
- #include <linux/freezer.h>
- #include <linux/vmstat.h>
-+#include <linux/syscalls.h>
- 
- #include "power.h"
- 
-@@ -231,6 +232,11 @@ static int enter_state(suspend_state_t s
- 
- 	if (!valid_state(state))
- 		return -ENODEV;
-+
-+	printk("Syncing filesystems ... ");
-+	sys_sync();
-+	printk("done.\n");
-+
- 	if (!mutex_trylock(&pm_mutex))
- 		return -EBUSY;
- 
-Index: linux-2.6.22-rc7/kernel/power/process.c
-===================================================================
---- linux-2.6.22-rc7.orig/kernel/power/process.c	2007-07-04 00:21:26.000000000 +0200
-+++ linux-2.6.22-rc7/kernel/power/process.c	2007-07-04 00:21:44.000000000 +0200
-@@ -179,9 +179,9 @@ static int try_to_freeze_tasks(int freez
- }
- 
- /**
-- *	freeze_processes - tell processes to enter the refrigerator
-+ *	__freeze_processes - tell processes to enter the refrigerator
-  */
--int freeze_processes(void)
-+int __freeze_processes(int sync_filesystems)
- {
- 	int error;
- 
-@@ -190,7 +190,9 @@ int freeze_processes(void)
- 	if (error)
- 		return error;
- 
--	sys_sync();
-+	if (sync_filesystems)
-+		sys_sync();
-+
- 	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
- 	if (error)
- 		return error;
-Index: linux-2.6.22-rc7/kernel/power/user.c
-===================================================================
---- linux-2.6.22-rc7.orig/kernel/power/user.c	2007-07-04 00:21:26.000000000 +0200
-+++ linux-2.6.22-rc7/kernel/power/user.c	2007-07-04 00:21:44.000000000 +0200
-@@ -153,7 +153,7 @@ static int snapshot_ioctl(struct inode *
- 		mutex_lock(&pm_mutex);
- 		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
- 		if (!error) {
--			error = freeze_processes();
-+			error = freeze_processes_with_sync();
- 			if (error)
- 				thaw_processes();
- 		}
+I agree the kernel threads which try to do I/O during a suspend will 
+need extra attention.  However if these threads are necessary for the 
+suspend procedure, then blocking them (which is how people on this 
+thread have been saying driver should treat I/O requests during a 
+suspend) will cause additional problems.  There's no way around it; 
+these threads _will_ require more work.
+
+> > The reasons why the PPC people dislike the whole idea aren't clear to
+> > me. 
+> 
+> Our experience is that it isn't necessary.  It's extra code that in
+> practice causes deadlocks and added maintenance burden for no
+> discernable benefit.
+
+I have discussed the benefits elsewhere.  As for the deadlocks -- do 
+you still observe them if you use the version of the freezer which 
+doesn't freeze kernel threads?
+
+> The freezer doesn't achieve its stated goal of preventing drivers from
+> getting I/O requests after suspend, since kernel threads can (and do)
+> initiate I/O.  So then we say that some kernel threads need to be
+> frozen and others don't, but making that decision is difficult and
+> error-prone.
+
+No -- we say that the kernel threads which generate I/O requests during 
+suspend need to be changed.
+
+> In fact I believe that making a distinction between user and kernel
+> threads is wrong and likely to lead to problems, since userspace can
+> be involved in doing I/O (e.g. FUSE or the user-space driver
+> framework).  So the argument of the previous paragraph also applies to
+> some userspace processes.
+
+Userspace cannot do I/O directly on its own, apart from some
+exceptional situations where a privileged task directly twiddles some
+I/O ports or the equivalent.
+
+There remains the problem of user tasks whose assistance is required to 
+carry out some I/O (as with FUSE).  If the I/O can be deferred until 
+after the resume, then there's no problem.  If the I/O can be carried 
+out before the suspend, then it should be.  And finally, if the I/O 
+must be done during the suspend, you're in real trouble -- how do you 
+do I/O to a suspended device?
+
+> I remain convinced that the right approach is to fix the drivers to do
+> one of two things; either do something in the suspend call to block
+> further requests to the device, or use a late-suspend call to put
+> their device into a low-power state.  Of course, correctly-written
+> frameworks can do a lot to help the chipset drivers here.
+
+The first alternative is a possibility.  My argument all along has been 
+that it is difficult and error-prone, and it adds more overhead to 
+system operation (even when not suspending!) than simply freezing 
+userspace.
+
+Alan Stern
