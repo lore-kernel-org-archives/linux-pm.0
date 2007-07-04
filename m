@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Wed, 4 Jul 2007 12:26:33 +0200
-Message-ID: <200707041226.34799.rjw__32827.8221343227$1183544384$gmane$org@sisk.pl>
+Date: Wed, 4 Jul 2007 12:33:17 +0200
+Message-ID: <200707041233.18199.rjw@sisk.pl>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<18059.21555.317415.928416@cargo.ozlabs.ibm.com>
-	<E1I60CR-00066n-00@dorka.pomaz.szeredi.hu>
+	<200707032332.49694.rjw@sisk.pl>
+	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I60CR-00066n-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <18059.5165.861038.392332@cargo.ozlabs.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,48 +22,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 4 July 2007 10:26, Miklos Szeredi wrote:
-> > > That's weird, I never had a suspend problem due to a fuse mount,
-> > > though I have them all the time.  And I suspect, that even the sync()
-> > 
-> > Well, I don't either, because we don't freeze processes on
-> > powerbooks.  But I have heard that other people have problems with
-> > suspending with a fuse filesystem mounted.  Maybe the difference is
-> > whether or not the filesystem is writable?
-> > 
-> > > thing that suspend does is not the real cause, because sync() actually
-> > > does nothing in fuse filesystems.
-> > 
-> > It's not the filesystem sync method, as I understand it, it's that if
-> > there are dirty pages in the page cache for files on the fuse
-> > filesystem,
+On Wednesday, 4 July 2007 05:29, Paul Mackerras wrote:
+> Rafael J. Wysocki writes:
 > 
-> Currently fuse doesn't produce dirty pages.  Normal writes are done
-> synchronously, and writable mmap is not supported.  So sync() should
-> really be a no-op for fuse.
+> > Still, do you really think that we're ready to drop it _right_ _now_ (I'm
+> > referring to suspend only) and if so than on what basis (except that you
+> > don't like it, which falls short of being a techical argument)?
 > 
-> > the system will initiate a write-out on them and wait for it to
-> > finish.  But if the fuse userspace is frozen, the write-out will
-> > never complete.
-> 
-> Maybe there is some other fs operation being done, possibly not
-> directly, but by waiting for a kernel thread, that does that.
+> The basis is that it (the freezer) causes more deadlocks and other
+> problems than it avoids, so it's a net win to remove it.
 
-We're going to limit the freezing of kernel threads to the ones that explicitly
-want to be frozen, so if that's the case, then I think it'll be fixed soon.
-
-> It would be nice, if someone who can reproduce the deadlock could
-> debug it.
-
-Agreed.
-
-> Does sysrq still work during suspend? 
-
-Yes, it should work.
+So, I gather, you're volunteering to handle suspend-related bug reports
+from the point in which we drop the freezer from the suspend code path?
 
 Greetings,
 Rafael
