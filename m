@@ -1,18 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 14:25:06 +0200
-Message-ID: <200707051425.07904.rjw__3208.41906727782$1183637952$gmane$org@sisk.pl>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707032132.20731.oliver@neukum.org>
-	<20070704234523.GC2719@elf.ucw.cz>
+From: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
+Subject: RE: Power event notification patch
+Date: Thu, 5 Jul 2007 17:47:45 +0530
+Message-ID: <67670A5CEA5C374B8E7B16D7DC55F95301247414@bgsmsx413.gar.corp.intel.com>
+References: <200707051408.02756.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070704234523.GC2719@elf.ucw.cz>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
+In-Reply-To: <200707051408.02756.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,43 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 01:45, Pavel Machek wrote:
-> On Tue 2007-07-03 21:32:20, Oliver Neukum wrote:
-> > Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
-> > > > And a further question. The freezer is not atomic. What do you do
-> > > > if a task not yet frozen calls sys_sync(), but fuse is already frozen?
-> > > 
-> > > What do you do if a task not yet frozen writes to a pipe, on the other
-> > > end of which is a task already frozen?
-> 
-> There's some difference between uninterruptible and interruptible
-> sleep I'd say.
-> 
-> > > It doesn't matter.  The only thing that should matter during suspend
-> > > (not hibernate) is saving the state of devices to ram, and putting the
-> > > devices to sleep.
-> > 
-> > Well, but you did remove sys_sync() from the freezer, which is
-> > and must be called in the hibernate path.
-> 
-> Not "must". In fact, hibernation should be safe without sys_sync(). It
-> is just user un-friendly.
+1. Isn't it the kernel which is finally initiating a low power sleep
+state? So, I added it in kernel/power/main.c where the kernel does all
+the suspend related activities.
 
-In fact, I'd like to remove the sys_sync() from the freezer entirely, because
-it just doesn't belong in there.
+2. To answer your second question, we really can't guarantee. But even
+if you take Windows Vista (sorry linux enthusiasts for referring windows
+here) or any other non-UNIX operating systems (which has this power
+event notification), they really do not guarantee it. But, it is an
+era-of-tera and the user space applications can do some minimal work
+like saving the app's last state in a .tmp file or so (like firefox if
+closed in an unclean way) to restore their state.
 
-The only advantege of having sys_sync() in freeze_processes() is that we
-have a chance to write out everything when applications cannot produce more
-data to write, but there are filesystems which don't do that anyway (eg. XFS),
-so generally there's no reason to bother.
+I have tested it over some applications of my own and they seem to
+execute a significant piece of code-like writing to a file when they go
+to low power state.
 
-Greetings,
-Rafael
+Really appreciate your comment. Thanks.
+ 
+Thanks,
+Sankara Narayanan V.
 
+-----Original Message-----
+From: Oliver Neukum [mailto:oliver@neukum.org] 
+Sent: Thursday, July 05, 2007 5:38 PM
+To: linux-pm@lists.linux-foundation.org
+Cc: V, Sankara Narayanan
+Subject: Re: [linux-pm] Power event notification patch
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Am Donnerstag, 5. Juli 2007 schrieb V, Sankara Narayanan:
+> Here is a simple patch for power event notification to user-space
+> applications. Basically, what it does is notify the user-space
+> applications that the system is going to a low power state
+> (Suspend-to-RAM and Suspend-to-Disk) and resume from that state. This
+is
+> useful for the user-space applications to do some significant action
+> when the system goes to the low power state (like saving an unsaved
+> file). The user-space objects can form a netlink socket and listen to
+> these events. It is done through a kobject-netlink socket. For this I
+> have used the kobject_uevent system call, posting the notification to
+> user space with standby, hibernate and resume in the action parameter
+of
+> the kobject_uevent call (mapped to KOBJ_S3, KOBJ_S4 and KOBJ_RESUME
+> enums). Appreciate your comments on the patch.
+
+Why does this need to be done in kernel space?
+How do you want to make sure user space has enough time to act on a
+notification?
+
+	Regards
+		Oliver
