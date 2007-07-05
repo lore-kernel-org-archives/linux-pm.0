@@ -1,17 +1,17 @@
 From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 08:53:41 +0200
-Message-ID: <200707050853.42224.oliver__570.323170586739$1183618570$gmane$org@neukum.org>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031920.59940.oliver@neukum.org>
-	<20070704233909.GB2719@elf.ucw.cz>
+Date: Thu, 5 Jul 2007 08:58:03 +0200
+Message-ID: <200707050858.03638.oliver__1685.52709878913$1183618813$gmane$org@neukum.org>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
+	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070704233909.GB2719@elf.ucw.cz>
+In-Reply-To: <18060.14856.824473.325660@cargo.ozlabs.ibm.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,55 +22,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Pavel Machek:
-> On Tue 2007-07-03 19:20:59, Oliver Neukum wrote:
-> > Am Dienstag, 3. Juli 2007 schrieb Rafael J. Wysocki:
-> > > On Tuesday, 3 July 2007 15:08, Rafael J. Wysocki wrote:
-> > > > On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
-> > > > > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
-> > > > > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
-> > > > > > a screaming nightmare - either the suspend fails because syslog (for 
-> > > > > > instance) can't be frozen, or the machine deadlocks for some other 
-> > > > > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
-> > > > > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
-> > > > > > and just not use the freezer.
-> > > > > 
-> > > > > The main reason for deadlocks is because we do a sys_sync() after the
-> > > > > freeze, which we shouldn't do.
-> > > > 
-> > > > So why don't we remove the sys_sync() from freeze_processes() instead?
-> > > 
-> > > The patch follows (untested).
-> > > 
-> > > Greetings,
-> > > Rafael
-> > > 
-> > > 
-> > > ---
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > We shouldn't sync filesystems from within the freezer, because it's not needed
-> > > for suspend to RAM and leads to problems with FUSE.
-> > 
-> > This seems fishy. Swsusp needs enough clean memory to make enough
-> > room for the image. If you sync before you freeze, the running tasks can
-> > redirty memory.
-> > What makes you sure that you don't die as shrink_all_memory() writes out
-> > pages?
-> 
-> Shrink_all_memory should just free enough memory, what's the problem?
-> Yes, we can have dirty memory, shrink_all_memory() can write that out
-> just fine.
+Am Donnerstag, 5. Juli 2007 schrieb Paul Mackerras:
+> > I have discussed the benefits elsewhere. =A0As for the deadlocks -- d=
+o=20
+> > you still observe them if you use the version of the freezer which=20
+> > doesn't freeze kernel threads?
+>=20
+> In general the only way to guarantee there are no deadlocks is to
+> construct the graph of dependencies between tasks. =A0Those dependencie=
+s
+> are not in practice observable from outside the tasks, so it is
+> virtually impossible to construct the graph.
 
-If there's any dirty memory to be written out through fuse, this will not
-work as user space is already frozen. Now I am told that with fuse writes
-are synchronous. Therefore I don't understand why having a call to sys_sync()
-can make a difference. IMHO removing it to make fuse work covers over
-a symptom but hides the bug.
+In which way can user space tasks depend on each other in a way that
+allows a them members of that cycle to be in uninterruptible sleep?
 
 	Regards
 		Oliver
