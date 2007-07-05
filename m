@@ -1,19 +1,19 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 16:00:42 +0100
-Message-ID: <20070705150042.GA23647__44213.4365592667$1183647968$gmane$org@srcf.ucam.org>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051528.34754.oliver@neukum.org>
-	<20070705134632.GA22177@srcf.ucam.org>
-	<200707051609.25887.rjw@sisk.pl>
-	<20070705142318.GA22598@srcf.ucam.org>
-	<2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
+	(was Re: Re: [PATCH] Remove process freezer from
+	suspend to RAM pathway)
+Date: Thu, 5 Jul 2007 17:04:47 +0200
+Message-ID: <200707051704.48137.rjw__47249.1889297546$1183647988$gmane$org@sisk.pl>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
+	<200707051641.39998.rjw@sisk.pl>
+	<20070705143918.GA23248@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070705143918.GA23248@srcf.ucam.org>
 Content-Disposition: inline
-In-Reply-To: <2c0942db0707050746v2b8cdc9ew2c4656736b52895d@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,22 +23,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 07:46:01AM -0700, Ray Lee wrote:
+On Thursday, 5 July 2007 16:39, Matthew Garrett wrote:
+> On Thu, Jul 05, 2007 at 04:41:39PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 5 July 2007 16:26, Matthew Garrett wrote:
+> > > On Thu, Jul 05, 2007 at 04:28:11PM +0200, Rafael J. Wysocki wrote:
+> > > > On Thursday, 5 July 2007 15:57, Matthew Garrett wrote:
+> > > > > And also "Userland should not depend on userland services", which is 
+> > > > > rather more of a problem.
+> > > > 
+> > > > I think you're oversimplifying it, as far as FUSE is concerned.
+> > > > 
+> > > > Namely, if there are two userland tasks, A and B, and B is uninterruptible,
+> > > > because A is blocked, then this is not a usual situation.
+> > > 
+> > > Fuse is one case of it occuring, and if we end up with more userspace 
+> > > drivers then the problem is only going to get worse.
+> > 
+> > But this is a problem by itself, regardless of the freezer etc., no?
+> 
+> Why?
 
-> Hmm, careful. There are a bunch of people who use suspend2 exactly
-> because it saves and restores the page cache, leaving the system in a
-> usable state without waiting for the universe to swap back in from
-> disk. It makes a big difference on older laptops with slow drives.
-> While the other advantages you list for process cryogenics are pretty
-> neat, let's remember that the 99% use case for STD is laptops.
+You have processes that don't react to signals, because some other user land
+task is misbehaving.  I'd call that ugly at the very least.
 
-Saving the processes means that you're implicitly saving the interesting 
-chunks of the page cache. Removing the need for the atomic copy saves 
-you from pushing a pile of stuff out to swap in the first place.
+Greetings,
+Rafael
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+"Premature optimization is the root of all evil." - Donald Knuth
