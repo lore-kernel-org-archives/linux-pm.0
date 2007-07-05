@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 15:35:45 +0200
-Message-ID: <200707051535.46196.rjw__33988.5317757309$1183642815$gmane$org@sisk.pl>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707051425.07904.rjw@sisk.pl>
-	<200707052238.27889.nigel@nigel.suspend2.net>
+Date: Thu, 5 Jul 2007 15:28:33 +0200
+Message-ID: <200707051528.34754.oliver__1493.96516285396$1183642851$gmane$org@neukum.org>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
+	<200707051523.44826.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707052238.27889.nigel@nigel.suspend2.net>
+In-Reply-To: <200707051523.44826.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,70 +22,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@suspend2.net
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 14:38, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Thursday 05 July 2007 22:25:06 Rafael J. Wysocki wrote:
-> > On Thursday, 5 July 2007 01:45, Pavel Machek wrote:
-> > > On Tue 2007-07-03 21:32:20, Oliver Neukum wrote:
-> > > > Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
-> > > > > > And a further question. The freezer is not atomic. What do you do
-> > > > > > if a task not yet frozen calls sys_sync(), but fuse is already 
-> frozen?
-> > > > > 
-> > > > > What do you do if a task not yet frozen writes to a pipe, on the other
-> > > > > end of which is a task already frozen?
-> > > 
-> > > There's some difference between uninterruptible and interruptible
-> > > sleep I'd say.
-> > > 
-> > > > > It doesn't matter.  The only thing that should matter during suspend
-> > > > > (not hibernate) is saving the state of devices to ram, and putting the
-> > > > > devices to sleep.
-> > > > 
-> > > > Well, but you did remove sys_sync() from the freezer, which is
-> > > > and must be called in the hibernate path.
-> > > 
-> > > Not "must". In fact, hibernation should be safe without sys_sync(). It
-> > > is just user un-friendly.
-> > 
-> > In fact, I'd like to remove the sys_sync() from the freezer entirely, 
-> because
-> > it just doesn't belong in there.
-> > 
-> > The only advantege of having sys_sync() in freeze_processes() is that we
-> > have a chance to write out everything when applications cannot produce more
-> > data to write, but there are filesystems which don't do that anyway (eg. 
-> XFS),
-> > so generally there's no reason to bother.
-> 
-> Shouldn't XFS - and fuse - be considered to be broken? Sync should sync data 
-> and if XFS isn't doing that, it's wrong.
-> 
-> In the case of fuse, we should have a mechanism by which fuse processes can be 
-> made to sync if they do have any pending I/O, and by which they can be frozen 
-> later than other userspace processes.
-> 
-> I'd like to see the sync stay, because it improves reliability and data 
-> integrity in the fail-to-resume case. Calling scripts would probably invoke 
-> sync themselves if they don't already, but that's racy. As it is at the 
-> moment, we know userspace is stopped, so syncing isn't racy.
+Am Donnerstag, 5. Juli 2007 schrieb Rafael J. Wysocki:
+> > It seems pretty clear cut. =A0Whining about how much problems this wi=
+ll
+> > cause won't get us nearer to a solution.
+>=20
+> Yes, that's pretty clear cut, but we should start from fixing the drive=
+rs. :-)
 
-I'd like to move the sync out of the freezer, but to call it from the
-suspend/hibernation code, so that we do
+If, at a minimum, we can determine that we can STD without a freezer.
+It makes no sense to invest a lot of work to face the same problem
+again with STD.
 
-sys_sync();
-error = freeze_processes();
-
-etc.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	Regards
+		Oliver
