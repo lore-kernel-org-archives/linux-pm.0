@@ -1,18 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 15:47:14 +0200
-Message-ID: <200707051547.15239.rjw__4549.51251526854$1183643448$gmane$org@sisk.pl>
-References: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
-	<200707051451.38497.rjw@sisk.pl>
-	<1183639825.3818.38.camel@johannes.berg>
+From: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
+Subject: RE: Power event notification patch
+Date: Thu, 5 Jul 2007 19:09:53 +0530
+Message-ID: <67670A5CEA5C374B8E7B16D7DC55F9530124746A@bgsmsx413.gar.corp.intel.com>
+References: <1183641658.3619.14.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183639825.3818.38.camel@johannes.berg>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
+In-Reply-To: <1183641658.3619.14.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,45 +19,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: mjg59@srcf.ucam.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>
+To: Igor Stoppa <igor.stoppa@nokia.com>
+Cc: johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 14:50, Johannes Berg wrote:
-> On Thu, 2007-07-05 at 14:51 +0200, Rafael J. Wysocki wrote:
+I really can't stop the kernel from going to suspend using my master app
+(well, my app is not really a master app). It is just to inform the apps
+in the user space "Hey, I'm going to suspend, in the time available
+before I go to sleep, do whatever you can do!" whenever kernel goes to
+sleep. And I'm really can't stop the kernel from going to sleep (from a
+theoretical point I can do that as well, but at least I have not
+implemented that).
+
+Thanks,
+Sankar.
+
+-----Original Message-----
+From: Igor Stoppa [mailto:igor.stoppa@nokia.com] 
+Sent: Thursday, July 05, 2007 6:51 PM
+To: V, Sankara Narayanan
+Cc: johannes@sipsolutions.net; Oliver Neukum;
+linux-pm@lists.linux-foundation.org
+Subject: RE: [linux-pm] Power event notification patch
+
+On Thu, 2007-07-05 at 18:39 +0530, ext V, Sankara Narayanan wrote:
+> Guys,
 > 
-> > > > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> > > > wanting to resume devices during a system suspend transition?  This is
-> > > > exactly what happens when those threads aren't frozen.
-> > > 
-> > > So, I wonder why I don't see that error on my powerbook?
-> > 
-> > Because you have only one CPU running while your suspend code is being
-> > executed?
+> You really can't depend on this if your application want to execute
+some
+> 10000 lines of code. What I told is the app will have enough time to
+do
+> some minimal work (say wanna do some cleanup which is of the order of
+> 100 instructions or so). The go-to-suspend time is of the order of 2.x
+> seconds. So, we can really do it.
 > 
-> If that's really all the problem then what's wrong with just unplugging
-> the other CPUs earlier? Sure, that makes suspend no longer perfectly
-> transparent since userspace might notice the CPUs being unplugged, but
-> it has to cope with that anyway since a user can do it manually...
+> Igor,
+> I really do not understand what you mean by NACK (is it No ACK? If
+yes,
+> please explain)
 
-This is a bit complicated, but I'll try to explain.
+You are not expecting another app (say app2) to veto (No ACK) what your
+master app (app1) has decided.
 
-We used to disable the nonboot CPUs before suspending devices and enable
-them after resuming devices, but that turned out to lead to resume problems on
-some ACPI systems.  Namely, it turned out that this code ordering was not in
-line with the ACPI spec that assumed specific ordering of events during a
-suspend.  For this reason, we changed the code ordering and now it is more or
-less in agreement with ACPI (for the first time, AFAICS).  I don't think that
-anyone would like to revert that change right now.
+You only want app 2 to take care of itself so that its internal state
+(the part you care about) will be available for restoring, should
+something
+go bad. That, btw, is the same situation as with the OOM killer.
 
-Moreover, in the meantime we learned that the CPU hotplug code that we use
-for disabling the nonboot CPUs, is generally problematic on x86 and only works
-for us because we have the majority of interrupt sources disabled when it's
-invoked.
 
-Greetings,
-Rafael
+Your assumption to do something when the system starts to go in
+suspended
+mode is dangerous and, as i said, not really safe.
 
+Instead, if you save your application state when it changes (i.e. the
+user
+opens a new tab in the browser) you will be able to restore the
+application
+state in _any_ case, not just for a failed suspend.
+
+It's cleaner, deterministic and doesn't introduce artificial
+dependencies
+on kernelspace.
+Keep also in mind that your numbers are probably bogus on different
+architectures and your solution might not work (yes, i've seen your
+email
+address but that doesn't justify the creation of arch-specific coded
+when
+it's not necessary ;-)
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Cheers, Igor
+
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
