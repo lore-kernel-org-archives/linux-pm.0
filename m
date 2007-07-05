@@ -1,18 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 14:29:06 +0200
-Message-ID: <200707051429.07535.rjw@sisk.pl>
-References: <20070703211227.GA28758@srcf.ucam.org>
-	<200707041717.05149.rjw@sisk.pl>
-	<18060.15209.274437.471074@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Date: Thu, 05 Jul 2007 14:24:50 +0200
+Message-ID: <E1I6QOA-0000bq-00@dorka.pomaz.szeredi.hu>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<20070705091801.GB3084@elf.ucw.cz>
+	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
+	<200707051358.26963.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18060.15209.274437.471074@cargo.ozlabs.ibm.com>
-Content-Disposition: inline
+In-reply-to: <200707051358.26963.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +18,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>
+To: rjw@sisk.pl
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 02:29, Paul Mackerras wrote:
-> Rafael J. Wysocki writes:
-> 
-> > They will not trigger 100% of the time, but sporadically and generally at
-> > random.
-> > 
-> > At least the freezer problems are reproducible. ;-)
-> 
-> Our experience with powermacs has been that it isn't actually all that
-> hard to get it right for the drivers you care about.
+> Don't you think, however, that it can be modified a little to play well,
+> for example, with the freezer?
 
-Well, I'm a bit suspicious about that. ;-)
+I could stick a couple of try_to_freeze()s into fuse, and that would
+make suspend failure less likely.  But making problems less easy to
+reproduce is not a good thing.
 
-Namely, if you run your suspend code on one CPU and (do I remeber correctly
-that?) with kernel preemption disabled, then you practically prevent user land
-processes from being scheduled when your suspend code is running.
-
-If that is the case (of which I'm not sure), the freezer is obviously
-unnecessary, because you've taken processes out of the equation in a different
-way ...
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Miklos
