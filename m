@@ -1,20 +1,16 @@
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-Subject: Re: The big suspend mess
-Date: Thu, 5 Jul 2007 12:32:55 +0200
-Message-ID: <b637ec0b0707050332p6a5d31afpe3c0baa97da9b068__2343.60478721118$1183631627$gmane$org@mail.gmail.com>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031456.40890.rjw@sisk.pl>
-	<1183497290.3388.4.camel@localhost.localdomain>
-	<200707032332.49694.rjw@sisk.pl>
-	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
-	<20070704221952.GM3492@stusta.de> <20070705002747.GA2952@elf.ucw.cz>
-	<18060.16657.2143.11489@cargo.ozlabs.ibm.com>
-	<20070705093251.GB3228@elf.ucw.cz> <468CC7F7.90803@googlemail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync from within the
+	freezer during suspend to RAM
+Date: Thu, 5 Jul 2007 13:28:49 +0200
+Message-ID: <200707051328.50845.rjw@sisk.pl>
+References: <200707041658.59588.rjw@sisk.pl> <20070704224942.GD2491@elf.ucw.cz>
+	<200707050852.15392.nigel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <468CC7F7.90803@googlemail.com>
+In-Reply-To: <200707050852.15392.nigel@nigel.suspend2.net>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,42 +21,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: nigel@suspend2.net
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Thursday, 5 July 2007 00:52, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Thursday 05 July 2007 08:49:42 Pavel Machek wrote:
+> > On Thu 2007-07-05 08:48:15, Nigel Cunningham wrote:
+> > > Hi.
+> > > 
+> > > On Thursday 05 July 2007 00:58:58 Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > The syncing of filesystems from within the freezer in not needed for 
+> suspend 
+> > > to
+> > > > RAM.  Change freeze_processes() so that it doesn't execute sys_sync() 
+> and
+> > > > introduce the "syncing" version of it to be called from the hibernation 
+> code
+> > > > paths.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > ---
+> > > >  include/linux/freezer.h |   14 ++++++++++++--
+> > > >  kernel/power/disk.c     |    2 +-
+> > > >  kernel/power/main.c     |    6 ++++++
+> > > >  kernel/power/process.c  |    8 +++++---
+> > > >  kernel/power/user.c     |    2 +-
+> > > >  5 files changed, 25 insertions(+), 7 deletions(-)
+> > > 
+> > > Looks ok, except that I wonder if you want the following fragment. It 
+> looks to 
+> > > me (looking at rc6) like with this code, you'll currently call sys_sync 
+> twice 
+> > > when suspending to ram. Maybe I'm misreading it. Also, shouldn't it be 
+> done 
+> > > after taking the mutex?
+> > 
+> > sys_sync() should be okay to call, mutex or not.
+> 
+> Yeah. That wasn't my point, sorry. Calling sys_sync is pointless if you're 
+> going to fail to take the mutex. It makes more sense to know you've got it 
+> before you start doing things related to actually suspending.
 
-On 7/5/07, Gabriel C <nix.or.die@googlemail.com> wrote:
-> Pavel Machek wrote:
-> > On Thu 2007-07-05 10:53:37, Paul Mackerras wrote:
-> >
-> >> Pavel Machek writes:
-> >>
-> >>
-> >>> 0. Get someone to sign up as a maintainer for suspend, so we have
-> >>> someone to blame for the mess? :-)
-> >>>
-> >> I thought that was Rafael?
-> >>
-> >
-> > Rafael is good job trying to fix suspend when he can, but we do not
-> > actually have "SUSPEND" entry in MAINTAINERS file.
-> >                                                               Pavel
-> >
->
-> Huch ?;)
->
-> We do :p
->
-> ...
->
-> SOFTWARE SUSPEND:
-> P: Pavel Machek
-> M: pavel@suse.cz
-> L: linux-pm@lists.linux-foundation.org
-> S: Maintained
->
+Well, that's a valid point, I'll move it under the mutex.
 
-I think he means SUSPEND (aka suspend-to-ram) not "SOFTWARE SUSPEND"
-(aka suspend-to-disk)
+And why do you think it will be called twice?
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
