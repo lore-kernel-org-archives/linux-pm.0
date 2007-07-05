@@ -1,18 +1,13 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 05 Jul 2007 21:44:12 +0200
-Message-ID: <E1I6XFM-0001ek-00__11200.6663381637$1183664825$gmane$org@dorka.pomaz.szeredi.hu>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<20070705115400.GF3984@ucw.cz>
-	<E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
-	<200707052138.56920.oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Wakeup settings for USB hubs?
+Date: Thu, 5 Jul 2007 15:51:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707051546010.4198-100000@iolanthe.rowland.org>
+References: <200707052118.59885.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200707052138.56920.oliver@neukum.org> (message from Oliver
-	Neukum on Thu, 5 Jul 2007 21:38:56 +0200)
+In-Reply-To: <200707052118.59885.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,37 +17,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: oliver@neukum.org
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
-> > > > Actually fuse allows SIGKILL, because it's always fatal, and the
-> > > > syscall may not be restarted.
-> > >=20
-> > > I think you want to stick try_to_freeze() at the same places where =
-you
-> > > do SIGKILL handling. That should solve the 'syslogd is unfreezeable=
-'
-> > > problem.
+On Thu, 5 Jul 2007, Oliver Neukum wrote:
+
+> Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
+> > Allow me to rephrase. =A0You seem to be saying that /sys/.../power/wa=
+keup=20
+> > should be able to hold four different values:
 > >=20
-> > I could, but it would not solve the general problem. =C2=A0Namely, th=
-at the
-> > presence of fuse imposes a certain ordering in which userspace tasks
-> > have to be frozen. =C2=A0And it is not possible to know this ordering.
+> > =A0=A0=A0=A0=A0=A0=A0=A01. always disabled
+> > =A0=A0=A0=A0=A0=A0=A0=A02. always enabled
+> > =A0=A0=A0=A0=A0=A0=A0=A03. enabled at runtime but not during system s=
+leep
+> > =A0=A0=A0=A0=A0=A0=A0=A04. enabled during system sleep but not at run=
+time
+> >=20
+> > Right? =A0With the default being 3 (except for a few things like the=20
+> > power button).
+> >=20
+> > Or maybe there should be two attribute files: wakeup (used during
+> > system sleep) and wakeup_runtime (used for runtime suspend).
+> >=20
+> > Comments from anybody else?
 >=20
-> Actually, why do you need this? There is no absolute need that you
-> finish the request. You must either finish the request or let yourself
-> be frozen.
->=20
-> A quick look through fuse reveals principally request_wait_answer()
-> And maybe a few other places. Is there some hidden reason you cannot
-> handle being frozen here?
+> I am not sure we ever want to do runtime suspend without remote wakeup.
 
-Yes, fuse could handle being frozen there.  However that would only
-solve part of the problem: an operation waiting for a reply could be
-holding a VFS mutex and some other task may be blocked on that mutex.
+You mean the user shouldn't be able to disable remote wakeup during a
+runtime suspend?  But what if the user wants to put the device to sleep
+with no possibility of wakeup?
 
-How would you solve freezing those tasks?
+> If we want that then it is orthogonal to its value during system sleep.
+> That would call for two attributes.
 
-Miklos
+Another attribute can be added easily enough.
+
+Dave, you created the original wakeup attribute.  What do you think=20
+about adding a separate wakeup_runtime?  (At a minimum, perhaps you can=20
+suggest a better name!)
+
+Alan Stern
