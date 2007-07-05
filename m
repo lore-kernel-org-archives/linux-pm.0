@@ -1,17 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 01:45:23 +0200
-Message-ID: <20070704234523.GC2719__12607.3360479952$1183592819$gmane$org@elf.ucw.cz>
+Date: Thu, 5 Jul 2007 02:02:35 +0200
+Message-ID: <20070705000235.GD2719__38129.7340071343$1183593815$gmane$org@elf.ucw.cz>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707032026.34649.oliver@neukum.org>
-	<E1I5no4-0004fU-00@dorka.pomaz.szeredi.hu>
-	<200707032132.20731.oliver@neukum.org>
+	<200707030944.18702.oliver@neukum.org>
+	<E1I5fug-0003ZS-00@dorka.pomaz.szeredi.hu>
+	<200707031307.41366.oliver@neukum.org>
+	<E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707032132.20731.oliver@neukum.org>
+In-Reply-To: <E1I5gSu-0003f4-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +22,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2007-07-03 21:32:20, Oliver Neukum wrote:
-> Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
-> > > And a further question. The freezer is not atomic. What do you do
-> > > if a task not yet frozen calls sys_sync(), but fuse is already frozen?
+Hi!
+
+> > > I don't claim to know anything about how STR or hibernate works, but
+> > > neither seem to have any problem with I/O on the fuse device "racing"
+> > > with them.
 > > 
-> > What do you do if a task not yet frozen writes to a pipe, on the other
-> > end of which is a task already frozen?
-
-There's some difference between uninterruptible and interruptible
-sleep I'd say.
-
-> > It doesn't matter.  The only thing that should matter during suspend
-> > (not hibernate) is saving the state of devices to ram, and putting the
-> > devices to sleep.
+> > The problem is not with fuse. The problem is generic in nature.
+> > 
+> > If you remove the freezer, user space remains active until the last CPU
+> > goes into suspend. It can do syscalls. Or do you know a clean way to exempt
+> > only the tasks fuse might use?
 > 
-> Well, but you did remove sys_sync() from the freezer, which is
-> and must be called in the hibernate path.
+> You are talking about hibernate, right?  Suspending (to ram) is
+> instantaneous, in that _after_ suspend no CPU is active obviously.
 
-Not "must". In fact, hibernation should be safe without sys_sync(). It
-is just user un-friendly.
+No, suspend to ram is not instantaneous.
 
-									Pavel
+We may have 16 cpus, and we may have 250 disks that need to be spun
+down. That takes time, and is really not atomic operation.
+								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
