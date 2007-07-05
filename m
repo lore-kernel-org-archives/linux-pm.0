@@ -1,12 +1,18 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: RE: Power event notification patch
-Date: Thu, 05 Jul 2007 15:12:57 +0200
-Message-ID: <1183641177.3818.40.camel@johannes.berg>
-References: <67670A5CEA5C374B8E7B16D7DC55F9530124744C@bgsmsx413.gar.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 15:23:43 +0200
+Message-ID: <200707051523.44826.rjw__25108.3626681522$1183641435$gmane$org@sisk.pl>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051340.41901.rjw@sisk.pl>
+	<E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5400648507220473269=="
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <67670A5CEA5C374B8E7B16D7DC55F9530124744C@bgsmsx413.gar.corp.intel.com>
+In-Reply-To: <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,56 +20,39 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, 5 July 2007 13:54, Miklos Szeredi wrote:
+> > > Limiting what a userspace filesystem can do would defeat the whole
+> > > purpose of the bloody thing.  This is not negotiable ;)
+> > 
+> > Which doesn't change the fact that FUSE _is_ special, because it adds
+> > dependencies between processed that were not present before.
+> 
+> OK, fuse is special.  So is the userspace driver framework (UIO)
+> proposed by Greg KH and co.  Now what can be done about these?
+> 
+>  - making them not-special is not an option due to the established
+>    interfaces, which don't allow restartability.
+> 
+>  - fixing the freezer is pretty much impossible because the
+>    dependencies between the tasks cannot be known.
+> 
+>  - removing the freezer and fixing the drivers seems workable, we
+>    already have a prototype in the form of the powermac architecture.
+> 
+> It seems pretty clear cut.  Whining about how much problems this will
+> cause won't get us nearer to a solution.
 
---===============5400648507220473269==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pB/DCWYaeHk3b4w9EqbM"
+Yes, that's pretty clear cut, but we should start from fixing the drivers. :-)
 
-
---=-pB/DCWYaeHk3b4w9EqbM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-07-05 at 18:39 +0530, V, Sankara Narayanan wrote:
-
-> Johannes,
-> In that case, you need to implement it in every power manager and in
-> turn HAL and DBUS get these from the kernel, one more redirection which
-> will further reduce the time for the app to do the 'minimal' work.
-
-No, as far as I know it'll actually tell applications *before* telling
-the kernel.
-
-johannes
-
---=-pB/DCWYaeHk3b4w9EqbM
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGjO5Z/ETPhpq3jKURAtxOAJ4wNAZ4TjFU2c+8pdnFeO3NOivMGgCeKc1L
-YVJrZ9kx5rUv2YZrRItEysg=
-=EBQ/
------END PGP SIGNATURE-----
-
---=-pB/DCWYaeHk3b4w9EqbM--
+Greetings,
+Rafael
 
 
---===============5400648507220473269==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5400648507220473269==--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
