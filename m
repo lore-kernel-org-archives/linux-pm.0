@@ -1,13 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 10:25:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707051023520.3728-100000__9467.32872766933$1183645947$gmane$org@iolanthe.rowland.org>
-References: <18060.15630.812698.367707@cargo.ozlabs.ibm.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
+	(was Re: Re: [PATCH] Remove process freezer from
+	suspend to RAM pathway)
+Date: Thu, 5 Jul 2007 15:26:00 +0100
+Message-ID: <20070705142600.GB22598__26141.2573200234$1183645956$gmane$org@srcf.ucam.org>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
+	<20070705091526.GA3084@elf.ucw.cz>
+	<20070705135758.GB22177@srcf.ucam.org>
+	<200707051628.12199.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18060.15630.812698.367707@cargo.ozlabs.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <200707051628.12199.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +22,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: mjg59@srcf.ucam.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Jul 2007, Paul Mackerras wrote:
-
-> Alan Stern writes:
+On Thu, Jul 05, 2007 at 04:28:11PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, 5 July 2007 15:57, Matthew Garrett wrote:
+> > And also "Userland should not depend on userland services", which is 
+> > rather more of a problem.
 > 
-> > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> > wanting to resume devices during a system suspend transition?  This is
-> > exactly what happens when those threads aren't frozen.
+> I think you're oversimplifying it, as far as FUSE is concerned.
 > 
-> So, I wonder why I don't see that error on my powerbook?
+> Namely, if there are two userland tasks, A and B, and B is uninterruptible,
+> because A is blocked, then this is not a usual situation.
 
-That's a good question.  Miklos, can you please reproduce the suspend 
-error using a kernel built with CONFIG_USB_DEBUG turned on?
-
-Alan Stern
+Fuse is one case of it occuring, and if we end up with more userspace 
+drivers then the problem is only going to get worse.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
