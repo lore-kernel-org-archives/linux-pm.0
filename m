@@ -1,17 +1,19 @@
 From: Paul Mackerras <paulus@samba.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 10:46:50 +1000
-Message-ID: <18060.16250.191996.324672__19129.8394384377$1183596501$gmane$org@cargo.ozlabs.ibm.com>
+Subject: Re: The big suspend mess
+Date: Thu, 5 Jul 2007 10:53:37 +1000
+Message-ID: <18060.16657.2143.11489__8141.28501010618$1183596866$gmane$org@cargo.ozlabs.ibm.com>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031454.42078.nigel@nigel.suspend2.net>
-	<1183441706.10386.73.camel@localhost.localdomain>
-	<20070705000301.GE2719@elf.ucw.cz>
+	<200707031456.40890.rjw@sisk.pl>
+	<1183497290.3388.4.camel@localhost.localdomain>
+	<200707032332.49694.rjw@sisk.pl>
+	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+	<20070704221952.GM3492@stusta.de>
+	<20070705002747.GA2952@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070705000301.GE2719@elf.ucw.cz>
+In-Reply-To: <20070705002747.GA2952@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,18 +24,14 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 Pavel Machek writes:
 
-> How well does it work on SMP PPC?
+> 0. Get someone to sign up as a maintainer for suspend, so we have
+> someone to blame for the mess? :-)
 
-Just fine, on those machines where we know how to reinitialize the
-video card.  We currently require userspace to offline all except the
-boot cpu before suspending, but that could be moved into the kernel.
-I have no particular attachment to that way of doing it; it was just a
-"don't do things in the kernel that can be reasonably be done in
-userspace" kind of thing.
+I thought that was Rafael?
 
 Paul.
