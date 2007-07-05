@@ -1,13 +1,19 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-Date: Thu, 5 Jul 2007 10:42:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707051025500.3728-100000__43933.5673269399$1183646711$gmane$org@iolanthe.rowland.org>
-References: <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+From: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 07:46:01 -0700
+Message-ID: <2c0942db0707050746v2b8cdc9ew2c4656736b52895d__20322.3989498385$1183646886$gmane$org@mail.gmail.com>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051528.34754.oliver@neukum.org>
+	<20070705134632.GA22177@srcf.ucam.org>
+	<200707051609.25887.rjw@sisk.pl>
+	<20070705142318.GA22598@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+In-Reply-To: <20070705142318.GA22598@srcf.ucam.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,88 +23,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Jul 2007, Paul Mackerras wrote:
+On 7/5/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Thu, Jul 05, 2007 at 04:09:24PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 5 July 2007 15:46, Matthew Garrett wrote:
+> > > I have a model for STD that avoids the need to freeze the entirity of
+> > > userspace, but I need to find some more time to flesh it out.
+> >
+> > You can just describe it, as far as I'm concerned. :-)
+>
+> The basic model is that nobody's really described a use-case where we
+> actually care about restoring system state. What people want is to be
+> able to restore application state.
 
-> Alan Stern writes:
-> 
-> > > > Yes, the code could be changed to keep track of the reason for a device
-> > > > suspend.  But that just raises the old problem of what to do when
-> > > > there's an I/O request for a suspended device during STR.
-> > > 
-> > > Is this actually a real problem?  I would think the policy would be
-> > > "block" for block devices (pun not intended :), "drop" for network
-> > > devices, etc.
-> > 
-> > It is indeed a real problem, or at least, it can be.
-> 
-> How so?  Can you give me an example?
-
-The example I quoted earlier about binding during a suspend will do.  I 
-agree that we can and should try to prevent it from ever occurring.
-
-Read and write are a problem only in that fixing them would potentially
-involve changing lots of drivers; I don't think they pose a serious
-theoretical obstacle.  (Lord knows what will happen with async I/O!)
-
-Any other entry points to drivers are also potential problems, but it's 
-hard to say anything definite about them since they are so varied.
-
-> > Bus subsystems can suspend devices with no drivers.
-> 
-> Interesting.  I assume this is for buses for which there is a
-> bus-specific but device-independent suspend procedure defined.
-
-Yes.
-
-> It would seem sensible to me that the PM core should get the bus to
-> resume such a device before calling a driver probe routine.  The
-> resume should be blocked or deferred while a system suspend is
-> underway.  In fact I think that all driver bind/unbind and probe
-> operations should be deferred while the system is suspending (i.e. put
-> on a list to be done after the system resumes).
-
-Getting the PM core to resume a device before probing could be 
-difficult; in general it doesn't know enough about specific device 
-behaviors to do something like that.  But the subsystem certainly ought 
-to take care of it.  USB does.
-
-Yes, bind/unbind/etc. should be deferred during a system suspend.  But
-it has to be done carefully, because these operations generally involve
-locks that can't be released.  They need to be prevented at their
-source, not in the driver core.  That's one reason why khubd needs to
-be frozen (being part of the USB hub driver, it is the task responsible
-for binding and unbinding drivers to USB devices).
-
-Another thing to look out for is registration and unregistration of 
-drivers.  These activities also cause bind/unbind operations.  Note 
-that if userspace is frozen then neither insmod nor rmmod can run.  :-)
-
-> > It would help.  It would help even more if the sysfs core also blocked
-> > all I/O while suspend is under way.  (Although this might be tricky, 
-> > considering that the suspend is initiated by a sysfs write...)
-> 
-> I didn't think sysfs got involved at all in normal read and write
-> requests, so I don't know how it would block them...
-
-All I/O to sysfs attributes passes through the routines in fs/sysfs/*.  
-It could be blocked there.  (But if userspace is frozen it won't need 
-to be.)
-
-> Normally devices have some sort of queue of pending operations.
-
-That's certainly true of block devices, whose drivers use the block 
-subsystem.  It's not true for lots of other devices, though.
-
->  So
-> all that is required on suspend is to stop processing the queue and
-> wait for any currently-underway operations to complete.  The blocking
-> then happens naturally using the normal I/O wait mechanisms.
-
-In my experience, most non-block drivers do not have any queue of 
-pending I/O operations.  They simply carry out requests as they arrive.
-
-Alan Stern
+Hmm, careful. There are a bunch of people who use suspend2 exactly
+because it saves and restores the page cache, leaving the system in a
+usable state without waiting for the universe to swap back in from
+disk. It makes a big difference on older laptops with slow drives.
+While the other advantages you list for process cryogenics are pretty
+neat, let's remember that the 99% use case for STD is laptops.
