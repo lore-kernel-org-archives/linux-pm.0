@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-Date: Thu, 5 Jul 2007 17:15:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707051713440.2753-100000__15687.1843770661$1183670490$gmane$org@iolanthe.rowland.org>
-References: <E1I6YXX-0001yE-00@dorka.pomaz.szeredi.hu>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 23:15:38 +0200
+Message-ID: <200707052315.38770.oliver__18576.7636438415$1183670682$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0707051704580.2557-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I6YXX-0001yE-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <Pine.LNX.4.44L0.0707051704580.2557-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Jul 2007, Miklos Szeredi wrote:
+Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
+> On Thu, 5 Jul 2007, Oliver Neukum wrote:
+>=20
+> > > Obviously. =C2=A0But I wasn't about the server trying to acquire a =
+lock
+> > > held by a client. =C2=A0I was talking about a client trying to acqu=
+ire a
+> > > lock held by _another_ client.
+> > >=20
+> > > If this coincides with the server (or some other task which the ser=
+ver
+> > > is depending on) being frozen before the clients, the freezer has a
+> > > problem.
+> >=20
+> > True, but that case can only happen if servers are frozen before clie=
+nts.
+> > You don't need a full dependency graph. A simple set sequence of two
+> > classes of tasks will do.
+>=20
+> Just to make things more complicated...  Since a server isn't
+> restricted in what it can do, what happens when one server depends on
+> another server?
 
-> I fear, that your efforts to "save" the freezer are in vain.  It is
-> already moderately hackish with that PF_FREEZER_SKIP and the kernel
-> dotted randomly with try_to_freeze() calls, but adding bandaids to try
-> to order freezing userspace processes in the right order would just
-> make it a horrible mess.
+The same principle applies. If you really want that you can solve this
+by freezing servers in the reverse sequence they were started.
 
-I agree that bandaids won't work.  What's needed is something more 
-radical.  Things like FUSE must be written so that the kernel parts 
-_can_ freeze even while they are waiting for a response from a user 
-thread.
+The main point remains. If you have a circular dependency anywhere
+among the servers you can deadlock independent of the freezer.
 
-Alan Stern
+	Regards
+		Oliver
