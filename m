@@ -1,14 +1,18 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to
 	RAM pathway
-Date: Fri, 06 Jul 2007 08:59:52 +1000
-Message-ID: <1183676393.3388.89.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707051014180.3728-100000@iolanthe.rowland.org>
+Date: Fri, 06 Jul 2007 09:05:51 +1000
+Message-ID: <1183676751.3388.96.camel@localhost.localdomain>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<20070705115400.GF3984@ucw.cz>
+	<E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
+	<200707052138.56920.oliver@neukum.org>
+	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707051014180.3728-100000@iolanthe.rowland.org>
+In-Reply-To: <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-07-05 at 10:23 -0400, Alan Stern wrote:
+
+> Yes, fuse could handle being frozen there.  However that would only
+> solve part of the problem: an operation waiting for a reply could be
+> holding a VFS mutex and some other task may be blocked on that mutex.
 > 
-> How will that help?  Block the kernel thread in the freezer or block it 
-> in the driver -- either way it is blocked.  So how do your deadlocks 
-> get resolved?
+> How would you solve freezing those tasks?
 
-Because nobody is waiting on that kernel thread anyway without a freezer
-so there is no deadlock anymore.
+That task is implicitely frozen... but the kernel doesn't know it and
+thus the freezer timeouts or fails or deadlocks or whatever.
 
-> I disagree with your analysis -- not that it's completely wrong, but it 
-> points out an existing basic problem in the kernel.  The kernel should 
-> never depend on userspace!  More correctly, a task executing in the 
-> kernel should never block with any sort of mutex or other lock held (in 
-> a way that would preclude it from being frozen, let's say) while 
-> waiting for a response from userspace.
-> 
-> Then the dependency graph would be easy to construct: User tasks can
-> depend on whatever they want, and kernel threads never depend on a user
-> task.
+The freezer could be made to ignore tasks that are sleeping in the
+kernel assuming that if they go out of it, they'll ultimately reach
+do_signal and freeze, but that means they can potentially still issues
+IOs which is what the freezer tries to avoid ...
 
-In an idea world, there would be no hunger...
+Or the kernel could start tracking dependencies, but then, good luck
+implementing that crap.
 
-> If this contradicts the existing implementations and APIs for userspace 
-> filesystems, then so be it.  My conclusion would be that the 
-> implementations and APIs should be changed.
+At the end of the day, I stand my ground, the freezer cannot be made
+reliable without massive infrastructure changes or giving up on very
+useful features such as fuse among others. Besides, it only partially
+"hides" the problem of requests going to drivers, thus it's a bad
+solutions.
 
-Why are you guys working so hard and spending so much energy to try to
-avoid doing the right thing is beyond my understanding...
+We would be much better off spending time fixing the drivers to properly
+block requests after suspended, and that also gives for free the ability
+to do dynamic runtime suspend on them.
 
-> It _does_ apply to kernel threads.  That's exactly why I wrote above 
-> that kernel threads which try to do I/O during a suspend will need 
-> extra attention.
-
-Ok none at all if you don't have a freezer.
+And for "trivial" drivers where we don't care, using late_suspend to
+power the chip off later when IRQs are off is an easy enough way to
+solve it with very little code (though won't help with dynamic PM but
+that's not necessarily an issue). No need for a freezer either way.
 
 Ben.
