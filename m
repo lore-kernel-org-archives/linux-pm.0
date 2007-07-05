@@ -1,19 +1,15 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 05 Jul 2007 14:07:09 +0200
-Message-ID: <E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
-	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
-	<200707050858.03638.oliver@neukum.org>
-	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-	<20070705091801.GB3084@elf.ucw.cz>
-	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-	<20070705115400.GF3984@ucw.cz>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Power event notification patch
+Date: Thu, 5 Jul 2007 14:08:02 +0200
+Message-ID: <200707051408.02756.oliver@neukum.org>
+References: <67670A5CEA5C374B8E7B16D7DC55F953012473FF@bgsmsx413.gar.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20070705115400.GF3984@ucw.cz> (message from Pavel Machek on Thu,
-	5 Jul 2007 11:54:00 +0000)
+In-Reply-To: <67670A5CEA5C374B8E7B16D7DC55F953012473FF@bgsmsx413.gar.corp.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,47 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@ucw.cz
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> > Actually fuse allows SIGKILL, because it's always fatal, and the
-> > syscall may not be restarted.
-> 
-> I think you want to stick try_to_freeze() at the same places where you
-> do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
-> problem.
+Am Donnerstag, 5. Juli 2007 schrieb V, Sankara Narayanan:
+> Here is a simple patch for power event notification to user-space
+> applications. Basically, what it does is notify the user-space
+> applications that the system is going to a low power state
+> (Suspend-to-RAM and Suspend-to-Disk) and resume from that state. This is
+> useful for the user-space applications to do some significant action
+> when the system goes to the low power state (like saving an unsaved
+> file). The user-space objects can form a netlink socket and listen to
+> these events. It is done through a kobject-netlink socket. For this I
+> have used the kobject_uevent system call, posting the notification to
+> user space with standby, hibernate and resume in the action parameter of
+> the kobject_uevent call (mapped to KOBJ_S3, KOBJ_S4 and KOBJ_RESUME
+> enums). Appreciate your comments on the patch.
 
-I could, but it would not solve the general problem.  Namely, that the
-presence of fuse imposes a certain ordering in which userspace tasks
-have to be frozen.  And it is not possible to know this ordering.
+Why does this need to be done in kernel space?
+How do you want to make sure user space has enough time to act on a
+notification?
 
-And even if the ordering were solved, the freezer would still not work
-if the filesystem is not responding due to external events, such as a
-lost network (this affects NFS, CIFS, whatever just the same as fuse).
-
-> Plus, it would be nice to find out where suspend/hibernation is
-> triggering fuse activity. We can then decide where to fix it -- in
-> fuse or in suspend parts. You said sys_sync is not implemented... so
-> where is the problem?
-
-I cannot say without having a sysrq-t of the situation.
-
-> > > That's very special, and maybe even a FUSE bug. And that is also
-> > > what makes FUSE special w.r.t. s2ram.
-> > 
-> > What makes fuse special is that some file operations are synchronous
-> > and non-restartable.  That's just how the UNIX filesystem API works
-> > and is hardly a bug in fuse.
-> 
-> Well, unix is not plan9, and maybe userland filesystems are impossible
-> in unix. But that is hardly a bug in unix :-).
-
-I'd rather say, reliable suspend to ram is impossible in the presense
-of userspace filesystems, iff people are too lazy to fix the suspend
-framework and the drivers to work without the freezer.
-
-This has nothing to do with unix, if plan9 would need to support STR
-or hibernate, it would face exactly the same problems.
-
-Miklos
+	Regards
+		Oliver
