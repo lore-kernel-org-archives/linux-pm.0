@@ -1,16 +1,15 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 05 Jul 2007 14:50:25 +0200
-Message-ID: <1183639825.3818.38.camel__17089.5164869309$1183639811$gmane$org@johannes.berg>
-References: <E1I63Nv-0006Z9-00@dorka.pomaz.szeredi.hu>
-	<Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
-	<18060.15630.812698.367707@cargo.ozlabs.ibm.com>
-	<200707051451.38497.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Power event notification patch
+Date: Thu, 5 Jul 2007 14:51:34 +0200
+Message-ID: <200707051451.34788.oliver@neukum.org>
+References: <67670A5CEA5C374B8E7B16D7DC55F95301247436@bgsmsx413.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4159459121572796858=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707051451.38497.rjw@sisk.pl>
+In-Reply-To: <67670A5CEA5C374B8E7B16D7DC55F95301247436@bgsmsx413.gar.corp.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +17,21 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mjg59@srcf.ucam.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>
+To: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+Am Donnerstag, 5. Juli 2007 schrieb V, Sankara Narayanan:
+> Well, say I have two applications, say app1 and app2. App 1 initiates a
+> suspend-to-RAM. How will app2 come to know the system is going to sleep.
+> Only way is app1 needs to inform/broadcast that the application has
+> initiates the sleep or the system is going to sleep. In that case, every
+> application which initiates a sleep has to implement this. Quoting your
 
---===============4159459121572796858==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-5wbtt3bjFieiS1P7Vk4K"
+Yes, that is a situation that screams for implementation in a library.
+Preferably through using multicast channels, like DBUS.
 
-
---=-5wbtt3bjFieiS1P7Vk4K
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-07-05 at 14:51 +0200, Rafael J. Wysocki wrote:
-
-> > > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> > > wanting to resume devices during a system suspend transition?  This i=
-s
-> > > exactly what happens when those threads aren't frozen.
-> >=20
-> > So, I wonder why I don't see that error on my powerbook?
->=20
-> Because you have only one CPU running while your suspend code is being
-> executed?
-
-If that's really all the problem then what's wrong with just unplugging
-the other CPUs earlier? Sure, that makes suspend no longer perfectly
-transparent since userspace might notice the CPUs being unplugged, but
-it has to cope with that anyway since a user can do it manually...
-
-johannes
-
---=-5wbtt3bjFieiS1P7Vk4K
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGjOkQ/ETPhpq3jKURAuS+AKCkOs0M4b62O+mlZjMKGlO7InyTyQCfU+/Z
-ZOzbFpjyaZyeiBmCweuEM90=
-=Bh3G
------END PGP SIGNATURE-----
-
---=-5wbtt3bjFieiS1P7Vk4K--
-
-
---===============4159459121572796858==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4159459121572796858==--
+	Regards
+		Oliver
