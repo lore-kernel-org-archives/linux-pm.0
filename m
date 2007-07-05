@@ -1,17 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 14:46:32 +0100
-Message-ID: <20070705134632.GA22177__34501.8789791085$1183643489$gmane$org@srcf.ucam.org>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
-	<200707051523.44826.rjw@sisk.pl>
-	<200707051528.34754.oliver@neukum.org>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: RE: Power event notification patch
+Date: Thu, 05 Jul 2007 16:46:35 +0300
+Message-ID: <1183643195.3619.21.camel@localhost.localdomain>
+References: <67670A5CEA5C374B8E7B16D7DC55F9530124746A@bgsmsx413.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707051528.34754.oliver@neukum.org>
+In-Reply-To: <67670A5CEA5C374B8E7B16D7DC55F9530124746A@bgsmsx413.gar.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,18 +17,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: "ext V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
+Cc: johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 03:28:33PM +0200, Oliver Neukum wrote:
+Hi,
+On Thu, 2007-07-05 at 19:09 +0530, ext V, Sankara Narayanan wrote:
+> I really can't stop the kernel from going to suspend using my master app
+> (well, my app is not really a master app). It is just to inform the apps
+> in the user space "Hey, I'm going to suspend, in the time available
+> before I go to sleep, do whatever you can do!" whenever kernel goes to
+> sleep. And I'm really can't stop the kernel from going to sleep (from a
+> theoretical point I can do that as well, but at least I have not
+> implemented that).
 
-> If, at a minimum, we can determine that we can STD without a freezer.
-> It makes no sense to invest a lot of work to face the same problem
-> again with STD.
+Yes, i've understood that.
 
-I have a model for STD that avoids the need to freeze the entirity of 
-userspace, but I need to find some more time to flesh it out.
+What i'm saying is that your approach:
+
+"Hey, I'm going to suspend, in the time available before I go to sleep,
+do whatever you can do!"
+
+is faulty, imo.
+
+
+What we are doing in Maemo is:
+
+App1 changes states -> App1 saves its state using library
+App2 changes states -> App2 saves its state using library
+App3 changes states -> App3 saves its state using library
+App4 changes states -> App4 saves its state using library
+....
+
+Suspend event -> Apps do nothing 
+
+
+Very simple and deterministic. Note also that you can track is Apps are
+saving their state by refcounting and therefore delaying the actual
+suspend command.
+
+I hope that it's clear now.
+
+cheers, igor
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Cheers, Igor
+
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
