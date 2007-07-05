@@ -1,18 +1,18 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
-	(was Re: Re: [PATCH] Remove process freezer from
-	suspend to RAM pathway)
-Date: Thu, 5 Jul 2007 14:57:58 +0100
-Message-ID: <20070705135758.GB22177__1857.75307841158$1183644251$gmane$org@srcf.ucam.org>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org>
-	<18060.15591.556676.28935@cargo.ozlabs.ibm.com>
-	<20070705091526.GA3084@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 16:09:24 +0200
+Message-ID: <200707051609.25887.rjw__1591.05518037013$1183644253$gmane$org@sisk.pl>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051528.34754.oliver@neukum.org>
+	<20070705134632.GA22177@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070705134632.GA22177@srcf.ucam.org>
 Content-Disposition: inline
-In-Reply-To: <20070705091526.GA3084@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,19 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 11:15:26AM +0200, Pavel Machek wrote:
-
-> Now, if kernel needs FUSE services for some reason (that's the problem
-> we hit in s2ram case, right?), we have a deadlock.
+On Thursday, 5 July 2007 15:46, Matthew Garrett wrote:
+> On Thu, Jul 05, 2007 at 03:28:33PM +0200, Oliver Neukum wrote:
 > 
-> So main problem still seems to be "kernel should not depend on
-> userland services during suspend", refrigerator or not.
+> > If, at a minimum, we can determine that we can STD without a freezer.
+> > It makes no sense to invest a lot of work to face the same problem
+> > again with STD.
+> 
+> I have a model for STD that avoids the need to freeze the entirity of 
+> userspace, but I need to find some more time to flesh it out.
 
-And also "Userland should not depend on userland services", which is 
-rather more of a problem.
+You can just describe it, as far as I'm concerned. :-)
+
+Greetings,
+Rafael
+
+
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+"Premature optimization is the root of all evil." - Donald Knuth
