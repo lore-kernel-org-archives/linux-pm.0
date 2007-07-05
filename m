@@ -1,13 +1,18 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: RE: Power event notification patch
-Date: Thu, 05 Jul 2007 15:22:53 +0200
-Message-ID: <1183641773.3818.42.camel@johannes.berg>
-References: <67670A5CEA5C374B8E7B16D7DC55F9530124744C@bgsmsx413.gar.corp.intel.com>
-	<1183641177.3818.40.camel@johannes.berg>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 15:31:36 +0200
+Message-ID: <200707051531.37532.rjw__25657.3506434963$1183642481$gmane$org@sisk.pl>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051358.26963.rjw@sisk.pl>
+	<E1I6QOA-0000bq-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3168376137140391170=="
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183641177.3818.40.camel@johannes.berg>
+In-Reply-To: <E1I6QOA-0000bq-00@dorka.pomaz.szeredi.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,55 +20,25 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, 5 July 2007 14:24, Miklos Szeredi wrote:
+> > Don't you think, however, that it can be modified a little to play well,
+> > for example, with the freezer?
+> 
+> I could stick a couple of try_to_freeze()s into fuse, and that would
+> make suspend failure less likely.  But making problems less easy to
+> reproduce is not a good thing.
 
---===============3168376137140391170==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-sZQQdO+ZYcxqnjy/8S6R"
+So, how about eliminating them?
 
-
---=-sZQQdO+ZYcxqnjy/8S6R
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-07-05 at 15:13 +0200, Johannes Berg wrote:
-
-> No, as far as I know it'll actually tell applications *before* telling
-> the kernel.
-
-Huh, looks like I was wrong, it only specifically tells gnome-keyring,
-gnome-network-manager and gnome-screensaver. But it could very well
-broadcast something too.
-
-johannes
-
---=-sZQQdO+ZYcxqnjy/8S6R
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGjPCt/ETPhpq3jKURAn0CAJ4wwfxARyJiq8R4Yb2c00/TFmYD3ACdEDaH
-8u26itAQdjdgKlvARk7HLmE=
-=wcsC
------END PGP SIGNATURE-----
-
---=-sZQQdO+ZYcxqnjy/8S6R--
+Greetings,
+Rafael
 
 
---===============3168376137140391170==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3168376137140391170==--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
