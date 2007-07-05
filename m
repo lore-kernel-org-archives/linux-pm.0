@@ -1,15 +1,17 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
-	(was Re: Re: [PATCH] Remove process freezer from
-	suspend to RAM pathway)
-Date: Thu, 05 Jul 2007 17:32:34 +0200
-Message-ID: <E1I6TJq-000164-00__39964.9885636338$1183649617$gmane$org@dorka.pomaz.szeredi.hu>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
-	<200707051704.48137.rjw@sisk.pl>
-	<20070705150301.GB23647@srcf.ucam.org>
-	<200707051727.36715.rjw@sisk.pl>
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 05 Jul 2007 12:06:09 -0400
+Message-ID: <87wsxeu972.fsf__48796.1764367812$1183651659$gmane$org@jbms.ath.cx>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051528.34754.oliver@neukum.org>
+	<20070705134632.GA22177@srcf.ucam.org> <200707051609.25887.rjw@sisk.pl>
+	<20070705142318.GA22598@srcf.ucam.org>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200707051727.36715.rjw@sisk.pl>
+In-Reply-To: <20070705142318.GA22598@srcf.ucam.org> (Matthew Garrett's message
+	of "Thu\, 5 Jul 2007 15\:23\:18 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> > > You have processes that don't react to signals, because some
-> > > other user land task is misbehaving.  I'd call that ugly at the
-> > > very least.
-> > 
-> > It already happens with, say, NFS. Don't think about it in terms of a 
-> > userland task misbehaving - think of it in terms of a resource becoming 
-> > unavailable.
-> 
-> I think there's a difference between a userland task playing the role of a
-> resource and a "real" external resource the kernel doesn't control.
-> 
-> IMO, userland tasks should not have the power to affect each other as though
-> they were parts of the kernel.
+Matthew Garrett <mjg59@srcf.ucam.org> writes:
 
-One task doing ptrace() can basically do whatever it wants with the
-task being traced.  This is not an exact analogy to what fuse does,
-but close.
+> On Thu, Jul 05, 2007 at 04:09:24PM +0200, Rafael J. Wysocki wrote:
+>> On Thursday, 5 July 2007 15:46, Matthew Garrett wrote:
+>> > I have a model for STD that avoids the need to freeze the entirity of 
+>> > userspace, but I need to find some more time to flesh it out.
+>> 
+>> You can just describe it, as far as I'm concerned. :-)
 
-And for this reason the security model for allowing access to a fuse
-filesystem is similar to that for allowing tracing.
+[snip: new hibernate idea]
 
-The gory details can be found in Documentation/filesystems/fuse.txt.
+I think my kexec-based hibernate idea is simpler and more feasible than
+this approach, and also avoids the freezer.
 
-Miklos
+-- 
+Jeremy Maitin-Shepard
