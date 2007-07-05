@@ -1,19 +1,18 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: The big suspend mess
-Date: Thu, 5 Jul 2007 03:22:06 +0200
-Message-ID: <20070705012206.GN3492__43554.6113564216$1183598549$gmane$org@stusta.de>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 08:53:41 +0200
+Message-ID: <200707050853.42224.oliver__570.323170586739$1183618570$gmane$org@neukum.org>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031456.40890.rjw@sisk.pl>
-	<1183497290.3388.4.camel@localhost.localdomain>
-	<200707032332.49694.rjw@sisk.pl>
-	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
-	<20070704221952.GM3492@stusta.de>
-	<20070705002747.GA2952@elf.ucw.cz>
+	<200707031920.59940.oliver@neukum.org>
+	<20070704233909.GB2719@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070704233909.GB2719@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <20070705002747.GA2952@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,50 +26,51 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 05, 2007 at 02:27:47AM +0200, Pavel Machek wrote:
-> 
-> > IMHO the suspend code is currently way too much of a moving target which 
-> > results in this mess.
+Am Donnerstag, 5. Juli 2007 schrieb Pavel Machek:
+> On Tue 2007-07-03 19:20:59, Oliver Neukum wrote:
+> > Am Dienstag, 3. Juli 2007 schrieb Rafael J. Wysocki:
+> > > On Tuesday, 3 July 2007 15:08, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 3 July 2007 07:51, Benjamin Herrenschmidt wrote:
+> > > > > On Tue, 2007-07-03 at 05:29 +0100, Matthew Garrett wrote:
+> > > > > > Suspend to RAM on a machine with / on a fuse filesystem turns out to be 
+> > > > > > a screaming nightmare - either the suspend fails because syslog (for 
+> > > > > > instance) can't be frozen, or the machine deadlocks for some other 
+> > > > > > reason I haven't tracked down. We could "fix" fuse, or alternatively we 
+> > > > > > could do what we do for suspend to RAM on other platforms (PPC and APM) 
+> > > > > > and just not use the freezer.
+> > > > > 
+> > > > > The main reason for deadlocks is because we do a sys_sync() after the
+> > > > > freeze, which we shouldn't do.
+> > > > 
+> > > > So why don't we remove the sys_sync() from freeze_processes() instead?
+> > > 
+> > > The patch follows (untested).
+> > > 
+> > > Greetings,
+> > > Rafael
+> > > 
+> > > 
+> > > ---
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > We shouldn't sync filesystems from within the freezer, because it's not needed
+> > > for suspend to RAM and leads to problems with FUSE.
 > > 
-> > The correct order seems to be:
+> > This seems fishy. Swsusp needs enough clean memory to make enough
+> > room for the image. If you sync before you freeze, the running tasks can
+> > redirty memory.
+> > What makes you sure that you don't die as shrink_all_memory() writes out
+> > pages?
 > 
-> 0. Get someone to sign up as a maintainer for suspend, so we have
-> someone to blame for the mess? :-)
+> Shrink_all_memory should just free enough memory, what's the problem?
+> Yes, we can have dirty memory, shrink_all_memory() can write that out
+> just fine.
 
-The "SOFTWARE SUSPEND" entry in MAINTAINERS already contains a victim...  ;-)
+If there's any dirty memory to be written out through fuse, this will not
+work as user space is already frozen. Now I am told that with fuse writes
+are synchronous. Therefore I don't understand why having a call to sys_sync()
+can make a difference. IMHO removing it to make fuse work covers over
+a symptom but hides the bug.
 
-My impression is that suspend is an area of the kernel that does not 
-lack maintainers - you and Rafael are doing a good job, and there's e.g. 
-also the maintained code formerly known as suspend2.
-
-But some basic questions like e.g.
-- What should be done in the kernel and what in userspace?
-- How should this be implemented?
-- What must subsystems and drivers do?
-- What must subsystems and drivers not do?
-seem to be in a constant flux because the big picture everyone agrees 
-upon seems to be missing.
-
-> > 1. agree on what the suspend code as a whole should look like
-> > 2. implement this
-> > 3. fix ALL drivers to work at least as good as they do today
-> > 4. get it tested in -mm
-> > 5. fix all bugs people run into
-> > 6. submit it for inclusion in Linus' tree
-> > 7. quickly work on the most likely big amount of bug reports
-> > 
-> > Step 1 is the most important one - evolving code is often something 
-> > good, but in this case with different people trying to evolve the 
-> > suspend code in different directions it simply results in a big mess.
-> 
-> 									Pavel
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+	Regards
+		Oliver
