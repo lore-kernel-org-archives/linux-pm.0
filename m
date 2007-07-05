@@ -1,12 +1,15 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-Date: Thu, 05 Jul 2007 23:26:54 +0200
-Message-ID: <E1I6Yqk-00022q-00@dorka.pomaz.szeredi.hu>
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Wakeup settings for USB hubs?
+Date: Thu, 5 Jul 2007 14:30:39 -0700
+Message-ID: <200707051430.39999.david-b@pacbell.net>
+References: <Pine.LNX.4.44L0.0707051546010.4198-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-	(message from Alan Stern on Thu, 5 Jul 2007 17:15:24 -0400 (EDT))
+In-Reply-To: <Pine.LNX.4.44L0.0707051546010.4198-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,33 +19,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > I fear, that your efforts to "save" the freezer are in vain.  It is
-> > already moderately hackish with that PF_FREEZER_SKIP and the kernel
-> > dotted randomly with try_to_freeze() calls, but adding bandaids to try
-> > to order freezing userspace processes in the right order would just
-> > make it a horrible mess.
-> 
-> I agree that bandaids won't work.  What's needed is something more 
-> radical.  Things like FUSE must be written so that the kernel parts 
-> _can_ freeze even while they are waiting for a response from a user 
-> thread.
+On Thursday 05 July 2007, Alan Stern wrote:
 
-This has already been discussed, with the conclusion, that it can't be
-done without hacking VFS internals.
+> Dave, you created the original wakeup attribute.  What do you think 
+> about adding a separate wakeup_runtime?  (At a minimum, perhaps you can 
+> suggest a better name!)
 
-The basic problem is that the freezer tries to get every user process
-out of the kernel even when those processes have _nothing_ to do with
-drivers and could happily stay in kernel land across a suspend or even
-hibernate.
+I'll have to scan the emails in my queue to see what the issue
+is (umm, is this really 300+ messages in just the last couple
+days??) but my initial reaction is to avoid complications.  We
+have enough configuration knobs ... but userspace hasn't even
+begun to use them.  Adding more knobs will not improve that
+situation at all.
 
-If we could have a good grip on when a request is entering a driver,
-it would be easy to take care of this.  I guess network and block
-devices are easy.  For others there's no obvious common place where
-such barriers could be placed so it's more work, but nothing
-conceptually problematic.  Is this about right?
+At one level, we want USB mice and keyboards to act pretty much
+like the PS2 variety.  Which means being wakeup sources in most
+cases ... though BIOS settings often overrides the PS2 stuff.
 
-Miklos
+It'd make sense that _removing_ devices not normally be a wake
+event for USB ports.  But we don't always have that option...
+
+- Dave
