@@ -1,18 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 16:14:17 +0200
-Message-ID: <200707051614.19300.rjw__45448.7392250032$1183644445$gmane$org@sisk.pl>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051531.37532.rjw@sisk.pl>
-	<E1I6RjE-0000pP-00@dorka.pomaz.szeredi.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: The big suspend mess
+Date: Thu, 5 Jul 2007 10:14:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707051013170.3728-100000@iolanthe.rowland.org>
+References: <20070704221952.GM3492@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I6RjE-0000pP-00@dorka.pomaz.szeredi.hu>
-Content-Disposition: inline
+In-Reply-To: <20070704221952.GM3492@stusta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +16,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 15:50, Miklos Szeredi wrote:
-> > > > Don't you think, however, that it can be modified a little to play well,
-> > > > for example, with the freezer?
-> > > 
-> > > I could stick a couple of try_to_freeze()s into fuse, and that would
-> > > make suspend failure less likely.  But making problems less easy to
-> > > reproduce is not a good thing.
-> > 
-> > So, how about eliminating them?
+On Thu, 5 Jul 2007, Adrian Bunk wrote:
+
+> IMHO the suspend code is currently way too much of a moving target which 
+> results in this mess.
 > 
-> That can't be done just within fuse, a process might be sleeping on a
-> VFS mutex.  Do we want to hack VFS as well?
+> The correct order seems to be:
+> 1. agree on what the suspend code as a whole should look like
+> 2. implement this
+> 3. fix ALL drivers to work at least as good as they do today
+> 4. get it tested in -mm
+> 5. fix all bugs people run into
+> 6. submit it for inclusion in Linus' tree
+> 7. quickly work on the most likely big amount of bug reports
+> 
+> Step 1 is the most important one - evolving code is often something 
+> good, but in this case with different people trying to evolve the 
+> suspend code in different directions it simply results in a big mess.
 
-No.
+Isn't Step 1 exactly what we are in the midst of right now?
 
-> I guess I know your answer.  But it ain't gonna work.  Suspend code
-> really doesn't belong in VFS, and I'm pretty sure the maintainers of
-> that little piece of code would agree with me on this.
-
-Surprise, surprise.  Not that I'm scared of the VFS maintainers, though. ;-)
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Alan Stern
