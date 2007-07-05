@@ -1,12 +1,18 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: RE: Power event notification patch
-Date: Thu, 05 Jul 2007 15:28:00 +0200
-Message-ID: <1183642080.3818.46.camel@johannes.berg>
-References: <67670A5CEA5C374B8E7B16D7DC55F95301247453@bgsmsx413.gar.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 15:35:45 +0200
+Message-ID: <200707051535.46196.rjw__33988.5317757309$1183642815$gmane$org@sisk.pl>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707051425.07904.rjw@sisk.pl>
+	<200707052238.27889.nigel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0666695523297051656=="
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <67670A5CEA5C374B8E7B16D7DC55F95301247453@bgsmsx413.gar.corp.intel.com>
+In-Reply-To: <200707052238.27889.nigel@nigel.suspend2.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,66 +20,72 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: nigel@suspend2.net
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, 5 July 2007 14:38, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Thursday 05 July 2007 22:25:06 Rafael J. Wysocki wrote:
+> > On Thursday, 5 July 2007 01:45, Pavel Machek wrote:
+> > > On Tue 2007-07-03 21:32:20, Oliver Neukum wrote:
+> > > > Am Dienstag, 3. Juli 2007 schrieb Miklos Szeredi:
+> > > > > > And a further question. The freezer is not atomic. What do you do
+> > > > > > if a task not yet frozen calls sys_sync(), but fuse is already 
+> frozen?
+> > > > > 
+> > > > > What do you do if a task not yet frozen writes to a pipe, on the other
+> > > > > end of which is a task already frozen?
+> > > 
+> > > There's some difference between uninterruptible and interruptible
+> > > sleep I'd say.
+> > > 
+> > > > > It doesn't matter.  The only thing that should matter during suspend
+> > > > > (not hibernate) is saving the state of devices to ram, and putting the
+> > > > > devices to sleep.
+> > > > 
+> > > > Well, but you did remove sys_sync() from the freezer, which is
+> > > > and must be called in the hibernate path.
+> > > 
+> > > Not "must". In fact, hibernation should be safe without sys_sync(). It
+> > > is just user un-friendly.
+> > 
+> > In fact, I'd like to remove the sys_sync() from the freezer entirely, 
+> because
+> > it just doesn't belong in there.
+> > 
+> > The only advantege of having sys_sync() in freeze_processes() is that we
+> > have a chance to write out everything when applications cannot produce more
+> > data to write, but there are filesystems which don't do that anyway (eg. 
+> XFS),
+> > so generally there's no reason to bother.
+> 
+> Shouldn't XFS - and fuse - be considered to be broken? Sync should sync data 
+> and if XFS isn't doing that, it's wrong.
+> 
+> In the case of fuse, we should have a mechanism by which fuse processes can be 
+> made to sync if they do have any pending I/O, and by which they can be frozen 
+> later than other userspace processes.
+> 
+> I'd like to see the sync stay, because it improves reliability and data 
+> integrity in the fail-to-resume case. Calling scripts would probably invoke 
+> sync themselves if they don't already, but that's racy. As it is at the 
+> moment, we know userspace is stopped, so syncing isn't racy.
 
---===============0666695523297051656==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-4TA2svh8Y6chM2CMZ0D0"
+I'd like to move the sync out of the freezer, but to call it from the
+suspend/hibernation code, so that we do
+
+sys_sync();
+error = freeze_processes();
+
+etc.
+
+Greetings,
+Rafael
 
 
---=-4TA2svh8Y6chM2CMZ0D0
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-07-05 at 18:47 +0530, V, Sankara Narayanan wrote:
-> We have to confirm that. And even if that does, running just linux
-> kernel as OS without these applications/libraries does not guarantee the
-> power notification.=20
-
-True.
-
-> It means that I have to run these apps/libraries
-> wherever I want power event notification (example embedded devices).
-
-Well, if you have a truly embedded device then likely you don't care
-about this at all since the applications will work together much closer
-than on a desktop system. Also, you likely have much stricter
-requirements in that each application *must* be able to do exactly steps
-1/2/3 before the system is suspended. Also, suspend will likely be
-*much* faster too.
-
-If it's pseudo-embedded like Nokia's N770/800 then you can very well run
-things like hal to handle it.
-
-johannes
-
---=-4TA2svh8Y6chM2CMZ0D0
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGjPHf/ETPhpq3jKURAk4mAJ9wd7Rv+6bGapMmu/3tkRd4RKqHOACfdGaL
-bvS6DxJuipdtGcVep7gTw8Y=
-=4MT0
------END PGP SIGNATURE-----
-
---=-4TA2svh8Y6chM2CMZ0D0--
-
-
---===============0666695523297051656==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0666695523297051656==--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
