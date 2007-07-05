@@ -1,14 +1,19 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 05 Jul 2007 16:14:51 +0200
-Message-ID: <E1I6S6d-0000tl-00__13627.2111245946$1183645039$gmane$org@dorka.pomaz.szeredi.hu>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051531.37532.rjw@sisk.pl>
-	<E1I6RjE-0000pP-00@dorka.pomaz.szeredi.hu>
-	<200707051614.19300.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
+	(was Re: Re: [PATCH] Remove process freezer from
+	suspend to RAM pathway)
+Date: Thu, 5 Jul 2007 16:28:11 +0200
+Message-ID: <200707051628.12199.rjw__9753.5754940056$1183645294$gmane$org@sisk.pl>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
+	<20070705091526.GA3084@elf.ucw.cz>
+	<20070705135758.GB22177@srcf.ucam.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200707051614.19300.rjw@sisk.pl>
+In-Reply-To: <20070705135758.GB22177@srcf.ucam.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +23,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-> > I guess I know your answer.  But it ain't gonna work.  Suspend code
-> > really doesn't belong in VFS, and I'm pretty sure the maintainers of
-> > that little piece of code would agree with me on this.
+On Thursday, 5 July 2007 15:57, Matthew Garrett wrote:
+> On Thu, Jul 05, 2007 at 11:15:26AM +0200, Pavel Machek wrote:
 > 
-> Surprise, surprise.  Not that I'm scared of the VFS maintainers, though. ;-)
+> > Now, if kernel needs FUSE services for some reason (that's the problem
+> > we hit in s2ram case, right?), we have a deadlock.
+> > 
+> > So main problem still seems to be "kernel should not depend on
+> > userland services during suspend", refrigerator or not.
+> 
+> And also "Userland should not depend on userland services", which is 
+> rather more of a problem.
 
-Probably you haven't had a close encounter with them yet.  They are
-pretty much the _most_ dangerous people in kernel land ;)
+I think you're oversimplifying it, as far as FUSE is concerned.
 
-Miklos
+Namely, if there are two userland tasks, A and B, and B is uninterruptible,
+because A is blocked, then this is not a usual situation.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
