@@ -1,16 +1,18 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC][PATCH -mm] PM: Do not sync from within the
-	freezer during suspend to RAM
-Date: Thu, 5 Jul 2007 21:37:57 +1000
-Message-ID: <200707052137.58164.nigel__1563.65860389105$1183635619$gmane$org@nigel.suspend2.net>
-References: <200707041658.59588.rjw@sisk.pl>
-	<200707050852.15392.nigel@nigel.suspend2.net>
-	<200707051328.50845.rjw@sisk.pl>
-Reply-To: nigel@suspend2.net
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 13:54:36 +0200
+Message-ID: <200707051354.37671.rjw__40447.1692433164$1183636087$gmane$org@sisk.pl>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707041630.30048.rjw@sisk.pl>
+	<18060.14341.341604.666867@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9126040666392855085=="
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707051328.50845.rjw@sisk.pl>
+In-Reply-To: <18060.14341.341604.666867@cargo.ozlabs.ibm.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,104 +20,35 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============9126040666392855085==
-Content-Type: multipart/signed; boundary="nextPart2170237.7EuUvR8Xdo";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Thursday, 5 July 2007 02:15, Paul Mackerras wrote:
+> Rafael J. Wysocki writes:
+> 
+> > This is incompatible with the code in kernel/power/main.c, since we only
+> > disable the nonboot CPUs after devices have been suspended.  Do you think that
+> > your framework can be modified to work without disabling the nonboot CPUs
+> > by the user space?
+> 
+> Sure.  It was a "if it can be done in userspace, do it in userspace"
+> kind of decision, but I'm not wedded to it.
+> 
+> I actually do want to converge to using the generic suspend-to-ram
+> code on powerbooks.  I just want to avoid causing regressions for
+> powerbook users, including myself. :)
 
---nextPart2170237.7EuUvR8Xdo
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Okay, but my question is this: Would that be possible, within your framework,
+to disable the nonboot CPUs _after_ suspending devices?
 
-Hi.
+Can you please point me to your high-level suspend code?
 
-On Thursday 05 July 2007 21:28:49 Rafael J. Wysocki wrote:
-> On Thursday, 5 July 2007 00:52, Nigel Cunningham wrote:
-> > On Thursday 05 July 2007 08:49:42 Pavel Machek wrote:
-> > > On Thu 2007-07-05 08:48:15, Nigel Cunningham wrote:
-> > > > On Thursday 05 July 2007 00:58:58 Rafael J. Wysocki wrote:
-> > > > > The syncing of filesystems from within the freezer in not needed =
-for=20
-> > suspend=20
-> > > > to
-> > > > > RAM.  Change freeze_processes() so that it doesn't execute=20
-sys_sync()=20
-> > and
-> > > > > introduce the "syncing" version of it to be called from the=20
-hibernation=20
-> > code
-> > > > > paths.
-> > > > >=20
-> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > ---
-> > > > >  include/linux/freezer.h |   14 ++++++++++++--
-> > > > >  kernel/power/disk.c     |    2 +-
-> > > > >  kernel/power/main.c     |    6 ++++++
-> > > > >  kernel/power/process.c  |    8 +++++---
-> > > > >  kernel/power/user.c     |    2 +-
-> > > > >  5 files changed, 25 insertions(+), 7 deletions(-)
-> > > >=20
-> > > > Looks ok, except that I wonder if you want the following fragment. =
-It=20
-> > looks to=20
-> > > > me (looking at rc6) like with this code, you'll currently call=20
-sys_sync=20
-> > twice=20
-> > > > when suspending to ram. Maybe I'm misreading it. Also, shouldn't it=
- be=20
-> > done=20
-> > > > after taking the mutex?
-> > >=20
-> > > sys_sync() should be okay to call, mutex or not.
-> >=20
-> > Yeah. That wasn't my point, sorry. Calling sys_sync is pointless if you=
-'re=20
-> > going to fail to take the mutex. It makes more sense to know you've got=
- it=20
-> > before you start doing things related to actually suspending.
->=20
-> Well, that's a valid point, I'll move it under the mutex.
-
-Okee doke.
-=20
-> And why do you think it will be called twice?
-
-Hmm. Looking again now, I can't see why I thought that. Maybe I just hadn't=
-=20
-had enough caffeine today at that stage :)
-
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart2170237.7EuUvR8Xdo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjNgWN0y+n1M3mo0RAqisAJ4hzqS9GnL1xQXN/P4K6OltNmpvegCfdmsO
-IH4L8GvZC1SXQ8eeM85mIgg=
-=BFJ9
------END PGP SIGNATURE-----
-
---nextPart2170237.7EuUvR8Xdo--
-
---===============9126040666392855085==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Greetings,
+Rafael
 
 
---===============9126040666392855085==--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
