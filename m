@@ -1,20 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Miklos Szeredi <miklos@szeredi.hu>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 11:54:00 +0000
-Message-ID: <20070705115400.GF3984__35541.4320402362$1183636510$gmane$org@ucw.cz>
+Date: Thu, 05 Jul 2007 13:54:19 +0200
+Message-ID: <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
 References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
-	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
-	<200707050858.03638.oliver@neukum.org>
-	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-	<20070705091801.GB3084@elf.ucw.cz>
-	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	<200707051202.59375.oliver@neukum.org>
+	<E1I6OLf-0000JP-00@dorka.pomaz.szeredi.hu>
+	<200707051340.41901.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
+In-reply-to: <200707051340.41901.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,52 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: rjw@sisk.pl
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > > In which way can user space tasks depend on each other in a way that
-> > > > allows a them members of that cycle to be in uninterruptible sleep?
-> > > 
-> > >  - process A calls rename() on a fuse fs
-> > >  - process B, the fuse server, starts to process the rename request
-> > >  - process B is frozen before it can reply
-> > > 
-> > > Now process A is unfreezable.  We cannot make rename() restartable,
-> > > hence it cannot be interruptible.
-> > 
-> > Yes, we are claiming fuse is very special in this regard, and perhaps
-> > even broken.
-> > 
-> > Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
-> > unkillable (even for SIGKILL!) forever.
+> > Limiting what a userspace filesystem can do would defeat the whole
+> > purpose of the bloody thing.  This is not negotiable ;)
 > 
-> Actually fuse allows SIGKILL, because it's always fatal, and the
-> syscall may not be restarted.
+> Which doesn't change the fact that FUSE _is_ special, because it adds
+> dependencies between processed that were not present before.
 
-I think you want to stick try_to_freeze() at the same places where you
-do SIGKILL handling. That should solve the 'syslogd is unfreezeable'
-problem.
+OK, fuse is special.  So is the userspace driver framework (UIO)
+proposed by Greg KH and co.  Now what can be done about these?
 
-Plus, it would be nice to find out where suspend/hibernation is
-triggering fuse activity. We can then decide where to fix it -- in
-fuse or in suspend parts. You said sys_sync is not implemented... so
-where is the problem?
+ - making them not-special is not an option due to the established
+   interfaces, which don't allow restartability.
 
-> > That's very special, and maybe even a FUSE bug. And that is also
-> > what makes FUSE special w.r.t. s2ram.
-> 
-> What makes fuse special is that some file operations are synchronous
-> and non-restartable.  That's just how the UNIX filesystem API works
-> and is hardly a bug in fuse.
+ - fixing the freezer is pretty much impossible because the
+   dependencies between the tasks cannot be known.
 
-Well, unix is not plan9, and maybe userland filesystems are impossible
-in unix. But that is hardly a bug in unix :-).
+ - removing the freezer and fixing the drivers seems workable, we
+   already have a prototype in the form of the powermac architecture.
 
-							Pavel
+It seems pretty clear cut.  Whining about how much problems this will
+cause won't get us nearer to a solution.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Miklos
