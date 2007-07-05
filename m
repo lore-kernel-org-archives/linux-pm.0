@@ -1,11 +1,15 @@
-From: Arthur <dyfwi@ezweb.ne.jp>
-Subject: cement impasse
-Date: Thu, 5 Jul 2007 14:26:55 -0400
-Message-ID: <468D37EF.7000204@ezweb.ne.jp>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Wakeup settings for USB hubs?
+Date: Thu, 5 Jul 2007 21:18:59 +0200
+Message-ID: <200707052118.59885.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0707051054040.3728-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707051054040.3728-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,66 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-ERMX Continues To Expand As Stock Climbs Up 16.6%!
+Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
+> Allow me to rephrase. =A0You seem to be saying that /sys/.../power/wake=
+up=20
+> should be able to hold four different values:
+>=20
+> =A0=A0=A0=A0=A0=A0=A0=A01. always disabled
+> =A0=A0=A0=A0=A0=A0=A0=A02. always enabled
+> =A0=A0=A0=A0=A0=A0=A0=A03. enabled at runtime but not during system sle=
+ep
+> =A0=A0=A0=A0=A0=A0=A0=A04. enabled during system sleep but not at runti=
+me
+>=20
+> Right? =A0With the default being 3 (except for a few things like the=20
+> power button).
+>=20
+> Or maybe there should be two attribute files: wakeup (used during
+> system sleep) and wakeup_runtime (used for runtime suspend).
+>=20
+> Comments from anybody else?
 
-EntreMetrix Inc. (ERMX)
-$0.21 UP 16.6%
+I am not sure we ever want to do runtime suspend without remote wakeup.
+If we want that then it is orthogonal to its value during system sleep.
+That would call for two attributes.
 
-ERMX announced further expansion with K-9 Genetics. Healthy and Premium
-dog foods grossed $3.6 Billion in 2006, up from $1.9 billion in previous
-years. Read up on ERMX over the holiday, we think you will see even more
-fireworks on Thursday morning!
-
-com Qwest RadarSource.
-com Kiehls KimmyShop. com Rampage RazorGator Rebel Board Sports
-RedEnvelope RedWagons.
-
-com Dogfunk DoItBest. com Joe's Sports JoggingStroller.
-
-Colorful Images Comedy Central Comfort Channel CompAndSave.
-
-com Things From Another World Things Remembered Things You Never Knew
-Existed ThinkGeek.
-
-com CBS Sports Store CCS. com KingSizeDirect Kitchen Collection Kitchen
-Universe KitchenEtc Kite And Wind Kiyonna Kmart Knetgolf. com Foot
-Locker Football Fanatics FootSmart Fossil FragranceNet.
-
-com Joe's Sports JoggingStroller. GNC Coupons, GNC Coupon Codes, GNC
-Discount Coupons, GNC Discount Codes, GNC Discounts. com Spring Hill
-Nurseries Stacks and Stacks Stamps.
-
-com Constructive Playthings Contour Living Converse Cookie Gift Baskets.
-com Boot Barn BootBay. com WebVitamins Wedding Paper Divas WeHaveSeats.
-com Kaplan Test Prep Karmaloop KBtoys. com Dutch Gardens DVD Empire DVD
-Planet E-Loan e.
-com Becker Surfboards BedBathStore. com UncommonGoods UnderGear
-Underground Station United Airlines UpgradeMemory. com Couture Candy
-Craftland Crate and Barrel at Amazon Crazy for Bargains CreateForLess.
-
-com Sahalie Saks Fifth Avenue SameDayMusic.
-
-com Magazine Discount Center Magazine Master MagazineCity Magazineline
-MagazinePromotion. com Martha's Flowers Maryland Square Maternity Mall
-MaxStudio. com Liz Claiborne Lobster Gram LogoDogz Loralie Love My Shoes
-Lucky Brand Jeans Luggage Pros Luggage. com MCSports MedicalSupplyGroup.
-
-com Soft Surroundings Soft Surroundings Outlet SoftMoc Solutions Catalog
-Sonoma Diet Sony Sony ImageStation South Beach Diet SpareBed. com Modern
-Bike Mondera Monroe and Main Montana Legend Monte Carlo Las Vegas
-Monterey Bay Montgomery Ward Montgomery Ward Kids Moosejaw Morrellwine.
-
-com Kid Stuff In A Box KidsLandUSA. com DJPremium DKNY Dockers Shoes
-Dog. com FAO Schwarz Fashion Bug FastFloors.
-
-com Bellagio Las Vegas BeltOutlet.
-com ShopNBC ShopPBS ShoppersChoice.
-
-com Vitacost Vitality Medical Vons. com Bart's Water Sports Baseball
-Warehouse BaseballSavings. com Bargainchildrensclothing.
-com Tire Rack TKRecon.
-
-com Qwest RadarSource.
+	Regards
+		Oliver
