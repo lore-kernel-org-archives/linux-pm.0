@@ -1,20 +1,20 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 05 Jul 2007 11:31:39 +0200
-Message-ID: <E1I6NgZ-0000F6-00__37649.1587762304$1183628262$gmane$org@dorka.pomaz.szeredi.hu>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
-	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
-	<200707050858.03638.oliver@neukum.org>
-	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-	<20070705091801.GB3084@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: The big suspend mess
+Date: Thu, 5 Jul 2007 11:32:51 +0200
+Message-ID: <20070705093251.GB3228__45891.2673326724$1183628294$gmane$org@elf.ucw.cz>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707031456.40890.rjw@sisk.pl>
+	<1183497290.3388.4.camel@localhost.localdomain>
+	<200707032332.49694.rjw@sisk.pl>
+	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
+	<20070704221952.GM3492@stusta.de>
+	<20070705002747.GA2952@elf.ucw.cz>
+	<18060.16657.2143.11489@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20070705091801.GB3084@elf.ucw.cz> (message from Pavel Machek on
-	Thu, 5 Jul 2007 11:18:01 +0200)
+Content-Disposition: inline
+In-Reply-To: <18060.16657.2143.11489@cargo.ozlabs.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,54 +24,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@ucw.cz
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> > > > > I have discussed the benefits elsewhere. =C2=A0As for the deadl=
-ocks -- do=20
-> > > > > you still observe them if you use the version of the freezer wh=
-ich=20
-> > > > > doesn't freeze kernel threads?
-> > > >=20
-> > > > In general the only way to guarantee there are no deadlocks is to
-> > > > construct the graph of dependencies between tasks. =C2=A0Those de=
-pendencies
-> > > > are not in practice observable from outside the tasks, so it is
-> > > > virtually impossible to construct the graph.
-> > >=20
-> > > In which way can user space tasks depend on each other in a way tha=
-t
-> > > allows a them members of that cycle to be in uninterruptible sleep?
-> >=20
-> >  - process A calls rename() on a fuse fs
-> >  - process B, the fuse server, starts to process the rename request
-> >  - process B is frozen before it can reply
-> >=20
-> > Now process A is unfreezable.  We cannot make rename() restartable,
-> > hence it cannot be interruptible.
->=20
-> Yes, we are claiming fuse is very special in this regard, and perhaps
-> even broken.
->=20
-> Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
-> unkillable (even for SIGKILL!) forever.
+On Thu 2007-07-05 10:53:37, Paul Mackerras wrote:
+> Pavel Machek writes:
+> 
+> > 0. Get someone to sign up as a maintainer for suspend, so we have
+> > someone to blame for the mess? :-)
+> 
+> I thought that was Rafael?
 
-Actually fuse allows SIGKILL, because it's always fatal, and the
-syscall may not be restarted.
-
-> That's very special, and maybe even a FUSE bug. And that is also
-> what makes FUSE special w.r.t. s2ram.
-
-What makes fuse special is that some file operations are synchronous
-and non-restartable.  That's just how the UNIX filesystem API works
-and is hardly a bug in fuse.
-
-> So no, you can't claim "FUSE is just IPC". It is very special IPC.
-
-I did say it's special.  Sure, it has some "interesting" properties,
-and with a bit of malice you can do very ugly things with it.  If you
-are interested, read Documentation/filesystems/fuse.txt, especially
-the "Tricky deadlock" section ;)
-
-Miklos
+Rafael is good job trying to fix suspend when he can, but we do not
+actually have "SUSPEND" entry in MAINTAINERS file.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
