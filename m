@@ -1,18 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 15:23:43 +0200
-Message-ID: <200707051523.44826.rjw__25108.3626681522$1183641435$gmane$org@sisk.pl>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051340.41901.rjw@sisk.pl>
-	<E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
+From: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
+Subject: RE: Power event notification patch
+Date: Thu, 5 Jul 2007 18:47:57 +0530
+Message-ID: <67670A5CEA5C374B8E7B16D7DC55F95301247453@bgsmsx413.gar.corp.intel.com>
+References: <1183641177.3818.40.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I6Pud-0000V1-00@dorka.pomaz.szeredi.hu>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
+In-Reply-To: <1183641177.3818.40.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,37 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 13:54, Miklos Szeredi wrote:
-> > > Limiting what a userspace filesystem can do would defeat the whole
-> > > purpose of the bloody thing.  This is not negotiable ;)
-> > 
-> > Which doesn't change the fact that FUSE _is_ special, because it adds
-> > dependencies between processed that were not present before.
-> 
-> OK, fuse is special.  So is the userspace driver framework (UIO)
-> proposed by Greg KH and co.  Now what can be done about these?
-> 
->  - making them not-special is not an option due to the established
->    interfaces, which don't allow restartability.
-> 
->  - fixing the freezer is pretty much impossible because the
->    dependencies between the tasks cannot be known.
-> 
->  - removing the freezer and fixing the drivers seems workable, we
->    already have a prototype in the form of the powermac architecture.
-> 
-> It seems pretty clear cut.  Whining about how much problems this will
-> cause won't get us nearer to a solution.
+We have to confirm that. And even if that does, running just linux
+kernel as OS without these applications/libraries does not guarantee the
+power notification. It means that I have to run these apps/libraries
+wherever I want power event notification (example embedded devices).
 
-Yes, that's pretty clear cut, but we should start from fixing the drivers. :-)
+Thanks,
+Sankar.
 
-Greetings,
-Rafael
+-----Original Message-----
+From: Johannes Berg [mailto:johannes@sipsolutions.net] 
+Sent: Thursday, July 05, 2007 6:43 PM
+To: V, Sankara Narayanan
+Cc: Igor Stoppa; Oliver Neukum; linux-pm@lists.linux-foundation.org
+Subject: RE: [linux-pm] Power event notification patch
 
+On Thu, 2007-07-05 at 18:39 +0530, V, Sankara Narayanan wrote:
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+> Johannes,
+> In that case, you need to implement it in every power manager and in
+> turn HAL and DBUS get these from the kernel, one more redirection
+which
+> will further reduce the time for the app to do the 'minimal' work.
+
+No, as far as I know it'll actually tell applications *before* telling
+the kernel.
+
+johannes
