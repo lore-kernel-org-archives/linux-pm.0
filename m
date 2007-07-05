@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 16:43:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707051628380.2557-100000__37774.132556706$1183668244$gmane$org@iolanthe.rowland.org>
-References: <E1I6VLD-0001Ks-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 05 Jul 2007 22:46:09 +0200
+Message-ID: <E1I6YDJ-0001sj-00@dorka.pomaz.szeredi.hu>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707052138.56920.oliver@neukum.org>
+	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
+	<200707052234.30021.oliver@neukum.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I6VLD-0001Ks-00@dorka.pomaz.szeredi.hu>
+In-reply-to: <200707052234.30021.oliver@neukum.org> (message from Oliver
+	Neukum on Thu, 5 Jul 2007 22:34:29 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,51 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: oliver@neukum.org
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Jul 2007, Miklos Szeredi wrote:
-
-> > > Alan Stern writes:
-> > > 
-> > > > Remember what I wrote a few minutes ago about khubd and ksuspend_usbd
-> > > > wanting to resume devices during a system suspend transition?  This is
-> > > > exactly what happens when those threads aren't frozen.
-> > > 
-> > > So, I wonder why I don't see that error on my powerbook?
+> > Yes, fuse could handle being frozen there.  However that would only
+> > solve part of the problem: an operation waiting for a reply could be
+> > holding a VFS mutex and some other task may be blocked on that mutex.
 > > 
-> > That's a good question.  Miklos, can you please reproduce the suspend 
-> > error using a kernel built with CONFIG_USB_DEBUG turned on?
+> > How would you solve freezing those tasks?
 > 
-> Here's the full dmesg.  First there was a successful suspend/resume,
-> then a couple of unsuccessful ones:
+> OK, you made me reach for literatur on theoretical computer science.
+> 
+> IMHO the range of actions a fuse server is inherently limited.
+> You must never ever block on a lock one of your clients is holding. In
+> this case the limitation is not influenced by the freezer.
 
-Okay, good.  It's not a coincidence that the first one worked and later 
-ones didn't.  Here's what happened:
+Obviously.  But I wasn't about the server trying to acquire a lock
+held by a client.  I was talking about a client trying to acquire a
+lock held by _another_ client.
 
-You suspended the system.  Upon resuming, the USB host controller 
-drivers detected that their device sessions had been interrupted and 
-consequently marked your two USB devices (the optical mouse and the 
-biometric thingy) for removal.  Normally that removal would take place 
-when khubd wakes up, i.e., after the resume is complete and the thread 
-is taken out of the freezer.
+If this coincides with the server (or some other task which the server
+is depending on) being frozen before the clients, the freezer has a
+problem.
 
-But in this case khubd was already awake.  It resumed the two root hubs
-in response to their remote wakeup requests and saw that the devices
-were gone.  So it unregistered the device structures immediately --
-even before the PM core tried to resume them -- and then registered new
-data structures to embody the new device connections.  As far as I can
-tell, the fact that these new device structures were created while the
-suspend-list was in flux must have caused one of them (the biometric
-coprocessor) not to be added to the appropriate list.
+> The freezer introduces a further limitation in that the server can freeze
+> before the client, which must not be. You can prevent that by freezing
+> the servers last.
+> 
+> In principle you might have dependencies between servers and you won't
+> catch that, true. You won't catch servers blocking on IPC, but you are
+> balancing on the edge of deadlock with fuse anyway.
 
-Thus the next time you tried to suspend, the PM core didn't call the
-device's suspend method.  It was left awake, and as a result its parent 
-hub refused to suspend (since it had an unsuspended child).  This 
-caused the overall system suspend to fail.
+Huh?
 
-This illustrates the folly of allowing other threads to perform 
-driver-core-type operations in the middle of a system sleep transition.
-
-Alan Stern
+Miklos
