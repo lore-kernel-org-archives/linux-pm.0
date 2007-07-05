@@ -1,15 +1,15 @@
 From: Paul Mackerras <paulus@samba.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-Date: Thu, 5 Jul 2007 10:28:24 +1000
-Message-ID: <18060.15144.986090.570992__43180.9380338111$1183596451$gmane$org@cargo.ozlabs.ibm.com>
-References: <18059.7151.841436.329553@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041057230.25704-100000@netrider.rowland.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 10:43:44 +1000
+Message-ID: <18060.16064.519060.755991__44921.7921392576$1183596457$gmane$org@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.44L0.0707041139100.25704-100000@netrider.rowland.org>
+	<E1I6ATN-0007QS-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707041057230.25704-100000@netrider.rowland.org>
+In-Reply-To: <E1I6ATN-0007QS-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern writes:
+Miklos Szeredi writes:
 
-> That's not what I'm saying.  What I'm saying is that it would be a big 
-> mistake to force all drivers which implement runtime PM to do it using 
-> a separate code path from system PM.
-
-OK; I can accept that provided there is a way to change the "what to
-do with an I/O request" policy from auto-resume to something else
-while we're suspending the system (and presumably restore the old
-policy on system resume if the device was runtime-suspended at the
-point where the system was suspended).
-
-> > The main attraction of the late-suspend call is that it really does,
-> > reliably, guarantee that the driver's I/O request methods won't get
-> > called between the late-suspend call and the early-resume call.
+> OK, let me summarize the situation as I see it now: there are two
+> camps, the pro-freezers and the anti-freezers.
 > 
-> For some drivers (like USB), carrying out an actual suspend requires a
-> delay.  Right now we implement those delays using wait_event(),
-> wait_for_completion(), and so on.  Would you have us check at runtime
-> whether or not a system suspend is underway and in each case use a
-> busy-loop instead if it is?
+> Pro-freezers say:
+> 
+>   - don't remove the freezer, otherwise we'll have to deal with
+>     numerous problems in drivers
+> 
+> Anti-freezers say:
+> 
+>   - let's remove the freezer, which causes numerous problems
+> 
+> Alan summerized the pro-freezer arguments well I think.  What are the
+> anti-freezer arguments then?
 
-No; the late suspend call isn't appropriate for all drivers.  It is a
-simple and safe way to do the suspend for some drivers, mostly the
-simpler ones.  Things that are complex enough to have a subsystem
-(e.g. USB) would want to use the early suspend call.
+1. The freezer cannot be guaranteed deadlock-free without constructing
+   a dependency graph between tasks (both user and kernel), which is
+   virtually impossible since the dependencies are not externally
+   observable.
 
-> What happens if, in order to carry out the late-suspend, a driver needs
-> to acquire a mutex which happens to be held by some other task?  That
-> other task won't be able to run and release the mutex, so you will
-> deadlock.
+2. As a consequence of (1), we try to make a crude approximation of
+   the graph by saying "only kernel threads that want to be frozen
+   will be frozen" or some other similar statement.
 
-Then late-suspend is not appropriate for that driver, and it needs to
-use the early-suspend call, and do something such as setting a flag
-that the I/O request function tests.
+3. However, (2) means that we can no longer guarantee that drivers
+   will not get any I/O requests after their suspend method has been
+   called, and therefore the freezer fails in its main objective.
+
+4. We have an existence proof that reliable suspend can be achieved
+   without the freezer.
+
+To summarize, the argument is that the freezer is deadlock-prone and
+ineffective.
 
 Paul.
