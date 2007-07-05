@@ -1,13 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Wakeup settings for USB hubs?
-Date: Thu, 5 Jul 2007 15:51:36 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707051546010.4198-100000@iolanthe.rowland.org>
-References: <200707052118.59885.oliver@neukum.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 22:19:59 +0200
+Message-ID: <200707052220.00555.rjw__33563.2932525643$1183666416$gmane$org@sisk.pl>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707052138.56920.oliver@neukum.org>
+	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707052118.59885.oliver@neukum.org>
+In-Reply-To: <E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,45 +22,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Jul 2007, Oliver Neukum wrote:
-
-> Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
-> > Allow me to rephrase. =A0You seem to be saying that /sys/.../power/wa=
-keup=20
-> > should be able to hold four different values:
+On Thursday, 5 July 2007 21:44, Miklos Szeredi wrote:
+> > Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
+> > > > > Actually fuse allows SIGKILL, because it's always fatal, and th=
+e
+> > > > > syscall may not be restarted.
+> > > >=20
+> > > > I think you want to stick try_to_freeze() at the same places wher=
+e you
+> > > > do SIGKILL handling. That should solve the 'syslogd is unfreezeab=
+le'
+> > > > problem.
+> > >=20
+> > > I could, but it would not solve the general problem. =C2=A0Namely, =
+that the
+> > > presence of fuse imposes a certain ordering in which userspace task=
+s
+> > > have to be frozen. =C2=A0And it is not possible to know this orderi=
+ng.
 > >=20
-> > =A0=A0=A0=A0=A0=A0=A0=A01. always disabled
-> > =A0=A0=A0=A0=A0=A0=A0=A02. always enabled
-> > =A0=A0=A0=A0=A0=A0=A0=A03. enabled at runtime but not during system s=
-leep
-> > =A0=A0=A0=A0=A0=A0=A0=A04. enabled during system sleep but not at run=
-time
+> > Actually, why do you need this? There is no absolute need that you
+> > finish the request. You must either finish the request or let yoursel=
+f
+> > be frozen.
 > >=20
-> > Right? =A0With the default being 3 (except for a few things like the=20
-> > power button).
-> >=20
-> > Or maybe there should be two attribute files: wakeup (used during
-> > system sleep) and wakeup_runtime (used for runtime suspend).
-> >=20
-> > Comments from anybody else?
+> > A quick look through fuse reveals principally request_wait_answer()
+> > And maybe a few other places. Is there some hidden reason you cannot
+> > handle being frozen here?
 >=20
-> I am not sure we ever want to do runtime suspend without remote wakeup.
+> Yes, fuse could handle being frozen there.  However that would only
+> solve part of the problem: an operation waiting for a reply could be
+> holding a VFS mutex and some other task may be blocked on that mutex.
+>=20
+> How would you solve freezing those tasks?
 
-You mean the user shouldn't be able to disable remote wakeup during a
-runtime suspend?  But what if the user wants to put the device to sleep
-with no possibility of wakeup?
+How probable is this situation?
 
-> If we want that then it is orthogonal to its value during system sleep.
-> That would call for two attributes.
+Greetings,
+Rafael
 
-Another attribute can be added easily enough.
 
-Dave, you created the original wakeup attribute.  What do you think=20
-about adding a separate wakeup_runtime?  (At a minimum, perhaps you can=20
-suggest a better name!)
-
-Alan Stern
+--=20
+"Premature optimization is the root of all evil." - Donald Knuth
