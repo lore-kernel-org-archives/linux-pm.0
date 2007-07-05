@@ -1,17 +1,19 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: removing refrigerator does not help with s2ram vs. fuse deadlocks
-	(was Re: Re: [PATCH] Remove process freezer from
-	suspend to RAM pathway)
-Date: Thu, 5 Jul 2007 11:15:26 +0200
-Message-ID: <20070705091526.GA3084__18541.2777275362$1183627246$gmane$org@elf.ucw.cz>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org>
-	<18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Thu, 5 Jul 2007 11:18:01 +0200
+Message-ID: <20070705091801.GB3084__20900.1642805108$1183627399$gmane$org@elf.ucw.cz>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
+	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
+	<200707050858.03638.oliver@neukum.org>
+	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+In-Reply-To: <E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +23,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Thu 2007-07-05 10:17:17, Miklos Szeredi wrote:
+> > > > I have discussed the benefits elsewhere. =A0As for the deadlocks =
+-- do=20
+> > > > you still observe them if you use the version of the freezer whic=
+h=20
+> > > > doesn't freeze kernel threads?
+> > >=20
+> > > In general the only way to guarantee there are no deadlocks is to
+> > > construct the graph of dependencies between tasks. =A0Those depende=
+ncies
+> > > are not in practice observable from outside the tasks, so it is
+> > > virtually impossible to construct the graph.
+> >=20
+> > In which way can user space tasks depend on each other in a way that
+> > allows a them members of that cycle to be in uninterruptible sleep?
+>=20
+>  - process A calls rename() on a fuse fs
+>  - process B, the fuse server, starts to process the rename request
+>  - process B is frozen before it can reply
+>=20
+> Now process A is unfreezable.  We cannot make rename() restartable,
+> hence it cannot be interruptible.
 
-> > The fact remains that lots of drivers would still need to be changed.  
-> > In the read and write methods someone would have to add code amounting
-> > to this:
-> > 
-> > 	if (suspend_is_under_way()) {
-> > 		mutex_unlock(...);
-> > 		block_until_resume();
-> > 		goto restart;
-> > 	}
-> > 
-> > Freezing userspace is a small amount of code by comparison.
-> 
-> Normally devices have some sort of queue of pending operations.  So
-> all that is required on suspend is to stop processing the queue and
-> wait for any currently-underway operations to complete.  The blocking
-> then happens naturally using the normal I/O wait mechanisms.
+Yes, we are claiming fuse is very special in this regard, and perhaps
+even broken.
 
-So... instead of one big freezer (we know it is problematic), you have
-100 small freezers, problematic in same way :-(.
+Let's see. If I SIGSTOP the fuse server, I can get unrelated tasks
+unkillable (even for SIGKILL!) forever. That's very special, and maybe
+even a FUSE bug. And that is also what makes FUSE special
+w.r.t. s2ram.
 
-Let's take current FUSE problems, and see if they have problem on PPC,
-ok?
-
-Let's say FUSE thread touches one of those "blocking" devices. It is
-now in D state, somewhere in kernel.... exactly same way refrigerator
-works.
-
-Now, if kernel needs FUSE services for some reason (that's the problem
-we hit in s2ram case, right?), we have a deadlock.
-
-So main problem still seems to be "kernel should not depend on
-userland services during suspend", refrigerator or not.
+So no, you can't claim "FUSE is just IPC". It is very special IPC.
 								Pavel
--- 
+--=20
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
