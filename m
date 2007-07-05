@@ -1,17 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Fri, 06 Jul 2007 09:20:43 +1000
-Message-ID: <1183677643.3388.105.camel__26233.7947650396$1183677902$gmane$org@localhost.localdomain>
+Date: Fri, 6 Jul 2007 09:35:11 +1000
+Message-ID: <200707060935.12706.nigel__38282.8462207273$1183678616$gmane$org@nigel.suspend2.net>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<20070705093013.GA3228@elf.ucw.cz>
-	<1183675615.3388.81.camel@localhost.localdomain>
 	<200707060913.05644.nigel@nigel.suspend2.net>
+	<1183677643.3388.105.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============8064026576500505520=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707060913.05644.nigel@nigel.suspend2.net>
+In-Reply-To: <1183677643.3388.105.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,60 +17,125 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+--===============8064026576500505520==
+Content-Type: multipart/signed; boundary="nextPart1549699.qhScn4nsNC";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> Will you be able to guarantee that every place where a task can/will block 
-> will be harmless place? If so, how will you guarantee that? How will you 
-> debug issues where a task occasionally doesn't block in the right place, 
-> particularly instances where it is some less than obvious interaction with 
-> other tasks?
+--nextPart1549699.qhScn4nsNC
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Which places aren't harmless if you don't have a freezer ?
+Hi.
 
-> This is the whole point to having the freezer. It makes things more 
-> predictable and testable. It shows us, clearly, when process X is the one 
-> that is causing problems.
+On Friday 06 July 2007 09:20:43 Benjamin Herrenschmidt wrote:
+>=20
+> > Will you be able to guarantee that every place where a task can/will bl=
+ock=20
+> > will be harmless place? If so, how will you guarantee that? How will yo=
+u=20
+> > debug issues where a task occasionally doesn't block in the right place=
+,=20
+> > particularly instances where it is some less than obvious interaction w=
+ith=20
+> > other tasks?
+>=20
+> Which places aren't harmless if you don't have a freezer ?
 
-No, the freezer creates all those places what are harmful for a task to
-block because they will break the freezer :-)
+If I knew that, I wouldn't be asking the question.
 
-> >  - Silently add GFP_NOIO to all allocations, to avoid having things
-> > blocking in kmalloc() with a mutex held that will deadlock with
-> > suspend() in a driver for example. Or set some way to have all GFP
-> > waiters wakeup and fail rather than wait for IOs. It's hard/bizarre but
-> > necessary, again, with or without a freezer.
-> 
-> GFP_ATOMIC? (In driver suspend, they shouldn't be sleeping either, right?)
+> > This is the whole point to having the freezer. It makes things more=20
+> > predictable and testable. It shows us, clearly, when process X is the o=
+ne=20
+> > that is causing problems.
+>=20
+> No, the freezer creates all those places what are harmful for a task to
+> block because they will break the freezer :-)
 
-NOIO should be enough I think but ATOMIC would do).
- 
-That's one of the reason why I used to have the pre-suspend and
-post-resume hooks in my original powermac implementation, for those few
-drivers complicated enough to require some pre-allocations.
- 
-> >  - Deal with the firmware problem. The best way is probably to have an
-> > async request_firmware interface(). Another thing is, drivers may want
-> > to cache their firmware in main memory, that sort of thing...
-> >
+Nice try :) Okay then, you remove the freezer, try hibernating, then get ba=
+ck=20
+to me after you've fixed your filesystem because some process that wasn't=20
+frozen started writing things after the atomic copy (making the on disk=20
+filesystem inconsistent with the snapshot).
 
-Note that the above firmware problem could be dealt with also with the
-pre-suspend/post-resume. Allowing to pre-request firmware etc... and
-keep it around until after resume, because we know we will need it.
-Gives a chance to drivers to perform things while the system is still
-live, filesystems still working, etc... (big memory allocations for
-example).
+As Pavel rightly said, you can get rid of the freezer, but you're only goin=
+g=20
+to have to implement another one that does the essentially the same thing,=
+=20
+even if it is at some other level.
+=20
+> > >  - Silently add GFP_NOIO to all allocations, to avoid having things
+> > > blocking in kmalloc() with a mutex held that will deadlock with
+> > > suspend() in a driver for example. Or set some way to have all GFP
+> > > waiters wakeup and fail rather than wait for IOs. It's hard/bizarre b=
+ut
+> > > necessary, again, with or without a freezer.
+> >=20
+> > GFP_ATOMIC? (In driver suspend, they shouldn't be sleeping either, righ=
+t?)
+>=20
+> NOIO should be enough I think but ATOMIC would do).
+> =20
+> That's one of the reason why I used to have the pre-suspend and
+> post-resume hooks in my original powermac implementation, for those few
+> drivers complicated enough to require some pre-allocations.
+> =20
+> > >  - Deal with the firmware problem. The best way is probably to have an
+> > > async request_firmware interface(). Another thing is, drivers may want
+> > > to cache their firmware in main memory, that sort of thing...
+> > >
+>=20
+> Note that the above firmware problem could be dealt with also with the
+> pre-suspend/post-resume. Allowing to pre-request firmware etc... and
+> keep it around until after resume, because we know we will need it.
+> Gives a chance to drivers to perform things while the system is still
+> live, filesystems still working, etc... (big memory allocations for
+> example).
+>=20
+> > > And that's just a small list off the top of my mind, of known problems
+> > > that will cause deadlocks or misbehaviours today, with or without the
+> > > freezer, and that need to be addressed.
+> >=20
+> > Userspace device drivers too?
+>=20
+> Maybe but they are less of an issue, most of the time, they don't do DMA
+> or whatever harmful things. If they are USB drivers, for example, they
+> are an non-issues at that level.
 
-> > And that's just a small list off the top of my mind, of known problems
-> > that will cause deadlocks or misbehaviours today, with or without the
-> > freezer, and that need to be addressed.
-> 
-> Userspace device drivers too?
+(Leaving the rest of the message intact so we don't have to fragment the=20
+discussion into a million subthreads).
 
-Maybe but they are less of an issue, most of the time, they don't do DMA
-or whatever harmful things. If they are USB drivers, for example, they
-are an non-issues at that level.
+Regards,
+
+Nigel
+
+--nextPart1549699.qhScn4nsNC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGjYAwN0y+n1M3mo0RAvecAJ9j+9ImU1r53WqkTs2L1fd5YPrvcwCaA8yC
+o01ys2e3r11sPD3HG7w0qps=
+=m6mU
+-----END PGP SIGNATURE-----
+
+--nextPart1549699.qhScn4nsNC--
+
+--===============8064026576500505520==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============8064026576500505520==--
