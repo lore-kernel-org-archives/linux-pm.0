@@ -1,7 +1,7 @@
-From: Paul Mackerras <paulus@samba.org>
+From: Adrian Bunk <bunk@stusta.de>
 Subject: Re: The big suspend mess
-Date: Thu, 5 Jul 2007 10:53:37 +1000
-Message-ID: <18060.16657.2143.11489__8141.28501010618$1183596866$gmane$org@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Jul 2007 03:22:06 +0200
+Message-ID: <20070705012206.GN3492__43554.6113564216$1183598549$gmane$org@stusta.de>
 References: <20070703042916.GA17240@srcf.ucam.org>
 	<200707031456.40890.rjw@sisk.pl>
 	<1183497290.3388.4.camel@localhost.localdomain>
@@ -10,9 +10,9 @@ References: <20070703042916.GA17240@srcf.ucam.org>
 	<20070704221952.GM3492@stusta.de>
 	<20070705002747.GA2952@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <20070705002747.GA2952@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,14 +24,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-pm@lists.linux-foundation.org
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek writes:
-
+On Thu, Jul 05, 2007 at 02:27:47AM +0200, Pavel Machek wrote:
+> 
+> > IMHO the suspend code is currently way too much of a moving target which 
+> > results in this mess.
+> > 
+> > The correct order seems to be:
+> 
 > 0. Get someone to sign up as a maintainer for suspend, so we have
 > someone to blame for the mess? :-)
 
-I thought that was Rafael?
+The "SOFTWARE SUSPEND" entry in MAINTAINERS already contains a victim...  ;-)
 
-Paul.
+My impression is that suspend is an area of the kernel that does not 
+lack maintainers - you and Rafael are doing a good job, and there's e.g. 
+also the maintained code formerly known as suspend2.
+
+But some basic questions like e.g.
+- What should be done in the kernel and what in userspace?
+- How should this be implemented?
+- What must subsystems and drivers do?
+- What must subsystems and drivers not do?
+seem to be in a constant flux because the big picture everyone agrees 
+upon seems to be missing.
+
+> > 1. agree on what the suspend code as a whole should look like
+> > 2. implement this
+> > 3. fix ALL drivers to work at least as good as they do today
+> > 4. get it tested in -mm
+> > 5. fix all bugs people run into
+> > 6. submit it for inclusion in Linus' tree
+> > 7. quickly work on the most likely big amount of bug reports
+> > 
+> > Step 1 is the most important one - evolving code is often something 
+> > good, but in this case with different people trying to evolve the 
+> > suspend code in different directions it simply results in a big mess.
+> 
+> 									Pavel
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
