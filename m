@@ -1,8 +1,8 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 5 Jul 2007 22:19:59 +0200
-Message-ID: <200707052220.00555.rjw__33563.2932525643$1183666416$gmane$org@sisk.pl>
+Date: Thu, 5 Jul 2007 22:34:29 +0200
+Message-ID: <200707052234.30021.oliver@neukum.org>
 References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
 	<200707052138.56920.oliver@neukum.org>
 	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
@@ -26,7 +26,7 @@ To: Miklos Szeredi <miklos@szeredi.hu>
 Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 21:44, Miklos Szeredi wrote:
+Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
 > > Am Donnerstag, 5. Juli 2007 schrieb Miklos Szeredi:
 > > > > > Actually fuse allows SIGKILL, because it's always fatal, and th=
 e
@@ -60,11 +60,19 @@ f
 >=20
 > How would you solve freezing those tasks?
 
-How probable is this situation?
+OK, you made me reach for literatur on theoretical computer science.
 
-Greetings,
-Rafael
+IMHO the range of actions a fuse server is inherently limited.
+You must never ever block on a lock one of your clients is holding. In
+this case the limitation is not influenced by the freezer.
 
+The freezer introduces a further limitation in that the server can freeze
+before the client, which must not be. You can prevent that by freezing
+the servers last.
 
---=20
-"Premature optimization is the root of all evil." - Donald Knuth
+In principle you might have dependencies between servers and you won't
+catch that, true. You won't catch servers blocking on IPC, but you are
+balancing on the edge of deadlock with fuse anyway.
+
+	Regards
+		Oliver
