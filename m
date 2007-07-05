@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: The big suspend mess
-Date: Thu, 5 Jul 2007 02:27:47 +0200
-Message-ID: <20070705002747.GA2952__11643.6949618675$1183595318$gmane$org@elf.ucw.cz>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707031456.40890.rjw@sisk.pl>
-	<1183497290.3388.4.camel@localhost.localdomain>
-	<200707032332.49694.rjw@sisk.pl>
-	<18059.5165.861038.392332@cargo.ozlabs.ibm.com>
-	<20070704221952.GM3492@stusta.de>
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Thu, 5 Jul 2007 10:35:51 +1000
+Message-ID: <18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070704221952.GM3492@stusta.de>
+In-Reply-To: <Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,32 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Alan Stern writes:
 
-> IMHO the suspend code is currently way too much of a moving target which 
-> results in this mess.
+> > > Yes, the code could be changed to keep track of the reason for a device
+> > > suspend.  But that just raises the old problem of what to do when
+> > > there's an I/O request for a suspended device during STR.
+> > 
+> > Is this actually a real problem?  I would think the policy would be
+> > "block" for block devices (pun not intended :), "drop" for network
+> > devices, etc.
 > 
-> The correct order seems to be:
+> It is indeed a real problem, or at least, it can be.
 
-0. Get someone to sign up as a maintainer for suspend, so we have
-someone to blame for the mess? :-)
+How so?  Can you give me an example?
 
-> 1. agree on what the suspend code as a whole should look like
-> 2. implement this
-> 3. fix ALL drivers to work at least as good as they do today
-> 4. get it tested in -mm
-> 5. fix all bugs people run into
-> 6. submit it for inclusion in Linus' tree
-> 7. quickly work on the most likely big amount of bug reports
+> > How did the device get suspended if it didn't have a driver?  If it
+> > did have a driver, why didn't the bind attempt fail?
 > 
-> Step 1 is the most important one - evolving code is often something 
-> good, but in this case with different people trying to evolve the 
-> suspend code in different directions it simply results in a big mess.
+> Bus subsystems can suspend devices with no drivers.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Interesting.  I assume this is for buses for which there is a
+bus-specific but device-independent suspend procedure defined.
+
+It would seem sensible to me that the PM core should get the bus to
+resume such a device before calling a driver probe routine.  The
+resume should be blocked or deferred while a system suspend is
+underway.  In fact I think that all driver bind/unbind and probe
+operations should be deferred while the system is suspending (i.e. put
+on a list to be done after the system resumes).
+
+> It would help.  It would help even more if the sysfs core also blocked
+> all I/O while suspend is under way.  (Although this might be tricky, 
+> considering that the suspend is initiated by a sysfs write...)
+
+I didn't think sysfs got involved at all in normal read and write
+requests, so I don't know how it would block them...
+
+> The fact remains that lots of drivers would still need to be changed.  
+> In the read and write methods someone would have to add code amounting
+> to this:
+> 
+> 	if (suspend_is_under_way()) {
+> 		mutex_unlock(...);
+> 		block_until_resume();
+> 		goto restart;
+> 	}
+> 
+> Freezing userspace is a small amount of code by comparison.
+
+Normally devices have some sort of queue of pending operations.  So
+all that is required on suspend is to stop processing the queue and
+wait for any currently-underway operations to complete.  The blocking
+then happens naturally using the normal I/O wait mechanisms.
+
+Paul.
