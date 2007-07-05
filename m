@@ -1,12 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Wakeup settings for USB hubs?
-Date: Thu, 5 Jul 2007 17:03:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707051658021.2557-100000@iolanthe.rowland.org>
-References: <200707052240.05950.oliver@neukum.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Thu, 5 Jul 2007 17:06:08 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707051704580.2557-100000__25819.7922529236$1183669726$gmane$org@iolanthe.rowland.org>
+References: <200707052249.45495.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707052240.05950.oliver@neukum.org>
+In-Reply-To: <200707052249.45495.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,33 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Oliver Neukum <oliver@neukum.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, 5 Jul 2007, Oliver Neukum wrote:
 
-> > > I am not sure we ever want to do runtime suspend without remote wakeup.
-> > 
-> > You mean the user shouldn't be able to disable remote wakeup during a
-> > runtime suspend?  But what if the user wants to put the device to sleep
-> > with no possibility of wakeup?
-> 
-> Then the user will have to force suspend anyway and we can use the existing
-> attribute. Two points:
-> 
-> 1. For hubs I don't think we should allow it
+> > Obviously. =C2=A0But I wasn't about the server trying to acquire a lo=
+ck
+> > held by a client. =C2=A0I was talking about a client trying to acquir=
+e a
+> > lock held by _another_ client.
+> >=20
+> > If this coincides with the server (or some other task which the serve=
+r
+> > is depending on) being frozen before the clients, the freezer has a
+> > problem.
+>=20
+> True, but that case can only happen if servers are frozen before client=
+s.
+> You don't need a full dependency graph. A simple set sequence of two
+> classes of tasks will do.
 
-Why not?
-
-> 2. The important distinction is not between system wide vs. device,
-> but between forced sleep and the "best effort" runtime suspension
-> in style of autosuspend. The latter needs remote wakeup under control
-> of the driver.
-
-The existing USB code already takes this into account.  For "best 
-effort" runtime autosuspend, if the driver wants remote wakeup 
-capability and the user has disabled it (or the device doesn't provide 
-it) then the autosuspend will fail.  However "forced" runtime 
-suspension will succeed regardless of whether wakeup is enabled.
+Just to make things more complicated...  Since a server isn't
+restricted in what it can do, what happens when one server depends on
+another server?
 
 Alan Stern
