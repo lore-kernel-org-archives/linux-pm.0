@@ -1,17 +1,14 @@
 From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 5 Jul 2007 08:58:03 +0200
-Message-ID: <200707050858.03638.oliver__1685.52709878913$1183618813$gmane$org@neukum.org>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
-	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
+Subject: Re: Wakeup settings for USB hubs?
+Date: Thu, 5 Jul 2007 09:20:43 +0200
+Message-ID: <200707050920.43618.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0707041432250.9446-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18060.14856.824473.325660@cargo.ozlabs.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0707041432250.9446-100000@netrider.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,24 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 5. Juli 2007 schrieb Paul Mackerras:
-> > I have discussed the benefits elsewhere. =A0As for the deadlocks -- d=
-o=20
-> > you still observe them if you use the version of the freezer which=20
-> > doesn't freeze kernel threads?
->=20
-> In general the only way to guarantee there are no deadlocks is to
-> construct the graph of dependencies between tasks. =A0Those dependencie=
-s
-> are not in practice observable from outside the tasks, so it is
-> virtually impossible to construct the graph.
+Am Mittwoch, 4. Juli 2007 schrieb Alan Stern:
+> Here's a question that has been bothering me for a while.  Should we 
+> enable remote wakeup on USB hubs?
+> 
+> On the face of it the answer is obviously Yes.  And certainly we want
+> remote wakeup enabled during a runtime suspend; otherwise the system
+> would never know when the user unplugged a device from the hub or
+> plugged in a new one.
 
-In which way can user space tasks depend on each other in a way that
-allows a them members of that cycle to be in uninterruptible sleep?
+I agree. Runtime suspend needs remote wakeup.
+
+> But consider STR, say in the case of a laptop with a USB mouse
+> attached.  The user suspends the laptop.  Then he prepares to pack it
+> away and in the process unplugs the mouse.  Pow! -- the laptop
+> springs back to life.  That's not what we want.
+
+We might want attaching a device to wake the laptop. OR we might
+not. The choice is not makeable in kernel space.
+
+> On the other hand, the user might indeed want to awaken the laptop by
+> clicking the USB mouse.  So what should we do?  The question is made
+> even more difficult by the fact that, if the hub is already
+> runtime-suspended when the system suspend occurs, we would have to
+> resume the hub just in order to turn off remote wakeup!
+
+I don't think this can be helped. We cannot leave the setting of remote
+wakeup in the STR case to chance. We'd do so if we let stand the setting
+caused by autosuspend.
+If that means waking up a hub about to be suspended again, so be it.
+
+> Right now we more or less ignore all these issues by relying on the 
+> wakeup settings in sysfs.  Is that a reasonable approach?  Is there 
+> anything else we can do?
+
+I don't think so. It is the most reasonable approach.
 
 	Regards
 		Oliver
