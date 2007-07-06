@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from
-	within the freezer
-Date: Fri, 6 Jul 2007 09:02:53 +0200
-Message-ID: <200707060902.55090.rjw__209.294763817702$1183705005$gmane$org@sisk.pl>
-References: <200707041658.59588.rjw@sisk.pl> <200707052231.27780.rjw@sisk.pl>
-	<20070705220046.GC3881@elf.ucw.cz>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Fri, 6 Jul 2007 09:04:08 +0200
+Message-ID: <200707060904.09497.rjw__27234.0738251389$1183705032$gmane$org@sisk.pl>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051048.46202.oliver@neukum.org>
+	<1183675095.3388.72.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070705220046.GC3881@elf.ucw.cz>
+In-Reply-To: <1183675095.3388.72.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,31 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 6 July 2007 00:00, Pavel Machek wrote:
-> Hi!
+On Friday, 6 July 2007 00:38, Benjamin Herrenschmidt wrote:
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > There is that.
 > > 
-> > The syncing of filesystems from within the freezer is generally not needed.
-> > Change freeze_processes() so that it doesn't execute sys_sync() and make the
-> > suspend and hibernation code path sync filesystems independently of the freezer.
+> > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
+> > and teach the freezer to put them on ice only after all other task are
+> > frozen. In a way they are kernel, there's no use denying that.
 > 
-> Yes, we can do that, but ... why?
+> Yet another ugly hack to work around the fact that the freezer cannot
+> work reliably ... yuck
+> 
+> Why not spend that energy fixing drivers to properly block requests
+> instead ?
 
-I think that sync and the freezer are different things and shouldn't be mixed in
-such a way as they are now.
-
-> Does it actually fix FUSE?
-
-It should prevent the freezer from deadlocking.
-
-> Miklos claims sync is nop on FUSE...? 
-
-In that case there shouldn't be any deadlock, but a freezer failure. :-)
+Because it's more difficult? :-)
 
 Greetings,
 Rafael
