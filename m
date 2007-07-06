@@ -1,15 +1,17 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Fri, 6 Jul 2007 14:03:15 +1000
-Message-ID: <200707061403.15932.nigel__42146.6709849939$1183694808$gmane$org@nigel.suspend2.net>
+Date: Fri, 06 Jul 2007 14:41:40 +1000
+Message-ID: <1183696901.3388.119.camel@localhost.localdomain>
 References: <20070703042916.GA17240@srcf.ucam.org>
 	<200707060935.12706.nigel@nigel.suspend2.net>
 	<1183694055.3388.108.camel@localhost.localdomain>
+	<200707061403.15932.nigel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6728921691785676211=="
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183694055.3388.108.camel@localhost.localdomain>
+In-Reply-To: <200707061403.15932.nigel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,101 +19,38 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============6728921691785676211==
-Content-Type: multipart/signed; boundary="nextPart1936548.jGbeEE64qb";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
 
---nextPart1936548.jGbeEE64qb
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> I/O from swsusp and suspend2 use bios directly, so the page cache isn't an 
+> issue for them (apart from the fact that Suspend2 saves the page cache 
+> separately so it can get a full image). Not sure about uswsusp.
+> 
+> Only having half the amount of memory doesn't sound like a big limitation for 
+> modern desktops & laptops, but don't forget that there are embedded guys 
+> wanting to hbernate too :)
 
-Hi.
+Wait wait wait ... uses the BIOS ? what do you mean ?
 
-On Friday 06 July 2007 13:54:15 Benjamin Herrenschmidt wrote:
-> On Fri, 2007-07-06 at 09:35 +1000, Nigel Cunningham wrote:
-> >=20
-> > Nice try :) Okay then, you remove the freezer, try hibernating, then ge=
-t=20
-back=20
-> > to me after you've fixed your filesystem because some process that wasn=
-'t=20
-> > frozen started writing things after the atomic copy (making the on disk=
-=20
-> > filesystem inconsistent with the snapshot).
-> >=20
-> > As Pavel rightly said, you can get rid of the freezer, but you're only=
-=20
-going=20
-> > to have to implement another one that does the essentially the same thi=
-ng,=20
-> > even if it is at some other level.
->=20
-> I was mostly talking about STR... Regarding STD, we have a different
-> problem and we all know it. The freezer is one somewhat horrible way to
-> get it working for now, I would prefer something more along the way that
-> blocks the page cache from writing out new dirty pages though, except
-> those specifically flagged by the snapshot.
->=20
-> That is, some kind of proper snapshotting facility, as linus was
-> describing some time ago.
+I know that for example, things like MacOS X use a separate polled path to
+the storage driver for suspend (works fine for the built-in IDE, but more
+complicated in large scale). If you can use BIOS calls to write your
+suspend image, that is, if you don't need any of the normal block
+infrastructure, then you don't need a freezer ! not at all !
 
-The kind of thing Linus was talking about would limit you (as swsusp and=20
-uswsusp do now) to only half the amount of memory. I suppose you could lzf=
-=20
-compress as you did the snapshot. That would generally get you up to 2/3rds=
-,=20
-but then again you can't know what compression ratio you'll get until you=20
-try, so reliability would suffer or it would take longer because of retryin=
-g.
+You just do like STR ... and at the end of the day, once you have stopped
+all your driver, you shut interrupts off and do the BIOS thing....
 
-I/O from swsusp and suspend2 use bios directly, so the page cache isn't an=
-=20
-issue for them (apart from the fact that Suspend2 saves the page cache=20
-separately so it can get a full image). Not sure about uswsusp.
+I fail to see how processes could dirty pages while/after the BIOS thingy :-)
 
-Only having half the amount of memory doesn't sound like a big limitation f=
-or=20
-modern desktops & laptops, but don't forget that there are embedded guys=20
-wanting to hbernate too :)
+But then, the problem with that approach is that of course, you need a BIOS
+capable of doing that (or a special sideband path to the "blessed" block
+driver that will be used for suspend ... not necessarily a hard thing to do,
+would be trivial to add support to drivers/ide or libata for that sort of
+things I suppose).
 
-Regards,
-
-Nigel
-=2D-=20
-Nigel Cunningham
-Christian Reformed Church of Cobden
-103 Curdie Street, Cobden 3266, Victoria, Australia
-Ph. +61 3 5595 1185 / +61 417 100 574
-Communal Worship: 11 am Sunday.
-
---nextPart1936548.jGbeEE64qb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjb8DN0y+n1M3mo0RAnlCAJ0YB1WRNez65mvawvFVrbih2oE9lgCg1drl
-Aa/O8qLc5htNjOLfHBJ87ls=
-=ZQRS
------END PGP SIGNATURE-----
-
---nextPart1936548.jGbeEE64qb--
-
---===============6728921691785676211==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6728921691785676211==--
+Ben.
