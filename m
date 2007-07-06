@@ -1,15 +1,17 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to
-	RAM pathway
-Date: Fri, 06 Jul 2007 18:59:13 +1000
-Message-ID: <1183712354.3388.126.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-	<200707052337.27066.oliver@neukum.org> <200707060913.24131.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from
+	within the freezer
+Date: Fri, 06 Jul 2007 18:59:54 +1000
+Message-ID: <1183712394.3388.128.camel@localhost.localdomain>
+References: <200707041658.59588.rjw@sisk.pl>
+	<20070705220046.GC3881@elf.ucw.cz> <200707060902.55090.rjw@sisk.pl>
+	<200707061707.23316.nigel@nigel.suspend2.net>
+	<E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707060913.24131.rjw@sisk.pl>
+In-Reply-To: <E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +21,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, nigel@suspend2.net, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-07-06 at 09:13 +0200, Rafael J. Wysocki wrote:
+On Fri, 2007-07-06 at 09:13 +0200, Miklos Szeredi wrote:
 > 
-> The only reason (I know of) why we don't handle uninterruptible tasks in the
-> freezer is that we're afraid of the suspend process deadlocking with an
-> uninterruptible task holding a lock, but AFAICS the probability of such an
-> event is extremely small.
+> Another myth, that has been debunked already.  The problem is: how do
+> you define fuse processes?  There's no theoretical or even practial
+> way to do that.
 
-What would deadlock specifically ? One of the drivers trying to acquire
-that lock ? It would be a driver bug then.
+It could if they told the kernel via some black magic ...
 
-> Also, the powermac suspend will deadlock in such cases, so the fact that
-> it doesn't deadlock means that they don't occur very often (if at all).
+But that still suck. The freezer sucks :-)
 
 Ben.
