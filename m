@@ -1,15 +1,14 @@
 From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from
-	within the freezer
-Date: Fri, 06 Jul 2007 09:36:01 +0200
-Message-ID: <E1I6iMD-0003Gl-00__36142.4853130758$1183707533$gmane$org@dorka.pomaz.szeredi.hu>
-References: <200707041658.59588.rjw@sisk.pl>
-	<200707061707.23316.nigel@nigel.suspend2.net>
-	<E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
-	<200707061719.36054.nigel@nigel.suspend2.net>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Fri, 06 Jul 2007 09:39:15 +0200
+Message-ID: <E1I6iPL-0003Hj-00__16769.4489624866$1183707971$gmane$org@dorka.pomaz.szeredi.hu>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707051559.58479.rjw@sisk.pl>
+	<200707060749.08665.nigel@nigel.suspend2.net>
+	<200707060940.23248.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <200707061719.36054.nigel@nigel.suspend2.net> (message from Nigel
-	Cunningham on Fri, 6 Jul 2007 17:19:34 +1000)
+In-reply-to: <200707060940.23248.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +18,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, nigel@suspend2.net, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, mingo@elte.hu
+To: rjw@sisk.pl
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, nigel@suspend2.net, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> > > To get more serious and practical though, I think the solution is to
-> > > fuzz the userspace/kernelspace distinction. What we really want to
-> > > do is freeze things that submit I/O, then sync, then freeze anything
-> > > that processes I/O and needs to be frozen. In effect, redefine fuse
-> > > processes as freezeable kernel threads.
-> > 
-> > Another myth, that has been debunked already.  The problem is: how do
-> > you define fuse processes?  There's no theoretical or even practial
-> > way to do that.
+> > You're missing the point. I'm arguing that a sync from within the freezer 
+> > should guarantee that there is no data loss.
 > 
-> No theoretical or practical way?! I'll freely admit to being quite ignorant 
-> about fuse, but surely there's some way by which they can be distinguished.
+> Well, it should, but it doesn't ...
+> 
+> Moreover, if FUSE implements syncing, then the sync from within the freezer
+> will almost certainly deadlock.
 
-How?  OK, there are some tasks, that read and/or write /dev/fuse. And
-there are some that just communicate in some way with the above.
-
-These could all be considered "fuse tasks", but those that don't do
-I/O on /dev/fuse are indistinguishable from non-fuse tasks.
-
-And for example sshfs does have such a thread, which is in the reply
-chain, yet never communicates directly with the fuse kernel module.
+Rafael, think positively: by the time fuse implements sync(), the
+freezer will be long gone ;)
 
 Miklos
