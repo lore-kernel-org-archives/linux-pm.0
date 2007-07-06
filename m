@@ -1,19 +1,18 @@
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Thu, 05 Jul 2007 23:59:00 -0400
-Message-ID: <87d4z6xjwb.fsf__16572.2900339917$1183694496$gmane$org@jbms.ath.cx>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<20070705115400.GF3984@ucw.cz>
-	<E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
-	<200707052138.56920.oliver@neukum.org>
-	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
-	<1183676751.3388.96.camel@localhost.localdomain>
+Date: Fri, 06 Jul 2007 13:59:07 +1000
+Message-ID: <1183694347.3388.114.camel__45935.3479709991$1183694637$gmane$org@localhost.localdomain>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707060913.05644.nigel@nigel.suspend2.net>
+	<1183677643.3388.105.camel@localhost.localdomain>
+	<200707060935.12706.nigel@nigel.suspend2.net>
+	<CF60EC03-0171-4052-924D-57555A393168@mac.com>
 Mime-Version: 1.0
 Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183676751.3388.96.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Fri\, 06 Jul 2007 09\:05\:51 +1000")
+In-Reply-To: <CF60EC03-0171-4052-924D-57555A393168@mac.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,43 +22,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-[snip]
+> How about a freezer whose job it is to "wait for pending hard  
+> interrupts to complete when we have already guaranteed that we won't  
+> get any more"?  That part should be really *REALLY* easy.  You don't  
+> need to care about either userspace processes or kernel threads at  
+> all.  Specifically, Step 1 consists of:
 
-> At the end of the day, I stand my ground, the freezer cannot be made
-> reliable without massive infrastructure changes or giving up on very
-> useful features such as fuse among others. Besides, it only partially
-> "hides" the problem of requests going to drivers, thus it's a bad
-> solutions.
+Well, waiting for pending DMA and making sure to not trigger more
+activity is what driver suspend() is supposed to do. With the ability
+for simple drivers that can cope with it to just basically use a
+late_suspend(), called after IRQs are off, that basically does what you
+describe: wait for pending HW tasks to complete (polling) and turn the
+damn thing off.
 
-I agree that the freezer absolutely should not be used for suspend to
-ram ("suspend"), since it is unnecessary with properly written drivers,
-which are important to have anyway.  It seems that it is indeed the
-consensus that it will be phased out sooner or later.
+Note that the later is really a shortcut for somewhat dump and directly
+accessible devices (PCI comes to mind). Things like USB has to use the
+"normal" mechanism of blocking IOs etc... at suspend(), at least, USB
+devices have to since the USB HC will not issue any new URBs. (And will
+return them with a nice error code which is a perfect way to deal with
+it in driver, been there, it works fine, once we fixed the races in the
+USB host code itself, which I think we pretty much did by now).
 
-It does seem that the current device suspend interface does not tell the
-drivers enough, since as discussed, they need to know whether to merely
-block if they receive a request while suspended (as should be done while
-initiating a suspend to ram), or if they should wake up the device (as
-should be done if a suspend to ram is not in progress).  Clearly these
-two cases need to be addressed by every driver supporting suspend/resume
-(but possibly indirectly if the subsystem handles it for them).
+> Scheduling and userspace are all still fully enabled in this  
+> scenario.  Once all your devices are turned off, the only remaining  
+> running threads will be those which haven't done IO since the  
+> beginning of the suspend.  We can then disable preemption, turn off  
+> the timer interrupts, and tell the other CPUs to park all their  
+> remaining threads in schedule() and sleep.  Then we put the IRQ  
+> controller to sleep and go to sleep ourselves.  If our driver model  
+> locking is sufficient to handle putting a parent device to sleep  
+> while threads are sleeping on a child device then there are exactly 0  
+> problems.
 
-The current hibernate approach used by all of the existing
-implementations for Linux seems to depend fundamentally on the freezer,
-though, in order to actually save the system state.  Thus, it will still
-be necessary to fix all of the issues with the freezer, or adopt an
-alternate hibernate approach (which is unlikely).  Unfortunately, even
-leaving kernel threads and certain drivers running after the snapshot is
-taken means that the saved image isn't completely correct, and the
-freezer cannot help with these issues.
+What you propose is basically a slightly over-simplistic version of what
+I think (and Paulus think) should be done. We do need to do it via
+driver callbacks down the tree since only drivers can know how to deal
+with their DMA etc... and ordering need to be respected, but that's
+basically it.
 
-[snip]
+And guess what ? It's what we do on powerbooks, and it works fine,
+without a freezer :-)
 
--- 
-Jeremy Maitin-Shepard
+Ben.
