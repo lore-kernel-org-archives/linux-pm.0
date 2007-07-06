@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm] Freezer: Handle uninterruptible tasks
-Date: Fri, 6 Jul 2007 10:12:47 +0200
-Message-ID: <200707061012.48998.rjw__17184.8799720921$1183709255$gmane$org@sisk.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Fri, 06 Jul 2007 18:59:13 +1000
+Message-ID: <1183712354.3388.126.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
+	<200707052337.27066.oliver@neukum.org> <200707060913.24131.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200707060913.24131.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,162 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Fri, 2007-07-06 at 09:13 +0200, Rafael J. Wysocki wrote:
+> 
+> The only reason (I know of) why we don't handle uninterruptible tasks in the
+> freezer is that we're afraid of the suspend process deadlocking with an
+> uninterruptible task holding a lock, but AFAICS the probability of such an
+> event is extremely small.
 
-The main limitation of the freezer is that it cannot handle uninterruptible
-tasks.  Namely, if there are uninterruptible tasks in the system, the freezer
-returns an error, which makes it impossible to suspend the system.
+What would deadlock specifically ? One of the drivers trying to acquire
+that lock ? It would be a driver bug then.
 
-This mechanism is used to prevent the situations in which the suspend process
-can deadlock with a task holding a lock needed by it from happening.  However,
-AFAICS, the probability of that happening is very small and if the freezer is
-removed from the suspend code patch, then the suspend process will be exposed to
-deadlocking in this manner anyway.
+> Also, the powermac suspend will deadlock in such cases, so the fact that
+> it doesn't deadlock means that they don't occur very often (if at all).
 
-Unfortunately, this mechanism also leads to severe limitations, such as that it
-makes the freezer unable to handle systems using FUSE in a reliable way.
-
-This patch makes the freezer skip uninterruptible user space tasks (ie. such
-that have an mm of their own) when counting the tasks to be frozen.  As a
-result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, but the
-freezer doesn't wait for them to enter the refrigerator.  Nevertheless, they
-will enter the refrigerator as soon as they change their state.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/freezer.h |   44 --------------------------------------------
- include/linux/sched.h   |    1 -
- kernel/fork.c           |    2 --
- kernel/power/process.c  |   18 +++++++++++++++++-
- 4 files changed, 17 insertions(+), 48 deletions(-)
-
-Index: linux-2.6.22-rc6-mm1/kernel/power/process.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c
-+++ linux-2.6.22-rc6-mm1/kernel/power/process.c
-@@ -105,6 +105,16 @@ static void cancel_freezing(struct task_
- 	}
- }
- 
-+static int has_mm(struct task_struct *p)
-+{
-+	return (p->mm && !(p->flags & PF_BORROWED_MM));
-+}
-+
-+static int freezer_should_skip(struct task_struct *p)
-+{
-+	return (has_mm(p) && (p->state | TASK_UNINTERRUPTIBLE));
-+}
-+
- static int try_to_freeze_tasks(int freeze_user_space)
- {
- 	struct task_struct *g, *p;
-@@ -135,7 +145,7 @@ static int try_to_freeze_tasks(int freez
- 				 * occuring.
- 				 */
- 				task_lock(p);
--				if (!p->mm || (p->flags & PF_BORROWED_MM)) {
-+				if (!has_mm(p)) {
- 					task_unlock(p);
- 					continue;
- 				}
-@@ -144,8 +154,14 @@ static int try_to_freeze_tasks(int freez
- 			} else {
- 				freeze_task(p);
- 			}
-+			/*
-+			 * task_lock() is necessary to prevent races with
-+			 * use_mm()/unuse_mm() from occuring.
-+			 */
-+			task_lock(p);
- 			if (!freezer_should_skip(p))
- 				todo++;
-+			task_unlock(p);
- 		} while_each_thread(g, p);
- 		read_unlock(&tasklist_lock);
- 		yield();			/* Yield is okay here */
-Index: linux-2.6.22-rc6-mm1/include/linux/freezer.h
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/include/linux/freezer.h
-+++ linux-2.6.22-rc6-mm1/include/linux/freezer.h
-@@ -75,50 +75,6 @@ static inline int try_to_freeze(void)
- }
- 
- /*
-- * The PF_FREEZER_SKIP flag should be set by a vfork parent right before it
-- * calls wait_for_completion(&vfork) and reset right after it returns from this
-- * function.  Next, the parent should call try_to_freeze() to freeze itself
-- * appropriately in case the child has exited before the freezing of tasks is
-- * complete.  However, we don't want kernel threads to be frozen in unexpected
-- * places, so we allow them to block freeze_processes() instead or to set
-- * PF_NOFREEZE if needed and PF_FREEZER_SKIP is only set for userland vfork
-- * parents.  Fortunately, in the ____call_usermodehelper() case the parent won't
-- * really block freeze_processes(), since ____call_usermodehelper() (the child)
-- * does a little before exec/exit and it can't be frozen before waking up the
-- * parent.
-- */
--
--/*
-- * If the current task is a user space one, tell the freezer not to count it as
-- * freezable.
-- */
--static inline void freezer_do_not_count(void)
--{
--	if (current->mm)
--		current->flags |= PF_FREEZER_SKIP;
--}
--
--/*
-- * If the current task is a user space one, tell the freezer to count it as
-- * freezable again and try to freeze it.
-- */
--static inline void freezer_count(void)
--{
--	if (current->mm) {
--		current->flags &= ~PF_FREEZER_SKIP;
--		try_to_freeze();
--	}
--}
--
--/*
-- * Check if the task should be counted as freezeable by the freezer
-- */
--static inline int freezer_should_skip(struct task_struct *p)
--{
--	return !!(p->flags & PF_FREEZER_SKIP);
--}
--
--/*
-  * Tell the freezer that the current task should be frozen by it
-  */
- static inline void set_freezable(void)
-Index: linux-2.6.22-rc6-mm1/include/linux/sched.h
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/include/linux/sched.h
-+++ linux-2.6.22-rc6-mm1/include/linux/sched.h
-@@ -1275,7 +1275,6 @@ static inline void put_task_struct(struc
- #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
- #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
--#define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
- 
- /*
-  * Only the _current_ task can read/write to tsk->flags, but other
-Index: linux-2.6.22-rc6-mm1/kernel/fork.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/kernel/fork.c
-+++ linux-2.6.22-rc6-mm1/kernel/fork.c
-@@ -1424,9 +1424,7 @@ long do_fork(unsigned long clone_flags,
- 		}
- 
- 		if (clone_flags & CLONE_VFORK) {
--			freezer_do_not_count();
- 			wait_for_completion(&vfork);
--			freezer_count();
- 			if (unlikely (current->ptrace & PT_TRACE_VFORK_DONE)) {
- 				current->ptrace_message = nr;
- 				ptrace_notify ((PTRACE_EVENT_VFORK_DONE << 8) | SIGTRAP);
+Ben.
