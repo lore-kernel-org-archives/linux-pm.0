@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Fri, 6 Jul 2007 09:13:22 +0200
-Message-ID: <200707060913.24131.rjw__31523.8927644261$1183705595$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-	<200707052337.27066.oliver@neukum.org>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from
+	within the freezer
+Date: Fri, 6 Jul 2007 17:07:20 +1000
+Message-ID: <200707061707.23316.nigel@nigel.suspend2.net>
+References: <200707041658.59588.rjw@sisk.pl> <20070705220046.GC3881@elf.ucw.cz>
+	<200707060902.55090.rjw@sisk.pl>
+Reply-To: nigel@suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0775900966560065873=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707052337.27066.oliver@neukum.org>
-Content-Disposition: inline
+In-Reply-To: <200707060902.55090.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +17,96 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 5 July 2007 23:37, Oliver Neukum wrote:
-> Am Donnerstag, 5. Juli 2007 schrieb Alan Stern:
-> > On Thu, 5 Jul 2007, Miklos Szeredi wrote:
-> > 
-> > > I fear, that your efforts to "save" the freezer are in vain.  It is
-> > > already moderately hackish with that PF_FREEZER_SKIP and the kernel
-> > > dotted randomly with try_to_freeze() calls, but adding bandaids to try
-> > > to order freezing userspace processes in the right order would just
-> > > make it a horrible mess.
-> > 
-> > I agree that bandaids won't work.  What's needed is something more 
-> > radical.  Things like FUSE must be written so that the kernel parts 
-> > _can_ freeze even while they are waiting for a response from a user 
-> > thread.
-> 
-> OK, some radical ideas.
-> 
-> In principle we want a deadlock here. Tasks that are frozen due to fuse
-> are as good as frozen, there's no need to formally freeze them.
-> The bad uninterruptible tasks are those waiting for hardware.
-> 
-> Can we detect the difference? Perhaps we can label those crucial locks
-> and when only tasks in the refrigerator and tasks waiting on these locks
-> are left we are content and go on to suspending the device tree.
+--===============0775900966560065873==
+Content-Type: multipart/signed; boundary="nextPart3909026.cUa00Odpy5";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-Well, I think we can just make the freezer handle uninterruptible tasks.
+--nextPart3909026.cUa00Odpy5
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If an uninterruptible task is stuck holding a lock that's needed for suspend,
-the freezerless suspend will deadlock anyway. :-)
+Hi.
 
-The only reason (I know of) why we don't handle uninterruptible tasks in the
-freezer is that we're afraid of the suspend process deadlocking with an
-uninterruptible task holding a lock, but AFAICS the probability of such an
-event is extremely small.
+On Friday 06 July 2007 17:02:53 Rafael J. Wysocki wrote:
+> On Friday, 6 July 2007 00:00, Pavel Machek wrote:
+> > Hi!
+> >=20
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > >=20
+> > > The syncing of filesystems from within the freezer is generally not=20
+needed.
+> > > Change freeze_processes() so that it doesn't execute sys_sync() and m=
+ake=20
+the
+> > > suspend and hibernation code path sync filesystems independently of t=
+he=20
+freezer.
+> >=20
+> > Yes, we can do that, but ... why?
+>=20
+> I think that sync and the freezer are different things and shouldn't be=20
+mixed in
+> such a way as they are now.
+>=20
+> > Does it actually fix FUSE?
+>=20
+> It should prevent the freezer from deadlocking.
 
-Also, the powermac suspend will deadlock in such cases, so the fact that
-it doesn't deadlock means that they don't occur very often (if at all).
+That's not the same thing. It's like saying "My footbrake grabs so I'll use=
+=20
+the handbrake all the time. Take the stone out of the brake pad! :)
 
-I have a patch for that, will post it in a separate thread in a while.
+> > Miklos claims sync is nop on FUSE...?=20
+>=20
+> In that case there shouldn't be any deadlock, but a freezer failure. :-)
 
-Greetings,
-Rafael
+Isn't this scary? I'm agreeing with Pavel and the two of us seem to be=20
+disagreeing with everyone else!
+
+To get more serious and practical though, I think the solution is to fuzz t=
+he=20
+userspace/kernelspace distinction. What we really want to do is freeze thin=
+gs=20
+that submit I/O, then sync, then freeze anything that processes I/O and nee=
+ds=20
+to be frozen. In effect, redefine fuse processes as freezeable kernel=20
+threads.
+
+Regards,
+
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart3909026.cUa00Odpy5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGjeorN0y+n1M3mo0RAiefAKDvj0tKkFt9pMB58ZsOGRtSBYanswCgx4TJ
+Dppfj0MqT6eS0tZ/TKtRUGw=
+=/bZU
+-----END PGP SIGNATURE-----
+
+--nextPart3909026.cUa00Odpy5--
+
+--===============0775900966560065873==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--===============0775900966560065873==--
