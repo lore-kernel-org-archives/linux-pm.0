@@ -1,15 +1,19 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from
-	within the freezer
-Date: Fri, 6 Jul 2007 17:07:20 +1000
-Message-ID: <200707061707.23316.nigel@nigel.suspend2.net>
-References: <200707041658.59588.rjw@sisk.pl> <20070705220046.GC3881@elf.ucw.cz>
-	<200707060902.55090.rjw@sisk.pl>
-Reply-To: nigel@suspend2.net
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0775900966560065873=="
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Fri, 06 Jul 2007 09:07:38 +0200
+Message-ID: <E1I6huk-0003AH-00@dorka.pomaz.szeredi.hu>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
+	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
+	<200707050858.03638.oliver@neukum.org>
+	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
+	<20070705091801.GB3084@elf.ucw.cz>
+	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
+	<20070705220444.GD3881@elf.ucw.cz>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707060902.55090.rjw@sisk.pl>
+In-reply-to: <20070705220444.GD3881@elf.ucw.cz> (message from Pavel Machek on
+	Fri, 6 Jul 2007 00:04:44 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,96 +21,26 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: pavel@ucw.cz
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============0775900966560065873==
-Content-Type: multipart/signed; boundary="nextPart3909026.cUa00Odpy5";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+> > Actually fuse allows SIGKILL, because it's always fatal, and the
+> > syscall may not be restarted.
+> 
+> Okay, and you should handle refrigerator in the same paths where you
+> handle SIGKILL. Just add try_to_freeze() there...
 
---nextPart3909026.cUa00Odpy5
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+It's the fourth time I'm repeating this in this thread:
 
-Hi.
+Yes adding try_to_freeze() there would partially solve the probelem.
 
-On Friday 06 July 2007 17:02:53 Rafael J. Wysocki wrote:
-> On Friday, 6 July 2007 00:00, Pavel Machek wrote:
-> > Hi!
-> >=20
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > >=20
-> > > The syncing of filesystems from within the freezer is generally not=20
-needed.
-> > > Change freeze_processes() so that it doesn't execute sys_sync() and m=
-ake=20
-the
-> > > suspend and hibernation code path sync filesystems independently of t=
-he=20
-freezer.
-> >=20
-> > Yes, we can do that, but ... why?
->=20
-> I think that sync and the freezer are different things and shouldn't be=20
-mixed in
-> such a way as they are now.
->=20
-> > Does it actually fix FUSE?
->=20
-> It should prevent the freezer from deadlocking.
+But another task can be sleeping on a mutex held by the task waiting
+for the reply.  And the freezer won't be able to handle that one.
 
-That's not the same thing. It's like saying "My footbrake grabs so I'll use=
-=20
-the handbrake all the time. Take the stone out of the brake pad! :)
+Generally, calling try_to_freeze() with mutexes held is not a good
+idea.
 
-> > Miklos claims sync is nop on FUSE...?=20
->=20
-> In that case there shouldn't be any deadlock, but a freezer failure. :-)
-
-Isn't this scary? I'm agreeing with Pavel and the two of us seem to be=20
-disagreeing with everyone else!
-
-To get more serious and practical though, I think the solution is to fuzz t=
-he=20
-userspace/kernelspace distinction. What we really want to do is freeze thin=
-gs=20
-that submit I/O, then sync, then freeze anything that processes I/O and nee=
-ds=20
-to be frozen. In effect, redefine fuse processes as freezeable kernel=20
-threads.
-
-Regards,
-
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart3909026.cUa00Odpy5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGjeorN0y+n1M3mo0RAiefAKDvj0tKkFt9pMB58ZsOGRtSBYanswCgx4TJ
-Dppfj0MqT6eS0tZ/TKtRUGw=
-=/bZU
------END PGP SIGNATURE-----
-
---nextPart3909026.cUa00Odpy5--
-
---===============0775900966560065873==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0775900966560065873==--
+Miklos
