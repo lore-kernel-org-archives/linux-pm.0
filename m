@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Fri, 6 Jul 2007 09:35:10 +0200
-Message-ID: <200707060935.11186.rjw@sisk.pl>
-References: <20070703042916.GA17240@srcf.ucam.org>
-	<CF60EC03-0171-4052-924D-57555A393168@mac.com>
-	<1183694347.3388.114.camel@localhost.localdomain>
+Date: Fri, 6 Jul 2007 09:30:20 +0200
+Message-ID: <200707060930.21348.oliver__16858.736848417$1183707073$gmane$org@neukum.org>
+References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
+	<200707051048.46202.oliver@neukum.org>
+	<1183675095.3388.72.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183694347.3388.114.camel@localhost.localdomain>
+In-Reply-To: <1183675095.3388.72.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,63 +23,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 6 July 2007 05:59, Benjamin Herrenschmidt wrote:
+Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
 > 
-> > How about a freezer whose job it is to "wait for pending hard  
-> > interrupts to complete when we have already guaranteed that we won't  
-> > get any more"?  That part should be really *REALLY* easy.  You don't  
-> > need to care about either userspace processes or kernel threads at  
-> > all.  Specifically, Step 1 consists of:
+> > There is that.
+> > 
+> > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
+> > and teach the freezer to put them on ice only after all other task are
+> > frozen. In a way they are kernel, there's no use denying that.
 > 
-> Well, waiting for pending DMA and making sure to not trigger more
-> activity is what driver suspend() is supposed to do. With the ability
-> for simple drivers that can cope with it to just basically use a
-> late_suspend(), called after IRQs are off, that basically does what you
-> describe: wait for pending HW tasks to complete (polling) and turn the
-> damn thing off.
+> Yet another ugly hack to work around the fact that the freezer cannot
+> work reliably ... yuck
 > 
-> Note that the later is really a shortcut for somewhat dump and directly
-> accessible devices (PCI comes to mind). Things like USB has to use the
-> "normal" mechanism of blocking IOs etc... at suspend(), at least, USB
-> devices have to since the USB HC will not issue any new URBs. (And will
-> return them with a nice error code which is a perfect way to deal with
-> it in driver, been there, it works fine, once we fixed the races in the
-> USB host code itself, which I think we pretty much did by now).
-> 
-> > Scheduling and userspace are all still fully enabled in this  
-> > scenario.  Once all your devices are turned off, the only remaining  
-> > running threads will be those which haven't done IO since the  
-> > beginning of the suspend.  We can then disable preemption, turn off  
-> > the timer interrupts, and tell the other CPUs to park all their  
-> > remaining threads in schedule() and sleep.  Then we put the IRQ  
-> > controller to sleep and go to sleep ourselves.  If our driver model  
-> > locking is sufficient to handle putting a parent device to sleep  
-> > while threads are sleeping on a child device then there are exactly 0  
-> > problems.
-> 
-> What you propose is basically a slightly over-simplistic version of what
-> I think (and Paulus think) should be done. We do need to do it via
-> driver callbacks down the tree since only drivers can know how to deal
-> with their DMA etc... and ordering need to be respected, but that's
-> basically it.
-> 
-> And guess what ? It's what we do on powerbooks, and it works fine,
-> without a freezer :-)
+> Why not spend that energy fixing drivers to properly block requests
+> instead ?
 
-On powerbooks you disable the nonboot CPUs before suspending devices, which
-simplifies things _a_ _lot_ in comparison with the general case.
+Because we will be unable to escape that job. Let's assume that
+we remove the freezer from the STR path. The next complaint would
+be that we cannot do STD with fuse. "Then don't do that" would not
+be taken kindly as answer.
 
-If you additionally disable kernel preemption, then you don't need anything
-like the freezer anyway in that case (except for detecting situations in which
-the suspend process can deadlock with a task stuck in the D state holding a
-lock, but that's overkill).
+So we would be under pressure to remove the freezer from STD, too,
+or find a way to make the freezer work. If we'd have to make the freezer
+work anyway, we can do it right now.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	Regards
+		Oliver
