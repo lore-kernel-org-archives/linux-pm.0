@@ -1,17 +1,16 @@
-From: Kyle Moffett <mrmacman_g4@mac.com>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Fri, 6 Jul 2007 01:01:48 -0400
-Message-ID: <CF605B91-2425-4FC2-9434-5F8877EEEEEB__1959.67941913313$1183698349$gmane$org@mac.com>
+Date: Fri, 6 Jul 2007 15:25:16 +1000
+Message-ID: <200707061525.18412.nigel__12101.6272031286$1183700043$gmane$org@nigel.suspend2.net>
 References: <20070703042916.GA17240@srcf.ucam.org>
-	<200707060935.12706.nigel@nigel.suspend2.net>
-	<1183694055.3388.108.camel@localhost.localdomain>
 	<200707061403.15932.nigel@nigel.suspend2.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Content-Transfer-Encoding: 7bit
+	<1183696901.3388.119.camel@localhost.localdomain>
+Reply-To: nigel@suspend2.net
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============8032048617001921520=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707061403.15932.nigel@nigel.suspend2.net>
+In-Reply-To: <1183696901.3388.119.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,117 +18,70 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Jul 06, 2007, at 00:03:15, Nigel Cunningham wrote:
-> On Friday 06 July 2007 13:54:15 Benjamin Herrenschmidt wrote:
->> On Fri, 2007-07-06 at 09:35 +1000, Nigel Cunningham wrote:
->>>
->>> Nice try :) Okay then, you remove the freezer, try hibernating,  
->>> then get back to me after you've fixed your filesystem because  
->>> some process that wasn't frozen started writing things after the  
->>> atomic copy (making the on disk filesystem inconsistent with the  
->>> snapshot).
->>>
->>> As Pavel rightly said, you can get rid of the freezer, but you're  
->>> only going to have to implement another one that does the  
->>> essentially the same thing, even if it is at some other level.
->>
->> I was mostly talking about STR... Regarding STD, we have a  
->> different problem and we all know it. The freezer is one somewhat  
->> horrible way to get it working for now, I would prefer something  
->> more along the way that blocks the page cache from writing out new  
->> dirty pages though, except those specifically flagged by the  
->> snapshot.
->>
->> That is, some kind of proper snapshotting facility, as linus was  
->> describing some time ago.
->
-> The kind of thing Linus was talking about would limit you (as  
-> swsusp and uswsusp do now) to only half the amount of memory.
+--===============8032048617001921520==
+Content-Type: multipart/signed; boundary="nextPart2227406.DxAaQg50xy";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-How so?  Suppose hibernate is implemented like this:
+--nextPart2227406.DxAaQg50xy
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-(1) Userspace program calls sys_freeze_processes()
-   (a) Pokes all CPUs with IPMIs and tells them to finish the  
-currently running timeslot then stop
-   (b) Atomically sends SIGSTOP to all userspace processes in a non- 
-trappable way, except the calling process and any process which is  
-ptracing it.
-   (c) Returns to the calling process.
+Hi.
 
-(2) Userspace process sends SIGCONT to only those processes which are  
-necessary for sync and a device-mapper snapshot.
+On Friday 06 July 2007 14:41:40 Benjamin Herrenschmidt wrote:
+>=20
+> > I/O from swsusp and suspend2 use bios directly, so the page cache isn't=
+ an=20
+> > issue for them (apart from the fact that Suspend2 saves the page cache=
+=20
+> > separately so it can get a full image). Not sure about uswsusp.
+> >=20
+> > Only having half the amount of memory doesn't sound like a big limitati=
+on=20
+for=20
+> > modern desktops & laptops, but don't forget that there are embedded guy=
+s=20
+> > wanting to hbernate too :)
+>=20
+> Wait wait wait ... uses the BIOS ? what do you mean ?
 
-(3) Userspace calls sys_snapshot_kernel(snapshot_overhead_pages)
-   (a) Kernel starts freeing memory and swapping stuff out to make  
-room for a copy of *kernel* memory (not pagecache, not process RAM).   
-It does the same for at least snapshot_overhead_pages extra (used by  
-userspace later).  It then allocates this memory to keep it from  
-going away.  Since most processes are stopped we won't have much else  
-competing with us for the RAM.
-   (a) Kernel uses the device-mapper up-call-into-filesystem  
-machinery to get all mounted filesystems synced and ready for a DM  
-snapshot.  This may include sending data via the userspace processes  
-resumed in (2).  Any deadlocks here are userspace's fault (see (2)).   
-Will need some modification to handle doing multiple blockdevs at a  
-time.  Anything using FUSE is basically perma-synced anyways (no dep- 
-handling needed), and anything using loop should already be handled  
-by DM.  This includes allocating memory for the basic snapshot  
-datastructures.
-   (b) At this point all blockdev operations should be halted and  
-disk caches flushed; that's all we care about.
-   (c) Go through the device tree and quiesce DMA and shut off  
-interrupts.  Since all the disks are synced this is easy.
-   (d) Use IPMIs again to get all the CPUs together, which should be  
-easy as most processes are sleeping in IO or SIGSTOPed, and we're  
-getting no interrupts.
-   (e) One CPU turns off all interrupts on itself and takes an atomic  
-snapshot of kernel memory into the previously allocated storage.   
-Once again, does not include pagecache.  The kernel also records a  
-list of what pages *are* included in the pagecache.  It then marks  
-all userspace pages as copy-on-write.
-   (f) That CPU finalizes the modified DM snapshot using the  
-previously-allocated memory.
-   (g) That CPU frees up the snapshot_overhead_pages memory allocated  
-during step (a) for userspace to use.
-   (h) The CPU does the equivalent of a "swapoff -a" without  
-overwriting any data already on any swap device(s).
-   (i) The CPU then IPMI-signals the other CPUs to wake them up
-   (j) The kernel returns a FD-reference to the snapshot and the read- 
-only halves of the CoW pagecache to the process which called  
-sys_snapshot_kernel().
+You misread me, Ben. Sorry for not being clearer. bios as in struct bio.
 
-(4) The userspace process now has a reference to the copy of the  
-kernel pages and the unmodified pagecache pages.  Since 99% of the  
-processes aren't running, we aren't going to be having to CoW many of  
-the pagecache pages.
+Regards,
 
-(5) The userspace process uses read() or other syscalls to get data  
-out of the kernel-snapshot FD in small chunks, within its  
-snapshot_overhead_pages limit.  It compresses these and writes them  
-out to the snapshot-storage blockdev (must not be mounted during  
-snapshot), or to any network server.
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
 
-(6) The userspace process syncs the disks and halts the system.  Any  
-changed filesystem pages after the pseudo-DM-snapshot should have  
-been stored in semi-volatile storage somewhere and will be discarded  
-on the next reboot.
+--nextPart2227406.DxAaQg50xy
+Content-Type: application/pgp-signature
 
-So basically your hibernate-overhead would consist of:
-   (1) The pages necessary for the atomic snapshot of kernel memory  
-and the list of pagecache pages at that time
-   (2) A little memory necessary for the kernel non-persistent DM  
-snapshot datastructures.
-   (3) The snapshot_overhead_pages needed by userspace.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-If you're using swap devices then you can save 99% of the state of  
-the running kernel with an initial swapout overhead of virtually  
-nothing beyond the size of the unswappable kernel memory.
+iD8DBQBGjdI+N0y+n1M3mo0RAn+XAKDjmtdqcIfth3ZlY3b3I7ymJJ7SYACgtTQI
+m4wU5zhG5dUsnc9DVnm+n3A=
+=TxDF
+-----END PGP SIGNATURE-----
 
-Cheers,
-Kyle Moffett
+--nextPart2227406.DxAaQg50xy--
+
+--===============8032048617001921520==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============8032048617001921520==--
