@@ -1,18 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Fri, 6 Jul 2007 11:31:07 +0200
-Message-ID: <200707061131.08475.oliver__17154.3427547023$1183714321$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-	<200707060913.24131.rjw@sisk.pl>
-	<1183712354.3388.126.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [RFC][PATCH -mm] PM: Do not sync filesystems from
+	within the freezer
+Date: Fri, 06 Jul 2007 11:31:41 +0200
+Message-ID: <E1I6kA9-0003Zt-00@dorka.pomaz.szeredi.hu>
+References: <200707041658.59588.rjw@sisk.pl>
+	<1183712394.3388.128.camel@localhost.localdomain>
+	<E1I6jlB-0003TC-00@dorka.pomaz.szeredi.hu>
+	<200707061914.02972.nigel@nigel.suspend2.net>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183712354.3388.126.camel@localhost.localdomain>
-Content-Disposition: inline
+In-reply-to: <200707061914.02972.nigel@nigel.suspend2.net> (message from Nigel
+	Cunningham on Fri, 6 Jul 2007 19:13:56 +1000)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, nigel@suspend2.net, linux-kernel@vger.kernel.org, pavel@ucw.cz, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Fri, 2007-07-06 at 09:13 +0200, Rafael J. Wysocki wrote:
+> > > On Fri, 2007-07-06 at 09:13 +0200, Miklos Szeredi wrote:
+> > > > 
+> > > > Another myth, that has been debunked already.  The problem is: how do
+> > > > you define fuse processes?  There's no theoretical or even practial
+> > > > way to do that.
+> > > 
+> > > It could if they told the kernel via some black magic ...
+> > > 
+> > > But that still suck. The freezer sucks :-)
 > > 
-> > The only reason (I know of) why we don't handle uninterruptible tasks in the
-> > freezer is that we're afraid of the suspend process deadlocking with an
-> > uninterruptible task holding a lock, but AFAICS the probability of such an
-> > event is extremely small.
+> > Yeah, and it wouldn't work in practice, since the auxilary tasks might
+> > be part of a library which is not even aware of being used by a "fuse
+> > task".
 > 
-> What would deadlock specifically ? One of the drivers trying to acquire
-> that lock ? It would be a driver bug then.
+> This is why I think the whole concept of filesystems in userspace is broken. 
+> Trying to shift things that need special privilege and special handling to 
+> userspace is just asking for trouble.
 
-Your driver's write method looks like:
+I'm not claiming fuse doesn't introduce problems.  I've been tackling
+those problems for a number of years now.  Suspend/hibernate is just
+the next thing that needs looking at.
 
-mutex_lock();
-poke_some_hardware();
-wait_event_uninterruptible(); //for result
-res = evaluate_result();
-mutex_unlock();
-return res;
+Just blaming either suspend or fuse for these problems is unproductive
+and stupid.  The problems _are_ solvable if not always simply.
 
-If you put a task into the refrigerator at wait_event_interruptible()
-you will deadlock if you need this lock for the driver to go to suspend.
-The suspend method then must not take the lock _and_ it must be
-aware that there may be an ongoing operation.
+> You can say it's the kernel code's fault, but then you have to
+> explain why it's only fuse (yeah ok, and XFS) that have problems.
 
-	Regards
-		Oliver
+I'm not faulting anythig.  My opinion, is that the freezer is not
+needed for suspend, and removing it will not just solve the problems
+with fuse but several others.  It probably needs a lot of work, but
+hey, that's why we are here.
+
+The patch posted by Rafael, which lets the freezer skip uninterrupible
+tasks is a step in the right direction.
+
+Miklos
