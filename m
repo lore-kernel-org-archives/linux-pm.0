@@ -1,12 +1,13 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: RE: Power event notification patch
-Date: Fri, 06 Jul 2007 12:46:54 +0200
-Message-ID: <1183718814.3818.101.camel@johannes.berg>
-References: <67670A5CEA5C374B8E7B16D7DC55F95301247460@bgsmsx413.gar.corp.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Fri, 6 Jul 2007 10:38:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707061034540.3737-100000__6241.65685517273$1183732793$gmane$org@iolanthe.rowland.org>
+References: <1183694347.3388.114.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1049966611739116706=="
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <67670A5CEA5C374B8E7B16D7DC55F95301247460@bgsmsx413.gar.corp.intel.com>
+In-Reply-To: <1183694347.3388.114.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,59 +15,32 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "V, Sankara Narayanan" <sankara.narayanan.v@intel.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 6 Jul 2007, Benjamin Herrenschmidt wrote:
 
---===============1049966611739116706==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-H7RDK5we4g+8sby0shbp"
+> What you propose is basically a slightly over-simplistic version of what
+> I think (and Paulus think) should be done. We do need to do it via
+> driver callbacks down the tree since only drivers can know how to deal
+> with their DMA etc... and ordering need to be respected, but that's
+> basically it.
+> 
+> And guess what ? It's what we do on powerbooks, and it works fine,
+> without a freezer :-)
 
+I wish you'd stop saying that.  Have you ever done any serious testing?
 
---=-H7RDK5we4g+8sby0shbp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Here's something to try:  Add a time delay to the end of hub_suspend in
+drivers/usb/core/hub.c, so you can provoke a race manually.  Then while
+one of your root hubs is being suspended and the system is waiting in
+that delay, either plug in a new USB device to that hub or unplug an
+existing device.
 
-On Thu, 2007-07-05 at 19:03 +0530, V, Sankara Narayanan wrote:
-> Yeah! If it is a pseudo-embedded device, it can take care of because the
-> application ecosystem is already established there. It won't be a
-> generic thing for all embedded devices. Of course, every application
-> receives the event and it can act on the way it wants (I did not
-> understand step 1/2/3...).=20
+Be sure that CONFIG_USB_DEBUG is on so that we can figure out what 
+happened after the fact.
 
-By "steps 1/2/3" I was just trying to say that each application probably
-has multiple steps that should be guaranteed to run before it can
-rightfully say it has saved all state for the event that the system
-never wakes up or whatever else it needs. But if you have more
-applications the chances of it running successfully diminish quickly.
-
-johannes
-
---=-H7RDK5we4g+8sby0shbp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGjh2e/ETPhpq3jKURAknpAKCUzpIpjreb9O1bASd2ULv7Q5IMBQCgi2AI
-HPPnXrOhkFn0vRhs2sS2D24=
-=sdm4
------END PGP SIGNATURE-----
-
---=-H7RDK5we4g+8sby0shbp--
-
-
---===============1049966611739116706==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1049966611739116706==--
+Alan Stern
