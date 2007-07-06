@@ -1,17 +1,17 @@
 From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Fri, 6 Jul 2007 09:30:20 +0200
-Message-ID: <200707060930.21348.oliver__16858.736848417$1183707073$gmane$org@neukum.org>
+Date: Fri, 6 Jul 2007 09:32:30 +0200
+Message-ID: <200707060932.31345.oliver__38951.1421941735$1183707202$gmane$org@neukum.org>
 References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<200707051048.46202.oliver@neukum.org>
-	<1183675095.3388.72.camel@localhost.localdomain>
+	<E1I6XFM-0001ek-00@dorka.pomaz.szeredi.hu>
+	<1183676751.3388.96.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183675095.3388.72.camel@localhost.localdomain>
+In-Reply-To: <1183676751.3388.96.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,27 +27,26 @@ Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.k
 List-Id: linux-pm@vger.kernel.org
 
 Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
-> 
-> > There is that.
-> > 
-> > OK, bite the bullet. Tasks involved in fuse are special. Give them a flag
-> > and teach the freezer to put them on ice only after all other task are
-> > frozen. In a way they are kernel, there's no use denying that.
-> 
-> Yet another ugly hack to work around the fact that the freezer cannot
-> work reliably ... yuck
-> 
-> Why not spend that energy fixing drivers to properly block requests
-> instead ?
+> > Yes, fuse could handle being frozen there. =C2=A0However that would o=
+nly
+> > solve part of the problem: an operation waiting for a reply could be
+> > holding a VFS mutex and some other task may be blocked on that mutex.
+> >=20
+> > How would you solve freezing those tasks?
+>=20
+> That task is implicitely frozen... but the kernel doesn't know it and
+> thus the freezer timeouts or fails or deadlocks or whatever.
+>=20
+> The freezer could be made to ignore tasks that are sleeping in the
+> kernel assuming that if they go out of it, they'll ultimately reach
+> do_signal and freeze, but that means they can potentially still issues
+> IOs which is what the freezer tries to avoid ...
+>=20
+> Or the kernel could start tracking dependencies, but then, good luck
+> implementing that crap.
 
-Because we will be unable to escape that job. Let's assume that
-we remove the freezer from the STR path. The next complaint would
-be that we cannot do STD with fuse. "Then don't do that" would not
-be taken kindly as answer.
-
-So we would be under pressure to remove the freezer from STD, too,
-or find a way to make the freezer work. If we'd have to make the freezer
-work anyway, we can do it right now.
+Do we need dependencies? Don't we know that fuse can deadlock only
+on a limited number of locks in VFS?
 
 	Regards
 		Oliver
