@@ -1,12 +1,13 @@
-From: "e-cards.com" <kxw@armyissue.com>
-Subject: You've received an ecard from a Mate!
-Date: Sat, 7 Jul 2007 11:33:53 -0500
-Message-ID: <000e01c7c0b4$9b757180$2679613b@oe.eq>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Sat, 7 Jul 2007 13:19:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707071255590.26860-100000__8705.72198550708$1183829433$gmane$org@netrider.rowland.org>
+References: <1183781219.3388.225.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="Windows-1252";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1183781219.3388.225.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,35 +17,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi. Mate has sent you an ecard.
-See your card as often as you wish during the next 15 days.
+On Sat, 7 Jul 2007, Benjamin Herrenschmidt wrote:
 
-SEEING YOUR CARD
+> > > so the suspend process will wait for it.  When binding  
+> > > is done the suspend_device() code will take the device lock and tell  
+> > > everything else to postpone further bind requests as above.
+> > 
+> > My question referred to drivers trying to bind or unbind a device
+> > _after_ the device has been suspended.  I suppose you'll say that's
+> > covered by the NO_BIND flag.  But now we have the locking problem
+> > mentioned above: The thread trying to bind is holding a lock which is
+> > needed for resuming.
+> 
+> Why would it ? Just make it fail, maybe with some kind of -ERETRY... Or
+> it can spin with the lock not held if it want. That's a detail really.
 
-If your email software creates links to Web pages, click on your 
-card's direct www address below while you are connected to the Internet:
+Spinning in the driver with the lock not held is impossible, since the 
+driver is called with the lock already acquired.
 
-http://83.179.182.242/?a43e297e646d1deed435601e5ee713076a3d
+Failing with -ERETRY is non-transparent.  I would prefer to block such 
+requests at their source, before the lock is acquired.  Perhaps in the 
+driver core, perhaps even earlier.
 
-Or copy and paste it into your browser's "Location" box (where Internet 
-addresses go).
-     
+(And rather than trying to manage a waitqueue or struct completion, it
+would be easiest to jump directly into the freezer!  The driver or the 
+core wouldn't have to worry about waking up all these blocked threads.)
 
+> > As one of the people responsible for the USB power management 
+> > implementation, I would appreciate more details about this.  For 
+> > example, a dmesg log with CONFIG_USB_DEBUG turned on together with a
+> > complete description of the actions you took to provoke the bug.
+> > 
+> > (I wonder how much of this "buginess" is caused by the lack of the 
+> > freezer in PPC.)
+> 
+> No. The freezer will hide some of those problems under the carpet, but
+> not solve the basic issue which is the driver should be solid. Period.
 
-PRIVACY
-e-cards.com honors your privacy. Our home page and Card Pick Up have links to our 
-Privacy Policy.
+You're missing the point.  If the driver and the freezer are both 
+solid, there's no reason they can't share the work.  If many drivers 
+can pass off part of their workload to the single freezer, it's a net 
+win.
 
-TERMS OF USE
-By accessing your card you agree we have no liability. 
-If you don't know the person sending the card or don't wish to see the card, 
-please disregard this Announcement.
+So it isn't a question of how solid the drivers are; it's a question 
+of how solid the freezer is.  And bear in mind that if you convince 
+people the freezer is not solid enough to be used, then you will have 
+to find an alternative for purposes of hibernation.
 
-We hope you enjoy your awesome card.
+> The freezer is a flawed concept in the first place.
 
-Wishing you the best,
-Mailer-Daemon,
-e-cards.com
+<... Long and cogent argument which I will skip over for now ...>
+
+> Face it, we should seriously look into doing suspend/resume without a
+> freezer.
+
+I'm willing to try, although I think it will be a tremendous amount of 
+work to verify that every driver does the right thing.  There's lots of 
+support missing.  For example, don't you think we should block all 
+sysfs I/O during suspend?  And likewise for insmod/rmmod?
+
+> I even tend to think that we could do STD that way too, in
+> fact, while Linus is right saying it's a different problem than STR, we
+> could even probably re-use some of the STR infrastructure in some
+> hackish way, still without a freezer. We could have ways to block page
+> cache writeout, for example, to prevent new post-snapshot dirty data
+> from hitting the platter, and use direct BIOs for writeout. That's just
+> an example.
+
+What about systems with no BIOS?  I think this would be very hard or 
+even impossible to make work.
+
+Alan Stern
