@@ -1,15 +1,19 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
-	tasks
-Date: Sat, 7 Jul 2007 13:31:18 +0200
-Message-ID: <20070707113118.GA2789@elf.ucw.cz>
-References: <200707061012.48998.rjw@sisk.pl> <20070707075018.GB2638@elf.ucw.cz>
-	<200707071913.43482.nigel@nigel.suspend2.net>
+Subject: problem 1 (was Re: removing refrigerator does not help with s2ram vs.
+	fuse deadlocks (was Re: Re: [PATCH] Remove process
+	freezer from suspend to RAM pathway))
+Date: Sat, 7 Jul 2007 14:08:27 +0200
+Message-ID: <20070707120827.GA3111__46267.0515677475$1183810243$gmane$org@elf.ucw.cz>
+References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.44L0.0707041104140.25704-100000@netrider.rowland.org>
+	<18060.15591.556676.28935@cargo.ozlabs.ibm.com>
+	<20070705091526.GA3084@elf.ucw.cz>
+	<20070705135758.GB22177@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707071913.43482.nigel@nigel.suspend2.net>
+In-Reply-To: <20070705135758.GB22177@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +23,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@suspend2.net
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > I don't think we can do that. I suspect rename looks like:
+> > Now, if kernel needs FUSE services for some reason (that's the problem
+> > we hit in s2ram case, right?), we have a deadlock.
 > > 
-> > 	write directory entry in source
-> > A)	(uninterruptible wait for write)
-> > 	write directory entry in destination
-> > 	(uninterruptible wait for write)
-> > 	write something else
-> > 
-> > If we freeze some task in place "A)", we'll write to the disk when the
-> > directory write is finished :-(.
+> > So main problem still seems to be "kernel should not depend on
+> > userland services during suspend", refrigerator or not.
 > 
-> Renaming is a single syscall, so won't the process get frozen when the syscall 
-> finishes? 
+> And also "Userland should not depend on userland services", which is 
+> rather more of a problem.
 
-It would be frozen when syscall finishes. But if we freeze it at A)
-point, we have a problem.
+No, that's not a problem. Or rather, that's different problem, called
+"problem 2" (fuse causes freezer to fail to stop processes).
 
-> Perhaps you've just found more logic for keeping the sys_sync there?
+But we still have "problem 1" here: after devices are suspended,
+kernel tries to use fuse's services. That is not going to work, one
+way or another, because devices are suspended and userland can't work
+reliably.
 
-No, I don't think so.
-									Pavel
+(Aha, it _may_ be it is kernel tries to use fuse's services after
+freezing userland but before freezing devices. I don't think it is).
+
+To solve "problem 1", we need to know which part of kernel asks for
+fuse services. sysrq-t trace is likely to tell us. Can someone repeat
+the "problem 1" scenario (freezer succeeds but then it deadlocks), and
+produce sysrq-t trace? That way we can solve "problem 1".
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
