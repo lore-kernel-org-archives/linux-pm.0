@@ -1,18 +1,18 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
-	(was Re: Re: [PATCH] Remove process freezer from
-	suspend to RAM pathway)
-Date: Sat, 07 Jul 2007 22:14:34 +0200
-Message-ID: <E1I7Gfq-0006n0-00@dorka.pomaz.szeredi.hu>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
-	<200707051704.48137.rjw@sisk.pl>
-	<20070705150301.GB23647@srcf.ucam.org>
-	<200707051727.36715.rjw@sisk.pl>
-	<E1I6TJq-000164-00@dorka.pomaz.szeredi.hu>
-	<20070707115047.GE2789@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
+	tasks
+Date: Sat, 7 Jul 2007 22:44:45 +0200
+Message-ID: <200707072244.46645.rjw__13004.6722632416$1183840715$gmane$org@sisk.pl>
+References: <200707061012.48998.rjw@sisk.pl>
+	<200707071913.43482.nigel@nigel.suspend2.net>
+	<20070707113118.GA2789@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20070707115047.GE2789@elf.ucw.cz> (message from Pavel Machek on
-	Sat, 7 Jul 2007 13:50:47 +0200)
+In-Reply-To: <20070707113118.GA2789@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,23 +22,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@ucw.cz
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-> > One task doing ptrace() can basically do whatever it wants with the
-> > task being traced.  This is not an exact analogy to what fuse does,
-> > but close.
+On Saturday, 7 July 2007 13:31, Pavel Machek wrote:
+> Hi!
 > 
-> Well, IMO userland tasks should not have power to grab VFS mutexes for
-> indefinite ammount of time. ("fused is allowed to deadlock kernel, in
-> a way only write to special file helps" is ugly). Unfortunately, I
-> don't think there's a way to work around that deadlock within fuse
-> design limits... (coda was able to get around it by working on whole
-> files granularity, AFAICT), so we'll have to live with that.
+> > > I don't think we can do that. I suspect rename looks like:
+> > > 
+> > > 	write directory entry in source
+> > > A)	(uninterruptible wait for write)
+> > > 	write directory entry in destination
+> > > 	(uninterruptible wait for write)
+> > > 	write something else
+> > > 
+> > > If we freeze some task in place "A)", we'll write to the disk when the
+> > > directory write is finished :-(.
+> > 
+> > Renaming is a single syscall, so won't the process get frozen when the syscall 
+> > finishes? 
+> 
+> It would be frozen when syscall finishes. But if we freeze it at A)
+> point, we have a problem.
 
-That's just file I/O.  You can easily deadlock coda with any other
-file operation.  In fact coda is _less_ robust wrt a misbehaving
-userspace server than fuse by a big margin.
+With this patch, we don't freeze it. :-)
 
-Miklos
+We do something like "send a freeze request to this task, but don't care if it
+doesn't freeze".
+
+Now, IMHO, the correctness here is the question of for how long a task can be
+in TASK_UNINTERRUPTIBLE it it's not stuck (eg. the resource needed is gone
+indefinitely, like in NFS) and I think that's not very long.
+
+For example, if the tasks sleeps on a mutex, then it waits for another task to
+release the mutex (interrupt handlers don't use mutexes) and I don't know of
+any realistic scenario in which it can last in that state throughout
+freeze_processes().
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
