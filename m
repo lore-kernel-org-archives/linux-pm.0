@@ -1,14 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
-	tasks
-Date: Sat, 7 Jul 2007 09:50:18 +0200
-Message-ID: <20070707075018.GB2638@elf.ucw.cz>
-References: <200707061012.48998.rjw@sisk.pl>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Sat, 7 Jul 2007 09:56:30 +0200
+Message-ID: <20070707075630.GC2638__5882.15452521599$1183795057$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707051014180.3728-100000@iolanthe.rowland.org>
+	<1183676393.3388.89.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707061012.48998.rjw@sisk.pl>
+In-Reply-To: <1183676393.3388.89.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> The main limitation of the freezer is that it cannot handle uninterruptible
-> tasks.  Namely, if there are uninterruptible tasks in the system, the freezer
-> returns an error, which makes it impossible to suspend the system.
-...
-> Unfortunately, this mechanism also leads to severe limitations, such as that it
-> makes the freezer unable to handle systems using FUSE in a reliable way.
+> > How will that help?  Block the kernel thread in the freezer or block it 
+> > in the driver -- either way it is blocked.  So how do your deadlocks 
+> > get resolved?
 > 
-> This patch makes the freezer skip uninterruptible user space tasks (ie. such
-> that have an mm of their own) when counting the tasks to be frozen.  As a
-> result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, but the
-> freezer doesn't wait for them to enter the refrigerator.  Nevertheless, they
-> will enter the refrigerator as soon as they change their state.
+> Because nobody is waiting on that kernel thread anyway without a freezer
+> so there is no deadlock anymore.
 
-I don't think we can do that. I suspect rename looks like:
+In the deadlock we are seeing, _someone_ is waiting on userspace
+thread, that leads to deadlock with freezer. We don't know who,
+because we have not seen the sysrq-t dumps.
 
-	write directory entry in source
-A)	(uninterruptible wait for write)
-	write directory entry in destination
-	(uninterruptible wait for write)
-	write something else
-
-If we freeze some task in place "A)", we'll write to the disk when the
-directory write is finished :-(.
-									Pavel
+The "unknown who" will deadlock on fused frozen by driver, too. We
+really need to fix the "unknown who" here.
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
