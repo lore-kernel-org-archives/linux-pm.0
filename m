@@ -1,14 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Sat, 07 Jul 2007 14:06:59 +1000
-Message-ID: <1183781219.3388.225.camel__2625.21728077463$1183781444$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707062210470.7605-100000@netrider.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
+	tasks
+Date: Sat, 7 Jul 2007 09:50:18 +0200
+Message-ID: <20070707075018.GB2638@elf.ucw.cz>
+References: <200707061012.48998.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707062210470.7605-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <200707061012.48998.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,119 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-> > so the suspend process will wait for it.  When binding  
-> > is done the suspend_device() code will take the device lock and tell  
-> > everything else to postpone further bind requests as above.
+> The main limitation of the freezer is that it cannot handle uninterruptible
+> tasks.  Namely, if there are uninterruptible tasks in the system, the freezer
+> returns an error, which makes it impossible to suspend the system.
+...
+> Unfortunately, this mechanism also leads to severe limitations, such as that it
+> makes the freezer unable to handle systems using FUSE in a reliable way.
 > 
-> My question referred to drivers trying to bind or unbind a device
-> _after_ the device has been suspended.  I suppose you'll say that's
-> covered by the NO_BIND flag.  But now we have the locking problem
-> mentioned above: The thread trying to bind is holding a lock which is
-> needed for resuming.
+> This patch makes the freezer skip uninterruptible user space tasks (ie. such
+> that have an mm of their own) when counting the tasks to be frozen.  As a
+> result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, but the
+> freezer doesn't wait for them to enter the refrigerator.  Nevertheless, they
+> will enter the refrigerator as soon as they change their state.
 
-Why would it ? Just make it fail, maybe with some kind of -ERETRY... Or
-it can spin with the lock not held if it want. That's a detail really.
+I don't think we can do that. I suspect rename looks like:
 
-> As one of the people responsible for the USB power management 
-> implementation, I would appreciate more details about this.  For 
-> example, a dmesg log with CONFIG_USB_DEBUG turned on together with a
-> complete description of the actions you took to provoke the bug.
-> 
-> (I wonder how much of this "buginess" is caused by the lack of the 
-> freezer in PPC.)
+	write directory entry in source
+A)	(uninterruptible wait for write)
+	write directory entry in destination
+	(uninterruptible wait for write)
+	write something else
 
-No. The freezer will hide some of those problems under the carpet, but
-not solve the basic issue which is the driver should be solid. Period.
-
-The freezer is a flawed concept in the first place. If you go back to
-square one, what is the basic idea of it ? I'll basically expose the
-idea and go down all of the path I have in mind where it stops working
-and becomes an incredibly difficult thing that in the end doesn't even
-solve all the problems it's supposed to.
-
-So first thing first...
-
-I want a quiescent system with no new "IO requests" (whatever that mean
-in the context of drivers) issued to avoid races during suspend/resume.
-
-That sounds like a nice idea. Yeah. Sounds... only. Problem is. How do
-you define that quiescent system ? First idea is ... let's stop
-userland. There are various ways of doing that, but the freezer hooking
-into the signal code is not necessarily a bad one.
-
-No, I'm purposefully putting aside all the cases where the above doesn't
-work (user process in the kernel in some uninterruptible wait, etc...),
-which are the first big setback imho... our simple idea is suddenly not
-so simple anymore, but we can bring those back later.
-
-Now, there is still a problem... kernel threads. In fact, there is no
-fundamental distinction between a kernel thread and a user process...
-one has an MM and the other doesn't but as far as we are concerned, it's
-the same. Kernel threads can issues IOs, or like khubd, detect devices,
-plug/unplug them, etc etc.... all over the place.
-
-Easy answer that comes to mind -> freeze them too. Heh, but kernel
-threads don't do signals, so we end up with all those try_to_freeze().
-Then what about the fact that drivers may need those kernel threads to
-proceed ? Some drivers queue up their IO requests to a kernel thread to
-process them and suspend() might need to flush those down, issue a
-couple more such as "spin down disks" before that kernel thread can
-actually be frozen... Hrm.. maybe not all of them then.
-
-But how do you decide ? What defines that a kernel can issue an IO ? In
-fact, if you look closely, anything doing kmalloc(...,GFP_KERNEL) for
-example can trigger an IO... implicitely, via the VM pushing things out.
-And that's just one example.
-
-In some case, those same threads that may need to be kept non-frozen are
--also- the ones that will potentially submit new IOs or bring in new
-devices.
-
-And then, there is keventd ... what do you do about work queues ? You
-have everybody pouring things at workqueues... some of these things may
-well hit your driver, some may not. Same goes in some cases with
-interrupt time stuff, such as timers or tasklets.. think about
-networking.
-
-In the end, the nice idea that "threads/tasks cause requests, so we just
-stop them" basically falls appart. Half of the kernel can cause a driver
-to be hit somewhere and a given time, it can be from a thread context,
-directly caused by userland, or from some timer due to some subsystem
-having a keepalive thing ticking in or whatever else.
-
-Now, we go back to the previous issue of what do we do about
-uninterruptible sleep... You want to abort suspend because, for example,
-somethign called a driver that does an msleep(200) or so ? Are you aware
-that 99% of laptop users close their laptops and shove it in the bag not
-even waiting for the disk to spin down ? And you want suspend to abort
-because some random "happen all the time" even such as a process being
-somewhere temporarily in uninterruptible state in the kernel ?
-
-So let's say we freeze them from within the scheduler even when they are
-uininterruptible.. ouch... you just caused the deadlocks we talked about
-before. While without a freezer, suspend() can at least rely on the fact
-that it can wait for processes that have such pending locked constructs
-waiting will ultimately wakeupm and wait for them (or even explicitely
-wake them), it can't if they've been frozen. So what was a perfectly
-solvable moderate driver synchronisation issue becomes a deadlock
-nightmare.
-
-And those are just example. During this discussion, we also brought the
-example of FUSE which is a big stab at the whole freezer concept. And
-I'm sure we can find more everyday.
-
-Face it, we should seriously look into doing suspend/resume without a
-freezer. I even tend to think that we could do STD that way too, in
-fact, while Linus is right saying it's a different problem than STR, we
-could even probably re-use some of the STR infrastructure in some
-hackish way, still without a freezer. We could have ways to block page
-cache writeout, for example, to prevent new post-snapshot dirty data
-from hitting the platter, and use direct BIOs for writeout. That's just
-an example.
-
-Ben.
+If we freeze some task in place "A)", we'll write to the disk when the
+directory write is finished :-(.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
