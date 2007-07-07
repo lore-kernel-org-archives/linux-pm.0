@@ -1,14 +1,15 @@
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
-	tasks
-Date: Sat, 7 Jul 2007 19:13:42 +1000
-Message-ID: <200707071913.43482.nigel__890.786891295825$1183799679$gmane$org@nigel.suspend2.net>
-References: <200707061012.48998.rjw@sisk.pl> <20070707075018.GB2638@elf.ucw.cz>
-Reply-To: nigel@suspend2.net
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Sat, 7 Jul 2007 13:49:17 +0200
+Message-ID: <20070707114917.GC2789@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707061034540.3737-100000@iolanthe.rowland.org>
+	<1183779845.3388.206.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5310920894562774070=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070707075018.GB2638@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1183779845.3388.206.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,97 +17,47 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============5310920894562774070==
-Content-Type: multipart/signed; boundary="nextPart1224078.IenSHiJm17";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Hi!
 
---nextPart1224078.IenSHiJm17
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > > And guess what ? It's what we do on powerbooks, and it works fine,
+> > > without a freezer :-)
 
-Hi.
+Well, issue is, you should stop claiming it works fine until issue
+below is fixed... please?
 
-On Saturday 07 July 2007 17:50:18 Pavel Machek wrote:
-> Hi!
->=20
-> > The main limitation of the freezer is that it cannot handle=20
-uninterruptible
-> > tasks.  Namely, if there are uninterruptible tasks in the system, the=20
-freezer
-> > returns an error, which makes it impossible to suspend the system.
-> ...
-> > Unfortunately, this mechanism also leads to severe limitations, such as=
-=20
-that it
-> > makes the freezer unable to handle systems using FUSE in a reliable way.
-> >=20
-> > This patch makes the freezer skip uninterruptible user space tasks (ie.=
-=20
-such
-> > that have an mm of their own) when counting the tasks to be frozen.  As=
- a
-> > result, these tasks have the TIF_FREEZE and TIF_SIGPENDING flags set, b=
-ut=20
-the
-> > freezer doesn't wait for them to enter the refrigerator.  Nevertheless,=
-=20
-they
-> > will enter the refrigerator as soon as they change their state.
->=20
-> I don't think we can do that. I suspect rename looks like:
->=20
-> 	write directory entry in source
-> A)	(uninterruptible wait for write)
-> 	write directory entry in destination
-> 	(uninterruptible wait for write)
-> 	write something else
->=20
-> If we freeze some task in place "A)", we'll write to the disk when the
-> directory write is finished :-(.
-
-Renaming is a single syscall, so won't the process get frozen when the sysc=
-all=20
-finishes? The sys_sync will also help here - it will ensure the rename gets=
-=20
-flushed before we start on freezing kernel threads.
-
-Perhaps you've just found more logic for keeping the sys_sync there?
-
-Regards,
-
-Nigel
-=2D-=20
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
-
---nextPart1224078.IenSHiJm17
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGj1lHN0y+n1M3mo0RAgKlAJ9YI4zJzlL9bwAknrVnrkOiZU5O+gCgnXmS
-Cm4oeo7+qQhhj4HjJpPzG4U=
-=jLOo
------END PGP SIGNATURE-----
-
---nextPart1224078.IenSHiJm17--
-
---===============5310920894562774070==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+And anyway I believe that current issue (fuse deadlocks with s2ram)
+should be present on powerbooks, too... it is just way harder to
+trigger. All that is neccessary is fused (or one of its helpers) to
+get frozen by accessing suspended device.
 
 
---===============5310920894562774070==--
+									Pavel
+
+> > I wish you'd stop saying that.  Have you ever done any serious testing?
+> > 
+> > Here's something to try:  Add a time delay to the end of hub_suspend in
+> > drivers/usb/core/hub.c, so you can provoke a race manually.  Then while
+> > one of your root hubs is being suspended and the system is waiting in
+> > that delay, either plug in a new USB device to that hub or unplug an
+> > existing device.
+> > 
+> > Be sure that CONFIG_USB_DEBUG is on so that we can figure out what 
+> > happened after the fact.
+> 
+> If you remember, one of the things I've been advocating has always been
+> that we should put on hold all plug activity (unplug might be alright as
+> long as the user events are just delayed) when we start suspending. No
+> new devices, no new bindings. "hub" type devices are respondible for
+> bringing in the new stuff after resume.
+
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
