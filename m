@@ -1,19 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: removing refrigerator does not help with s2ram vs. fuse deadlocks
-	(was Re: Re: [PATCH] Remove process freezer from
-	suspend to RAM pathway)
-Date: Sat, 7 Jul 2007 13:49:47 +0200
-Message-ID: <20070707114947.GD2789@elf.ucw.cz>
-References: <18059.6726.218205.104212@cargo.ozlabs.ibm.com>
-	<20070705091526.GA3084@elf.ucw.cz>
-	<20070705135758.GB22177@srcf.ucam.org>
-	<200707051628.12199.rjw@sisk.pl>
-	<20070705142600.GB22598@srcf.ucam.org>
+Subject: possible solution for problem 2 (was Re: [RFC][PATCH
+	-mm] PM: Do not sync filesystems from within the freezer)
+Date: Sat, 7 Jul 2007 13:48:56 +0200
+Message-ID: <20070707114856.GB2789@elf.ucw.cz>
+References: <200707041658.59588.rjw@sisk.pl>
+	<200707061707.23316.nigel@nigel.suspend2.net>
+	<E1I6i0N-0003CY-00@dorka.pomaz.szeredi.hu>
+	<200707061719.36054.nigel@nigel.suspend2.net>
+	<E1I6iMD-0003Gl-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070705142600.GB22598@srcf.ucam.org>
+In-Reply-To: <E1I6iMD-0003Gl-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,41 +22,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, nigel@suspend2.net, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > And also "Userland should not depend on userland services", which is 
-> > > rather more of a problem.
+> > > > To get more serious and practical though, I think the solution is to
+> > > > fuzz the userspace/kernelspace distinction. What we really want to
+> > > > do is freeze things that submit I/O, then sync, then freeze anything
+> > > > that processes I/O and needs to be frozen. In effect, redefine fuse
+> > > > processes as freezeable kernel threads.
+> > > 
+> > > Another myth, that has been debunked already.  The problem is: how do
+> > > you define fuse processes?  There's no theoretical or even practial
+> > > way to do that.
 > > 
-> > I think you're oversimplifying it, as far as FUSE is concerned.
-> > 
-> > Namely, if there are two userland tasks, A and B, and B is uninterruptible,
-> > because A is blocked, then this is not a usual situation.
+> > No theoretical or practical way?! I'll freely admit to being quite ignorant 
+> > about fuse, but surely there's some way by which they can be distinguished.
 > 
-> Fuse is one case of it occuring, and if we end up with more userspace 
-> drivers then the problem is only going to get worse.
+> How?  OK, there are some tasks, that read and/or write /dev/fuse. And
+> there are some that just communicate in some way with the above.
 
-We'll have to solve them as they come.
+(Not that I'm advocating this, but:)
 
-Face it, hardware drivers _have_ to know about suspend/resume. Even
-userspace drivers will have to know about suspend/resume, because they
-need to reinit the hw during resume.
+You could ask fused to identify tasks involved in fuse handling. "Hey,
+fused, please give me list of PIDs".
 
-Now... most parts of kernel need to know (a bit) about suspend/resume
--- at least enough to play nicely with refrigerator. In retrospect it
-is pretty obvious that this covers fused, too, unfortunately noone
-noticed that when fuse was designed.
+Yes, that would be beyond ugly.
 
-Can we try to solve the suspend vs. fuse problem now? "Just removing
-the refrigerator" is not the answer. First, refrigerator is impossible
-to remove in few months timeframe, and second, it does not solve the
-problem anyway.
+(I guess I'm advocating this:)
 
-(Actually, there are two separate problems with suspend vs. fuse.)
-								Pavel
+We probably can do variation on this. Notify fuse early that suspend
+is comming, so we can wait for all the fused requests to be flushed
+(/fusectl/*/waiting going to 0), and then just trap tasks trying to
+communicate with fuse in a sane place (i.e. not a place where VFS
+locks are held).
+
+...I'm not saying this is a nice solution, but it should
+work... right...? And should work for hibernation, too...?
+
+(at this point, we still have problem 1: something in s2ram path
+causes fuse to communicate with its frozen fused. It is not sync, so
+what is it?)
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
