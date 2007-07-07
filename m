@@ -1,17 +1,16 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: [PATCH] Remove process freezer from suspend to
 	RAM pathway
-Date: Sat, 07 Jul 2007 12:44:45 +1000
-Message-ID: <1183776285.3388.201.camel@localhost.localdomain>
+Date: Sat, 07 Jul 2007 12:46:37 +1000
+Message-ID: <1183776397.3388.203.camel@localhost.localdomain>
 References: <Pine.LNX.4.44L0.0707051713440.2753-100000@iolanthe.rowland.org>
-	<200707060913.24131.rjw@sisk.pl>
 	<1183712354.3388.126.camel@localhost.localdomain>
-	<200707061131.08475.oliver@neukum.org>
+	<200707061131.08475.oliver@neukum.org> <200707061153.05091.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707061131.08475.oliver@neukum.org>
+In-Reply-To: <200707061153.05091.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,75 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-07-06 at 11:31 +0200, Oliver Neukum wrote:
-> Am Freitag, 6. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > On Fri, 2007-07-06 at 09:13 +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > The only reason (I know of) why we don't handle uninterruptible tasks in the
-> > > freezer is that we're afraid of the suspend process deadlocking with an
-> > > uninterruptible task holding a lock, but AFAICS the probability of such an
-> > > event is extremely small.
-> > 
-> > What would deadlock specifically ? One of the drivers trying to acquire
-> > that lock ? It would be a driver bug then.
+On Fri, 2007-07-06 at 11:53 +0200, Rafael J. Wysocki wrote:
 > 
-> Your driver's write method looks like:
-> 
-> mutex_lock();
-> poke_some_hardware();
-> wait_event_uninterruptible(); //for result
-> res = evaluate_result();
-> mutex_unlock();
-> return res;
-> 
-> If you put a task into the refrigerator at wait_event_interruptible()
-> you will deadlock if you need this lock for the driver to go to suspend.
-> The suspend method then must not take the lock _and_ it must be
-> aware that there may be an ongoing operation.
+> Moreover, I claim that, in the context of your example, _if_ the task
+> is stuck
+> at the wait_event_uninterruptible(), _then_ the freezerless suspend
+> will
+> deadlock with the task.
 
-Well... 2 things here. Either you have a freezer in which case the
-chances of the above scenario are increased, or you don't, in which case
-your suspend method will just sleep on the lock until outstanding HW
-accesses that have that lock are completed, and everything is fine.
+Why would the task be stuck there if it's not becasue of a freezer ? The
+only reason I see would be a dependency on something like kmalloc trying
+to push things to disk, or a lock owned by another user process, but the
+former is a generic issue I've discussed in a separate mail and the
+later is a driver bug imho.
 
-You need to be careful with one thing though, whether you have a freezer
-or not. If you driver, in some code path, whatever it is (ioctl, kernel
-thread, workqueue, ...) does something like:
-
-mutex_lock
-kmalloc(...,GFP_KERNEL);
-mutex_unlock
-
-And it's suspend callback then does:
-
-mutex_lock
-
-The problem here is that the disks might already have been suspended
-prior to your driver being called. Thus, any attempt at pushing things
-out to swap or dirty mmap'ings back to storage will hang, thus kmalloc
-can potentially hang (afaik), and you will deadlock.
-
-That's what I've been talking about earlier when I said that we should
-have some security in SLAB/SLUB/Buddy allocators, to silently turn
-GFP_KERNEL to at least GFP_NOIO or even ATOMIC before we start
-suspending drivers.
-
-Now, another way to deal with that would have to use
-pre-suspend/post-resume notifications, and have drivers avoid doing the
-above between those, but that's much harder. (Essentially, drivers would
-have to either make sure they don't do things like blocking allocations,
-even implicitely, or possibly fall back to a degraded synchronous mode
-or that sort of thing).
-
-I think it's much simpler to tweak slab/slub/buddy instead :-)
-
-Note that the above issue is orthogonal to our freezer discussion, it's
-just one of the potential deadlock cause we have with suspend that needs
-to be fixed.
-
-Cheers,
 Ben.
