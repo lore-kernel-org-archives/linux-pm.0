@@ -1,22 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Sat, 7 Jul 2007 14:19:13 +0200
-Message-ID: <20070707121913.GD3111__28653.3756334849$1183810824$gmane$org@elf.ucw.cz>
-References: <18059.10554.955290.148535@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
-	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
-	<200707050858.03638.oliver@neukum.org>
-	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-	<20070705091801.GB3084@elf.ucw.cz>
-	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-	<20070705220444.GD3881@elf.ucw.cz>
-	<E1I6huk-0003AH-00@dorka.pomaz.szeredi.hu>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: 2.6.22-rc7: known regressions v2
+Date: Sat, 07 Jul 2007 18:06:44 +0200
+Message-ID: <468FBA14.9040706__39388.0513533533$1183824467$gmane$org@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <E1I6huk-0003AH-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,31 +15,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Ben. Herrenschmidt" <benh@kernel.crashing.org>, Ani Joshi <ajoshi@kernel.crashing.org>, reiserfs-devel@vger.kernel.org, "Vladimir V. Saveliev" <vs@namesys.com>, Randy Dunlap <randy.dunlap@oracle.com>, sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Andrey Borzenkov <arvidjaar@mail.ru>, Andi Kleen <ak@suse.de>, discuss@x86-64.org, Ioan Ionita <opslynx@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2007-07-06 09:07:38, Miklos Szeredi wrote:
-> > > Actually fuse allows SIGKILL, because it's always fatal, and the
-> > > syscall may not be restarted.
-> > 
-> > Okay, and you should handle refrigerator in the same paths where you
-> > handle SIGKILL. Just add try_to_freeze() there...
-> 
-> It's the fourth time I'm repeating this in this thread:
-> 
-> Yes adding try_to_freeze() there would partially solve the probelem.
-> 
-> But another task can be sleeping on a mutex held by the task waiting
-> for the reply.  And the freezer won't be able to handle that one.
-> 
-> Generally, calling try_to_freeze() with mutexes held is not a good
-> idea.
+Hi all,
 
-Agreed, calling try_to_freeze() with mutex held is no-no, and it is
-even documented somewhere.
-								Pavel
+Here is a list of some known regressions in 2.6.22-rc7.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Hugh Dickins                           2
+Andi Kleen                             2
+Andrew Morton                          1
+Benjamin Herrenschmidt                 1
+Bj=F6rn Steinbrink                       1
+Bjorn Helgaas                          1
+Christoph Lameter                      1
+David Woodhouse                        1
+Jean Delvare                           1
+Olaf Hering                            1
+Siddha, Suresh B                       1
+Trent Piepho                           1
+Ville Syrj=E4l=E4                          1
+
+
+
+FBDEV
+
+Subject         : SLUB kmalloc-32768: Poison check failed@0xc1e20000 slab=
+ 0xc04de400
+References      : http://lkml.org/lkml/2007/7/4/305
+Last known good : ?
+Submitter       : David Woodhouse <dwmw2@infradead.org>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+
+
+FS
+
+Subject    : 2.6.22-rc4-git5 reiserfs: null ptr deref.
+References : http://lkml.org/lkml/2007/6/13/322
+Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
+Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+Status     : problem is being debugged
+
+
+
+Sparc64
+
+Subject    : 2.6.22-rc broke X on Ultra5
+References : http://lkml.org/lkml/2007/5/22/78
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Handled-By : David Miller <davem@davemloft.net>
+Status     : problem is being debugged
+
+
+
+Suspend
+
+Subject         : reiserfs/libata sporadically hangs on resume from hiber=
+nation
+References      : http://lkml.org/lkml/2007/6/30/5
+Last known good : ?
+Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+
+
+x86-64
+
+Subject    : x86-64 2.6.22-rc2 random segfaults
+References : http://lkml.org/lkml/2007/5/24/275
+Submitter  : Ioan Ionita <opslynx@gmail.com>
+Status     : Unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
