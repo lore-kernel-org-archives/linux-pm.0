@@ -1,16 +1,18 @@
-From: Marcelo Tosatti <marcelo@kvack.org>
-Subject: [PATCH] add powerbutton and lid platform devices
-Date: Sun, 8 Jul 2007 18:10:27 -0400
-Message-ID: <20070708221027.GA4964__23665.746060624$1183932831$gmane$org@dmt>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200704011728.10966.david-b@pacbell.net>
-	<20070619170048.GA342@dmt.media.mit.edu>
-	<200706201830.52277.david-b@pacbell.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: hibernation/snapshot design [was Re: [PATCH] Remove
+	process freezer from suspend to RAM pathway]
+Date: Mon, 9 Jul 2007 00:13:15 +0200
+Message-ID: <20070708221315.GF5401__47597.9674760767$1183932848$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
+	<200707082115.27363.rjw@sisk.pl>
+	<1183928612.3388.289.camel@localhost.localdomain>
+	<200707082345.27859.rjw@sisk.pl>
+	<1183931688.3388.316.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200706201830.52277.david-b@pacbell.net>
+In-Reply-To: <1183931688.3388.316.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,86 +22,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>, Jordan Crouse <jordan.crouse@amd.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Jordan,
+Hi!
 
-This allows configuration of powerbutton/lid events... Are the 
-gpio_gpio_{clear,set} calls correct for enabling/disabling LID
-events?
+> > Actaully, I'm perfectly fine with that, as long as each task blocked by the
+> > driver due to suspend has PF_FROZEN (or something similar) set.  Then, at
+> > least theoretically, we'll be able to drop the freezer from the suspend code
+> > path and move it after device_suspend() (or the hibernation-specific
+> > equivalent) for hibernation (in that case there shouldn't be a problem with
+> > any task waiting on I/O while the freezer is running ;-)).
+> 
+> I don't see the need for a freezer for snapshot but that's a different
+> issue. (stop_machine looks good enough to me).
 
-What else do we want to support?
+Freezer is not needed for snapshot -- it is needed so that we can
+write out the snapshot to disk without the need for special
+drivers/block/simple-ide-for-suspend.c. (We are doing snapshot, then
+write to disk from userland code in uswsusp).
+								Pavel 
 
---- olpc-pm.c.orig	2007-07-08 17:09:07.000000000 -0400
-+++ olpc-pm.c	2007-07-08 18:07:03.000000000 -0400
-@@ -54,6 +54,18 @@
- 
- static int gpio_wake_events = 0;
- static int ebook_state = -1;
-+static u16 olpc_wakeup_mask = 0;
-+
-+struct platform_device olpc_powerbutton_dev = {
-+	.name = "powerbutton",
-+	.id = 0,
-+};
-+
-+struct platform_device olpc_lid_dev = {
-+	.name = "lid",
-+	.id = 0,
-+};
-+
- 
- static void __init init_ebook_state(void)
- {
-@@ -250,6 +262,16 @@
- 	/* Save the MFGPT MSRs */
- 	rdmsrl(MFGPT_IRQ_MSR, mfgpt_irq_msr);
- 	rdmsrl(MFGPT_NR_MSR, mfgpt_nr_msr);
-+
-+	if (device_may_wakeup(&olpc_powerbutton_dev.dev))
-+		olpc_wakeup_mask |= CS5536_PM_PWRBTN;
-+	else
-+		olpc_wakeup_mask &= ~(CS5536_PM_PWRBTN);
-+
-+	if (device_may_wakeup(&olpc_lid_dev.dev))
-+		geode_gpio_clear(OLPC_GPIO_LID, GPIO_EVENTS_ENABLE);
-+	else
-+		geode_gpio_set(OLPC_GPIO_LID, GPIO_EVENTS_ENABLE);
- }
- 
- static int olpc_pm_enter(suspend_state_t pm_state)
-@@ -275,8 +297,6 @@
- 	return 0;
- }
- 
--static u16 olpc_wakeup_mask = CS5536_PM_PWRBTN;
--
- int asmlinkage olpc_do_sleep(u8 sleep_state)
- {
- 	void *pgd_addr = __va(read_cr3());
-@@ -596,15 +616,20 @@
- 	.resource = rtc_platform_resource,
- };
- 
--static int __init olpc_rtc_init(void)
-+static int __init olpc_platform_init(void)
- {
- 	(void)platform_device_register(&olpc_rtc_device);
--
- 	device_init_wakeup(&olpc_rtc_device.dev, 1);
- 
-+	(void)platform_device_register(&olpc_powerbutton_dev);
-+	device_init_wakeup(&olpc_powerbutton_dev.dev, 1);
-+
-+	(void)platform_device_register(&olpc_lid_dev);
-+	device_init_wakeup(&olpc_lid_dev.dev, 1);
-+
- 	return 0;
- }
--arch_initcall(olpc_rtc_init);
-+arch_initcall(olpc_platform_init);
- #endif /* CONFIG_RTC_DRV_CMOS */
- 
- static void olpc_pm_exit(void)
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
