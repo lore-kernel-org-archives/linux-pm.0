@@ -1,15 +1,17 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Sun, 08 Jul 2007 15:19:01 +1000
-Message-ID: <1183871941.3388.286.camel__31976.0023769506$1183872007$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
-	<1183871661.3388.282.camel@localhost.localdomain>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] rtc-cmos: use cmos_rtc_board_info to
+	determine wake_on callback
+Date: Sat, 7 Jul 2007 22:06:03 -0700
+Message-ID: <200707072206.03895.david-b__2530.0896414139$1183872459$gmane$org@pacbell.net>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<20070402165511.GD5024@cosmic.amd.com> <20070708034953.GB19633@dmt>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183871661.3388.282.camel@localhost.localdomain>
+In-Reply-To: <20070708034953.GB19633@dmt>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +21,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Saturday 07 July 2007, Marcelo Tosatti wrote:
+> 
+> From my understand ACPI fills a cmos_rtc_board_info with pointers for
+> wake_on/wake_off callbacks and registers that at dev->platform_data.
+> 
+> So use that to retrieve the callback pointers.
+> 
+> Am I missing something?
 
-> I think it's a fairly significant change from the current freezer and I
-> also think it's a very good idea. The more I think about it, the more I
-> like it, in the sense that it's a simple drop-in that you could put in a
-> lot of the ioctl path of drivers to just block tasks that are trying to
-> call in while suspending, and could be used selectively by things like
-> the USB hub threads.
+This is retrieved already in the probe() routine, which
+does other board-specific setup that may be needed.
 
-Note that we could have also a per-device "icebox" (just a waitqueue).
-Might be nice for a device to resume whatever it froze just after it
-resumed itself, might even be necessary in case whatever thread got
-frozen is necessary for handling child devices.
+So this patch isn't needed.  Or, in fact, correct ... both
+the wake_on() and wake_off() methods are required.
 
-Cheers,
-Ben.
+
+> diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+> index e24ea82..5bfab23 100644
+> --- a/drivers/rtc/rtc-cmos.c
+> +++ b/drivers/rtc/rtc-cmos.c
+> @@ -549,6 +549,7 @@ #ifdef	CONFIG_PM
+>  static int cmos_suspend(struct device *dev, pm_message_t mesg)
+>  {
+>  	struct cmos_rtc	*cmos = dev_get_drvdata(dev);
+> +	struct cmos_rtc_board_info *board_info = dev->platform_data;
+>  	int		do_wake = device_may_wakeup(dev);
+>  	unsigned char	tmp;
+>  
+> @@ -572,8 +573,8 @@ static int cmos_suspend(struct device *d
+>  
+>  	if (tmp & RTC_AIE) {
+>  		cmos->enabled_wake = 1;
+> -		if (cmos->wake_on)
+> -			cmos->wake_on(dev);
+> +		if (board_info->wake_on)
+> +			board_info->wake_on(dev);
+>  		else
+>  			enable_irq_wake(cmos->irq);
+>  	}
+> 
