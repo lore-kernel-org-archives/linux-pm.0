@@ -1,16 +1,15 @@
 From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] rtc-cmos: use cmos_rtc_board_info to
-	determine wake_on callback
-Date: Sat, 7 Jul 2007 22:06:03 -0700
-Message-ID: <200707072206.03895.david-b__2530.0896414139$1183872459$gmane$org@pacbell.net>
+Subject: Re: [PATCH] OLPC rtc-cmos support
+Date: Sat, 7 Jul 2007 22:13:40 -0700
+Message-ID: <200707072213.41028.david-b__3700.05690861053$1183872475$gmane$org@pacbell.net>
 References: <20070330235759.GC4252@cosmic.amd.com>
-	<20070402165511.GD5024@cosmic.amd.com> <20070708034953.GB19633@dmt>
+	<20070402165511.GD5024@cosmic.amd.com> <20070708035504.GC19633@dmt>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070708034953.GB19633@dmt>
+In-Reply-To: <20070708035504.GC19633@dmt>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,41 +26,28 @@ List-Id: linux-pm@vger.kernel.org
 
 On Saturday 07 July 2007, Marcelo Tosatti wrote:
 > 
-> From my understand ACPI fills a cmos_rtc_board_info with pointers for
-> wake_on/wake_off callbacks and registers that at dev->platform_data.
+> Hi,
 > 
-> So use that to retrieve the callback pointers.
+> The following patch implements the hooks necessary for OLPC to use the
+> rtc-cmos driver. This is necessary since we do not want CONFIG_PNP.
 > 
-> Am I missing something?
-
-This is retrieved already in the probe() routine, which
-does other board-specific setup that may be needed.
-
-So this patch isn't needed.  Or, in fact, correct ... both
-the wake_on() and wake_off() methods are required.
-
-
-> diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-> index e24ea82..5bfab23 100644
-> --- a/drivers/rtc/rtc-cmos.c
-> +++ b/drivers/rtc/rtc-cmos.c
-> @@ -549,6 +549,7 @@ #ifdef	CONFIG_PM
->  static int cmos_suspend(struct device *dev, pm_message_t mesg)
->  {
->  	struct cmos_rtc	*cmos = dev_get_drvdata(dev);
-> +	struct cmos_rtc_board_info *board_info = dev->platform_data;
->  	int		do_wake = device_may_wakeup(dev);
->  	unsigned char	tmp;
->  
-> @@ -572,8 +573,8 @@ static int cmos_suspend(struct device *d
->  
->  	if (tmp & RTC_AIE) {
->  		cmos->enabled_wake = 1;
-> -		if (cmos->wake_on)
-> -			cmos->wake_on(dev);
-> +		if (board_info->wake_on)
-> +			board_info->wake_on(dev);
->  		else
->  			enable_irq_wake(cmos->irq);
->  	}
+> This makes it possible to control rtc wakeup via
+> /sys/devices/platform/rtc_cmos/power/wakeup.
 > 
+> Comments?
+
+Looks almost right ... though I'd have expected the RTC to
+support alarms more than just 24 hours into the future!
+
+It's more complicated than necessary.  It'd be much simpler
+to just declare a static platform_device with pre-initted
+platform_data.  Then call device_init_wakeup() on that before
+calling the usual platform_device_register() routine.
+
+That way you wouldn't need to have two different init sections
+just to set up one device, where one of them is spending most
+of its time working around the possibility that the other one
+failed.  And you'd also pretty much eliminate the possibility
+that the (now) single init section fails.  :)
+
+- Dave
