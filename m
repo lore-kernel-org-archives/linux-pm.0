@@ -1,17 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Sun, 8 Jul 2007 23:07:29 +0200
-Message-ID: <20070708210729.GC5401@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
-	<1183871661.3388.282.camel@localhost.localdomain>
-	<200707082115.27363.rjw@sisk.pl>
-	<1183928612.3388.289.camel@localhost.localdomain>
+Date: Sun, 8 Jul 2007 23:08:09 +0200
+Message-ID: <20070708210809.GD5401__45571.9134225093$1183928942$gmane$org@elf.ucw.cz>
+References: <200707082046.36864.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1183928612.3388.289.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > I just think that the freezer approach, as it is, is backward. We can't
-> > > have a 3rd party try to discriminate what to freeze and what not, it
-> > > will always get something wrong, and in some cases with the wrong timing
-> > > or ordering.
+> > I'm all for changing this infrastructure, but in an organized way (ie. we
+> > discuss what to do next, we do that and then we go to the next step) and in
+> > the order that everyone will be comfortable with.
 > > 
-> > Nice discussion, except for one thing: the freezer doesn't decide what to
-> > freeze.  For example, even right now kernel threads decide if they want to be
-> > frozen.
+> > So, let's finish this thread and start over from discussing what needs to be
+> > done, how (ie. in what order etc.) we are going to do that and who is going to
+> > do what.  Shall we?
 > 
-> Somewhat... userspace doesn't and workqueues are a gray area.
-
-But userspace must not be neccessary for kernel functioning, so that's
-quite okay. And we do need to solve the workqueues.
-
-> Also, I've been thinking this "icebox" idea a bit more and it seems in
-> fact a bit racy in some areas, at least for use by things like drivers,
-> unless we end up doing something aking to an RCU on suspend, waiting for
-> all tasks to reach userland once, but that has the same annoyances as
-> the current freezer.
+> IMO we should start by using the new notifier chain and by implementing 
+> a central "icebox" routine.  Then we can forbid device registration 
+> during suspend.
 > 
-> Thus I'm tempted to go back to saying that driver can handle things
-> locally :-)
+> It might also be a good idea to add a freezable keventd-like workqueue 
+> specifically intended for things that need to block during a suspend.  
+> Although maybe this will end up being unnecessary; it's too soon to 
+> tell.
 
-:-). Or perhaps freezer is not _that_ evil after all?
+We actually had patches for freezeable workqueues at one point.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
