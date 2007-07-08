@@ -1,15 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
-	tasks
-Date: Sun, 8 Jul 2007 18:37:41 +0000
-Message-ID: <20070708183741.GA4891__12632.7019920156$1183920003$gmane$org@ucw.cz>
-References: <Pine.LNX.4.44L0.0707061039380.3737-100000@iolanthe.rowland.org>
-	<200707080108.17371.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Sun, 8 Jul 2007 20:46:35 +0200
+Message-ID: <200707082046.36864.rjw__5051.39936362884$1183920130$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0707072218030.10912-100000@netrider.rowland.org>
+	<1183869576.3388.250.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1183869576.3388.250.camel@localhost.localdomain>
 Content-Disposition: inline
-In-Reply-To: <200707080108.17371.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +21,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > And then you will face the problem of a user task doing I/O during 
-> > hibernate after the atomic snapshot has been made.
+On Sunday, 8 July 2007 06:39, Benjamin Herrenschmidt wrote:
 > 
-> I don't think that this is possible in normal conditions.  It would be possible
-> if, for example, the task were waiting for an unavailable resource and that
-> resource became available after the hibernation image had been created.
-> In that case, however, to do any damage, the task would have to cause some
-> filesystem-related data to be flushed in the same syscall (ie. before returning
-> to user space).
+> > In my defense, you should realize that until Rafael's notifier chain
+> > was added (just a few weeks ago, still not in mainline I believe) there
+> > was no other way to do it.  Plug activity needs to be stopped before
+> > the child devices are suspended, and the PM core does not send any
+> > notification to drivers at that time.  All it does is activate the 
+> > freezer.
 > 
-> Such situations may be prevented by a mechanizm detecting if any uniterruptible
-> and freezing task has been woken up after creating the image and aborting the
-> hibernation in that cases.  For this purpose, we only need to add an
-> appropriate condition to try_to_wake_up() and make it start to trigger after,
-> for example, enabling the nonboot CPUs.
+> That's true. That was one of the reason I've always wanted the
+> pre-suspend and post-resume hooks. (I prefer keeping the ordering there
+> too, rather than a notifier, but a notifier is fine I suppose).
+> 
+> Among the clients we want here the firmware stuff, the allocators,
+> etc... to get themselves in conditions that won't deadlock during
+> suspend cycle.
+> 
+> I think that's a much bigger issue overall than freezer vs. no
+> freezer :-)
 
-Hmm, okay, I see how you meant it. Yes, it probably could work... but
-I'd say it is seriously ugly.
+Yes.  The freezer is only one part of the PM infrastructure that we have
+currently and that is not very sophisticated, so to speak.
 
-Imagine task waking up after complete image is written... we'd have to
-invalidate the image before aborting the suspend.
+I'm all for changing this infrastructure, but in an organized way (ie. we
+discuss what to do next, we do that and then we go to the next step) and in
+the order that everyone will be comfortable with.
 
-Actually, we could do better: we could just refuse to run those tasks
-after atomic snapshot... and hope we don't deadlock,because the
-uninterruptible task holds some important lock... but I still think it
-is too ugly.
-							Pavel
+So, let's finish this thread and start over from discussing what needs to be
+done, how (ie. in what order etc.) we are going to do that and who is going to
+do what.  Shall we?
+
+Greetings,
+Rafael
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
