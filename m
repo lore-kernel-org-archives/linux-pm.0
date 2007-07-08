@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Sun, 8 Jul 2007 21:15:26 +0200
-Message-ID: <200707082115.27363.rjw__34698.3112198815$1183921756$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
-	<1183871661.3388.282.camel@localhost.localdomain>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] OLPC rtc-cmos support
+Date: Sun, 8 Jul 2007 12:10:50 -0700
+Message-ID: <200707081210.51145.david-b__1837.99112351171$1183921982$gmane$org@pacbell.net>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200707072213.41028.david-b@pacbell.net>
+	<20070708184035.GA20078@dmt>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183871661.3388.282.camel@localhost.localdomain>
+In-Reply-To: <20070708184035.GA20078@dmt>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,25 +21,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 8 July 2007 07:14, Benjamin Herrenschmidt wrote:
-[--snip--]
+On Sunday 08 July 2007, Marcelo Tosatti wrote:
+
+> Like this? 
+
+Not quite ...
+
+
+> +struct resource rtc_platform_irq = {
+> +	.flags = IORESOURCE_IRQ,
+> +	.start = 8,
+> +	.end = 8,
+> +};
+
+Unused, right?
+
+
+> +static int olpc_rtc_init(void)
+
+... should be marked __init ...
+
+> +{
+> +	rtc_info.rtc_day_alarm = 0;
+> +	rtc_info.rtc_mon_alarm = 0;
+> +	rtc_info.rtc_century = 0;
+> +	rtc_info.wake_on = rtc_wake_on;
+> +	rtc_info.wake_off = rtc_wake_off;
+
+... that can all just be static init ...
+
+> +
+> +	(void)platform_device_register(&olpc_rtc_device);
+> +
+> +	device_init_wakeup(&olpc_rtc_device.dev, 1);
+
+... do the init_wakeup before registering the device, so
+there can never be confusion about whether a probe() will
+see that part of device config ...
+
+> +
+> +	return 0;
+> +}
+> +fs_initcall(olpc_rtc_init);
+
+... and try to register platform devices in arch_initcall().
+Just to avoid potential confusion; that's where it's normally
+done, and I don't think you had a need to do it elsewhere.
+
+- Dave
+
+
+
+> +#endif /* CONFIG_RTC_DRV_CMOS */
+> +
+>  static void olpc_pm_exit(void)
+>  {
+>  	/* Clear any pending events, and disable them */
 > 
-> I just think that the freezer approach, as it is, is backward. We can't
-> have a 3rd party try to discriminate what to freeze and what not, it
-> will always get something wrong, and in some cases with the wrong timing
-> or ordering.
-
-Nice discussion, except for one thing: the freezer doesn't decide what to
-freeze.  For example, even right now kernel threads decide if they want to be
-frozen.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
