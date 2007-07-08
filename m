@@ -1,16 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: rtc-cmos not supporting RTC_AIE?
-Date: Sat, 7 Jul 2007 22:26:49 -0700
-Message-ID: <200707072226.50069.david-b__42492.351079318$1183872482$gmane$org@pacbell.net>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<20070402165511.GD5024@cosmic.amd.com> <20070708034633.GA19633@dmt>
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: Re: [PATCH] Remove process freezer from suspend to
+	RAM pathway
+Date: Sun, 8 Jul 2007 17:19:34 +1000
+Message-ID: <18064.36870.150985.222090__3248.61609046838$1183879239$gmane$org@cargo.ozlabs.ibm.com>
+References: <1183676393.3388.89.camel@localhost.localdomain>
+	<Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070708034633.GA19633@dmt>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0707061111050.3737-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,66 +19,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcelo Tosatti <marcelo@kvack.org>
-Cc: linux-pm@lists.linux-foundation.org, rtc-linux@googlegroups.com, devel@laptop.org, linux-acpi@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Kernel development list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 07 July 2007, Marcelo Tosatti wrote:
+Alan Stern writes:
 
-> 
-> David,
-> 
-> Is there any reason why programs using RTC_AIE/RTC_ALM_SET ioctls are    
-> unable to arm alarm irq's?                                              
+> In answer to both questions: We need the freezer in order to implement 
+> hibernate.  Even if we take your advice and stop using the freezer 
+> during suspend, these issues would still remain and would need to be 
+> solved.
 
-The ALM_SET request never did!  And I'm pretty sure AIE_ON does
-indeed set it ... the test cases use ALM_SET then AIE_ON, which
-is the "traditional" idiom (i.e. legacy drivers/char/rtc.c idiom).
+Stepping back for a minute, let's think about what the freezer is
+trying to achieve.  I think that currently there are three basic
+design goals:
 
+A. Ensure that device drivers don't get I/O requests after being
+   suspended.
 
-> I'm aware of the new RTC_WKALM_SET... but shouldnt backward
-> compatibility be kept?
+B. Ensure that driver suspend routines don't end up blocking forever
+   on mutexes or semaphores held by frozen tasks.
 
-According to <linux/rtc.h> the ALM_SET ioctl takes an rtc_time,
-while WKALM_SET takes an rtc_wkalm ... which differs from the
-former by including the flag controlling wheter the alarm will
-be enabled (or not) when setting the alarm.  (Model inherited
-from EFI.)
+C. Provide a way to get an atomic snapshot of memory for hibernation.
 
- 
-> The code seems to imply that its not supported anymore, however ioctl
-> returns success but no alarm is fired (for instance alarm.enabled is set
-> to 0):
-> 
->         case RTC_ALM_SET:
->                 if (copy_from_user(&alarm.time, uarg, sizeof(tm)))
->                         return -EFAULT;
-> 
->                 alarm.enabled = 0;
->                 alarm.pending = 0;
->                 alarm.time.tm_wday = -1;
->                 alarm.time.tm_yday = -1;
->                 alarm.time.tm_isdst = -1;
+Now, it's easy enough to freeze all processes (or all except one), if
+you don't have goal B.  Just offline non-boot cpus and disable
+interrupts, or use stop_machine().  But goal B implies that you can't
+necessarily just stop all tasks wherever they are.  In fact it means
+there are points where it is safe to stop a given task, and there may
+be points where it isn't safe to stop it - and there is no practical
+way to determine those points reliably.[1]
 
-That code is generic RTC framework code (rtc-dev.c), and not
-code specific to rtc-cmos ... the comment immediately following
-that (2.6.22-rc7 and previous) should clarify many of the issues.
+That implies to me that we can have a freezer as long as we do nothing
+that can sleep, while tasks are frozen.  In other words, I think the
+freezer is a viable option for hibernation as long as we restrict
+driver hibernate routines to doing only things which don't sleep.  I
+_think_ that should be doable since hibernate routines only need to
+wait for outstanding DMAs to complete, as I understand it, which can
+be done by polling.
 
-I think the current manpage does the same.  (If it mentions the
-/dev/rtc0, /dev/rtc1, etc files, it should be current enough.)
+Paul.
 
-What it does is just stuff the rtc_time into the expanded
-rtc_wkalm.  The idea is that the RTC drivers only support one
-alarm-setting method, but the /dev/rtcN ioctl interface uses
-it in two modes:
+[1] For a start, there's no way to determine which mutexes a task
+holds.  Even if there were, we would then also have to know which
+mutexes it is going to try to acquire before it releases the one we
+want, which is pretty much unknowable.
 
- - "legacy", up to 24 hours in the future, and requiring
-   the alarm to be enabled later with AIE_ON;
-
- - "EFI-style", into the arbitrary future, and bundling the
-   flag saying whether to enable the alarm.
-
-Since ALM_SET is the legacy mode, it requires separate AIE_ON
-(from the RTC driver directly).  But RTC_WKALM_SET doesn't.
-
-- Dave
+One can say "we'll only freeze kernel tasks that ask to be frozen" but
+then one has no way to guarantee A, and we still don't reliably
+guarantee B if we have user-level filesystems or device drivers.
