@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Sun, 8 Jul 2007 16:22:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707081619090.11049-100000__3974.44487684897$1183926183$gmane$org@netrider.rowland.org>
-References: <200707082046.36864.rjw@sisk.pl>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] OLPC rtc-cmos support
+Date: Sun, 8 Jul 2007 13:47:34 -0700
+Message-ID: <200707081347.35231.david-b__16496.621099259$1183927704$gmane$org@pacbell.net>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200707081210.51145.david-b@pacbell.net>
+	<20070708201747.GA13115@dmt>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707082046.36864.rjw@sisk.pl>
+In-Reply-To: <20070708201747.GA13115@dmt>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,27 +21,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-pm@lists.linux-foundation.org, devel@laptop.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 8 Jul 2007, Rafael J. Wysocki wrote:
 
-> I'm all for changing this infrastructure, but in an organized way (ie. we
-> discuss what to do next, we do that and then we go to the next step) and in
-> the order that everyone will be comfortable with.
+> > > +	(void)platform_device_register(&olpc_rtc_device);
+> > > +
+> > > +	device_init_wakeup(&olpc_rtc_device.dev, 1);
+> > 
+> > ... do the init_wakeup before registering the device, so
+> > there can never be confusion about whether a probe() will
+> > see that part of device config ...
 > 
-> So, let's finish this thread and start over from discussing what needs to be
-> done, how (ie. in what order etc.) we are going to do that and who is going to
-> do what.  Shall we?
+> For some reason doing things in that order causes wake_on/wake_off
+> to not be called...
 
-IMO we should start by using the new notifier chain and by implementing 
-a central "icebox" routine.  Then we can forbid device registration 
-during suspend.
+I see ... because platform_device_register() will device_initialize()
+which clobbers that state, before doing platform_device_add().  I
+wonder what bugs are lurking thereby.  :(
 
-It might also be a good idea to add a freezable keventd-like workqueue 
-specifically intended for things that need to block during a suspend.  
-Although maybe this will end up being unnecessary; it's too soon to 
-tell.
 
-Alan Stern
+> Thanks again for the comments.
+
+This last version looks clean and OK, so long as the driver registers
+after that arch_initcall().
+
+Really, no day field in the alarm for that particular southbridge?
+Too bad.  And a bit surprising ... I thought current versions of
+ACPI required the up-to-one-month enhancement to mc146818.
+
+- Dave
