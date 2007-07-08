@@ -1,18 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Sun, 8 Jul 2007 23:45:26 +0200
-Message-ID: <200707082345.27859.rjw__31835.9797973701$1183930741$gmane$org@sisk.pl>
+Date: Mon, 09 Jul 2007 07:54:48 +1000
+Message-ID: <1183931688.3388.316.camel__14348.4723441818$1183931859$gmane$org@localhost.localdomain>
 References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
 	<200707082115.27363.rjw@sisk.pl>
 	<1183928612.3388.289.camel@localhost.localdomain>
+	<200707082345.27859.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183928612.3388.289.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <200707082345.27859.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,48 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 8 July 2007 23:03, Benjamin Herrenschmidt wrote:
-> On Sun, 2007-07-08 at 21:15 +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 8 July 2007 07:14, Benjamin Herrenschmidt wrote:
-> > [--snip--]
-> > > 
-> > > I just think that the freezer approach, as it is, is backward. We can't
-> > > have a 3rd party try to discriminate what to freeze and what not, it
-> > > will always get something wrong, and in some cases with the wrong timing
-> > > or ordering.
-> > 
-> > Nice discussion, except for one thing: the freezer doesn't decide what to
-> > freeze.  For example, even right now kernel threads decide if they want to be
-> > frozen.
+On Sun, 2007-07-08 at 23:45 +0200, Rafael J. Wysocki wrote:
 > 
-> Somewhat... userspace doesn't and workqueues are a gray area.
+> Workqueues are kernel threads and the creator decides if they are going to
+> freeze.  There are only two freezable worqueues in the entire tree right now.
 
-Workqueues are kernel threads and the creator decides if they are going to
-freeze.  There are only two freezable worqueues in the entire tree right now.
+That and keventd workqueues... my point is you may well end up with
+something in a workqueue doing things that should have been blocked
+after the freeze.
 
-> Also, I've been thinking this "icebox" idea a bit more and it seems in
-> fact a bit racy in some areas, at least for use by things like drivers,
-> unless we end up doing something aking to an RCU on suspend, waiting for
-> all tasks to reach userland once, but that has the same annoyances as
-> the current freezer.
-> 
-> Thus I'm tempted to go back to saying that driver can handle things
-> locally :-)
+> Actaully, I'm perfectly fine with that, as long as each task blocked by the
+> driver due to suspend has PF_FROZEN (or something similar) set.  Then, at
+> least theoretically, we'll be able to drop the freezer from the suspend code
+> path and move it after device_suspend() (or the hibernation-specific
+> equivalent) for hibernation (in that case there shouldn't be a problem with
+> any task waiting on I/O while the freezer is running ;-)).
 
-Actaully, I'm perfectly fine with that, as long as each task blocked by the
-driver due to suspend has PF_FROZEN (or something similar) set.  Then, at
-least theoretically, we'll be able to drop the freezer from the suspend code
-path and move it after device_suspend() (or the hibernation-specific
-equivalent) for hibernation (in that case there shouldn't be a problem with
-any task waiting on I/O while the freezer is running ;-)).
+I don't see the need for a freezer for snapshot but that's a different
+issue. (stop_machine looks good enough to me).
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Ben
