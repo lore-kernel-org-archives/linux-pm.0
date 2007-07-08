@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Mon, 9 Jul 2007 00:06:31 +0200
-Message-ID: <200707090006.32712.rjw__17113.7776728303$1183932059$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	<1183929611.3388.303.camel@localhost.localdomain>
+From: Marcelo Tosatti <marcelo@kvack.org>
+Subject: [PATCH] add powerbutton and lid platform devices
+Date: Sun, 8 Jul 2007 18:10:27 -0400
+Message-ID: <20070708221027.GA4964__23665.746060624$1183932831$gmane$org@dmt>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200704011728.10966.david-b@pacbell.net>
+	<20070619170048.GA342@dmt.media.mit.edu>
+	<200706201830.52277.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183929611.3388.303.camel@localhost.localdomain>
 Content-Disposition: inline
+In-Reply-To: <200706201830.52277.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,133 +20,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>, Jordan Crouse <jordan.crouse@amd.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 8 July 2007 23:20, Benjamin Herrenschmidt wrote:
-> 
-> > But I'm not sure it's a good idea in the long run.  Think of a printer 
-> > daemon, for example.  It shouldn't have to experience unexpected I/O 
-> > problems merely because someone has decided to put the system to sleep.
-> 
-> Why not ? Printer is offline when machine is asleep... trying to print
-> errors out, I don't see the problem there. At one point, we'll need a
-> cleaner way to also notify userland in which case our daemon could
-> become more intelligent and stop servicings things before sleep and
-> resume afterward :-)
->  
-> > This will be up to the people responsible for the subsystems.  I can 
-> > take care of USB.
-> 
-> USB is not that much of a problem in the sense that for most "leaf"
-> drivers, USB is a provider (ie, the bus they sit on), not the client
-> (like the network stack is to network drivers).
-> 
-> In most cases, that "helper" thing would sit on the client subsystem,
-> since it's the one feeding drivers with requests. The main ones I see at
-> hand are block, alsa, net, fb/drm... Some of them already have
-> infrastructure to do it, some my need some more work.
-> 
-> > > I think it's a fairly significant change from the current freezer and I
-> > > also think it's a very good idea. The more I think about it, the more I
-> > > like it, in the sense that it's a simple drop-in that you could put in a
-> > > lot of the ioctl path of drivers to just block tasks that are trying to
-> > > call in while suspending, and could be used selectively by things like
-> > > the USB hub threads.
-> > 
-> > That's what I had in mind.  Rafael, can we add an "icebox" routine?  
-> > Like Ben says, it doesn't need to be much more than a waitqueue
-> > that the current task puts itself on if a suspend is in progress.  
-> > Callers arriving at a time when the icebox isn't activated should
-> > simply return without blocking.  Basically the icebox should be active 
-> > at the same times as the existing freezer.
-> 
-> There is still the race of:
-> 
-> 	drivers_sysfs_write()
-> 		try_to_icebox()
-> 		<---- <sleep request gets here>
-> 		hit hardware
-> 
-> Those are akin, in some ways, to the freezer races.
+Jordan,
 
-I'm not sure what races you're referring to, but never mind. :-)
+This allows configuration of powerbutton/lid events... Are the 
+gpio_gpio_{clear,set} calls correct for enabling/disabling LID
+events?
 
-This is the reason why the freezer waits for tasks to freeze, actually.
+What else do we want to support?
 
-> Some kind of RCU might take care of them if we enable the icebox,
-> then wait for all tasks to hit an explicit schedule point once (or return to
-> userland).
-
-This is what the freezer does, isn't it? ;-)
-
-> That would mean that drivers need to try_to_icebox() again if they do
-> something that may schedule (such as __get_user). So it's not a magic
-> solution, it has issues, but it can handle a lot of the simplest cases. 
-
-Well, can't we do:
-
- 	drivers_sysfs_write()
-		while(!suspend_trylock())
-			try_to_icebox() --> or even try_to_freeze(), what's the difference?
-
- 		hit hardware
-		unlock_suspend()
-
-where the PM core must wait for the suspend lock to get released (say with a
-timeout)?
+--- olpc-pm.c.orig	2007-07-08 17:09:07.000000000 -0400
++++ olpc-pm.c	2007-07-08 18:07:03.000000000 -0400
+@@ -54,6 +54,18 @@
  
-> > Here's a wacky idea which just might work:
-> > 
-> > In order to prevent binding and unbinding, while suspending devices all
-> > the PM core has to do is avoid dropping the device semaphores!  It can
-> > release the semaphores as it resumes the devices.
-> > 
-> > Of course, for this to work it's necessary to avoid changes to the 
-> > device list during the suspend.  However I believe the iteration can be 
-> > made safe against unregistration, so we only have to prevent device 
-> > registration.  (And anyway, it won't be possible to unregister a device 
-> > while the PM core is holding its semaphore.)
-> > 
-> > If we are willing to be somewhat non-transparent, this is easy to
-> > accomplish.  After the notifier chain has been alerted about the
-> > upcoming suspend, we tell the driver core to disallow adding new
-> > devices.  Maybe use SRCU to synchronize with registration calls that
-> > are in progress.  Thus, until the suspend is over device_add() will
-> > immediately return an error.  We could even add a new ESUSPENDING code
-> > to errno.h; it would come in handy in a few places.
-> > 
-> > Drivers are already prepared for device registration to fail (or they
-> > ought to be), so this change shouldn't knock the bottom out of things.  
-> > device_add() isn't on a hot path, so adding an extra check and
-> > srcu_read_lock() won't hurt.
-> 
-> True. Also, bus drivers could just flag the port with something saying
-> "try registering again later". Don't underestimate the power of "try
-> later" constructs :-)
-> 
-> > I have had the same thought, that unbinding and unregistration would be 
-> > easier to handle than binding and registration.  As it happens, holding 
-> > the device semaphore will block both all three -- which makes life 
-> > simpler.
-> 
-> Yup. Fair and simple.
-> 
-> > There are other possibilities too.  For example, instead of using
-> > keventd these attributes could use a separate workqueue which would put
-> > itself in the icebox during a suspend.  Or maybe sysfs can be reworked 
-> > so that they don't need to use a workqueue at all.
-> 
-> I think having a facility for a given workqueue entry to requeue itself
-> for after resume might be of use for drivers too.
-
-Hmm, perhaps we can use a special workqueue that's created before the suspend
-(say by the PM core) and starts processing jobs after the resume?
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+ static int gpio_wake_events = 0;
+ static int ebook_state = -1;
++static u16 olpc_wakeup_mask = 0;
++
++struct platform_device olpc_powerbutton_dev = {
++	.name = "powerbutton",
++	.id = 0,
++};
++
++struct platform_device olpc_lid_dev = {
++	.name = "lid",
++	.id = 0,
++};
++
+ 
+ static void __init init_ebook_state(void)
+ {
+@@ -250,6 +262,16 @@
+ 	/* Save the MFGPT MSRs */
+ 	rdmsrl(MFGPT_IRQ_MSR, mfgpt_irq_msr);
+ 	rdmsrl(MFGPT_NR_MSR, mfgpt_nr_msr);
++
++	if (device_may_wakeup(&olpc_powerbutton_dev.dev))
++		olpc_wakeup_mask |= CS5536_PM_PWRBTN;
++	else
++		olpc_wakeup_mask &= ~(CS5536_PM_PWRBTN);
++
++	if (device_may_wakeup(&olpc_lid_dev.dev))
++		geode_gpio_clear(OLPC_GPIO_LID, GPIO_EVENTS_ENABLE);
++	else
++		geode_gpio_set(OLPC_GPIO_LID, GPIO_EVENTS_ENABLE);
+ }
+ 
+ static int olpc_pm_enter(suspend_state_t pm_state)
+@@ -275,8 +297,6 @@
+ 	return 0;
+ }
+ 
+-static u16 olpc_wakeup_mask = CS5536_PM_PWRBTN;
+-
+ int asmlinkage olpc_do_sleep(u8 sleep_state)
+ {
+ 	void *pgd_addr = __va(read_cr3());
+@@ -596,15 +616,20 @@
+ 	.resource = rtc_platform_resource,
+ };
+ 
+-static int __init olpc_rtc_init(void)
++static int __init olpc_platform_init(void)
+ {
+ 	(void)platform_device_register(&olpc_rtc_device);
+-
+ 	device_init_wakeup(&olpc_rtc_device.dev, 1);
+ 
++	(void)platform_device_register(&olpc_powerbutton_dev);
++	device_init_wakeup(&olpc_powerbutton_dev.dev, 1);
++
++	(void)platform_device_register(&olpc_lid_dev);
++	device_init_wakeup(&olpc_lid_dev.dev, 1);
++
+ 	return 0;
+ }
+-arch_initcall(olpc_rtc_init);
++arch_initcall(olpc_platform_init);
+ #endif /* CONFIG_RTC_DRV_CMOS */
+ 
+ static void olpc_pm_exit(void)
