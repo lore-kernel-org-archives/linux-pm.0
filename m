@@ -1,15 +1,16 @@
-From: Richard Hughes <hughsient@gmail.com>
-Subject: Re: Hibernate after alarm wakes from STR
-Date: Mon, 09 Jul 2007 09:34:11 +0100
-Message-ID: <1183970051.3087.5.camel__11417.7119489343$1183970256$gmane$org@work>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200707081315.40560.david-b@pacbell.net> <20070708223121.GB4964@dmt>
-	<200707081944.04598.david-b@pacbell.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Mon, 09 Jul 2007 19:13:40 +1000
+Message-ID: <1183972420.5961.26.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
+	<1183929611.3388.303.camel@localhost.localdomain>
+	<200707090847.43378.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707081944.04598.david-b@pacbell.net>
+In-Reply-To: <200707090847.43378.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +20,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, rtc-linux@googlegroups.com
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2007-07-08 at 19:44 -0700, David Brownell wrote:
-> On Sunday 08 July 2007, Marcelo Tosatti wrote:
-> > On Sun, Jul 08, 2007 at 01:15:40PM -0700, David Brownell wrote:
-> > > On Sunday 08 July 2007, Richard Hughes wrote:
-> > > 
-> > > That is, we may want to provide a bit more information about the
-> > > specific event which triggered wakeup.  I don't believe there is
-> > > such an interface, in general.
+On Mon, 2007-07-09 at 08:47 +0200, Oliver Neukum wrote:
+> Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
+> > > But I'm not sure it's a good idea in the long run.  Think of a printer 
+> > > daemon, for example.  It shouldn't have to experience unexpected I/O 
+> > > problems merely because someone has decided to put the system to sleep.
 > > 
-> > What would be a nice interface? Perhaps an additional file under
-> > /sys/devices/.../power/wakeup_fired or something (only for devices with
-> > can_wakeup set).
+> > Why not ? Printer is offline when machine is asleep... trying to print
 > 
-> Better a /sys/power/wakeup_event (or whatever) that's more easily
-> found.  It could link to the device issuing the event.
+> Not necessarily. The machine must survive going to sleep while you are
+> printing. Any other error return than -ERESTARTSYS is not an option.
+> We can't simply change the ABI.
 
-Good plan.
+Ugh ? Why returning an error from the printer driver to the userland
+print server/daemon would prevent the machine from "surviving" ? I would
+be happy with -EIO personally :-)
 
-> > > Plus, the notion seems kind of racey to me.  (If you press a key
-> > > right while the wakealarm fires, you don't want hibernation..)
-> > 
-> > Then you check if the any key or other wakeup event has happened other
-> > than RTC... I don't see any problem with that.
-> 
-> It might be best not to need to re-activate the whole system from
-> STR though ... it ought to be possible to just power off, having
-> already written the image to disk.  Right?
-> 
-> Yes, there's all that stuff about how to quiesce the system properly,
-> freezer/icebox/flamesuits/etc.  Regardless, going from STR to fully
-> operational and then hibernating would take time and energy that
-> might not be available...
-
-Sure, although quick-suspend on a few minutes idle, slow
-hibernate-on-long idle is one of the biggest requested features of
-g-p-m.
-
-Richard.
+Ben.
