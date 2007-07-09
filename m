@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 3/6] Freezer: Be more verbose
-Date: Mon, 9 Jul 2007 22:33:51 +0200
-Message-ID: <200707092233.52475.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 1/6] Freezer: Do not sync filesystems
+Date: Mon, 9 Jul 2007 22:31:45 +0200
+Message-ID: <200707092231.46808.rjw@sisk.pl>
 References: <200707092229.08898.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,46 +25,86 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Increase the freezer's verbosity a bit, so that it's easier to read problem
-reports related to it.
+The syncing of filesystems from within the freezer is generally not needed.
+Also, if FUSE implements sync, this will cause the freezer to deadlock with it.
+
+Change freeze_processes() so that it doesn't execute sys_sync() and make the
+suspend and hibernation code path sync filesystems independently of the freezer.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/process.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ kernel/power/disk.c    |    4 ++++
+ kernel/power/main.c    |    6 ++++++
+ kernel/power/process.c |    1 -
+ kernel/power/user.c    |    4 ++++
+ 4 files changed, 14 insertions(+), 1 deletion(-)
 
+Index: linux-2.6.22-rc6-mm1/kernel/power/disk.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/kernel/power/disk.c
++++ linux-2.6.22-rc6-mm1/kernel/power/disk.c
+@@ -297,6 +297,10 @@ int hibernate(void)
+ 	if (error)
+ 		goto Exit;
+ 
++	printk("Syncing filesystems ... ");
++	sys_sync();
++	printk("done.\n");
++
+ 	error = prepare_processes();
+ 	if (error)
+ 		goto Finish;
+Index: linux-2.6.22-rc6-mm1/kernel/power/main.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/kernel/power/main.c
++++ linux-2.6.22-rc6-mm1/kernel/power/main.c
+@@ -20,6 +20,7 @@
+ #include <linux/resume-trace.h>
+ #include <linux/freezer.h>
+ #include <linux/vmstat.h>
++#include <linux/syscalls.h>
+ 
+ #include "power.h"
+ 
+@@ -234,9 +235,14 @@ static int enter_state(suspend_state_t s
+ 
+ 	if (!valid_state(state))
+ 		return -ENODEV;
++
+ 	if (!mutex_trylock(&pm_mutex))
+ 		return -EBUSY;
+ 
++	printk("Syncing filesystems ... ");
++	sys_sync();
++	printk("done.\n");
++
+ 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+ 	if ((error = suspend_prepare()))
+ 		goto Unlock;
 Index: linux-2.6.22-rc6-mm1/kernel/power/process.c
 ===================================================================
 --- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c
 +++ linux-2.6.22-rc6-mm1/kernel/power/process.c
-@@ -237,20 +237,23 @@ static int try_to_freeze_tasks(int freez
-  */
- int freeze_processes(void)
- {
--	int error;
-+	int error = 0;
- 
--	printk("Stopping tasks ... ");
-+	printk("Freezing user space processes ... ");
- 	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
+@@ -191,7 +191,6 @@ int freeze_processes(void)
  	if (error)
--		return error;
-+		goto Exit;
-+	printk("done.\n");
+ 		return error;
  
-+	printk("Freezing remaining freezable tasks ... ");
+-	sys_sync();
  	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
  	if (error)
--		return error;
--
--	printk("done.\n");
-+		goto Exit;
-+	printk("done.");
-+ Exit:
- 	BUG_ON(in_atomic());
--	return 0;
-+	printk("\n");
-+	return error;
- }
- 
- static void thaw_tasks(int thaw_user_space)
+ 		return error;
+Index: linux-2.6.22-rc6-mm1/kernel/power/user.c
+===================================================================
+--- linux-2.6.22-rc6-mm1.orig/kernel/power/user.c
++++ linux-2.6.22-rc6-mm1/kernel/power/user.c
+@@ -153,6 +153,10 @@ static int snapshot_ioctl(struct inode *
+ 		mutex_lock(&pm_mutex);
+ 		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+ 		if (!error) {
++			printk("Syncing filesystems ... ");
++			sys_sync();
++			printk("done.\n");
++
+ 			error = freeze_processes();
+ 			if (error)
+ 				thaw_processes();
