@@ -1,18 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Mon, 9 Jul 2007 13:56:44 +0200
-Message-ID: <200707091356.45486.rjw__31314.3196319745$1183981844$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
-	<200707090852.03429.oliver@neukum.org>
-	<1183972449.5961.28.camel@localhost.localdomain>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
+	tasks
+Date: Mon, 9 Jul 2007 10:45:56 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707091043480.3851-100000__45358.9609860957$1183992408$gmane$org@iolanthe.rowland.org>
+References: <87odimw6k3.fsf@jbms.ath.cx>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183972449.5961.28.camel@localhost.localdomain>
-Content-Disposition: inline
+In-Reply-To: <87odimw6k3.fsf@jbms.ath.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,32 +17,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 9 July 2007 11:14, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-07-09 at 08:52 +0200, Oliver Neukum wrote:
-> > Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > Another issue that's been a problem forever with suspend is the
-> > > synchronous request_firmware interface. Lots of drivers do that in
-> > > resume() which will generally not work.
-> > 
-> > Unfortunately yes they do. We now have the notifier chains, which
-> > can be used. Firmware, especially if it is large, must be requested
-> > while the system is still fully functional and paging will work.
-> > 
-> > Asynchronocity will not help much because the devices must work
-> > after resumingand delaying that will not help with respect to needing
-> > devices to get at the firmware.
+On Mon, 9 Jul 2007, Jeremy Maitin-Shepard wrote:
+
+> Pavel Machek <pavel@ucw.cz> writes:
 > 
-> True, pre-loading is the best approach.
+> [snip]
+> 
+> > I don't know how to do that mechanism... but if we knew where to trap
+> > filesystem writes, we could simply freeze at that point, and at that
+> > point only, no?
+> 
+> Any operation at all that has an external effect must not occur after
+> the snapshot is made; otherwise, there will be random hard-to-find
+> corruptions and other problems occurring as a result.  Thus, for
+> example, any writes (either directly or indirectly through e.g. a
+> filesystem) to non-volatile storage, any network traffic, any
+> communication with hardware like a printer must be prevented after the
+> snapshot.
 
-Agreed.
+You have forgotten one critical point: The writes to save the snapshot 
+image must be allowed.  That's what makes it really hard.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Alan Stern
