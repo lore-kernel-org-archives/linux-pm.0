@@ -1,17 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Mon, 09 Jul 2007 20:05:22 +1000
-Message-ID: <1183975522.5961.44.camel@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	<1183929611.3388.303.camel@localhost.localdomain>
-	<200707090847.43378.oliver@neukum.org>
-	<20070709100204.GN5401@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [mm-patch]Documentation:reference notifiers.txt in
+	freezing-of-tasks.txt
+Date: Mon, 9 Jul 2007 13:56:23 +0200
+Message-ID: <200707091356.23496.rjw@sisk.pl>
+References: <200707091026.20463.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070709100204.GN5401@elf.ucw.cz>
+In-Reply-To: <200707091026.20463.oliver@neukum.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +20,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2007-07-09 at 12:02 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > But I'm not sure it's a good idea in the long run.  Think of a printer 
-> > > > daemon, for example.  It shouldn't have to experience unexpected I/O 
-> > > > problems merely because someone has decided to put the system to sleep.
-> > > 
-> > > Why not ? Printer is offline when machine is asleep... trying to print
-> 
-> ...filesystems are offline, too, when the machine is asleep. Yet,
-> unmounting everything on suspend would not result in useful suspend
-> support.
-> 
-> Yes, I believe we should be transparent.
+Hi,
 
-You just compared apple and oranges... Try printing and half way through
-the page, suspend your USB bus, and see how the printer reacts.
+On Monday, 9 July 2007 10:26, Oliver Neukum wrote:
+> Hi,
+> 
+> freezing-of-tasks.txt mentions firmware issues without mentioning the use
+> of the new notifier API to overcome them. Here's an update.
+> 
+> 	Regards
+> 		Oliver
+> Signed-off-by: Oliver Neukum <oneukum@suse.de>
 
-Ben.
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
