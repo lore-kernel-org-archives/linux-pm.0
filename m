@@ -1,18 +1,18 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Mon, 9 Jul 2007 16:57:17 +0200
-Message-ID: <20070709145717.GA3492__48450.7909547121$1183993274$gmane$org@stusta.de>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	<200707090847.43378.oliver@neukum.org>
-	<1183972420.5961.26.camel@localhost.localdomain>
-	<200707091123.57400.oliver@neukum.org>
-	<1183973636.5961.37.camel@localhost.localdomain>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: add powerbutton and lid platform devices
+Date: Mon, 9 Jul 2007 09:05:45 -0600
+Message-ID: <20070709150545.GD31533__12565.0569018491$1183993613$gmane$org@cosmic.amd.com>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200704011728.10966.david-b@pacbell.net>
+	<20070619170048.GA342@dmt.media.mit.edu>
+	<200706201830.52277.david-b@pacbell.net> <20070708221027.GA4964@dmt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070708221027.GA4964@dmt>
 Content-Disposition: inline
-In-Reply-To: <1183973636.5961.37.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,90 +22,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, devel@laptop.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 09, 2007 at 07:33:56PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-07-09 at 11:23 +0200, Oliver Neukum wrote:
-> > Suspension is to be transparent. Apart from a jump in the system clock
-> > user space must not notice, thus returning errors due to suspension is
-> > not an option.
+On 08/07/07 18:10 -0400, Marcelo Tosatti wrote:
+> Jordan,
 > 
-> Who says ?
+> This allows configuration of powerbutton/lid events... Are the 
+> gpio_gpio_{clear,set} calls correct for enabling/disabling LID
+> events?
 > 
-> If I'm talking to a USB printer, it will notice the USB bus being
-> suspended, believe me. It's actually likely to screw up whatever job is
-> in progress. It make perfect sense to error out attempts to talk to it
-> when suspended.
+> What else do we want to support?
+
+The obvious ones would be RTC (but you already covered that), and SCI.
+But this is an excellent start. 
+
+> --- olpc-pm.c.orig	2007-07-08 17:09:07.000000000 -0400
+> +++ olpc-pm.c	2007-07-08 18:07:03.000000000 -0400
+> @@ -54,6 +54,18 @@
+>  
+>  static int gpio_wake_events = 0;
+>  static int ebook_state = -1;
+> +static u16 olpc_wakeup_mask = 0;
+> +
+> +struct platform_device olpc_powerbutton_dev = {
+> +	.name = "powerbutton",
+> +	.id = 0,
+> +};
+> +
+> +struct platform_device olpc_lid_dev = {
+> +	.name = "lid",
+> +	.id = 0,
+> +};
+> +
+
+>  static void __init init_ebook_state(void)
+>  {
+> @@ -250,6 +262,16 @@
+>  	/* Save the MFGPT MSRs */
+>  	rdmsrl(MFGPT_IRQ_MSR, mfgpt_irq_msr);
+>  	rdmsrl(MFGPT_NR_MSR, mfgpt_nr_msr);
+> +
+> +	if (device_may_wakeup(&olpc_powerbutton_dev.dev))
+> +		olpc_wakeup_mask |= CS5536_PM_PWRBTN;
+> +	else
+> +		olpc_wakeup_mask &= ~(CS5536_PM_PWRBTN);
+> +
+> +	if (device_may_wakeup(&olpc_lid_dev.dev))
+> +		geode_gpio_clear(OLPC_GPIO_LID, GPIO_EVENTS_ENABLE);
+> +	else
+> +		geode_gpio_set(OLPC_GPIO_LID, GPIO_EVENTS_ENABLE);
+>  }
+
+As was already mentioned before, the clear and set clauses should be
+reversed. 
+
+You'll also need to get rid of
+
+outl(1 << 31, acpi_base + PM_GPE0_EN);
+
+in olpc_pm_enter() since that would have the undesired effect of eliminating
+the LID completely from the list of wakeup sources.  We should leave the
+value of GPE0_EN the same through the lifetime of the system,
+and control the individual events through the event enable bit(s) as you
+have done above.
+
+>  static int olpc_pm_enter(suspend_state_t pm_state)
+> @@ -275,8 +297,6 @@
+>  	return 0;
+>  }
+>  
+> -static u16 olpc_wakeup_mask = CS5536_PM_PWRBTN;
+> -
+>  int asmlinkage olpc_do_sleep(u8 sleep_state)
+>  {
+>  	void *pgd_addr = __va(read_cr3());
+> @@ -596,15 +616,20 @@
+>  	.resource = rtc_platform_resource,
+>  };
+>  
+> -static int __init olpc_rtc_init(void)
+> +static int __init olpc_platform_init(void)
+>  {
+>  	(void)platform_device_register(&olpc_rtc_device);
+> -
+>  	device_init_wakeup(&olpc_rtc_device.dev, 1);
+>  
+> +	(void)platform_device_register(&olpc_powerbutton_dev);
+> +	device_init_wakeup(&olpc_powerbutton_dev.dev, 1);
+> +
+> +	(void)platform_device_register(&olpc_lid_dev);
+> +	device_init_wakeup(&olpc_lid_dev.dev, 1);
+> +
+>  	return 0;
+>  }
+
+I agree that the default setting for the power button should be to 
+wake up, but I don't know about the lid.  Imagine a scenario where somebody
+manually puts the machine to sleep and then shuts the lid.  You wouldn't want
+the machine to turn back on when you lifted it.  Lid behavior is so policy 
+driven, I think we should leave it off by default, and let the power manager
+decide what to do.
+
+> -arch_initcall(olpc_rtc_init);
+> +arch_initcall(olpc_platform_init);
+>  #endif /* CONFIG_RTC_DRV_CMOS */
+>  
+>  static void olpc_pm_exit(void)
 > 
-> I don't think "transparent" is an absolute requirement. In some cases,
-> it doesn't make sense and the printer is a good example of that. The
-> printing daemon is typically something that will ideally need to grow
-> knowledge about suspend/resume to interrupt things at the right time.
 > 
-> That's one of the thing... we don't even have the kernel right, so we
-> are light-years from having the rest of userland right.
-> 
-> For example, from a user point of view, what should happen if you
-> suspend while printing ?
-
-There might be other existing things with a semantics that might be 
-worth looking at, e.g.:
-
-I don't have an USB printer, but what happens if you unplug the printer 
-while printing, wait 30 seconds, and plug it in again?
-Wait 3 hours?
-
-Could this work theoretically?
-Does it work in practice?
-
-This are non-theoretical use cases kernel and userspace already somehow 
-handle today, and for userspace an USB printer disconnected for 3 hours 
-and a 3 hour suspend might simply be the same with the latter not 
-requiring any extra userspace handling.
-
-Another example might be mounted NFS file systems:
-
-The case that a client's ethernet cable gets unplugged for 24 hours and 
-plugged in again is a real life use case NFS and all applications 
-already have to handle.
-
-> Well, it's a matter of policy (thus should be configurable), but I would
-> exect (as a former Mac user) something around the lines of this as a
-> default:
-> 
->  - If the laptop's clamshell has been closed, it's likely that the
-> user's just picking up the laptop for a ride, makes sense to abort jobs
-> in progress.
-> 
->  - If this is a manual action via the menus, displaying a dialog asking
-> if you really want to suspend before your page is finished makes sense
-> (with that dialog disappearing and the machine going to sleep if you
-> just wait and let it print).
-> 
-> That sort of thing requires much more than just kernel collaboration of
-> course, but a whole infrastructure in userland as well.
-> 
-> So no, suspend is -not- transparent, doesn't have to be, it's something
-> that is to be decided on a case-by-case basis (or rather,
-> driver-per-driver and possibly via policy settings).
-
-But keep in mind that every piece that does not work transparently 
-might result in less use cases for suspend.
-
-There are cases like CD burning while suspending that might not be 
-solvable, but as much as possible should work as transparently as 
-possible.
-
-> Ben.
-
-cu
-Adrian
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
