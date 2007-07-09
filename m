@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 1/6] Freezer: Do not sync filesystems
-Date: Mon, 9 Jul 2007 22:31:45 +0200
-Message-ID: <200707092231.46808.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 4/6] Freezer: Prevent new tasks from
+	inheriting TIF_FREEZE set
+Date: Mon, 9 Jul 2007 22:34:54 +0200
+Message-ID: <200707092234.55437.rjw@sisk.pl>
 References: <200707092229.08898.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,86 +26,24 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The syncing of filesystems from within the freezer is generally not needed.
-Also, if FUSE implements sync, this will cause the freezer to deadlock with it.
-
-Change freeze_processes() so that it doesn't execute sys_sync() and make the
-suspend and hibernation code path sync filesystems independently of the freezer.
+Tasks should go to the refrigerator only if explicitly requested to do that by
+the freezer and not as a result of inheriting the TIF_FREEZE flag set from the
+parent.  Make it happen.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/disk.c    |    4 ++++
- kernel/power/main.c    |    6 ++++++
- kernel/power/process.c |    1 -
- kernel/power/user.c    |    4 ++++
- 4 files changed, 14 insertions(+), 1 deletion(-)
+ kernel/fork.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6.22-rc6-mm1/kernel/power/disk.c
+Index: linux-2.6.22-rc6-mm1/kernel/fork.c
 ===================================================================
---- linux-2.6.22-rc6-mm1.orig/kernel/power/disk.c
-+++ linux-2.6.22-rc6-mm1/kernel/power/disk.c
-@@ -297,6 +297,10 @@ int hibernate(void)
- 	if (error)
- 		goto Exit;
+--- linux-2.6.22-rc6-mm1.orig/kernel/fork.c
++++ linux-2.6.22-rc6-mm1/kernel/fork.c
+@@ -932,6 +932,7 @@ static inline void copy_flags(unsigned l
+ 	if (!(clone_flags & CLONE_PTRACE))
+ 		p->ptrace = 0;
+ 	p->flags = new_flags;
++	clear_freeze_flag(p);
+ }
  
-+	printk("Syncing filesystems ... ");
-+	sys_sync();
-+	printk("done.\n");
-+
- 	error = prepare_processes();
- 	if (error)
- 		goto Finish;
-Index: linux-2.6.22-rc6-mm1/kernel/power/main.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/kernel/power/main.c
-+++ linux-2.6.22-rc6-mm1/kernel/power/main.c
-@@ -20,6 +20,7 @@
- #include <linux/resume-trace.h>
- #include <linux/freezer.h>
- #include <linux/vmstat.h>
-+#include <linux/syscalls.h>
- 
- #include "power.h"
- 
-@@ -234,9 +235,14 @@ static int enter_state(suspend_state_t s
- 
- 	if (!valid_state(state))
- 		return -ENODEV;
-+
- 	if (!mutex_trylock(&pm_mutex))
- 		return -EBUSY;
- 
-+	printk("Syncing filesystems ... ");
-+	sys_sync();
-+	printk("done.\n");
-+
- 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
- 	if ((error = suspend_prepare()))
- 		goto Unlock;
-Index: linux-2.6.22-rc6-mm1/kernel/power/process.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c
-+++ linux-2.6.22-rc6-mm1/kernel/power/process.c
-@@ -191,7 +191,6 @@ int freeze_processes(void)
- 	if (error)
- 		return error;
- 
--	sys_sync();
- 	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
- 	if (error)
- 		return error;
-Index: linux-2.6.22-rc6-mm1/kernel/power/user.c
-===================================================================
---- linux-2.6.22-rc6-mm1.orig/kernel/power/user.c
-+++ linux-2.6.22-rc6-mm1/kernel/power/user.c
-@@ -153,6 +153,10 @@ static int snapshot_ioctl(struct inode *
- 		mutex_lock(&pm_mutex);
- 		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
- 		if (!error) {
-+			printk("Syncing filesystems ... ");
-+			sys_sync();
-+			printk("done.\n");
-+
- 			error = freeze_processes();
- 			if (error)
- 				thaw_processes();
+ asmlinkage long sys_set_tid_address(int __user *tidptr)
