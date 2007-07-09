@@ -1,16 +1,13 @@
-From: Marcelo Tosatti <marcelo@kvack.org>
-Subject: Re: Hibernate after alarm wakes from STR
-Date: Mon, 9 Jul 2007 11:40:14 -0400
-Message-ID: <20070709154014.GF27828__23023.8356897191$1183995600$gmane$org@dmt>
-References: <20070330235759.GC4252@cosmic.amd.com>
-	<200707081315.40560.david-b@pacbell.net>
-	<20070708223121.GB4964@dmt>
-	<200707081944.04598.david-b@pacbell.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Remove process freezer from suspend to RAM
+	pathway
+Date: Mon, 9 Jul 2007 12:03:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707091143350.4007-100000__31553.6736663946$1183997052$gmane$org@iolanthe.rowland.org>
+References: <1183929611.3388.303.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707081944.04598.david-b@pacbell.net>
+In-Reply-To: <1183929611.3388.303.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,61 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Richard Hughes <hughsient@gmail.com>, rtc-linux@googlegroups.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jul 08, 2007 at 07:44:03PM -0700, David Brownell wrote:
-> On Sunday 08 July 2007, Marcelo Tosatti wrote:
-> > On Sun, Jul 08, 2007 at 01:15:40PM -0700, David Brownell wrote:
-> > > On Sunday 08 July 2007, Richard Hughes wrote:
-> > > 
-> > > That is, we may want to provide a bit more information about the
-> > > specific event which triggered wakeup.  I don't believe there is
-> > > such an interface, in general.
-> > 
-> > What would be a nice interface? Perhaps an additional file under
-> > /sys/devices/.../power/wakeup_fired or something (only for devices with
-> > can_wakeup set).
+On Mon, 9 Jul 2007, Benjamin Herrenschmidt wrote:
+
+> > This will be up to the people responsible for the subsystems.  I can 
+> > take care of USB.
 > 
-> Better a /sys/power/wakeup_event (or whatever) that's more easily
-> found.  It could link to the device issuing the event.
+> USB is not that much of a problem in the sense that for most "leaf"
+> drivers, USB is a provider (ie, the bus they sit on), not the client
+> (like the network stack is to network drivers).
 
-As you mentioned, there might be two wakeup sources (RTC and power
-button for instance) or even more at the same time.
+That's why I thought I would be able to handle it!  :-)
 
-Do you think its fine to simply but the device separated by spaces in
-the wakeup_event file?
-
-Sounds fine by me, but what about the one-value-per-file sysfs rule?
-
-> > > Plus, the notion seems kind of racey to me.  (If you press a key
-> > > right while the wakealarm fires, you don't want hibernation..)
-> > 
-> > Then you check if the any key or other wakeup event has happened other
-> > than RTC... I don't see any problem with that.
+> There is still the race of:
 > 
-> It might be best not to need to re-activate the whole system from
-> STR though ... it ought to be possible to just power off, having
-> already written the image to disk.  Right?
-
-Perhaps, yes... 
-
-> Yes, there's all that stuff about how to quiesce the system properly,
-> freezer/icebox/flamesuits/etc.  Regardless, going from STR to fully
-> operational and then hibernating would take time and energy that
-> might not be available...
-
-True, that needs to be taken into account.
-
-> - Dave
+> 	drivers_sysfs_write()
+> 		try_to_icebox()
+> 		<---- <sleep request gets here>
+> 		hit hardware
 > 
+> Those are akin, in some ways, to the freezer races. Some kind of RCU
+> might take care of them if we enable the icebox, then wait for all tasks
+> to hit an explicit schedule point once (or return to userland). That
+> would mean that drivers need to try_to_icebox() again if they do
+> something that may schedule (such as __get_user). So it's not a magic
+> solution, it has issues, but it can handle a lot of the simplest cases. 
+
+It depends on what kind of race you're worried about.  In general a 
+sysfs access that causes I/O isn't much different from a char device's 
+read or write.  For such cases the driver would have to do something 
+like this:
+
+	drivers_sysfs_write()
+	{
+	 restart:
+		mutex_lock(private_io_mutex);
+		if (device is suspended) {
+			mutex_unlock(private_io_mutex);
+			icebox();
+			goto restart;
+		}
+		... hit hardware ...
+		mutex_unlock(private_io_mutex);
+	}
+
+And of course the suspend method would have to acquire the
+private_io_mutex.  Some drivers might be able to use the device
+semaphore instead of adding a new mutex.
+
+I'm more concerned about races involving device registration.  The best 
+solution I can come up with is to use an rwsem:
+
+	drivers_sysfs_write()
+	{
+		down_read(private_rwsem);
+		... register/unregister devices ...
+		up_read(private_rwsem);
+	}
+
+where the suspend notifer callout would do down_write() and the resume
+callout would do up_write().  Can you suggest anything better?
+
+> > Drivers are already prepared for device registration to fail (or they
+> > ought to be), so this change shouldn't knock the bottom out of things.  
+> > device_add() isn't on a hot path, so adding an extra check and
+> > srcu_read_lock() won't hurt.
 > 
-> > > > Is this something we can do (or should do) for OLPC and general ACPI?
-> > > 
-> > > I'd certainly rather see laptops doing that than what they do now:
-> > > running the battery out, and needing filesystem recovery!!
-> > 
-> > Yep.
-> > 
-> 
+> True. Also, bus drivers could just flag the port with something saying
+> "try registering again later". Don't underestimate the power of "try
+> later" constructs :-)
+
+-ESUSPENDING would naturally imply that the caller should retry after 
+the resume.
+
+Alan Stern
