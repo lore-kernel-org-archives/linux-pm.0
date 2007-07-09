@@ -1,14 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 5/6] Freezer: Use freezing timeout
-	more efficiently
-Date: Tue, 10 Jul 2007 01:34:14 +0200
-Message-ID: <20070709233414.GI1967@elf.ucw.cz>
-References: <200707092229.08898.rjw@sisk.pl> <200707092238.19267.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 2/6] Freezer: Do not send signals to
+	kernel threads
+Date: Tue, 10 Jul 2007 01:42:12 +0200
+Message-ID: <20070709234212.GJ1967@elf.ucw.cz>
+References: <200707092229.08898.rjw@sisk.pl> <200707092232.01603.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707092238.19267.rjw@sisk.pl>
+In-Reply-To: <200707092232.01603.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,24 +26,49 @@ Hi!
 
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> The freezer fails if there are uninterruptible tasks waiting for some frozen
-> tasks to let them continue.  Moreover, in that case try_to_freeze_tasks() loops
-> uselessly until the timeout expires which is wasteful, so in principle we should
-> make the freezer fail as soon as all the tasks that refuse to freeze are
-> uninterruptible.  However, instead of failing the freezer we can try to use the
-> time left and thaw the tasks that have already been frozen without
-> clearing the
+> Commit b74d0deb968e1f85942f17080eace015ce3c332c has changed
+> recalc_sigpending_tsk() so that it doesn't clear TIF_SIGPENDING.  For this
+> reason, the freezer should not send fake signals to kernel threads any more,
+> since otherwise some of them may run with TIF_SIGPENDING set forever if the
+> freezing of kernel threads fails.
 
-No, we can't do that:
+Is there some bigger plan why we want this?
 
-Imagine we have single uninterruptible task that waits for disk. It
-would exit uninterruptible state in 10msec, *but* you give up and
-unfreeze all. Now, another task goes uninterruptible waiting for
-disk and situation repeats. Livelock.
+I mean, it seems nicer w/o signals, but OTOH it is more lines of code
+and kernel/user freezing diverges. Can we just revert few lines,
+instead of inserting 100 lines?
 
-Yes, this might play with races in interresting ways and help fuse,
-but we do not want the livelock in the first place.
-									Pavel
+> +/*
+> + * Freezer-friendly wrappers around wait_event_interruptible() and
+> + * wait_event_interruptible_timeout(), originally defined in <linux/wait.h>
+> + */
+> +
+> +#define wait_event_freezable(wq, condition)				\
+> +({									\
+> +	int __ret;							\
+> +	do {								\
+> +		__ret = wait_event_interruptible(wq, 			\
+> +				(condition) || freezing(current));	\
+> +	} while (try_to_freeze());					\
+> +	__ret;								\
+> +})
+> +
+> +
+> +#define wait_event_freezable_timeout(wq, condition, timeout)		\
+> +({									\
+> +	long __ret = timeout;						\
+> +	do {								\
+> +		__ret = wait_event_interruptible_timeout(wq,		\
+> +				(condition) || freezing(current),	\
+> +				__ret); 				\
+> +	} while (try_to_freeze());					\
+> +	__ret;								\
+> +})
+
+Hohum, but yes, these are nice.
+
+								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
