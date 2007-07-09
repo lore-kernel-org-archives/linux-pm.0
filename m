@@ -1,18 +1,17 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Mon, 09 Jul 2007 11:32:44 +1000
-Message-ID: <1183944764.3388.330.camel__5589.66533649272$1183944816$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	<1183929611.3388.303.camel@localhost.localdomain>
-	<200707090006.32712.rjw@sisk.pl>
-	<1183941217.3388.324.camel@localhost.localdomain>
-	<FFA29D56-3400-4EA3-8CE8-C1EF75484510@mac.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Hibernate after alarm wakes from STR
+Date: Sun, 8 Jul 2007 19:44:03 -0700
+Message-ID: <200707081944.04598.david-b__41184.9505072043$1183949103$gmane$org@pacbell.net>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200707081315.40560.david-b@pacbell.net>
+	<20070708223121.GB4964@dmt>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <FFA29D56-3400-4EA3-8CE8-C1EF75484510@mac.com>
+In-Reply-To: <20070708223121.GB4964@dmt>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,40 +21,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Richard Hughes <hughsient@gmail.com>, rtc-linux@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
 
+On Sunday 08 July 2007, Marcelo Tosatti wrote:
+> On Sun, Jul 08, 2007 at 01:15:40PM -0700, David Brownell wrote:
+> > On Sunday 08 July 2007, Richard Hughes wrote:
+> > 
+> > That is, we may want to provide a bit more information about the
+> > specific event which triggered wakeup.  I don't believe there is
+> > such an interface, in general.
+> 
+> What would be a nice interface? Perhaps an additional file under
+> /sys/devices/.../power/wakeup_fired or something (only for devices with
+> can_wakeup set).
 
-> You could do this with a straight mutex except for the  
-> dev_suspend_trylock/unlock bit in uninterruptable contexts, but I  
-> seem to recall somebody saying that could be made to work if there  
-> was a real need for it.  Alternatively you could just drive the  
-> "Generic Mutex" guys up the wall by inventing your own pseudo-mutex  
-> with a spinlock, a boolean value, and a waitqueue.
+Better a /sys/power/wakeup_event (or whatever) that's more easily
+found.  It could link to the device issuing the event.
 
-Most of the time, the interrupt/atomic contexts are part of what I call
-the "main path" of the driver, which doesn't need most of this stuff.
 
-Depending on what is "upstream" from the driver, you typically set a
-condition stopping the flow of "interrupt" activity and wait for it to
-drain in suspend. For example, a block driver would instruct the driver
-to stop processing the request queue and wait for pending in flight
-requests to drain, or a network driver would stop the tx queue and wait
-for pending/concurrent xmit() callbacks to complete (basically sync. bh
-and sync. with NAPI poll).
+> > Plus, the notion seems kind of racey to me.  (If you press a key
+> > right while the wakealarm fires, you don't want hibernation..)
+> 
+> Then you check if the any key or other wakeup event has happened other
+> than RTC... I don't see any problem with that.
 
-In both examples, helpers can be provided in the block layer or network
-stack to make that easier.
+It might be best not to need to re-activate the whole system from
+STR though ... it ought to be possible to just power off, having
+already written the image to disk.  Right?
 
-In many cases, the driver may just turn off something in the chip in
-"suspend" (using a low level spinlock that it already has if it has an
-irq path to sync. HW access) and set some flag/state to instruct the irq
-handler to not restart, then synchronize_irq().
+Yes, there's all that stuff about how to quiesce the system properly,
+freezer/icebox/flamesuits/etc.  Regardless, going from STR to fully
+operational and then hibernating would take time and energy that
+might not be available...
 
-All those techniques are fairly simple and well known. The main source
-of problems are the "sideband" channels, such as sysfs accesses to
-driver tunables, ioctl's, etc... for which I believe mutexes can solve
-90% of them.
+- Dave
 
-Ben.
+
+> > > Is this something we can do (or should do) for OLPC and general ACPI?
+> > 
+> > I'd certainly rather see laptops doing that than what they do now:
+> > running the battery out, and needing filesystem recovery!!
+> 
+> Yep.
+> 
