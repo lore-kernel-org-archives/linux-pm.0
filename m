@@ -1,16 +1,16 @@
 From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Mon, 9 Jul 2007 08:47:42 +0200
-Message-ID: <200707090847.43378.oliver__43894.3689609461$1183963897$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	<1183929611.3388.303.camel@localhost.localdomain>
+Date: Mon, 9 Jul 2007 08:52:02 +0200
+Message-ID: <200707090852.03429.oliver__44794.3990621299$1183964231$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0707081619090.11049-100000@netrider.rowland.org>
+	<1183929708.3388.306.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183929611.3388.303.camel@localhost.localdomain>
+In-Reply-To: <1183929708.3388.306.camel@localhost.localdomain>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -26,18 +26,17 @@ Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Mo
 List-Id: linux-pm@vger.kernel.org
 
 Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > But I'm not sure it's a good idea in the long run. =C2=A0Think of a p=
-rinter=20
-> > daemon, for example. =C2=A0It shouldn't have to experience unexpected=
- I/O=20
-> > problems merely because someone has decided to put the system to slee=
-p.
->=20
-> Why not ? Printer is offline when machine is asleep... trying to print
+> Another issue that's been a problem forever with suspend is the
+> synchronous request_firmware interface. Lots of drivers do that in
+> resume() which will generally not work.
 
-Not necessarily. The machine must survive going to sleep while you are
-printing. Any other error return than -ERESTARTSYS is not an option.
-We can't simply change the ABI.
+Unfortunately yes they do. We now have the notifier chains, which
+can be used. Firmware, especially if it is large, must be requested
+while the system is still fully functional and paging will work.
+
+Asynchronocity will not help much because the devices must work
+after resumingand delaying that will not help with respect to needing
+devices to get at the firmware.
 
 	Regards
 		Oliver
