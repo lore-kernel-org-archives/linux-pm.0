@@ -1,12 +1,22 @@
-From: "James Rogers" <jw_watson@freeuso.it>
-Subject: IRREVOCABLE RELEASE OF YOUR PAYMENT
-Date: Mon, 9 Jul 2007 08:07:42 -0700
-Message-ID: <4670D0A4000E0261@ims1.edisontel.com>
-Reply-To: info_officialmail_un09@yahoo.co.uk
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: hibernation/snapshot design
+Date: Mon, 09 Jul 2007 11:23:12 -0400
+Message-ID: <873azxwqhr.fsf__19442.1622356915$1183994731$gmane$org@jbms.ath.cx>
+References: <Pine.LNX.4.44L0.0707072224270.10912-100000@netrider.rowland.org>
+	<200707082115.27363.rjw@sisk.pl>
+	<1183928612.3388.289.camel@localhost.localdomain>
+	<200707082345.27859.rjw@sisk.pl>
+	<1183931688.3388.316.camel@localhost.localdomain>
+	<20070708221315.GF5401@elf.ucw.cz>
+	<Pine.LNX.4.64.0707081519210.25614@asgard.lang.hm>
+	<20070708230042.GH5401@elf.ucw.cz>
+	<Pine.LNX.4.64.0707081614211.25614@asgard.lang.hm>
+	<20070708232819.GJ5401@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070708232819.GJ5401@elf.ucw.cz> (Pavel Machek's message of
+	"Mon\, 9 Jul 2007 01\:28\:19 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,72 +26,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-UNITED NATIONS (WORLD BANK ASSISTED PROGRAMME)
-DIRECTORATE OF INTERNATIONAL PAYMENT AND TRANSFERS.
-8WB 5OH,UNITED KINGDOM, LONDON 
-WIRE TRANSFER/AUDIT UNIT
-Our Ref: WB/NF/UN/XX027
+Pavel Machek <pavel@ucw.cz> writes:
 
-ATTN: Beneficiary,               
+[snip]
 
-  
-IRREVOCABLE RELEASE OF YOUR PAYMENT 
- 
-We have actually been authorized by the newly appointed UN secretary general,
-and the governing body of the UNITED NATIONS monetary unit, to investigate
-the unnecessary delay of your inheritance fund, recommended and approved
-in your favour. 
+>> why do you say that neither would work for the "lets hibernate my 
+>> notebook" case?
 
-During the course of our investigation, we discovered with dismay that your
-payment has been unnecessarily Delayed by corrupt officials of the Bank who
-are Trying to divert your money into their private accounts, to forestall
-this, security for your funds Was organized in the form of your personal
-Identification number (PIN) ATM CARD OR  Debit card  this will enable only
-you have direct Control over this fund, we have also agreed with the Presidency
-that we will handle this payment ourselves to avoid the hopeless situation
-created by the Officials of the  bank. 
- 
-We obtained an irrevocable payment guarantee on your Payment from the presidency
-we are happy to inform you that based on our recommendation/instructions;
-your Entire Inheritances fund has been credited in your favour through ATM
-card OR  Debit card . 
- 
-You are therefore adviced you send your contact to REV JOHN HOBBS International
-Audit unit, United Nations Liaison Office London  to collect your original
-payment slip with your ATM card or  Debit card .
- 
-They will issue you an ATM card OR  Debit card  that you can use to withdraw
-money in any ATM machine any part of the world, but the maximum is fifteen
-thousand dollars per a day.
- 
-therefore if you like to receive your funds through this means kindly let
-us know by contacting the card payment center and also send the following
-information as stated below.  
- 
+> Both would work. One would eat 8-64MB of your RAM, permanently;
 
-1. PHONE AND FAX NUMBER,
-2. YOUR FULL NAME
-3. ADDRESS WERE YOU WANT THEM TO SEND THE ATM CARD
-TO (P.O BOX NOT ACCEPTABLE) 
-4. YOUR AGE AND CURRENT OCCUPATION
-5. Home Equity {YES OR NO}.
+As I have stated in other messages, the kdump approach would not waste
+any RAM permanently.  The reason that kdump must reserve memory at boot
+is that on panic, it cannot attempt to nicely stop drivers, and
+consequently there might be ongoing DMAs that could clobber anything but
+the reserved area; this reason does not apply to hibernate, though.
+I'll quote a previous message in which I stated a solution that can be
+used:
 
- 
-NOTE: YOU ARE ADVICED TO FURNISH REV JOHN HOBBS WITH YOUR CORRECTCONTACT
- DETAILS. AND ALSO BE INFORMED THAT THE AMOUNT TO BE PAID NOW IS $8.3 MILLION
-THE REST WILL BE PAID LATTER.
- 
-We expect your urgent response to this email to enable
-us monitor this payment effectively.. 
-CONGRATULATIONS. 
+Immediately before jumping to the new kernel, the first X bytes (where X
+is the amount of memory the new kernel will get, typically 16MB or 64MB)
+of physical memory are backed up into the arbitrary discontiguous pages
+that are made available.  This will not take very long, because copying
+even 64MB of memory is extremely fast.  Then the new kernel is free to
+use the first X bytes of contiguous physical memory.  Problem solved.
 
-Anxiously waiting for your reply.
- 
- 
-
-CONGRATULATIONS.
-CAPT. JAMES C. WILLIAMS
-UNITED NATIONS, LONDON UK
-UNITED NATION MONETARY FUND (UNMF)
+-- 
+Jeremy Maitin-Shepard
