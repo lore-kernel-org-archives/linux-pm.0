@@ -1,18 +1,14 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Mon, 9 Jul 2007 11:23:56 +0200
-Message-ID: <200707091123.57400.oliver__34526.5975491658$1183973179$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
-	<200707090847.43378.oliver@neukum.org>
-	<1183972420.5961.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: malicious filesystems (was Re: Re: [PATCH] Remove
+	process freezer from suspend to RAM pathway)
+Date: Mon, 09 Jul 2007 11:28:39 +0200
+Message-ID: <E1I7pXr-0001Qn-00@dorka.pomaz.szeredi.hu>
+References: <200707050858.03638.oliver@neukum.org>
+	<200707082008.57879.rjw@sisk.pl>
+	<E1I7clo-0000JY-00@dorka.pomaz.szeredi.hu>
+	<200707082307.15616.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183972420.5961.26.camel@localhost.localdomain>
-Content-Disposition: inline
+In-reply-to: <200707082307.15616.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: rjw@sisk.pl
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, 9. Juli 2007 schrieb Benjamin Herrenschmidt:
-> On Mon, 2007-07-09 at 08:47 +0200, Oliver Neukum wrote:
-> > Am Sonntag, 8. Juli 2007 schrieb Benjamin Herrenschmidt:
-> > > > But I'm not sure it's a good idea in the long run. =C2=A0Think of=
- a printer=20
-> > > > daemon, for example. =C2=A0It shouldn't have to experience unexpe=
-cted I/O=20
-> > > > problems merely because someone has decided to put the system to =
-sleep.
-> > >=20
-> > > Why not ? Printer is offline when machine is asleep... trying to pr=
-int
-> >=20
-> > Not necessarily. The machine must survive going to sleep while you ar=
-e
-> > printing. Any other error return than -ERESTARTSYS is not an option.
-> > We can't simply change the ABI.
->=20
-> Ugh ? Why returning an error from the printer driver to the userland
-> print server/daemon would prevent the machine from "surviving" ? I woul=
-d
-> be happy with -EIO personally :-)
+> Please have a look at the documentation update at the bottom of this patch:
+> 
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc7/patches/15-freezer-make-kernel-threads-nonfreezable-by-default.patch
+> 
+> It says what the freezer is for in the first place. :-)
 
-Surviving is a bit strongly worded.
+Thanks, good description.
 
-Suspension is to be transparent. Apart from a jump in the system clock
-user space must not notice, thus returning errors due to suspension is
-not an option.
+> > Yes, we need to make sure, that nothing is scheduled during (and
+> > possibly after) taking the snapshot.  But AFAICS that could be
+> > achieved by unplugging all but one CPU.
+> 
+> Actually, we want things to get scheduled, because we need some of them to
+> save the image (to make things more difficult, we don't know what will be
+> needed to save the image in advance ;-)).
 
-	Regards
-		Oliver
+Well, kexecing a new kernel (as being pursued in one of the
+subthreads) to do the saving should take care of that.
+
+In that case the "we need suspend to be invisible to userspace" as a
+reason to use the freezer would also be moot, since if you don't
+schedule userspace after offlining the CPUs, it can't notice this.
+
+Miklos
