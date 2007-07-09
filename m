@@ -1,14 +1,16 @@
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [RFC][PATCH -mm] Freezer: Handle uninterruptible
-	tasks
-Date: Mon, 09 Jul 2007 11:36:13 -0400
-Message-ID: <87tzsdvbbm.fsf__25838.2553853609$1183995429$gmane$org@jbms.ath.cx>
-References: <Pine.LNX.4.44L0.0707091043480.3851-100000@iolanthe.rowland.org>
+From: Marcelo Tosatti <marcelo@kvack.org>
+Subject: Re: Hibernate after alarm wakes from STR
+Date: Mon, 9 Jul 2007 11:40:14 -0400
+Message-ID: <20070709154014.GF27828__23023.8356897191$1183995600$gmane$org@dmt>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200707081315.40560.david-b@pacbell.net>
+	<20070708223121.GB4964@dmt>
+	<200707081944.04598.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707091043480.3851-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Mon\, 9 Jul 2007 10\:45\:56 -0400 \(EDT\)")
+Content-Disposition: inline
+In-Reply-To: <200707081944.04598.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Richard Hughes <hughsient@gmail.com>, rtc-linux@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Sun, Jul 08, 2007 at 07:44:03PM -0700, David Brownell wrote:
+> On Sunday 08 July 2007, Marcelo Tosatti wrote:
+> > On Sun, Jul 08, 2007 at 01:15:40PM -0700, David Brownell wrote:
+> > > On Sunday 08 July 2007, Richard Hughes wrote:
+> > > 
+> > > That is, we may want to provide a bit more information about the
+> > > specific event which triggered wakeup.  I don't believe there is
+> > > such an interface, in general.
+> > 
+> > What would be a nice interface? Perhaps an additional file under
+> > /sys/devices/.../power/wakeup_fired or something (only for devices with
+> > can_wakeup set).
+> 
+> Better a /sys/power/wakeup_event (or whatever) that's more easily
+> found.  It could link to the device issuing the event.
 
-> On Mon, 9 Jul 2007, Jeremy Maitin-Shepard wrote:
->> Pavel Machek <pavel@ucw.cz> writes:
->> 
->> [snip]
->> 
->> > I don't know how to do that mechanism... but if we knew where to trap
->> > filesystem writes, we could simply freeze at that point, and at that
->> > point only, no?
->> 
->> Any operation at all that has an external effect must not occur after
->> the snapshot is made; otherwise, there will be random hard-to-find
->> corruptions and other problems occurring as a result.  Thus, for
->> example, any writes (either directly or indirectly through e.g. a
->> filesystem) to non-volatile storage, any network traffic, any
->> communication with hardware like a printer must be prevented after the
->> snapshot.
+As you mentioned, there might be two wakeup sources (RTC and power
+button for instance) or even more at the same time.
 
-> You have forgotten one critical point: The writes to save the snapshot 
-> image must be allowed.  That's what makes it really hard.
+Do you think its fine to simply but the device separated by spaces in
+the wakeup_event file?
 
-Well, I didn't forget about that, although my language may have been a
-bit ambiguous.  I was referring only to the operations that are done by
-normal (i.e. non-hibernate) portions of the system and which are not
-explicitly for the purpose of hibernating the system.  It is very
-difficult to maintain this guarantee while also attempting to reuse the
-same infrastructure that is supposed to not be processing any "normal"
-requests in order to write the snapshot.  The kdump approach handily
-avoids this problem by *not* reusing the same infrastructure while still
-allowing complete flexibility (i.e. not depending on a
-drivers/suspend/ide-simple).
+Sounds fine by me, but what about the one-value-per-file sysfs rule?
 
--- 
-Jeremy Maitin-Shepard
+> > > Plus, the notion seems kind of racey to me.  (If you press a key
+> > > right while the wakealarm fires, you don't want hibernation..)
+> > 
+> > Then you check if the any key or other wakeup event has happened other
+> > than RTC... I don't see any problem with that.
+> 
+> It might be best not to need to re-activate the whole system from
+> STR though ... it ought to be possible to just power off, having
+> already written the image to disk.  Right?
+
+Perhaps, yes... 
+
+> Yes, there's all that stuff about how to quiesce the system properly,
+> freezer/icebox/flamesuits/etc.  Regardless, going from STR to fully
+> operational and then hibernating would take time and energy that
+> might not be available...
+
+True, that needs to be taken into account.
+
+> - Dave
+> 
+> 
+> > > > Is this something we can do (or should do) for OLPC and general ACPI?
+> > > 
+> > > I'd certainly rather see laptops doing that than what they do now:
+> > > running the battery out, and needing filesystem recovery!!
+> > 
+> > Yep.
+> > 
+> 
