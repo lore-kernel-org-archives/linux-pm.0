@@ -1,22 +1,12 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: malicious filesystems (was Re: Re: [PATCH] Remove
-	process freezer from suspend to RAM pathway)
-Date: Mon, 09 Jul 2007 18:19:02 +0200
-Message-ID: <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu>
-References: <Pine.LNX.4.44L0.0707041045150.25704-100000@netrider.rowland.org>
-	<18060.14856.824473.325660@cargo.ozlabs.ibm.com>
-	<200707050858.03638.oliver@neukum.org>
-	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-	<20070705091801.GB3084@elf.ucw.cz>
-	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-	<20070705115400.GF3984@ucw.cz>
-	<E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
-	<20070707121729.GC3111@elf.ucw.cz>
-	<E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu>
-	<20070707233315.GB3820@elf.ucw.cz>
+From: "James Rogers" <jw_watson@freeuso.it>
+Subject: IRREVOCABLE RELEASE OF YOUR PAYMENT
+Date: Mon, 9 Jul 2007 09:16:23 -0700
+Message-ID: <4670D0A4000E20F6@ims1.edisontel.com>
+Reply-To: info_officialmail_un09@yahoo.co.uk
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20070707233315.GB3820@elf.ucw.cz> (message from Pavel Machek on
-	Sun, 8 Jul 2007 01:33:15 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,46 +16,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pavel@ucw.cz
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> > > We can just wait for all fuse requests to be serviced before
-> > > proceeding further with freeze, right?
-> > 
-> > Right.  Nice way to slow down or stop the suspend with an unprivileged
-> > process.  Avoiding that sort of DoS is one of the design goals of
-> > fuse.
-> 
-> So you want me to handle _malicious_ filesystems now?
-> 
-> That should be easy... :-). You already have nasty deadlocks in FUSE,
-> and you solve them by "root can echo 1 > abort"... so allow me the
-> same possibility.
-> 
-> We can tell fused we are freezing, and if all the requests are not
-> serviced within, say, 30 seconds, we call the filesystem malicious and
-> do echo 1 > abort.
-> 
-> Not ideal, but neither is allowing malicious filesystems in the first
-> place...
+UNITED NATIONS (WORLD BANK ASSISTED PROGRAMME)
+DIRECTORATE OF INTERNATIONAL PAYMENT AND TRANSFERS.
+8WB 5OH,UNITED KINGDOM, LONDON 
+WIRE TRANSFER/AUDIT UNIT
+Our Ref: WB/NF/UN/XX027
 
-Actually there's also a non-malicious case in which waiting for
-requests to finish won't work: when one fuse filesystem is accessing
-another.
+ATTN: Beneficiary,               
 
-Since we are blocking new fuse requests, that might block a fuse
-daemon, which in turn makes it impossible to finish the pending
-request.
+  
+IRREVOCABLE RELEASE OF YOUR PAYMENT 
+ 
+We have actually been authorized by the newly appointed UN secretary general,
+and the governing body of the UNITED NATIONS monetary unit, to investigate
+the unnecessary delay of your inheritance fund, recommended and approved
+in your favour. 
 
-And this is not at all theoretical, I know that encfs is used over
-various other fuse filesystems like sshfs or ntfs-3g.
+During the course of our investigation, we discovered with dismay that your
+payment has been unnecessarily Delayed by corrupt officials of the Bank who
+are Trying to divert your money into their private accounts, to forestall
+this, security for your funds Was organized in the form of your personal
+Identification number (PIN) ATM CARD OR  Debit card  this will enable only
+you have direct Control over this fund, we have also agreed with the Presidency
+that we will handle this payment ourselves to avoid the hopeless situation
+created by the Officials of the  bank. 
+ 
+We obtained an irrevocable payment guarantee on your Payment from the presidency
+we are happy to inform you that based on our recommendation/instructions;
+your Entire Inheritances fund has been credited in your favour through ATM
+card OR  Debit card . 
+ 
+You are therefore adviced you send your contact to REV JOHN HOBBS International
+Audit unit, United Nations Liaison Office London  to collect your original
+payment slip with your ATM card or  Debit card .
+ 
+They will issue you an ATM card OR  Debit card  that you can use to withdraw
+money in any ATM machine any part of the world, but the maximum is fifteen
+thousand dollars per a day.
+ 
+therefore if you like to receive your funds through this means kindly let
+us know by contacting the card payment center and also send the following
+information as stated below.  
+ 
 
-Yeah, stacking userspace filesystems could be done entirely in
-userspace, and I'm actually working on that (with fuse-2.7.0 already
-supporting some basic stacking).
+1. PHONE AND FAX NUMBER,
+2. YOUR FULL NAME
+3. ADDRESS WERE YOU WANT THEM TO SEND THE ATM CARD
+TO (P.O BOX NOT ACCEPTABLE) 
+4. YOUR AGE AND CURRENT OCCUPATION
+5. Home Equity {YES OR NO}.
 
-But the point is, that the "wait for fuse to quiescence" hack would
-not work in todays environment.
+ 
+NOTE: YOU ARE ADVICED TO FURNISH REV JOHN HOBBS WITH YOUR CORRECTCONTACT
+ DETAILS. AND ALSO BE INFORMED THAT THE AMOUNT TO BE PAID NOW IS $8.3 MILLION
+THE REST WILL BE PAID LATTER.
+ 
+We expect your urgent response to this email to enable
+us monitor this payment effectively.. 
+CONGRATULATIONS. 
 
-Miklos
+Anxiously waiting for your reply.
+ 
+ 
+
+CONGRATULATIONS.
+CAPT. JAMES C. WILLIAMS
+UNITED NATIONS, LONDON UK
+UNITED NATION MONETARY FUND (UNMF)
