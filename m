@@ -1,12 +1,17 @@
-From: "James Rogers" <jw_watson@freeuso.it>
-Subject: IRREVOCABLE RELEASE OF YOUR PAYMENT
-Date: Mon, 9 Jul 2007 09:16:23 -0700
-Message-ID: <4670D0A4000E20F6@ims1.edisontel.com>
-Reply-To: info_officialmail_un09@yahoo.co.uk
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Hibernate after alarm wakes from STR
+Date: Mon, 9 Jul 2007 09:26:32 -0700
+Message-ID: <200707090926.32826.david-b__44423.5696843409$1183998559$gmane$org@pacbell.net>
+References: <20070330235759.GC4252@cosmic.amd.com>
+	<200707081944.04598.david-b@pacbell.net>
+	<20070709154014.GF27828@dmt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070709154014.GF27828@dmt>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,72 +21,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Richard Hughes <hughsient@gmail.com>, rtc-linux@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
 
-UNITED NATIONS (WORLD BANK ASSISTED PROGRAMME)
-DIRECTORATE OF INTERNATIONAL PAYMENT AND TRANSFERS.
-8WB 5OH,UNITED KINGDOM, LONDON 
-WIRE TRANSFER/AUDIT UNIT
-Our Ref: WB/NF/UN/XX027
+On Monday 09 July 2007, Marcelo Tosatti wrote:
+> On Sun, Jul 08, 2007 at 07:44:03PM -0700, David Brownell wrote:
 
-ATTN: Beneficiary,               
+> > Better a /sys/power/wakeup_event (or whatever) that's more easily
+> > found.  It could link to the device issuing the event.
+> 
+> As you mentioned, there might be two wakeup sources (RTC and power
+> button for instance) or even more at the same time.
 
-  
-IRREVOCABLE RELEASE OF YOUR PAYMENT 
- 
-We have actually been authorized by the newly appointed UN secretary general,
-and the governing body of the UNITED NATIONS monetary unit, to investigate
-the unnecessary delay of your inheritance fund, recommended and approved
-in your favour. 
+Actually I though I said that there would be races.  Though come
+to think of it, one way they'd show up on a typical embedded system
+would be to have multiple wake IRQs pending ... you couldn't tell
+which one came first.  (The typical case would be a single event,
+of course.)  ACPI-ish systems would do that with GPEs and the
+magic "rtc woke" flag.
 
-During the course of our investigation, we discovered with dismay that your
-payment has been unnecessarily Delayed by corrupt officials of the Bank who
-are Trying to divert your money into their private accounts, to forestall
-this, security for your funds Was organized in the form of your personal
-Identification number (PIN) ATM CARD OR  Debit card  this will enable only
-you have direct Control over this fund, we have also agreed with the Presidency
-that we will handle this payment ourselves to avoid the hopeless situation
-created by the Officials of the  bank. 
- 
-We obtained an irrevocable payment guarantee on your Payment from the presidency
-we are happy to inform you that based on our recommendation/instructions;
-your Entire Inheritances fund has been credited in your favour through ATM
-card OR  Debit card . 
- 
-You are therefore adviced you send your contact to REV JOHN HOBBS International
-Audit unit, United Nations Liaison Office London  to collect your original
-payment slip with your ATM card or  Debit card .
- 
-They will issue you an ATM card OR  Debit card  that you can use to withdraw
-money in any ATM machine any part of the world, but the maximum is fifteen
-thousand dollars per a day.
- 
-therefore if you like to receive your funds through this means kindly let
-us know by contacting the card payment center and also send the following
-information as stated below.  
- 
+And then there are shared IRQ lines serving as wake sources.  There
+could be three wake-enabled devices on that line (plus others that
+aren't wake-enabled); the drivers returning IRQ_HANDLED should likely
+be reported as having been wake sources, but not the ones returning
+IRQ_NONE ...
 
-1. PHONE AND FAX NUMBER,
-2. YOUR FULL NAME
-3. ADDRESS WERE YOU WANT THEM TO SEND THE ATM CARD
-TO (P.O BOX NOT ACCEPTABLE) 
-4. YOUR AGE AND CURRENT OCCUPATION
-5. Home Equity {YES OR NO}.
+... so yes, systems might need to present multiple wake events.
 
- 
-NOTE: YOU ARE ADVICED TO FURNISH REV JOHN HOBBS WITH YOUR CORRECTCONTACT
- DETAILS. AND ALSO BE INFORMED THAT THE AMOUNT TO BE PAID NOW IS $8.3 MILLION
-THE REST WILL BE PAID LATTER.
- 
-We expect your urgent response to this email to enable
-us monitor this payment effectively.. 
-CONGRATULATIONS. 
 
-Anxiously waiting for your reply.
- 
- 
+> Do you think its fine to simply but the device separated by spaces in
+> the wakeup_event file?
+> 
+> Sounds fine by me, but what about the one-value-per-file sysfs rule?
 
-CONGRATULATIONS.
-CAPT. JAMES C. WILLIAMS
-UNITED NATIONS, LONDON UK
-UNITED NATION MONETARY FUND (UNMF)
+Better to have that node be a directory of links then, rather than
+a single link.
+
+Note that I'm just throwing ideas out there.  I suspect that
+in the general case it may not be easy to map from wake event
+to device, without infrastructure that's now missing.
+
+- Dave
