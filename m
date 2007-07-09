@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 6/6] Freezer: Document relationship with
-	memory shrinking
-Date: Mon, 9 Jul 2007 22:41:28 +0200
-Message-ID: <200707092241.29029.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 5/6] Freezer: Use freezing timeout more
+	efficiently
+Date: Mon, 9 Jul 2007 22:38:18 +0200
+Message-ID: <200707092238.19267.rjw@sisk.pl>
 References: <200707092229.08898.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,43 +26,138 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-One important reason to freeze tasks, which is that we don't want them to
-allocate memory after freeing it for the hibernation image, has not been
-documented.  Fix it.
+The freezer fails if there are uninterruptible tasks waiting for some frozen
+tasks to let them continue.  Moreover, in that case try_to_freeze_tasks() loops
+uselessly until the timeout expires which is wasteful, so in principle we should
+make the freezer fail as soon as all the tasks that refuse to freeze are
+uninterruptible.  However, instead of failing the freezer we can try to use the
+time left and thaw the tasks that have already been frozen without clearing the
+freeze requests of the tasks that are refusing to freeze.  This way, if these
+tasks are really blocked by the frozen ones, they will get extra chance to
+freeze when the other tasks are thawed.  Next, we can repeat the freezing loop
+and so on, until the timeout expires.
+
+This patch implements the above idea.  It has been tested by trying to freeze
+tasks on a 2.2 GHz dual-core machine running 'make -j50' kernel compilation
+concurrently with try_to_freeze_tasks() with the freezer hooks removed from
+do_fork() and it's been able to do the job 100% of the time.  It may help with
+the "freezer tends to fail if FUSE is used" issue
+(cf. http://lkml.org/lkml/2007/7/3/1) and I don't see any drawback of doing it
+in general.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/power/freezing-of-tasks.txt |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ kernel/power/process.c |   67 +++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 54 insertions(+), 13 deletions(-)
 
-Index: linux-2.6.22-rc7/Documentation/power/freezing-of-tasks.txt
+Index: linux-2.6.22-rc6-mm1/kernel/power/process.c
 ===================================================================
---- linux-2.6.22-rc7.orig/Documentation/power/freezing-of-tasks.txt
-+++ linux-2.6.22-rc7/Documentation/power/freezing-of-tasks.txt
-@@ -88,7 +88,16 @@ hibernation image has been created and b
- The majority of these are user space processes, but if any of the kernel threads
- may cause something like this to happen, they have to be freezable.
+--- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c
++++ linux-2.6.22-rc6-mm1/kernel/power/process.c
+@@ -14,10 +14,8 @@
+ #include <linux/syscalls.h>
+ #include <linux/freezer.h>
  
--2. The second reason is to prevent user space processes and some kernel threads
-+2. Next, to create the hibernation image we need to free a sufficient amount of
-+memory (approximately 50% of available RAM) and we need to do that before
-+devices are deactivated, because we generally need them for swapping out.  Then,
-+after the memory for the image has been freed, we don't want tasks to allocate
-+additional memory and we prevent them from doing that by freezing them earlier.
-+[Of course, this also means that device drivers should not allocate substantial
-+amounts of memory from their .suspend() callbacks before hibernation, but this
-+is e separate issue.]
+-/* 
+- * Timeout for stopping processes
+- */
+-#define TIMEOUT	(20 * HZ)
++/* Timeout for the freezing of tasks */
++#define TIMEOUT	(30 * HZ)
+ 
+ #define FREEZER_KERNEL_THREADS 0
+ #define FREEZER_USER_SPACE 1
+@@ -172,15 +170,30 @@ static void cancel_freezing(struct task_
+ 	}
+ }
+ 
++/**
++ *	try_to_freeze_tasks - send freeze requests to all tasks and wait for
++ *		for them to enter the refrigerator
++ *	@freeze_user_space - if set, only tasks that have mm of their own are
++ *		requested to freeze
++ *
++ *	If this function fails, thaw_tasks() must be called to do the cleanup.
++ */
 +
-+3. The third reason is to prevent user space processes and some kernel threads
- from interfering with the suspending and resuming of devices.  A user space
- process running on a second CPU while we are suspending devices may, for
- example, be troublesome and without the freezing of tasks we would need some
-@@ -118,7 +127,7 @@ frozen before the driver's .suspend() ca
- thawed after the driver's .resume() callback has run, so it won't be accessing
- the device while it's suspended.
+ static int try_to_freeze_tasks(int freeze_user_space)
+ {
+ 	struct task_struct *g, *p;
+ 	unsigned long end_time;
+-	unsigned int todo;
++	unsigned int todo, blocking;
++	unsigned int i = 0;
++	char *tick = "-\\|/";
++
++	printk(" ");
  
--3. Another reason for freezing tasks is to prevent user space processes from
-+4. Another reason for freezing tasks is to prevent user space processes from
- realizing that hibernation (or suspend) operation takes place.  Ideally, user
- space processes should not notice that such a system-wide operation has occurred
- and should continue running without any problems after the restore (or resume
+ 	end_time = jiffies + TIMEOUT;
++ Repeat:
+ 	do {
+ 		todo = 0;
++		blocking = 0;
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+ 			if (frozen(p) || !freezeable(p))
+@@ -197,25 +210,53 @@ static int try_to_freeze_tasks(int freez
+ 			} else {
+ 				freeze_task(p);
+ 			}
+-			if (!freezer_should_skip(p))
++			if (!freezer_should_skip(p)) {
+ 				todo++;
++				if (freeze_user_space &&
++				    (p->state == TASK_UNINTERRUPTIBLE))
++					blocking++;
++			}
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
+ 		yield();			/* Yield is okay here */
+ 		if (time_after(jiffies, end_time))
+ 			break;
+-	} while (todo);
++	} while (todo != blocking);
++
++	if (todo && freeze_user_space && !time_after(jiffies, end_time)) {
++		/*
++		 * Some tasks have not been able to freeze.  They might be stuck
++		 * in TASK_UNINTERRUPTIBLE waiting for the frozen tasks.  Try to
++		 * thaw the tasks that have frozen without clearing the freeze
++		 * requests of the remaining tasks and repeat.
++		 */
++		read_lock(&tasklist_lock);
++		do_each_thread(g, p) {
++			if (frozen(p)) {
++				p->flags &= ~PF_FROZEN;
++				wake_up_process(p);
++			}
++		} while_each_thread(g, p);
++		read_unlock(&tasklist_lock);
++
++		yield();
++
++		printk("\b%c", tick[i++%4]);
++
++		goto Repeat;
++	}
++
++	printk("\b");
+ 
+ 	if (todo) {
+-		/* This does not unfreeze processes that are already frozen
+-		 * (we have slightly ugly calling convention in that respect,
+-		 * and caller must call thaw_processes() if something fails),
+-		 * but it cleans up leftover PF_FREEZE requests.
++		/*
++		 * The freezing of tasks has failed.  List the tasks that have
++		 * refused to freeze.  This also clears all pending freeze
++		 * requests.
+ 		 */
+ 		printk("\n");
+-		printk(KERN_ERR "Freezing of %s timed out after %d seconds "
++		printk(KERN_ERR "Freezing of tasks timed out after %d seconds "
+ 				"(%d tasks refusing to freeze):\n",
+-				freeze_user_space ? "user space " : "tasks ",
+ 				TIMEOUT / HZ, todo);
+ 		show_state();
+ 		read_lock(&tasklist_lock);
