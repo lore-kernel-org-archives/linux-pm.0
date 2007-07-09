@@ -1,18 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Miklos Szeredi <miklos@szeredi.hu>
 Subject: Re: malicious filesystems (was Re: Re: [PATCH] Remove
 	process freezer from suspend to RAM pathway)
-Date: Mon, 9 Jul 2007 11:36:32 +0200
-Message-ID: <200707091136.33581.oliver__38554.8178376213$1183973842$gmane$org@neukum.org>
+Date: Mon, 09 Jul 2007 11:40:19 +0200
+Message-ID: <E1I7pj9-0001TE-00@dorka.pomaz.szeredi.hu>
 References: <200707050858.03638.oliver@neukum.org>
 	<200707082307.15616.rjw@sisk.pl>
 	<E1I7pXr-0001Qn-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	<200707091136.33581.oliver@neukum.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1I7pXr-0001Qn-00@dorka.pomaz.szeredi.hu>
-Content-Disposition: inline
+In-reply-to: <200707091136.33581.oliver@neukum.org> (message from Oliver
+	Neukum on Mon, 9 Jul 2007 11:36:32 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,16 +19,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: oliver@neukum.org
+Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, 9. Juli 2007 schrieb Miklos Szeredi:
-> In that case the "we need suspend to be invisible to userspace" as a
-> reason to use the freezer would also be moot, since if you don't
-> schedule userspace after offlining the CPUs, it can't notice this.
+> > In that case the "we need suspend to be invisible to userspace" as a
+> > reason to use the freezer would also be moot, since if you don't
+> > schedule userspace after offlining the CPUs, it can't notice this.
+> 
+> After? Can you do the offlining atomically?
 
-After? Can you do the offlining atomically?
+Don't know.  Wait for all CPUs to reach a scheduling point and then
+take them offline?  Doesn't sound too difficult.
 
-	Regards
-		Oliver
+Miklos
