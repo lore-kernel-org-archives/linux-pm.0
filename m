@@ -1,17 +1,18 @@
-From: Kyle Moffett <mrmacman_g4@mac.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] Remove process freezer from suspend to RAM
 	pathway
-Date: Sun, 8 Jul 2007 20:57:29 -0400
-Message-ID: <FFA29D56-3400-4EA3-8CE8-C1EF75484510__2858.17211629382$1183942981$gmane$org@mac.com>
+Date: Mon, 09 Jul 2007 11:32:44 +1000
+Message-ID: <1183944764.3388.330.camel__5589.66533649272$1183944816$gmane$org@localhost.localdomain>
 References: <Pine.LNX.4.44L0.0707081517540.11049-100000@netrider.rowland.org>
 	<1183929611.3388.303.camel@localhost.localdomain>
 	<200707090006.32712.rjw@sisk.pl>
 	<1183941217.3388.324.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+	<FFA29D56-3400-4EA3-8CE8-C1EF75484510@mac.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1183941217.3388.324.camel@localhost.localdomain>
+In-Reply-To: <FFA29D56-3400-4EA3-8CE8-C1EF75484510@mac.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,74 +22,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kyle Moffett <mrmacman_g4@mac.com>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Jul 08, 2007, at 20:33:37, Benjamin Herrenschmidt wrote:
->>  	drivers_sysfs_write()
->> 		while(!suspend_trylock())
->> 			try_to_icebox() --> or even try_to_freeze(), what's the  
->> difference?
->>
->>  		hit hardware
->> 		unlock_suspend()
->>
->> where the PM core must wait for the suspend lock to get released  
->> (say with a timeout)?
->
-> Somewhat. What I'd like is to have that a construct of that sort on  
-> a per-driver basis though :-) Now the question is, in what way  
-> would the above be different from a simple suspend mutex ? I've  
-> been using mutexes in the past for a couple of drivers (iirc,  
-> that's how I did it for dmasound_pmac, though that driver is long  
-> past obsolescence now).
 
-I agree completely.  It's a bit trickier if you want to do work in  
-uninterruptable contexts:
+> You could do this with a straight mutex except for the  
+> dev_suspend_trylock/unlock bit in uninterruptable contexts, but I  
+> seem to recall somebody saying that could be made to work if there  
+> was a real need for it.  Alternatively you could just drive the  
+> "Generic Mutex" guys up the wall by inventing your own pseudo-mutex  
+> with a spinlock, a boolean value, and a waitqueue.
 
-driver_suspend_callback(...)
-{
-	dev_suspend_lock(dev);
-	put_hardware_to_sleep(dev);
-}
+Most of the time, the interrupt/atomic contexts are part of what I call
+the "main path" of the driver, which doesn't need most of this stuff.
 
-driver_resume_callback(...)
-{
-	wake_hardware_up(dev);
-	dev_suspend_unlock(dev);
-}
+Depending on what is "upstream" from the driver, you typically set a
+condition stopping the flow of "interrupt" activity and wait for it to
+drain in suspend. For example, a block driver would instruct the driver
+to stop processing the request queue and wait for pending in flight
+requests to drain, or a network driver would stop the tx queue and wait
+for pending/concurrent xmit() callbacks to complete (basically sync. bh
+and sync. with NAPI poll).
 
-Then for sleep-capable contexts:
-	dev_suspend_lock(dev);
-	dev_suspend_unlock(dev);
+In both examples, helpers can be provided in the block layer or network
+stack to make that easier.
 
-And for no-sleep contexts like interrupts etc:
-	if (!dev_suspend_trylock(dev))
-		return postpone_work_for_later(dev, ...);
-	do_stuff_with(dev);
-	dev_suspend_unlock(dev);
+In many cases, the driver may just turn off something in the chip in
+"suspend" (using a low level spinlock that it already has if it has an
+irq path to sync. HW access) and set some flag/state to instruct the irq
+handler to not restart, then synchronize_irq().
 
-You could do this with a straight mutex except for the  
-dev_suspend_trylock/unlock bit in uninterruptable contexts, but I  
-seem to recall somebody saying that could be made to work if there  
-was a real need for it.  Alternatively you could just drive the  
-"Generic Mutex" guys up the wall by inventing your own pseudo-mutex  
-with a spinlock, a boolean value, and a waitqueue.
+All those techniques are fairly simple and well known. The main source
+of problems are the "sideband" channels, such as sysfs accesses to
+driver tunables, ioctl's, etc... for which I believe mutexes can solve
+90% of them.
 
-Then when you put your driver to sleep, things trying to do IO will  
-automatically "freeze" themselves exactly until the device is woken  
-again.
-
-Assuming the driver model and subsystem get the ordering right for  
-which devices to suspend/resume, then it's impossible to deadlock or  
-cause hardware confusion.  And even further, if you manage to make  
-the automagic mutex-debugging code work with the noninterruptable  
-trylock it will yell at you when the driver model does nasty deadlock- 
-y things.
-
-On the other hand, if the driver model *doesn't* get the ordering  
-right then it's fundamentally impossible to reliably suspend and resume.
-
-Cheers,
-Kyle Moffett
+Ben.
