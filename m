@@ -1,14 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 3/6] Freezer: Be more verbose
-Date: Tue, 10 Jul 2007 17:05:22 +0200
-Message-ID: <20070710150522.GB5133@atrey.karlin.mff.cuni.cz>
-References: <200707092229.08898.rjw@sisk.pl> <200707092233.52475.rjw@sisk.pl>
-	<20070709234625.GK1967@elf.ucw.cz> <200707100801.44087.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 4/6] Freezer: Prevent new tasks from
+	inheriting TIF_FREEZE set
+Date: Tue, 10 Jul 2007 17:05:54 +0200
+Message-ID: <20070710150554.GC5133@atrey.karlin.mff.cuni.cz>
+References: <200707092229.08898.rjw@sisk.pl> <200707092234.55437.rjw@sisk.pl>
+	<20070709232113.GG1967@elf.ucw.cz> <200707100803.43799.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707100801.44087.rjw@sisk.pl>
+In-Reply-To: <200707100803.43799.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,41 +23,23 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, pm list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > --- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c
-> > > +++ linux-2.6.22-rc6-mm1/kernel/power/process.c
-> > > @@ -237,20 +237,23 @@ static int try_to_freeze_tasks(int freez
-> > >   */
-> > >  int freeze_processes(void)
-> > >  {
-> > > -	int error;
-> > > +	int error = 0;
+> On Tuesday, 10 July 2007 01:21, Pavel Machek wrote:
+> > Hi!
 > > 
-> > You set error unconditionally few lines below.
-> 
-> Ah, thanks.  There were a couple of versions of this patch and I forgot to
-> remove this.
-> 
-> > > -	printk("Stopping tasks ... ");
-> > > +	printk("Freezing user space processes ... ");
-> > >  	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
-> > >  	if (error)
-> > > -		return error;
-> > > +		goto Exit;
-> > > +	printk("done.\n");
-> > >  
-> > > +	printk("Freezing remaining freezable tasks ... ");
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Tasks should go to the refrigerator only if explicitly requested to do that by
+> > > the freezer and not as a result of inheriting the TIF_FREEZE flag set from the
+> > > parent.  Make it happen.
 > > 
-> > can we ust do printk(" rest ... "); ? Saves one line... and suspend
-> > process is too verbose anyway.
+> > Umm, what prevents userspace task from escaping freezer this way? Does
+> > tasklist_lock prevent new tasks and thus this race?
 > 
-> In fact, this is related to the next patch, in which try_to_freeze_tasks() is
-> reworked and without this it won't be clear which phase of the freezing has
-> failed (in case of failure, that is).
+> I think so.
 
-Ok, ACK , then.
+I think so, too. ACK.
 									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
