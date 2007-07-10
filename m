@@ -1,8 +1,8 @@
 From: Oleg Nesterov <oleg@tv-sign.ru>
 Subject: Re: Re: [RFC][PATCH -mm 5/6] Freezer: Use freezing timeout
 	more efficiently
-Date: Tue, 10 Jul 2007 21:17:04 +0400
-Message-ID: <20070710171704.GA406@tv-sign.ru>
+Date: Tue, 10 Jul 2007 22:50:59 +0400
+Message-ID: <20070710185059.GA92@tv-sign.ru>
 References: <200707092229.08898.rjw@sisk.pl> <20070709233414.GI1967@elf.ucw.cz>
 	<200707100809.38466.rjw@sisk.pl> <200707101204.42687.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -25,19 +25,6 @@ List-Id: linux-pm@vger.kernel.org
 
 On 07/10, Rafael J. Wysocki wrote:
 >
-> > Besides, we can add another timeout for breaking the loop from a "locked up"
-> > state.
-> 
-> Actually I like this idea. :-)
-> 
-> I have updated the patch to use the additional timeout, please have a look
-> (below).
-
-Q: do we really need these complications with UNINTERRUPTIBLE/blocked ?
-
-Just watch the "todo", it it doesn't decrease during BREAK_TIMEOUT, then retry.
-No?
-
 > +	if (todo && freeze_user_space && !time_after(jiffies, end_time)) {
 > +		/*
 > +		 * Some tasks have not been able to freeze.  They might be stuck
@@ -45,7 +32,26 @@ No?
 > +		 * thaw the tasks that have frozen without clearing the freeze
 > +		 * requests of the remaining tasks and repeat.
 > +		 */
+> +		read_lock(&tasklist_lock);
+> +		do_each_thread(g, p) {
+> +			if (frozen(p)) {
+> +				p->flags &= ~PF_FROZEN;
+> +				wake_up_process(p);
 
-Another question, why do we check "freeze_user_space" here?
+I just noticed we don't use thaw_process(), this means that the retry doesn't
+play well with wait_event_freezable() introduced in the previous patch.
+
+Suppose that kthread_stop(T) hangs and blocks the freezer, and T does
+
+	while (!kthread_should_stop()) {
+		wait_event_freezable(...);
+		do_something();
+	}
+
+and it is freezed. We clear PF_FROZEN but not TIF_FREEZE, wait_event_freezable
+checks freezing() and goes to refrigerator again.
+
+Another problem is that we only count UNINTERRUPTIBLE tasks to make a decision
+about retry, while wait_event_freezable() sleeps NTERRUPTIBLE.
 
 Oleg.
