@@ -1,14 +1,14 @@
 From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: Re: Hibernate after alarm wakes from STR
-Date: Tue, 10 Jul 2007 12:45:30 +1000
-Message-ID: <200707101245.31449.nigel__13298.7582394437$1184035569$gmane$org@nigel.suspend2.net>
-References: <20070330235759.GC4252@cosmic.amd.com> <20070709154014.GF27828@dmt>
-	<200707090926.32826.david-b@pacbell.net>
+Subject: Re: [mm-patch]Documentation:reference notifiers.txt in
+	freezing-of-tasks.txt
+Date: Tue, 10 Jul 2007 12:48:27 +1000
+Message-ID: <200707101248.27761.nigel@nigel.suspend2.net>
+References: <200707091026.20463.oliver@neukum.org>
 Reply-To: nigel@suspend2.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8156311615834262550=="
+Content-Type: multipart/mixed; boundary="===============7586028413737054931=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707090926.32826.david-b@pacbell.net>
+In-Reply-To: <200707091026.20463.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,15 +20,15 @@ Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Richard Hughes <hughsient@gmail.com>, rtc-linux@googlegroups.com, linux-acpi@vger.kernel.org
+Cc: Andrew Morton <akpm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============8156311615834262550==
-Content-Type: multipart/signed; boundary="nextPart1633309.Asmc9IrAUR";
+--===============7586028413737054931==
+Content-Type: multipart/signed; boundary="nextPart6926592.AGqNk8pWco";
 	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
 
---nextPart1633309.Asmc9IrAUR
+--nextPart6926592.AGqNk8pWco
 Content-Type: text/plain;
   charset="cp 850"
 Content-Transfer-Encoding: quoted-printable
@@ -36,65 +36,50 @@ Content-Disposition: inline
 
 Hi.
 
-On Tuesday 10 July 2007 02:26:32 David Brownell wrote:
-> On Monday 09 July 2007, Marcelo Tosatti wrote:
-> > On Sun, Jul 08, 2007 at 07:44:03PM -0700, David Brownell wrote:
+On Monday 09 July 2007 18:26:19 Oliver Neukum wrote:
+> Hi,
 >=20
-> > > Better a /sys/power/wakeup_event (or whatever) that's more easily
-> > > found.  It could link to the device issuing the event.
-> >=20
-> > As you mentioned, there might be two wakeup sources (RTC and power
-> > button for instance) or even more at the same time.
+> freezing-of-tasks.txt mentions firmware issues without mentioning the use
+> of the new notifier API to overcome them. Here's an update.
 >=20
-> Actually I though I said that there would be races.  Though come
-> to think of it, one way they'd show up on a typical embedded system
-> would be to have multiple wake IRQs pending ... you couldn't tell
-> which one came first.  (The typical case would be a single event,
-> of course.)  ACPI-ish systems would do that with GPEs and the
-> magic "rtc woke" flag.
+> 	Regards
+> 		Oliver
+> Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> ----
 >=20
-> And then there are shared IRQ lines serving as wake sources.  There
-> could be three wake-enabled devices on that line (plus others that
-> aren't wake-enabled); the drivers returning IRQ_HANDLED should likely
-> be reported as having been wake sources, but not the ones returning
-> IRQ_NONE ...
->=20
-> ... so yes, systems might need to present multiple wake events.
->=20
->=20
-> > Do you think its fine to simply but the device separated by spaces in
-> > the wakeup_event file?
-> >=20
-> > Sounds fine by me, but what about the one-value-per-file sysfs rule?
->=20
-> Better to have that node be a directory of links then, rather than
-> a single link.
->=20
-> Note that I'm just throwing ideas out there.  I suspect that
-> in the general case it may not be easy to map from wake event
-> to device, without infrastructure that's now missing.
+> --- a/Documentation/power/freezing-of-tasks.txt	2007-07-09=20
+10:06:51.000000000 +0200
+> +++ b/Documentation/power/freezing-of-tasks.txt	2007-07-09=20
+10:24:05.000000000 +0200
+> @@ -155,6 +155,8 @@ Suppose, however, that the firmware file
+>  only through another device that hasn't been resumed yet.  In that case,
+>  request_firmware() will fail regardless of whether or not the freezing o=
+f=20
+tasks
+>  is used.  Consequently, the problem is not really related to the freezin=
+g=20
+of
+> -tasks, since it generally exists anyway.  [The solution to this particul=
+ar
+> -problem is to keep the firmware in memory after it's loaded for the firs=
+t=20
+time
+> -and upload if from memory to the device whenever necessary.]
+> +tasks, since it generally exists anyway.
+> +
+> +A driver must have all firmwares it may need in RAM before suspend() is=
+=20
+called.
 
-=46WIW, I've recently added code to Suspend2 to allow it to (optionally) se=
-t the=20
-RTC wake alarm when it's finished writing the image and check the lid switc=
-h=20
-when waking, entering a different sleep state if the lid switch is still=20
-closed. It achieves this by letting the user set the name of an rtc alarm t=
-o=20
-use (the 'rtc0' in /sys/class/rtc/rtc0/*) and of a button to use (lid/LID=20
-in /proc/acpi/button/lid/LID/*). It then opens the button directory's state=
-=20
-file and the rtc directory's since_epoch and wakealarm files, and uses them=
-=20
-to determine read the time since epoch and set the wakealarm and determine=
-=20
-whether the lid button is still closed.
+s/firmwares/firmware
 
-I don't really like the opening /proc and /sysfs files in this way - whatev=
-er=20
-solution you come up with, could you consider exposing some way for kernel=
-=20
-code to do this more neatly?
+> +If keeping them is not practical, for example due to their size, they mu=
+st=20
+be
+> +requested early enough using the suspend notifier API described in=20
+notifiers.txt.
+
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
 
 Regards,
 
@@ -103,24 +88,24 @@ Nigel
 See http://www.tuxonice.net for Howtos, FAQs, mailing
 lists, wiki and bugzilla info.
 
---nextPart1633309.Asmc9IrAUR
+--nextPart6926592.AGqNk8pWco
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGkvLLN0y+n1M3mo0RAha4AJ9wpmItfkcrZ6MhhkK0oMiXX360dgCcDwPm
-On5WSvNP5Lp07+++kSaXK+k=
-=UhIT
+iD8DBQBGkvN7N0y+n1M3mo0RApJoAJoCvQpG24TEnHgOwutOgwAonPdmRwCffEeI
+wyoyRlstrV/mVbSzk4AMvcE=
+=jmPc
 -----END PGP SIGNATURE-----
 
---nextPart1633309.Asmc9IrAUR--
+--nextPart6926592.AGqNk8pWco--
 
---===============8156311615834262550==
+--===============7586028413737054931==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============8156311615834262550==--
+--===============7586028413737054931==--
