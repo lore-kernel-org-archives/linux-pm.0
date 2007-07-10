@@ -1,13 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 3/6] Freezer: Be more verbose
-Date: Tue, 10 Jul 2007 01:46:25 +0200
-Message-ID: <20070709234625.GK1967@elf.ucw.cz>
-References: <200707092229.08898.rjw@sisk.pl> <200707092233.52475.rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC][PATCH -mm 1/6] Freezer: Do not sync filesystems
+Date: Tue, 10 Jul 2007 01:31:45 +0100
+Message-ID: <20070710003145.GA4624@srcf.ucam.org>
+References: <200707092229.08898.rjw@sisk.pl> <200707092231.46808.rjw@sisk.pl>
+	<20070709231209.GF1967@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707092233.52475.rjw@sisk.pl>
+In-Reply-To: <20070709231209.GF1967@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,50 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, pm list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, pm list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, Jul 10, 2007 at 01:12:09AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Increase the freezer's verbosity a bit, so that it's easier to read problem
-> reports related to it.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The syncing of filesystems from within the freezer is generally not needed.
+> > Also, if FUSE implements sync, this will cause the freezer to deadlock with it.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/process.c |   17 ++++++++++-------
->  1 file changed, 10 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6.22-rc6-mm1/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c
-> +++ linux-2.6.22-rc6-mm1/kernel/power/process.c
-> @@ -237,20 +237,23 @@ static int try_to_freeze_tasks(int freez
->   */
->  int freeze_processes(void)
->  {
-> -	int error;
-> +	int error = 0;
+> While this is right, I do not think it is good enough reason for a
+> change. I mean, sync there currently hurts noone....
 
-You set error unconditionally few lines below.
-
-> -	printk("Stopping tasks ... ");
-> +	printk("Freezing user space processes ... ");
->  	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
->  	if (error)
-> -		return error;
-> +		goto Exit;
-> +	printk("done.\n");
->  
-> +	printk("Freezing remaining freezable tasks ... ");
-
-can we ust do printk(" rest ... "); ? Saves one line... and suspend
-process is too verbose anyway.
-
-									Pavel
+It's a problem if you have an ext3 filesystem loopback mounted from a 
+fuse filesystem...
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Matthew Garrett | mjg59@srcf.ucam.org
