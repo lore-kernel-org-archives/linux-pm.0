@@ -1,15 +1,10 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 4/6] Freezer: Prevent new tasks from
-	inheriting TIF_FREEZE set
-Date: Tue, 10 Jul 2007 17:05:54 +0200
-Message-ID: <20070710150554.GC5133@atrey.karlin.mff.cuni.cz>
-References: <200707092229.08898.rjw@sisk.pl> <200707092234.55437.rjw@sisk.pl>
-	<20070709232113.GG1967@elf.ucw.cz> <200707100803.43799.rjw@sisk.pl>
-Mime-Version: 1.0
+From: "Myra Chung" <Roxannescavengedapper@meatlessmonday.com>
+Subject: No more worrying needed
+Date: Tue, 10 Jul 2007 08:58:02 -0700
+Message-ID: <200707101558.l6AFw2XW016787@smtp1.linux-foundation.org>
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707100803.43799.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +14,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Miklos Szeredi <miklos@szeredi.hu>, pm list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-> On Tuesday, 10 July 2007 01:21, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Tasks should go to the refrigerator only if explicitly requested to do that by
-> > > the freezer and not as a result of inheriting the TIF_FREEZE flag set from the
-> > > parent.  Make it happen.
-> > 
-> > Umm, what prevents userspace task from escaping freezer this way? Does
-> > tasklist_lock prevent new tasks and thus this race?
-> 
-> I think so.
+As a business you have been preapproved to receive 37225 USD TODAY!
 
-I think so, too. ACK.
-									Pavel
+No hassle at all, completely unsecured.
+There are no hidden costs or fees.
+Worried that your credit is less than perfect? Not an issue.
+As long as your business is based in the US and processes over ten thousand a month.
+Give us a ring, now..
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
++1-877-767-9308
+
+Turn your dream, into a reality, is that not worth two minutes of your time?
+
++1-877-767-9308
+
+He had managed about four feet before realizing he was going to do nothing more useful than roll the wheelchair past the door and into the far comer unless he could turn it. If it were ever to be published in something other than the severely limited (first printing: one copy) Annie Wilkes Edition, he guessed it might sell like a mad bastard.
+
+Roxanne Swift
