@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oleg Nesterov <oleg@tv-sign.ru>
 Subject: Re: Re: [RFC][PATCH -mm 5/6] Freezer: Use freezing timeout
 	more efficiently
-Date: Tue, 10 Jul 2007 22:30:32 +0200
-Message-ID: <200707102230.33407.rjw@sisk.pl>
+Date: Wed, 11 Jul 2007 00:35:05 +0400
+Message-ID: <20070710203505.GA148@tv-sign.ru>
 References: <200707092229.08898.rjw@sisk.pl> <200707101204.42687.rjw@sisk.pl>
-	<20070710171704.GA406@tv-sign.ru>
+	<20070710185059.GA92@tv-sign.ru> <200707102154.03531.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070710171704.GA406@tv-sign.ru>
 Content-Disposition: inline
+In-Reply-To: <200707102154.03531.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,55 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 10 July 2007 19:17, Oleg Nesterov wrote:
-> On 07/10, Rafael J. Wysocki wrote:
-> >
-> > > Besides, we can add another timeout for breaking the loop from a "locked up"
-> > > state.
+On 07/10, Rafael J. Wysocki wrote:
+>
+> On Tuesday, 10 July 2007 20:50, Oleg Nesterov wrote:
 > > 
-> > Actually I like this idea. :-)
+> > I just noticed we don't use thaw_process(), this means that the retry doesn't
+> > play well with wait_event_freezable() introduced in the previous patch.
 > > 
-> > I have updated the patch to use the additional timeout, please have a look
-> > (below).
+> > Suppose that kthread_stop(T) hangs and blocks the freezer, and T does
 > 
-> Q: do we really need these complications with UNINTERRUPTIBLE/blocked ?
-
-Yes, I think so.
-
-> Just watch the "todo", it it doesn't decrease during BREAK_TIMEOUT, then retry.
-> No?
-
-No, it is computed from the start in every interation and I compare the result
-from the previous iteration with the current result.  Still, I don't compare 'todo'
-with 'todo from the previous step' directly, because the lock up can only
-happen if 'todo' is equal to 'blocking'.  For this reason, it is sufficient to
-compare 'blocking' with 'prev_blocking' (ie. 'blocking' from the previous
-step) and 'todo' with 'blocking' (the test if 'todo' > 0 is not essential;
-well, I should remove it in accordance with my signature ;-)).
-
-> > +	if (todo && freeze_user_space && !time_after(jiffies, end_time)) {
-> > +		/*
-> > +		 * Some tasks have not been able to freeze.  They might be stuck
-> > +		 * in TASK_UNINTERRUPTIBLE waiting for the frozen tasks.  Try to
-> > +		 * thaw the tasks that have frozen without clearing the freeze
-> > +		 * requests of the remaining tasks and repeat.
-> > +		 */
+> The retry mechanism only applies to user land processes. :-)
 > 
-> Another question, why do we check "freeze_user_space" here?
+> > 	while (!kthread_should_stop()) {
+> > 		wait_event_freezable(...);
+> > 		do_something();
+> > 	}
+> > 
+> > and it is freezed. We clear PF_FROZEN but not TIF_FREEZE, wait_event_freezable
+> > checks freezing() and goes to refrigerator again.
+> 
+> PF_FROZEN and TIF_FREEZE are mutually exclusive as long as the thawing is
+> not racing with refrigerator().
 
-Well, the assumption is that the freezable kernel threads won't lock up the
-freezer in such a way (that may be overoptimistic, but I'd like to make it
-for now).  IOW, the retry mechanism is only activated during the freezing
-of user space (in principle it might be used in the second phase too, but
-I'm not sure if that's really necessary).
+Ah yes, I forgot. Thanks!
 
-Greetings,
-Rafael
+> > Another problem is that we only count UNINTERRUPTIBLE tasks to make a decision
+> > about retry, while wait_event_freezable() sleeps NTERRUPTIBLE.
+> 
+> The retry thing doesn't cover kernel threads, because they aren't supposed to
+> block the freezer.  They are supposed to freeze voluntarily and to know
+> _exactly_ what they are doing.
 
+Ok, I see... So, the plan is to eventually fix the "problematic" things like
+kthread_stop(), yes?  Unless I missed something again, we can't reliably
+kthread_stop() the thread above even if it does
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	wait_event_freezable(my_condition || kthread_should_stop())
+
+Oleg.
