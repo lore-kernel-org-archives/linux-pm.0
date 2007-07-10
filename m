@@ -1,17 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Oleg Nesterov <oleg@tv-sign.ru>
 Subject: Re: bogosort (was Re: Re: [RFC][PATCH -mm 5/6] Freezer:
 	Use freezing timeout more efficiently)
-Date: Tue, 10 Jul 2007 23:39:17 +0200
-Message-ID: <200707102339.18192.rjw@sisk.pl>
-References: <200707092229.08898.rjw@sisk.pl> <200707101204.42687.rjw@sisk.pl>
+Date: Wed, 11 Jul 2007 01:38:36 +0400
+Message-ID: <20070710213836.GA200@tv-sign.ru>
+References: <200707092229.08898.rjw@sisk.pl> <20070709233414.GI1967@elf.ucw.cz>
+	<200707100809.38466.rjw@sisk.pl> <200707101204.42687.rjw@sisk.pl>
 	<20070710211320.GC7091@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070710211320.GC7091@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <20070710211320.GC7091@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,13 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <miklos@szeredi.hu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Tuesday, 10 July 2007 23:13, Pavel Machek wrote:
-> Hi!
+On 07/10, Pavel Machek wrote:
 > 
 > > > > No, we can't do that:
 > > > > 
@@ -56,22 +52,10 @@ On Tuesday, 10 July 2007 23:13, Pavel Machek wrote:
 > 
 > Yes, this one could actually work... _really_ inefficiently.
 
-Not _that_ inefficiently ...
+Why inefficiently?
 
-> Task here is to sort the tasks, and freeze them in such order that
-> freezing works, right? Yep, we do not know the dependencies
-> explicitely... but what you invented is bogosort.
+I am asking because I am curious (I never used freezer for myself): how long
+does it take to freeze all tasks? I can't believe we need 20 seconds unless
+something goes wrong. It looks very natural to do what Rafael suggests.
 
-Define, please?
-
-> Yes, it does increase chance that freezing succeeds, but I do not
-> think increase of chance is worth having bogosort in tree :-).
-
-Well.  Do you think it's better to uselessly wait for 20s?
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Oleg.
