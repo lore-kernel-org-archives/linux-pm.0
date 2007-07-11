@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 2/7] Freezer: Do not sync filesystems
-	from freeze_processes
-Date: Thu, 12 Jul 2007 00:10:43 +0200
-Message-ID: <200707120010.44482.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 1/7] Freezer: Document relationship with
+	memory shrinking
+Date: Thu, 12 Jul 2007 00:08:50 +0200
+Message-ID: <200707120008.51074.rjw@sisk.pl>
 References: <200707120006.50095.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,108 +26,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The syncing of filesystems from within the freezer is generally not neede=
-d.
-Also, if there's an ext3 filesystem loopback-mounted from a FUSE one, the
-syncing results in writes to it and deadlocks. =A0Similarly, it will dead=
-lock if
-FUSE implements sync.
-
-Change freeze_processes() so that it doesn't execute sys_sync() and make =
-the
-suspend and hibernation code paths sync filesystems independently of the
-freezer.
+One important reason to freeze tasks, which is that we don't want them to
+allocate memory after freeing it for the hibernation image, has not been
+documented. =A0Fix it.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/disk.c    |    4 ++++
- kernel/power/main.c    |    6 ++++++
- kernel/power/process.c |    1 -
- kernel/power/user.c    |    4 ++++
- 4 files changed, 14 insertions(+), 1 deletion(-)
+ Documentation/power/freezing-of-tasks.txt |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.22-rc6-mm1/kernel/power/disk.c
+Index: linux-2.6.22-rc6-mm1/Documentation/power/freezing-of-tasks.txt
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.22-rc6-mm1.orig/kernel/power/disk.c	2007-07-11 20:48:05.000=
-000000 +0200
-+++ linux-2.6.22-rc6-mm1/kernel/power/disk.c	2007-07-11 20:48:23.00000000=
-0 +0200
-@@ -297,6 +297,10 @@ int hibernate(void)
- 	if (error)
- 		goto Exit;
+--- linux-2.6.22-rc6-mm1.orig/Documentation/power/freezing-of-tasks.txt	2=
+007-07-11 20:48:04.000000000 +0200
++++ linux-2.6.22-rc6-mm1/Documentation/power/freezing-of-tasks.txt	2007-0=
+7-11 20:50:24.000000000 +0200
+@@ -81,7 +81,16 @@ hibernation image has been created and b
+ The majority of these are user space processes, but if any of the kernel=
+ threads
+ may cause something like this to happen, they have to be freezable.
 =20
-+	printk("Syncing filesystems ... ");
-+	sys_sync();
-+	printk("done.\n");
+-2. The second reason is to prevent user space processes and some kernel =
+threads
++2. Next, to create the hibernation image we need to free a sufficient am=
+ount of
++memory (approximately 50% of available RAM) and we need to do that befor=
+e
++devices are deactivated, because we generally need them for swapping out=
+.  Then,
++after the memory for the image has been freed, we don't want tasks to al=
+locate
++additional memory and we prevent them from doing that by freezing them e=
+arlier.
++[Of course, this also means that device drivers should not allocate subs=
+tantial
++amounts of memory from their .suspend() callbacks before hibernation, bu=
+t this
++is e separate issue.]
 +
- 	error =3D prepare_processes();
- 	if (error)
- 		goto Finish;
-Index: linux-2.6.22-rc6-mm1/kernel/power/main.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.22-rc6-mm1.orig/kernel/power/main.c	2007-07-11 20:48:05.000=
-000000 +0200
-+++ linux-2.6.22-rc6-mm1/kernel/power/main.c	2007-07-11 20:48:23.00000000=
-0 +0200
-@@ -20,6 +20,7 @@
- #include <linux/resume-trace.h>
- #include <linux/freezer.h>
- #include <linux/vmstat.h>
-+#include <linux/syscalls.h>
++3. The third reason is to prevent user space processes and some kernel t=
+hreads
+ from interfering with the suspending and resuming of devices.  A user sp=
+ace
+ process running on a second CPU while we are suspending devices may, for
+ example, be troublesome and without the freezing of tasks we would need =
+some
+@@ -111,7 +120,7 @@ frozen before the driver's .suspend() ca
+ thawed after the driver's .resume() callback has run, so it won't be acc=
+essing
+ the device while it's suspended.
 =20
- #include "power.h"
-=20
-@@ -234,9 +235,14 @@ static int enter_state(suspend_state_t s
-=20
- 	if (!valid_state(state))
- 		return -ENODEV;
-+
- 	if (!mutex_trylock(&pm_mutex))
- 		return -EBUSY;
-=20
-+	printk("Syncing filesystems ... ");
-+	sys_sync();
-+	printk("done.\n");
-+
- 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
- 	if ((error =3D suspend_prepare()))
- 		goto Unlock;
-Index: linux-2.6.22-rc6-mm1/kernel/power/process.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.22-rc6-mm1.orig/kernel/power/process.c	2007-07-11 20:48:05.=
-000000000 +0200
-+++ linux-2.6.22-rc6-mm1/kernel/power/process.c	2007-07-11 20:48:23.00000=
-0000 +0200
-@@ -191,7 +191,6 @@ int freeze_processes(void)
- 	if (error)
- 		return error;
-=20
--	sys_sync();
- 	error =3D try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
- 	if (error)
- 		return error;
-Index: linux-2.6.22-rc6-mm1/kernel/power/user.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.22-rc6-mm1.orig/kernel/power/user.c	2007-07-11 20:48:05.000=
-000000 +0200
-+++ linux-2.6.22-rc6-mm1/kernel/power/user.c	2007-07-11 20:48:23.00000000=
-0 +0200
-@@ -153,6 +153,10 @@ static int snapshot_ioctl(struct inode *
- 		mutex_lock(&pm_mutex);
- 		error =3D pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
- 		if (!error) {
-+			printk("Syncing filesystems ... ");
-+			sys_sync();
-+			printk("done.\n");
-+
- 			error =3D freeze_processes();
- 			if (error)
- 				thaw_processes();
+-3. Another reason for freezing tasks is to prevent user space processes =
+from
++4. Another reason for freezing tasks is to prevent user space processes =
+from
+ realizing that hibernation (or suspend) operation takes place.  Ideally,=
+ user
+ space processes should not notice that such a system-wide operation has =
+occurred
+ and should continue running without any problems after the restore (or r=
+esume
