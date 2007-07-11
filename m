@@ -1,15 +1,13 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [RFC][PATCH -mm 0/9] PM: Update global suspend and
-	hibernation operations framework
-Date: Wed, 11 Jul 2007 21:04:22 +0100
-Message-ID: <20070711200422.GB2301@flint.arm.linux.org.uk>
-References: <200706302257.17556.rjw@sisk.pl> <20070711105334.GH7091@elf.ucw.cz>
-	<200707111316.08388.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 0/7] Freezer update (updated)
+Date: Thu, 12 Jul 2007 00:06:49 +0200
+Message-ID: <200707120006.50095.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707111316.08388.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 11, 2007 at 01:16:07PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, 11 July 2007 12:53, Pavel Machek wrote:
-> > > This series of patches implements changes that are possible/necessary/desirable
-> > > (IMO) after the introduction of the .set_target() method in 'struct pm_ops'
-> > > (the patch that introduces it is in -mm,
-> > > http://marc.info/?l=linux-mm-commits&m=118306698814722&w=2).
-> > 
-> > (I think this series is already in -mm, right?)
-> 
-> No, it is not, because I'm waiting for the inclusion of the ARM update.
+Hi,
 
-Which should be tomorrow evening...
+This is the second "release" of my latest freezer update.  I have updated=
+ the
+patches to take your comments into account (thanks a lot for them) and
+changed their ordering.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+The patches in these series update the freezer to eliminate some existing
+shortcomings, so I'm still considering them as 2.6.23 material.
+
+The patches do the following:
+* update the freezer documentation to describe, previously omitted, impor=
+tant
+  reason for freezing tasks (ie. memory shrinking)
+* remove sys_sync() from the freezer and make the suspend/hibernation cod=
+e
+=A0 invoke it explicitly
+* prevent new tasks from inheriting TIF_FREEZE set from the parents
+* introduce freezer-firendly wrappers around wait_event_interruptible()
+  and wait_event_interruptible_timeout()
+* prevent the freezer from sending signals to kernel threads
+* increase the verbosity of the freezer slightly
+* make the freezer use the freezing timeout more efficiently
+The details are in the changelogs.
+
+Comments welcome.
+
+Greetings,
+Rafael
+
+--=20
+"Premature optimization is the root of all evil." - Donald Knuth
