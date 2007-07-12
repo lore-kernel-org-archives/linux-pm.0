@@ -1,13 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] Kexec jump: Hibernation image operations
-Date: Thu, 12 Jul 2007 11:38:08 +0200
-Message-ID: <20070712093808.GF1866@elf.ucw.cz>
-References: <1184167834.12556.14.camel@caritas-dev.intel.com>
+Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
+Date: Thu, 12 Jul 2007 11:42:07 +0200
+Message-ID: <20070712094207.GG1866@elf.ucw.cz>
+References: <1184167836.12556.15.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1184167834.12556.14.camel@caritas-dev.intel.com>
+In-Reply-To: <1184167836.12556.15.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,17 +21,75 @@ To: "Huang, Ying" <ying.huang@intel.com>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2007-07-11 15:30:34, Huang, Ying wrote:
-> This patch make it possible to have multiple implementations of
-> hibernation image operations such as write, read, check, etc, and they
-> can be switched at run time through writing the
-> "/sys/power/hibernation_image_ops". The uswsusp is the default
-> implementation.
+Hi!
 
-Umm, so you hook into hibernation_ops, only to run kexec from it?
+> This patch provide the kexec based implementation of hibernation image
+> operation. Now, only jumping between original kernel and kexeced
+> kernel is supported, real image write/read/check will be provided in
+> next patches.
 
-Would it make more sense to just run kexec manually, maybe with some
-parameter saying "prepare devices before"?
+I'd prefer this not to use hibernation hooks... existing dumping
+infrastructure should be good enough to write resume image, no?
+
+BTW... is this able to do kdump, then return back to the old kernel?
+That seems to be similar functionality to hibernation, and I was told
+it would be very welcome.
+
+> +static int kexec_suspend(void)
+> +{
+> +	int error;
+> +
+> +	local_irq_disable();
+> +	/* At this point, device_suspend() has been called, but *not*
+> +	 * device_power_down(). We *must* device_power_down() now.
+> +	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+> +	 * become desynchronized with the actual state of the hardware
+> +	 * at resume time, and evil weirdness ensues.
+> +	 */
+> +	error = device_power_down(PMSG_FREEZE);
+> +	if (error) {
+> +		printk(KERN_ERR "Some devices failed to power down, aborting suspend\n");
+> +		goto Enable_irqs;
+> +	}
+> +
+> +	save_processor_state();
+> +	error = kexec_jump(KEXEC_JUMP_TYPE_EXEC);
+> +	restore_processor_state();
+> +
+> +	/* NOTE:  device_power_up() is just a resume() for devices
+> +	 * that suspended with irqs off ... no overall powerup.
+> +	 */
+> +	device_power_up();
+> + Enable_irqs:
+> +	in_suspend = 0;
+> +	local_irq_enable();
+> +	return error;
+> +}
+...
+> +static int kexec_resume(void)
+> +{
+> +	int error = 0;
+> +
+> +	local_irq_disable();
+> +	/* NOTE:  device_power_down() is just a suspend() with irqs off;
+> +	 * it has no special "power things down" semantics
+> +	 */
+> +	if (device_power_down(PMSG_PRETHAW))
+> +		printk(KERN_ERR "Some devices failed to power down, very bad\n");
+> +	/* We'll ignore saved state, but this gets preempt count (etc) right */
+> +	save_processor_state();
+> +	kexec_restore_backup();
+> +	error = kexec_jump(KEXEC_JUMP_TYPE_JUMP);
+> +	swsusp_free();
+> +	restore_processor_state();
+> +	touch_softlockup_watchdog();
+> +	device_power_up();
+> +	local_irq_enable();
+> +	return error;
+> +}
+
+This seems like mostly generic stuff for going between two kernels,
+no? I'd prefer it not be hooked into hibernation infrastructure.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
