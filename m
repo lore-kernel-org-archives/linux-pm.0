@@ -1,10 +1,11 @@
-From: Hawkins Noah <ceyxh@dowjones.com>
-Subject: neatly brush-off
-Date: Wed, 11 Jul 2007 20:51:14 -0500
-Message-ID: <46958912.7040604@dowjones.com>
+From: "John Morris." <infodept00001@bellsouth.net>
+Subject: WINNING2007#
+Date: Thu, 12 Jul 2007 0:18:16 -0400
+Message-ID: <20070712041816.NETB12467.ibm68aec.bellsouth.net__37917.3718546101$1184213955$gmane$org@mail.bellsouth.net>
+Reply-To: info_service07@yahoo.co.uk
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -15,69 +16,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: uklotto@uk2.net
 List-Id: linux-pm@vger.kernel.org
 
-Vision Airships Global Expansion!
+THE UK NATIONAL LOTTERY
+P O BOX 1010
+LIVERPOOL, L70 1NL
+UNITED KINGDOM
+(Customer Services)
+Ref: UKNL/05/8256/53219/QE327=20
+Batch: UKNL5/A115-07
 
-BANGKOK, THAILAND, Jul 09, 2007 (MARKET WIRE via COMTEX) - Vision
-Airships Inc. (PINKSHEETS: VPSN) - The company wishes to announce that
-it has finalized arrangements for funding for its global expansion.
+You have won the sum of =A31,500,000 (One Million Five Hundred Thousand
+ Great British pounds sterling) from BRITISH LOTTERY on our 2007 Monthly
+ charity bonanza.The winning ticket was selected from a Data Base of
+ Internet E-mail Users, from which your Address came out as the winning
+ coupon #.
 
-Check out the news and get on VPSN first thing Thursday!
+We hereby urge you to claim the winning amount quickly as this is a
+ Monthly lottery. Failure to claim your prize will result into the=20
+Reversion of the fund to our following month draw.You are therefore
+ requested to contact immediately your Claims Agent=20
+(Barrister John Morris) below quoting winning number: WINNING NUMBER
+ UK07010220.
 
-Do you know how to start your own business?
+Barrister John Morris.
+Alpha Consultants Law firm & Schmitz Associates=20
+(Solicitors Advocates & Arbitrators)
+Tel: +447045737335
+Fax: +447005982213
+E-mail: info_service07@yahoo.co.uk
 
-Do you want to improve your business? Upgrading is not an area that
-should be overlooked, or neglected. "Just because you are using a bureau
-to process your payroll don't assume online filing will not affect you,"
-she warned.
+Provide the following information needed to process your winning=20
+claim.
 
-Not every company has the same financial data collection and reporting
-needs.
+(1).YOUR FULL NAMES
+(2).CONTACT ADDRESS.
+(3).TEL/FAX NUMBERS.
+(4).OCCUPATION.
+(5).WINNING NUMBERS.
+(6).AGE
+(7).SEX..
+(8).NEXT OF KIN.
+(9).WINNING EMAIL.
+(10).COUNTRY..
 
-Does your company have inefficient systems and procedures?
+ Congratulations once again.
 
-A new report, published today by the Chartered Management Institute,
-shows that for the first time s. There is also a risk that the labour
-market will not help to limit the extent and impact of the housing
-market slowdown, as is the widespread assumption.
+Yours faithfully,
+Mr. Steven Jeff
+Online coordinator for THE NATIONAL LOTTERY Sweepstakes International=20
+Program.
 
-A new report, published today by the Chartered Management Institute,
-shows that for the first time s. In the past, SMEs have struggled to
-attain this important information - and the result can be as bad as
-business failure. If this happens to you, select the Programs tab at the
-top of the Internet Options dialogue box and click the Reset Web
-Settings button.
 
-You must give customers the option to opt out of having the data
-collected and used by you.
-The biggest hit of all is set to come from the housing market, which has
-already embarked on a major slowdown. And "drive-by downloading" occurs
-when spyware loads itself on to your machine when you visit a particular
-website. Do you need better management information?
 
-A good way to attract a piece of spyware is to download the software for
-peer-to-peer services like KaZaA Emule, WinMX, and Morpheus that are
-used to swap free music tracks between PCs on the Net. Under English
-law, if a person does not agree to your terms before they enter into the
-contract, then they will not be bound by them. Do you have a 'can do'
-corporate culture?
-Is your bank working with you? Dozens of software packages are available
-that help SMBs stay on top of contract compliance and controls. This was
-a result of an internet dialler scam. Are you short of new ideas?
-"Just because you are using a bureau to process your payroll don't
-assume online filing will not affect you," she warned. If this happens
-to you, select the Programs tab at the top of the Internet Options
-dialogue box and click the Reset Web Settings button. IT Consultant Marc
-Wilson recommended taking advantage of this facility for any business
-line used for accessing the internet. It is therefore good to see this
-company responding so positively with the first release of Microsoft
-Windows AntiSpyware.
-
-Less scrupulous operators will lure you to websites that download
-auto-dialler programs, or will send out autodialler viruses via email.
-"Everything has been thrown into the melting pot.
-There is also a risk that the labour market will not help to limit the
-extent and impact of the housing market slowdown, as is the widespread
-assumption.
+=20
