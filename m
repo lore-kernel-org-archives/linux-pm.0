@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Remove process freezer from suspend to RAM
-	pathway
-Date: Thu, 12 Jul 2007 15:13:08 +0000
-Message-ID: <20070712151308.GA5139__2233.42513568259$1184270147$gmane$org@ucw.cz>
-References: <20070703211227.GA28758@srcf.ucam.org>
-	<E1I666o-0006wu-00@dorka.pomaz.szeredi.hu>
-	<200707041703.21808.oliver@neukum.org>
-	<200707041717.05149.rjw@sisk.pl>
-	<18060.15209.274437.471074@cargo.ozlabs.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
+Date: Thu, 12 Jul 2007 21:58:38 +0200
+Message-ID: <200707122158.39024.rjw__8956.72073024816$1184270268$gmane$org@sisk.pl>
+References: <1184167836.12556.15.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1184167836.12556.15.camel@caritas-dev.intel.com>
 Content-Disposition: inline
-In-Reply-To: <18060.15209.274437.471074@cargo.ozlabs.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: mjg59@srcf.ucam.org, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday, 11 July 2007 17:30, Huang, Ying wrote:
+> This patch provide the kexec based implementation of hibernation image
+> operation. Now, only jumping between original kernel and kexeced
+> kernel is supported, real image write/read/check will be provided in
+> next patches.
 
-> > They will not trigger 100% of the time, but sporadically and generally at
-> > random.
-> > 
-> > At least the freezer problems are reproducible. ;-)
-> 
-> Our experience with powermacs has been that it isn't actually all that
-> hard to get it right for the drivers you care about.
+I know a little about kexec.
 
-So... will you fix input and usb? Their maintainers seem to prefer
-simplicity of frozen system.
+Could you please tell me what I should know/read to understand this patch?
 
-Also, can you write down rules for drivers to follow?
+Greetings,
+Rafael 
 
-Like... 'if you get a request after system suspend started, you may
-not kmalloc(GFP_KERNEL)'
 
- - because disk driver may be already suspended
-
-- hmm, what happens if disk driver _is_ suspended? Let's say I'm v4l
-driver on cpu1. Someone may talk to me _while_ disk driver is being
-suspended... and if I'm after disk driver in pci order, I may only
-learn about suspend _after_ I do the wrong kmalloc.
-
-							Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
