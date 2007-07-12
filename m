@@ -1,16 +1,16 @@
 From: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Thu, 12 Jul 2007 11:57:36 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707121150460.25614__43255.5730724291$1184267002$gmane$org@asgard.lang.hm>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to
+ kexec	base	hibernation
+Date: Thu, 12 Jul 2007 12:03:58 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707121158300.25614__32127.8304946192$1184267497$gmane$org@asgard.lang.hm>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
-	<1184251423.9346.55.camel@caritas-dev.intel.com>
-	<200707121453.49616.rjw@sisk.pl>
+	<1184260683.9346.91.camel@caritas-dev.intel.com>
+	<Pine.LNX.4.64.0707120247230.25614@asgard.lang.hm>
+	<200707121501.03016.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707121453.49616.rjw@sisk.pl>
+In-Reply-To: <200707121501.03016.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,74 +27,100 @@ List-Id: linux-pm@vger.kernel.org
 
 On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
 
->>> I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
->>> be disabled in the to-be-hibernated kernel, or in the little transient
->>> kexec kernel?
+> On Thursday, 12 July 2007 12:10, david@lang.hm wrote:
+>> On Thu, 12 Jul 2007, Huang, Ying wrote:
 >>
->> Under current implementation of device state quiescent/save/restore, the
->> CONFIG_ACPI must be turned off both in to-be-hibernated kernel and
->> transient kexec kernel.
+>>> On Thu, 2007-07-12 at 00:03 -0700, david@lang.hm wrote:
+>>>>>
+>>>>> The kexec jump is the first step, maybe the simplest step. There are
+>>>>> many other issues to be resolved, at least the following ones.
+>>>>>
+>>>>> 1. Separate device suspend from device hibernate.
+>>>>
+>>>
+>>> Maybe my usage of terminology has some problem. But, the "device
+>>> hibernate" here means put device into quiescent state and save the
+>>> device state, but do not put device into low power state.
 >>
->> But the hibernation people are going to separate the device suspend from
->> device hibernate. The device hibernate will put device in quiescent
->> state but not in low power state. When this is done, it is not necessary
->> to disable CONFIG_ACPI at all. It is just a workaround for current
->> implementation that disabling CONFIG_ACPI.
+>> is there really enough savings (in time or otherwise) to make it worth
+>> splitting this into two steps? for suspend-to-ram we definantly will need
+>> to option to go all the way to a low power state, there's significant
+>> extra complexity if you also have a state between normal operation and
+>> this low power state.
 >>
->>> How close do you think all this is to being a viable thing?
+>> it may be worth doing if the low-power state is expensive (in time or
+>> effort) to get to or from and the lesser state allows the computer overall
+>> to save power (like the different cpu C states)
 >>
->> The kexec jump is the first step, maybe the simplest step. There are
->> many other issues to be resolved, at least the following ones.
+>> but I suspect that the number of drivers where this is worth doing is
+>> relativly small, and it may be a better approach to start off with just
+>> putting everything into the low-power state until some drive shows up that
+>> makes it worth adding the intermediate state to the system (and drivers
+>> wouldn't have to change, if they only support one suspend state it's the
+>> low-power one, if they support more then higher layers choose which ones
+>> to move to)
+>
+> We've discussed that a lot on linux-pm and the conclusion is that devices
+> should not be put into low power states before creating the hibernation
+> image, because that leads to problems during the restore.
+
+too bad, I was thinking that a driver in a low-power state could be 
+initialized normally and we could avoid having different quiesce and 
+low-power states
+
+> In turn, during the restore, when the image has been loaded and the "old"
+> kernel gets the control, it should reprobe devices and initialize them from
+> scratch rather than doing something like "resume devices after suspend
+> to RAM".
+
+this makes sense.
+
+>>>>> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
+>>>>> be hibernate/resume by the normal kernel too. This way, a real
+>>>>> kexec/boot-up is only needed for the first time.
+>>>>
+>>>> the hibernate kernel shouldn't need a lot of the features of the standard
+>>>> kerneel (does it really need sound for example), and if tailored even
+>>>> tighter could be configured to only have the drivers actually used for the
+>>>> save and restore, makeing a _very_ minimal kernel (no USB, no network,
+>>>> only simple video drivers, etc) greatly speeding up the boot
+>>>
+>>> There is no need for two kernel. Most drivers and optional features are
+>>> compiled as modules, as that of most desktop distributions. So just
+>>> "insmod" needed modules only in hibernate kernel is sufficient.
 >>
->> 1. Separate device suspend from device hibernate.
+>> actually, I think that while you may be able to get away with only one
+>> kernel, you are probably better off with two. on the hibernate kernel you
+>> can choose many 'embedded' options that don't make sense for the normal
+>> kernel (no high mem, no SMP support, no SELinux, no network routing, not
+>> netfilter, use SLOB not SLAB/SLUB, etc). also keep in mind that each
+>> module that you load wastes apartial page of memory.
+>>
+>> remember people run complete linux systems in 8M of ram, a syspend system
+>> for a simple 'write the ram image to partition X on this IDE drive' should
+>> be aiming at 2-4M of memory.
+>>
+>> more complex setups may want more space, but let the distros bloat things
+>> up, design and demo an optimized system :-)
 >
-> Step 0, I'd say. :-)
+> So if a user wants to install a kernel.org kernel on his system, (s)he'll have
+> to compile and install two kernels with different options.
 
-is there more involved then just start ignoreing device hibernate and just 
-useing the device suspend? (although if there is not a workable device 
-suspend for a driver, that would answer my question :-)
+for now allow this option as it's the simplest to implement (it takes 
+extra work to re-use the kernel)
 
->> 2. Do not reserve memory for kexec kernel. That is, backup needed memory
->> before kexec and restore them after kexec.
->
-> I don't think this is very important initially.
+also, the objections to the auto-config kernel requests have mostly been 
+how it's impossible for the auto-config to get enough things right. in the 
+case of a hibernate kernel I think it's such a minimal config that it 
+should be possible to have an auto-config script that you tell 'I plan to 
+suspend to partition X, give me a minimal kernel that can access ram, that 
+partition, and the framebuffer (for status output)' and have it produce a 
+tiny kernel with only thta support
 
-I agree, a stipped down hibernate kernel can be very small, not allocating 
-this memory until it's needed is a step for the final polishing.
+> That doesn't sound good to me. :-)
 
->> 3. Support the in-place kexec? The relocatable kernel is not necessary
->> if this can be implemented.
->> 4. Image writing/reading. (Only user space application is needed).
->
-> And a kernel interface for that application.
-
-I do't understand this statement, this application is just useing the 
-standard kernel interfaces (block devices to read/write to disk, network 
-devices to read/write to a server, etc). no new interfaces needed.
-
->> 5. A smooth resume process. Maybe it is not needed to kexec a new kernel
->> for resume. For example, in the first stage of kernel boot, just first
->> 16M (or a little more) RAM is used, if the resume image is found, the
->> saved kernel image is resumed; if the resume image is not found, turn on
->> the remaining RAM. This will depends on 3.
->
-> I think that this is the most difficult part of the whole thing.
-
-don't try to get too fancy right now. stick with a simple 'boot hibernate 
-kernel, it's userspace looks for an image to resume, and if it doesn't 
-find one reboot to the normal system'
-
-I don't know how to do this with grub, but it would be a trivial shell 
-script with lilo
-
->> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
->> be hibernate/resume by the normal kernel too. This way, a real
->> kexec/boot-up is only needed for the first time.
->
-> I'm not sure what you mean.
-
-he's trying to get fancy again, the best way to speed up the boot of the 
-kexec kernel is make it smaller and avoid probing for devices (hotplug 
-should NOT be used for normal suspend situations)
+on the other hand, booting a standard distro kernel that does hotplug 
+detection for everything it can find on the system is far from optimal as 
+well.
 
 David Lang
