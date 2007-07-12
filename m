@@ -1,14 +1,14 @@
-From: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH -mm 4/7] Freezer: Introduce
-	freezer-firendly waiting macros
-Date: Thu, 12 Jul 2007 03:02:49 +0400
-Message-ID: <20070711230249.GA310@tv-sign.ru>
-References: <200707120006.50095.rjw@sisk.pl> <200707120013.32672.rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+ hibernation
+Date: Wed, 11 Jul 2007 17:22:43 -0700
+Message-ID: <20070711172243.ab44c4d4.akpm@linux-foundation.org>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707120013.32672.rjw@sisk.pl>
+In-Reply-To: <1184167831.12556.13.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,28 +18,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, Miklos Szeredi <miklos@szeredi.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/12, Rafael J. Wysocki wrote:
->
-> +#define wait_event_freezable(wq, condition)				\
-> +({									\
-> +	int __ret;							\
-> +	do {								\
-> +		__ret = wait_event_interruptible(wq, 			\
-> +				(condition) || freezing(current));	\
-> +		try_to_freeze();					\
-> +	} while (!(condition));					\
-> +	__ret;								\
-> +})
+On Wed, 11 Jul 2007 15:30:31 +0000
+"Huang, Ying" <ying.huang@intel.com> wrote:
 
-This is still not right in general, I believe.
+> Kexec base hibernation has some potential advantages over uswsusp and
+> suspend2. Some most obvious advantages are:
+> 
+> 1. The hibernation image size can exceed half of memory size easily.
+> 2. The hibernation image can be written to and read from almost
+>    anywhere, such as USB disk, NFS.
+> 
+> This patch implements the functionality of "jumping from kexeced
+> kernel to original kernel". That is, the following sequence is
+> possible:
+> 
+> 1. Boot a kernel A
+> 2. Work under kernel A
+> 3. Kexec another kernel B in kernel A
+> 4. Work under kernel B
+> 5. Jump from kernel B to kernel A
+> 6. Continue work under kernel A
+> 
+> This is the first step to implement kexec based hibernation. If the
+> memory image of kernel A is written to or read from a permanent media
+> in step 4, a preliminary version of kexec based hibernation can be
+> implemented.
+> 
+> The kernel B is run as a crashdump kernel in reserved memory
+> region. This is the biggest constrains of the patch. It is planed to
+> be eliminated in the next version. That is, instead of reserving memory
+> region previously, the needed memory region is backuped before kexec
+> and restored after jumping back.
+> 
+> Another constrains of the patch is that the CONFIG_ACPI must be turned
+> off to make kexec jump work. Because ACPI will put devices into low
+> power state, the kexeced kernel can not be booted properly under
+> it. This constrains can be eliminated by separating the suspend method
+> and hibernation method of the devices as proposed earlier in the LKML.
+> 
+> The kexec jump is implemented in the framework of software suspend. In
+> fact, the kexec based hibernation can be seen as just implementing the
+> image writing and reading method of software suspend with a kexeced
+> Linux kernel.
+> 
+> Now, only the i386 architecture is supported. The patch is based on
+> Linux kernel 2.6.22, and has been tested on my IBM T42.
 
-It will spin if the caller is signalled. You changed the freezer, but
-kthread can use signals anyway.
+This sounds awesome.  Am I correct in expecting that ultimately the
+existing hibernation implementation just goes away and we reuse (and hence
+strengthen) the existing kexec (and kdump?) infrastructure?
 
-It returns only when "condition" is true, so the "__ret" is meaningless.
+And that we get hibernation support almost for free on all kexec (and
+relocatable-kernel?) capable architectures?
 
-Oleg.
+And that all the management of hibernation and resume happens in userspace?
+
+I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
+be disabled in the to-be-hibernated kernel, or in the little transient
+kexec kernel?
+
+How close do you think all this is to being a viable thing?
