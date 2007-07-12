@@ -1,15 +1,15 @@
-From: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec
-	base	hibernation
-Date: Thu, 12 Jul 2007 00:03:24 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707112345250.28090__34992.7113893957$1184224224$gmane$org@asgard.lang.hm>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+	hibernation
+Date: Thu, 12 Jul 2007 16:28:54 +0000
+Message-ID: <1184257734.9346.76.camel__27883.3898985342$1184229182$gmane$org@caritas-dev.intel.com>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
-	<1184251423.9346.55.camel@caritas-dev.intel.com>
+	<20070711111350.GI7091@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184251423.9346.55.camel@caritas-dev.intel.com>
+In-Reply-To: <20070711111350.GI7091@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,73 +19,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 12 Jul 2007, Huang, Ying wrote:
+On Wed, 2007-07-11 at 13:13 +0200, Pavel Machek wrote:
+> Hi!
+> 
+> Looks interesting... but I was feeling strange dejavu reading
+> this... and that's because you pasted the changelog twice :-).
+> 
 
-> On Wed, 2007-07-11 at 17:22 -0700, Andrew Morton wrote:
->> This sounds awesome.  Am I correct in expecting that ultimately the
->> existing hibernation implementation just goes away and we reuse (and hence
->> strengthen) the existing kexec (and kdump?) infrastructure?
->> And that we get hibernation support almost for free on all kexec (and
->> relocatable-kernel?) capable architectures?
->> And that all the management of hibernation and resume happens in userspace?
->
-> Yes. Ultimately, most of the hibernation code such as process freezer,
-> memory shrinking, memory snapshot (atomic copy), image reading/writing
-> can go away, because kexec based hibernation doesn't depend on them.
-> Just the device/CPU state quiescent/save/restore is necessary to remain.
+Sorry, I should have re-checked the mail before sending out.
 
-and the device/CPU quiesent/save/restore/sleep/wakeup functions are needed 
-for suspend-to-ram and low-power mode.
+> How fast can kexec boot secondary kernel?
 
-> And, the management of hibernation and resume will happen in userspace.
->
->>
->> I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
->> be disabled in the to-be-hibernated kernel, or in the little transient
->> kexec kernel?
->
-> Under current implementation of device state quiescent/save/restore, the
-> CONFIG_ACPI must be turned off both in to-be-hibernated kernel and
-> transient kexec kernel.
->
-> But the hibernation people are going to separate the device suspend from
-> device hibernate. The device hibernate will put device in quiescent
-> state but not in low power state. When this is done, it is not necessary
-> to disable CONFIG_ACPI at all. It is just a workaround for current
-> implementation that disabling CONFIG_ACPI.
->
->> How close do you think all this is to being a viable thing?
->
-> The kexec jump is the first step, maybe the simplest step. There are
-> many other issues to be resolved, at least the following ones.
->
-> 1. Separate device suspend from device hibernate.
+I measure it on my IBM T42 with CONFIG_PRINTK_TIME=y. The boot-up time
+is about 4.35s from kexec is issued to root mounted in kexec kernel.
 
-you shouldn't need a device hibernate, hibernate will be a system 
-shutdown.
+I think it is possible to optimize. Maybe the kexec kernel can
+be hibernate/resume by the normal kernel too. This way, a real
+kexec/boot-up is only needed for the first time.
 
-> 2. Do not reserve memory for kexec kernel. That is, backup needed memory
-> before kexec and restore them after kexec.
-> 3. Support the in-place kexec? The relocatable kernel is not necessary
-> if this can be implemented.
-> 4. Image writing/reading. (Only user space application is needed).
-> 5. A smooth resume process. Maybe it is not needed to kexec a new kernel
-> for resume. For example, in the first stage of kernel boot, just first
-> 16M (or a little more) RAM is used, if the resume image is found, the
-> saved kernel image is resumed; if the resume image is not found, turn on
-> the remaining RAM. This will depends on 3.
-> 6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
-> be hibernate/resume by the normal kernel too. This way, a real
-> kexec/boot-up is only needed for the first time.
+> > 2. Compile the kexec-tools with kdump and kjump patches added, the
+> >    kdump patch can be found at:
+> > 
+> > http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-dkump10.patch
+> 
+> I got 404 error :-(.
 
-the hibernate kernel shouldn't need a lot of the features of the standard 
-kerneel (does it really need sound for example), and if tailored even 
-tighter could be configured to only have the drivers actually used for the 
-save and restore, makeing a _very_ minimal kernel (no USB, no network, 
-only simple video drivers, etc) greatly speeding up the boot
+Sorry, typo problem. The URL should be:
+http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-kdump10.patch
 
-David Lang
+> > 3. Boot compiled kernel, the reserved crash kernel memory region must
+> >    be added to kernel command line as following:
+> > 
+> >    crashkernel=<XX>M@<XX>M
+> > 
+> >    Where, <XX> should be replaced by the real memory size and position.
+> 
+> How much memory do you suggest to reserve? 64M? 
+
+I reserved 16M RAM. I think this is sufficient for a simple disk based
+hibernation.
+
+> > 7. In the kexec booted kernel, trigger the jumping back with following
+> >    shell command.
+> > 
+> >    echo <a>:<b> > /sys/power/resume
+> > 
+> >    Where <a> and <b> is non-negative integer, at least one of them must
+> >    be non-zero.
+> 
+> What does a and b mean?
+> 
+
+a and b has no meaning. They are only used to trigger the resume
+process. This will be fixed in the future version.
+
+> > +/* Adds the kexec_backup= command line parameter to command line. */
+> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
+> > +{
+> > +	int cmdlen, len, align = 1024;
+> > +	char str[30], *ptr;
+> > +
+> > +	/* Passing in kexec_backup=xxxK format. Saves space required in cmdline.
+> > +	 * Ensure 1K alignment*/
+> > +	if (addr%align)
+> > +		return -1;
+> > +	addr = addr/align;
+> > +	ptr = str;
+> > +	strcpy(str, " kexec_backup=");
+> > +	ptr += strlen(str);
+> > +	ultoa(addr, ptr);
+> > +	strcat(str, "K");
+> > +	len = strlen(str);
+> > +	cmdlen = strlen(cmdline) + len;
+> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+> > +		die("Command line overflow\n");
+> > +	strcat(cmdline, str);
+> > +#if 0
+> > +		printf("Command line after adding backup\n");
+> > +		printf("%s\n", cmdline);
+> > +#endif
+> > +	return 0;
+> > +}
+> 
+> printf()? ...and please remove out commented code.
+
+This is patch against kexec-tools, which is a userspace tool. So printf
+is used. The commented code is just as other cmdline_add_xxx functions
+of kexec-tools. But it is useless, and should be removed.
+
+Best Regards,
+Huang Ying
