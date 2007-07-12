@@ -1,17 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Thu, 12 Jul 2007 14:49:12 +0000
-Message-ID: <20070712144912.GA4987@ucw.cz>
+Date: Thu, 12 Jul 2007 17:35:38 +0200
+Message-ID: <200707121735.40077.rjw__37393.8370882117$1184254258$gmane$org@sisk.pl>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<4695C096.5080400@goop.org>
-	<Pine.LNX.4.64.0707112319550.28090@asgard.lang.hm>
 	<200707121446.14170.rjw@sisk.pl> <469631FA.2070405@rtr.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <469631FA.2070405@rtr.ca>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +22,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Mark Lord <lkml@rtr.ca>
-Cc: david@lang.hm, Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: david@lang.hm, Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> And the complexity and difficulty of setup really scares 
-> me.
-> Right now, we've got a pretty good/fast in-kernel (well, 
-> external patch)
-> that allows my machines to hibernate very quickly, wake 
-> up even faster,
-> and not swap like mad afterwards.  Without any external 
-> programs,
-> initramfs, or extra kernels required.
+On Thursday, 12 July 2007 15:51, Mark Lord wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday, 12 July 2007 08:43, david@lang.hm wrote:
+> >> On Wed, 11 Jul 2007, Jeremy Fitzhardinge wrote:
+> >>
+> >>> Andrew Morton wrote:
+> ..
+> >> 8. hibernate kernel does syspend-to-ram to put the devices into a known 
+> >> safe state.
+> > Again, the devices should be quiesced rather then suspended in this step.
 > 
-> And we want to replace this with an ultra-complex setup 
-> because.. ????
+> That's just not possible.  The Hibernate kernel will not have all
+> of the same device drivers as the mainline kernel.  Or at least that's
+> what people have previously stated here.
 
-...freezer does not work with fuse :-). Or more exactly because
-freezer is ugly, and we don't know how to get rid of it...
+OK, one more problem to solve. :-)
 
-(Not that I advocate kexec-based hibernation. I think it is going to
-suck. But it might allow kdump-but-keep-running, so work is not
-wasted).
-							Pavel
+> >>>>  This sounds awesome.  Am I correct in expecting that ultimately the
+> >>>>  existing hibernation implementation just goes away and we reuse (and hence
+> >>>>  strengthen) the existing kexec (and kdump?) infrastructure?
+> 
+> No, not so simple.  We still need much of the code to santize devices
+> upon wakeup from hibernation.   And adding this extra reboot-kernel step
+> in the midst of hibernate will double the time it takes (ugh).
+> 
+> Currently, TuxOnIce(suspend2) takes about 10 seconds to suspend my notebook.
+> Switching to this new scheme would double that to 10 seconds to boot/probe,
+> plus the original 10 seconds to hibernate.  Assuming the new implementation
+> even comes close to suspend2 speed.
+
+How much RAM is there in your machine?
+
+Greetings,
+Rafael
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
