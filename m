@@ -1,16 +1,16 @@
 From: david@lang.hm
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Thu, 12 Jul 2007 12:09:31 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707121206240.25614@asgard.lang.hm>
+Date: Thu, 12 Jul 2007 12:14:20 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707121210210.25614__5336.12803924388$1184268001$gmane$org@asgard.lang.hm>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
-	<1184251423.9346.55.camel@caritas-dev.intel.com>
-	<m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
+	<200707121446.14170.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707121138140.25614@asgard.lang.hm>
+	<200707122120.19662.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <200707122120.19662.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +20,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 12 Jul 2007, Eric W. Biederman wrote:
+On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
 
->> 2. Do not reserve memory for kexec kernel. That is, backup needed memory
->> before kexec and restore them after kexec.
->> 3. Support the in-place kexec? The relocatable kernel is not necessary
->> if this can be implemented.
+>>>> note that what devices get put to sleep could be configurable, potentially
+>>>> to the extreme of things like the OLPC (that have hardware designed for
+>>>> cheap sleeping) going into a light suspend-to-ram state between keystrokes
+>>>> if nothing else has a timer event scheduled before that.
+>>>>
+>>>> Suspend-do-disk (Hibernate) involves stopping the system, makeing a
+>>>> snapshot of ram, writing the snapshot to somewhere and powering off the
+>>>> box. on wakeup (power-on) a helper kernel boots, loads the snapshot into
+>>>> ram and jumps to the kernel in the snapshot to resume operation.
+>>>>
+>>>> as I understand the proposal the thought is to do the following
+>>>>
+>>>> 1. system kernel does suspend-to-ram to put the devices into a known safe
+>>>> state.
+>>>
+>>> Not necessarily suspend-to-RAM.  I'd much prefer it if devices were not put
+>>> into low power states but quiesced (ie. no DMA, no interrupts).
+>>
+>> as I asked in another message, is it really worth having two (or more)
+>> modes here?
 >
-> It sounds like what you really want is the normal kexec path enhanced
-> so that you can return to the kernel you started with.
+> I think so.  The suspend-to-RAM mode is quite specific and on some platform
+> (ie. ACPI) it requires platform support.
 >
-> The normal kexec path already knows how to do the memory shuffle so
-> it can do on demand memory allocation.  That code just needs to
-> enhanced slightly so that you allocate an extra page, setup an inverse
-> scatter gather list for restoring the pages, and teach relocate_kernel.S
-> to preserve it's destination pages by using the inverse scatter gather
-> list.
->
-> The normal kexec path already calls device_shutdown and the like to
-> stop devices from running.  Although again that code path is not
-> prepared to restore the devices.
+> We've already reached the conclusion that it's better to separate suspend from
+> hibernation, as far as device drivers are concerned, and let's not repeat the
+> discussion.
 
-we shouldn't need a restore code path if the new kernel re-detects 
-everything. if kexec already shuts down all the devices we may not need to 
-implement anything new here (although there may be room for future 
-performance optimization)
+Ok, I seem to have been miscommunicating here. the old combined 
+suspend/hibernate took everything to the hibernate state even if you only 
+needed to suspend.
 
-> ...
->
-> For prototyping I would:
-> - reserve a chunk of memory (possibly with the crashkernel= option)
->  and run a relocatable kernel out of it.
->
->  By using the normal kexec you can boot a relocatable restore kernel
->  in that reserved region. It is an extra step but it makes things
->  work today.
->
-> - I would use the normal sys_kexec_load.
->
-> - I would debug/tweak the user space and the code to reenter the
->  old kernel.  I.e. the device driver stop/start code.
->
->  Once it was basically working I would the update normal kexec
->  memory copy code in relocate.S to preserve the destination pages.
+I was still seeing two diffent states involved
 
-for prototyping there's no need to use the same kernel.
+for suspend go to low-power mode
 
->> 4. Image writing/reading. (Only user space application is needed).
->
-> And possibly a few fixes to /dev/mem.  This is pretty much the same
-> process as generating a core dump so there should be some synergy with that.
+for hibernate go to low-power mode, kexec the new kernel, do your stuff, power off
 
-what fixes are you thinking of?
-
-you are makeing this sound very simple ;-)
+note that this doesn't really matter as you have pointed out in other 
+messages that we don't really want to put things in low-power mode, and 
+Eric pointed out that kexec already handles disabling devices, so it 
+sounds like this may be a solved problem if he's right and an issue to be 
+solved differently if he's not.
 
 David Lang
