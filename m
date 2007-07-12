@@ -1,18 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Thu, 12 Jul 2007 21:45:55 +0200
-Message-ID: <200707122145.56567.rjw@sisk.pl>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707122120.19662.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707121210210.25614@asgard.lang.hm>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: malicious filesystems (was Re: Re: [PATCH] Remove
+	process freezer from suspend to RAM pathway)
+Date: Thu, 12 Jul 2007 15:31:12 +0000
+Message-ID: <20070712153112.GB5139__35638.1523808979$1184270019$gmane$org@ucw.cz>
+References: <200707050858.03638.oliver@neukum.org>
+	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
+	<20070705091801.GB3084@elf.ucw.cz>
+	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
+	<20070705115400.GF3984@ucw.cz>
+	<E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
+	<20070707121729.GC3111@elf.ucw.cz>
+	<E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu>
+	<20070707233315.GB3820@elf.ucw.cz>
+	<E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707121210210.25614@asgard.lang.hm>
 Content-Disposition: inline
+In-Reply-To: <E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,85 +27,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 12 July 2007 21:14, david@lang.hm wrote:
-> On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
+Hi!
+
+> > So you want me to handle _malicious_ filesystems now?
+> > 
+> > That should be easy... :-). You already have nasty deadlocks in FUSE,
+> > and you solve them by "root can echo 1 > abort"... so allow me the
+> > same possibility.
+> > 
+> > We can tell fused we are freezing, and if all the requests are not
+> > serviced within, say, 30 seconds, we call the filesystem malicious and
+> > do echo 1 > abort.
+> > 
+> > Not ideal, but neither is allowing malicious filesystems in the first
+> > place...
 > 
-> >>>> note that what devices get put to sleep could be configurable, potentially
-> >>>> to the extreme of things like the OLPC (that have hardware designed for
-> >>>> cheap sleeping) going into a light suspend-to-ram state between keystrokes
-> >>>> if nothing else has a timer event scheduled before that.
-> >>>>
-> >>>> Suspend-do-disk (Hibernate) involves stopping the system, makeing a
-> >>>> snapshot of ram, writing the snapshot to somewhere and powering off the
-> >>>> box. on wakeup (power-on) a helper kernel boots, loads the snapshot into
-> >>>> ram and jumps to the kernel in the snapshot to resume operation.
-> >>>>
-> >>>> as I understand the proposal the thought is to do the following
-> >>>>
-> >>>> 1. system kernel does suspend-to-ram to put the devices into a known safe
-> >>>> state.
-> >>>
-> >>> Not necessarily suspend-to-RAM.  I'd much prefer it if devices were not put
-> >>> into low power states but quiesced (ie. no DMA, no interrupts).
-> >>
-> >> as I asked in another message, is it really worth having two (or more)
-> >> modes here?
-> >
-> > I think so.  The suspend-to-RAM mode is quite specific and on some platform
-> > (ie. ACPI) it requires platform support.
-> >
-> > We've already reached the conclusion that it's better to separate suspend from
-> > hibernation, as far as device drivers are concerned, and let's not repeat the
-> > discussion.
+> Actually there's also a non-malicious case in which waiting for
+> requests to finish won't work: when one fuse filesystem is accessing
+> another.
 > 
-> Ok, I seem to have been miscommunicating here. the old combined 
-> suspend/hibernate took everything to the hibernate state even if you only 
-> needed to suspend.
+> Since we are blocking new fuse requests, that might block a fuse
+> daemon, which in turn makes it impossible to finish the pending
+> request.
 
-No, quite the other way around.
+Hmm, yes, this is ugly. But will it hurt? We'll just wait for number
+of active fuse requests to go down to 0 before proceeding. It may
+still livelock on system with busy fused-s, but we'll detect that with
+timeout, and I believe it is 'don't do that' situation.
 
-For creating a hibernation image you don't have to suspend devices.
-Furthermore, you don't want to suspend at least some of them, because you'll
-be using them to save the image in a while.  Also, there's no need to worry
-about what power state to put the device into, so that it can wake up the
-system from the sleep state etc.
-
-We've made hibernation use suspend-specific callbacks and that causes quite
-a lot of problems to appear.
-
-> I was still seeing two diffent states involved
+> And this is not at all theoretical, I know that encfs is used over
+> various other fuse filesystems like sshfs or ntfs-3g.
 > 
-> for suspend go to low-power mode
-> 
-> for hibernate go to low-power mode,
+> Yeah, stacking userspace filesystems could be done entirely in
+> userspace, and I'm actually working on that (with fuse-2.7.0 already
+> supporting some basic stacking).
 
-No, that is not the way to go, IMO.  We can shut down devices before creating
-the image, but not suspend them.
+Great.
 
-> kexec the new kernel, do your stuff, power off 
+> But the point is, that the "wait for fuse to quiescence" hack would
+> not work in todays environment.
 
-Here, instead of just powering off, we may want to make the system enter a
-sleep state (S4 in ACPI systems), which is similar to suspend.
-
-> note that this doesn't really matter as you have pointed out in other 
-> messages that we don't really want to put things in low-power mode, and 
-> Eric pointed out that kexec already handles disabling devices, so it 
-> sounds like this may be a solved problem if he's right and an issue to be 
-> solved differently if he's not.
-
-Shutting down devices and reinitializing them is costly.  I wouldn't like to
-do that.
-
-Of course, in a proof-of-concept version this is viable, but IMO not in the
-final one.
-
-Greetings,
-Rafael
-
-
+Ok, I'll just blame fuse here. 'You have to write to /sys
+files for SIGKILL to work' is not funny.
+							Pavel
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
