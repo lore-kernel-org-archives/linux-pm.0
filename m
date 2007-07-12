@@ -1,13 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
-Date: Thu, 12 Jul 2007 11:42:07 +0200
-Message-ID: <20070712094207.GG1866@elf.ucw.cz>
-References: <1184167836.12556.15.camel@caritas-dev.intel.com>
+Subject: Re: sysrq-t dumps of s2ram/fuse deadlock (was Re:
+	[PATCH] Remove process freezer from suspend to RAM pathway)
+Date: Thu, 12 Jul 2007 11:17:14 +0200
+Message-ID: <20070712091714.GD1866__30090.3679607019$1184273138$gmane$org@elf.ucw.cz>
+References: <20070703042916.GA17240@srcf.ucam.org>
+	<200707031456.36027.rjw@sisk.pl> <20070709132905.GA5212@ucw.cz>
+	<20070711132819.GA5753@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1184167836.12556.15.camel@caritas-dev.intel.com>
+In-Reply-To: <20070711132819.GA5753@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,79 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed 2007-07-11 14:28:20, Matthew Garrett wrote:
+> On Mon, Jul 09, 2007 at 01:29:05PM +0000, Pavel Machek wrote:
+> > Hi!
+> > 
+> > Can we get them? They are neccessary for debugging 'what in suspend
+> > calls fuse' problem. And yes, that problem is there even when you
+> > remove freezer.
+> 
+> I can produce them, but haven't managed to do that in any way that lets 
+> me get them off the system yet.
+> 
+> > Matthew, you seem to be the only one able to produce them...
+> 
+> sys_sync may not do anything on a fuse filesystem, but if you've 
+> loopback-mounted an ext3 filesystem from that fuse filesystem then it's 
+> going to result in writes to it and deadlock.
 
-> This patch provide the kexec based implementation of hibernation image
-> operation. Now, only jumping between original kernel and kexeced
-> kernel is supported, real image write/read/check will be provided in
-> next patches.
-
-I'd prefer this not to use hibernation hooks... existing dumping
-infrastructure should be good enough to write resume image, no?
-
-BTW... is this able to do kdump, then return back to the old kernel?
-That seems to be similar functionality to hibernation, and I was told
-it would be very welcome.
-
-> +static int kexec_suspend(void)
-> +{
-> +	int error;
-> +
-> +	local_irq_disable();
-> +	/* At this point, device_suspend() has been called, but *not*
-> +	 * device_power_down(). We *must* device_power_down() now.
-> +	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-> +	 * become desynchronized with the actual state of the hardware
-> +	 * at resume time, and evil weirdness ensues.
-> +	 */
-> +	error = device_power_down(PMSG_FREEZE);
-> +	if (error) {
-> +		printk(KERN_ERR "Some devices failed to power down, aborting suspend\n");
-> +		goto Enable_irqs;
-> +	}
-> +
-> +	save_processor_state();
-> +	error = kexec_jump(KEXEC_JUMP_TYPE_EXEC);
-> +	restore_processor_state();
-> +
-> +	/* NOTE:  device_power_up() is just a resume() for devices
-> +	 * that suspended with irqs off ... no overall powerup.
-> +	 */
-> +	device_power_up();
-> + Enable_irqs:
-> +	in_suspend = 0;
-> +	local_irq_enable();
-> +	return error;
-> +}
-...
-> +static int kexec_resume(void)
-> +{
-> +	int error = 0;
-> +
-> +	local_irq_disable();
-> +	/* NOTE:  device_power_down() is just a suspend() with irqs off;
-> +	 * it has no special "power things down" semantics
-> +	 */
-> +	if (device_power_down(PMSG_PRETHAW))
-> +		printk(KERN_ERR "Some devices failed to power down, very bad\n");
-> +	/* We'll ignore saved state, but this gets preempt count (etc) right */
-> +	save_processor_state();
-> +	kexec_restore_backup();
-> +	error = kexec_jump(KEXEC_JUMP_TYPE_JUMP);
-> +	swsusp_free();
-> +	restore_processor_state();
-> +	touch_softlockup_watchdog();
-> +	device_power_up();
-> +	local_irq_enable();
-> +	return error;
-> +}
-
-This seems like mostly generic stuff for going between two kernels,
-no? I'd prefer it not be hooked into hibernation infrastructure.
+Aha, yes, that explains the problem. Thanks!
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
