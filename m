@@ -1,15 +1,15 @@
-From: "Huang, Ying" <ying.huang@intel.com>
+From: david@lang.hm
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Thu, 12 Jul 2007 14:43:43 +0000
-Message-ID: <1184251423.9346.55.camel__26713.6742979803$1184222728$gmane$org@caritas-dev.intel.com>
+Date: Wed, 11 Jul 2007 23:43:39 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707112319550.28090@asgard.lang.hm>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
 	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
+	<4695C096.5080400@goop.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070711172243.ab44c4d4.akpm@linux-foundation.org>
+In-Reply-To: <4695C096.5080400@goop.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +19,143 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
+	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2007-07-11 at 17:22 -0700, Andrew Morton wrote:
-> This sounds awesome.  Am I correct in expecting that ultimately the
-> existing hibernation implementation just goes away and we reuse (and hence
-> strengthen) the existing kexec (and kdump?) infrastructure?
-> And that we get hibernation support almost for free on all kexec (and
-> relocatable-kernel?) capable architectures?
-> And that all the management of hibernation and resume happens in userspace?
+On Wed, 11 Jul 2007, Jeremy Fitzhardinge wrote:
 
-Yes. Ultimately, most of the hibernation code such as process freezer,
-memory shrinking, memory snapshot (atomic copy), image reading/writing
-can go away, because kexec based hibernation doesn't depend on them.
-Just the device/CPU state quiescent/save/restore is necessary to remain.
-And, the management of hibernation and resume will happen in userspace.
+> Andrew Morton wrote:
+>>  On Wed, 11 Jul 2007 15:30:31 +0000
+>>  "Huang, Ying" <ying.huang@intel.com> wrote:
+>> 
+>> >  1. Boot a kernel A
+>> >  2. Work under kernel A
+>> >  3. Kexec another kernel B in kernel A
+>> >  4. Work under kernel B
+>> >  5. Jump from kernel B to kernel A
+>> >  6. Continue work under kernel A
+>> > 
+>> >  This is the first step to implement kexec based hibernation. If the
+>> >  memory image of kernel A is written to or read from a permanent media
+>> >  in step 4, a preliminary version of kexec based hibernation can be
+>> >  implemented.
+>> > 
+>> >  The kernel B is run as a crashdump kernel in reserved memory
+>> >  region. This is the biggest constrains of the patch. It is planed to
+>> >  be eliminated in the next version. That is, instead of reserving memory
+>> >  region previously, the needed memory region is backuped before kexec
+>> >  and restored after jumping back.
+>> > 
+>> >  Another constrains of the patch is that the CONFIG_ACPI must be turned
+>> >  off to make kexec jump work. Because ACPI will put devices into low
+>> >  power state, the kexeced kernel can not be booted properly under
+>> >  it. This constrains can be eliminated by separating the suspend method
+>> >  and hibernation method of the devices as proposed earlier in the LKML.
+>> > 
+>> >  The kexec jump is implemented in the framework of software suspend. In
+>> >  fact, the kexec based hibernation can be seen as just implementing the
+>> >  image writing and reading method of software suspend with a kexeced
+>> >  Linux kernel.
+>> > 
+>
+> I guess I'm (still) confused by the terminology here.  Do you mean that it 
+> fits into suspend-to-disk as a disk-writing mechanism, or in suspend-to-ram 
+> as a way of going to sleep?
 
-> 
-> I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
-> be disabled in the to-be-hibernated kernel, or in the little transient
-> kexec kernel?
+Suspend-to-ram involves stopping the system and shutting down devices to 
+go into low-power mode, then on wakeup restarting devices and resuming 
+operation
 
-Under current implementation of device state quiescent/save/restore, the
-CONFIG_ACPI must be turned off both in to-be-hibernated kernel and
-transient kexec kernel.
+so the steps would be.
 
-But the hibernation people are going to separate the device suspend from
-device hibernate. The device hibernate will put device in quiescent
-state but not in low power state. When this is done, it is not necessary
-to disable CONFIG_ACPI at all. It is just a workaround for current
-implementation that disabling CONFIG_ACPI.
+1. stop userspace
 
-> How close do you think all this is to being a viable thing?
+2. walk the system device tree and put devices to sleep
 
-The kexec jump is the first step, maybe the simplest step. There are
-many other issues to be resolved, at least the following ones.
+3. go into the lowest power mode available and wait for a wakeup signal
 
-1. Separate device suspend from device hibernate.
-2. Do not reserve memory for kexec kernel. That is, backup needed memory
-before kexec and restore them after kexec.
-3. Support the in-place kexec? The relocatable kernel is not necessary
-if this can be implemented.
-4. Image writing/reading. (Only user space application is needed).
-5. A smooth resume process. Maybe it is not needed to kexec a new kernel
-for resume. For example, in the first stage of kernel boot, just first
-16M (or a little more) RAM is used, if the resume image is found, the
-saved kernel image is resumed; if the resume image is not found, turn on
-the remaining RAM. This will depends on 3.
-6. Reduce the boot-up time of kexec kernel. Maybe the kexec kernel can
-be hibernate/resume by the normal kernel too. This way, a real
-kexec/boot-up is only needed for the first time.
+later
 
-Best Regards,
-Huang, Ying
+4. walk the system device tree and wake up devices
+
+5. resume userspace scheduling.
+
+note that what devices get put to sleep could be configurable, potentially 
+to the extreme of things like the OLPC (that have hardware designed for 
+cheap sleeping) going into a light suspend-to-ram state between keystrokes 
+if nothing else has a timer event scheduled before that.
+
+Suspend-do-disk (Hibernate) involves stopping the system, makeing a 
+snapshot of ram, writing the snapshot to somewhere and powering off the 
+box. on wakeup (power-on) a helper kernel boots, loads the snapshot into 
+ram and jumps to the kernel in the snapshot to resume operation.
+
+as I understand the proposal the thought is to do the following
+
+1. system kernel does suspend-to-ram to put the devices into a known safe 
+state.
+
+2. system kernel uses kexec to start hibernate kernel
+
+3. hibernate kernel wakes up devices it needs as if it was doing a 
+resume-from-ram
+
+4. hibernate kernel copies ram image somewhere
+
+5. hibernate kernel shuts down the box
+
+later
+
+6. hibernate kernel boots
+
+7. hibernate kernel copies ram image from somewhere
+
+8. hibernate kernel does syspend-to-ram to put the devices into a known 
+safe state.
+
+9. hibernate kernel uses kexec to start system kernel
+
+10. system kernel wakes up devices it needs as if it was doing a 
+resume-from-ram.
+
+>> >  Now, only the i386 architecture is supported. The patch is based on
+>> >  Linux kernel 2.6.22, and has been tested on my IBM T42.
+>> > 
+>>
+>>  This sounds awesome.  Am I correct in expecting that ultimately the
+>>  existing hibernation implementation just goes away and we reuse (and hence
+>>  strengthen) the existing kexec (and kdump?) infrastructure?
+>>
+>>  And that we get hibernation support almost for free on all kexec (and
+>>  relocatable-kernel?) capable architectures?
+>>
+>>  And that all the management of hibernation and resume happens in
+>>  userspace?
+
+this is the thought.
+
+>>  I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI
+>>  must
+>>  be disabled in the to-be-hibernated kernel, or in the little transient
+>>  kexec kernel?
+>> 
+>
+> I think the point is that if kernel A says "I'm suspending" and calls the 
+> suspend method on all its devices, then kernel B finds that it has no powered 
+> on devices to work with.  But then couldn't it turn on the ones it wants 
+> anyway?  And don't you want to suspend them, to make sure they're not still 
+> DMAing memory while B is trying to shuffle everything off to disk?
+
+I don't understand the ACPI problem so I can't try to clarify it.
+
+> It does sound pretty cool.
+
+re-useing existing components in new ways, making it so that particular 
+problems only have to be solved once and that solution is used repeatedly. 
+there's a lot to like about this approach.
+
+very cool.
+
+David Lang
