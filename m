@@ -1,15 +1,16 @@
 From: "Huang, Ying" <ying.huang@intel.com>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Thu, 12 Jul 2007 16:28:54 +0000
-Message-ID: <1184257734.9346.76.camel__27883.3898985342$1184229182$gmane$org@caritas-dev.intel.com>
+Date: Thu, 12 Jul 2007 17:09:34 +0000
+Message-ID: <1184260174.9346.85.camel__44817.8964354613$1184231498$gmane$org@caritas-dev.intel.com>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<20070711111350.GI7091@elf.ucw.cz>
+	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
+	<4695C096.5080400@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070711111350.GI7091@elf.ucw.cz>
+In-Reply-To: <4695C096.5080400@goop.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,97 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2007-07-11 at 13:13 +0200, Pavel Machek wrote:
-> Hi!
+On Wed, 2007-07-11 at 22:48 -0700, Jeremy Fitzhardinge wrote:
+> >> The kexec jump is implemented in the framework of software suspend. In
+> >> fact, the kexec based hibernation can be seen as just implementing the
+> >> image writing and reading method of software suspend with a kexeced
+> >> Linux kernel.
+> >>     
 > 
-> Looks interesting... but I was feeling strange dejavu reading
-> this... and that's because you pasted the changelog twice :-).
-> 
+> I guess I'm (still) confused by the terminology here.  Do you mean that 
+> it fits into suspend-to-disk as a disk-writing mechanism, or in 
+> suspend-to-ram as a way of going to sleep?
 
-Sorry, I should have re-checked the mail before sending out.
-
-> How fast can kexec boot secondary kernel?
-
-I measure it on my IBM T42 with CONFIG_PRINTK_TIME=y. The boot-up time
-is about 4.35s from kexec is issued to root mounted in kexec kernel.
-
-I think it is possible to optimize. Maybe the kexec kernel can
-be hibernate/resume by the normal kernel too. This way, a real
-kexec/boot-up is only needed for the first time.
-
-> > 2. Compile the kexec-tools with kdump and kjump patches added, the
-> >    kdump patch can be found at:
-> > 
-> > http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-dkump10.patch
-> 
-> I got 404 error :-(.
-
-Sorry, typo problem. The URL should be:
-http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-kdump10.patch
-
-> > 3. Boot compiled kernel, the reserved crash kernel memory region must
-> >    be added to kernel command line as following:
-> > 
-> >    crashkernel=<XX>M@<XX>M
-> > 
-> >    Where, <XX> should be replaced by the real memory size and position.
-> 
-> How much memory do you suggest to reserve? 64M? 
-
-I reserved 16M RAM. I think this is sufficient for a simple disk based
+It fits into suspend-to-disk as a disk-writing mechanism. But most
+tricks of suspend-to-disk will be no longer necessary in kexec based
 hibernation.
 
-> > 7. In the kexec booted kernel, trigger the jumping back with following
-> >    shell command.
-> > 
-> >    echo <a>:<b> > /sys/power/resume
-> > 
-> >    Where <a> and <b> is non-negative integer, at least one of them must
-> >    be non-zero.
+> > I didn't understand the ACPI problem.  Does this mean that CONFIG_ACPI must
+> > be disabled in the to-be-hibernated kernel, or in the little transient
+> > kexec kernel?
+> >   
 > 
-> What does a and b mean?
-> 
+> I think the point is that if kernel A says "I'm suspending" and calls 
+> the suspend method on all its devices, then kernel B finds that it has 
+> no powered on devices to work with.  But then couldn't it turn on the 
+> ones it wants anyway?  And don't you want to suspend them, to make sure 
+> they're not still DMAing memory while B is trying to shuffle everything 
+> off to disk?
 
-a and b has no meaning. They are only used to trigger the resume
-process. This will be fixed in the future version.
+The devices should be put quiescent state to stop DMA like things. But
+they do not need to be put in low power state.
 
-> > +/* Adds the kexec_backup= command line parameter to command line. */
-> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
-> > +{
-> > +	int cmdlen, len, align = 1024;
-> > +	char str[30], *ptr;
-> > +
-> > +	/* Passing in kexec_backup=xxxK format. Saves space required in cmdline.
-> > +	 * Ensure 1K alignment*/
-> > +	if (addr%align)
-> > +		return -1;
-> > +	addr = addr/align;
-> > +	ptr = str;
-> > +	strcpy(str, " kexec_backup=");
-> > +	ptr += strlen(str);
-> > +	ultoa(addr, ptr);
-> > +	strcat(str, "K");
-> > +	len = strlen(str);
-> > +	cmdlen = strlen(cmdline) + len;
-> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
-> > +		die("Command line overflow\n");
-> > +	strcat(cmdline, str);
-> > +#if 0
-> > +		printf("Command line after adding backup\n");
-> > +		printf("%s\n", cmdline);
-> > +#endif
-> > +	return 0;
-> > +}
-> 
-> printf()? ...and please remove out commented code.
+"Do not put devices into low power state" vs. "power on devices during
+boot-up"
 
-This is patch against kexec-tools, which is a userspace tool. So printf
-is used. The commented code is just as other cmdline_add_xxx functions
-of kexec-tools. But it is useless, and should be removed.
+Which one is easier?
 
 Best Regards,
 Huang Ying
