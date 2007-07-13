@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Fri, 13 Jul 2007 23:08:23 +0200
-Message-ID: <200707132308.24323.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0707131402001.2684-100000@iolanthe.rowland.org>
+Date: Fri, 13 Jul 2007 23:23:21 +0200
+Message-ID: <200707132323.22463.rjw__19878.4268614419$1184361397$gmane$org@sisk.pl>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<200707131745.43055.rjw@sisk.pl> <87644o1c7v.fsf@jbms.ath.cx>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707131402001.2684-100000@iolanthe.rowland.org>
+In-Reply-To: <87644o1c7v.fsf@jbms.ath.cx>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,83 +21,115 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 13 July 2007 20:15, Alan Stern wrote:
-> On Fri, 13 Jul 2007, Eric W. Biederman wrote:
+On Friday, 13 July 2007 18:48, Jeremy Maitin-Shepard wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> > > I doubt that re-probing devices will work.  The probe routine won't 
-> > > expect there to be any registered children, so it will try to 
-> > > re-register them.
-> > 
-> > So really unregister the children.  All we really need to do is disassociate
-> > the drivers from the devices (to reuse the existing code) we don't
-> > need to rescan for the devices.  The associating the device drivers
-> > with devices takes human measurable amount of time.  The only thing
-> > that takes time is waiting on hardware.  Maybe things will suck
-> > and associating the drivers with the device tree with take a whole
-> > second on a bad day, I don't think that is enough time to add
-> > complicated new code paths for the drivers to maintain.
+> [snip]
 > 
-> This would be even worse!
+> > Okay, I have thought it through and I think that, as an initial step, we can do
+> > something like this:
 > 
-> Suppose you unbind (or unregister, either way) a disk driver.  It's 
-> unbind method will unregister the gendisk structure, thereby deleting 
-> all the partitions and block devices associated with the disk.  This 
-> will leave any and all memory mappings dangling in the breeze.  When 
-> the kernel resumes from hibernation, nothing will work.
+> > - preload the image-saving kernel before hibernation
+> > - in the hibernation code path replace device_suspend() with the shutting down
+> > of
+> >   all devices without unregistering them (not very nice, but should be
+> > sufficient
+> >   for a while)
 > 
-> > > On the other hand, post_restore methods could be written to expect 
-> > > something like this.
-> > 
-> > Please Please Plaese do not start with the existing software suspend
-> > to disk code and thinking.
+> It seems that the effect of what is done by the current hibernate
+> implementations is to shutdown all of the devices, but according to
+> kernel data structures, have it look like the devices were merely
+> suspended (i.e. device_suspend).  Then in the resume path, the "restore
+> image" kernel also calls device_suspend just before jumping to the
+> hibernated kernel, so all of the devices the "restore image" kernel knew
+> about are in the state device_suspend expects them to be in, except that
+> they were actually suspended by a different kernel, so they might not be
+> in quite the right state.  There is also the issue that the "restore
+> image" kernel might not know about all of the devices; for instance, if
+> USB support is modular, and, as is likely to be the case, the user
+> didn't load the USB modules in the "restore image" kernel from an initrd
+> or something, then the USB devices will actually be powered off, rather
+> than "suspended".  Despite these apparent discrepancies, it seems that
+> for many devices (I'm not sure USB devices are included, though),
+> device_restore happens to do the right thing so that the device is
+> placed back in the state it needs to be so that the driver can begin
+> talking to it as it did before, and the device is recognized as the same
+> device as was there before (since otherwise mounted filesystems backed
+> by block devices that came back as a different device would cause great
+> havoc).
 > 
-> Ha!  Gotcha.  You evidently haven't been reading the linux-pm mailing 
-> list for the last few months.  :-)
+> Since I recall there being issues with USB devices being recognized as
+> the same devices post-hibernate-resume, without looking at the code I'm
+> inclined to believe that the USB drivers still don't end up resuming
+> from hibernate correctly.
 > 
->      1. post_restore isn't "existing software suspend to disk code"
-> 	(you're supposed to call it "hibernation" now, BTW).
+> Note that I am describing what is done currently, not what is planned to
+> be done (i.e. change device_suspend to quiesce and device_resume to
+> unquiesce).  It seems that ironically, despite everyone believing that
+> device_suspend/device_resume is incorrect for hibernate, many of the
+> things that those functions do (like saving the PCI configuration,
+> perhaps, and then restoring it later, or re-initializing the device) are
+> actually necessary, especially for modular drivers that won't be loaded
+> by the "restore image" kernel.
 > 
->      2. post_restore isn't new.  It has already been proposed and
-> 	generally accepted.  It is part of the movement to untangle
-> 	and separate the suspend and hibernate code paths.
+> What needs to be done is for the devices to be shut down (or possibly
+> just quiesced for a select few, but we won't worry about that
+> complication until later; in the case of the current implementations,
+> they should all be quiesced rather than shut down), but whatever
+> information that will be needed later to reinitialize the device
+> (ideally the reinitialization should be able to handle the device either
+> being in a quiesced state or completely off) and recognize it as the
+> same device must be saved.  This probably means they cannot be
+> "unregistered", as otherwise there would be nothing with which to
+> associate the saved information.
 > 
->      3. post_restore hasn't been implemented yet.  It's barely past
-> 	the proposal stage.
-> 
->      4. Maybe _you_ like to discuss complicated issues such as this
-> 	one without thinking, but the rest of us prefer a little 
-> 	cerebration.
-> 
-> >  We are not implementing suspend to ram
-> > here or anything like it.
-> 
-> One of the topics in this discussion has been "suspend-to-both", which
-> includes suspend-to-RAM.  
-> 
-> But anyway, so what?  I wasn't talking about suspend-to-RAM; I was
-> talking about hibernation.
-> 
-> >  We already have proven code paths that
-> > know how to quiesce hardware.  We already have proven code paths
-> > that know how to take quite hardware and make it run.  Please let's
-> > just use them.  At least until we can see that they are insufficient
-> > to the task.
-> 
-> Was this request directed at me or at Rafael?  It's hard to tell.
+> The resume path needs to use the saved state to reinitialize the device
+> and recognize it as the same device.  It seems that the existing
+> reprobing code may not be sufficient for this.  Note that exactly the
+> same thing must be done on resume for both the current hibernate
+> implementations and the kexec approach.  It seems that properly
+> restoring the devices should be relatively easy for the devices that
+> already get this correct, like IDE devices and basic PCI devices (and
+> SATA and SCSI devices as well perhaps?), and possibly harder for
+> Firewire or USB devices.
 
-Yeah.
+The problem of handling devices during hibernation has been discussed for many
+times on linux-pm and we have reached certain agreement.  I wouldn't like to
+repeat all of the arguments here.  For details, please refer, for example, to
+this thread:
 
-Anyway, IMO, unregistering of devices in the hibernated kernel won't work,
-because it doesn't know how to register them back after the restore.  Sure,
-we can teach it do do that, but I think it's simpler to just keep devices
-registered and have a .post_restore() or .reprobe() callbacks for handling
-the reinitialization of hardware.
+https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012386.html
 
-And yes, we've discussed this in detail for many times on linux-pm.
+> > - when we've called device_power_down() and save_processor_state(), jump to
+> >   the image-saving kernel and let it run
+> > - make the image-saving kernel set up everything, save the image without
+> >   starting any user space (we may use the existing image-saving code for this
+> >   purpose, with some modifications) and power off the system (or make it enter
+> >   S4)
+> 
+> I suppose this has the advantage of not requiring that a
+> kernel-to-userspace interface be created for this purpose.
+
+Yes, and for now we're avoiding the problems with starting the new user space
+from a special place.
+
+> > - use the existing restoration code to load the image and jump to the
+> >   hibernated kernel
+> 
+> This would again avoid the need for a separate userspace-kernelspace
+> interface for the purpose, so I agree it could be a useful thing to do
+> initially.
+> 
+> > - in the restore code patch replace device_resume() with the reprobing of all
+> >   devices.
+> 
+> See my comments above.
+
+And please see my reply. :-)
 
 Greetings,
 Rafael
