@@ -1,16 +1,14 @@
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+From: ebiederm@xmission.com (Eric W. Biederman)
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Fri, 13 Jul 2007 12:48:36 -0400
-Message-ID: <87644o1c7v.fsf@jbms.ath.cx>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707131359.53309.rjw@sisk.pl> <87abu01gnv.fsf@jbms.ath.cx>
-	<200707131745.43055.rjw@sisk.pl>
+Date: Fri, 13 Jul 2007 10:54:42 -0600
+Message-ID: <m1fy3sdz1p.fsf@ebiederm.dsl.xmission.com>
+References: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707131745.43055.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri\, 13 Jul 2007 17\:45\:41 +0200")
+In-Reply-To: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Fri, 13 Jul 2007 11:50:11 -0400 (EDT)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,102 +18,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-[snip]
-
-> Okay, I have thought it through and I think that, as an initial step, we can do
-> something like this:
-
-> - preload the image-saving kernel before hibernation
-> - in the hibernation code path replace device_suspend() with the shutting down
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
+>
+>> Okay, I have thought it through and I think that, as an initial step, we can
+> do
+>> something like this:
+>> 
+>> - preload the image-saving kernel before hibernation
+>> - in the hibernation code path replace device_suspend() with the shutting down
 > of
->   all devices without unregistering them (not very nice, but should be
+>> all devices without unregistering them (not very nice, but should be
 > sufficient
->   for a while)
+>>   for a while)
+>> - when we've called device_power_down() and save_processor_state(), jump to
+>>   the image-saving kernel and let it run
+>> - make the image-saving kernel set up everything, save the image without
+>>   starting any user space (we may use the existing image-saving code for this
+>> purpose, with some modifications) and power off the system (or make it enter
+>>   S4)
+>> - use the existing restoration code to load the image and jump to the
+>>   hibernated kernel
+>> - in the restore code patch replace device_resume() with the reprobing of all
+>>   devices.
+>> 
+>> Comments?
+>
+> I doubt that re-probing devices will work.  The probe routine won't 
+> expect there to be any registered children, so it will try to 
+> re-register them.
 
-It seems that the effect of what is done by the current hibernate
-implementations is to shutdown all of the devices, but according to
-kernel data structures, have it look like the devices were merely
-suspended (i.e. device_suspend).  Then in the resume path, the "restore
-image" kernel also calls device_suspend just before jumping to the
-hibernated kernel, so all of the devices the "restore image" kernel knew
-about are in the state device_suspend expects them to be in, except that
-they were actually suspended by a different kernel, so they might not be
-in quite the right state.  There is also the issue that the "restore
-image" kernel might not know about all of the devices; for instance, if
-USB support is modular, and, as is likely to be the case, the user
-didn't load the USB modules in the "restore image" kernel from an initrd
-or something, then the USB devices will actually be powered off, rather
-than "suspended".  Despite these apparent discrepancies, it seems that
-for many devices (I'm not sure USB devices are included, though),
-device_restore happens to do the right thing so that the device is
-placed back in the state it needs to be so that the driver can begin
-talking to it as it did before, and the device is recognized as the same
-device as was there before (since otherwise mounted filesystems backed
-by block devices that came back as a different device would cause great
-havoc).
+So really unregister the children.  All we really need to do is disassociate
+the drivers from the devices (to reuse the existing code) we don't
+need to rescan for the devices.  The associating the device drivers
+with devices takes human measurable amount of time.  The only thing
+that takes time is waiting on hardware.  Maybe things will suck
+and associating the drivers with the device tree with take a whole
+second on a bad day, I don't think that is enough time to add
+complicated new code paths for the drivers to maintain.
 
-Since I recall there being issues with USB devices being recognized as
-the same devices post-hibernate-resume, without looking at the code I'm
-inclined to believe that the USB drivers still don't end up resuming
-from hibernate correctly.
+> On the other hand, post_restore methods could be written to expect 
+> something like this.
 
-Note that I am describing what is done currently, not what is planned to
-be done (i.e. change device_suspend to quiesce and device_resume to
-unquiesce).  It seems that ironically, despite everyone believing that
-device_suspend/device_resume is incorrect for hibernate, many of the
-things that those functions do (like saving the PCI configuration,
-perhaps, and then restoring it later, or re-initializing the device) are
-actually necessary, especially for modular drivers that won't be loaded
-by the "restore image" kernel.
+Please Please Plaese do not start with the existing software suspend
+to disk code and thinking.  We are not implementing suspend to ram
+here or anything like it.  We already have proven code paths that
+know how to quiesce hardware.  We already have proven code paths
+that know how to take quite hardware and make it run.  Please let's
+just use them.  At least until we can see that they are insufficient
+to the task.
 
-What needs to be done is for the devices to be shut down (or possibly
-just quiesced for a select few, but we won't worry about that
-complication until later; in the case of the current implementations,
-they should all be quiesced rather than shut down), but whatever
-information that will be needed later to reinitialize the device
-(ideally the reinitialization should be able to handle the device either
-being in a quiesced state or completely off) and recognize it as the
-same device must be saved.  This probably means they cannot be
-"unregistered", as otherwise there would be nothing with which to
-associate the saved information.
-
-The resume path needs to use the saved state to reinitialize the device
-and recognize it as the same device.  It seems that the existing
-reprobing code may not be sufficient for this.  Note that exactly the
-same thing must be done on resume for both the current hibernate
-implementations and the kexec approach.  It seems that properly
-restoring the devices should be relatively easy for the devices that
-already get this correct, like IDE devices and basic PCI devices (and
-SATA and SCSI devices as well perhaps?), and possibly harder for
-Firewire or USB devices.
-
-> - when we've called device_power_down() and save_processor_state(), jump to
->   the image-saving kernel and let it run
-> - make the image-saving kernel set up everything, save the image without
->   starting any user space (we may use the existing image-saving code for this
->   purpose, with some modifications) and power off the system (or make it enter
->   S4)
-
-I suppose this has the advantage of not requiring that a
-kernel-to-userspace interface be created for this purpose.
-
-> - use the existing restoration code to load the image and jump to the
->   hibernated kernel
-
-This would again avoid the need for a separate userspace-kernelspace
-interface for the purpose, so I agree it could be a useful thing to do
-initially.
-
-> - in the restore code patch replace device_resume() with the reprobing of all
->   devices.
-
-See my comments above.
-
--- 
-Jeremy Maitin-Shepard
+Eric
