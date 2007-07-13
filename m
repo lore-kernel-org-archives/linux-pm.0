@@ -1,16 +1,18 @@
-From: david@lang.hm
+From: "Huang, Ying" <ying.huang@intel.com>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Fri, 13 Jul 2007 02:25:58 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707130211570.25614@asgard.lang.hm>
+Date: Fri, 13 Jul 2007 17:32:54 +0000
+Message-ID: <1184347974.4523.30.camel__49823.7009779134$1184319436$gmane$org@caritas-dev.intel.com>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<877ip54cti.fsf@jbms.ath.cx>
-	<Pine.LNX.4.64.0707122008550.25614@asgard.lang.hm>
-	<200707131117.38426.rjw@sisk.pl>
+	<200707121453.49616.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707121150460.25614@asgard.lang.hm>
+	<200707122134.29991.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707131117.38426.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,81 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
-
-> Date: Fri, 13 Jul 2007 11:17:37 +0200
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> To: david@lang.hm
-> Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
->     "Huang, Ying" <ying.huang@intel.com>,
->     Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
->     nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org,
->     linux-pm@lists.linux-foundation.org
-> Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base hibernation
+On Thu, 2007-07-12 at 20:06 -0700, david@lang.hm wrote:
+> >> I agree, a stipped down hibernate kernel can be very small, not allocating
+> >> this memory until it's needed is a step for the final polishing.
+> >
+> > I'm not sure if I agree with that.  In any case, having to use two different
+> > kernels for hibernation would be a big drawback.
 > 
-> On Friday, 13 July 2007 05:12, david@lang.hm wrote:
->> On Thu, 12 Jul 2007, Jeremy Maitin-Shepard wrote:
->>
->>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>>>>>> 3. Support the in-place kexec? The relocatable kernel is not necessary
->>>>>>> if this can be implemented.
->>>>>>> 4. Image writing/reading. (Only user space application is needed).
->>>>>>
->>>>>> And a kernel interface for that application.
->>>>>
->>>>> I do't understand this statement, this application is just useing the
->>>>> standard kernel interfaces (block devices to read/write to disk, network
->>>>> devices to read/write to a server, etc). no new interfaces needed.
->>>
->>>> Yes, but it will have to know _what_ to save, no?
->>>
->>> I agree that a kernel interface would be important; something like
->>> /dev/snapshot that can be read by the "save image" kernel, and written
->>> to by the "restore image" kernel.  Note that similarly, kdump provides a
->>> kernel interface to an ELF image of the old kernel.
->>
->> I thought that the idea was to save the entire contents of ram so that
->> caches, etc remain populated.
->>
->> having the system kernel free up ram and then making a sg list of what
->> memory needs to be backed up would be a nice enhancement, but let's let
->> that remain a future enhancement until everyone agrees that the basic
->> approach works.
->
-> It's not that easy. :-)
->
-> First, there are memory regions that we don't want to save, because the
-> restoration of them may cause problems (generally all of the reserved pages
-> fall into this category).
->
-> We also don't want to save free RAM and we don't want to save the memory
-> occupied by the hibernation kernel (ie. the "new" one).
+> I see it as a big advantage to not have to use the main kernel for the 
+> suspend. please keep it as an option at least.
 
-free ram is useually a pretty small number of pages (unless you free up 
-ram before suspend). avoiding the ram reserved for the new kernel should 
-be pretty simple (actually, it doesn't hurt much to save that ram, it just 
-hurts if you try to restore it)
+Yes. It has additional bonus to make it possible to write/read image
+from a program other than main kernel. For example, for a specific
+mobile device product (Such as Intel MID), a customized ultra-small
+program (or kernel) can be composed to write/read image. That way, the
+hibernate/resume time can be reduced to minimal.
 
-> Also, please note that we can't restore 100% of RAM, even if we save it.
-
-Ok, now we need a data channel from the old kernel to the hibernate 
-kernel, to the restore kernel. and the messier the memory layout the 
-larger this data channel needs to be (hmm, what's the status on the memory 
-defrag patches being proposed?) if this list can be made small enough it 
-would work to just have the old kernel put the data in a known location in 
-ram, and let the other two parts find it (in ram for the hibernate kernel, 
-in the hibernate image for the wakeup kernel). how do the existing 
-hibernate processes store this? since people are complaining about the 
-amount of ram that a kexec kernel would take up I'm assuiming it's 
-somethingmore complex then just a bitmap of all possible pages.
-
-most of the conversation so far has been around the process of makeing the 
-snapshot and storing it. what are the processes and tools available to 
-restore images?
-
-David Lang
+Best Regards,
+Huang Ying
