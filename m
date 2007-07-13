@@ -1,23 +1,11 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: malicious filesystems (was Re: Re: [PATCH] Remove
-	process freezer from suspend to RAM pathway)
-Date: Fri, 13 Jul 2007 01:13:09 +0200
-Message-ID: <E1I97qP-0005JF-00@dorka.pomaz.szeredi.hu>
-References: <200707050858.03638.oliver@neukum.org>
-	<E1I6MWb-0008Tq-00@dorka.pomaz.szeredi.hu>
-	<20070705091801.GB3084@elf.ucw.cz>
-	<E1I6NgZ-0000F6-00@dorka.pomaz.szeredi.hu>
-	<20070705115400.GF3984@ucw.cz>
-	<E1I6Q73-0000Xi-00@dorka.pomaz.szeredi.hu>
-	<20070707121729.GC3111@elf.ucw.cz>
-	<E1I7H6v-0006pf-00@dorka.pomaz.szeredi.hu>
-	<20070707233315.GB3820@elf.ucw.cz>
-	<E1I7vx0-0002Fn-00@dorka.pomaz.szeredi.hu>
-	<20070712153112.GB5139@ucw.cz>
-	<E1I96eW-00059M-00@dorka.pomaz.szeredi.hu>
+From: "Underwood V. Ruth" <hnkb@sciti.com>
+Subject: level fugitive
+Date: Thu, 12 Jul 2007 18:16:05 -0600
+Message-ID: <4696C445.2020105@sciti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <E1I96eW-00059M-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Thu, 12 Jul 2007 23:56:48 +0200)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,44 +15,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: mjg59@srcf.ucam.org, miklos@szeredi.hu, linux-kernel@vger.kernel.org, pavel@ucw.cz, johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-> > Ok, I'll just blame fuse here. 'You have to write to /sys
-> > files for SIGKILL to work' is not funny.
-> 
-> SIGKILL won't work on a stopped task.  Neither on a traced task.
-> Neither on a zombie (how many newbies are thoroughly confused about
-> that ;)
-> 
-> And it won't work on a task that is hanging on an NFS mount, when the
-> network broke.
-> 
-> Oh, and it won't work on a deadlocked fuse filesystem.  How many of
-> these have you met?  How many of the others?
+SZSN Expands To Become 3rd Largest Agricultural Seed Provider!
 
-And maybe someday, when I'm feeling _really_ bored, I may start
-hacking the VFS to make it possible for tasks to be killed while
-waiting on a mutex.  Can a task doing a page fault be interrupted?  I
-don't see why not.
+Shandong Zhouyuan Seed and Nursery Co., Ltd (SZSN)
+$0.24
 
-But, it's _not_ going to happen now, to fix the problems with suspend.
-Hacking fuse (however broken it may be) or the VFS is not the right
-way to fix those problems.  It may be easier than fixing the drivers,
-though I doubt it.  But even if it's the easier way it's not the
-_right_ way.
+SZSN is expanding. Recent acquisitions put it in the top 3 Seed
+providers in China. It is also expanding its distribution chains to 500
+new regional agencies. Big news expected! Get on SZSN first thing Friday
+morning.
 
-We want the various subsystems in the kernel to be less dependent on
-each other not more.  And the freezer is just adding unnecessary
-dependence on totally unrelated code.  And that does not only impact
-fuse, but a lot of other code in the kernel, in the form of
-try_to_freeze() calls all over the place.
+For search engines, the invisible CSS element looks like a normal part
+of the web page.
 
-Is that so hard to understand?
+Search engines have to visit your web pages, they have to evaluate the
+found pages, they have If your web pages contain spam elements, it's
+likely that they'll get banned from Google sooner or later or that they
+don't get listed at all. These two factors represent Google's PageRank
+algorithm and the hypertext-matching analysis.
 
-You can bash fuse all you want, I really don't mind.  But please stop
-trying to prove, that this situation is best handled in fuse.  It just
-won't happen, not because I'm lazy to do the work but because I don't
-have the guts to do something so obviously wrong.
+As usual, you may see some changes in ranking as well as some shuffling
+of the pages that are included in the index. Marketing ROI optimization
+matters.
 
-Miklos
+It might be that Google makes some web sites supplemental to identify
+the main domain of the site.
+
+You shouldn't use cloaking or any other unethical search engine
+optimization method for your web site. The hypertext-matching analysis
+factor is a bit more complicated. Are your search engine rankings still
+yours? If you do something special for Googlebot then Google knows that
+you're cloaking.
+advertisers "Microsoft invites advertisers to enroll in the U.
+
+" Using spam techniques puts the success of your your web site at risk.
+Google's latest update Big Daddy continues to cause problems for some
+webmasters. Maybe you have changed something on your pages that search
+engines might consider spam. If your web pages are still in the
+supplemental results in a week or two, contact Google at the email
+address mentioned above. To get high search engine rankings, you must
+make sure that search engines can parse your web pages and that you have
+many inbound links that tell search engines that your web site is
+important. Depending on your location, some URLs might not have worked
+for some hours.
+
+Note that a secure DNS server only makes sure that no-one hijacks your
+search engine rankings.
+
+It might be that Google makes some web sites supplemental to identify
+the main domain of the site.
+
+, MSN and America Online.
+New research has highlighted the importance of search engine
+optimization and more. Optimize that content for search engines and make
+sure that your web site has good inbound links. If you want to get
+long-term results, you should use ethical search engine optimization
+methods.
+The software program ARELIS can help you to get these links. This week,
+we're telling you how to get listed on Google by following Google's
+advice on hypertext-matching analysis. If your web host cannot fix the
+DNS problems, you should use a new web host. Google's Big Daddy update:
+Is your web site supplemental? Why is CSS spam a bad idea? com and enter
+the URL of your web site. It's very important that your web site is
+spam-free.
+
+This is not due to a duplicate content filter.
+Some people think that there must be a duplicate content filter because
+additional domain names that point to the same web space as the main
+domain name are usually not listed on search engines. You should also
+make sure that your web pages have valid HTML code.
