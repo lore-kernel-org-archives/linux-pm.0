@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Fri, 13 Jul 2007 14:15:46 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707131402001.2684-100000__37105.4345429458$1184350602$gmane$org@iolanthe.rowland.org>
-References: <m1fy3sdz1p.fsf@ebiederm.dsl.xmission.com>
+Date: Fri, 13 Jul 2007 22:55:37 +0200
+Message-ID: <200707132255.39077.rjw__49458.8517271497$1184359737$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1fy3sdz1p.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <Pine.LNX.4.44L0.0707131146340.2555-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,71 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 13 Jul 2007, Eric W. Biederman wrote:
-
-> > I doubt that re-probing devices will work.  The probe routine won't 
-> > expect there to be any registered children, so it will try to 
-> > re-register them.
+On Friday, 13 July 2007 17:50, Alan Stern wrote:
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> So really unregister the children.  All we really need to do is disassociate
-> the drivers from the devices (to reuse the existing code) we don't
-> need to rescan for the devices.  The associating the device drivers
-> with devices takes human measurable amount of time.  The only thing
-> that takes time is waiting on hardware.  Maybe things will suck
-> and associating the drivers with the device tree with take a whole
-> second on a bad day, I don't think that is enough time to add
-> complicated new code paths for the drivers to maintain.
-
-This would be even worse!
-
-Suppose you unbind (or unregister, either way) a disk driver.  It's 
-unbind method will unregister the gendisk structure, thereby deleting 
-all the partitions and block devices associated with the disk.  This 
-will leave any and all memory mappings dangling in the breeze.  When 
-the kernel resumes from hibernation, nothing will work.
-
-> > On the other hand, post_restore methods could be written to expect 
-> > something like this.
+> > Okay, I have thought it through and I think that, as an initial step, we can do
+> > something like this:
+> > 
+> > - preload the image-saving kernel before hibernation
+> > - in the hibernation code path replace device_suspend() with the shutting down of
+> >   all devices without unregistering them (not very nice, but should be sufficient
+> >   for a while)
+> > - when we've called device_power_down() and save_processor_state(), jump to
+> >   the image-saving kernel and let it run
+> > - make the image-saving kernel set up everything, save the image without
+> >   starting any user space (we may use the existing image-saving code for this
+> >   purpose, with some modifications) and power off the system (or make it enter
+> >   S4)
+> > - use the existing restoration code to load the image and jump to the
+> >   hibernated kernel
+> > - in the restore code patch replace device_resume() with the reprobing of all
+> >   devices.
+> > 
+> > Comments?
 > 
-> Please Please Plaese do not start with the existing software suspend
-> to disk code and thinking.
+> I doubt that re-probing devices will work.  The probe routine won't 
+> expect there to be any registered children, so it will try to 
+> re-register them.
 
-Ha!  Gotcha.  You evidently haven't been reading the linux-pm mailing 
-list for the last few months.  :-)
+I didn't mean to use .probe() for that.  I just used the term "reprobe" as
+similar to "reinit", but not exactly the same.
 
-     1. post_restore isn't "existing software suspend to disk code"
-	(you're supposed to call it "hibernation" now, BTW).
+> On the other hand, post_restore methods could be written to expect 
+> something like this.
 
-     2. post_restore isn't new.  It has already been proposed and
-	generally accepted.  It is part of the movement to untangle
-	and separate the suspend and hibernate code paths.
+Yes, that's what I'm thinking of.
 
-     3. post_restore hasn't been implemented yet.  It's barely past
-	the proposal stage.
+Greetings,
+Rafael
 
-     4. Maybe _you_ like to discuss complicated issues such as this
-	one without thinking, but the rest of us prefer a little 
-	cerebration.
 
->  We are not implementing suspend to ram
-> here or anything like it.
-
-One of the topics in this discussion has been "suspend-to-both", which
-includes suspend-to-RAM.  
-
-But anyway, so what?  I wasn't talking about suspend-to-RAM; I was
-talking about hibernation.
-
->  We already have proven code paths that
-> know how to quiesce hardware.  We already have proven code paths
-> that know how to take quite hardware and make it run.  Please let's
-> just use them.  At least until we can see that they are insufficient
-> to the task.
-
-Was this request directed at me or at Rafael?  It's hard to tell.
-
-Alan Stern
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
