@@ -1,18 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Fri, 13 Jul 2007 14:01:34 +0200
-Message-ID: <200707131401.35274.rjw__16142.9934124046$1184327672$gmane$org@sisk.pl>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
-	<1184347974.4523.30.camel@caritas-dev.intel.com>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 2/2] Kexec jump: Kexec jump
+Date: Fri, 13 Jul 2007 21:03:31 +0000
+Message-ID: <1184360611.1069.23.camel__47090.5481641696$1184331954$gmane$org@caritas-dev.intel.com>
+References: <1184167836.12556.15.camel@caritas-dev.intel.com>
+	<20070712094207.GG1866@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184347974.4523.30.camel@caritas-dev.intel.com>
-Content-Disposition: inline
+In-Reply-To: <20070712094207.GG1866@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,33 +18,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 13 July 2007 19:32, Huang, Ying wrote:
-> On Thu, 2007-07-12 at 20:06 -0700, david@lang.hm wrote:
-> > >> I agree, a stipped down hibernate kernel can be very small, not allocating
-> > >> this memory until it's needed is a step for the final polishing.
-> > >
-> > > I'm not sure if I agree with that.  In any case, having to use two different
-> > > kernels for hibernation would be a big drawback.
-> > 
-> > I see it as a big advantage to not have to use the main kernel for the 
-> > suspend. please keep it as an option at least.
+On Thu, 2007-07-12 at 11:42 +0200, Pavel Machek wrote:
+> > This patch provide the kexec based implementation of hibernation image
+> > operation. Now, only jumping between original kernel and kexeced
+> > kernel is supported, real image write/read/check will be provided in
+> > next patches.
 > 
-> Yes. It has additional bonus to make it possible to write/read image
-> from a program other than main kernel. For example, for a specific
-> mobile device product (Such as Intel MID), a customized ultra-small
-> program (or kernel) can be composed to write/read image. That way, the
-> hibernate/resume time can be reduced to minimal.
+> I'd prefer this not to use hibernation hooks... existing dumping
+> infrastructure should be good enough to write resume image, no?
+> 
+> BTW... is this able to do kdump, then return back to the old kernel?
+> That seems to be similar functionality to hibernation, and I was told
+> it would be very welcome.
 
-You don't need kexec for that.  This is how the userland hibernation (aka
-uswsusp) works.
+Yes. Just because there are so much similarity between them, many people
+think they can be merged.
 
-Greetings,
-Rafael
+> > +static int kexec_suspend(void)
+> > +{
+> > +	int error;
+> > +
+> > +	local_irq_disable();
+> > +	/* At this point, device_suspend() has been called, but *not*
+> > +	 * device_power_down(). We *must* device_power_down() now.
+> > +	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+> > +	 * become desynchronized with the actual state of the hardware
+> > +	 * at resume time, and evil weirdness ensues.
+> > +	 */
+> > +	error = device_power_down(PMSG_FREEZE);
+> > +	if (error) {
+> > +		printk(KERN_ERR "Some devices failed to power down, aborting suspend\n");
+> > +		goto Enable_irqs;
+> > +	}
+> > +
+> > +	save_processor_state();
+> > +	error = kexec_jump(KEXEC_JUMP_TYPE_EXEC);
+> > +	restore_processor_state();
+> > +
+> > +	/* NOTE:  device_power_up() is just a resume() for devices
+> > +	 * that suspended with irqs off ... no overall powerup.
+> > +	 */
+> > +	device_power_up();
+> > + Enable_irqs:
+> > +	in_suspend = 0;
+> > +	local_irq_enable();
+> > +	return error;
+> > +}
+> ...
+> > +static int kexec_resume(void)
+> > +{
+> > +	int error = 0;
+> > +
+> > +	local_irq_disable();
+> > +	/* NOTE:  device_power_down() is just a suspend() with irqs off;
+> > +	 * it has no special "power things down" semantics
+> > +	 */
+> > +	if (device_power_down(PMSG_PRETHAW))
+> > +		printk(KERN_ERR "Some devices failed to power down, very bad\n");
+> > +	/* We'll ignore saved state, but this gets preempt count (etc) right */
+> > +	save_processor_state();
+> > +	kexec_restore_backup();
+> > +	error = kexec_jump(KEXEC_JUMP_TYPE_JUMP);
+> > +	swsusp_free();
+> > +	restore_processor_state();
+> > +	touch_softlockup_watchdog();
+> > +	device_power_up();
+> > +	local_irq_enable();
+> > +	return error;
+> > +}
+> 
+> This seems like mostly generic stuff for going between two kernels,
+> no? I'd prefer it not be hooked into hibernation infrastructure.
 
+Yes. In fact, with device_suspend(...), disable_nonboot_cpus() and
+enable_nonboot_cpus(), device_resume(...) around the above two
+functions, the jumping between normal kernel and kexeced kernel can work
+too. Maybe it is more approriate not to hook the kexec into current
+hibernation. It seems that there are no much code shared between them
+except device/CPU state quiescent/save/restore.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Best Regards,
+Huang Ying
