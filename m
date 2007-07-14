@@ -1,17 +1,13 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Sat, 14 Jul 2007 18:55:54 +0800
-Message-ID: <1184410554.1898.84.camel__2880.35830385542$1184410685$gmane$org@caritas-dev.intel.com>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
-	<1184392129.1898.69.camel@caritas-dev.intel.com>
-	<200707141159.47289.rjw@sisk.pl>
+From: Ninette Webber <jysq@voila.fr>
+Subject: However,
+	this also means entity translation is necessary for
+	moving between the layers.
+Date: Sat, 14 Jul 2007 18:08:54 +0200
+Message-ID: <4698F516.5060802@voila.fr>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707141159.47289.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,72 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2007-07-14 at 11:59 +0200, Rafael J. Wysocki wrote:
-> > Hibernating process:
-> > 
-> >   1. Normal kernel running
-> >   2. Hibernating is triggered, sys_kexec_load is used to load
-> >      hibernating kernel and initramfs into memory. Then
-> >      sys_reboot(LINUX_REBOOT_CMD_KSPAWN) is invoked.
-> >   3. In sys_reboot, kexec_jump is called to save device/CPU state,
-> >      then relocate_kernel is called. kexec_jump and relocate_kernel
-> >      reside in individual page in 16M~512M.
-> 
-> OK
-> What's going to happen to devices at this point?
-> 
+SZSN Goes Through The Roof! UP 37.5%
 
-The devices should be quiesced and the state of devices should be saved
-in kexec_jump, before relocate_kernel is called. This needs the
-implementation of device hibernating as you mentioned before.
+Shandong Zhouyuan Seed and Nursery Co., Ltd (SZSN)
+$0.33 UP 37.5%
 
-> >   4. In relocate_kernel, 0~16M is backupped firstly, then the
-> >      hibernating kernel and initramfs is copied to 0~16M, after that,
-> >      the hibernating kernel is booted.
-> >   5. In hibernating kernel, the memory of normal kernel (it is in
-> >      16M~512M) is saved into a hibernation image through /dev/mem
-> >      and ELF header.
-> 
-> I don't think it can be _that_ simple:
-> (a) what about processes' memory
-> (b) what about areas that shouldn't be saved?
+Brokers are grabbing up SZSN like crazy after two news releases this
+week. Huge expansion plus multi-million dollar development projects are
+pushing share prices through the roof. Act fast and get on SZSN first
+thing Monday!
 
-The mem_map (struct page[]) of every zone of hibernated kernel is
-checked.  Necessary pages are saved, like memory snapshot of software
-suspend, but in user space.
+Each layer consists of different software components that are closely
+related to one another. Each layer consists of different software
+components that are closely related to one another. Weitere Infos auf
+der Seite der Deutschen Rheumaliga, zugleich Bildquelle Quelle:
+aerztezeitung. This allows you to navigate the various guidance assets
+made available by each guidance package you're using. Berichtet wurde
+auf dem Kongress von einer Studie von Forschern vom National Center for
+Chronic Disease and Health Promotion in Atlanta.
 
-> > Resume process:
-> > 
-> >   1. Resuming kernel is booted as a normal kernel, but the memory is
-> >      restricted to 0~16M.
-> >   2. Checking whether there is a effective hibernation image. If
-> >      there isn't, the memory of 16M~512M is hot added, and the normal
-> >      boot up process continues; If there is, a resuming process is
-> >      triggered.
-> >   3. sys_kexec_load is used to restore the memory state of hibernated
-> >      kernel. The sys_kexec_load works in crashdump way, that is, the
-> >      hibernation image is copied to destination location in 16M~512M
-> >      in sys_kexec_load instead of relocate_kernel. There is no half
-> >      of memory size restriction.
-> >   4. sys_reboot is called to trigger jumping back, which will jump back
-> >      to kexec_jump of hibernated kernel.
-> >   5. In kexec_jump of hibernated kernel, the memory of 0~16M is copied
-> >      back from the backup area in 16M~512M. The memory state of
-> >      hibernated kernel is restored totally. The CPU and device state
-> >      can be restored after that.
-> 
-> Well, I don't know why this needs to be that complicated.  We already have
-> code in the mainline that's able to load a large hibernation image into memory
-> and jump to the kernel being restored.  And it has _no_ 50% of RAM limitation,
-> this is the _saving_ part of the current code that this limitation comes from.
+Aaron Skonnard is a cofounder of Pluralsight, a Microsoft . This recipe
+gives you support for schema-first design scenarios in your development
+process.
+Mehr Informationen hier.
 
-There is much similarity between sys_kexec_load and software resuming.
-If resuming can be done by sys_kexec_load, then we need not two similar
-functionality in kernel.
+Das Gesundheits-Weblog: Fitness-Training fuers Gesicht? It provides
+guidance that begins with the consumer and continues all the way through
+to the back-end data sources. All rights reserved; reproduction in part
+or in whole without permission is prohibited. Foerderung der Gesundheit
+fuer hyperkinetische Kinder, sog.
+You typically launch recipes by right-clicking on a project and
+selecting the recipe from the Service Factory context menu. Mehr
+Informationen hier. Endlich im Kino - Harry Potter und der. And,
+handily, you can always add more recipes to fulfill your specific needs.
+It provides guidance that begins with the consumer and continues all the
+way through to the back-end data sources.
 
-Best Regards,
-Huang Ying
+The data access logic provides everything you need for interacting with
+the underlying data store while the service agents provide everything
+you need to interact with external Web services.
+
+Das ist, zugegeben, kein streng medizinisches Thema. - beispielsweise
+bei therapeuten.
+
+Worldwide Luxus Raphaels Portrait der Medici erzielt. Geben Sie dazu
+einfach die URL Ihres Lieblingsblogs in Ihren Handybrowser ein. These
+classes operate on the business entities to perform a desired action.
+
+Reach him at pluralsight. You can also export the modified solution
+template so that you can potentially rebuild a customized version of the
+guidance package based on your modified solution.
+
+The generated ASMX class will implement the service contract you defined
+earlier in the recipe. However, in order to do this, the WebMethods must
+first perform a translation between the service contract types and the
+business entity types used in the business logic.
+
+Mehr Informationen hier.
+
+In addition, the Service Factory provides several guidance packages that
+automate many common development tasks. Kroatische Wissenschaftler haben
+das jetzt endlich herausgefunden. There are two flavors of Service
+Factory: one for ASP.
