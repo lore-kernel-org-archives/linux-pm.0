@@ -1,14 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 7/7] Freezer: Use freezing timeout
-	more efficiently
-Date: Sat, 14 Jul 2007 01:43:50 +0200
-Message-ID: <20070713234350.GE15498@elf.ucw.cz>
-References: <200707120006.50095.rjw@sisk.pl> <200707120017.23622.rjw@sisk.pl>
+From: jfannin@gmail.com (Joseph Fannin)
+Subject: Re: Hibernating To Swap Considered Harmful
+Date: Fri, 13 Jul 2007 20:45:17 -0400
+Message-ID: <20070714004517.GA18336__6459.37188896841$1184373991$gmane$org@nineveh.local>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<Pine.LNX.4.64.0707121953440.25614@asgard.lang.hm>
+	<20070713054244.GA20082@nineveh.local>
+	<200707131130.51279.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707120017.23622.rjw@sisk.pl>
+In-Reply-To: <200707131130.51279.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, pm list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <miklos@szeredi.hu>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Joseph Fannin <jfannin@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Fri, Jul 13, 2007 at 11:30:50AM +0200, Rafael J. Wysocki wrote:
+> On Friday, 13 July 2007 07:42, Joseph Fannin wrote:
+> > On Thu, Jul 12, 2007 at 08:06:43PM -0700, david@lang.hm wrote:
+> > > On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
+> >
+> > > > Plus we need to figure out how to avoid corrupting filesystems and
+> > > > swap in use by the "old" kernel and its processes (hint: a separate
+> > > > "hibernation partition" is a no-go).
+> > >
+> > > I thought the existing hibernation wrote to the swap partition as it's
+> > > dedicated space?
+> > >
+> > > I didn't know that anyone was suggesting writing the hibernation image to
+> > > a filesystem that the kernel was activly accessing.
+> >
+> > I'm suggesting a dedicated, preallocated hibernation *file*, right
+> > now.  There's no way around it, if hibernation is to be reliable --
+> > otherwise hibernation can fail if the system has used enough of its
+> > swap space, so that there isn't enough room to write the hibernate
+> > image.
+> >
+> > Even if it's desirable to allow hibernation to fail if the system is
+> > too deep into swap, it's a moot point.
+>
+> If you're afraid of that, use a dedicated swap file.
 
-> There is the problem with try_to_freeze_tasks() that it always loops until the
-> timeout expires, even if it is certain to fail much earlier.  Namely, if there
-> are uninterruptible tasks waiting for some frozen tasks to let them continue,
-> try_to_freeze_tasks() will certainly fail and it shouldn't waste time in that
-> cases.
-> 
-> To detect such situations, we can check if the number of tasks that haven't
-> frozen yet changes between subsequent iterations of the main loop in
-> try_to_freeze_tasks().  If this number hasn't been changing for sufficiently
-> long time (say, 250 ms), then most probably some uninterruptible tasks are
-> blocked by some frozen tasks and we should break out of this stalemate.  Thus,
-> it seems reasonable to thaw the tasks that have already been frozen without
-> clearing the freeze requests of the tasks that are refusing to freeze.  This
-> way, if these tasks are really blocked by the frozen ones, they will get extra
-> chance to freeze themselves after we have thawed the other tasks and before we
-> request those tasks to freeze again.  Next, the freezing loop can be repeated
-> and so on, until all tasks are frozen or the timeout expires.
+    I don't understand what you mean.  A dedicated swap file for what?
 
-I still don't quite like this patch... it is kind of trick we should
-not have to play. Can we at least get confirmation it helps in the
-FUSE case?
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+Joseph Fannin
+jfannin@gmail.com
