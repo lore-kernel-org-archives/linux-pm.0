@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Sat, 14 Jul 2007 21:16:09 +0200
-Message-ID: <200707142116.10237.rjw__32942.9189012901$1184440162$gmane$org@sisk.pl>
+Date: Sat, 14 Jul 2007 22:00:16 +0200
+Message-ID: <200707142200.17515.rjw@sisk.pl>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707141159.47289.rjw@sisk.pl>
-	<1184410554.1898.84.camel@caritas-dev.intel.com>
+	<200707131341.35801.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184410554.1898.84.camel@caritas-dev.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,80 +22,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
+	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 14 July 2007 12:55, Huang, Ying wrote:
-> On Sat, 2007-07-14 at 11:59 +0200, Rafael J. Wysocki wrote:
-> > > Hibernating process:
-> > > 
-> > >   1. Normal kernel running
-> > >   2. Hibernating is triggered, sys_kexec_load is used to load
-> > >      hibernating kernel and initramfs into memory. Then
-> > >      sys_reboot(LINUX_REBOOT_CMD_KSPAWN) is invoked.
-> > >   3. In sys_reboot, kexec_jump is called to save device/CPU state,
-> > >      then relocate_kernel is called. kexec_jump and relocate_kernel
-> > >      reside in individual page in 16M~512M.
-> > 
-> > OK
-> > What's going to happen to devices at this point?
-> > 
+On Saturday, 14 July 2007 09:51, david@lang.hm wrote:
+> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> The devices should be quiesced and the state of devices should be saved
-> in kexec_jump, before relocate_kernel is called. This needs the
-> implementation of device hibernating as you mentioned before.
-
-Hmm, at which point devices are normally shut down when kexec is used?
-
-> > >   4. In relocate_kernel, 0~16M is backupped firstly, then the
-> > >      hibernating kernel and initramfs is copied to 0~16M, after that,
-> > >      the hibernating kernel is booted.
-> > >   5. In hibernating kernel, the memory of normal kernel (it is in
-> > >      16M~512M) is saved into a hibernation image through /dev/mem
-> > >      and ELF header.
-> > 
-> > I don't think it can be _that_ simple:
-> > (a) what about processes' memory
-> > (b) what about areas that shouldn't be saved?
+> >> Ok, now we need a data channel from the old kernel to the hibernate
+> >> kernel, to the restore kernel. and the messier the memory layout the
+> >> larger this data channel needs to be (hmm, what's the status on the memory
+> >> defrag patches being proposed?) if this list can be made small enough it
+> >> would work to just have the old kernel put the data in a known location in
+> >> ram, and let the other two parts find it (in ram for the hibernate kernel,
+> >> in the hibernate image for the wakeup kernel).
+> >
+> > I think the hibernation kernel should mmap() the "old" kernel's (and it's
+> > processes') memory available for saving, so that the image-saving process
+> > can read its contents from the original locations.
 > 
-> The mem_map (struct page[]) of every zone of hibernated kernel is
-> checked.  Necessary pages are saved, like memory snapshot of software
-> suspend, but in user space.
+> but I'll bet that not all kernels keep the info in the same place (and 
+> probably not even in the same format). I'm suggesting that a standard be 
+> defined for the format of the data and the location of a pointer to it 
+> that will be maintained across kernel versions.
 
-Well, it's not enough to check that, sorry.  That's why we have
-register_nosave_region().
+Yes.
 
-> > > Resume process:
-> > > 
-> > >   1. Resuming kernel is booted as a normal kernel, but the memory is
-> > >      restricted to 0~16M.
-> > >   2. Checking whether there is a effective hibernation image. If
-> > >      there isn't, the memory of 16M~512M is hot added, and the normal
-> > >      boot up process continues; If there is, a resuming process is
-> > >      triggered.
-> > >   3. sys_kexec_load is used to restore the memory state of hibernated
-> > >      kernel. The sys_kexec_load works in crashdump way, that is, the
-> > >      hibernation image is copied to destination location in 16M~512M
-> > >      in sys_kexec_load instead of relocate_kernel. There is no half
-> > >      of memory size restriction.
-> > >   4. sys_reboot is called to trigger jumping back, which will jump back
-> > >      to kexec_jump of hibernated kernel.
-> > >   5. In kexec_jump of hibernated kernel, the memory of 0~16M is copied
-> > >      back from the backup area in 16M~512M. The memory state of
-> > >      hibernated kernel is restored totally. The CPU and device state
-> > >      can be restored after that.
-> > 
-> > Well, I don't know why this needs to be that complicated.  We already have
-> > code in the mainline that's able to load a large hibernation image into memory
-> > and jump to the kernel being restored.  And it has _no_ 50% of RAM limitation,
-> > this is the _saving_ part of the current code that this limitation comes from.
+The image-saving kernel needs to have access to the hibernated kernel's
+pages data, plus some additional information that should be passed in a
+standard format.
+
+> >> how do the existing hibernate processes store this?
+> >
+> > There are two approaches.  In the first of them (used in the mainline) we just
+> > create copies of all pages eligible for saving (hence we can't create images
+> > larger than 50% of RAM) atomically and then we save the contents of these
+> > copies (either directly from the kernel or through a user space process).  This
+> > way we don't need to worry that they may be modified before we can save
+> > them.
+> >
+> > The other approach is the Nigel's one, in which all LRU pages are first saved
+> > and then used as additional storage for copying the rest of memory contents.
+> > This has a drawback that we are not 100% sure if the LRU won't be modified
+> > after we've used them to store the copies of the other pages.
 > 
-> There is much similarity between sys_kexec_load and software resuming.
-> If resuming can be done by sys_kexec_load, then we need not two similar
-> functionality in kernel.
+> and since both current approaches use the same kernel for everything the 
+> issues I'm thinking of simply don't apply.
+> 
+> >> since people are complaining about the amount of ram that a kexec kernel
+> >> would take up I'm assuiming it's somethingmore complex then just a bitmap
+> >> of all possible pages.
+> >
+> > No, it's just bitmaps, AFAICS, and the complaints are a bit overstated, IMO. ;-)
+> 
+> 1 bit for each 4k means 1m bits for 4g of ram, or 128k of bitmaps, growing 
+> up to 1m of ram used for 32G of ram in the system. I guess this isn't bad 
+> as long as it doesn't need to be contiguous for the new kernel to access 
+> it.
+> 
+> ok, that makes it a pretty trivial thing to work with. I just need to 
+> learn how to find the bitmaps.
 
-Oh, I see, but your proposed solution seems to be more complicated than that.
+They are created on the fly before the hibernation.  The format is described in
+kernel/power/snapshot.c .
+
+> >> most of the conversation so far has been around the process of makeing the
+> >> snapshot and storing it. what are the processes and tools available to
+> >> restore images?
+> >
+> > We have quite an efficient restoration code in the kernel right now.  It's
+> > able to upload big images (something like total RAM minus the size of the
+> > boot kernel, initrd and, optionally, the resume application), which is much
+> > more than we're able to save. :-)
+> >
+> > It can work with images uploaded via /dev/snapshot from the user space
+> > (specific image format is required, but that can be changed easily).
+> 
+> Ok, so it sounds as if the restore is basicly a solved problem, great!
+> 
+> so now I want to do a but-ugly hibernate configuration.
+> 
+> while I haven't done it yet I am very confident that I can enable kexec 
+> and create a kernel and filesystem to boot into. I can then use perl to 
+> get the bitmaps out of kmem (once I learn how to find them), and then can 
+> read from kmem to a file to save the 4k chunks that I need to a file.
+> 
+> it'll be ugly and use lots of partitions, but it should end up being solid 
+> from what I am understanding.
+> 
+> where can I learn how to find the bitmaps and what format things need to 
+> be in to feed into /dev/snapshot?
+
+Well, see above.
+
+BTW, please read this message and tell me what you think:
+
+http://lkml.org/lkml/2007/7/13/265
 
 Greetings,
 Rafael
