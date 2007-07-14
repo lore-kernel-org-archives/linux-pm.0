@@ -1,17 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Sat, 14 Jul 2007 11:24:56 +0200
-Message-ID: <200707141124.57935.rjw__44243.1694166318$1184404883$gmane$org@sisk.pl>
+Subject: Re: Hibernating To Swap Considered Harmful
+Date: Sat, 14 Jul 2007 11:48:17 +0200
+Message-ID: <200707141148.18279.rjw__876.894387374882$1184406182$gmane$org@sisk.pl>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
-	<Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
+	<200707131130.51279.rjw@sisk.pl>
+	<20070714004517.GA18336@nineveh.local>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707140128210.25614@asgard.lang.hm>
+In-Reply-To: <20070714004517.GA18336@nineveh.local>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,36 +21,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Joseph Fannin <jfannin@gmail.com>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 14 July 2007 10:33, david@lang.hm wrote:
-> by the way, a data point on kernel sizes
+On Saturday, 14 July 2007 02:45, Joseph Fannin wrote:
+> On Fri, Jul 13, 2007 at 11:30:50AM +0200, Rafael J. Wysocki wrote:
+> > On Friday, 13 July 2007 07:42, Joseph Fannin wrote:
+> > > On Thu, Jul 12, 2007 at 08:06:43PM -0700, david@lang.hm wrote:
+> > > > On Thu, 12 Jul 2007, Rafael J. Wysocki wrote:
+> > >
+> > > > > Plus we need to figure out how to avoid corrupting filesystems and
+> > > > > swap in use by the "old" kernel and its processes (hint: a separate
+> > > > > "hibernation partition" is a no-go).
+> > > >
+> > > > I thought the existing hibernation wrote to the swap partition as it's
+> > > > dedicated space?
+> > > >
+> > > > I didn't know that anyone was suggesting writing the hibernation image to
+> > > > a filesystem that the kernel was activly accessing.
+> > >
+> > > I'm suggesting a dedicated, preallocated hibernation *file*, right
+> > > now.  There's no way around it, if hibernation is to be reliable --
+> > > otherwise hibernation can fail if the system has used enough of its
+> > > swap space, so that there isn't enough room to write the hibernate
+> > > image.
+> > >
+> > > Even if it's desirable to allow hibernation to fail if the system is
+> > > too deep into swap, it's a moot point.
+> >
+> > If you're afraid of that, use a dedicated swap file.
 > 
-> -rw-r--r-- 1 root root  864648 Jul 14 00:53 vmlinuz.2.6.22.1.hibernate
-> -rw-r--r-- 1 root root  659496 Jul 14 01:17 vmlinuz.2.6.22.1.hibernate.stripped
-> -rw-r--r-- 1 root root 3948168 Jul 14 01:10 vmlinuz.2.6.22.1.running
-> 
-> the running one matches the config I'm running on my home server, the 
-> hibernate is a pretty stripped down version, and the stripped is close to 
-> a minimum (including turning off printk and BUG()). All three are with all 
-> drivers built-in, no module support.
-> 
-> this is on a amd64 64 bit system
-> 
-> configs are available if anyone cares, the point is how much smaller a 
-> kernel could be if it doesn't need all the stuff that you put in your main 
-> kernel. In my case this includes not enabling the 3-ware card that holds 
-> my 12-disk raid array, instead the hibernate image would be stored on one 
-> of the scsi drives attached to the adaptec 78xx card.
-> 
-> I expect that on a normal desktop/laptop with more features (like sound) 
-> the savings could be even more significant
+>     I don't understand what you mean.  A dedicated swap file for what?
 
-But the kernel needs some data to work too (a 'struct page' for each memory
-page etc.).
+Sorry, I should have been more precise.
+
+For hibernation (ie. a swap file that you activate right befor the
+hibernation).
+
+Also tuxonice (formerly known as suspend2) allows you to use regular files
+hibernation.
 
 Greetings,
 Rafael
