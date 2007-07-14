@@ -1,18 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: david@lang.hm
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Sat, 14 Jul 2007 22:00:16 +0200
-Message-ID: <200707142200.17515.rjw@sisk.pl>
+Date: Sat, 14 Jul 2007 13:34:23 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707141257290.14672__14539.8734057837$1184445653$gmane$org@asgard.lang.hm>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
 	<200707131341.35801.rjw@sisk.pl>
 	<Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
+	<200707142200.17515.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
-Content-Disposition: inline
+In-Reply-To: <200707142200.17515.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,107 +20,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
 	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 14 July 2007 09:51, david@lang.hm wrote:
-> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
-> 
-> >> Ok, now we need a data channel from the old kernel to the hibernate
-> >> kernel, to the restore kernel. and the messier the memory layout the
-> >> larger this data channel needs to be (hmm, what's the status on the memory
-> >> defrag patches being proposed?) if this list can be made small enough it
-> >> would work to just have the old kernel put the data in a known location in
-> >> ram, and let the other two parts find it (in ram for the hibernate kernel,
-> >> in the hibernate image for the wakeup kernel).
-> >
-> > I think the hibernation kernel should mmap() the "old" kernel's (and it's
-> > processes') memory available for saving, so that the image-saving process
-> > can read its contents from the original locations.
-> 
-> but I'll bet that not all kernels keep the info in the same place (and 
-> probably not even in the same format). I'm suggesting that a standard be 
-> defined for the format of the data and the location of a pointer to it 
-> that will be maintained across kernel versions.
+in the past, Rafael J. Wysocki wrote:
 
-Yes.
+> BTW, please read this message and tell me what you think:
+>
+> http://lkml.org/lkml/2007/7/13/265
+>
+> Greetings,
+> Rafael
+>
+>
+>
 
-The image-saving kernel needs to have access to the hibernated kernel's
-pages data, plus some additional information that should be passed in a
-standard format.
+since I've deleted this message here's the relavent portion of it
 
-> >> how do the existing hibernate processes store this?
-> >
-> > There are two approaches.  In the first of them (used in the mainline) we just
-> > create copies of all pages eligible for saving (hence we can't create images
-> > larger than 50% of RAM) atomically and then we save the contents of these
-> > copies (either directly from the kernel or through a user space process).  This
-> > way we don't need to worry that they may be modified before we can save
-> > them.
-> >
-> > The other approach is the Nigel's one, in which all LRU pages are first saved
-> > and then used as additional storage for copying the rest of memory contents.
-> > This has a drawback that we are not 100% sure if the LRU won't be modified
-> > after we've used them to store the copies of the other pages.
-> 
-> and since both current approaches use the same kernel for everything the 
-> issues I'm thinking of simply don't apply.
-> 
-> >> since people are complaining about the amount of ram that a kexec kernel
-> >> would take up I'm assuiming it's somethingmore complex then just a bitmap
-> >> of all possible pages.
-> >
-> > No, it's just bitmaps, AFAICS, and the complaints are a bit overstated, IMO. ;-)
-> 
-> 1 bit for each 4k means 1m bits for 4g of ram, or 128k of bitmaps, growing 
-> up to 1m of ram used for 32G of ram in the system. I guess this isn't bad 
-> as long as it doesn't need to be contiguous for the new kernel to access 
-> it.
-> 
-> ok, that makes it a pretty trivial thing to work with. I just need to 
-> learn how to find the bitmaps.
+>Okay, I have thought it through and I think that, as an initial step, we
+>can do something like this:
+>
+>- preload the image-saving kernel before hibernation
+>- in the hibernation code path replace device_suspend() with the shutting 
+>down of all devices without unregistering them (not very nice, but should be 
+>sufficient for a while)
+>- when we've called device_power_down() and save_processor_state(), jump 
+>to the image-saving kernel and let it run
+>- make the image-saving kernel set up everything, save the image without
+>  starting any user space (we may use the existing image-saving code for 
+>this purpose, with some modifications) and power off the system (or make it 
+>enter S4)
+>- use the existing restoration code to load the image and jump to the
+>  hibernated kernel
+>- in the restore code patch replace device_resume() with the reprobing of 
+>all devices.
+>
+>Comments?
 
-They are created on the fly before the hibernation.  The format is described in
-kernel/power/snapshot.c .
+I think this is far more complicated then it needs to be.
 
-> >> most of the conversation so far has been around the process of makeing the
-> >> snapshot and storing it. what are the processes and tools available to
-> >> restore images?
-> >
-> > We have quite an efficient restoration code in the kernel right now.  It's
-> > able to upload big images (something like total RAM minus the size of the
-> > boot kernel, initrd and, optionally, the resume application), which is much
-> > more than we're able to save. :-)
-> >
-> > It can work with images uploaded via /dev/snapshot from the user space
-> > (specific image format is required, but that can be changed easily).
-> 
-> Ok, so it sounds as if the restore is basicly a solved problem, great!
-> 
-> so now I want to do a but-ugly hibernate configuration.
-> 
-> while I haven't done it yet I am very confident that I can enable kexec 
-> and create a kernel and filesystem to boot into. I can then use perl to 
-> get the bitmaps out of kmem (once I learn how to find them), and then can 
-> read from kmem to a file to save the 4k chunks that I need to a file.
-> 
-> it'll be ugly and use lots of partitions, but it should end up being solid 
-> from what I am understanding.
-> 
-> where can I learn how to find the bitmaps and what format things need to 
-> be in to feed into /dev/snapshot?
+it sounds like it should be possible to do the following
 
-Well, see above.
+1. figure out what pages should be backed up (creating a data structure to 
+hold them)
 
-BTW, please read this message and tell me what you think:
+2. kexec into the hibernate kernel (this step handles all device 
+transitions today)
 
-http://lkml.org/lkml/2007/7/13/265
+3. have the hibernate userspace find the data structures created in step 
+#1
 
-Greetings,
-Rafael
+4. have the hibernate userspace write the pages somewhere in the suspend 
+format.
 
+5. have the hibernate kernel power down the box.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+the only things here that sounds like they're not available in stock 
+kernels are steps #1 and #3.
+
+now this won't do the fancier suspend-to-ram-and-disk and it won't let you 
+go back from the hibernate kernel to the main kernel, but it should be 
+enough to let you do the suspend safely and reliably.
+
+for the restore, as I understand it the process is
+
+1. boot a kernel, any working kernel.
+
+2. read the suspend formatted data from wherever it was saved and feed it 
+to /dev/suspend
+
+David Lang
