@@ -1,19 +1,16 @@
-From: "Huang, Ying" <ying.huang@intel.com>
+From: david@lang.hm
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Sat, 14 Jul 2007 13:48:49 +0800
-Message-ID: <1184392129.1898.69.camel__25514.4355971881$1184392376$gmane$org@caritas-dev.intel.com>
+Date: Sat, 14 Jul 2007 00:12:04 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707140008130.25614@asgard.lang.hm>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<20070711172243.ab44c4d4.akpm@linux-foundation.org>
-	<1184251423.9346.55.camel@caritas-dev.intel.com>
-	<m14pk9fuqa.fsf@ebiederm.dsl.xmission.com>
-	<1184368525.1069.68.camel@caritas-dev.intel.com>
-	<m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
+	<200707131129.34974.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707130227310.25614@asgard.lang.hm>
+	<200707131359.53309.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m1k5t4dzl4.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <200707131359.53309.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,90 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
+	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2007-07-13 at 10:43 -0600, Eric W. Biederman wrote:
-> > Why a assembly stub is necessary? Is it not sufficient that just
-> > continue to complete a normal boot (hot add the reset of memory) or load
-> > the hibernated kernel (hibernated image) and jump to it?
-> 
-> I was thinking the assembly stub would be the small piece that jumps
-> to loaded hibernated kernel.  Quite possibly we could just get away
-> with providing no memory and just an entry point to kexec but it
-> makes sense to me to plan on running a couple of instructions.
+On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
 
-Oh, I got it. In my patch, there is such assembly stub in
-arch/i386/kernel/kexec_jump.S. I think it is needed to restore basic CPU
-state and accommodate some position independent restore code (such as
-memory restore code).
+>> remember release early, release often (with something that functions)
+>>
+>>>> fo rthe current stage where we are trying to make things work don't worry
+>>>> about packaging everything tight with initrd and re-useing partitions or
+>>>> kernel images. once everything is working reliably then it's time to look
+>>>> at useing the same kernel for multiple functions, writing to a partition
+>>>> that's i use for other things, etc
+>>>
+>>> I don't agree.  You need to think of many limitations in advance, because
+>>> they need to be taken into consideration in the design.
+>>>
+>>> Otherwise we'll end up with something that will need to be bandaided like the
+>>> freezer. :-)
+>>
+>> on the other hand, worrying about all the possible ways to do things can
+>> paralize you.
+>>
+>> the big advantage of the kexec approach is that the new userspace that's
+>> setup with the new kernel can do _anything_.
+>
+> No, it can't.  For example, it can't access filesystems mounted by the
+> hibernated kernel, or they may get corrupted after the restore (if they are
+> journaling, it can't even read from them).
 
-> Actually the way the kexec infrastructure it might be reasonable to
-> just use sys_kexec_load to load the entire hibernated image.  Except
-> for the fact that sys_kexec_load requires the source pages to be
-> in the processes memory image the code shouldn't have the 50% of
-> memory limitation already.
-> 
-> If we can get that going we don't even need to restrict the first
-> kernels memory.  So it might just require teaching sys_kexec_load
-> how to steal process pages.  Anyway something to think about.
+it's only ext3 that has this bug when mounting a fileystem read-only 
+AFAIK.
 
-As for memory backupping and restoring during hibernating and resuming,
-I think a possible picture can be as follow:
+> Which reminds me of one more issue, which is that the image-saving kernel
+> won't be able to use these filesystems either, so its modules and user space
+> will have to be available from somewhere else (like a RAM disk or dedicated
+> partition).  So things get ugly.
 
-Memory:
+another reason to go ahead and make a dedicated no-module kernel for the 
+hibernate phase ;-)
 
-  Total memory: 512M
-  Memory used by hibernating/resuming kernel: 0~16M
+> Apart from this, the new kernel's user space cannot blindly modify swap space
+> that might be in use by the hibernated kernel.
 
+with swap space you have two options
 
-Hibernating process:
+1. free it up (to a swap file if needed) and don't worry about it
 
-  1. Normal kernel running
-  2. Hibernating is triggered, sys_kexec_load is used to load
-     hibernating kernel and initramfs into memory. Then
-     sys_reboot(LINUX_REBOOT_CMD_KSPAWN) is invoked.
-  3. In sys_reboot, kexec_jump is called to save device/CPU state,
-     then relocate_kernel is called. kexec_jump and relocate_kernel
-     reside in individual page in 16M~512M.
-  4. In relocate_kernel, 0~16M is backupped firstly, then the
-     hibernating kernel and initramfs is copied to 0~16M, after that,
-     the hibernating kernel is booted.
-  5. In hibernating kernel, the memory of normal kernel (it is in
-     16M~512M) is saved into a hibernation image through /dev/mem
-     and ELF header.
+2. try and ensure that nothing else on the system attempts to use the swap 
+partition until you reboot.
 
+#2 is failure prone, #1 would be more reliable.
 
-Resume process:
-
-  1. Resuming kernel is booted as a normal kernel, but the memory is
-     restricted to 0~16M.
-  2. Checking whether there is a effective hibernation image. If
-     there isn't, the memory of 16M~512M is hot added, and the normal
-     boot up process continues; If there is, a resuming process is
-     triggered.
-  3. sys_kexec_load is used to restore the memory state of hibernated
-     kernel. The sys_kexec_load works in crashdump way, that is, the
-     hibernation image is copied to destination location in 16M~512M
-     in sys_kexec_load instead of relocate_kernel. There is no half
-     of memory size restriction.
-  4. sys_reboot is called to trigger jumping back, which will jump back
-     to kexec_jump of hibernated kernel.
-  5. In kexec_jump of hibernated kernel, the memory of 0~16M is copied
-     back from the backup area in 16M~512M. The memory state of
-     hibernated kernel is restored totally. The CPU and device state
-     can be restored after that.
-
-
-If there is too much difficulty to hot add memory in step 2. A more
-conservative method can be used as step 1 and step 2.
-
-  1. A normal kernel is booted.
-  2. Checking whether there is a effective hibernation image. If there
-     isn't, continue the normal boot process; otherwise, a resuming
-     kernel is kexeced in memory 0~16M. The resuming process will
-     continue in kexeced resuming kernel.
-
-Best Regards,
-Huang Ying
+David Lang
