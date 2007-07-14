@@ -1,17 +1,17 @@
-From: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Sat, 14 Jul 2007 01:33:54 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707140128210.25614__6455.80514469675$1184402459$gmane$org@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707131117.38426.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707130211570.25614@asgard.lang.hm>
-	<200707131341.35801.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 7/7] Freezer: Use freezing timeout
+	more efficiently
+Date: Sat, 14 Jul 2007 11:20:06 +0200
+Message-ID: <200707141120.07101.rjw@sisk.pl>
+References: <200707120006.50095.rjw@sisk.pl> <200707120017.23622.rjw@sisk.pl>
+	<20070713234350.GE15498@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707140017560.25614@asgard.lang.hm>
+In-Reply-To: <20070713234350.GE15498@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +21,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, pm list <linux-pm@lists.linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-by the way, a data point on kernel sizes
+On Saturday, 14 July 2007 01:43, Pavel Machek wrote:
+> Hi!
+> 
+> > There is the problem with try_to_freeze_tasks() that it always loops until the
+> > timeout expires, even if it is certain to fail much earlier.  Namely, if there
+> > are uninterruptible tasks waiting for some frozen tasks to let them continue,
+> > try_to_freeze_tasks() will certainly fail and it shouldn't waste time in that
+> > cases.
+> > 
+> > To detect such situations, we can check if the number of tasks that haven't
+> > frozen yet changes between subsequent iterations of the main loop in
+> > try_to_freeze_tasks().  If this number hasn't been changing for sufficiently
+> > long time (say, 250 ms), then most probably some uninterruptible tasks are
+> > blocked by some frozen tasks and we should break out of this stalemate.  Thus,
+> > it seems reasonable to thaw the tasks that have already been frozen without
+> > clearing the freeze requests of the tasks that are refusing to freeze.  This
+> > way, if these tasks are really blocked by the frozen ones, they will get extra
+> > chance to freeze themselves after we have thawed the other tasks and before we
+> > request those tasks to freeze again.  Next, the freezing loop can be repeated
+> > and so on, until all tasks are frozen or the timeout expires.
+> 
+> I still don't quite like this patch... it is kind of trick we should
+> not have to play. Can we at least get confirmation it helps in the
+> FUSE case?
 
--rw-r--r-- 1 root root  864648 Jul 14 00:53 vmlinuz.2.6.22.1.hibernate
--rw-r--r-- 1 root root  659496 Jul 14 01:17 vmlinuz.2.6.22.1.hibernate.stripped
--rw-r--r-- 1 root root 3948168 Jul 14 01:10 vmlinuz.2.6.22.1.running
+Well, anyone having problems with FUSE vs the freezer please check. :-)
 
-the running one matches the config I'm running on my home server, the 
-hibernate is a pretty stripped down version, and the stripped is close to 
-a minimum (including turning off printk and BUG()). All three are with all 
-drivers built-in, no module support.
+I think I'll send the series to Andrew without this patch.  Would that be OK?
 
-this is on a amd64 64 bit system
+Greetings,
+Rafael
 
-configs are available if anyone cares, the point is how much smaller a 
-kernel could be if it doesn't need all the stuff that you put in your main 
-kernel. In my case this includes not enabling the 3-ware card that holds 
-my 12-disk raid array, instead the hibernate image would be stored on one 
-of the scsi drives attached to the adaptec 78xx card.
 
-I expect that on a normal desktop/laptop with more features (like sound) 
-the savings could be even more significant
-
-David Lang
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
