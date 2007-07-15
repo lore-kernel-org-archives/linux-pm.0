@@ -1,12 +1,14 @@
 From: david@lang.hm
 Subject: Re: Hibernation considerations
-Date: Sun, 15 Jul 2007 16:41:17 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707151633240.25614__4681.78228843517$1184543381$gmane$org@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
+Date: Sun, 15 Jul 2007 16:49:55 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707151644270.25614@asgard.lang.hm>
+References: <200707151433.34625.rjw@sisk.pl> <200707160047.28420.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707151538130.25614@asgard.lang.hm>
+	<200707160122.09840.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
+In-Reply-To: <200707160122.09840.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,14 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 15 Jul 2007, Alan Stern wrote:
+On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
 
-> On Sun, 15 Jul 2007 david@lang.hm wrote:
->
+> On Monday, 16 July 2007 00:42, david@lang.hm wrote:
+>> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+>>
+>>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
+>>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+>>>>
+>>>>>    The ACPI specification requires us to invoke some global ACPI methods
+>>>>>    during the hibernation and during the restore.  Moreover, the ordering of
+>>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
+>>>>>    them have to be executed after devices are put into low power states etc.).
+>>>>
 >>>> for a pure hibernate mode, you will be powering off the box after saving
 >>>> the suspend image. why are there any special ACPI modes involved?
 >>>
@@ -34,40 +45,27 @@ On Sun, 15 Jul 2007, Alan Stern wrote:
 >>
 >> so if a machine is actually powered off the /dev/suspend process won't
 >> work?
->>
+>
+> No, it sort of works as usual, but after the restore the platform is not in the
+> correct state.
+
+this is not hibernate as I and many others are thinking of it.
+
+hibernate as we are thinking would work on basicly any hardware, including 
+things with no ACPI or power savings support. and the system could be in 
+hibernate mode for any time period.
+
+for that matter, after a system is put into hibernate mode the system 
+could be completely disassembled and any components replaced and the 
+system would work after a resume (assuming you still have access to the 
+suspend image)
+
 >> remember that the system may run a different OS between the hibernate and
 >> the resume, makeing any assumptions about what state the hardware is in
 >> when you start the resume is a problem.
 >
-> As I understand it, running a different OS between the hibernate and
-> the resume would violate the ACPI spec.
+> True, that's problematic.
 
-then we need a third mode of operation.
-
-mode 1: Suspend-to-ram
-
-   the system is paused and put into a low-power mode but data remains in 
-memory and the system stays awake enough to keep the memory refreshed.
-
-mode 2: new
-
-   the system is paused, data is stored to permanent media, and the system 
-is put into a ultra-low power mode.
-
-mode 3: hibernate
-
-   the system is paused, data is stored to permanent media, and the system 
-is powered off
-
-with mode 3 there are no requirements or limitations about what can be 
-done with the hardware before a resume (the resume could even take place 
-on a different piece of identical hardware)
-
-mode 2 could be what you are talking about doing, although I don't see any 
-advantage of creating it in additon to mode 3, it doesn't use any less 
-power and it locks the system so that it can't be used for anything else 
-in the meantime. I guess if it was significantly faster to do then mode 3 
-there may be _some_ reason to consider it, but I don't see the speed 
-difference.
+putting it mildly.
 
 David Lang
