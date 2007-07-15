@@ -1,16 +1,12 @@
 From: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Sun, 15 Jul 2007 12:33:58 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707151224160.25614__12201.3581487865$1184528517$gmane$org@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707142200.17515.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707141413330.14672@asgard.lang.hm>
-	<200707151239.28400.rjw@sisk.pl>
+Subject: Re: Hibernation considerations
+Date: Sun, 15 Jul 2007 12:46:53 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707151240380.25614@asgard.lang.hm>
+References: <200707151433.34625.rjw@sisk.pl> <469A8515.3080109@gmx.de>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707151239.28400.rjw@sisk.pl>
+In-Reply-To: <469A8515.3080109@gmx.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,97 +16,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Cornelius Riemenschneider <c.r1@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+On Sun, 15 Jul 2007, Cornelius Riemenschneider wrote:
 
-> On Saturday, 14 July 2007 23:34, david@lang.hm wrote:
->> On Sat, 14 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> On Saturday, 14 July 2007 09:51, david@lang.hm wrote:
->>>> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
->>>>
->>>>>> Ok, now we need a data channel from the old kernel to the hibernate
->>>>>> kernel, to the restore kernel. and the messier the memory layout the
->>>>>> larger this data channel needs to be (hmm, what's the status on the memory
->>>>>> defrag patches being proposed?) if this list can be made small enough it
->>>>>> would work to just have the old kernel put the data in a known location in
->>>>>> ram, and let the other two parts find it (in ram for the hibernate kernel,
->>>>>> in the hibernate image for the wakeup kernel).
->>>>>
->>>>> I think the hibernation kernel should mmap() the "old" kernel's (and it's
->>>>> processes') memory available for saving, so that the image-saving process
->>>>> can read its contents from the original locations.
->>>>
->>>> but I'll bet that not all kernels keep the info in the same place (and
->>>> probably not even in the same format). I'm suggesting that a standard be
->>>> defined for the format of the data and the location of a pointer to it
->>>> that will be maintained across kernel versions.
->>>
->>> Yes.
->>>
->>> The image-saving kernel needs to have access to the hibernated kernel's
->>> pages data, plus some additional information that should be passed in a
->>> standard format.
->>
->> but per stable-abi-nonsense the internal structure of the kernel's pages
->> data isn't an abi. so instead of figuring this out by pokeing around in
->> the memory of the old kernel and deciding what should be saved and what
->> shouldn't, the old kernel (which understands the memory structure) should
->> create a simple map of what should be backed up (either a bitmap or an
->> extent-style map, depending on how many holes there are expected to be)
->> and then provide that map to the new kernel. the new kernel (or more
->> precisely it's userspace) reads the pages it's told to read and writes
->> them somewhere.
+> Hi,
+> I think a (10) is needed to be clear:
 >
-> That's reasonable, but the "old" kernel can only do this after handling the
-> shut down/quiescing of devices, when there is 100% guarantee that the memory
-> contents will not change.
-
-Ok, that makes sense. and since part of what's being passed along here is 
-what ram is free as far as the outgoing kernel is concerned, this is 
-useful info for the new kernel for other situations, not just for the 
-hibernate operation, so this is probably a reasonable modification to the 
-kexec call in any case (although a crash-dump kernel may decide not to 
-trust this info and save everything, it's still useful to know what the 
-outgoing kernel considers free)
-
->>>>>> since people are complaining about the amount of ram that a kexec kernel
->>>>>> would take up I'm assuiming it's somethingmore complex then just a bitmap
->>>>>> of all possible pages.
->>>>>
->>>>> No, it's just bitmaps, AFAICS, and the complaints are a bit overstated, IMO. ;-)
->>>>
->>>> 1 bit for each 4k means 1m bits for 4g of ram, or 128k of bitmaps, growing
->>>> up to 1m of ram used for 32G of ram in the system. I guess this isn't bad
->>>> as long as it doesn't need to be contiguous for the new kernel to access
->>>> it.
->>>>
->>>> ok, that makes it a pretty trivial thing to work with. I just need to
->>>> learn how to find the bitmaps.
->>>
->>> They are created on the fly before the hibernation.  The format is described in
->>> kernel/power/snapshot.c .
->>
->> I'll look through this file, but the format of this is an abi/api to the
->> userspace and should be documented outside of the code.
+> (10) This depends directly on (9)
+> Easy Userinterface for the average user, no one wants to edit several
+> files and use a long commandline for a suspend (not all know about
+> alias(P)), so keeping the effort to suspend your system low, please.(eg
+> for my TuxOnIce i just type hibernate as root/ sudo hibernate as normal
+> user and the suspend begin, the rest is automatically done by the
+> configuration(for me this is shutting down my wireless interface)
 >
-> Nope.  The user space need not know anything about the image contents.
->
-> The current implementation of the user space tools use the knowledge of the
-> image header format, which is given by 'struct swsusp_info', defined in
-> kernel/power/power.h .
+> Cornelius Riemenschneider
 
-there are a couple factors here.
+for both #9 and #10, if there are complex command lines that need to be 
+used, they can be put into scripts (including things like 'sudo 
+hibernate')
 
-1. this needs to remain the same across different kernel versions.
+this doesn't prevent people from useing kernel.org kernels, in fact the 
+seperate between the main system and what's used for hibernation may make 
+it easier to change the main kernel (all that you would need is to enable 
+kexec in your main kernel and 'everything else would just work')
 
-2. this may or may not be created by userspace tools
+now if you need/want to change out your hibernate kernel you will have to 
+change the hibernate scripts to tell them to use the new kernel. yes this 
+is an extra step, but it can still be simple. for that matter, it may be 
+possible for the distros to agree enough to add 'make install_hibernate' 
+to the kernel makefiles like they have 'make install' that will just 'do 
+the right thing' for each particular distro.
 
-both of these tend to imply that this is an interface to the world and 
-needs to be documented and stable.
+makeing things explicit and flexible may require complex command lines to 
+implement, but nothing says that the user (even a moderatly advanced user) 
+needs to deal with those command lines directly.
 
 David Lang
