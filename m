@@ -1,16 +1,12 @@
 From: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Sun, 15 Jul 2007 16:33:02 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707151627270.25614__41839.8064830855$1184542894$gmane$org@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707151239.28400.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707151224160.25614@asgard.lang.hm>
-	<200707160111.16805.rjw@sisk.pl>
+Subject: Re: Hibernation considerations
+Date: Sun, 15 Jul 2007 16:41:17 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707151633240.25614__4681.78228843517$1184543381$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707160111.16805.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0707151914450.28934-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,84 +16,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On Sun, 15 Jul 2007, Alan Stern wrote:
 
-> On Sunday, 15 July 2007 21:33, david@lang.hm wrote:
->> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> On Saturday, 14 July 2007 23:34, david@lang.hm wrote:
->>>> On Sat, 14 Jul 2007, Rafael J. Wysocki wrote:
->>>>
->>>>> On Saturday, 14 July 2007 09:51, david@lang.hm wrote:
->>>>>> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
->>>>>>
->>>>>>>> since people are complaining about the amount of ram that a kexec kernel
->>>>>>>> would take up I'm assuiming it's somethingmore complex then just a bitmap
->>>>>>>> of all possible pages.
->>>>>>>
->>>>>>> No, it's just bitmaps, AFAICS, and the complaints are a bit overstated, IMO. ;-)
->>>>>>
->>>>>> 1 bit for each 4k means 1m bits for 4g of ram, or 128k of bitmaps, growing
->>>>>> up to 1m of ram used for 32G of ram in the system. I guess this isn't bad
->>>>>> as long as it doesn't need to be contiguous for the new kernel to access
->>>>>> it.
->>>>>>
->>>>>> ok, that makes it a pretty trivial thing to work with. I just need to
->>>>>> learn how to find the bitmaps.
->>>>>
->>>>> They are created on the fly before the hibernation.  The format is described in
->>>>> kernel/power/snapshot.c .
->>>>
->>>> I'll look through this file, but the format of this is an abi/api to the
->>>> userspace and should be documented outside of the code.
+> On Sun, 15 Jul 2007 david@lang.hm wrote:
+>
+>>>> for a pure hibernate mode, you will be powering off the box after saving
+>>>> the suspend image. why are there any special ACPI modes involved?
 >>>
->>> Nope.  The user space need not know anything about the image contents.
->>>
->>> The current implementation of the user space tools use the knowledge of the
->>> image header format, which is given by 'struct swsusp_info', defined in
->>> kernel/power/power.h .
+>>> Because, for example, on my machine the status of power supply (present
+>>> vs not present) is not updated correctly after the restore if ACPI callbacks
+>>> aren't used during the hibernation.  That's just experience and it's in line
+>>> with the ACPI spec.
 >>
->> there are a couple factors here.
+>> so if a machine is actually powered off the /dev/suspend process won't
+>> work?
 >>
->> 1. this needs to remain the same across different kernel versions.
+>> remember that the system may run a different OS between the hibernate and
+>> the resume, makeing any assumptions about what state the hardware is in
+>> when you start the resume is a problem.
 >
-> Not exactly.  Whatever is after the image header may change at any time and
-> the user space should not rely on that not changing.  The header itself is a
-> (slightly) different matter.
+> As I understand it, running a different OS between the hibernate and
+> the resume would violate the ACPI spec.
 
-ok, more precisely
+then we need a third mode of operation.
 
-an image of one kernel version should be able to be fed into /dev/snapshot 
-of another kernel version and work.
+mode 1: Suspend-to-ram
 
-that's what I was meaning about it needing to be the same across different 
-kernel versions
+   the system is paused and put into a low-power mode but data remains in 
+memory and the system stays awake enough to keep the memory refreshed.
 
->> 2. this may or may not be created by userspace tools
->
-> Well, the image header is not created by userspace tools and only read the
-> image size from it.
+mode 2: new
 
-it's not today, but maby it should be.
+   the system is paused, data is stored to permanent media, and the system 
+is put into a ultra-low power mode.
 
-in the kexec approach there's nothing happening here that a perl script 
-couldn't do perfectly well. it's reading a bitmap from somewhere, and 
-based on that bitmap it creates a header and then reads chunks from 
-/dev/oldmem or /dev/mem and writes the results somewhere (to a device, or 
-a network or a userspace compress program, or ...)
+mode 3: hibernate
 
->> both of these tend to imply that this is an interface to the world and
->> needs to be documented and stable.
->
-> Well, it should be documented, but currently there's only one implementation
-> of the userland tools and the authors of these know the format. ;-)
+   the system is paused, data is stored to permanent media, and the system 
+is powered off
 
-true today, but as the pieces get simplified and documented other 
-implementations could exist.
+with mode 3 there are no requirements or limitations about what can be 
+done with the hardware before a resume (the resume could even take place 
+on a different piece of identical hardware)
+
+mode 2 could be what you are talking about doing, although I don't see any 
+advantage of creating it in additon to mode 3, it doesn't use any less 
+power and it locks the system so that it can't be used for anything else 
+in the meantime. I guess if it was significantly faster to do then mode 3 
+there may be _some_ reason to consider it, but I don't see the speed 
+difference.
 
 David Lang
