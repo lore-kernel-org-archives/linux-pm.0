@@ -1,10 +1,13 @@
-From: "Ian Torres" <totegames.com@eroticstockphoto.com>
-Subject: Beware of fake pills
-Date: ¿œ, 15 7 2007 20:43:31 +0900
-Message-ID: <000401c7c6d5$11a97380$0100007f@iqcexk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Hibernation considerations
+Date: Sun, 15 Jul 2007 14:33:32 +0200
+Message-ID: <200707151433.34625.rjw__25698.1922816069$1184502653$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1184499797-3969-105"
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,412 +17,113 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: david@lang.hm, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+Hi,
 
-------------=_1184499797-3969-105
-Message-ID: <000401c7c6d5$11a97380$0100007f@iqcexk>
-Date: ¿œ, 15 7 2007 20:43:31 +0900
-From: "Ian Torres" <totegames.com@eroticstockphoto.com>
-To: <linux-pm@osdl.org>
-Subject: Beware of fake pills
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	boundary="----=_NextPart_000_0050_01C7C6D5.11A97380"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2180
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+Since many alternative approaches to hibernation are now being considered and
+discussed, I thought it might be a good idea to list some things that in my not
+so humble opinion should be taken care of by any hibernation framework.  They
+are listed below, not in any particular order, because I think they all are
+important.  Still, I might have forgotten something, so everyone with
+experience in implementing hibernation, especially Pavel and Nigel, please
+check if the list is complete.
 
-This is a multi-part message in MIME format.
+(1) Filesystems mounted before the hibernation are untouchable
 
-------=_NextPart_000_0050_01C7C6D5.11A97380
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_0016_01C7C6D5.11A97380"
+    When there's a memory snapshot, either in the form of a hibernation image,
+    or in the form of the "old" kernel and processes available to the "new"
+    kexeced kernel responsible for saving their memory, the filesystems mounted
+    before the hibernation should not be accessed, even for reading, because
+    that would cause their on-disk state to be inconsistent with the snapshot
+    and might lead to a filesystem corruption.
 
+(2) Swap space in use before the hibernation must be handled with care
 
-------=_NextPart_001_0016_01C7C6D5.11A97380
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+    If swap space is used for saving the memory snapshot, the snapshot-saving
+    application (or kernel) must be careful enough not to overwrite swap pages
+    that contain valid memory contents stored in there before the hibernation.
 
-See attach.=0A=
-http://www.pavilr.com/=0A=
-=0A=
------=0A=
-You were over twenty years old=0A=
-He nudged Connor in his back.=0A=
-Ill kill you first, MacNare bo=0A=
-Help me, Connor, Euphemia crie=0A=
-=0A=
-=0A=
+(3) There are memory regions that must not be saved or restored
 
-------=_NextPart_001_0016_01C7C6D5.11A97380
-Content-Type: text/html;
-    charset="us-ascii"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+    Some memory regions contain data that shouldn't be overwritten during the
+    restore, because that might lead to the system not working correctly
+    afterwards.  Also, on some systems there are valid 'struct pages'
+    structures that in fact corresond to memory holes and we should not attempt
+    to save those pages.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">=0A=
-<HTML><HEAD><TITLE>Hi</TITLE>=0A=
-<META http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii">=
-=0A=
-<STYLE> textarea { display:none; } </STYLE></HEAD>=0A=
-<BODY>=0A=
-<DIV><A href=3D"http://www.pavilr.com/">=0A=
-<IMG src=3D"cid:img061.jpg@51099175.09846576" border=3D0>=0A=
-</A></DIV><br><br>=0A=
-<textarea>No, they arent ugly. They aren=0A=
-</textarea><textarea>No. Then what are they? His sm=0A=
-</textarea><textarea>She was appeased. He kissed th=0A=
-</textarea><textarea>She smiled with pleasure. Im n=0A=
-</textarea><textarea>Since he hadnt moved at all, h=0A=
-</textarea><textarea>Where did you get these callus=0A=
-</textarea><textarea>The top of her head bumped his=0A=
-</textarea><textarea>She was nearly doubled over in=0A=
-</textarea><textarea>He controlled his exasperation=0A=
-</textarea><textarea>He lifted her right hand. She=0A=
-</textarea><textarea>Shed lost him with that explan=0A=
-</textarea><textarea>The ones my two fingers fit th=0A=
-</textarea><textarea>He closed his eyes and prayed=0A=
-</textarea><textarea>My sling. Your what? She cuddl=0A=
-</textarea><textarea>I hit you with a stone from my=0A=
-</textarea>=0A=
-</BODY></HTML>=0A=
+(4) The user should be able to limit the size of a hibernation image
 
-------=_NextPart_001_0016_01C7C6D5.11A97380--
+    There are a couple of reasons of that.  For example, the storage space
+    used for saving the image may be smaller than the entire RAM or the user
+    may want the image to be saved quickier.
 
-------=_NextPart_000_0050_01C7C6D5.11A97380
-Content-Type: image/jpeg;
-	name="pic68.jpg"
-Content-ID: <img061.jpg@51099175.09846576>
-Content-Disposition: inline
-Content-Transfer-Encoding: base64
+(5) Hibernation should be transparent from the applications' point of view
 
-/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQAEAAAACgAA/+4AIUFk
-b2JlAGTAAAAAAQMAEAMCAwYAAAibAAAU1AAAMXP/2wCEABQQEBkSGScXFycy
-Jh8mMi4mJiYmLj41NTU1NT5EQUFBQUFBRERERERERERERERERERERERERERE
-REREREREREQBFRkZIBwgJhgYJjYmICY2RDYrKzZERERCNUJERERERERERERE
-RERERERERERERERERERERERERERERERERERERP/CABEIAKwCIAMBIgACEQED
-EQH/xAC+AAACAwEBAQAAAAAAAAAAAAAABQIDBAEGBwEBAQEBAQAAAAAAAAAA
-AAAAAAECAwQQAAICAgIBBAEEAgIDAQAAAAIDAQQAERIFIRAgExQwQDEVBkEi
-UDRgMiMzEQACAQMCAgcEBgoBBAIDAAABAhEAEgMhMUFRYXGBIjITBBCRobEg
-wdFCUjMwQPDhYnKCkiMUovGy0kNQUyREBRIAAQMDAwQDAAAAAAAAAAAAAQAR
-IRAgQDAxImBhAhJQUaH/2gAMAwEAAhEDEQAAAPZgAAAAAEV25A16Pvmbx/Si
-mP8AvmvRovYeftad1p6E9KedsHwixnqTzbxKNCihr0udJNPQUp5jmXnHyZNK
-eLXoRI6Z6AgAAAAAAAAAAAHmHPzswkSWREJnBbLapF2jLZL9PnXZrAAAAAAH
-COXaCzjQXBmbgkcS6JtW/hgzOQSamIee56EVQztExc3Ak17pCmTQMOi4TBmc
-CrWQJ04HSPTpwOgAAAAAAAeQ8f6FAlXJWTVRKIS5NZS1Oc6Rc9V5SX6PvQvu
-nMATmHeqqGyq9MtnOHSmRZ3sCzCxpI3V3GeXZFFsZGbtoace/IHCBroLDmVj
-iOQ24Ttcdldu7VEZc4TzbKiuEwzXWTNtkZSgAAAABWtmvEqvSedjrZT6DHXP
-i9HDO171D6WasnhvjIqo97381tgawAAAAcOmXMrMXXGsXwGZggjIXTNwumbh
-RcMTFWMeY8I575+K+jPO7RryFicOhzpw7FP2xnb564dxTg6K0g/EshwBKHeH
-QAqtUTS3JOHm9uJY5z6wvb5dQxow3Z6adtljKPM/O3lte4tvTmAAECC/EzWr
-lWoXtVusoYqdBp5mgMsNudG/E9y9Zqqxvjz5x3RTUbMebeINbBBTajPrnWTZ
-ZU5+iKrGe8x5rGcF+Qd9W2GzlHTVlzKz0EVO4ZSU0jzsZS5dXj/YTXPLvvPc
-+2eunvH0d5HtnNHaas2ZZrppXyk3tPN7Lj2XVbPv5egayJXKk155q115KJ1X
-DSLmNNR3kLUrJcIWcsWMLOIRrmttuMS+FcVZU4ps5ma8aaV5+SvGeTUwoxek
-jZ5+12CrF6Lolm1mecvdAhsd8FcHAd6EvzX3fj+8/S3z56uXXFfX2i7NJd8M
-19S6arMsNWu1BaQ5HrZBsZ9IZdXp8dC/aqqGW+upxrhLbpZ7kx2aBKS4KC8K
-C8M8dQZjSFHNAZuagyGsMeJyHnGTEOHQ5yQIdk+WV6aLjLO+Bh09sKJX4BzO
-q2UAPGYGGLn6+Ssums/NfJcts6S7lRLZo7vzFUXebOfOZ9UNc9llJTl8kc7W
-od+rrw4ahF2u7h04HTgdOdArkSOB050DgdCBMjiN5mkXlVZpMNppMdxaGAYc
-zWFpTlGBnwU37FJD0XMDoAAHksuHbw9kI7Kc6wa2zDnnzsmWFlheivzWhTbu
-15d+S3zLJKy3d1yN2l/qF7Hr5+dDfIAFeJv2xPW6sE9zKIsoecEw7rE46xUv
-64shPW/gI7m8zGn9HUJdTLospe1CDrzoppdUmrzvqMgp1bZl6hvXLQuZRsvT
-tomRlC2XoAAHnLmV/l64ZMDWPKZ/XwvX53q5PHo07crGLC2FxCizPnSEjLpl
-k6p1y0PkTvpxkB14AAAGGNFTbwUWMsxXEbCLSrRfjirySbUzrmsrVwJ2ySEN
-iuhN0cGGlGgqgrgU5x8JYjylZAeCLQMoLIjsQahrkwwGsY5RqJojsVYz0PFd
-Yx0JqB1HNnjbHFNWoqzjziqRfKncku2CV2BYAAAAAuizGlurQGC3UIug0FTj
-gVfbnZpmyswVs+iJJuBpbxmtTbm3CKbGQq3rEFsmALoswXRZgpGwqqxiJiyt
-wy0MQXcZAog6FS22WGcaiKZswW8Zgq42FWWbxF22wQAQAP/aAAgBAgABBQD/
-AMBkojILft8Z4zx6eM8Z4zx6eM8e3xnjPGePbJRGbicOcEsL9/OCOo/RazWa
-zWa9kzqMidYU5rWRPkdz+j1mvXWazXpE7hk+zfjInWRO/wBFvN5vN5vN5v03
-xzUznHNZxyAjOEZPjBnInf6Xx7C/fWa9OUZ8oxktmcGZ0PKMH9/za/FJeeXi
-WDnIpzjvIGI9gR49N5vN5vN5vN5vN5vN5vN5vIzfv4MKYQOQrWTkZOTmv9cX
-P63UZ4zUemo/4T//2gAIAQMAAQUA9kRGcc1kxrJjzxzWccmNZqM1Ga8zGajJ
-jX5o9+83OTO83m5zc5yzebzc5ufTc/ijNTPrATOSPHJ9nn8Pn3efXz7YGZzj
-I4uN4YYMajcYR7n2anNe/WazU+zebzfpv2CPKdawh3gxr0mN4eh90+cn2xnj
-NayJyJyfXfrv036EPGUx669SGCghkfZvNenjNRms1msmMj0jJnxms1ms1ms1
-6zHOI1Eb9N5vPPoUbyYmJ/xm9Zv9KH/ruIzfprJOIyDnCEtjHln7f4/TxERG
-4jJZGRynOE5xiMjPMzjJ3PprNZrNZrNZrNZr01ms1mvTXv5zEcpz5YyMnIyM
-if8AafMt9kRGazWayI86zW41nHNZrzrNZxzWazWazWa86zjmvGs855zU559N
-z7Y3k7zznnPOf4jeTnnIyN7855zznnPOec855zzvznnP8ec855zznnJ36//a
-AAgBAQABBQD8BlACPdKkYKCj0ZYhbPRfbi0RLlBlADWsDZX7mdoAMrWl2gwr
-QC7LNgaywODHC7UYOtaXaD9H/bHOWqSze836xg4BRGFOVnmslFJB+Gx/+deb
-DqYlDGV2GllWkLaq7JtlEfG0Z3nVtsDXsq+e6MfVsVzNodlUiqHgrlSoNxUW
-HVQYsBCo4mqFrV24U4D7SnFZL6yyvVEx2A20mim6pFeslnyCuz9Ul1mMT1rz
-usid/oe07COvr9p2L77IySzc5++cc8Rg6zxGBrAOAlJ81/hYPMalWa630DFq
-6R7rVJSgeskYjrGaD9kULNYJqFNhtKTd/FlC39dYtQqpIuRzTFGj8ypp2jFK
-+ELpyp1yj9iLPXWLYlUkrEUXIKevIkPqS6ukOELo/GUdYz4go/E+P2/Qf2Nr
-Wy44IvTWbz98iMHNYEbzURPUWos1fy6zWcYzWazjGazWazWcYnOMZqPSY3ms
-khGdems1ms1ms16bzeSUDEzrIneb/H/Zb67NouEwMZKZwgIc85G8EJLKvVOs
-Sn+vLCGUFqUvzP8AWfkFHqUzED2QEdm7LE12TL39rCzPsoHCvO5N7AoiL7Gy
-N8nR17iYoLdiYLs/jGneizNjtYWcdjJSrtxIl23shFthpHtOAhZ+ZFa6cAns
-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
-6byp8z7983/8tY+H6j//2Q==
+    Generally, applications should not notice that hibernation took place.
+    [Note that I don't regard all processes as applications and I think that
+    there may be processes which need to handle the hibernation in a special
+    way.]  Ideally, for example, if some audio is being played when a
+    hibernation starts, the audio player should be able to continue playing the
+    same audio after the restore from the point in which it has been
+    interrupted by the hibernation.  Also, the CPU affinities and similar
+    settings requested by the applications before a hibernation should be
+    binding after the restore.
 
-------=_NextPart_000_0050_01C7C6D5.11A97380--
+(6) State of devices from before hibernation should be restored, if possible
+
+    If possible, during a restore devices should be brought back to the same
+    state in which they were before the corresponding hibernation.  Of course
+    in some situations it might be impossible to do that (eg. the user
+    connected the hibernated system to a different IP subnet and then
+    restored), but as a general rule, we should do our best to restore the
+    state of devices, which is directly related to point (5) above.
+
+(7) On ACPI systems special platform-related actions have to be carried out at
+    the right points, so that the platform works correctly after the restore
+
+    The ACPI specification requires us to invoke some global ACPI methods
+    during the hibernation and during the restore.  Moreover, the ordering of
+    code related to these ACPI methods may not be arbitrary (eg. some of
+    them have to be executed after devices are put into low power states etc.).
+
+(8) Hibernation and restore should not be too slow
+
+    In my opinion, if more than one minute is needed to hibernate the system
+    with the help of certain hibernation framework, then this framework is not
+    very useful in practice.  It might be useful to perform some special tasks
+    (eg. moving a server to another place without taking it down), but it is
+    not very useful, for example, to notebook users.
+
+(9) Hibernation framework should not be too difficult to set up
+
+    It follows from my experience that if the users are required to do too much
+    work to set up a hibernation framework, they will not use it as long as
+    there are simpler alternatives (some of them will not use hibernation at
+    all if it's too difficult to get to work).  On the other hand, if the users
+    are provided with a working hibernation framework by their distribution
+    and they find it useful, they are not likely to use kernel.org kernels if
+    t's too difficult to replace the distribution kernel with a generic one due
+    to the hibernation framework's requirements.
+
+All of the existing hibernation frameworks have been written with the above
+points in mind and that's why they are what they are.  In particular, the
+existence of the tasks freezer, hated by some people to the point of insanity,
+follows directly from points (1), (4) and (5).
+
+In my opinion any hibernation framework that doesn't take the above
+requirements into account in any way will be a failure.  Moreover, the existing
+frameworks fail to follow some of them too, so I consider all of these
+frameworks as a work in progress.  For this reason, I will much more appreciate
+ideas allowing us to improve the existing frameworks in a more or less
+evolutionary way, then attempts to replace them all with something entirely
+new.
+
+Greetings,
+Rafael
 
 
-------------=_1184499797-3969-105
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-Content-Transfer-Encoding: 7bit
-
-Spam detection software, running on the system "daredevil.linux-foundation.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  See attach. http://www.pavilr.com/ ----- You were over
-  twenty years old He nudged Connor in his back. Ill kill you first,
-  MacNare bo Help me, Connor, Euphemia crie Hi [...] 
-
-Content analysis details:   (7.8 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 2.0 INVALID_DATE           Invalid Date: header (not RFC 2822)
- 2.0 HTML_IMAGE_ONLY_12     BODY: HTML: images with 800-1200 bytes of words
- 1.0 BAYES_60               BODY: Bayesian spam probability is 60 to 80%
-                            [score: 0.7492]
- 0.0 HTML_MESSAGE           BODY: HTML included in message
- 2.7 HTML_SHORT_LINK_IMG_2  HTML is very short with a linked image
-
-
-
-------------=_1184499797-3969-105
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
-------------=_1184499797-3969-105--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
