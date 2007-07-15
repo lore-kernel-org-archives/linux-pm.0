@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
 	hibernation
-Date: Mon, 16 Jul 2007 00:59:07 +0200
-Message-ID: <200707160059.08277.rjw__37019.1807779067$1184539936$gmane$org@sisk.pl>
+Date: Mon, 16 Jul 2007 01:11:15 +0200
+Message-ID: <200707160111.16805.rjw__49434.2206315652$1184540756$gmane$org@sisk.pl>
 References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707151231.27410.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
+	<200707151239.28400.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707151224160.25614@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707151218320.25614@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707151224160.25614@asgard.lang.hm>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,127 +27,104 @@ Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
 	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 15 July 2007 21:23, david@lang.hm wrote:
+On Sunday, 15 July 2007 21:33, david@lang.hm wrote:
 > On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> >>>> I think this is far more complicated then it needs to be.
-> >>>>
-> >>>> it sounds like it should be possible to do the following
-> >>>>
-> >>>> 1. figure out what pages should be backed up (creating a data structure to
-> >>>> hold them)
-> >>>
-> >>> That should be done after step 2, because the memory contents can change
-> >>> in this step.
+> > On Saturday, 14 July 2007 23:34, david@lang.hm wrote:
+> >> On Sat, 14 Jul 2007, Rafael J. Wysocki wrote:
 > >>
-> >> no, this needs to be done by the main kernel, becouse only it knows how to
-> >> find this info. the kernel that you kexec into could be very different
-> >> (including different versions) and the ways to identify this data is not
-> >> part of any existing API
+> >>> On Saturday, 14 July 2007 09:51, david@lang.hm wrote:
+> >>>> On Fri, 13 Jul 2007, Rafael J. Wysocki wrote:
+> >>>>
+> >>>>>> Ok, now we need a data channel from the old kernel to the hibernate
+> >>>>>> kernel, to the restore kernel. and the messier the memory layout the
+> >>>>>> larger this data channel needs to be (hmm, what's the status on the memory
+> >>>>>> defrag patches being proposed?) if this list can be made small enough it
+> >>>>>> would work to just have the old kernel put the data in a known location in
+> >>>>>> ram, and let the other two parts find it (in ram for the hibernate kernel,
+> >>>>>> in the hibernate image for the wakeup kernel).
+> >>>>>
+> >>>>> I think the hibernation kernel should mmap() the "old" kernel's (and it's
+> >>>>> processes') memory available for saving, so that the image-saving process
+> >>>>> can read its contents from the original locations.
+> >>>>
+> >>>> but I'll bet that not all kernels keep the info in the same place (and
+> >>>> probably not even in the same format). I'm suggesting that a standard be
+> >>>> defined for the format of the data and the location of a pointer to it
+> >>>> that will be maintained across kernel versions.
+> >>>
+> >>> Yes.
+> >>>
+> >>> The image-saving kernel needs to have access to the hibernated kernel's
+> >>> pages data, plus some additional information that should be passed in a
+> >>> standard format.
+> >>
+> >> but per stable-abi-nonsense the internal structure of the kernel's pages
+> >> data isn't an abi. so instead of figuring this out by pokeing around in
+> >> the memory of the old kernel and deciding what should be saved and what
+> >> shouldn't, the old kernel (which understands the memory structure) should
+> >> create a simple map of what should be backed up (either a bitmap or an
+> >> extent-style map, depending on how many holes there are expected to be)
+> >> and then provide that map to the new kernel. the new kernel (or more
+> >> precisely it's userspace) reads the pages it's told to read and writes
+> >> them somewhere.
 > >
-> > If the memory contents changes in step 2, then the information collected by
-> > the main kernel will be inaccurate.
+> > That's reasonable, but the "old" kernel can only do this after handling the
+> > shut down/quiescing of devices, when there is 100% guarantee that the memory
+> > contents will not change.
 > 
-> why would the memory use change when the new kernel is run? is it becouse 
-> of whatever it does to the devices for the hand-off?
-
-Yes, I think so, although I'm not sure, because I don't know what happens to
-devices during a "normal" kexec.
-
-> >>>> 2. kexec into the hibernate kernel (this step handles all device
-> >>>> transitions today)
+> Ok, that makes sense. and since part of what's being passed along here is 
+> what ram is free as far as the outgoing kernel is concerned, this is 
+> useful info for the new kernel for other situations, not just for the 
+> hibernate operation, so this is probably a reasonable modification to the 
+> kexec call in any case (although a crash-dump kernel may decide not to 
+> trust this info and save everything, it's still useful to know what the 
+> outgoing kernel considers free)
+> 
+> >>>>>> since people are complaining about the amount of ram that a kexec kernel
+> >>>>>> would take up I'm assuiming it's somethingmore complex then just a bitmap
+> >>>>>> of all possible pages.
+> >>>>>
+> >>>>> No, it's just bitmaps, AFAICS, and the complaints are a bit overstated, IMO. ;-)
 > >>>>
-> >>>> 3. have the hibernate userspace find the data structures created in step
-> >>>> #1
+> >>>> 1 bit for each 4k means 1m bits for 4g of ram, or 128k of bitmaps, growing
+> >>>> up to 1m of ram used for 32G of ram in the system. I guess this isn't bad
+> >>>> as long as it doesn't need to be contiguous for the new kernel to access
+> >>>> it.
 > >>>>
-> >>>> 4. have the hibernate userspace write the pages somewhere in the suspend
-> >>>> format.
+> >>>> ok, that makes it a pretty trivial thing to work with. I just need to
+> >>>> learn how to find the bitmaps.
 > >>>
-> >>> You don't need to run any hibernate userspace to carry out steps 3 and 4.
+> >>> They are created on the fly before the hibernation.  The format is described in
+> >>> kernel/power/snapshot.c .
 > >>
-> >> you should though.
-> >>
-> >> by doing this write in usespace you can add in all the eye-candy (aka
-> >> progress bars), network I/O, etc that you want since it doesn't affect
-> >> things
-> >>
-> >> trying to do this in the kernel makes the kernel have to know/decide too
-> >> much policy (and many things that people want to do are things that do not
-> >> belong in the kernel in the first place)
+> >> I'll look through this file, but the format of this is an abi/api to the
+> >> userspace and should be documented outside of the code.
 > >
-> > Please don't tell me.  I've written uswsusp on the basis of these arguments,
-> > but I don't cosider it as an overwhelming success ...
-> 
-> uswsusp has the problem that you are trying to run some userspace, but not 
-> other userspace as you are doing the hibernate. with this approach you 
-> don't have that problem since you are running a completely seperate 
-> userspace.
-
-You're running it from a RAM disk, because you can't touch filesystems.  You
-can do the same with uswsusp, just fine.
-
-> >>>> 5. have the hibernate kernel power down the box.
-> >>>>
-> >>>> the only things here that sounds like they're not available in stock
-> >>>> kernels are steps #1 and #3.
-> >>>
-> >>> Correct, up to the first remark above.
-> >>>
-> >>>> now this won't do the fancier suspend-to-ram-and-disk and it won't let you
-> >>>> go back from the hibernate kernel to the main kernel, but it should be
-> >>>> enough to let you do the suspend safely and reliably.
-> >>>>
-> >>>> for the restore, as I understand it the process is
-> >>>>
-> >>>> 1. boot a kernel, any working kernel.
-> >>>>
-> >>>> 2. read the suspend formatted data from wherever it was saved and feed it
-> >>>> to /dev/suspend
-> >>>
-> >>> Yes, something like this, but you really should pay more attention to devices.
-> >>>
-> >>> There are things that you shouldn't do to them (like unregistering), because
-> >>> some processes may be using them while we're trying to hibernate (for now
-> >>> we have the freezer, but I though you'd like to do all that to eliminate it).
-> >>>
-> >>> Generally, you need to ensure that the devices are handled in consistent ways
-> >>> by both the hibernated and image-saving kernels and that's a big piece of the
-> >>> jigsaw that's missing now.
-> >>
-> >> the kexec process should handle the device state for the transition from
-> >> one kernel to another (it has to do this now, this isn't a new
-> >> requirement), so this should solve the problem during the hibernate stage.
+> > Nope.  The user space need not know anything about the image contents.
 > >
-> > Well, I don't think so.
+> > The current implementation of the user space tools use the knowledge of the
+> > image header format, which is given by 'struct swsusp_info', defined in
+> > kernel/power/power.h .
 > 
-> Ok, I could easily be misunderstanding something here (and the comments 
-> with the latest 'kexec back and forth' patch indicate there may still be 
-> work to do here after all)
+> there are a couple factors here.
 > 
-> >> during the wakeup stage, I thought you said that al that was needed was to
-> >> feed the suspend image to /dev/suspend and the kernel in the suspend image
-> >> would re-probe, or otherwise re-initialize all the devices it needs. am I
-> >> misunderstanding this?
-> >
-> > Perhaps.  Currently, the hibernated kernel will run device_resume() after
-> > the restore, which is not exactly compatible with what kexec does.
-> 
-> but kexec isn't needed during the restore process, is it?
+> 1. this needs to remain the same across different kernel versions.
 
-Generally, it's not needed.  _However_, the current handling of devices is
-such that:
-(a) hibernated kernel uses device_suspend() to put them into low power states
-    and creates the image
-(b) hibernated kernel uses device_resume() to get devices back to work and
-    saves the image
-(c) during the restore the boot kernel loads the image and uses
-    device_suspend() to prepare devices for the "old" kernel
-(d) hibernated kernel gets control and uses device_resume() to get devices back
-    to work.
-Now, if you use kexec instead of (a) and (b), then whatever it does to devices
-is generally incompatible with the device_resume() in (d) (because, for
-instance, some device driver's .resume() routine may expect some data to be
-saved by the corresponding .suspend() at specific locations).
+Not exactly.  Whatever is after the image header may change at any time and
+the user space should not rely on that not changing.  The header itself is a
+(slightly) different matter.
+
+> 2. this may or may not be created by userspace tools
+
+Well, the image header is not created by userspace tools and only read the
+image size from it.
+
+> both of these tend to imply that this is an interface to the world and 
+> needs to be documented and stable.
+
+Well, it should be documented, but currently there's only one implementation
+of the userland tools and the authors of these know the format. ;-)
 
 Greetings,
 Rafael
