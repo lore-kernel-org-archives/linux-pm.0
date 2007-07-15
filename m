@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec
-	based hibernation
-Date: Sun, 15 Jul 2007 12:09:05 +0200
-Message-ID: <200707151209.06529.rjw__46360.3322198198$1184493764$gmane$org@sisk.pl>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+	hibernation
+Date: Sun, 15 Jul 2007 12:31:26 +0200
+Message-ID: <200707151231.27410.rjw__13791.480594273$1184495077$gmane$org@sisk.pl>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<200707142306.33783.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707141400320.14672@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184483593.1898.98.camel@caritas-dev.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0707141400320.14672@asgard.lang.hm>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,120 +22,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: david@lang.hm, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
+	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 15 July 2007 09:13, Huang, Ying wrote:
-> The changelog between v1 and v2
+On Saturday, 14 July 2007 23:13, david@lang.hm wrote:
+> On Sat, 14 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> 1. The kexec jump implementation is put into the kexec/kdump
->    framework instead of software suspend framework. The device
->    and CPU state save/restore code of software suspend is called
->    when needed.
+> > On Saturday, 14 July 2007 22:34, david@lang.hm wrote:
+> >> in the past, Rafael J. Wysocki wrote:
+> >>
+> >>> BTW, please read this message and tell me what you think:
+> >>>
+> >>> http://lkml.org/lkml/2007/7/13/265
+> >>>
+> >>> Greetings,
+> >>> Rafael
+> >>>
+> >>>
+> >>>
+> >>
+> >> since I've deleted this message here's the relavent portion of it
+> >>
+> >>> Okay, I have thought it through and I think that, as an initial step, we
+> >>> can do something like this:
+> >>>
+> >>> - preload the image-saving kernel before hibernation
+> >>> - in the hibernation code path replace device_suspend() with the shutting
+> >>> down of all devices without unregistering them (not very nice, but should be
+> >>> sufficient for a while)
+> >>> - when we've called device_power_down() and save_processor_state(), jump
+> >>> to the image-saving kernel and let it run
+> >>> - make the image-saving kernel set up everything, save the image without
+> >>>  starting any user space (we may use the existing image-saving code for
+> >>> this purpose, with some modifications) and power off the system (or make it
+> >>> enter S4)
+> >>> - use the existing restoration code to load the image and jump to the
+> >>>  hibernated kernel
+> >>> - in the restore code patch replace device_resume() with the reprobing of
+> >>> all devices.
+> >>>
+> >>> Comments?
+> >>
+> >> I think this is far more complicated then it needs to be.
+> >>
+> >> it sounds like it should be possible to do the following
+> >>
+> >> 1. figure out what pages should be backed up (creating a data structure to
+> >> hold them)
+> >
+> > That should be done after step 2, because the memory contents can change
+> > in this step.
 > 
-> 2. The same code path is used for both kexec a new kernel and jump
->    back to original kernel.
-> 
-> The complete changelog of the patch is as follow:
-> 
-> ---
-> 
-> Kexec base hibernation has some potential advantages over uswsusp and
-> TuxOnIce (suspend2). Some most obvious advantages are:
-> 
-> 1. The hibernation image size can exceed half of memory size easily.
+> no, this needs to be done by the main kernel, becouse only it knows how to 
+> find this info. the kernel that you kexec into could be very different 
+> (including different versions) and the ways to identify this data is not 
+> part of any existing API
 
-In TuxOnIce (suspend2) there's no such limitation.
+If the memory contents changes in step 2, then the information collected by
+the main kernel will be inaccurate.
 
-> 2. The hibernation image can be written to and read from almost
->    anywhere, such as USB disk, NFS.
+> >> 2. kexec into the hibernate kernel (this step handles all device
+> >> transitions today)
+> >>
+> >> 3. have the hibernate userspace find the data structures created in step
+> >> #1
+> >>
+> >> 4. have the hibernate userspace write the pages somewhere in the suspend
+> >> format.
+> >
+> > You don't need to run any hibernate userspace to carry out steps 3 and 4.
+> 
+> you should though.
+> 
+> by doing this write in usespace you can add in all the eye-candy (aka 
+> progress bars), network I/O, etc that you want since it doesn't affect 
+> things
+> 
+> trying to do this in the kernel makes the kernel have to know/decide too 
+> much policy (and many things that people want to do are things that do not 
+> belong in the kernel in the first place)
 
-You can do this, too, with uswsusp.
+Please don't tell me.  I've written uswsusp on the basis of these arguments,
+but I don't cosider it as an overwhelming success ...
 
-> This patch implements the functionality of "jumping from kexeced
-> kernel to original kernel". That is, the following sequence is
-> possible:
+> >> 5. have the hibernate kernel power down the box.
+> >>
+> >> the only things here that sounds like they're not available in stock
+> >> kernels are steps #1 and #3.
+> >
+> > Correct, up to the first remark above.
+> >
+> >> now this won't do the fancier suspend-to-ram-and-disk and it won't let you
+> >> go back from the hibernate kernel to the main kernel, but it should be
+> >> enough to let you do the suspend safely and reliably.
+> >>
+> >> for the restore, as I understand it the process is
+> >>
+> >> 1. boot a kernel, any working kernel.
+> >>
+> >> 2. read the suspend formatted data from wherever it was saved and feed it
+> >> to /dev/suspend
+> >
+> > Yes, something like this, but you really should pay more attention to devices.
+> >
+> > There are things that you shouldn't do to them (like unregistering), because
+> > some processes may be using them while we're trying to hibernate (for now
+> > we have the freezer, but I though you'd like to do all that to eliminate it).
+> >
+> > Generally, you need to ensure that the devices are handled in consistent ways
+> > by both the hibernated and image-saving kernels and that's a big piece of the
+> > jigsaw that's missing now.
 > 
-> 1. Boot a kernel A
-> 2. Work under kernel A
-> 3. Kexec another kernel B in kernel A
-> 4. Work under kernel B
-> 5. Jump from kernel B to kernel A
-> 6. Continue work under kernel A
-> 
-> This is the first step to implement kexec based hibernation. If the
-> memory image of kernel A is written to or read from a permanent media
-> in step 4, a preliminary version of kexec based hibernation can be
-> implemented.
-> 
-> The kernel B run as a crashdump kernel in reserved memory region. This
-> is the biggest constrains of the patch. It is planed to be eliminated
-> in the future version. That is, instead of reserving memory region
-> previously, the needed memory region is backupped before kexec and
-> restored after jumping back.
-> 
-> Another constrains of the patch is that the CONFIG_ACPI must be turned
-> off to make kexec jump work. Because ACPI will put devices into low
-> power state, the kexeced kernel can not be booted properly under
-> it. This constrains can be eliminated by separating the suspend method
-> and hibernate method of the devices as proposed earlier in the LKML.
-> 
-> The kexec jump is implemented in the framework of kexec/kdump. In
-> sys_reboot, a new command named LINUX_REBOOT_CMD_KJUMP is defined to
-> trigger the jumping to (executing) the new kernel or jump back to the
-> original kernel.
-> 
-> Now, only the i386 architecture is supported. The patch is based on
-> Linux kernel 2.6.22, and has been tested on my IBM T42.
-> 
-> Usage:
-> 
-> 1. Compile kernel with following options selected:
-> 
-> CONFIG_X86_32=y
-> CONFIG_RELOCATABLE=y # not needed strictly, but it is more convenient with it
-> CONFIG_KEXEC=y
-> CONFIG_PM=y
-> CONFIG_KEXEC_JUMP=y
-> 
-> 2. Compile the kexec-tools with kdump and kjump patches, the
->    kdump patch can be found at:
-> 
-> http://lse.sourceforge.net/kdump/patches/kexec-tools-1.101-kdump10.patch
-> 
->    While, the kexec-tools kjump patch is appended with the mail.
-> 
-> 3. Boot kernel compiled for normal usage, the reserved crash kernel
->    memory region must be added to kernel command line as following:
-> 
->    crashkernel=<XX>M@<XX>M
-> 
->    Where, <XX> should be replaced by the real memory size and position.
-> 
-> 4. Load kernel compiled for hibernating usage as a crashdump kernel
->    with kexec, the same kernel as that of 3 can be used if
->    CONFIG_RELOCATABLE=y is selected. The kernel command line option as
->    following must be appended to kernel command line.
-> 
->    kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
-> 
->    For example, the shell command line can be as follow:
-> 
->    kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
->        kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-> 
-> 5. Boot the hibernating kernel with following shell command line:
-> 
->    kexec -j
-> 
-> 6. In the kexec booted kernel, trigger the jumping back with following
->    shell command.
-> 
->    kexec -j
+> the kexec process should handle the device state for the transition from 
+> one kernel to another (it has to do this now, this isn't a new 
+> requirement), so this should solve the problem during the hibernate stage.
 
-Well, I think that's _way_ too much complicated to be useful for hibernation
-on systems that are set up and administered by average users.
+Well, I don't think so.
+
+> during the wakeup stage, I thought you said that al that was needed was to 
+> feed the suspend image to /dev/suspend and the kernel in the suspend image 
+> would re-probe, or otherwise re-initialize all the devices it needs. am I 
+> misunderstanding this?
+
+Perhaps.  Currently, the hibernated kernel will run device_resume() after
+the restore, which is not exactly compatible with what kexec does.
 
 Greetings,
 Rafael
