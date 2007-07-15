@@ -1,14 +1,12 @@
 From: david@lang.hm
 Subject: Re: Hibernation considerations
-Date: Sun, 15 Jul 2007 16:49:55 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707151644270.25614@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl> <200707160047.28420.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707151538130.25614@asgard.lang.hm>
-	<200707160122.09840.rjw@sisk.pl>
+Date: Sun, 15 Jul 2007 16:53:47 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707151650090.25614@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151915570.28934-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707160122.09840.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0707151915570.28934-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +16,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On Sun, 15 Jul 2007, Alan Stern wrote:
 
-> On Monday, 16 July 2007 00:42, david@lang.hm wrote:
->> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
->>
->>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
->>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
->>>>
->>>>>    The ACPI specification requires us to invoke some global ACPI methods
->>>>>    during the hibernation and during the restore.  Moreover, the ordering of
->>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
->>>>>    them have to be executed after devices are put into low power states etc.).
->>>>
->>>> for a pure hibernate mode, you will be powering off the box after saving
->>>> the suspend image. why are there any special ACPI modes involved?
+> On Sun, 15 Jul 2007 david@lang.hm wrote:
+>
+>>> (1) Filesystems mounted before the hibernation are untouchable
 >>>
->>> Because, for example, on my machine the status of power supply (present
->>> vs not present) is not updated correctly after the restore if ACPI callbacks
->>> aren't used during the hibernation.  That's just experience and it's in line
->>> with the ACPI spec.
+>>>    When there's a memory snapshot, either in the form of a hibernation image,
+>>>    or in the form of the "old" kernel and processes available to the "new"
+>>>    kexeced kernel responsible for saving their memory, the filesystems mounted
+>>>    before the hibernation should not be accessed, even for reading, because
+>>>    that would cause their on-disk state to be inconsistent with the snapshot
+>>>    and might lead to a filesystem corruption.
 >>
->> so if a machine is actually powered off the /dev/suspend process won't
->> work?
+>> AFAIK this is only the case with ext3, all other filesystems could be
+>> accessed read-only safely
+>>
+>> this is arguably a bug with ext3 (and has been discussed as such), but
+>> right now the ext3 team has decided not to change this bahavior so
+>> hibernate needs to work around it. but don't mistake a work-around for a
+>> single (admittedly very popular) filesystem with a hard and fast
+>> directive.
 >
-> No, it sort of works as usual, but after the restore the platform is not in the
-> correct state.
+> Isn't is possible to avoid this problem by mounting an ext3 filesystem
+> as readonly ext2?  Provided the filesystem isn't dirty it should be
+> doable.  (And provided the filesystem doesn't use any ext3 extensions
+> that are incompatible with ext2.)
 
-this is not hibernate as I and many others are thinking of it.
-
-hibernate as we are thinking would work on basicly any hardware, including 
-things with no ACPI or power savings support. and the system could be in 
-hibernate mode for any time period.
-
-for that matter, after a system is put into hibernate mode the system 
-could be completely disassembled and any components replaced and the 
-system would work after a resume (assuming you still have access to the 
-suspend image)
-
->> remember that the system may run a different OS between the hibernate and
->> the resume, makeing any assumptions about what state the hardware is in
->> when you start the resume is a problem.
->
-> True, that's problematic.
-
-putting it mildly.
+from the last discussion I saw on the kernel mailing list, no. the act of 
+mounting the ext3 filesystem as ext2 read-only will change it as the 
+unsupported extentions get turned off (and I think the journal contents at 
+least are lost as part of this)
 
 David Lang
