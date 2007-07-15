@@ -1,13 +1,14 @@
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
+From: jimmy bahuleyan <knight.camelot@gmail.com>
 Subject: Re: Hibernation considerations
-Date: Sun, 15 Jul 2007 13:58:56 +0100
-Message-ID: <20070715125855.GA1737__6333.9592692957$1184504452$gmane$org@gallifrey>
+Date: Sun, 15 Jul 2007 21:05:21 +0530
+Message-ID: <469A3EB9.8000304__40859.4104381793$1184513786$gmane$org@gmail.com>
 References: <200707151433.34625.rjw@sisk.pl>
+	<200707151810.33554.a1426z@gawab.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707151433.34625.rjw@sisk.pl>
+In-Reply-To: <200707151810.33554.a1426z@gawab.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,50 +18,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-
-> (5) Hibernation should be transparent from the applications' point of view
+Al Boldi wrote:
 > 
->     Generally, applications should not notice that hibernation took place.
->     [Note that I don't regard all processes as applications and I think that
->     there may be processes which need to handle the hibernation in a special
->     way.]  Ideally, for example, if some audio is being played when a
->     hibernation starts, the audio player should be able to continue playing the
->     same audio after the restore from the point in which it has been
->     interrupted by the hibernation.  Also, the CPU affinities and similar
-
-That would be _so_ embarrassing in a library; I'd rather the audio
-player had the opportunity to consider whether restarting was a good idea.
-
-> (6) State of devices from before hibernation should be restored, if possible
+> This should be the responsibility of the kexec'd hibernating kernel.  Note 
+> though in (6), the normal kernel takes care of preparing devices, then the 
+> hibernating kernel dumps the image and either calls S4 or S3.  On resume 
+> from S3 it can immediately switch over to the normal kernel, and from S4 the 
+> known bootup would occur.
 > 
->     If possible, during a restore devices should be brought back to the same
->     state in which they were before the corresponding hibernation.  Of course
->     in some situations it might be impossible to do that (eg. the user
->     connected the hibernated system to a different IP subnet and then
->     restored), but as a general rule, we should do our best to restore the
->     state of devices, which is directly related to point (5) above.
+>> (8) Hibernation and restore should not be too slow
+>>
+>>     In my opinion, if more than one minute is needed to hibernate the
+>> system with the help of certain hibernation framework, then this framework
+>> is not very useful in practice.  It might be useful to perform some
+>> special tasks (eg. moving a server to another place without taking it
+>> down), but it is not very useful, for example, to notebook users.
+> 
+> The latest hibernating kexec patches boot a kexec'd modular kernel with 
+> initramfs into crashkernel=16M@16M in less than one second.  Switch-back is 
+> almost instant.  Add to this the time required to either store or restore 
+> the image, and it may be obvious that this approach isn't slower, but maybe 
+> even faster than the current swsusp.
+> 
 
-Or the user unplugs their flash drive after hibernation rather than before.
+What about (9)? Would it be that a user choosing to build a kernel with
+hibernate support gets a additional modular kernel built (which he
+should then use for resumption) or he should configure & build the
+modular kernel independent of main kernel?
 
-Two things which I think would be nice to consider are:
-   1) Encryption - I'd actually prefer if my luks device did not
-       remember the key accross a hibernation; I want to be forced to
-       reenter the phrase.  However I don't know what the best thing
-       to do to partitions/applications using the luks device is.
+Or will the Linux boot procedure change so that it always goes thru a
+modular part followed by kexec (just to be uniform)?
 
-   2) Some level of debugging needs to be available so that users can
-      provide something so you can see why something hasn't hibernated
-      or why (as in the case of this tosh laptop) it still takes power
-      during hibernation.
+Although the kexec approach seems interesting, the final user-scenario
+seems a bit complex (or confusing).
 
-Dave
+-jb
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+Tact is the art of making a point without making an enemy.
