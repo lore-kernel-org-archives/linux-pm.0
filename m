@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Mon, 16 Jul 2007 17:40:25 +0200
-Message-ID: <200707161740.26703.rjw__2234.14864526621$1184600013$gmane$org@sisk.pl>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707161417.50166.rjw@sisk.pl>
-	<1184596950.24143.28.camel@caritas-dev.intel.com>
+From: Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+Date: Mon, 16 Jul 2007 19:51:35 +0300
+Message-ID: <200707161951.35225.a1426z__46194.051000248$1184604879$gmane$org@gawab.com>
+References: <Pine.LNX.4.44L0.0707161045520.3410-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184596950.24143.28.camel@caritas-dev.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0707161045520.3410-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,87 +19,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 16 July 2007 16:42, Huang, Ying wrote:
-> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
-> > > is this  a matter of running some test to find out, or is this a question 
-> > > for the kexec implemantors?
-> > 
-> > Actually, I'd like someone to tell me. ;-)
-> > 
-> > I've browsed the kexec code, but haven't found anything related to the devices
-> > in it.  Perhaps I didn't know where to look ...
-> 
-> There are two stages for kexec. For "normal" kexec, first the
-> sys_kexe_load is called to load the kernel image, then
-> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
+Alan Stern wrote:
+> On Mon, 16 Jul 2007, Al Boldi wrote:
+> > From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually
+> > exactly the same.  The only difference is, in S3 the memory is in memory
+> > and in S4 the memory is on storage.  All device handling is exactly the
+> > same, so if there is a problem with device handling between the kexec'd
+> > hibernation kernel and the normal kernel, then that would have made
+> > itself visible.
+>
+> You have contradicted yourself.  "In S3 the memory is in memory and in
+> S4 the memory is on storage".  How does the memory get onto storage?
+> The kexec'd hibernation kernel writes it there.  To do so it accesses a
+> storage device.
+>
+> Consequently the device handling _cannot_ be exactly the same in S3 and
+> S4.
 
-OK, thanks.  This is the information that I was missing.
+Ok, you should have read this in the context of suspending/resuming from/to 
+the normal kernel, and in that case they are exactly the same, i.e. kexec -e 
+for suspend and kexec -j for resume.
 
-> The call chain is as follow:
-> 
-> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
->     kernel_kexec
->         kernel_restart_prepare
->             device_shutdown
->         machine_shutdown
->         machine_kexec
-> 
-> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
-> every device is called to put device in quiescent state. In
-> machine_kexec, the new kernel is booted.
-
-Yes.
-
-> So, for normal kexec, there is no code path for device state saving and
-> restoring.
-
-Exactly.
-
-> State of device can be restore after shutdown? I don't think so.
-
-No, it can't, but we need something like this for hibernation and
-device_shutdown() is not appropriate for this purpose IMO.
-
-> > I think that the right approach is to separate devices' suspend from the
-> > devices' hibernation-related operations FIRST.  Then, many different approaches
-> > to hibernation will be much easier to implement than they are now.
-> > 
-> > I've been saying this for weeks now, but no one seems to listen frankly I'm
-> > tired of repeating it:
-> 
-> I agree with you on this. :)
-
-OK :-)
-
-> > If we want to improve things, let's do that IN AN ORDERED WAY.  If everyone
-> > will come up with a new idea every two days, we won't be able to get anything
-> > actually _done_.
-> 
-> Yes, and I am very glad to collaborate with everybody who is interested
-> in this subject. But I think we should try to verify our idea with code
-> as early as possible. Now, I am trying to implement a prototype of
-> kexec/kdump based image writing/reading mechanism to verify the
-> feasibility. (I suppose you are working on separating device suspend and
-> device hibernate).
-
-Yes, I am.
-
-> What do you think about the pattern of collaboration?
-
-Sounds good.
-
-> At last, thank you very much for your valuable reminding in the mail of
-> "hibernation considerations".
-
-You're welcome. :-)
-
-Greetings,
-Rafael
+BTW, it would be really helpful if people would actually try the kexec 
+hibernation patches, as this may yield a much more constructive discussion.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Thanks!
+
+--
+Al
