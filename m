@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Hibernation considerations
-Date: Mon, 16 Jul 2007 10:53:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707161045520.3410-100000__23264.5250660882$1184597702$gmane$org@iolanthe.rowland.org>
-References: <200707160802.46567.a1426z@gawab.com>
+Date: Mon, 16 Jul 2007 17:25:15 +0200
+Message-ID: <200707161725.16593.rjw__10646.3589276702$1184599103$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707160802.46567.a1426z@gawab.com>
+In-Reply-To: <Pine.LNX.4.44L0.0707161013440.3410-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,24 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Al Boldi <a1426z@gawab.com>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Jul 2007, Al Boldi wrote:
+On Monday, 16 July 2007 16:15, Alan Stern wrote:
+> On Mon, 16 Jul 2007, Nigel Cunningham wrote:
+> 
+> > > As I understand it, running a different OS between the hibernate and 
+> > > the resume would violate the ACPI spec.
+> > 
+> > Well then, I know one or two people who would argue that the ACPI spec is 
+> > faulty. :\
+> 
+> It's hard to argue against that.  In fact there are people who would 
+> argue that the ACPI spec is incomplete and inconsistent period, 
+> regardless of any questions about what happens between hibernate and 
+> resume.  :-)
 
-> From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually 
-> exactly the same.  The only difference is, in S3 the memory is in memory and 
-> in S4 the memory is on storage.  All device handling is exactly the same, so 
-> if there is a problem with device handling between the kexec'd hibernation 
-> kernel and the normal kernel, then that would have made itself visible.
+That's true, but OTOH it's difficult to argue with my notebook's firmware
+about that. ;-)
 
-You have contradicted yourself.  "In S3 the memory is in memory and in
-S4 the memory is on storage".  How does the memory get onto storage?  
-The kexec'd hibernation kernel writes it there.  To do so it accesses a 
-storage device.
+Greetings,
+Rafael
 
-Consequently the device handling _cannot_ be exactly the same in S3 and
-S4.
 
-Alan Stern
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
