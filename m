@@ -1,13 +1,15 @@
-From: david@lang.hm
+From: Al Boldi <a1426z@gawab.com>
 Subject: Re: Hibernation considerations
-Date: Sun, 15 Jul 2007 17:51:40 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707151747310.25614@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl>
-	<20070716005135.GB8140@srcf.ucam.org>
+Date: Mon, 16 Jul 2007 08:02:46 +0300
+Message-ID: <200707160802.46567.a1426z__39677.6744434193$1184562434$gmane$org@gawab.com>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070716005135.GB8140@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,51 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Jul 2007, Matthew Garrett wrote:
+Alan Stern wrote:
+> As for the VGA font, the effect is easy to see: Run setfont before
+> hibernating; when you resume the original font will be back.  The
+> kernel simply does not bother to save the VGA font information across a
+> hibernate.
 
-> On Sun, Jul 15, 2007 at 02:33:32PM +0200, Rafael J. Wysocki wrote:
+This could probably be handled by a device suspend/resume call; but this 
+problem is not specific to kexec.
+
+> > Ok, after applying the latest kexec patches, I was able to use the
+> > kexec'd kernel to suspend to ram and resume to the normal kernel, while
+> > working under a full-blown X session.  It went without a hitch.  All
+> > that is needed now are the dump/restore hibernation-image routines.
 >
-> (snip)
->
-> Many of these assumptions are based on the assumption that we want to
-> save a full image of RAM. I'm not convinced that this is true. The two
-> things that we need are application state and hardware state.
-> Application state can clearly be saved without kernel involvement
-> (though restoring some of it may need some help from the kernel...), so
-> hardware state is a more interesting question.
+> That's exactly my point.  While doing suspend-to-RAM from a kexec'd
+> kernel may be simple, saving the hibernation image will add
+> complications.
 
-one other reason for saving all the ram is that some people want to save 
-all the system caches so that the machine is just as responsive immediatly 
-after the resume as it was before the hibernate.
+>From a kexec'd hibernation kernel pov, both S3 and S4 look conceptually 
+exactly the same.  The only difference is, in S3 the memory is in memory and 
+in S4 the memory is on storage.  All device handling is exactly the same, so 
+if there is a problem with device handling between the kexec'd hibernation 
+kernel and the normal kernel, then that would have made itself visible.
 
-> The obvious argument for saving the entirity of memory is that we have
-> no mechanism for picking apart hardware state from any other part of the
-> kernel. In reality, we're looking at implementing a set of hibernation
-> operations anyway - it would be possible to utilise those to save as
-> much state as needed. You also get fringe benefits, like being able to
-> freeze a process that's accessing a piece of flaky hardware, swap the
-> card out (assuming hotplug PCI), restore some amount of state and then
-> let the process continue.
->
-> I appreciate that this suggestion sounds kind of fragile and
-> complicated, but I think that's true of most descriptions of suspend to
-> disk :) The main benefit is that it means we can use the hibernation
-> infrastructure for other purposes (checkpointing, swapping hardware,
-> that kind of thing) and reduce the damage caused by users doing
-> seemingly reasonable things (like suspending Linux, booting Windows and
-> then writing to a shared partition...).
+david@lang.hm wrote:
+> suspend-to-RAM should not involve kexec, the only reason for doing the
+> kexec to to get a seperate userspace to use for suspend-to-disk operations
+> instead of trying to partially freeze the sustem and keep useing it.
 
-I see the order being a little different.
+Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant 
+to test kexec compatibility with device suspend/resume calls.
 
-if anyone implements a reliable checkpoint/restore of applications then 
-that could be used as to pause specific applicaitons, move applications 
-from one machine to another, move applications from one kernel to another, 
-and as a side effect, as a form of hibernation when you are willing to 
-loose your cache in favor of storing as little info as possible (since you 
-wouldn't need to store the cache memory or any kernel memory/state)
 
-David Lang
+Thanks!
+
+--
+Al
