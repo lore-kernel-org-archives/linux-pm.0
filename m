@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation considerations
-Date: Mon, 16 Jul 2007 17:29:15 +0200
-Message-ID: <200707161729.16440.rjw__26246.4725914926$1184599754$gmane$org@sisk.pl>
-References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl>
-	<20070716123849.GC14212@grifter.jdc.home>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+	hibernation
+Date: Mon, 16 Jul 2007 17:40:25 +0200
+Message-ID: <200707161740.26703.rjw__2234.14864526621$1184600013$gmane$org@sisk.pl>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<200707161417.50166.rjw@sisk.pl>
+	<1184596950.24143.28.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070716123849.GC14212@grifter.jdc.home>
+In-Reply-To: <1184596950.24143.28.camel@caritas-dev.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,78 +22,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jim Crilly <jim@why.dont.jablowme.net>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 16 July 2007 14:38, Jim Crilly wrote:
-> On 07/16/07 02:06:27PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, 16 July 2007 01:49, david@lang.hm wrote:
-> > > On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
-> > > 
-> > > > On Monday, 16 July 2007 00:42, david@lang.hm wrote:
-> > > >> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
-> > > >>
-> > > >>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
-> > > >>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
-> > > >>>>
-> > > >>>>>    The ACPI specification requires us to invoke some global ACPI methods
-> > > >>>>>    during the hibernation and during the restore.  Moreover, the ordering of
-> > > >>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
-> > > >>>>>    them have to be executed after devices are put into low power states etc.).
-> > > >>>>
-> > > >>>> for a pure hibernate mode, you will be powering off the box after saving
-> > > >>>> the suspend image. why are there any special ACPI modes involved?
-> > > >>>
-> > > >>> Because, for example, on my machine the status of power supply (present
-> > > >>> vs not present) is not updated correctly after the restore if ACPI callbacks
-> > > >>> aren't used during the hibernation.  That's just experience and it's in line
-> > > >>> with the ACPI spec.
-> > > >>
-> > > >> so if a machine is actually powered off the /dev/suspend process won't
-> > > >> work?
-> > > >
-> > > > No, it sort of works as usual, but after the restore the platform is not in the
-> > > > correct state.
-> > > 
-> > > this is not hibernate as I and many others are thinking of it.
-> > > 
-> > > hibernate as we are thinking would work on basicly any hardware, including 
-> > > things with no ACPI or power savings support. and the system could be in 
-> > > hibernate mode for any time period.
-> > > 
-> > > for that matter, after a system is put into hibernate mode the system 
-> > > could be completely disassembled and any components replaced and the 
-> > > system would work after a resume (assuming you still have access to the 
-> > > suspend image)
+On Monday, 16 July 2007 16:42, Huang, Ying wrote:
+> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
+> > > is this  a matter of running some test to find out, or is this a question 
+> > > for the kexec implemantors?
 > > 
-> > Well, this is not how ACPI defines the S4 sleep state.  If the system is in
-> > S4, that corresponds to our hibernation, you are _not_ allowed to disassemble
-> > it.
+> > Actually, I'd like someone to tell me. ;-)
 > > 
-> > I've just done an experiment on my test desktop.  I had enabled suspend support
-> > in the CMOS setup and afterwards I made Linux hibernate in the "platform" mode.
-> > Then, when the system was powred on, the BIOS showed me a nice "Resume from
-> > hibernation" screen that is not normally displayed during boot.  This clearly
-> > means that some information has been preserved by the platform across the
-> > hibernate/restore cycle.  We are supposed to handle that.
-> > 
+> > I've browsed the kexec code, but haven't found anything related to the devices
+> > in it.  Perhaps I didn't know where to look ...
 > 
-> What I believe he's getting at is that Linux hibernation shouldn't be tied
-> to any ACPI states. Yes, when available and working most people will want
-> to enter ACPI S4 but we should still have the option of doing a normal
-> poweroff. With the latter method it would look just like regular power off/on
-> cycle to the firmware. And that would definitely be useful for things like
-> working around buggy ACPI implementations or supporting platforms that don't
-> do ACPI at all. That is the difference between the platform and shutdown
-> options in /sys/power/disk, isn't it?
+> There are two stages for kexec. For "normal" kexec, first the
+> sys_kexe_load is called to load the kernel image, then
+> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
 
-Yes, but this is not my point.
+OK, thanks.  This is the information that I was missing.
 
-The point is that there are systems that _require_ the ACPI handling to work
-correctly after the restore and we need to that _that_ into consideration.
+> The call chain is as follow:
+> 
+> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
+>     kernel_kexec
+>         kernel_restart_prepare
+>             device_shutdown
+>         machine_shutdown
+>         machine_kexec
+> 
+> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
+> every device is called to put device in quiescent state. In
+> machine_kexec, the new kernel is booted.
 
-IOW, there are poeple for whom the non-ACPI framework won't work as expected.
+Yes.
+
+> So, for normal kexec, there is no code path for device state saving and
+> restoring.
+
+Exactly.
+
+> State of device can be restore after shutdown? I don't think so.
+
+No, it can't, but we need something like this for hibernation and
+device_shutdown() is not appropriate for this purpose IMO.
+
+> > I think that the right approach is to separate devices' suspend from the
+> > devices' hibernation-related operations FIRST.  Then, many different approaches
+> > to hibernation will be much easier to implement than they are now.
+> > 
+> > I've been saying this for weeks now, but no one seems to listen frankly I'm
+> > tired of repeating it:
+> 
+> I agree with you on this. :)
+
+OK :-)
+
+> > If we want to improve things, let's do that IN AN ORDERED WAY.  If everyone
+> > will come up with a new idea every two days, we won't be able to get anything
+> > actually _done_.
+> 
+> Yes, and I am very glad to collaborate with everybody who is interested
+> in this subject. But I think we should try to verify our idea with code
+> as early as possible. Now, I am trying to implement a prototype of
+> kexec/kdump based image writing/reading mechanism to verify the
+> feasibility. (I suppose you are working on separating device suspend and
+> device hibernate).
+
+Yes, I am.
+
+> What do you think about the pattern of collaboration?
+
+Sounds good.
+
+> At last, thank you very much for your valuable reminding in the mail of
+> "hibernation considerations".
+
+You're welcome. :-)
 
 Greetings,
 Rafael
