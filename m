@@ -1,18 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Mon, 16 Jul 2007 14:17:49 +0200
-Message-ID: <200707161417.50166.rjw__35844.1044264056$1184587921$gmane$org@sisk.pl>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707160059.08277.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707151549200.25614@asgard.lang.hm>
+From: Jim Crilly <jim@why.dont.jablowme.net>
+Subject: Re: Hibernation considerations
+Date: Mon, 16 Jul 2007 08:38:50 -0400
+Message-ID: <20070716123849.GC14212@grifter.jdc.home>
+References: <200707151433.34625.rjw@sisk.pl> <200707160122.09840.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707151644270.25614@asgard.lang.hm>
+	<200707161406.28539.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707151549200.25614@asgard.lang.hm>
 Content-Disposition: inline
+In-Reply-To: <200707161406.28539.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,112 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 16 July 2007 01:22, david@lang.hm wrote:
-> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On 07/16/07 02:06:27PM +0200, Rafael J. Wysocki wrote:
+> On Monday, 16 July 2007 01:49, david@lang.hm wrote:
+> > On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+> > 
+> > > On Monday, 16 July 2007 00:42, david@lang.hm wrote:
+> > >> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+> > >>
+> > >>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
+> > >>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+> > >>>>
+> > >>>>>    The ACPI specification requires us to invoke some global ACPI methods
+> > >>>>>    during the hibernation and during the restore.  Moreover, the ordering of
+> > >>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
+> > >>>>>    them have to be executed after devices are put into low power states etc.).
+> > >>>>
+> > >>>> for a pure hibernate mode, you will be powering off the box after saving
+> > >>>> the suspend image. why are there any special ACPI modes involved?
+> > >>>
+> > >>> Because, for example, on my machine the status of power supply (present
+> > >>> vs not present) is not updated correctly after the restore if ACPI callbacks
+> > >>> aren't used during the hibernation.  That's just experience and it's in line
+> > >>> with the ACPI spec.
+> > >>
+> > >> so if a machine is actually powered off the /dev/suspend process won't
+> > >> work?
+> > >
+> > > No, it sort of works as usual, but after the restore the platform is not in the
+> > > correct state.
+> > 
+> > this is not hibernate as I and many others are thinking of it.
+> > 
+> > hibernate as we are thinking would work on basicly any hardware, including 
+> > things with no ACPI or power savings support. and the system could be in 
+> > hibernate mode for any time period.
+> > 
+> > for that matter, after a system is put into hibernate mode the system 
+> > could be completely disassembled and any components replaced and the 
+> > system would work after a resume (assuming you still have access to the 
+> > suspend image)
 > 
-> > On Sunday, 15 July 2007 21:23, david@lang.hm wrote:
-> >> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
-> >>
-> >>>>>> I think this is far more complicated then it needs to be.
-> >>>>>>
-> >>>>>> it sounds like it should be possible to do the following
-> >>>>>>
-> >>>>>> 1. figure out what pages should be backed up (creating a data structure to
-> >>>>>> hold them)
-> >>>>>
-> >>>>> That should be done after step 2, because the memory contents can change
-> >>>>> in this step.
-> >>>>
-> >>>> no, this needs to be done by the main kernel, becouse only it knows how to
-> >>>> find this info. the kernel that you kexec into could be very different
-> >>>> (including different versions) and the ways to identify this data is not
-> >>>> part of any existing API
-> >>>
-> >>> If the memory contents changes in step 2, then the information collected by
-> >>> the main kernel will be inaccurate.
-> >>
-> >> why would the memory use change when the new kernel is run? is it becouse
-> >> of whatever it does to the devices for the hand-off?
-> >
-> > Yes, I think so, although I'm not sure, because I don't know what happens to
-> > devices during a "normal" kexec.
+> Well, this is not how ACPI defines the S4 sleep state.  If the system is in
+> S4, that corresponds to our hibernation, you are _not_ allowed to disassemble
+> it.
 > 
-> is this  a matter of running some test to find out, or is this a question 
-> for the kexec implemantors?
+> I've just done an experiment on my test desktop.  I had enabled suspend support
+> in the CMOS setup and afterwards I made Linux hibernate in the "platform" mode.
+> Then, when the system was powred on, the BIOS showed me a nice "Resume from
+> hibernation" screen that is not normally displayed during boot.  This clearly
+> means that some information has been preserved by the platform across the
+> hibernate/restore cycle.  We are supposed to handle that.
+> 
 
-Actually, I'd like someone to tell me. ;-)
+What I believe he's getting at is that Linux hibernation shouldn't be tied
+to any ACPI states. Yes, when available and working most people will want
+to enter ACPI S4 but we should still have the option of doing a normal
+poweroff. With the latter method it would look just like regular power off/on
+cycle to the firmware. And that would definitely be useful for things like
+working around buggy ACPI implementations or supporting platforms that don't
+do ACPI at all. That is the difference between the platform and shutdown
+options in /sys/power/disk, isn't it?
 
-I've browsed the kexec code, but haven't found anything related to the devices
-in it.  Perhaps I didn't know where to look ...
+> Greetngs,
+> Rafael
+> 
 
-> >>>> during the wakeup stage, I thought you said that al that was needed was to
-> >>>> feed the suspend image to /dev/suspend and the kernel in the suspend image
-> >>>> would re-probe, or otherwise re-initialize all the devices it needs. am I
-> >>>> misunderstanding this?
-> >>>
-> >>> Perhaps.  Currently, the hibernated kernel will run device_resume() after
-> >>> the restore, which is not exactly compatible with what kexec does.
-> >>
-> >> but kexec isn't needed during the restore process, is it?
-> >
-> > Generally, it's not needed.  _However_, the current handling of devices is
-> > such that:
-> > (a) hibernated kernel uses device_suspend() to put them into low power states
-> >    and creates the image
-> > (b) hibernated kernel uses device_resume() to get devices back to work and
-> >    saves the image
-> > (c) during the restore the boot kernel loads the image and uses
-> >    device_suspend() to prepare devices for the "old" kernel
-> > (d) hibernated kernel gets control and uses device_resume() to get devices back
-> >    to work.
-> > Now, if you use kexec instead of (a) and (b), then whatever it does to devices
-> > is generally incompatible with the device_resume() in (d) (because, for
-> > instance, some device driver's .resume() routine may expect some data to be
-> > saved by the corresponding .suspend() at specific locations).
-> 
-> ok, this means that the resume operation is not a solved problem (at least 
-> for the kexec process)
-> 
-> now, one possible approach to this (and this may be what Ying Huang it 
-> thinking of) would be to have the restore process be
-> 
-> 1. boot the normal kernel with a dummy userspace, initializeing all 
-> devices
-> 
-> 2. kexec to the hibernate kernel
-> 
-> 3. the hibernate kernel's userspace overwrites all memory from the 
-> origional system that was saved
-> 
-> 4. kexec from the hibernate kernel back to the origional kernel
-> 
-> the ugly part here is the need for the dummy userspace in step #1 so that 
-> it doesn't try to access the wrong things.
-> 
-> now, it may be that the kernel boot in step 1 doesn't need to be able to 
-> initialize all drivers for things to work in step 4, in which case things 
-> are much simpler (but you still may need the three kernel hop so that the 
-> final kernel is running in the same addresses that it started in.
-
-I think that the right approach is to separate devices' suspend from the
-devices' hibernation-related operations FIRST.  Then, many different approaches
-to hibernation will be much easier to implement than they are now.
-
-I've been saying this for weeks now, but no one seems to listen frankly I'm
-tired of repeating it:
-
-If we want to improve things, let's do that IN AN ORDERED WAY.  If everyone
-will come up with a new idea every two days, we won't be able to get anything
-actually _done_.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Jim.
