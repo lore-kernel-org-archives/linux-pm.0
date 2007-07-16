@@ -1,16 +1,13 @@
-From: jfannin@gmail.com (Joseph Fannin)
-Subject: Re: Hibernating To Swap Considered Harmful
-Date: Mon, 16 Jul 2007 01:37:52 -0400
-Message-ID: <20070716053751.GA13707@nineveh.local>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707131130.51279.rjw@sisk.pl>
-	<20070714004517.GA18336@nineveh.local>
-	<200707141148.18279.rjw@sisk.pl>
+From: david@lang.hm
+Subject: Re: Hibernation considerations
+Date: Sun, 15 Jul 2007 23:49:20 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+	<200707160802.46567.a1426z@gawab.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707141148.18279.rjw@sisk.pl>
+In-Reply-To: <200707160802.46567.a1426z@gawab.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +17,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, Joseph Fannin <jfannin@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 14, 2007 at 11:48:17AM +0200, Rafael J. Wysocki wrote:
-> On Saturday, 14 July 2007 02:45, Joseph Fannin wrote:
-> > On Fri, Jul 13, 2007 at 11:30:50AM +0200, Rafael J. Wysocki wrote:
-> > > On Friday, 13 July 2007 07:42, Joseph Fannin wrote:
-> > > > On Thu, Jul 12, 2007 at 08:06:43PM -0700, david@lang.hm wrote:
-> > >
-> > > If you're afraid of that, use a dedicated swap file.
-> >
-> >     I don't understand what you mean.  A dedicated swap file for what?
->
-> Sorry, I should have been more precise.
->
-> For hibernation (ie. a swap file that you activate right befor the
-> hibernation).
->
-> Also tuxonice (formerly known as suspend2) allows you to use regular files
-> hibernation.
+On Mon, 16 Jul 2007, Al Boldi wrote:
 
-     How is that different from what I proposed, other than the
-requirement to pass the swap data stuctures between the two kernels?
+>
+> david@lang.hm wrote:
+>> suspend-to-RAM should not involve kexec, the only reason for doing the
+>> kexec to to get a seperate userspace to use for suspend-to-disk operations
+>> instead of trying to partially freeze the sustem and keep useing it.
+>
+> Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant
+> to test kexec compatibility with device suspend/resume calls.
 
-     Even if you only expect hibernation to work only _most of the
-time_, suspending to swap means allocating a bunch of swap space that
-you intend to never be used as swap.  The two functions don't really
-belong together.
+the point I am trying to make here is that there is no reason that the 
+kexec approach needs to do _any_ suspend/resume calls.
 
---
-Joseph Fannin
-jfannin@gmail.com
+all that is needed is the ability of the new kernel to initialize the 
+devices it needs.
+
+suspend-to-disk-and-ram could be implemented as three 
+seperate steps
+
+1. suspend-to-disk
+
+2. resume-from-disk
+
+3. suspend-to-ram
+
+followed by either
+
+4. resume-from-ram
+
+or
+
+4. battery dies and loptop powers off completely
+
+5. power-on boot.
+
+6. resume-from-disk
+
+all that you need to do is to make sure that the system doesn't run 
+anything that would affect permanent media or the outside world between 
+steps #2 and #3
+
+yes it's more steps, but each step is logicly seperate, and each step will 
+be excercised on a regular basis, so the combination of the steps will 
+also be reliable.
+
+this is far better then creating yet another way to pause the system that 
+only a few people will use.
+
+David Lang
