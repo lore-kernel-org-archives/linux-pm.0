@@ -1,13 +1,16 @@
-From: david@lang.hm
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Hibernation considerations
-Date: Sun, 15 Jul 2007 23:49:20 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
-	<200707160802.46567.a1426z@gawab.com>
+Date: Mon, 16 Jul 2007 14:06:27 +0200
+Message-ID: <200707161406.28539.rjw@sisk.pl>
+References: <200707151433.34625.rjw@sisk.pl> <200707160122.09840.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707151644270.25614@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707160802.46567.a1426z@gawab.com>
+In-Reply-To: <Pine.LNX.4.64.0707151644270.25614@asgard.lang.hm>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,57 +20,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Jul 2007, Al Boldi wrote:
+On Monday, 16 July 2007 01:49, david@lang.hm wrote:
+> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+> 
+> > On Monday, 16 July 2007 00:42, david@lang.hm wrote:
+> >> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+> >>
+> >>> On Sunday, 15 July 2007 22:13, david@lang.hm wrote:
+> >>>> On Sun, 15 Jul 2007, Rafael J. Wysocki wrote:
+> >>>>
+> >>>>>    The ACPI specification requires us to invoke some global ACPI methods
+> >>>>>    during the hibernation and during the restore.  Moreover, the ordering of
+> >>>>>    code related to these ACPI methods may not be arbitrary (eg. some of
+> >>>>>    them have to be executed after devices are put into low power states etc.).
+> >>>>
+> >>>> for a pure hibernate mode, you will be powering off the box after saving
+> >>>> the suspend image. why are there any special ACPI modes involved?
+> >>>
+> >>> Because, for example, on my machine the status of power supply (present
+> >>> vs not present) is not updated correctly after the restore if ACPI callbacks
+> >>> aren't used during the hibernation.  That's just experience and it's in line
+> >>> with the ACPI spec.
+> >>
+> >> so if a machine is actually powered off the /dev/suspend process won't
+> >> work?
+> >
+> > No, it sort of works as usual, but after the restore the platform is not in the
+> > correct state.
+> 
+> this is not hibernate as I and many others are thinking of it.
+> 
+> hibernate as we are thinking would work on basicly any hardware, including 
+> things with no ACPI or power savings support. and the system could be in 
+> hibernate mode for any time period.
+> 
+> for that matter, after a system is put into hibernate mode the system 
+> could be completely disassembled and any components replaced and the 
+> system would work after a resume (assuming you still have access to the 
+> suspend image)
 
->
-> david@lang.hm wrote:
->> suspend-to-RAM should not involve kexec, the only reason for doing the
->> kexec to to get a seperate userspace to use for suspend-to-disk operations
->> instead of trying to partially freeze the sustem and keep useing it.
->
-> Or you could do suspend-to-disk-and-RAM.  But in the above case, it was meant
-> to test kexec compatibility with device suspend/resume calls.
+Well, this is not how ACPI defines the S4 sleep state.  If the system is in
+S4, that corresponds to our hibernation, you are _not_ allowed to disassemble
+it.
 
-the point I am trying to make here is that there is no reason that the 
-kexec approach needs to do _any_ suspend/resume calls.
+I've just done an experiment on my test desktop.  I had enabled suspend support
+in the CMOS setup and afterwards I made Linux hibernate in the "platform" mode.
+Then, when the system was powred on, the BIOS showed me a nice "Resume from
+hibernation" screen that is not normally displayed during boot.  This clearly
+means that some information has been preserved by the platform across the
+hibernate/restore cycle.  We are supposed to handle that.
 
-all that is needed is the ability of the new kernel to initialize the 
-devices it needs.
+Greetngs,
+Rafael
 
-suspend-to-disk-and-ram could be implemented as three 
-seperate steps
 
-1. suspend-to-disk
-
-2. resume-from-disk
-
-3. suspend-to-ram
-
-followed by either
-
-4. resume-from-ram
-
-or
-
-4. battery dies and loptop powers off completely
-
-5. power-on boot.
-
-6. resume-from-disk
-
-all that you need to do is to make sure that the system doesn't run 
-anything that would affect permanent media or the outside world between 
-steps #2 and #3
-
-yes it's more steps, but each step is logicly seperate, and each step will 
-be excercised on a regular basis, so the combination of the steps will 
-also be reliable.
-
-this is far better then creating yet another way to pause the system that 
-only a few people will use.
-
-David Lang
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
