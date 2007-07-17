@@ -1,17 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Tue, 17 Jul 2007 13:46:51 +0200
-Message-ID: <200707171346.52542.rjw__15615.9665472389$1184672426$gmane$org@sisk.pl>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707161740.26703.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707162112180.19248@asgard.lang.hm>
+Subject: Re: Hibernating To Swap Considered Harmful
+Date: Tue, 17 Jul 2007 13:54:45 +0200
+Message-ID: <200707171354.46957.rjw__22236.9452626028$1184673000$gmane$org@sisk.pl>
+References: <200707121453.49616.rjw@sisk.pl>
+	<20070717072601.GA21633@nineveh.local>
+	<Pine.LNX.4.64.0707170030460.19248@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707162112180.19248@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707170030460.19248@asgard.lang.hm>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,77 +22,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: linux-kernel@vger.kernel.org, Joseph Fannin <jfannin@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 17 July 2007 06:18, david@lang.hm wrote:
-> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On Tuesday, 17 July 2007 09:34, david@lang.hm wrote:
+> On Tue, 17 Jul 2007, Joseph Fannin wrote:
 > 
-> > On Monday, 16 July 2007 16:42, Huang, Ying wrote:
-> >> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
-> >>>> is this  a matter of running some test to find out, or is this a question
-> >>>> for the kexec implemantors?
-> >>>
-> >>> Actually, I'd like someone to tell me. ;-)
-> >>>
-> >>> I've browsed the kexec code, but haven't found anything related to the devices
-> >>> in it.  Perhaps I didn't know where to look ...
+> > On Mon, Jul 16, 2007 at 11:42:08PM -0700, david@lang.hm wrote:
+> >> On Tue, 17 Jul 2007, Joseph Fannin wrote:
+> >
+> >>> root is free to "dd if=/dev/random of=/dev/mem".  Root owned
+> >>> daemons which do bad things are bugs.
 > >>
-> >> There are two stages for kexec. For "normal" kexec, first the
-> >> sys_kexe_load is called to load the kernel image, then
-> >> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
-> >
-> > OK, thanks.  This is the information that I was missing.
-> >
-> >> The call chain is as follow:
+> >> in this case it would be more like
 > >>
-> >> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
-> >>     kernel_kexec
-> >>         kernel_restart_prepare
-> >>             device_shutdown
-> >>         machine_shutdown
-> >>         machine_kexec
+> >> dd if=/block0 of=/dev/sda1 count=1 bs=4096 skip=5000
+> >> dd if=/block1 of=/dev/sda1 count=1 bs=4096 skip=5050
+> >> dd if=/block2 of=/dev/sda1 count=1 bs=4096 skip=5400
+> >> etc
 > >>
-> >> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
-> >> every device is called to put device in quiescent state. In
-> >> machine_kexec, the new kernel is booted.
+> >> to write the blocks to the raw parition in the right place
 > >
-> > Yes.
+> > What I meant by that was that root is allowed to shoot himself in the
+> > foot.  Nothing stops root from opening a swap/hibernate file, which
+> > would put it in cache, and cause it to be inconsistant if a
+> > hibernation image was written to it behind the kernel's back.
 > >
-> >> So, for normal kexec, there is no code path for device state saving and
-> >> restoring.
+> > That would be a very stupid thing to do, however.  There's no reason
+> > to open that file, unless you know *exactly* what you are doing, in
+> > which case the onus is on you to get it right.
 > >
-> > Exactly.
+> > But you have a point.  The swap file could be very fragmented.  It
+> > might often be so, even.
 > >
-> >> State of device can be restore after shutdown? I don't think so.
+> > Still, is this better than exporting the kernel's swap internals
+> > (which has never been a public interface before)?
 > >
-> > No, it can't, but we need something like this for hibernation and
-> > device_shutdown() is not appropriate for this purpose IMO.
+> > Does it make the interface that writing hibernation images to swap
+> > imposes any better?
+> >
+> > Even if hibernation files are no less complicated to support than
+> > hibernating to swap files (which isn't a forgone conclusion) , there
+> > are plenty of reasons writing hibernation images to swap doesn't make
+> > sense.
+> >
+> >
+> >>> Again, supporting swap files (*which is not optional*) requires the
+> >>> very same support.
+> >>
+> >> in the kexec model why would the second kernel care about swap files at
+> >> all? (unles it chooses to write to them, in which case it is exactly the
+> >> same support, but unless it writes to them it doesn't need to care)
+> >
+> > My point is that no extra work is required to write hibernation images
+> > to dedicated files than to write hibernation images to swap files.
+> >
+> > If swap files are to be supported, then, there's no technical reason
+> > not to support dedicated hibernation files.  Dedicated hibernation
+> > files are better, and there's no reason not to implement them.
 > 
-> is the only reason that device_shutdown() is not appropriate the amount of 
-> time it takes to shutdown some devices and then start them up again? (I'm 
-> specificly thinking of drive spin down/up as an example)
+> I agree with your point, but the reverse is not true, the ability to write 
+> to a dedicated hibernation file does not produce the capacity to write to 
+> a swap file, and I do question the 'requirement' to write the hibernation 
+> image to the swap file.
 
-Not only that.  You also need to save some driver data so that it can restore
-the devices state from before the hibernation.  [Say you have a task blocked
-on the driver's mutex in .read().  In that case you'd want the .read() to be
-carried out after the restore in the same way in which it would have been
-caried out if the hibernation hadn't occur.]
-
-> if so, it is probably worth implementing a demo with the long times 
-> involved to hash out any other problems, and then implemnt shortcuts to 
-> avoid the device_shutdown only where the time involved is excessive.
-
-I think that device_shutdown() is just inappropriate, because in principle
-it doesn't allow you to save any information related to the device state
-before hibernation that may be needed after the restore.
-
-> so, exactly where in the process above does the memory map need to be 
-> created? is this in the machine_shutdown step or would it need to be in 
-> the machine_kexec step?
-
-I would do in in the machine_kexec step.
+There's no such requirement, it's just been easier to implement.
 
 Greetings,
 Rafael
