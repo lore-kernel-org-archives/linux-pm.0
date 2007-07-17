@@ -1,11 +1,11 @@
 From: <gregkh@suse.de>
-Subject: patch pm-remove-deprecated-dpm_runtime_-routines.patch
-	added to gregkh-2.6 tree
-Date: Tue, 17 Jul 2007 10:21:16 -0700
-Message-ID: <20070717172115.4A2AD14540D0@imap.suse.de>
-References: <Pine.LNX.4.44L0.0707121655070.2567-100000@iolanthe.rowland.org>
+Subject: patch pm-remove-deprecated-sysfs-files.patch added to
+	gregkh-2.6 tree
+Date: Tue, 17 Jul 2007 10:21:21 -0700
+Message-ID: <20070717172120.4EEC114540D0@imap.suse.de>
+References: <Pine.LNX.4.44L0.0707121653440.2567-100000@iolanthe.rowland.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707121655070.2567-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707121653440.2567-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,265 +21,153 @@ List-Id: linux-pm@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-     Subject: PM: remove deprecated dpm_runtime_* routines
+     Subject: PM: Remove deprecated sysfs files
 
 to my gregkh-2.6 tree.  Its filename is
 
-     pm-remove-deprecated-dpm_runtime_-routines.patch
+     pm-remove-deprecated-sysfs-files.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From linux-pm-bounces@lists.linux-foundation.org Thu Jul 12 14:01:16 2007
+>From linux-pm-bounces@lists.linux-foundation.org Thu Jul 12 13:59:38 2007
 From: Alan Stern <stern@rowland.harvard.edu>
-Date: Thu, 12 Jul 2007 16:57:22 -0400 (EDT)
-Subject: PM: remove deprecated dpm_runtime_* routines
+Date: Thu, 12 Jul 2007 16:55:07 -0400 (EDT)
+Subject: PM: Remove deprecated sysfs files
 To: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pcmcia@lists.infradead.org, Dominik Brodowski <linux@dominikbrodowski.net>
-Message-ID: <Pine.LNX.4.44L0.0707121655070.2567-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0707121653440.2567-100000@iolanthe.rowland.org>
 
 
-This patch (as933) removes the deprecated dpm_runtime_suspend() and
-dpm_runtime_resume() routines from the PM core.  The only user of
-those routines is the PCMCIA ds driver; local replacements are added.
+This patch (as932) removes the deprecated sysfs .../power/state
+attribute files.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-CC: Dominik Brodowski <linux@dominikbrodowski.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/feature-removal-schedule.txt |    1 
- drivers/base/power/Makefile                |    2 
- drivers/base/power/power.h                 |    5 -
- drivers/base/power/runtime.c               |   85 -----------------------------
- drivers/pcmcia/ds.c                        |   40 +++++++++++--
- include/linux/pm.h                         |   11 ---
- 6 files changed, 35 insertions(+), 109 deletions(-)
+ Documentation/feature-removal-schedule.txt |    3 -
+ drivers/base/power/sysfs.c                 |   66 -----------------------------
+ kernel/power/Kconfig                       |   12 -----
+ 3 files changed, 1 insertion(+), 80 deletions(-)
 
 --- a/Documentation/feature-removal-schedule.txt
 +++ b/Documentation/feature-removal-schedule.txt
-@@ -27,7 +27,6 @@ Who:	Hans Verkuil <hverkuil@xs4all.nl> a
+@@ -26,8 +26,7 @@ Who:	Hans Verkuil <hverkuil@xs4all.nl> a
+ 
  ---------------------------
  
- What:	dev->power.power_state
--	dpm_runtime_{suspend,resume)()
+-What:	/sys/devices/.../power/state
+-	dev->power.power_state
++What:	dev->power.power_state
+ 	dpm_runtime_{suspend,resume)()
  When:	July 2007
  Why:	Broken design for runtime control over driver power states, confusing
- 	driver-internal runtime power management with:  mechanisms to support
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,5 +1,5 @@
- obj-y			:= shutdown.o
--obj-$(CONFIG_PM)	+= main.o suspend.o resume.o runtime.o sysfs.o
-+obj-$(CONFIG_PM)	+= main.o suspend.o resume.o sysfs.o
- obj-$(CONFIG_PM_TRACE)	+= trace.o
- 
- ifeq ($(CONFIG_DEBUG_DRIVER),y)
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -62,11 +62,6 @@ extern int resume_device(struct device *
-  */
- extern int suspend_device(struct device *, pm_message_t);
- 
--
--/*
-- * runtime.c
-- */
--
- #else /* CONFIG_PM */
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -7,69 +7,6 @@
+ #include "power.h"
  
  
---- a/drivers/base/power/runtime.c
-+++ /dev/null
-@@ -1,85 +0,0 @@
--/*
-- * drivers/base/power/runtime.c - Handling dynamic device power management.
-- *
-- * Copyright (c) 2003 Patrick Mochel
-- * Copyright (c) 2003 Open Source Development Lab
-- *
-- */
--
--#include <linux/device.h>
--#include "power.h"
--
--
--static void runtime_resume(struct device * dev)
--{
--	dev_dbg(dev, "resuming\n");
--	if (!dev->power.power_state.event)
--		return;
--	if (!resume_device(dev))
--		dev->power.power_state = PMSG_ON;
--}
--
+-#ifdef	CONFIG_PM_SYSFS_DEPRECATED
 -
 -/**
-- *	dpm_runtime_resume - Power one device back on.
-- *	@dev:	Device.
+- *	state - Control current power state of device
 - *
-- *	Bring one device back to the on state by first powering it
-- *	on, then restoring state. We only operate on devices that aren't
-- *	already on.
-- *	FIXME: We need to handle devices that are in an unknown state.
+- *	show() returns the current power state of the device. '0' indicates
+- *	the device is on. Other values (2) indicate the device is in some low
+- *	power state.
+- *
+- *	store() sets the current power state, which is an integer valued
+- *	0, 2, or 3.  Devices with bus.suspend_late(), or bus.resume_early()
+- *	methods fail this operation; those methods couldn't be called.
+- *	Otherwise,
+- *
+- *	- If the recorded dev->power.power_state.event matches the
+- *	  target value, nothing is done.
+- *	- If the recorded event code is nonzero, the device is reactivated
+- *	  by calling bus.resume() and/or class.resume().
+- *	- If the target value is nonzero, the device is suspended by
+- *	  calling class.suspend() and/or bus.suspend() with event code
+- *	  PM_EVENT_SUSPEND.
+- *
+- *	This mechanism is DEPRECATED and should only be used for testing.
 - */
 -
--void dpm_runtime_resume(struct device * dev)
+-static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
 -{
--	mutex_lock(&dpm_mtx);
--	runtime_resume(dev);
--	mutex_unlock(&dpm_mtx);
--}
--EXPORT_SYMBOL(dpm_runtime_resume);
--
--
--/**
-- *	dpm_runtime_suspend - Put one device in low-power state.
-- *	@dev:	Device.
-- *	@state:	State to enter.
-- */
--
--int dpm_runtime_suspend(struct device * dev, pm_message_t state)
--{
--	int error = 0;
--
--	mutex_lock(&dpm_mtx);
--	if (dev->power.power_state.event == state.event)
--		goto Done;
--
 -	if (dev->power.power_state.event)
--		runtime_resume(dev);
--
--	if (!(error = suspend_device(dev, state)))
--		dev->power.power_state = state;
-- Done:
--	mutex_unlock(&dpm_mtx);
--	return error;
+-		return sprintf(buf, "2\n");
+-	else
+-		return sprintf(buf, "0\n");
 -}
--EXPORT_SYMBOL(dpm_runtime_suspend);
 -
--
--#if 0
--/**
-- *	dpm_set_power_state - Update power_state field.
-- *	@dev:	Device.
-- *	@state:	Power state device is in.
-- *
-- *	This is an update mechanism for drivers to notify the core
-- *	what power state a device is in. Device probing code may not
-- *	always be able to tell, but we need accurate information to
-- *	work reliably.
-- */
--void dpm_set_power_state(struct device * dev, pm_message_t state)
+-static ssize_t state_store(struct device * dev, struct device_attribute *attr, const char * buf, size_t n)
 -{
--	mutex_lock(&dpm_mtx);
--	dev->power.power_state = state;
--	mutex_unlock(&dpm_mtx);
--}
--#endif  /*  0  */
---- a/drivers/pcmcia/ds.c
-+++ b/drivers/pcmcia/ds.c
-@@ -1127,6 +1127,34 @@ static int pcmcia_bus_uevent(struct devi
- 
- #endif
- 
-+/************************ runtime PM support ***************************/
-+
-+static int pcmcia_dev_suspend(struct device *dev, pm_message_t state);
-+static int pcmcia_dev_resume(struct device *dev);
-+
-+static int runtime_suspend(struct device *dev)
-+{
-+	int rc;
-+
-+	down(&dev->sem);
-+	rc = pcmcia_dev_suspend(dev, PMSG_SUSPEND);
-+	up(&dev->sem);
-+	if (!rc)
-+		dev->power.power_state.event = PM_EVENT_SUSPEND;
-+	return rc;
-+}
-+
-+static void runtime_resume(struct device *dev)
-+{
-+	int rc;
-+
-+	down(&dev->sem);
-+	rc = pcmcia_dev_resume(dev);
-+	up(&dev->sem);
-+	if (!rc)
-+		dev->power.power_state.event = PM_EVENT_ON;
-+}
-+
- /************************ per-device sysfs output ***************************/
- 
- #define pcmcia_device_attr(field, test, format)				\
-@@ -1173,9 +1201,9 @@ static ssize_t pcmcia_store_pm_state(str
-                 return -EINVAL;
- 
- 	if ((!p_dev->suspended) && !strncmp(buf, "off", 3))
--		ret = dpm_runtime_suspend(dev, PMSG_SUSPEND);
-+		ret = runtime_suspend(dev);
- 	else if (p_dev->suspended && !strncmp(buf, "on", 2))
+-	pm_message_t state;
+-	int error = -EINVAL;
+-
+-	/* disallow incomplete suspend sequences */
+-	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
+-		return error;
+-
+-	state.event = PM_EVENT_SUSPEND;
+-	/* Older apps expected to write "3" here - confused with PCI D3 */
+-	if ((n == 1) && !strcmp(buf, "3"))
+-		error = dpm_runtime_suspend(dev, state);
+-
+-	if ((n == 1) && !strcmp(buf, "2"))
+-		error = dpm_runtime_suspend(dev, state);
+-
+-	if ((n == 1) && !strcmp(buf, "0")) {
 -		dpm_runtime_resume(dev);
-+		runtime_resume(dev);
- 
- 	return ret ? ret : count;
- }
-@@ -1312,10 +1340,10 @@ static int pcmcia_bus_suspend_callback(s
- 	struct pcmcia_socket *skt = _data;
- 	struct pcmcia_device *p_dev = to_pcmcia_dev(dev);
- 
--	if (p_dev->socket != skt)
-+	if (p_dev->socket != skt || p_dev->suspended)
- 		return 0;
- 
--	return dpm_runtime_suspend(dev, PMSG_SUSPEND);
-+	return runtime_suspend(dev);
- }
- 
- static int pcmcia_bus_resume_callback(struct device *dev, void * _data)
-@@ -1323,10 +1351,10 @@ static int pcmcia_bus_resume_callback(st
- 	struct pcmcia_socket *skt = _data;
- 	struct pcmcia_device *p_dev = to_pcmcia_dev(dev);
- 
--	if (p_dev->socket != skt)
-+	if (p_dev->socket != skt || !p_dev->suspended)
- 		return 0;
- 
--	dpm_runtime_resume(dev);
-+	runtime_resume(dev);
- 
- 	return 0;
- }
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -284,8 +284,6 @@ extern int device_prepare_suspend(pm_mes
- #define device_may_wakeup(dev) \
- 	(device_can_wakeup(dev) && (dev)->power.should_wakeup)
- 
--extern int dpm_runtime_suspend(struct device *, pm_message_t);
--extern void dpm_runtime_resume(struct device *);
- extern void __suspend_report_result(const char *function, void *fn, int ret);
- 
- #define suspend_report_result(fn, ret)					\
-@@ -317,15 +315,6 @@ static inline int device_suspend(pm_mess
- #define device_set_wakeup_enable(dev,val)	do{}while(0)
- #define device_may_wakeup(dev)			(0)
- 
--static inline int dpm_runtime_suspend(struct device * dev, pm_message_t state)
--{
--	return 0;
+-		error = 0;
+-	}
+-
+-	return error ? error : n;
 -}
 -
--static inline void dpm_runtime_resume(struct device * dev)
--{
--}
+-static DEVICE_ATTR(state, 0644, state_show, state_store);
 -
- #define suspend_report_result(fn, ret) do { } while (0)
+-
+-#endif	/* CONFIG_PM_SYSFS_DEPRECATED */
+-
+ /*
+  *	wakeup - Report/change current wakeup option for device
+  *
+@@ -143,9 +80,6 @@ static DEVICE_ATTR(wakeup, 0644, wake_sh
  
- static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
+ 
+ static struct attribute * power_attrs[] = {
+-#ifdef	CONFIG_PM_SYSFS_DEPRECATED
+-	&dev_attr_state.attr,
+-#endif
+ 	&dev_attr_wakeup.attr,
+ 	NULL,
+ };
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -65,18 +65,6 @@ config PM_TRACE
+ 	CAUTION: this option will cause your machine's real-time clock to be
+ 	set to an invalid time after a resume.
+ 
+-config PM_SYSFS_DEPRECATED
+-	bool "Driver model /sys/devices/.../power/state files (DEPRECATED)"
+-	depends on PM && SYSFS
+-	default n
+-	help
+-	  The driver model started out with a sysfs file intended to provide
+-	  a userspace hook for device power management.  This feature has never
+-	  worked very well, except for limited testing purposes, and so it will
+-	  be removed.   It's not clear that a generic mechanism could really
+-	  handle the wide variability of device power states; any replacements
+-	  are likely to be bus or driver specific.
+-
+ config SOFTWARE_SUSPEND
+ 	bool "Software Suspend (Hibernation)"
+ 	depends on PM && SWAP && (((X86 || PPC64_SWSUSP) && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
 
 
 Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
