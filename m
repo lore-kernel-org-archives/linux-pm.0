@@ -1,16 +1,16 @@
 From: Jeremy Maitin-Shepard <jbms@cmu.edu>
 Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 16:54:08 -0400
-Message-ID: <87fy3mg39r.fsf__9504.56541399962$1184706013$gmane$org@jbms.ath.cx>
+Date: Tue, 17 Jul 2007 16:56:14 -0400
+Message-ID: <87bqeag369.fsf__11630.4133007818$1184706015$gmane$org@jbms.ath.cx>
 References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
-	<200707172217.01890.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
+	<200707172217.01890.rjw@sisk.pl> <87odiag45q.fsf@jbms.ath.cx>
+	<Pine.LNX.4.64.0707171335180.2467@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707171328450.2467@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707171335180.2467@asgard.lang.hm>
 	(david@lang.hm's message of "Tue\,
-	17 Jul 2007 13\:34\:24 -0700 \(PDT\)")
+	17 Jul 2007 13\:37\:08 -0700 \(PDT\)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,21 +28,16 @@ david@lang.hm writes:
 
 [snip]
 
-> this is where we disagree.
+>>> * figure out which devices can wake up
+>>> * put devices into low power states (wake-up devices are placed in the Dx
+>>> states compatible with the wake capability, the others are powered off)
 
-> why not? if all that the hibernated kernel does is to suspend-to-ram and makes
-> no changes to disks or TCP connections anything that it does do would be lost if
-> power were to fail and you instead did a restore from disk.
+> this can't be done by the image-saving kernel if that kernel doesn't know about
+> the device.
 
-It would be okay to switch the "hibernated" kernel in order to
-e.g. initiate a suspend to ram provided that everything is done
-atomically with interrupts off, for instance.  It is not clear, though,
-that it is possible to suspend to ram atomically like that.
-
-There is also the question of what state the devices will be in when
-switching back from the "save image" kernel to the "hibernated" kernel.
-
-[snip]
+The image-saving kernel can be made to know about all of the "wake up"
+devices; all other devices should have already been powered off by the
+"hibernated" kernel.
 
 -- 
 Jeremy Maitin-Shepard
