@@ -1,12 +1,15 @@
-From: amavisd-new <postmaster@ibict.br>
-Subject: VIRUS (W32/Mydoom.o@MM) IN MAIL FROM YOU
-Date: Tue, 17 Jul 2007 13:40:49 -0300 (BRT)
-Message-ID: <VS21401-05@sapucaia.ibict.br>
-References: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
+From: david@lang.hm
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 10:06:12 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707170959160.2467__42910.1018854$1184692602$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	<200707171640.39955.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707170824570.19248@asgard.lang.hm>
+	<200707171802.30903.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6433331430001040194=="
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
+In-Reply-To: <200707171802.30903.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,105 +17,81 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
 
---===============6433331430001040194==
-Content-Type: multipart/report; report-type=delivery-status;
-	boundary="----------=_1184690449-21401-1"
+> On Tuesday, 17 July 2007 17:29, david@lang.hm wrote:
+>> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+>>
+>>> On Tuesday, 17 July 2007 16:15, Alan Stern wrote:
+>>>> On Mon, 16 Jul 2007 david@lang.hm wrote:
+>>>>
+>>>>>> I agree, it would be good to have a non-ACPI-specific hibernation mode,
+>>>>>> something which would look to ACPI like a normal shutdown.  But I'm not
+>>>>>> so sure this is possible.
+>>>>>
+>>>>> why would it not be possible?
+>>>>
+>>>>> I can't think of anything much more frustrating then thinking that I
+>>>>> suspended a system and then discovering that becouse the battery went dead
+>>>>> (a complete power loss) that the system wouldn't boot up properly. to me
+>>>>> this would be a fairly common condition (when I'm mobile I use the machine
+>>>>> until I am out of battery, then stop and it may be a long time (days)
+>>>>> before I can charge the thing up again) this would not be a reliable
+>>>>> suspend as far as I'm concerned.
+>>>>>
+>>>>> for suspend-to-ram you have to worry about ACPI states and what you are
+>>>>> doing with them, for suspend-to-disk you can ignore them and completely
+>>>>> power the system off instead.
+>>>>
+>>>> If the only problem with doing this would be lack of wakeup support
+>>>> then I'm all for it.  There must be a lot of people who would like
+>>>> their computers to hibernate with power drain as close to 0 as possible
+>>>> and who don't care about remote wakeup.  In fact they might even prefer
+>>>> not to have wakeup support, so the computer doesn't resume at
+>>>> unexpected times.
+>>>
+>>> I'm afraid of one thing, though.
+>>>
+>>> If we create a framework without ACPI (well, ACPI needs to be enabled in the
+>>> kernel anyway for other reasons, like the ability to suspend to RAM) and then
+>>> it turns out that we have to add some ACPI hooks to it, that might be difficult
+>>> to do cleanly.
+>>
+>> doing suspend-to-ram should be orthoginal to doing hibernate-to-disk. some
+>> people will want both, some won't.
+>>
+>> at the moment kexec doesn't work with ACPI, that is a limitation that
+>> should be fixed, but makeing it able to work with ACPI enabled doesn't
+>> mean that it needs to be changed to depend on ACPI and it especially
+>> doesn't mean that it should pick up the limitations of the existing ACPI
+>> based hibernation approaches.
+>>
+>> if there is no ACPI on the system it should work, if ther is ACPI on the
+>> system it should still work.
+>>
+>>> Thus, it seems reasonable to think of the ACPI handling in advance.
+>>
+>> but don't become dependant on ACPI.
+>
+> Not dependent, but with the possibility of ACPI support taken into account.
+>
+> Arguably you can create a framework that, for example, will not allow the user
+> to adjust the size of the image, but then adding such a functionality may
+> require you to change the entire design.  Same thing with ACPI.
+>
+> I would rather avoid such pitfalls, if I could.
 
-This is a multi-part message in MIME format...
+Ok, what is it that you think ACPI fundamentally changes in this process?
 
-------------=_1184690449-21401-1
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+keep in mind that we are not makeing the assumption that the hardware 
+will remain powered (even a little bit), or the assumption that nothing 
+else will run on the hardware (eliminating any possibility that the 
+hardware is in a known ACPI state)
 
-VIRUS ALERT
-
-Our content checker found
-    virus: W32/Mydoom.o@MM
-    banned name: .exe
-in email presumably from you (<linux-pm@lists.osdl.org>), to the following recipient:
--> meinert@ibict.br
-
-Please check your system for viruses,
-or ask your system administrator to do so.
-
-Delivery of the email was stopped!
-
-
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Return-Path: <linux-pm@lists.osdl.org>
-Received: from lists.osdl.org (72-165-139-225.dia.static.qwest.net [72.165.139.225])
-	by sapucaia.ibict.br (Postfix) with ESMTP id 3DB103E5F58
-	for <meinert@ibict.br>; Tue, 17 Jul 2007 13:40:46 -0300 (BRT)
-From: linux-pm@lists.osdl.org
-To: meinert@ibict.br
-Subject: Mail System Error - Returned Mail
-Date: Tue, 17 Jul 2007 10:49:53 -0600
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0014_F8F82971.BBA51011"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-Message-Id: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
--------------------------- END HEADERS ------------------------------
-
-------------=_1184690449-21401-1
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
-
-Reporting-MTA: dns; sapucaia.ibict.br
-Received-From-MTA: smtp; sapucaia.ibict.br ([127.0.0.1])
-Arrival-Date: Tue, 17 Jul 2007 13:40:48 -0300 (BRT)
-
-Final-Recipient: rfc822; meinert@ibict.br
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=21401-05 - VIRUS:
-	W32/Mydoom.o@MM
-Last-Attempt-Date: Tue, 17 Jul 2007 13:40:49 -0300 (BRT)
-
-------------=_1184690449-21401-1
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
-
-Received: from lists.osdl.org (72-165-139-225.dia.static.qwest.net [72.165.139.225])
-	by sapucaia.ibict.br (Postfix) with ESMTP id 3DB103E5F58
-	for <meinert@ibict.br>; Tue, 17 Jul 2007 13:40:46 -0300 (BRT)
-From: linux-pm@lists.osdl.org
-To: meinert@ibict.br
-Subject: Mail System Error - Returned Mail
-Date: Tue, 17 Jul 2007 10:49:53 -0600
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0014_F8F82971.BBA51011"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-Message-Id: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
-
-------------=_1184690449-21401-1--
-
---===============6433331430001040194==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6433331430001040194==--
+David Lang
