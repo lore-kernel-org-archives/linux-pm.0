@@ -1,16 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernating To Swap Considered Harmful
-Date: Tue, 17 Jul 2007 13:54:45 +0200
-Message-ID: <200707171354.46957.rjw__22236.9452626028$1184673000$gmane$org@sisk.pl>
-References: <200707121453.49616.rjw@sisk.pl>
-	<20070717072601.GA21633@nineveh.local>
-	<Pine.LNX.4.64.0707170030460.19248@asgard.lang.hm>
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec
+	base	hibernation
+Date: Tue, 17 Jul 2007 13:59:31 +0200
+Message-ID: <200707171359.33317.rjw__44687.8491355621$1184673226$gmane$org@sisk.pl>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<1184491804.1898.121.camel@caritas-dev.intel.com>
+	<Pine.LNX.4.64.0707170101010.19248@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707170030460.19248@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707170101010.19248@asgard.lang.hm>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,71 +23,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, Joseph Fannin <jfannin@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 17 July 2007 09:34, david@lang.hm wrote:
-> On Tue, 17 Jul 2007, Joseph Fannin wrote:
+On Tuesday, 17 July 2007 10:13, david@lang.hm wrote:
+> Ying, as the kexec guru in this thread I have a question for you about how 
+> kexec works (and possibly where you are going with this)
 > 
-> > On Mon, Jul 16, 2007 at 11:42:08PM -0700, david@lang.hm wrote:
-> >> On Tue, 17 Jul 2007, Joseph Fannin wrote:
-> >
-> >>> root is free to "dd if=/dev/random of=/dev/mem".  Root owned
-> >>> daemons which do bad things are bugs.
-> >>
-> >> in this case it would be more like
-> >>
-> >> dd if=/block0 of=/dev/sda1 count=1 bs=4096 skip=5000
-> >> dd if=/block1 of=/dev/sda1 count=1 bs=4096 skip=5050
-> >> dd if=/block2 of=/dev/sda1 count=1 bs=4096 skip=5400
-> >> etc
-> >>
-> >> to write the blocks to the raw parition in the right place
-> >
-> > What I meant by that was that root is allowed to shoot himself in the
-> > foot.  Nothing stops root from opening a swap/hibernate file, which
-> > would put it in cache, and cause it to be inconsistant if a
-> > hibernation image was written to it behind the kernel's back.
-> >
-> > That would be a very stupid thing to do, however.  There's no reason
-> > to open that file, unless you know *exactly* what you are doing, in
-> > which case the onus is on you to get it right.
-> >
-> > But you have a point.  The swap file could be very fragmented.  It
-> > might often be so, even.
-> >
-> > Still, is this better than exporting the kernel's swap internals
-> > (which has never been a public interface before)?
-> >
-> > Does it make the interface that writing hibernation images to swap
-> > imposes any better?
-> >
-> > Even if hibernation files are no less complicated to support than
-> > hibernating to swap files (which isn't a forgone conclusion) , there
-> > are plenty of reasons writing hibernation images to swap doesn't make
-> > sense.
-> >
-> >
-> >>> Again, supporting swap files (*which is not optional*) requires the
-> >>> very same support.
-> >>
-> >> in the kexec model why would the second kernel care about swap files at
-> >> all? (unles it chooses to write to them, in which case it is exactly the
-> >> same support, but unless it writes to them it doesn't need to care)
-> >
-> > My point is that no extra work is required to write hibernation images
-> > to dedicated files than to write hibernation images to swap files.
-> >
-> > If swap files are to be supported, then, there's no technical reason
-> > not to support dedicated hibernation files.  Dedicated hibernation
-> > files are better, and there's no reason not to implement them.
+> for the power-off hibernate with ACPI disabled the hibernation seems 
+> fairly straightforward (although there are still some missing pieces)
 > 
-> I agree with your point, but the reverse is not true, the ability to write 
-> to a dedicated hibernation file does not produce the capacity to write to 
-> a swap file, and I do question the 'requirement' to write the hibernation 
-> image to the swap file.
+> however, since the resume designed for ACPI won't work would the following 
+> approach work
+> 
+> 1. boot one kernel
+> 2. setup a kexec the same way you would for hibernate
+> 3. kexec to the new kernel
+> 4. overwrite the memory of the first kernel
+> 5. kexec 'back' to the main kernel that has now been overwritten by what was saved?
+> 
+> as part of this question, when you do a kexec, how does the kernel that 
+> you are doing the kexec to know what to run next?
+> 
+> it needs to do some initialization first before it starts running normal 
+> things, and at that point it the move back doesn't look for init like a 
+> normal kernel boot (or the system would effectivly boot instead of picking 
+> up where it left off)
+> 
+> is this 'restart point' flexible enough that either the pre-hibernate 
+> kerenl or the small hibernate kernel could tell the pre-hibernate kernel 
+> to go into suspend-to-ram mode before doing anything else?
+> 
+> Rafael,
+>    if ACPI is disabled and not used, is there any memory in the origional 
+> kernel that _must not_ be saved in the hibernate image? I recognise that 
+> for efficancy it would save time to not save free memory, but if I'm 
+> willing to waste some resources would it hurt to save everything?
 
-There's no such requirement, it's just been easier to implement.
+On some systems there are valid 'struct page' structures that correspond to
+memory holes and the kernel will oops if you try to save the contents of
+these pages.  Unfortunately, only the early initialization platform code can
+tell you which they are.
 
 Greetings,
 Rafael
