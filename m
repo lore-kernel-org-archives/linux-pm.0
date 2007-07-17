@@ -1,16 +1,15 @@
 From: david@lang.hm
-Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
-	hibernation
-Date: Mon, 16 Jul 2007 21:18:32 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707162112180.19248@asgard.lang.hm>
-References: <1184167831.12556.13.camel@caritas-dev.intel.com>
-	<200707161417.50166.rjw@sisk.pl>
-	<1184596950.24143.28.camel@caritas-dev.intel.com>
-	<200707161740.26703.rjw@sisk.pl>
+Subject: Re: Hibernation considerations
+Date: Mon, 16 Jul 2007 21:33:06 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707162129090.19248@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+	<200707160802.46567.a1426z@gawab.com>
+	<Pine.LNX.4.64.0707152342140.19248@asgard.lang.hm>
+	<200707161632.02334.a1426z@gawab.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707161740.26703.rjw@sisk.pl>
+In-Reply-To: <200707161632.02334.a1426z@gawab.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +19,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
+On Mon, 16 Jul 2007, Al Boldi wrote:
 
-> On Monday, 16 July 2007 16:42, Huang, Ying wrote:
->> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
->>>> is this  a matter of running some test to find out, or is this a question
->>>> for the kexec implemantors?
+> david@lang.hm wrote:
+>> On Mon, 16 Jul 2007, Al Boldi wrote:
+>>> david@lang.hm wrote:
+>>>> suspend-to-RAM should not involve kexec, the only reason for doing the
+>>>> kexec to to get a seperate userspace to use for suspend-to-disk
+>>>> operations instead of trying to partially freeze the sustem and keep
+>>>> useing it.
 >>>
->>> Actually, I'd like someone to tell me. ;-)
->>>
->>> I've browsed the kexec code, but haven't found anything related to the devices
->>> in it.  Perhaps I didn't know where to look ...
+>>> Or you could do suspend-to-disk-and-RAM.  But in the above case, it was
+>>> meant to test kexec compatibility with device suspend/resume calls.
 >>
->> There are two stages for kexec. For "normal" kexec, first the
->> sys_kexe_load is called to load the kernel image, then
->> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
+>> the point I am trying to make here is that there is no reason that the
+>> kexec approach needs to do _any_ suspend/resume calls.
 >
-> OK, thanks.  This is the information that I was missing.
+> When you go through ACPI, then that implies calling suspend/resume calls.
+
+then don't go through ACPI
+
+>> all that is needed is the ability of the new kernel to initialize the
+>> devices it needs.
 >
->> The call chain is as follow:
+> We have to go through ACPI, for wakeup functions to succeed.  A simple
+> power-off won't do.
+
+the kexec switch being posted requires ACPI be disabled, so it's clearly 
+possible to switch kernels and initialize devices without ACPI
+
+>> suspend-to-disk-and-ram could be implemented as three
+>> seperate steps
 >>
->> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
->>     kernel_kexec
->>         kernel_restart_prepare
->>             device_shutdown
->>         machine_shutdown
->>         machine_kexec
+>> 1. suspend-to-disk
 >>
->> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
->> every device is called to put device in quiescent state. In
->> machine_kexec, the new kernel is booted.
+>> 2. resume-from-disk
+>>
+>> 3. suspend-to-ram
+>>
+>> followed by either
+>>
+>> 4. resume-from-ram
+>>
+>> or
+>>
+>> 4. battery dies and loptop powers off completely
+>>
+>> 5. power-on boot.
+>>
+>> 6. resume-from-disk
+>>
+>> all that you need to do is to make sure that the system doesn't run
+>> anything that would affect permanent media or the outside world between
+>> steps #2 and #3
 >
-> Yes.
->
->> So, for normal kexec, there is no code path for device state saving and
->> restoring.
->
-> Exactly.
->
->> State of device can be restore after shutdown? I don't think so.
->
-> No, it can't, but we need something like this for hibernation and
-> device_shutdown() is not appropriate for this purpose IMO.
+> Exactly, which is why your scheme would break down on #3, and that's why you
+> need to call S3 from within the kexec'd hibernation kernel after saving the
+> hibernation image.
 
-is the only reason that device_shutdown() is not appropriate the amount of 
-time it takes to shutdown some devices and then start them up again? (I'm 
-specificly thinking of drive spin down/up as an example)
+when a kexec is called, how does the kernel know what to execute? 
+something needs to tell it what to do, and I think that something is 
+either something in the kexec image, or it's something passed as a 
+parameter to that image.
 
-if so, it is probably worth implementing a demo with the long times 
-involved to hash out any other problems, and then implemnt shortcuts to 
-avoid the device_shutdown only where the time involved is excessive.
-
-so, exactly where in the process above does the memory map need to be 
-created? is this in the machine_shutdown step or would it need to be in 
-the machine_kexec step?
+all that would be needed to do #3 safely is to have the kernel that you 
+restarted on #2 do a suspend-to-ram before it does anything else.
 
 David Lang
