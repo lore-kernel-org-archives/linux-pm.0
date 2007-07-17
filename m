@@ -1,11 +1,15 @@
-From: <gregkh@suse.de>
-Subject: patch pm-remove-deprecated-sysfs-files.patch added to
-	gregkh-2.6 tree
-Date: Tue, 17 Jul 2007 10:21:21 -0700
-Message-ID: <20070717172120.4EEC114540D0@imap.suse.de>
-References: <Pine.LNX.4.44L0.0707121653440.2567-100000@iolanthe.rowland.org>
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+Subject: Re: Hibernation considerations
+Date: Tue, 17 Jul 2007 18:40:44 +0100
+Message-ID: <20070717174044.GA11212__23937.860193155$1184694397$gmane$org@gallifrey>
+References: <200707151433.34625.rjw@sisk.pl> <20070715125855.GA1737@gallifrey>
+	<200707160038.12943.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707151526080.25614@asgard.lang.hm>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707121653440.2567-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707151526080.25614@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,167 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu, akpm@linux-foundation.org, gregkh@suse.de, linux-pm@lists.linux-foundation.org, linux@dominikbrodowski.net, pavel@ucw.cz
+To: david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
+* david@lang.hm (david@lang.hm) wrote:
+> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
 
-This is a note to let you know that I've just added the patch titled
+> >Encryption is possible with both the userland hibernation (aka uswsusp) and
+> >TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a 
+> >"must
+> >have" feature for a framework to be generally useful (many users don't use 
+> >it
+> >anyway).
+> 
+> he's talking about the main system useing an encrypted device/partition, 
+> not the hibernate image being stored encrypted.
+> 
+> This would require the main system 'forget' the keys when it does the 
+> hinbernate and prompt for it again during the wake-up phase.
 
-     Subject: PM: Remove deprecated sysfs files
+Indeed - although as I say I really don't know what you would do with
+apps using the mounts at that point.   Still it seems like a 
+sensible requrest from the security side.
 
-to my gregkh-2.6 tree.  Its filename is
-
-     pm-remove-deprecated-sysfs-files.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From linux-pm-bounces@lists.linux-foundation.org Thu Jul 12 13:59:38 2007
-From: Alan Stern <stern@rowland.harvard.edu>
-Date: Thu, 12 Jul 2007 16:55:07 -0400 (EDT)
-Subject: PM: Remove deprecated sysfs files
-To: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pcmcia@lists.infradead.org, Dominik Brodowski <linux@dominikbrodowski.net>
-Message-ID: <Pine.LNX.4.44L0.0707121653440.2567-100000@iolanthe.rowland.org>
-
-
-This patch (as932) removes the deprecated sysfs .../power/state
-attribute files.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- Documentation/feature-removal-schedule.txt |    3 -
- drivers/base/power/sysfs.c                 |   66 -----------------------------
- kernel/power/Kconfig                       |   12 -----
- 3 files changed, 1 insertion(+), 80 deletions(-)
-
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -26,8 +26,7 @@ Who:	Hans Verkuil <hverkuil@xs4all.nl> a
- 
- ---------------------------
- 
--What:	/sys/devices/.../power/state
--	dev->power.power_state
-+What:	dev->power.power_state
- 	dpm_runtime_{suspend,resume)()
- When:	July 2007
- Why:	Broken design for runtime control over driver power states, confusing
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -7,69 +7,6 @@
- #include "power.h"
- 
- 
--#ifdef	CONFIG_PM_SYSFS_DEPRECATED
--
--/**
-- *	state - Control current power state of device
-- *
-- *	show() returns the current power state of the device. '0' indicates
-- *	the device is on. Other values (2) indicate the device is in some low
-- *	power state.
-- *
-- *	store() sets the current power state, which is an integer valued
-- *	0, 2, or 3.  Devices with bus.suspend_late(), or bus.resume_early()
-- *	methods fail this operation; those methods couldn't be called.
-- *	Otherwise,
-- *
-- *	- If the recorded dev->power.power_state.event matches the
-- *	  target value, nothing is done.
-- *	- If the recorded event code is nonzero, the device is reactivated
-- *	  by calling bus.resume() and/or class.resume().
-- *	- If the target value is nonzero, the device is suspended by
-- *	  calling class.suspend() and/or bus.suspend() with event code
-- *	  PM_EVENT_SUSPEND.
-- *
-- *	This mechanism is DEPRECATED and should only be used for testing.
-- */
--
--static ssize_t state_show(struct device * dev, struct device_attribute *attr, char * buf)
--{
--	if (dev->power.power_state.event)
--		return sprintf(buf, "2\n");
--	else
--		return sprintf(buf, "0\n");
--}
--
--static ssize_t state_store(struct device * dev, struct device_attribute *attr, const char * buf, size_t n)
--{
--	pm_message_t state;
--	int error = -EINVAL;
--
--	/* disallow incomplete suspend sequences */
--	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
--		return error;
--
--	state.event = PM_EVENT_SUSPEND;
--	/* Older apps expected to write "3" here - confused with PCI D3 */
--	if ((n == 1) && !strcmp(buf, "3"))
--		error = dpm_runtime_suspend(dev, state);
--
--	if ((n == 1) && !strcmp(buf, "2"))
--		error = dpm_runtime_suspend(dev, state);
--
--	if ((n == 1) && !strcmp(buf, "0")) {
--		dpm_runtime_resume(dev);
--		error = 0;
--	}
--
--	return error ? error : n;
--}
--
--static DEVICE_ATTR(state, 0644, state_show, state_store);
--
--
--#endif	/* CONFIG_PM_SYSFS_DEPRECATED */
--
- /*
-  *	wakeup - Report/change current wakeup option for device
-  *
-@@ -143,9 +80,6 @@ static DEVICE_ATTR(wakeup, 0644, wake_sh
- 
- 
- static struct attribute * power_attrs[] = {
--#ifdef	CONFIG_PM_SYSFS_DEPRECATED
--	&dev_attr_state.attr,
--#endif
- 	&dev_attr_wakeup.attr,
- 	NULL,
- };
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -65,18 +65,6 @@ config PM_TRACE
- 	CAUTION: this option will cause your machine's real-time clock to be
- 	set to an invalid time after a resume.
- 
--config PM_SYSFS_DEPRECATED
--	bool "Driver model /sys/devices/.../power/state files (DEPRECATED)"
--	depends on PM && SYSFS
--	default n
--	help
--	  The driver model started out with a sysfs file intended to provide
--	  a userspace hook for device power management.  This feature has never
--	  worked very well, except for limited testing purposes, and so it will
--	  be removed.   It's not clear that a generic mechanism could really
--	  handle the wide variability of device power states; any replacements
--	  are likely to be bus or driver specific.
--
- config SOFTWARE_SUSPEND
- 	bool "Software Suspend (Hibernation)"
- 	depends on PM && SWAP && (((X86 || PPC64_SWSUSP) && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
-
-
-Patches currently in gregkh-2.6 which might be from stern@rowland.harvard.edu are
-
-driver/pm-remove-deprecated-sysfs-files.patch
-driver/pm-remove-deprecated-dpm_runtime_-routines.patch
-usb/usb-add-descriptors-binary-sysfs-attribute.patch
-usb/usb-documentation-update-for-usb_unlink_urb.patch
-usb/usb-fix-warning-caused-by-autosuspend-counter-going-negative.patch
-usb/uhci-short-control-urbs-get-a-status-stage.patch
-usb/isp116x-hcd-prepare-for-urb-status.patch
+Dave
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
