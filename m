@@ -1,14 +1,12 @@
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 12:09:58 -0400
-Message-ID: <87hco3ypt5.fsf__20100.5475516014$1184688792$gmane$org@jbms.ath.cx>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171640.39955.rjw@sisk.pl>
+From: amavisd-new <postmaster@ibict.br>
+Subject: VIRUS (W32/Mydoom.o@MM) IN MAIL FROM YOU
+Date: Tue, 17 Jul 2007 13:40:49 -0300 (BRT)
+Message-ID: <VS21401-05@sapucaia.ibict.br>
+References: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/mixed; boundary="===============6433331430001040194=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707171640.39955.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue\, 17 Jul 2007 16\:40\:38 +0200")
+In-Reply-To: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,58 +14,105 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+This is a multi-part message in MIME format...
 
-[snip]
+--===============6433331430001040194==
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="----------=_1184690449-21401-1"
 
-> I'm afraid of one thing, though.
+This is a multi-part message in MIME format...
 
-> If we create a framework without ACPI (well, ACPI needs to be enabled in the
-> kernel anyway for other reasons, like the ability to suspend to RAM) and then
-> it turns out that we have to add some ACPI hooks to it, that might be difficult
-> to do cleanly.
+------------=_1184690449-21401-1
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-> Thus, it seems reasonable to think of the ACPI handling in advance.
+VIRUS ALERT
 
-As far as I understand, ACPI support is only useful for hibernate to the
-extent that it allows some or all of the following features:
+Our content checker found
+    virus: W32/Mydoom.o@MM
+    banned name: .exe
+in email presumably from you (<linux-pm@lists.osdl.org>), to the following recipient:
+-> meinert@ibict.br
 
- - possibly shows a nice looking "hibernate" LED
- - possibly allows the BIOS to show something about hibernate
- - possibly allows the lid or keyboard to "wake up" (turn on) the system
+Please check your system for viruses,
+or ask your system administrator to do so.
 
-Note that properly restoring device state (or even properly determining
-whether on external/mains power vs. battery) on resume is not something
-that should require special hibernate ACPI support, since it should be
-possible to make hibernate (and in general it will be the case that
-hibernate will) look exactly like a reboot to the BIOS/ACPI/devices.
-The problem that you mentioned on your system regarding power source
-information would seem to just be a problem with how ACPI is
-reinitialized after resuming from hibernation, which is not at all
-surprising since we know it (the use of driver calls for hibernate) is
-currently broken in many ways.
+Delivery of the email was stopped!
 
-It seems that enabling S4 mode should just be treated as a special
-shutdown mode, independent of hibernate.  In practice, it may likely
-only be useful in conjunction with hibernate, but there doesn't seem to
-be any reason it needs to be coupled.
 
-It would be useful to determine whether it is necessary to initialize
-ACPI specially after "resuming" from S4 mode, though, or whether they
-can be initialized normally (i.e. by a normal kernel for instance,
-completely unaware of hibernate).  If they can be initialized normally,
-then it seems that it is unnecessary to have any ACPI S4 mode support in
-the resume path, and it can merely exist as a special shutdown mode.
-Note that it seems a bit odd if ACPI can't be initialized normally after
-resume from S4 (and still work), since the "load image" kernel
-initializes everything normally before attempting to resume the
-hibernated system.
+For your reference, here are headers from your email:
+------------------------- BEGIN HEADERS -----------------------------
+Return-Path: <linux-pm@lists.osdl.org>
+Received: from lists.osdl.org (72-165-139-225.dia.static.qwest.net [72.165.139.225])
+	by sapucaia.ibict.br (Postfix) with ESMTP id 3DB103E5F58
+	for <meinert@ibict.br>; Tue, 17 Jul 2007 13:40:46 -0300 (BRT)
+From: linux-pm@lists.osdl.org
+To: meinert@ibict.br
+Subject: Mail System Error - Returned Mail
+Date: Tue, 17 Jul 2007 10:49:53 -0600
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0014_F8F82971.BBA51011"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
+Message-Id: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
+-------------------------- END HEADERS ------------------------------
 
--- 
-Jeremy Maitin-Shepard
+------------=_1184690449-21401-1
+Content-Type: message/delivery-status
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Delivery error report
+
+Reporting-MTA: dns; sapucaia.ibict.br
+Received-From-MTA: smtp; sapucaia.ibict.br ([127.0.0.1])
+Arrival-Date: Tue, 17 Jul 2007 13:40:48 -0300 (BRT)
+
+Final-Recipient: rfc822; meinert@ibict.br
+Action: failed
+Status: 5.7.1
+Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=21401-05 - VIRUS:
+	W32/Mydoom.o@MM
+Last-Attempt-Date: Tue, 17 Jul 2007 13:40:49 -0300 (BRT)
+
+------------=_1184690449-21401-1
+Content-Type: text/rfc822-headers
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Undelivered-message headers
+
+Received: from lists.osdl.org (72-165-139-225.dia.static.qwest.net [72.165.139.225])
+	by sapucaia.ibict.br (Postfix) with ESMTP id 3DB103E5F58
+	for <meinert@ibict.br>; Tue, 17 Jul 2007 13:40:46 -0300 (BRT)
+From: linux-pm@lists.osdl.org
+To: meinert@ibict.br
+Subject: Mail System Error - Returned Mail
+Date: Tue, 17 Jul 2007 10:49:53 -0600
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0014_F8F82971.BBA51011"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
+Message-Id: <20070717164046.3DB103E5F58@sapucaia.ibict.br>
+
+------------=_1184690449-21401-1--
+
+--===============6433331430001040194==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6433331430001040194==--
