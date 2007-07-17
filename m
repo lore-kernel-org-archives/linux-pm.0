@@ -1,12 +1,16 @@
-From: Baldwin <krgdz@aydoganlar.net>
-Subject: My position now is as the manager of the editorial
-	department, and here is my conundrum.
-Date: Tue, 17 Jul 2007 06:59:15 +0300
-Message-ID: <469C3E93.6000608@aydoganlar.net>
+From: david@lang.hm
+Subject: Re: [PATCH 0/2] Kexec jump: The first step to kexec base
+	hibernation
+Date: Mon, 16 Jul 2007 21:18:32 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707162112180.19248@asgard.lang.hm>
+References: <1184167831.12556.13.camel@caritas-dev.intel.com>
+	<200707161417.50166.rjw@sisk.pl>
+	<1184596950.24143.28.camel@caritas-dev.intel.com>
+	<200707161740.26703.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200707161740.26703.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,122 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Huang,
+	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-SZSN Sales UP 30%! Market Watchers Pick SZSN.
+On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
 
-Shandong Zhouyuan Seed and Nursery Co., Ltd (SZSN)
-$0.43 UP 30%
+> On Monday, 16 July 2007 16:42, Huang, Ying wrote:
+>> On Mon, 2007-07-16 at 14:17 +0200, Rafael J. Wysocki wrote:
+>>>> is this  a matter of running some test to find out, or is this a question
+>>>> for the kexec implemantors?
+>>>
+>>> Actually, I'd like someone to tell me. ;-)
+>>>
+>>> I've browsed the kexec code, but haven't found anything related to the devices
+>>> in it.  Perhaps I didn't know where to look ...
+>>
+>> There are two stages for kexec. For "normal" kexec, first the
+>> sys_kexe_load is called to load the kernel image, then
+>> sys_reboot(LINUX_REBOOT_CMD_KEXEC) is called to boot the new kernel.
+>
+> OK, thanks.  This is the information that I was missing.
+>
+>> The call chain is as follow:
+>>
+>> sys_reboot(LINUX_REBOOT_CMD_KEXEC)
+>>     kernel_kexec
+>>         kernel_restart_prepare
+>>             device_shutdown
+>>         machine_shutdown
+>>         machine_kexec
+>>
+>> In device_shutdown, the dev->bus->shutdown or dev->driver->shutdown of
+>> every device is called to put device in quiescent state. In
+>> machine_kexec, the new kernel is booted.
+>
+> Yes.
+>
+>> So, for normal kexec, there is no code path for device state saving and
+>> restoring.
+>
+> Exactly.
+>
+>> State of device can be restore after shutdown? I don't think so.
+>
+> No, it can't, but we need something like this for hibernation and
+> device_shutdown() is not appropriate for this purpose IMO.
 
-Sales reports show sales up 37.6% over last year. OTCPicks.com and
-RedHotPennyStock.com feature SZSN. Stock UP 30%! Get on SZSN first thing
-Tuesday!
+is the only reason that device_shutdown() is not appropriate the amount of 
+time it takes to shutdown some devices and then start them up again? (I'm 
+specificly thinking of drive spin down/up as an example)
 
-About the Author: Brian S.
+if so, it is probably worth implementing a demo with the long times 
+involved to hash out any other problems, and then implemnt shortcuts to 
+avoid the device_shutdown only where the time involved is excessive.
 
-Digital Surveillance System allows access via mobile device. GIS
-Software helps connect to dynamic content. So, branding is another way
-of conveying a value system and a set of promises behind it. Again, that
-contractor will not likely get bonding in the future. Once registered,
-professionals they are offered the same opportunities and access to
-local customers, and most importantly, at the same cost. Spouses taking
-separate vacations Home :: Web Directory :: huntingnews News :: Free RSS
-news :: Free Newsletter :: Tell a Friend Clientfinder.
+so, exactly where in the process above does the memory map need to be 
+created? is this in the machine_shutdown step or would it need to be in 
+the machine_kexec step?
 
-About Cinram Cinram International Inc. Major life changes at forty-five
-can be unsettling, and mine were.
-
-Bollinger bands are parallel and form the trend.
-
-com, NC -They want to start running and hunting," said urban musher Rob
-Fuechtenicht. Do you feel overwhelmed at all the options, rules and
-specs?
-
-Peregrine falcons make a comeback Home :: Web Directory :: huntingnews
-News :: Free RSS news :: Free Newsletter :: Tell a Friend Clientfinder.
-Intercolumnation may be of more interest to homeowners and residential
-builders as decorative columns could block natural light streaming into
-the residence. The Adirondack story Home :: Web Directory :: huntingnews
-News :: Free RSS news :: Free Newsletter :: Tell a Friend Clientfinder.
-On a hunting trip, scouts invade ABL Home :: Web Directory ::
-huntingnews News :: Free RSS news :: Free Newsletter :: Tell a Friend
-Clientfinder.
-Furthermore, only Speedheat is fully customized to meet the specific
-needs of each application. My position now is as the manager of the
-editorial department, and here is my conundrum.
-This is critical when several decorative columns are being used and are
-also the focal point of the building elevation.
-
-Bollinger bands are parallel and form the trend. Spouses taking separate
-vacations Home :: Web Directory :: huntingnews News :: Free RSS news ::
-Free Newsletter :: Tell a Friend Clientfinder. And the experience must
-be consistent
-The uptrend should continue to gather momentum.
-
-Moose poachers caught after killing trophy bulls Home :: Web Directory
-:: huntingnews News :: Free RSS news :: Free Newsletter :: Tell a Friend
-Clientfinder. Furthermore, only Speedheat is fully customized to meet
-the specific needs of each application. Urban Mushing Calls to Dogs'
-Wild Side Home :: Web Directory :: huntingnews News :: Free RSS news ::
-Free Newsletter :: Tell a Friend Clientfinder.
-So imagine my frustration.
-
-Digital Surveillance System allows access via mobile device. Here I am
-trying to help you guys by listing your jobs and having good subs
-contact you to bid, and I have to fight to get you to list with us.
-
-com is a tool designed to meet the unique needs of both home improvement
-professionals and homeowners. The Pitfalls of Trying to Help .
-
-Furthermore, only Speedheat is fully customized to meet the specific
-needs of each application.
-
-The volatility is high.
-
-Search for: Search what?
-
-CRM Software assists automotive dealers.
-
-Here I am trying to help you guys by listing your jobs and having good
-subs contact you to bid, and I have to fight to get you to list with us.
-The brand delivers on those expectations and therefore becomes memorable
-and recognizable. So, branding is another way of conveying a value
-system and a set of promises behind it.
-
-Crossett has several years of speculation writing experience.
-Construction Insurance and Bonds Simplified . "People want to connect
-with nature, . Why has branding become so important? The diameter of a
-Greek Doric column would be five and one half times the column height.
-Crossett has several years of speculation writing experience. Spouses
-taking separate vacations Home :: Web Directory :: huntingnews News ::
-Free RSS news :: Free Newsletter :: Tell a Friend Clientfinder.
-
-Greek Doric decorative columns are also very straightforward and
-substantial in design.
-prey for hunting, said Neal Ottaway, president  of The Florida Hawking
-Fraternity, a falconry club that supports the peregrine's removal from
-the list. It often is associated with a logo, tagline, color and graphic
-elements, but it is much more than that. Even an untrained eye can pick
-up improper spacing of architectural columns that can throw off the
-entire design.
-com, NC -They want to start running and hunting," said urban musher Rob
-Fuechtenicht.
-com, IA -"We haven't had problems with Internet hunting in Iowa, but
-there have been in other states," Lindenberg said.
-
-Like an electric blanket for the floor, RugBuddy turns regular area rugs
-into invisible space heaters and is an ideal solution for warming cold
-spots in any room of the home or office.
-
-"When you hook them to the scooter, you're riding behind them and
-they're in .
-
-Wildlife agency may freeze hiring of more officers Home :: Web Directory
-:: huntingnews News :: Free RSS news :: Free Newsletter :: Tell a Friend
-Clientfinder. In recognizing this trend, Chuck Solomon, a contractor
-himself, established ContractorHired. The volatility is high.
-Greek Doric decorative columns are also very straightforward and
-substantial in design.
-
-, CommVault Systems, Inc Search for: Search what?
+David Lang
