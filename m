@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: david@lang.hm
 Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 23:54:17 +0200
-Message-ID: <200707172354.18738.rjw__9323.64788973263$1184708848$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
-	<871wf6g1q1.fsf@jbms.ath.cx>
-	<Pine.LNX.4.64.0707171423280.2467@asgard.lang.hm>
+Date: Tue, 17 Jul 2007 14:42:58 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707171430050.2467@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	<200707172257.22959.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707171345270.2467@asgard.lang.hm>
+	<200707172337.24683.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707171423280.2467@asgard.lang.hm>
-Content-Disposition: inline
+In-Reply-To: <200707172337.24683.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,71 +19,144 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 17 July 2007 23:27, david@lang.hm wrote:
-> On Tue, 17 Jul 2007, Jeremy Maitin-Shepard wrote:
-> 
-> > david@lang.hm writes:
-> >
-> > [snip]
-> >
-> >>> How do you guarantee that no tasks are scheduled when you get back to the
-> >>> hibernated kernel?
-> >
-> >> just don't schedule any userspace tasks. all you need to do is to execute the
-> >> ACPI sleep functions. you normally do that after stopping userspace
-> >> anyway.
-> >
-> > What does "stopping userspace" mean?  You already said it does not mean
-> > disabling interrupts.  But using the freezer is also not an option,
-> > since the avoidance of that is the main reason for the kexec approach in
-> > the first place.
-> 
-> just don't schedule any non-kernel threads.
-> 
-> remember that the normal shutdown/suspend procedure is (from another 
-> related thread)
-> 
-> > >>sys_reboot(LINUX_REBOOT_CMD_KEXEC)
-> > >>     kernel_kexec
-> > >>         kernel_restart_prepare
-> > >>             device_shutdown
-> > >>         machine_shutdown
-> > >>         machine_kexec
-> 
-> I'm just saying that instead of going back to the normal operation of the 
-> kernel you just go directly to the new shutdown routine instead.
-> 
-> > [snip]
-> >
-> >>> Well, not exactly.  If your battery runs out of power while you're suspended,
-> >>> but you have the image saved, it's still better to restore from the image,
-> >> even
-> >>> if something may not work correctly after the restore, than to risk a loss of
-> >>> data.
-> >
-> >> if things don't work correctly you are still risking the loss of data, the user
-> >> just doesn't know it.
-> >
-> > It should be possible on any system to do a hibernate followed by a
-> > shutdown (and then resume properly, without any problems).  Thus, for
-> > handling suspend to both, you resume as if the system had been shutdown,
-> > rather than resuming as if the system came from S4.
-> 
-> I agree with this, but according to Rafael if the "hibernated" image is 
-> assuming that the devices were put into low-power mode by ACPI and you 
-> boot up instead the system doesn't work right.
+On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
 
-That's correct, some devices don't work right, but these are not disks.  They
-usually are devices closely related to the platform, like the embedded
-controller.
+> On Tuesday, 17 July 2007 22:53, david@lang.hm wrote:
+>> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+>>
+>>> On Tuesday, 17 July 2007 22:18, david@lang.hm wrote:
+>>>> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+>>>>
+>>>>> Now, with that in mind, ACPI requires us to make the system enter the S4 sleep
+>>>>> state as a result of the hibernation procedure.  In my opinion this may be done
+>>>>> after saving the image, but still this means, for example, that the
+>>>>> image-saving kernel needs to support ACPI.
+>>>>>
+>>>>> Next, during the restore, we should first check if the image is present (and
+>>>>> valid) _without_ turning ACPI on (note that this is not done by the current
+>>>>> hibernation code and that leads to strange problems on some systems).  Then,
+>>>>> if the image is present (and valid), we should first load it, jump to the
+>>>>> hibernated kernel and _then_ turn ACPI on and execute the _BFS and
+>>>>> _WAK ACPI global methods (again, this is not done by the current code in that
+>>>>> order, which is wrong).  Only after that is the hibernated kernel supposed to
+>>>>> continue.
+>>>>>
+>>>>> [Please refer to section 15.3 of the 3.0b ACPI spec for details.]
+>>>>
+>>>> you are starting from the assumption that ACPI S4 mode should be used.
+>>>>
+>>>> I'm saying that a suspend that uses ACPI S4 mode is fundamentally
+>>>> different from one that does a power off instead.
+>>>
+>>> It is different, but not fundamentally.
+>>>
+>>>> from my point of view the ACPI S4 sleep mode has far more in common with
+>>>> suspend-to-ram then with the suspend-to-disk that I'm talking about
+>>>>
+>>>> non-ACPI hibernate
+>>>>
+>>>>    since the box powers off
+>>>>      it uses zero power while suspended
+>>>>      another OS could be run before a resume
+>>>>      hardware can be swapped, suspend image could be sent around the world to be restored on another system.
+>>>>      restore makes no assumptions about the state of the hardware when it is restored
+>>>>      restore is slower (full BIOS boot is required)
+>>>>    should be able to work on just about any hardware (the limit is the ability to initialize the devices)
+>>>>
+>>>>
+>>>> ACPI suspends
+>>>>
+>>>>    since the box never completely powers off:
+>>>>      a complete power failure breaks the suspend
+>>>>      the OS must remain in control so other uses must be prevented.
+>>>>      hardware must remain in the ACPI state from suspend until restore.
+>>>>      restore can be faster (some initialization may be able to be skipped)
+>>>>    requires ACPI hardware support
+>>>>
+>>>> under the catagory of ACPI suspends you have
+>>>>
+>>>>    fast suspend-to-ram (stop scheduling, put the CPU to sleep, as long as
+>>>> the memory keeps getting refreshed)
+>>>>    slow suspend-to-ram (stop scheduling, put as much of the hardware as
+>>>> possible to sleep, including spinning down disks and other things that
+>>>> take a while to undo)
+>>>>    suspend-to-disk (stop scheduleing, copy the ram somewhere so that it
+>>>> doesn't need to be refreshed, put everything into low-power mode)
+>>>>
+>>>>    and there are probably quite a few others as well. but they are all in
+>>>> the same family in that you have to worry about ACPI states, and they all
+>>>> have the same restrictions on what can happen between suspend and resume
+>>>>
+>>>> the non-ACPI hibernate behaves very differently, and for some people (and
+>>>> I think I am one of them) it will meet their needs better then _any_ of
+>>>> the ACPI suspends.
+>>>
+>>> OTOH, there are many people who would want the ACPI suspends to be handled
+>>> and they don't really care for the power-off-only hibernation.
+>>>
+>>> If you aren't going to support the ACPI hibernation, your framework will be
+>>> incomplete and therefore not generally useful.
+>>
+>> if you make the framework limited by the ACPI requriement, your framework
+>> will not be able to be used in all cases and is therefor incomplete and
+>> not generally useful.
+>>
+>> see, I can make authoritative sounding declarations too. :-)
+>
+> Well, being able to support ACPI need not imply being unable to work in the
+> other cases.  Conversely, being able to work in non-ACPI cases need not imply
+> being unable to support ACPI.  Hence, you can support ACPI and be able to
+> work in the other cases at the same time.
+>
+> Try again. ;-)
 
-Greetings,
-Rafael
+I thought it was you who was saying that the restore operation requried 
+ACPI if you used ACPI at all.
 
+>> I agree that some people want ACPI suspends, but you don't seem to allow
+>> the fact that some people don't,
+>
+> No, I do.
+>
+> What I'm trying to say is that we should support the ACPI S4 transition and
+> resume, which DOES NOT MEAN that we should support ONLY that.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+it has sounded like you are saying that if you support ACPI S4 sleep then 
+it's incompatible with powering off.
+
+>> and those people don't want to have the ACPI based limits.
+>
+> There are NO ACPI LIMITS!  There only are things that you need to implement
+> if you're going to support ACPI, but they need not be used ALWAYS, no?
+
+yes there are limits. the fact that you can't remove the battery in S4 
+mode without messing things up is a limit, the fact that it's against ACPI 
+specs to boot another OS before resume is a limit. you seem to keep 
+pointing out requirements of ACPI that limit what can be done. I do not 
+disagree about these being requirements _if you are useing ACPI_, but if 
+you don't need ACPI they should not limit you.
+
+>> they _especially_ don't want those limits when it appears as if supporting
+>> those limits is what's preventing their much simpler case from working
+>> reliably.
+>>
+>> I strongly suspect that the majority of users don't care about ACPI, they
+>> want to be able to pause and resume their machine. they may want a couple
+>> options for how fast the resume is (trading resume speed against how much
+>> power the system eats), but the deep sleep modes (suspend-to-disk,
+>> hibernate) probably have restore times that are close enough to each other
+>> that very few people would care enough to opt for a ACPI S4 mode that
+>> won't survive a loss of battery power over a non-ACPI mode that would.
+>
+> Please don't argue like that, these are not arguments for avoiding the ACPI
+> support.  Arguably, you can support _both_ ACPI and non-ACPI hibernation, so
+> design for being able to support both.  End of story (as far as I'm concerned).
+
+I wish I understood how you are saying this, becouse it does not match 
+what I thought I have been reading for the last few days.
+
+David Lang
