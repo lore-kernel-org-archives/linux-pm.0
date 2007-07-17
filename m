@@ -1,20 +1,10 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Hibernation considerations
-Date: Wed, 18 Jul 2007 12:10:17 +0100
-Message-ID: <20070718111016.GA18716__5282.9836532057$1184757150$gmane$org@srcf.ucam.org>
-References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl>
-	<20070716123849.GC14212@grifter.jdc.home>
-	<200707161729.16440.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707162119500.19248@asgard.lang.hm>
-	<20070717104231.GA32486@srcf.ucam.org>
-	<Pine.LNX.4.64.0707170818460.19248@asgard.lang.hm>
-	<20070718021817.GA13502@srcf.ucam.org>
-	<Pine.LNX.4.64.0707172053280.19248@asgard.lang.hm>
+From: "king Hansen" <zqhzlm@multiponto.com.br>
+Subject: MD lists - over 30 specialties
+Date: Tue, 17 Jul 2007 13:39:37 -0700
+Message-ID: <1A787EE3.7684.1415C2D5@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707172053280.19248@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,28 +14,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Jim Crilly <jim@why.dont.jablowme.net>, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 08:54:24PM -0700, david@lang.hm wrote:
-> On Wed, 18 Jul 2007, Matthew Garrett wrote:
-> 
-> >On Tue, Jul 17, 2007 at 08:19:32AM -0700, david@lang.hm wrote:
-> >>On Tue, 17 Jul 2007, Matthew Garrett wrote:
-> >>>Powering off rather than using S4 means you lose most wakeup device
-> >>>support. That would be a functional regression compared to the current
-> >>>code.
-> >>
-> >>only if the kexec isn't able to initialize those devices.
-> >
-> >If you aren't using ACPI, you probably don't know how to.
-> 
-> the current kexec patch to allow you to move back to the original kernel 
-> requires ACPI be disabled to work.
 
-Which means it isn't putting the hardware into S4, which means that you 
-don't get the platform wakeup events.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+Here's the deal for this week but it's only available until July 20
+
+Medical Doctors in the USA
+more than 700,000 records - can be sorted by state or specialty
+many different fields, lots of specialties .. $351
+
+USA Hospital Database
+over 23,000 administrators on file
+full data on high profile execs .. $298
+
+USA Nursing Home List
+more than 31 thousand senior admins, 11,000 nursing directors
+in over 14,000 US nursing homes .. $190
+
+USA Dentist and Dental Services Database
+Includes 597,000 total records .. $191
+
+Order the Medical Doctor data and get the other 3 without charge
+
+For more details or to purchase send an email to : qualmed@hotmail.com or call 206-202-3021
+
+
+
+
+
+by sending us an email with "exit" in the subject we will know not to contact you again
