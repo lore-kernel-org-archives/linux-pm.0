@@ -1,13 +1,15 @@
 From: david@lang.hm
 Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 08:29:25 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707170824570.19248@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171640.39955.rjw@sisk.pl>
+Date: Tue, 17 Jul 2007 08:23:44 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707170820090.19248__19644.9925927029$1184686970$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707151918340.30402-100000@netrider.rowland.org>
+	<200707161632.02334.a1426z@gawab.com>
+	<Pine.LNX.4.64.0707162129090.19248@asgard.lang.hm>
+	<200707171508.06921.a1426z@gawab.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707171640.39955.rjw@sisk.pl>
+In-Reply-To: <200707171508.06921.a1426z@gawab.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,61 +19,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+On Tue, 17 Jul 2007, Al Boldi wrote:
 
-> On Tuesday, 17 July 2007 16:15, Alan Stern wrote:
->> On Mon, 16 Jul 2007 david@lang.hm wrote:
+> david@lang.hm wrote:
+>> On Mon, 16 Jul 2007, Al Boldi wrote:
+>>> We have to go through ACPI, for wakeup functions to succeed.  A simple
+>>> power-off won't do.
 >>
->>>> I agree, it would be good to have a non-ACPI-specific hibernation mode,
->>>> something which would look to ACPI like a normal shutdown.  But I'm not
->>>> so sure this is possible.
->>>
->>> why would it not be possible?
->>
->>> I can't think of anything much more frustrating then thinking that I
->>> suspended a system and then discovering that becouse the battery went dead
->>> (a complete power loss) that the system wouldn't boot up properly. to me
->>> this would be a fairly common condition (when I'm mobile I use the machine
->>> until I am out of battery, then stop and it may be a long time (days)
->>> before I can charge the thing up again) this would not be a reliable
->>> suspend as far as I'm concerned.
->>>
->>> for suspend-to-ram you have to worry about ACPI states and what you are
->>> doing with them, for suspend-to-disk you can ignore them and completely
->>> power the system off instead.
->>
->> If the only problem with doing this would be lack of wakeup support
->> then I'm all for it.  There must be a lot of people who would like
->> their computers to hibernate with power drain as close to 0 as possible
->> and who don't care about remote wakeup.  In fact they might even prefer
->> not to have wakeup support, so the computer doesn't resume at
->> unexpected times.
+>> the kexec switch being posted requires ACPI be disabled, so it's clearly
+>> possible to switch kernels and initialize devices without ACPI
 >
-> I'm afraid of one thing, though.
+> It's a given that kexec works in the absence of ACPI; what we have to handle
+> is the ACPI states across kernel invocations, to ensure wakeup functions
+> succeed.  If you don't need this, then just power off.
 >
-> If we create a framework without ACPI (well, ACPI needs to be enabled in the
-> kernel anyway for other reasons, like the ability to suspend to RAM) and then
-> it turns out that we have to add some ACPI hooks to it, that might be difficult
-> to do cleanly.
+>>>> suspend-to-disk-and-ram could be implemented as three
+>>>> seperate steps
+>>>>
+>>>> 1. suspend-to-disk
+>>>>
+>>>> 2. resume-from-disk
+>>>>
+>>>> 3. suspend-to-ram
+>>>>
+>>>> followed by either
+>>>>
+>>>> 4. resume-from-ram
+>>>>
+>>>> or
+>>>>
+>>>> 4. battery dies and loptop powers off completely
+>>>>
+>>>> 5. power-on boot.
+>>>>
+>>>> 6. resume-from-disk
+>>>>
+>>>> all that you need to do is to make sure that the system doesn't run
+>>>> anything that would affect permanent media or the outside world between
+>>>> steps #2 and #3
+>>>
+>>> Exactly, which is why your scheme would break down on #3, and that's why
+>>> you need to call S3 from within the kexec'd hibernation kernel after
+>>> saving the hibernation image.
+>>
+>> when a kexec is called, how does the kernel know what to execute?
+>> something needs to tell it what to do, and I think that something is
+>> either something in the kexec image, or it's something passed as a
+>> parameter to that image.
+>>
+>> all that would be needed to do #3 safely is to have the kernel that you
+>> restarted on #2 do a suspend-to-ram before it does anything else.
+>
+> If you mean by kernel 'the normal kernel', then this won't work, because it
+> would imply a change of state after saving its image.
 
-doing suspend-to-ram should be orthoginal to doing hibernate-to-disk. some 
-people will want both, some won't.
+yes, it would change the state, but if it only changes the state in ways 
+that aren't visable to the outside world why would it matter?
 
-at the moment kexec doesn't work with ACPI, that is a limitation that 
-should be fixed, but makeing it able to work with ACPI enabled doesn't 
-mean that it needs to be changed to depend on ACPI and it especially 
-doesn't mean that it should pick up the limitations of the existing ACPI 
-based hibernation approaches.
+if power dies you restore from the disk image (useing the non ACPI 
+approach), and the changes that you make are just lost
 
-if there is no ACPI on the system it should work, if ther is ACPI on the 
-system it should still work.
+> If you mean by kernel 'the kexec'd hibernation kernel', then you wouldn't
+> need to do #2, but rather do #3 right after dumping the image in #1.
+>
+> [...insert from another post...]
+>>> BTW, it would be really helpful if people would actually try the kexec
+>>> hibernation patches, as this may yield a much more constructive
+>>> discussion.
+>>
+>> I would love to, but so far I don't see the nessasary pieces
+>>
+>> once I kexec to the new kernel, how can it find out what pages of memory
+>> (and swap) need to be saved?
+>
+> No need to save the swap, all you need to do is to dump /dev/oldmem onto
+> storage, and if that dump image is compatible with swsusp, then a normal
+> kernel should be able to resume from this image via /dev/snapshot.
 
-> Thus, it seems reasonable to think of the ACPI handling in advance.
+Rafael is saying that there's more involved, you can't just dump 
+/dev/oldmem, you have to avoid specific pages.
 
-but don't become dependant on ACPI.
+as for swap, saving that may be required, depending on how clean you want 
+toleave the box for other OS's in the meantime.
 
 David Lang
