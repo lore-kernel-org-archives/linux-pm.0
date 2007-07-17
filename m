@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: david@lang.hm
 Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 16:40:38 +0200
-Message-ID: <200707171640.39955.rjw__45366.7982634672$1184683021$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+Date: Tue, 17 Jul 2007 08:19:32 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707170818460.19248__27219.7358347059$1184686517$gmane$org@asgard.lang.hm>
+References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl>
+	<20070716123849.GC14212@grifter.jdc.home>
+	<200707161729.16440.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707162119500.19248@asgard.lang.hm>
+	<20070717104231.GA32486@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <20070717104231.GA32486@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Jim Crilly <jim@why.dont.jablowme.net>, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 17 July 2007 16:15, Alan Stern wrote:
-> On Mon, 16 Jul 2007 david@lang.hm wrote:
-> 
-> > > I agree, it would be good to have a non-ACPI-specific hibernation mode,
-> > > something which would look to ACPI like a normal shutdown.  But I'm not
-> > > so sure this is possible.
-> > 
-> > why would it not be possible?
-> 
-> > I can't think of anything much more frustrating then thinking that I 
-> > suspended a system and then discovering that becouse the battery went dead 
-> > (a complete power loss) that the system wouldn't boot up properly. to me 
-> > this would be a fairly common condition (when I'm mobile I use the machine 
-> > until I am out of battery, then stop and it may be a long time (days) 
-> > before I can charge the thing up again) this would not be a reliable 
-> > suspend as far as I'm concerned.
-> > 
-> > for suspend-to-ram you have to worry about ACPI states and what you are 
-> > doing with them, for suspend-to-disk you can ignore them and completely 
-> > power the system off instead.
-> 
-> If the only problem with doing this would be lack of wakeup support
-> then I'm all for it.  There must be a lot of people who would like
-> their computers to hibernate with power drain as close to 0 as possible
-> and who don't care about remote wakeup.  In fact they might even prefer
-> not to have wakeup support, so the computer doesn't resume at
-> unexpected times.
+On Tue, 17 Jul 2007, Matthew Garrett wrote:
 
-I'm afraid of one thing, though.
+> On Mon, Jul 16, 2007 at 09:28:13PM -0700, david@lang.hm wrote:
+>
+>> why would the type of hibernate that I'm talking about (power off, not S4
+>> mode) not work on a box that has ACPI?
+>
+> Powering off rather than using S4 means you lose most wakeup device
+> support. That would be a functional regression compared to the current
+> code.
 
-If we create a framework without ACPI (well, ACPI needs to be enabled in the
-kernel anyway for other reasons, like the ability to suspend to RAM) and then
-it turns out that we have to add some ACPI hooks to it, that might be difficult
-to do cleanly.
+only if the kexec isn't able to initialize those devices.
 
-Thus, it seems reasonable to think of the ACPI handling in advance.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+David Lang
