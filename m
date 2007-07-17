@@ -1,15 +1,12 @@
-From: david@lang.hm
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 10:49:52 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707171042300.2467@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl> <20070715125855.GA1737@gallifrey>
-	<200707160038.12943.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707151526080.25614@asgard.lang.hm>
-	<20070717174044.GA11212@gallifrey>
+Date: Tue, 17 Jul 2007 14:32:08 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707171416120.3728-100000__12756.6913528883$1184697173$gmane$org@iolanthe.rowland.org>
+References: <200707171640.39955.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070717174044.GA11212@gallifrey>
+In-Reply-To: <200707171640.39955.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,49 +16,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 17 Jul 2007, Dr. David Alan Gilbert wrote:
+On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
 
-> * david@lang.hm (david@lang.hm) wrote:
->> On Mon, 16 Jul 2007, Rafael J. Wysocki wrote:
->
->>> Encryption is possible with both the userland hibernation (aka uswsusp) and
->>> TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a
->>> "must
->>> have" feature for a framework to be generally useful (many users don't use
->>> it
->>> anyway).
->>
->> he's talking about the main system useing an encrypted device/partition,
->> not the hibernate image being stored encrypted.
->>
->> This would require the main system 'forget' the keys when it does the
->> hinbernate and prompt for it again during the wake-up phase.
->
-> Indeed - although as I say I really don't know what you would do with
-> apps using the mounts at that point.   Still it seems like a
-> sensible requrest from the security side.
+> I'm afraid of one thing, though.
+> 
+> If we create a framework without ACPI (well, ACPI needs to be enabled in the
+> kernel anyway for other reasons, like the ability to suspend to RAM) and then
+> it turns out that we have to add some ACPI hooks to it, that might be difficult
+> to do cleanly.
+> 
+> Thus, it seems reasonable to think of the ACPI handling in advance.
 
-along the same lines, it would probably be a good idea to have the ability 
-for a system to re-ask for the pass phrase periodicly while the system is 
-running.
+Absolutely.  This needs to be done in such a way that it will work:
 
-I see two possible approaches to these issues.
+	On platforms without ACPI;
 
-1. implement the periodic re-request capability, and when going into 
-hibernate time-out any known pass phrases.
+	On platforms with ACPI where we do a non-ACPI type of shutdown
+	to whatever extent it is possible (or perhaps an ACPI-aware
+	shutdown rather than change to S4);
 
-this is a lot of work overall, but the suspend portion is trivial so there 
-would not be any suspend surprises.
+	On platforms with ACPI where we do an ACPI-aware transition
+	to S4.
 
-2. flush the keyring on hibernate and have the resume process re-populate 
-it (either by pokeing directly into the memory, or by providing a table 
-that the resuming kernel reads from during wake-up to re-populate it)
+Rafael, for those of us who aren't thoroughly familiar with all the ins
+and outs of the ACPI spec, could you please summarize a list of the
+ACPI calls needed in the second and third cases above?  Indicate which
+ones need to be done from within the original kernel and which should
+be done from within a kexec'd hibernation kernel.
 
-this is less work, but it's all suspend related so it will get less 
-testing.
 
-David Lang
+I'm still not entirely clear on how "suspend-to-both" ought to be
+handled.  Presumably it will start off as a normal hibernation.  But
+instead of shutting down, wouldn't the kexec'd kernel return to the
+original kernel?  After all, the original kernel knows about all the
+devices and can put them into a low-power state, while the kexec'd
+kernel might not have sufficient information.
+
+But what about the freezer?  The original reason for using kexec was to
+avoid the need for the freezer.  With no freezer, while the original
+kernel is busy powering down its devices, user tasks will be free to
+carry out I/O -- which will make the memory snapshot inconsistent with
+the on-disk data structures.
+
+Alan Stern
