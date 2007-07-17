@@ -1,16 +1,12 @@
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
+From: david@lang.hm
 Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 16:24:29 -0400
-Message-ID: <87sl7mg4n6.fsf@jbms.ath.cx>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171802.30903.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
-	<200707172150.44417.rjw@sisk.pl>
+Date: Tue, 17 Jul 2007 13:27:51 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707172150.44417.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue\, 17 Jul 2007 21\:50\:42 +0200")
+In-Reply-To: <Pine.LNX.4.44L0.0707171416120.3728-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,66 +16,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Tue, 17 Jul 2007, Alan Stern wrote:
 
-[snip]
+> On Tue, 17 Jul 2007, Rafael J. Wysocki wrote:
+>
+>> I'm afraid of one thing, though.
+>>
+>> If we create a framework without ACPI (well, ACPI needs to be enabled in the
+>> kernel anyway for other reasons, like the ability to suspend to RAM) and then
+>> it turns out that we have to add some ACPI hooks to it, that might be difficult
+>> to do cleanly.
+>>
+>> Thus, it seems reasonable to think of the ACPI handling in advance.
+>
+> Absolutely.  This needs to be done in such a way that it will work:
+>
+> 	On platforms without ACPI;
+>
+> 	On platforms with ACPI where we do a non-ACPI type of shutdown
+> 	to whatever extent it is possible (or perhaps an ACPI-aware
+> 	shutdown rather than change to S4);
+>
+> 	On platforms with ACPI where we do an ACPI-aware transition
+> 	to S4.
+>
+> Rafael, for those of us who aren't thoroughly familiar with all the ins
+> and outs of the ACPI spec, could you please summarize a list of the
+> ACPI calls needed in the second and third cases above?  Indicate which
+> ones need to be done from within the original kernel and which should
+> be done from within a kexec'd hibernation kernel.
+>
 
-> Well, first, the fact is that _some_ systems _will_ be powered while in
-> hibernation (the majority of notebooks, for example) and you should assume
-> that the platform _may_ retain some information accross the hibernation/restore
-> cycle.  In that case you _should_ _not_ trash the information retained by the
-> platform.
+there was just a link on slashdot toa primer on the subject of power 
+management
 
-I'm not sure the majority of notebook users will want wakeup support in
-exchange for some power consumption while the system is off.  I think
-many people would not consider the trouble of having to press the power
-button instead of merely opening the lid too great.
+http://www.techarp.com/showarticle.aspx?artno=420
 
-Furthermore, S4 mode is of course also not suitable if you intend to
-replace the battery while the system is hibernated.
+>
+> I'm still not entirely clear on how "suspend-to-both" ought to be
+> handled.  Presumably it will start off as a normal hibernation.  But
+> instead of shutting down, wouldn't the kexec'd kernel return to the
+> original kernel?  After all, the original kernel knows about all the
+> devices and can put them into a low-power state, while the kexec'd
+> kernel might not have sufficient information.
 
-It does seem that it is useful to provide S4 as an option, but certainly
-just shutting down should also be an option on all systems.
+this is what I'm thinking, but the issue here is that the original kernel 
+needs to go into suspend-to-ram mode instead of resuming operation. per 
+the e-mail I got from Ying last night this should not be hard to 
+implement.
 
-> Now, with that in mind, ACPI requires us to make the system enter the S4 sleep
-> state as a result of the hibernation procedure.  In my opinion this may be done
-> after saving the image, but still this means, for example, that the
-> image-saving kernel needs to support ACPI.
+> But what about the freezer?  The original reason for using kexec was to
+> avoid the need for the freezer.  With no freezer, while the original
+> kernel is busy powering down its devices, user tasks will be free to
+> carry out I/O -- which will make the memory snapshot inconsistent with
+> the on-disk data structures.
 
-It seems that it most certainly must be done AFTER saving the image, as
-the image obviously cannot be saved after entering S4 state, since S4
-state is nearly the same as powering off completely and all memory will
-be lost.
+no, user tasks just don't get scheduled during shutdown.
 
-> Next, during the restore, we should first check if the image is present (and
-> valid) _without_ turning ACPI on (note that this is not done by the current
-> hibernation code and that leads to strange problems on some systems).  Then,
-> if the image is present (and valid), we should first load it, jump to the
-> hibernated kernel and _then_ turn ACPI on and execute the _BFS and
-> _WAK ACPI global methods (again, this is not done by the current code in that
-> order, which is wrong).  Only after that is the hibernated kernel supposed to
-> continue.
+the big problem with the freezer isn't stopping anything from happening, 
+it's _selectivly_ stopping things.
 
-It seems that the implementation of that behavior for Linux cannot be
-quite so simple, since resume from hibernation is driven (in general)
-from an initrd/initramfs rather than directly from the kernel
-initialization sequence, in order to support modular drivers and
-features like DM and LVM.
+with kexec you don't need to let any portion of the origional kernel or 
+userspace operate so you don't have a problem.
 
-Thus, there would have to be a new "delay_acpi_initialization" kernel
-command-line option.  Additionally, there would be a sysfs interface to
-tell the kernel to proceed with the ACPI initialization as normal.  This
-would be used by an initrd/initramfs after determining that a resume
-from hibernate will not be done.  If a resume from hibernate is done,
-this hook won't be used, and instead the resumed kernel will call the
-ACPI hibernate resume stuff if S4 state was used; otherwise, the resumed
-kernel will just re-initialize ACPI as normal.  Also, if the in-kernel
-code for checking if a resume can be done does not find a hibernate
-image, it will also invoke the delayed ACPI initialization.
-
--- 
-Jeremy Maitin-Shepard
+David Lang
