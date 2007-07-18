@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation considerations
-Date: Wed, 18 Jul 2007 16:47:31 +0200
-Message-ID: <200707181647.32620.rjw__5448.55059492892$1184769694$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org>
+Subject: [RFC] Replacing sysdevs with platform devices
+Date: Wed, 18 Jul 2007 17:20:16 +0200
+Message-ID: <200707181720.17263.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,57 +17,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Greg KH <greg@kroah.com>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Russell King <rmk@arm.linux.org.uk>, Andi Kleen <ak@suse.de>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 18 July 2007 16:29, Alan Stern wrote:
-> On Tue, 17 Jul 2007 david@lang.hm wrote:
-> 
-> > On Tue, 17 Jul 2007, Alan Stern wrote:
-> > 
-> > > On Tue, 17 Jul 2007 david@lang.hm wrote:
-> > >
-> > >>> But what about the freezer?  The original reason for using kexec was to
-> > >>> avoid the need for the freezer.  With no freezer, while the original
-> > >>> kernel is busy powering down its devices, user tasks will be free to
-> > >>> carry out I/O -- which will make the memory snapshot inconsistent with
-> > >>> the on-disk data structures.
-> > >>
-> > >> no, user tasks just don't get scheduled during shutdown.
-> > >
-> > > But a user task may be holding a lock which is needed for putting some
-> > > device into low-power mode.  It can't release that lock if it doesn't
-> > > get scheduled.
-> > 
-> > then you can't suspend that box. if you schedule it, it could get another 
-> > lock (or another process gets another lock)
-> > 
-> > if you can't power down or put hardware into low-power mode without the 
-> > approval of userspace, you are in serious trouble.
-> 
-> You don't seem to appreciate the issues involved here.  Part of the 
-> justification for the freezer is that it doesn't need userspace 
-> approval and it freezes tasks at controlled points where they don't 
-> hold any locks.
-> 
-> Never mind.  It seems clear that this approach will suffer the same 
-> drawback as the proposal for removing the freezer from the 
-> suspend-to-RAM pathway.  Namely, device drivers will have to be changed 
-> to prevent user I/O requests from proceeding while devices are supposed 
-> to be quiescent or in a low-power state.
+Hi,
 
-I agree.
- 
-> If a driver fails to handle this properly, its device could be 
-> reactivated in order to service a user request before the memory 
-> snapshot is made.  This could easily ruin the snapshot.
+Some time ago we agreed that it would be a good idea to stop using device
+drivers' .suspend() and .resume() callbacks for hibernation and to introduce
+new hibernation-specific driver callbacks.  I'm currently working on
+implementing that and I'd like to avoid adding any hibernation-specific
+callbacks to sysdev drivers.  For this reason, I thought I first would try to
+replace sysdevs used for late suspending and early resuming with platform
+devices, where possible and straightforward, so I have reviewed the code and
+found that:
 
-That's why I've been saying for quite some time that we first need to take care
-of the drivers. :-)
+(1) In many cases sysdevs are used only for the late suspending and early
+    resuming of platform-dependent stuff (such as , timers, local APICs etc.).
+    These instances can be readily replaced with platform devices and platform
+    drivers, so can you please tell me if patches to do that would be acceptable
+    and useful?
 
-IMO we've reached the point at which, whatever we want to do next, the drivers
-are in the way.
+(2) In some cases sysdevs are used for late suspending, early resuming and late
+    shutdown of platform-dependent stuff (such as I/O APICs on x86* etc.).  In
+    such cases, to replace sysdevs with platform devices we would need to
+    add a .shutdown_late() callback to 'struct platform_driver' and a piece of
+    infrastructure to execute these callbacks in device_shutdown(), right
+    before or after, or instead of sysdev_shutdown().  Can you please tell me
+    if that would be useful?
+
+(3) In arch/x86_64/kernel/mce.c the sysdev is used for early resuming and
+    communications with user space, so I don't think it would be a good idea to
+    replace the sysdev with a platform device entirely.  However, would it make
+    sense to add a platform device for the early resuming alone and leave the
+    sysdev for other purposes?
+
+(4) In a few cases one sysdev is used for many different purposes, including
+    late suspend and early resume, and many different drivers bind to it.  This
+    is done by the i386 MTRR code and by the ARM s3c24xx platforms.
+
+    Still, as far as the i386 MTRR code is concerned, it only is necessary to
+    apply the late suspend and early resume to the boot CPU, since we disable
+    the other CPUs before this code is called and we eanble them after it has
+    been called using the CPU hotplug.  Thus, it seems that we only need one
+    platform device for handling the boot CPU's MTRR late suspend and early
+    resume.
+
+    Now, on the s3c24xx platforms one sysdev seems to be used for many
+    platform-related operations.  In particular, two or more different sysdev
+    drivers having .suspend() and/or .resume() callbacks defined, related to
+    different parts of the platform, seem to bind to the same sysdev, which is
+    kind of ugly.  It seems to be more correct to have a separate platform
+    device defined for each thing that requires to be suspended late or resumed
+    early and a dedicated platform driver handling these operations.
 
 Greetings,
 Rafael
