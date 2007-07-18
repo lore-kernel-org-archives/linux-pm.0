@@ -1,18 +1,14 @@
-From: david@lang.hm
-Subject: Re: Hibernation considerations
-Date: Tue, 17 Jul 2007 20:54:24 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707172053280.19248@asgard.lang.hm>
-References: <200707151433.34625.rjw@sisk.pl> <200707161406.28539.rjw@sisk.pl>
-	<20070716123849.GC14212@grifter.jdc.home>
-	<200707161729.16440.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707162119500.19248@asgard.lang.hm>
-	<20070717104231.GA32486@srcf.ucam.org>
-	<Pine.LNX.4.64.0707170818460.19248@asgard.lang.hm>
-	<20070718021817.GA13502@srcf.ucam.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: Wakeup settings for USB hubs?
+Date: Wed, 18 Jul 2007 18:58:49 +0800
+Message-ID: <1184756329.8054.73.camel@rzhang1-laptop>
+References: <Pine.LNX.4.44L0.0707051546010.4198-100000@iolanthe.rowland.org>
+	<200707051430.39999.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070718021817.GA13502@srcf.ucam.org>
+In-Reply-To: <200707051430.39999.david-b@pacbell.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,26 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Jim Crilly <jim@why.dont.jablowme.net>, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 18 Jul 2007, Matthew Garrett wrote:
+Hi,
+No one interested in this topic?
+I thought it might be hot. :)
 
-> On Tue, Jul 17, 2007 at 08:19:32AM -0700, david@lang.hm wrote:
->> On Tue, 17 Jul 2007, Matthew Garrett wrote:
->>> Powering off rather than using S4 means you lose most wakeup device
->>> support. That would be a functional regression compared to the current
->>> code.
->>
->> only if the kexec isn't able to initialize those devices.
->
-> If you aren't using ACPI, you probably don't know how to.
+On Fri, 2007-07-06 at 05:30 +0800, David Brownell wrote:
+> On Thursday 05 July 2007, Alan Stern wrote:
+> 
+> > Dave, you created the original wakeup attribute.  What do you think
+> > about adding a separate wakeup_runtime?  (At a minimum, perhaps you
+> can
+> > suggest a better name!)
+I think it's reasonable.
 
-the current kexec patch to allow you to move back to the original kernel 
-requires ACPI be disabled to work.
+> I'll have to scan the emails in my queue to see what the issue
+> is (umm, is this really 300+ messages in just the last couple
+> days??) but my initial reaction is to avoid complications.  We
+> have enough configuration knobs ... but userspace hasn't even
+> begun to use them.  Adding more knobs will not improve that
+> situation at all.
+Well, I can not find one for the system sleep wakeup attribute,
+I mean the ability to wakeup the system from a sleep state.
+The patch http://www.spinics.net/lists/mm-commits/msg27356.html
+makes the "wakeup" from device runtime suspend and the "wakeup" from
+system suspend both controlled by .../power/wakeup.
+This doesn't work in some cases, and that's why the patch
+http://www.spinics.net/lists/mm-commits/msg30526.html are dropped.
 
-that states pretty strongly that kexec isn't dependant on ACPI to 
-initialize devices.
+I think we should find an alternative way instead of
+using .../power/wakeup.
+Another wakeup file or more values in the .../power/wakeup makes sense
+to me, while the first one seems better. :)
 
-David Lang
+Dave, what's you opinion?
+Are there any available knobs that we can make use of but I missed?
+
+Thanks,
+Rui
+
+> At one level, we want USB mice and keyboards to act pretty much
+> like the PS2 variety.  Which means being wakeup sources in most
+> cases ... though BIOS settings often overrides the PS2 stuff.
+> 
+> It'd make sense that _removing_ devices not normally be a wake
+> event for USB ports.  But we don't always have that option...
