@@ -1,18 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec
-	based hibernation
-Date: Thu, 19 Jul 2007 11:13:21 +0200
-Message-ID: <200707191113.22711.rjw__43600.7431628697$1184836120$gmane$org@sisk.pl>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com>
-	<20070718180420.02352d4f.akpm@linux-foundation.org>
-	<1184827403.15756.14.camel@caritas-dev.intel.com>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [RFC] Replacing sysdevs with platform devices
+Date: Thu, 19 Jul 2007 10:23:58 +0100
+Message-ID: <20070719092358.GC25936@flint.arm.linux.org.uk>
+References: <200707181720.17263.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184827403.15756.14.camel@caritas-dev.intel.com>
 Content-Disposition: inline
+In-Reply-To: <200707181720.17263.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: david@lang.hm, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andi Kleen <ak@suse.de>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 19 July 2007 08:43, Huang, Ying wrote:
-> On Wed, 2007-07-18 at 18:04 -0700, Andrew Morton wrote:
-> > I like the idea but I think I'll let people chat about it a bit more
-> > before looking at merging the patches, OK?
-> 
-> I think maybe we should wait for Rafael to separate the device hibernate
-> (quiesce and state save) from device suspend.
+On Wed, Jul 18, 2007 at 05:20:16PM +0200, Rafael J. Wysocki wrote:
+>     Now, on the s3c24xx platforms one sysdev seems to be used for many
+>     platform-related operations.  In particular, two or more different sysdev
+>     drivers having .suspend() and/or .resume() callbacks defined, related to
+>     different parts of the platform, seem to bind to the same sysdev, which is
+>     kind of ugly.  It seems to be more correct to have a separate platform
+>     device defined for each thing that requires to be suspended late or resumed
+>     early and a dedicated platform driver handling these operations.
 
-Well, I'm afraid that will take some time ...
+A suggestion.  The information's all there.  All it takes is to look it
+up.
 
-> Without that, the ACPI issue can not be resolved.
-
-Yes, it seems so.
-
-Greetings,
-Rafael
-
+ARM/S3C2410 ARM ARCHITECTURE
+P:      Ben Dooks
+M:      ben-linux@fluff.org
+L:      linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+W:      http://www.fluff.org/ben/linux/
+S:      Maintained
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
