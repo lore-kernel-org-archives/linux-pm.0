@@ -1,14 +1,15 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec
- based hibernation
-Date: Wed, 18 Jul 2007 18:04:20 -0700
-Message-ID: <20070718180420.02352d4f.akpm__41071.5091893964$1184807156$gmane$org@linux-foundation.org>
+	based hibernation
+Date: Thu, 19 Jul 2007 12:15:04 +1000
+Message-ID: <200707191215.05245.nigel@nigel.suspend2.net>
 References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	<20070718180420.02352d4f.akpm@linux-foundation.org>
+Reply-To: nigel@suspend2.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4724294145971243587=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1184483593.1898.98.camel@caritas-dev.intel.com>
+In-Reply-To: <20070718180420.02352d4f.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,25 +17,80 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: david@lang.hm, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: david@lang.hm, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 15 Jul 2007 15:13:13 +0800
-"Huang, Ying" <ying.huang@intel.com> wrote:
+--===============4724294145971243587==
+Content-Type: multipart/signed; boundary="nextPart2351488.ktMTUd6rUM";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> 
-> The changelog between v1 and v2
-> 
-> 1. The kexec jump implementation is put into the kexec/kdump
->    framework instead of software suspend framework. The device
->    and CPU state save/restore code of software suspend is called
->    when needed.
-> 
-> 2. The same code path is used for both kexec a new kernel and jump
->    back to original kernel.
+--nextPart2351488.ktMTUd6rUM
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I like the idea but I think I'll let people chat about it a bit more
-before looking at merging the patches, OK?
+Hi.
+
+On Thursday 19 July 2007 11:04:20 Andrew Morton wrote:
+> On Sun, 15 Jul 2007 15:13:13 +0800
+> "Huang, Ying" <ying.huang@intel.com> wrote:
+>=20
+> >=20
+> > The changelog between v1 and v2
+> >=20
+> > 1. The kexec jump implementation is put into the kexec/kdump
+> >    framework instead of software suspend framework. The device
+> >    and CPU state save/restore code of software suspend is called
+> >    when needed.
+> >=20
+> > 2. The same code path is used for both kexec a new kernel and jump
+> >    back to original kernel.
+>=20
+> I like the idea but I think I'll let people chat about it a bit more
+> before looking at merging the patches, OK?
+
+Please wait until you see a complete implementation that actually works. I'=
+m=20
+sitting here quietly, following (and now breaking) the "If you can't say=20
+anything positive, don't say anything at all" line because I think that the=
+=20
+more into the implementation details people get, the uglier this is going t=
+o=20
+show itself to be. I'm perfectly willing to be proven wrong, but haven't se=
+en=20
+anything so far that's even begun to convince me otherwise.
+
+Regards,
+
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart2351488.ktMTUd6rUM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGnskpN0y+n1M3mo0RAge8AJoCwiUagG8l1xI7rk+vYajJQgkt+wCg6QPU
+PRSGoff64GJ4SvF1YCkgYBg=
+=2IrP
+-----END PGP SIGNATURE-----
+
+--nextPart2351488.ktMTUd6rUM--
+
+--===============4724294145971243587==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4724294145971243587==--
