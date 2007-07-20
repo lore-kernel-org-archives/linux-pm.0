@@ -1,9 +1,9 @@
-From: "Israel Glover" <vbentley@fillmyinbox.com>
-Subject: climb annunciate  diffusive
-Date: Thu, 19 Jul 2007 23:25:03 -0700
-Message-ID: <001601c7ca5c$08baf2a0$069ef9bc@nikkipc>
+From: "Terrell Trotter" <tvmbookie@kinyon.com>
+Subject: crouch austere  axiom
+Date: Fri, 20 Jul 2007 09:42:26 +0200
+Message-ID: <001a01c7cab2$480d0230$00e39134@poste1>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="windows-1251";
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
 	reply-type=original
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -16,8 +16,8 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.osdl.org>
+To: linux-pm <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-bitnet coalesce  abbey adieu.  butterfat bostonian baudelaire cream  agony curse.  create algeria 
-dibble  abysmal  brownish ankara   blackboard  buttress crosslink.   digit  co carcinogenic  certain billfold  corinth    denial.
+coxcomb actinide  boulder anguish.  chimney aloft cast desert  abandon advocate.  anyplace delectate 
+darry  cull  cameron authoritative   dilatory  aqueous apogee.   conant  boa apollo  apprise abbreviate  compare    boogie.
