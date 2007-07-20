@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 00:15:30 +0200
-Message-ID: <200707210015.31152.rjw__3639.30514217845$1184969391$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707201722060.5241-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0707201428080.5166@asgard.lang.hm>
+Date: Sat, 21 Jul 2007 00:19:39 +0200
+Message-ID: <200707210019.40762.rjw__17525.5284448669$1184969578$gmane$org@sisk.pl>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+	<200707202328.25126.rjw@sisk.pl> <87ejj2pxoc.fsf@jbms.ath.cx>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707201428080.5166@asgard.lang.hm>
+In-Reply-To: <87ejj2pxoc.fsf@jbms.ath.cx>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,60 +20,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 20 July 2007 23:34, david@lang.hm wrote:
-> On Fri, 20 Jul 2007, Alan Stern wrote:
+On Friday, 20 July 2007 23:33, Jeremy Maitin-Shepard wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> > On Fri, 20 Jul 2007 david@lang.hm wrote:
-> >
-> >>> Userspace can submit I/O requests.  Someone will have to audit every
-> >>> driver to make sure that such I/O requests don't cause a quiesced
-> >>> device to become active.  If the device is active, it will make the
-> >>> memory snapshot inconsistent with the on-device data.
-> >>
-> >> assuming this is the suspend-from-ram after a kexec back from the
-> >> write-to-disk kernel I don't think you are correct.
-> >>
-> >> when doing a suspend-to-ram you get to a point where you just don't use
-> >> any userspace.
-> >
-> > What do you mean?  How can you prevent user tasks from running?  That's
-> > basically what the freezer does, and the whole point of this approach
-> > is to eliminate the freezer.  Right?
-> >
-> >> from that point on you are just walking the device tree
-> >> putting things into low-power mode. This is the point where we are talking
-> >> about jumping to.
-> >
-> > Yes.  And putting things into low-power mode requires the ability to
-> > run the scheduler, which means that user tasks can be scheduled, which
-> > means that they can run.
+> [snip]
 > 
-> I did not know that getting into low-power mode required scheduling.
+> >> Or add a small bit of infrastructure that errors writes at make_request 
+> >> if you don't have a magic "i am a direct block device write from 
+> >> userspace" flag on the bio.
+> >> 
+> >> The hibernate may fail, but you don't corrupt the media.
+> >> 
+> >> If you don't get the image out, resume back to the "this is resume" 
+> >> instead of the power-down path.
 > 
-> does it require userspace?
+> > Well, I don't think that is much prettier than the freezer ...
 > 
-> if so this is a problem and I say punt on suspend-to-disk-and-ram until 
-> suspend-to-ram is working independantly ;-)
+> It seems that a better solution to the "how do we write to a file on an
+> in-use partition" has been suggested, which also handles swap partitions
+> and swap files, and does not require mounting filesystems, so it seems
+> that the filesystem issue need not be considered.
 > 
-> if not, then can you schedule but not consider non-kernel tasks runnable?
+> [snip]
 > 
-> freezing all of userspace is easy (see above)
+> > No.  I'm saying that when you go back from the image-saving kernel to the
+> > hibernated kernel, you need to make sure that no task will cause any
+> > filesystem's on-disk state to be actually updated.  If you can't make such
+> > a guarantee, you just can't do that.
 > 
-> freezing all of kernelspace is easy (unplug all non-boot CPU's and don't 
-> schedule)
+> > With the current state of the drivers, it's not doable without the
+> > freezer.
 > 
-> where freezing gets hard is when you need to partially freeze either one 
-> of these.
+> It seems that it should be feasible to fix the drivers so that
+> 
+> 1. they can be taken from normal state to quiesced state without
+>    requiring the freezer;
+> 
+> 2. they can be taken from normal state to low power state without
+>    requiring the freezer;
 
-If you use the scheduler to "freeze" tasks, you never know where they are
-stopped and what locks they may hold.
+Yes, that's correct.
 
-We would have done that already if that was so easy, because we really want
-to freeze _all_ user space tasks (even if not all kernel threads).
+> 3. they can be taken from quiesced state to low power state without
+>    requiring the freezer.
+>
+> In the particular, it seems that it should be possible to do (3) without
+> needing to schedule tasks.
+
+For that, you'd have to forbid the drivers to call schedule() from the relevant
+callbacks, which means, eg. no timeouts in there.
+
+> It seems likely that (2) may in fact be almost exactly the same as, or
+> at least similar to, (1) followed by (3), at least for many drivers.
+> (1) is required by the kexec hibernate approach even ignoring suspend to
+> both or S4.  (2) is required for suspend to ram without the freezer,
+> which seems to be desired anyway.
+
+Yes, (2) is needed anyway.
 
 Greetings,
 Rafael
