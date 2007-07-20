@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 00:19:39 +0200
-Message-ID: <200707210019.40762.rjw__17525.5284448669$1184969578$gmane$org@sisk.pl>
-References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
-	<200707202328.25126.rjw@sisk.pl> <87ejj2pxoc.fsf@jbms.ath.cx>
+Date: Fri, 20 Jul 2007 18:25:16 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707201820050.5241-100000__43469.3852476359$1184970387$gmane$org@iolanthe.rowland.org>
+References: <200707202335.05519.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87ejj2pxoc.fsf@jbms.ath.cx>
-Content-Disposition: inline
+In-Reply-To: <200707202335.05519.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,71 +16,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 20 July 2007 23:33, Jeremy Maitin-Shepard wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> [snip]
-> 
-> >> Or add a small bit of infrastructure that errors writes at make_request 
-> >> if you don't have a magic "i am a direct block device write from 
-> >> userspace" flag on the bio.
-> >> 
-> >> The hibernate may fail, but you don't corrupt the media.
-> >> 
-> >> If you don't get the image out, resume back to the "this is resume" 
-> >> instead of the power-down path.
-> 
-> > Well, I don't think that is much prettier than the freezer ...
-> 
-> It seems that a better solution to the "how do we write to a file on an
-> in-use partition" has been suggested, which also handles swap partitions
-> and swap files, and does not require mounting filesystems, so it seems
-> that the filesystem issue need not be considered.
-> 
-> [snip]
-> 
-> > No.  I'm saying that when you go back from the image-saving kernel to the
-> > hibernated kernel, you need to make sure that no task will cause any
-> > filesystem's on-disk state to be actually updated.  If you can't make such
-> > a guarantee, you just can't do that.
-> 
-> > With the current state of the drivers, it's not doable without the
-> > freezer.
-> 
-> It seems that it should be feasible to fix the drivers so that
-> 
-> 1. they can be taken from normal state to quiesced state without
->    requiring the freezer;
-> 
-> 2. they can be taken from normal state to low power state without
->    requiring the freezer;
+On Fri, 20 Jul 2007, Oliver Neukum wrote:
 
-Yes, that's correct.
+> > We already have a pre-suspend notification available for drivers that 
+> > need to allocate large amounts of memory.
+> 
+> Is that facility fine grained enough?
 
-> 3. they can be taken from quiesced state to low power state without
->    requiring the freezer.
->
-> In the particular, it seems that it should be possible to do (3) without
-> needing to schedule tasks.
+It's a notifier chain that gets called at several points during the 
+suspend transition.  One of those points is right at the start, while 
+userspace is still running and reasonably large amounts of memory can 
+be allocated.
 
-For that, you'd have to forbid the drivers to call schedule() from the relevant
-callbacks, which means, eg. no timeouts in there.
+Is it fine-grained enough?  I don't know -- hard to tell, since nothing 
+much is using it yet.
 
-> It seems likely that (2) may in fact be almost exactly the same as, or
-> at least similar to, (1) followed by (3), at least for many drivers.
-> (1) is required by the kexec hibernate approach even ignoring suspend to
-> both or S4.  (2) is required for suspend to ram without the freezer,
-> which seems to be desired anyway.
+> > You are correct about the need to delay/stop device addition.  I don't
+> > know how this can be done in general; each code path calling
+> > device_add() may have to be treated individually.
+> 
+> What about the old API?
 
-Yes, (2) is needed anyway.
+What old API do you mean?
 
-Greetings,
-Rafael
+>  Do we have to block module loading?
 
+No.  Registering new drivers is okay, registering new devices is bad.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Of course, some modules do want to register a new device in their init 
+method.  I don't know what we should do about them.  Force the 
+registration to fail, I suppose.  How often will people suspend while a 
+module is loading?
+
+> What happens if a scsi error handler is woken? If it cannot be woken,
+> how are errors handled?
+
+Why should the error handler wake up?  There isn't supposed to be any 
+I/O going on, hence no errors to handle.
+
+Alan Stern
