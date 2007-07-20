@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Jeremy Maitin-Shepard <jbms@cmu.edu>
 Subject: Re: Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 16:12:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707201608120.2546-100000__14905.5936410607$1184962400$gmane$org@iolanthe.rowland.org>
-References: <200707202203.27849.oliver@neukum.org>
+Date: Fri, 20 Jul 2007 16:23:18 -0400
+Message-ID: <87ir8eq0y1.fsf@jbms.ath.cx>
+References: <f29402c6050f9c3ff5d83a59cea2de58%40bga.com>
+	<f56664625c843ac71672d2818c4df69f@bga.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707202203.27849.oliver@neukum.org>
+In-Reply-To: <f56664625c843ac71672d2818c4df69f@bga.com> (Milton Miller's
+	message of "Fri\, 20 Jul 2007 14\:09\:00 -0500")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,39 +18,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Milton Miller <miltonm@bga.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 20 Jul 2007, Oliver Neukum wrote:
+Milton Miller <miltonm@bga.com> writes:
 
-> Am Freitag 20 Juli 2007 schrieb Alan Stern:
-> > Some drivers need the ability to schedule. =A0Some will need the abil=
-ity=20
-> > to allocate memory (although GFP_ATOMIC is probably sufficient). =A0S=
-ome=20
-> > will need timers to run.
->=20
-> Some will have to request firmware. It can add up to some megabytes.
-> In addition, if we don't freeze, some drivers, eg. video drivers, can
-> do allocations in the megabyte range.
->=20
-> It seems to me that without the freezer we will end up with many driver=
-s
-> needing a two step notification process. Furthermore there are requirem=
-ents
-> on the order of shutting down system facilities, eg. device addition mu=
-st
-> be stopped before drivers allocate firmware.
+[snip]
 
-These are really separate issues, since they refer to things that have=20
-to happen well before the memory snapshot is captured.
+> There is a requirement to hibernate without dedicating a partition to save the
+> data.  Two reasons given have been upgrading ram in a machine should not require
+> a repartition of the hard drive, and the intel macs can only have 4 partitions
+> total and people want to dual boot.
 
-We already have a pre-suspend notification available for drivers that=20
-need to allocate large amounts of memory.
+> Not having a separate partition means the userspace in the initramfs needs to
+> obtain a list of blocks upon which to write the data.  My first proposal was to
+> do it all from userspace of the new kernel by calling bmap on the filesystem
+> mounted read only.   My later proposal is to allocate the blocks in the
+> suspending kernel and pass the block list to userspace.
 
-You are correct about the need to delay/stop device addition.  I don't
-know how this can be done in general; each code path calling
-device_add() may have to be treated individually.
+I see.  The later proposal is needed anyway in order to support
+still-in-use swap partitions and swap files.  It is unfortunate that
+special support will be needed to tell the "save image" kernel about the
+storage device in order to support in-use swap partitions and files
+(both swap files and regular).  It seems that the kexec approach will
+need to support two different "storage methods": getting a block list
+from the hibernated kernel, or having the "save image" kernel handle
+itself (e.g. in order to support complicated storage methods like over
+the network, FUSE, etc.).  There is the additional complication for the
+"hibernated kernel tells save image kernel where to save the image"
+method that the relevant block device might not even have the same
+major/minor number under the save-to-disk kernel due to dynamic device
+numbering, etc.  The same problem applies anyway to finding the block
+device on resume (and is a problem that exists with the existing
+hibernate implementations as well); in theory it can be identified by
+attributes like filesystem label or UUID, or physical device path.
+There doesn't seem to be an existing general solution to this problem.
 
-Alan Stern
+Note: I have noticed that swap partitions can have a filesystem UUID,
+but the e2fsprogs blkid program does not find it while the swap
+partition is marked as a hibernate image.
+
+> There is still the question of how does the restore kernel find the block list
+> to restore from.  It does help the first kernel invalidating the image in the
+> suspend-to-both resume-from-ram case.
+
+Suspend2/TuxOnIce currently supports writing to regular files as well as
+swap files.  To resume, it is necessary to specify the device and the
+start block.  The first block must contain sufficient information to
+find all of the other blocks; presumably the same technique can be used
+for the kexec approach.
+
+> PS: I'm not subscribed to the list, and only saw your reply on the archives
+> ... which give me my message id as the message to reply to.   I'd appreciate
+> being cc'd in the future.
+
+The message was sent directly to you, so you should have received it.
+(Your e-mail address was in the To: header).
+
+-- 
+Jeremy Maitin-Shepard
