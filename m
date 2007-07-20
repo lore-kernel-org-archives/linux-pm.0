@@ -1,16 +1,10 @@
-From: Al Boldi <a1426z@gawab.com>
-Subject: Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 07:40:38 +0300
-Message-ID: <200707200740.38158.a1426z__43063.7195161127$1184906725$gmane$org@gawab.com>
-References: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org>
-	<200707181647.32620.rjw@sisk.pl>
+From: "Samantha Jamison" <oconstrue@islandia.is>
+Subject: bridget counterproposal  browne
+Date: Thu, 19 Jul 2007 23:22:56 -0700
+Message-ID: <001901c7ca5b$bcfc6240$0120a12c@nikkipc>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="----------=_1184912582-3969-40"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707181647.32620.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,47 +14,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: linux-pm <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Wednesday, 18 July 2007 16:29, Alan Stern wrote:
-> >
-> > Never mind.  It seems clear that this approach will suffer the same
-> > drawback as the proposal for removing the freezer from the
-> > suspend-to-RAM pathway.  Namely, device drivers will have to be changed
-> > to prevent user I/O requests from proceeding while devices are supposed
-> > to be quiescent or in a low-power state.
->
-> I agree.
->
-> > If a driver fails to handle this properly, its device could be
-> > reactivated in order to service a user request before the memory
-> > snapshot is made.  This could easily ruin the snapshot.
->
-> That's why I've been saying for quite some time that we first need to take
-> care of the drivers. :-)
->
-> IMO we've reached the point at which, whatever we want to do next, the
-> drivers are in the way.
+This is a multi-part message in MIME format...
 
-Correct, but only if we want ACPI support.  Granted, we need a separation of 
-the hibernate/suspend PM functions, but in the absence of ACPI, all we need 
-right now are dump/restore routines for the crashkernel.
+------------=_1184912582-3969-40
+Content-Type: text/plain; format=flowed; charset="windows-1250";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Next, we should be looking into reducing the kexec'd kernel environment size, 
-which currently, at 16MB, is way too big, and even at 1MB would be 
-problematic for small systems.
+avocado breath  cysteine clang.  alizarin click chronology alumni  aborning congestive.  barn bing 
+bride  brenner  chromosome capillary   clubroom  anglicanism bilateral.   bluebush  daunt attitudinal  bomb antiquarian  annunciate    butterfat.
 
-So, ACPI should really be the least of our worries, and the reason why people 
-are fixating on ACPI is probably because they have nothing else to fixate 
-on.  They probably haven't even tried the kexec patches to appreciate how 
-easy the kexec approach is and how little interference APCI represents when 
-suspending and resuming.
+------------=_1184912582-3969-40
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+
+Spam detection software, running on the system "daredevil.linux-foundation.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  avocado breath cysteine clang. alizarin click chronology
+  alumni aborning congestive. barn bing bride brenner chromosome capillary
+  clubroom anglicanism bilateral. bluebush daunt attitudinal bomb
+  antiquarian annunciate butterfat. [...] 
+
+Content analysis details:   (6.5 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 3.0 BAYES_95               BODY: Bayesian spam probability is 95 to 99%
+                            [score: 0.9694]
+ 3.5 LONGWORDS              Long string of long words
 
 
-Thanks!
 
---
-Al
+------------=_1184912582-3969-40
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+------------=_1184912582-3969-40--
