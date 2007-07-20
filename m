@@ -1,12 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 17:24:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707201722060.5241-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.64.0707201314261.5166@asgard.lang.hm>
+Date: Fri, 20 Jul 2007 23:34:40 +0200
+Message-ID: <200707202334.41665.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+	<40fa2626aff7b6b590ad6aa4737fc873@bga.com>
+	<1184942918.13737.23.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707201314261.5166@asgard.lang.hm>
+In-Reply-To: <1184942918.13737.23.camel@caritas-dev.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,33 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 20 Jul 2007 david@lang.hm wrote:
-
-> > Userspace can submit I/O requests.  Someone will have to audit every
-> > driver to make sure that such I/O requests don't cause a quiesced
-> > device to become active.  If the device is active, it will make the
-> > memory snapshot inconsistent with the on-device data.
+On Friday, 20 July 2007 16:48, Huang, Ying wrote:
+> On Fri, 2007-07-20 at 09:01 -0500, Milton Miller wrote:
+> > Simplifying kjump: the proposal for v3.
+> > 
+> > The current code is trying to use crash dump area as a safe, reserved 
+> > area to run the second kernel.   However, that means that the kernel 
+> > has to be linked specially to run in the reserved area.   I think we 
+> > need to finish separating kexec_jump from the other code paths.
+> > 
+> > (1) add a new command line argument that specifies the kexec_jump 
+> > target area (or just size?)
+> > 
+> > (2) add a kjump flag to the flags parameter, used by kexec_load.   When 
+> > loading a jump kernel, it is loaded like a normal kernel, however, 
+> > additional control pages are allocated to (a) save this kenrel's use of 
+> > the kexec_jump target area (b) save the backed up region that is used 
+> > by all kernels like crash dump, and (c) space for invoking 
+> > relocate_new_kernel that will get its args from the execution entry 
+> > point and will restore the kernel then call resume and suspend.
 > 
-> assuming this is the suspend-from-ram after a kexec back from the 
-> write-to-disk kernel I don't think you are correct.
-> 
-> when doing a suspend-to-ram you get to a point where you just don't use 
-> any userspace.
+> Backuping target memory before kexec and restoring it after kexec is
+> planed feature for kexec jump. But I will work on image writing/reading
+> first.
 
-What do you mean?  How can you prevent user tasks from running?  That's 
-basically what the freezer does, and the whole point of this approach 
-is to eliminate the freezer.  Right?
+Have you thought about using any existing code, when you're at it?
 
-> from that point on you are just walking the device tree 
-> putting things into low-power mode. This is the point where we are talking 
-> about jumping to.
+Greetings,
+Rafael
 
-Yes.  And putting things into low-power mode requires the ability to 
-run the scheduler, which means that user tasks can be scheduled, which 
-means that they can run.
 
-Alan Stern
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
