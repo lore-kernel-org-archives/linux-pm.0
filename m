@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Hibernation considerations
-Date: Fri, 20 Jul 2007 18:25:16 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707201820050.5241-100000__43469.3852476359$1184970387$gmane$org@iolanthe.rowland.org>
-References: <200707202335.05519.oliver@neukum.org>
+Date: Fri, 20 Jul 2007 18:35:16 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707201830470.5241-100000@iolanthe.rowland.org>
+References: <877ioupxi8.fsf@jbms.ath.cx>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707202335.05519.oliver@neukum.org>
+In-Reply-To: <877ioupxi8.fsf@jbms.ath.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,46 +16,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 20 Jul 2007, Oliver Neukum wrote:
+On Fri, 20 Jul 2007, Jeremy Maitin-Shepard wrote:
 
-> > We already have a pre-suspend notification available for drivers that 
-> > need to allocate large amounts of memory.
+> >> when doing a suspend-to-ram you get to a point where you just don't use 
+> >> any userspace.
 > 
-> Is that facility fine grained enough?
-
-It's a notifier chain that gets called at several points during the 
-suspend transition.  One of those points is right at the start, while 
-userspace is still running and reasonably large amounts of memory can 
-be allocated.
-
-Is it fine-grained enough?  I don't know -- hard to tell, since nothing 
-much is using it yet.
-
-> > You are correct about the need to delay/stop device addition.  I don't
-> > know how this can be done in general; each code path calling
-> > device_add() may have to be treated individually.
+> > What do you mean?  How can you prevent user tasks from running?  That's 
+> > basically what the freezer does, and the whole point of this approach 
+> > is to eliminate the freezer.  Right?
 > 
-> What about the old API?
+> Presumably no tasks at all would be scheduled.
 
-What old API do you mean?
+How would you prevent tasks from being scheduled?  How would you
+prevent drivers from deadlocking because in order to put their device
+in a low-power state they need to acquire a lock which is held by a
+user task?
 
->  Do we have to block module loading?
+> >> from that point on you are just walking the device tree 
+> >> putting things into low-power mode. This is the point where we are talking 
+> >> about jumping to.
+> 
+> > Yes.  And putting things into low-power mode requires the ability to 
+> > run the scheduler, which means that user tasks can be scheduled, which 
+> > means that they can run.
+> 
+> Does it really (fundamentally) require scheduling tasks, particularly in
+> the case that the devices have already been put in the "quiesced" state?
 
-No.  Registering new drivers is okay, registering new devices is bad.
-
-Of course, some modules do want to register a new device in their init 
-method.  I don't know what we should do about them.  Force the 
-registration to fail, I suppose.  How often will people suspend while a 
-module is loading?
-
-> What happens if a scsi error handler is woken? If it cannot be woken,
-> how are errors handled?
-
-Why should the error handler wake up?  There isn't supposed to be any 
-I/O going on, hence no errors to handle.
+I can't say for sure.  That's the way we have been doing it.  It
+wouldn't be easy to change, because the driver would have to busy-wait
+during delays -- which would mean it would need to use different code
+for system-wide suspend and runtime suspend.
 
 Alan Stern
