@@ -1,13 +1,16 @@
-From: tzawko1@stny.rr.com
-Subject: THE BRITISH OFFICIAL PRIZE NOTIFICATION
-Date: Thu, 19 Jul 2007 21:22:24 -0700
-Message-ID: <fa9db8154ddca.4ddcafa9db815__49434.7590989948$1184905454$gmane$org@nyroc.rr.com>
+From: Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+Date: Fri, 20 Jul 2007 07:40:38 +0300
+Message-ID: <200707200740.38158.a1426z__43063.7195161127$1184906725$gmane$org@gawab.com>
+References: <Pine.LNX.4.44L0.0707181021300.3759-100000@iolanthe.rowland.org>
+	<200707181647.32620.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-language: en
-Content-disposition: inline
+In-Reply-To: <200707181647.32620.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-THE LOTTERY DEPARTMENT UK.
-22 Garden Close,PE9 2YP, London
-REF N0:UK NL-L/200-26937
-BATCH N0:14/0017/1PD
+Rafael J. Wysocki wrote:
+> On Wednesday, 18 July 2007 16:29, Alan Stern wrote:
+> >
+> > Never mind.  It seems clear that this approach will suffer the same
+> > drawback as the proposal for removing the freezer from the
+> > suspend-to-RAM pathway.  Namely, device drivers will have to be changed
+> > to prevent user I/O requests from proceeding while devices are supposed
+> > to be quiescent or in a low-power state.
+>
+> I agree.
+>
+> > If a driver fails to handle this properly, its device could be
+> > reactivated in order to service a user request before the memory
+> > snapshot is made.  This could easily ruin the snapshot.
+>
+> That's why I've been saying for quite some time that we first need to take
+> care of the drivers. :-)
+>
+> IMO we've reached the point at which, whatever we want to do next, the
+> drivers are in the way.
 
-THE BRITISH OFFICIAL PRIZE NOTIFICATION  =20
+Correct, but only if we want ACPI support.  Granted, we need a separation of 
+the hibernate/suspend PM functions, but in the absence of ACPI, all we need 
+right now are dump/restore routines for the crashkernel.
 
-We are pleased to inform you of the result of the just concluded annual
-final draws held on the (17th July, 2007) by THE UK LOTTERY DEPARTMENT
-Worldwide Promotions, The selection process was carried out through
-random selection in our computerized email,Your email was among the 5=20
-Lucky winners who won =A31,000,000.00 each on THE BRITISH LOTTERY
-DEPARTMENT UK.
+Next, we should be looking into reducing the kexec'd kernel environment size, 
+which currently, at 16MB, is way too big, and even at 1MB would be 
+problematic for small systems.
 
-However the results were released on (19th July, 2007) And your email
-was attached to ticket number (7PWYZ2007) and BATCH N0 (14/0017/1PD)
-In other to claim your 1,000,000.00 prize winning,which has been
-deposited in a designated bank. However,you will have to fill the form
-below and send it to the Promotion manager of THE UK LOTTERY DEPARTMENT
-for verification and then you will be directed to the bank where a
-cheque of 1,000,000.00 has already  been deposited in your favour.
+So, ACPI should really be the least of our worries, and the reason why people 
+are fixating on ACPI is probably because they have nothing else to fixate 
+on.  They probably haven't even tried the kexec patches to appreciate how 
+easy the kexec approach is and how little interference APCI represents when 
+suspending and resuming.
 
-NAME:.......................
-AGE:...........................
-SEX:.male.................
-ADDRESS:................
-EMAIL:........................
-PHONE:.....................
-OCCUPATION:.........
-COMPANY:................
-COUNTRY:................
- =20
-(CONTACT PROMOTION MANAGER)
 
-Name: Thompson Fraser.
+Thanks!
 
-TEL : +44 704 570 2389
-FAX : +44 707 505 5658
-E MAIL: uk_serviceagent@yahoo.com.hk
-
-Accept my hearty congratulations once again!=20
-
-Yours faithfully,
-Mrs. Stella Ellis.
-Sweepstakes International Program.
-Copyright =A9 1994-2007 The UK National Lottery Inc.All rights reserved.
-Terms  of Service - Guideline.
+--
+Al
