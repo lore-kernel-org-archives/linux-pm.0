@@ -1,14 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 12:17:41 +0200
-Message-ID: <20070721101741.GD1902@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707161015490.3410-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.64.0707162137220.19248@asgard.lang.hm>
+Date: Sat, 21 Jul 2007 12:25:20 +0200
+Message-ID: <20070721102520.GE1902__24049.7566563592$1185013642$gmane$org@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	<200707171802.30903.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
+	<200707172150.44417.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707162137220.19248@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,32 +28,27 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> >Part of the problem here is that ACPI already has its own terminology,
-> >and you're trying to invent a new one instead of using the existing
-> >one.
-> >
-> >I agree, it would be good to have a non-ACPI-specific hibernation mode,
-> >something which would look to ACPI like a normal shutdown.  But I'm not
-> >so sure this is possible.
+> from my point of view the ACPI S4 sleep mode has far more in common with 
+> suspend-to-ram then with the suspend-to-disk that I'm talking about
 > 
-> why would it not be possible?
+> non-ACPI hibernate
 > 
-> >You have to understand that the ACPI spec is weird and complex.  The
-> >mere fact that you have written a system image to disk changes the way
-> >ACPI regards the shutdown procedure.  Even though you may treat all the
-> >devices and the rest of the hardware exactly the same, it's a different
-> >operation as far as ACPI is concerned, with different requirements.
-> >
-> >Yes, it's bizarre.  Why do you think so many people have complained so
-> >vehemently about ACPI for all these years?
-> 
-> so let's act as if ACPI doesn't exist and make a suspend-to-disk that 
-> works without it and looks to ACPI like a complete power off/on cycle (but 
-> looks to the user like a suspend/resume cycle)
+>   since the box powers off
+>     it uses zero power while suspended
+>     another OS could be run before a resume
+>     hardware can be swapped, suspend image could be sent around the world 
+>     to be restored on another system.
+>     restore makes no assumptions about the state of the hardware when it is 
+>     restored
+>     restore is slower (full BIOS boot is required)
+>   should be able to work on just about any hardware (the limit is the 
+>   ability to initialize the devices)
 
-...if you act as if ACPI does not exist, you'll loose AC/battery power
-status upon resume, and maybe more, because ACPI handles that.
+So it will be break at least battery status and "AC plugged in"
+status, because those are handled by ACPI and we do not know how to
+control them by hand.
 								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
