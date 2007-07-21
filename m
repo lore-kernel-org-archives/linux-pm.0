@@ -1,17 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 12:25:20 +0200
-Message-ID: <20070721102520.GE1902__24049.7566563592$1185013642$gmane$org@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171802.30903.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
-	<200707172150.44417.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Re: Hibernation considerations
+Date: Sat, 21 Jul 2007 13:44:32 +0200
+Message-ID: <E1ICDNw-0008HC-00__3341.80791765011$1185018496$gmane$org@dorka.pomaz.szeredi.hu>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+	<200707192228.05136.rjw@sisk.pl>
+	<44037b3d409370919bddd8710e6064fc@bga.com>
+	<200707202302.07116.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+In-reply-to: <200707202302.07116.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +17,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: rjw@sisk.pl
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, jbms@cmu.edu
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> The problem with FUSE is related to the fact that the freezer can't
+> freeze uninterruptible tasks and we said that perhaps we might avoid
+> it if FUSE was made freezing-aware.  Still, no one has gone in this
+> direction and I don't know of any plans to do that.
 
-> from my point of view the ACPI S4 sleep mode has far more in common with 
-> suspend-to-ram then with the suspend-to-disk that I'm talking about
-> 
-> non-ACPI hibernate
-> 
->   since the box powers off
->     it uses zero power while suspended
->     another OS could be run before a resume
->     hardware can be swapped, suspend image could be sent around the world 
->     to be restored on another system.
->     restore makes no assumptions about the state of the hardware when it is 
->     restored
->     restore is slower (full BIOS boot is required)
->   should be able to work on just about any hardware (the limit is the 
->   ability to initialize the devices)
+I thought we have fully explored this direction.  Lots of emails, and
+an IRC session with Pavel.  Conclusion:
 
-So it will be break at least battery status and "AC plugged in"
-status, because those are handled by ACPI and we do not know how to
-control them by hand.
-								Pavel
+ - It can't be done without VFS surgery + adding various hacks to fuse
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ - VFS surgery for the sake of a working suspend is not realistic
+
+Although removing the freezer seems the cleanest solution, I'm not
+saying the freezer can't be fixed up in the mean time.
+
+Allowing tasks to remain in uninterruptible sleep seemed a nice way to
+get around the fuse issues.  What was the problem with that patch?  It
+was something that was supposed to have been tested in suspend2,
+wasn't it?
+
+The other one (trying to wake up task, so that may make other tasks
+freezable) didn't seem such a good approach to me.
+
+The theory is quite simple: while and after suspending devices, no
+tasks must be touching said devices.
+
+The very cleanest way to do this is in the drivers.  The very simplest
+way is the current freezer.  But may be there are possibilities
+between these two extremes.
+
+But I can almost guarantee you, that any attempt at fixing the issues
+though fuse will just result in an even bigger mess than what we
+currently have.
+
+Miklos
