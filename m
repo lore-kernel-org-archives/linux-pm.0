@@ -1,20 +1,15 @@
-From: david@lang.hm
-Subject: Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 15:14:02 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707211510390.6577@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
-	<200707171802.30903.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
-	<200707172150.44417.rjw@sisk.pl>
-	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
-	<20070721102520.GE1902@elf.ucw.cz> <87ps2lojlc.fsf@jbms.ath.cx>
-	<20070721175639.GA3701@elf.ucw.cz>
-	<Pine.LNX.4.64.0707211232580.6577@asgard.lang.hm>
-	<20070721194906.GC3701@elf.ucw.cz>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: Re: Hibernation considerations
+Date: Sun, 22 Jul 2007 08:16:02 +1000
+Message-ID: <200707220816.03838.nigel@nigel.suspend2.net>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+	<200707212243.35602.nigel@nigel.suspend2.net>
+	<87lkd9ohtn.fsf@jbms.ath.cx>
+Reply-To: nigel@suspend2.net
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: multipart/mixed; boundary="===============1070297643266740212=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070721194906.GC3701@elf.ucw.cz>
+In-Reply-To: <87lkd9ohtn.fsf@jbms.ath.cx>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,54 +17,68 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: david@lang.hm, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 21 Jul 2007, Pavel Machek wrote:
+--===============1070297643266740212==
+Content-Type: multipart/signed; boundary="nextPart1976347.8yxf0I4N35";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
->>>>> So it will be break at least battery status and "AC plugged in"
->>>>> status, because those are handled by ACPI and we do not know how to
->>>>> control them by hand.
->>>>
->>>> It seems that it should be possible to initialize ACPI as if the system
->>>> just booted up normally.  Then battery status and such should be
->>>> correct, since they are correct after normal initialization.
->>>>
->>>> It should be possible to make hibernate look just like a reboot to all
->>>> of the devices, including ACPI stuff.
->>>
->>> Patch to make that work with swsusp/shutdown method would be indeed
->>> welcome. It does not work today.
->>
->> is this a problem in the restore path?
->>
->> with the kexec approach (and ignoring suspend to ram and disk for the
->> moment) the system will actually get shutdown completely after the image
->> is written. on resume it gets cold booted. at this point the ACPI stuff
->> should have no problem
->>
->> now if the ACPI drivers are storing something in ram about the battery
->> status and AC power status, but don't re-check after the resume, it
->> seems
->
-> That seems to be the problem. They store something in ram, and we
-> don't tell them that we resumed. That's why platform mode is
-> important, and way to go on ACPI systems.
+--nextPart1976347.8yxf0I4N35
+Content-Type: text/plain;
+  charset="cp 850"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-this sounds like the few drivers that do this sort of thing (and this 
-should only be the things that report status, drivers that enable devices 
-should be taken care of) need a 'forget what you think you know, check the 
-reality of the hardware' function.
+Hi.
 
-even without suspend I've sen these drivers get out of sync with reality, 
-and so such a function call would be useful to get them back in sync in 
-any case.
+On Sunday 22 July 2007 02:13:56 Jeremy Maitin-Shepard wrote:
+> It seems that you could still potentially get a failure to freeze if one
+> FUSE process depends on another, and the one that is frozen second just
+> happens to be waiting on the one that is frozen first when it is frozen.
+> I admit that this situation is unlikely, and perhaps acceptable.
+>=20
+> A larger concern is that it seems that freezing FUSE processes at all
+> _will_ generate deadlocks if a non-synchronous or memory-map-supporting
+> filesystem is loopback mounted from a FUSE filesystem.  In that case, if
+> you attempt to sync or free memory once FUSE is frozen, you are sure to
+> get a deadlock.
 
-if such a 'check reality' function was available it should be 
-straightforward to call it after a non-ACPI hibrnate/resume
+Ok. So then (in response to Alan too), how about keeping a tree of mounts,=
+=20
+akin to the device tree, and working from the deepest nodes up? (In=20
+conjunction with what I already suggested)?
 
-David Lang
+Regards,
+
+Nigel
+=2D-=20
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
+
+--nextPart1976347.8yxf0I4N35
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGooWjN0y+n1M3mo0RAiFrAKDoNHX3OYIQ5oa5oMuyorrITCWFngCgndeJ
+kW4J4yTjFIdPr+slSiMtIwo=
+=CQ/Y
+-----END PGP SIGNATURE-----
+
+--nextPart1976347.8yxf0I4N35--
+
+--===============1070297643266740212==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1070297643266740212==--
