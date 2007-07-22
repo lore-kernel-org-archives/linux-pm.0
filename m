@@ -1,10 +1,13 @@
-From: david@lang.hm
-Subject: Power Management framework proposal
-Date: Sat, 21 Jul 2007 23:49:43 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707212339550.6350__14281.9365174093$1185087086$gmane$org@asgard.lang.hm>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: Re: Power Management framework proposal
+Date: Sun, 22 Jul 2007 10:57:02 +0300
+Message-ID: <1185091022.19678.28.camel__32418.2415650741$1185091016$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,81 +17,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: "ext linux-pm-bounces@lists.linux-foundation.org" <linux-pm-bounces@lists.linux-foundation.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-I'm deliberatly breaking the threading on this so that people who have 
-tuned out the hibernation thread can take a look at this.
+Hi,
+On Sat, 2007-07-21 at 23:49 -0700, ext
+linux-pm-bounces@lists.linux-foundation.org wrote:
+> I'm deliberatly breaking the threading on this so that people who have 
+> tuned out the hibernation thread can take a look at this.
+> 
+> below is the proposal that I made at the bottom of one of the posts on the 
+> hibernation thread.
 
-below is the proposal that I made at the bottom of one of the posts on the 
-hibernation thread.
+I have the impression that you are trying to describe a mix of the clock
+and latency frameworks.
 
-the idea is that instead of approaching power management from the point of 
-view of the current desktop standard (ACPI), instead this approaches it 
-from the point of view of 'what does a tool need to know to do the job' no 
-matter what mechanism is actually used to implement the different modes.
+Could you elaborate on how your proposal is incompatible with enhancing
+the clock framework? 
 
-one thing that I didn't put in the original post is that the framework 
-that I mention below should work with other types of devices besides ACPI 
-ones.
+It looks like you are proposing a brand new shiny thing that frankly I
+would be happy to leave alone, unless it is crystal clear that the clock
+fw cannot be improved.
 
-CPU clock settings could fit the same API for example (with modeID=0 being 
-to hot-unplug the cpu and modeID=1 to initialize the cpu)
+The clocfk fw is used for OMAP and other architectures (including SH,
+iirc) and so far it has provided very good support for our power
+management needs (Nokia 770 and N800).
 
-here's the original post:
+Currently we are working on DVFS for OMAP2 (see slides presented at the
+linux-pm summit for OLS 2007 http://tinyurl.com/28tact ) and even if the
+current prototype is not actively involving the clock fw, our final goal
+is to make it capable of supporting atomic transactions for changing the
+core parameters.
 
-in fact, a better abstraction would be something like
+OMAP3 will require suspend to ram implementation where the content of
+system memory is retained, while parts or all the SoC are switched off.
+The plan is still to have a clock fw based implementation (plus
+interaction with the power rails, of course).
 
-report_power_modes
-    which would return a series of modes (sorted only by modeID)
-    modeID, %power_used_in_this_mode, %capability_in_this_mode
-    (I would make mode 0 always be complete power off, and mode 1 always be 
-full capacity)
+I think these are good examples of the non-ACPI systems you are
+mentioning.
 
-report_power_mode_speed
-   which would return a matrix giving how long it takes to transition from any 
-mode to any other mode. this should be a relative number, not an absolute 
-number since it will be different at different clock speeds.
+To make any proposal that has some chance of being accepted, you have to
+compare it against the existing solution, explaining:
 
-set_operational_mode(modeID)
-   which would take you from whatever mode you are in now to the requested mode.
+-what it is bringing in terms of new functionalities
+-how it is different
+-why the current implementation cannot simply be enhanced
 
-most devices would report the simple list of modes
+You can refer to the linux-pm archives for examples of failed attempts
+over the last year or so, just search for "framework" in the subject.
 
-0,0,0
-1,100,100
+-- 
+Cheers, Igor
 
-with a mode_speed matrix of
-    0 1
-    ---
-0|0 1
-1|1 0
-
-it may be that there is more info needed for the powr management engine to 
-decide what modes it wants to put things into, if so identify what type of info 
-you need and add another column to the modes list.
-for example:
-   you may want to add a flag for 'does this mode allow downstream devices to 
-operate?'
-   you may want to make a mode for 'this mode doesn't allow any new requests, 
-but continues to process pending requests' and have a flag that indicates this
-
-currently it looks like there's no way to find out what modes are available, 
-and you have to know what mode something is in currently before you can request 
-it change to a different mode. both of these prevent effective power management 
-without encoding intimate knowledge of the capability of the particular 
-hardware in your management tool.
-
-some of this may be discoverable via the ACPI interface (it's not talked about 
-much in the devices.txt file), but the mode setting is still wrong.
-
-note that in the example above it's accpetable for a driver to cache what mode 
-it thinks the device is in, but it needs to properly set the new mode even if 
-it's cached data is incorrect.
-
-this approach would allow the transition of ALL drivers to the new mode of 
-operation in one fell swoop, and then adding additional power management 
-features is just adding to the existing list rather then implementing new 
-functions.
-
-David Lang
+Igor Stoppa <igor.stoppa@nokia.com>
+(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
