@@ -1,12 +1,10 @@
 From: david@lang.hm
-Subject: Re: Re: Hibernation considerations
-Date: Sat, 21 Jul 2007 20:43:24 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707212000380.6747__27809.7307229929$1185075910$gmane$org@asgard.lang.hm>
-References: <Pine.LNX.4.44L0.0707210956320.8201-100000@netrider.rowland.org>
+Subject: Power Management framework proposal
+Date: Sat, 21 Jul 2007 23:49:43 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707212339550.6350__14281.9365174093$1185087086$gmane$org@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707210956320.8201-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,129 +14,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 21 Jul 2007, Alan Stern wrote:
+I'm deliberatly breaking the threading on this so that people who have 
+tuned out the hibernation thread can take a look at this.
 
-> On Fri, 20 Jul 2007 david@lang.hm wrote:
->
->>> How would you prevent tasks from being scheduled?  How would you
->>> prevent drivers from deadlocking because in order to put their device
->>> in a low-power state they need to acquire a lock which is held by a
->>> user task?
->>
->> you give up on the suspend becouse you have no way of getting the user
->> task to give up the lock.
->
-> Once the deadlock has occurred it's too late.  You can't give up; in
-> fact you can't do anything at all.  The system has hung.
->
->> however, kernel locks should not be held by user tasks, user tasks are not
->> expected to behave in rational ways, allowing them to compete with kernel
->> tasks for locks is a sure way to get a deadlock or indefinate stall.
->
-> What on Earth are you talking about?  "Kernel locks should not be held
-> by user tasks"?  Then who _should_ hold them?  You are aware, I hope,
-> that down() and mutex_lock() can be called only in process context?
->
->> what locks are accessed this way?
->
-> Lots of them.  For example, most drivers won't want a suspend to occur
-> right in the middle of an I/O transfer.  To prevent this, the driver
-> might use a mutex.  The task doing the I/O (which will be a user task)
-> acquires the mutex during a transfer and the suspend routine acquires
-> the mutex while quiescing the device.
+below is the proposal that I made at the bottom of one of the posts on the 
+hibernation thread.
 
-wait a min her, it's possible we are misunderstanding each other.
+the idea is that instead of approaching power management from the point of 
+view of the current desktop standard (ACPI), instead this approaches it 
+from the point of view of 'what does a tool need to know to do the job' no 
+matter what mechanism is actually used to implement the different modes.
 
-as I see it.
+one thing that I didn't put in the original post is that the framework 
+that I mention below should work with other types of devices besides ACPI 
+ones.
 
-if userspace can aquire locks that prevent the kernel from shutting off 
-(or doing anything else in particular) then it's possible for misbehaving 
-userspace code to stop the kernel by simply choosing to never release the 
-lock.
+CPU clock settings could fit the same API for example (with modeID=0 being 
+to hot-unplug the cpu and modeID=1 to initialize the cpu)
 
-this would be a trivial DOS from userspace.
-
-now, if you are talking instead about the fact that when userspace makes a 
-system call, the execution of that system call involves aquiring locks 
-that are released before the system call completes you have a very 
-different situation.
-
-if you have locks that are held across system calls then you should 
-already have problems. becouse you can't count on userspace ever taking 
-whatever action is appropriate to release the lock.
-
-what am I missing that concerns you so much?
-
->>>> Does it really (fundamentally) require scheduling tasks, particularly in
->>>> the case that the devices have already been put in the "quiesced" state?
->>>
->>> I can't say for sure.  That's the way we have been doing it.  It
->>> wouldn't be easy to change, because the driver would have to busy-wait
->>> during delays -- which would mean it would need to use different code
->>> for system-wide suspend and runtime suspend.
->>
->> please define terms so that we are all on the same page
->
-> Please read Documentation/power/devices.txt.
-
-I have done so.
-
->> what do you mean by
->> system-wide suspend
->
-> That's what you would call standby, suspend-to-RAM, or hibernate.  The
-> entire system goes to sleep.
->
->> runtime suspend
->
-> That's when an individual device is placed in a low-power state to
-> save energy while it isn't being used.  The system as a whole remains
-> awake and the device will be resumed the next time it is needed for
-> anything.
-
-thanks for the defintitions.
-
-having read through Documentation/power/devices.txt I remain convinced 
-that you are making a fundamental mistake.
-
-you are designing a system that will only work if everything (every 
-driver, every state transition) participates fully in the process at all 
-times. You started with the facts 'this is the info that ACPI provides and 
-this is how it is designed to be used' and worked from there instead of 
-looking to see what the kernel really needed and figuring how to provide a 
-good interface for that that happens to be implemented (today) with ACPI. 
-(a proper power management framework shouldn't care if you have ACPI, APM, 
-or some other method of controlling the devices)
-
-this leads to resume functions that can only work if the proper suspend 
-function was called rather then makeing 'resume' just mean 'go to full 
-operation', which is the same thing that gets called when the device is 
-first initialized. internally it can examine the hardware and follow 
-different paths depending on what it finds the current state of the 
-hardware is, but the outside world (including the rest of the kernel) 
-should not care. the fact that the rest of the kernel needs to know if it 
-should call 'resume' or 'initialize' is a failure in the abstraction.
+here's the original post:
 
 in fact, a better abstraction would be something like
 
 report_power_modes
-   which would return a series of modes (sorted only by modeID)
-   modeID, %power_used_in_this_mode, %capability_in_this_mode
-   (I would make mode 0 always be complete power off, and mode 1 always be 
+    which would return a series of modes (sorted only by modeID)
+    modeID, %power_used_in_this_mode, %capability_in_this_mode
+    (I would make mode 0 always be complete power off, and mode 1 always be 
 full capacity)
 
 report_power_mode_speed
-   which would return a matrix giving how long it takes to transition from 
-any mode to any other mode. this should be a relative number, not an 
-absolute number since it will be different at different clock speeds.
+   which would return a matrix giving how long it takes to transition from any 
+mode to any other mode. this should be a relative number, not an absolute 
+number since it will be different at different clock speeds.
 
 set_operational_mode(modeID)
-   which would take you from whatever mode you are in now to the requested 
-mode.
+   which would take you from whatever mode you are in now to the requested mode.
 
 most devices would report the simple list of modes
 
@@ -146,33 +59,32 @@ most devices would report the simple list of modes
 1,100,100
 
 with a mode_speed matrix of
-   0 1
-   ---
+    0 1
+    ---
 0|0 1
 1|1 0
 
 it may be that there is more info needed for the powr management engine to 
-decide what modes it wants to put things into, if so identify what type of 
-info you need and add another column to the modes list.
+decide what modes it wants to put things into, if so identify what type of info 
+you need and add another column to the modes list.
 for example:
-   you may want to add a flag for 'does this mode allow downstream devices 
-to operate?'
-   you may want to make a mode for 'this mode doesn't allow any new 
-requests, but continues to process pending requests' and have a flag that 
-indicates this
+   you may want to add a flag for 'does this mode allow downstream devices to 
+operate?'
+   you may want to make a mode for 'this mode doesn't allow any new requests, 
+but continues to process pending requests' and have a flag that indicates this
 
-currently it looks like there's no way to find out what modes are 
-available, and you have to know what mode something is in currently before 
-you can request it change to a different mode. both of these prevent 
-effective power management without encoding intimate knowledge of the 
-capability of the particular hardware in your management tool.
+currently it looks like there's no way to find out what modes are available, 
+and you have to know what mode something is in currently before you can request 
+it change to a different mode. both of these prevent effective power management 
+without encoding intimate knowledge of the capability of the particular 
+hardware in your management tool.
 
-some of this may be discoverable via the ACPI interface (it's not talked 
-about much in the devices.txt file), but the mode setting is still wrong.
+some of this may be discoverable via the ACPI interface (it's not talked about 
+much in the devices.txt file), but the mode setting is still wrong.
 
-note that in the example above it's accpetable for a driver to cache what 
-mode it thinks the device is in, but it needs to properly set the new 
-mode even if it's cached data is incorrect.
+note that in the example above it's accpetable for a driver to cache what mode 
+it thinks the device is in, but it needs to properly set the new mode even if 
+it's cached data is incorrect.
 
 this approach would allow the transition of ALL drivers to the new mode of 
 operation in one fell swoop, and then adding additional power management 
