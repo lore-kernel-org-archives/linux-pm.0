@@ -1,13 +1,12 @@
-From: david@lang.hm
-Subject: Re: Power Management framework proposal
-Date: Sun, 22 Jul 2007 11:56:04 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707221130380.6350__43137.852746486$1185130763$gmane$org@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	<1185125189.2714.13.camel@laptopd505.fenrus.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: Hibernation considerations
+Date: Sun, 22 Jul 2007 16:09:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707221608140.16031-100000__31306.0811757625$1185135082$gmane$org@netrider.rowland.org>
+References: <E1ICeHX-00025u-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1185125189.2714.13.camel@laptopd505.fenrus.org>
+In-Reply-To: <E1ICeHX-00025u-00@dorka.pomaz.szeredi.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,62 +16,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: david@lang.hm, nigel@suspend2.net, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, jbms@cmu.edu
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 22 Jul 2007, Arjan van de Ven wrote:
+On Sun, 22 Jul 2007, Miklos Szeredi wrote:
 
->> this approach would allow the transition of ALL drivers to the new mode of
->> operation in one fell swoop, and then adding additional power management
->> features is just adding to the existing list rather then implementing new
->> functions.
->
->
-> I have a concern with this approach though. It seems to assume that
-> there is one global thing somewhere that sets the system state; in my
-> experience that is the wrong approach; in fact there is a very definite
-> evidence that there are many decisions on power that are to be made
-> local at a high frequency. An example of this is the processor speed;
-> the ondemand governer does exactly this for the cpus that can switch
-> speeds fast; it's just impossible to beat such a local, fast decision
-> with anything on a global scale.
+> > The only thing to do is what Rafael has been working on: unfreeze
+> > things, hope the tasks sort themselves out, and try again.
+> 
+> Have we some proof, that this will untangle the freezing tasks in a
+> limited time?  Or will it just make the problem harder to trigger?
 
-the intent was not to have one global call that sets the mode on all 
-devices, but rather have one call for each device/subsystem, just the same 
-call in each case.
+Of course there's no proof.  Just the opposite -- if things get hung up
+the first time, they might get hung up the second time.  And the
+third...
 
-there's also nothing that says that there can only be one thing setting 
-the mode (although that does mean a fourth call 'report_current_mode()' or 
-similar is needed). and if you choose to have two pieces of software 
-managing the same device things could get 'interesting'.
+But it ought to make the problem harder to trigger.  For the present 
+that's a worthwhile improvement.
 
-as for the speed that such decisions need to be made.
-
-this API is not saying anything about the speed of the decisions.
-it's also not saying anything about if the decision makeing is being done 
-by kernelspace or userspace. it's just providing a common way for whatever 
-software is doing the decision makeing to find out it's options and set 
-the modes.
-
-one way to represent this in sysfs (as a possible userspace API) would be
-power/mode (read to see what mode the device is in, write to set the mode)
-power/modelist
-power/switching_delay (outputs the delay matrix showing the cost of switching from mode to mode)
-although I'm not sure how you would allow the system to report an error 
-this way.
-
-if you have the ondemand governer running, it uses these API's to make 
-it's changes, but if you didn't want to run the ondemand governer you 
-could just do course speed settings through sysfs.
-
-> On the other hand, some things (the high level goals and constraints)
-> are obviously global.
->
-> However, your design seems to want to put the low level settings in a
-> global thing, and that is just a mistake.
-
-I'm proposing a single function name per device, not a single function for 
-the entire system.
-
-David Lang
+Alan Stern
