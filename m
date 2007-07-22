@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Hibernation considerations
-Date: Sun, 22 Jul 2007 11:26:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707221116060.15224-100000__32432.0694119253$1185118040$gmane$org@netrider.rowland.org>
-References: <200707220816.03838.nigel@nigel.suspend2.net>
+Date: Sun, 22 Jul 2007 12:00:26 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707221126280.15224-100000@netrider.rowland.org>
+References: <Pine.LNX.4.64.0707212000380.6747@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707220816.03838.nigel@nigel.suspend2.net>
+In-Reply-To: <Pine.LNX.4.64.0707212000380.6747@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,45 +16,102 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@suspend2.net
-Cc: david@lang.hm, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 22 Jul 2007, Nigel Cunningham wrote:
+On Sat, 21 Jul 2007 david@lang.hm wrote:
 
-> Hi.
+> wait a min her, it's possible we are misunderstanding each other.
+
+I'd describe it as: You are misunderstanding me.  :-)
+
+> as I see it.
 > 
-> On Sunday 22 July 2007 02:13:56 Jeremy Maitin-Shepard wrote:
-> > It seems that you could still potentially get a failure to freeze if one
-> > FUSE process depends on another, and the one that is frozen second just
-> > happens to be waiting on the one that is frozen first when it is frozen.
-> > I admit that this situation is unlikely, and perhaps acceptable.
-> > 
-> > A larger concern is that it seems that freezing FUSE processes at all
-> > _will_ generate deadlocks if a non-synchronous or memory-map-supporting
-> > filesystem is loopback mounted from a FUSE filesystem.  In that case, if
-> > you attempt to sync or free memory once FUSE is frozen, you are sure to
-> > get a deadlock.
+> if userspace can aquire locks that prevent the kernel from shutting off 
+> (or doing anything else in particular) then it's possible for misbehaving 
+> userspace code to stop the kernel by simply choosing to never release the 
+> lock.
 > 
-> Ok. So then (in response to Alan too), how about keeping a tree of mounts, 
-> akin to the device tree, and working from the deepest nodes up? (In 
-> conjunction with what I already suggested)?
+> this would be a trivial DOS from userspace.
 
-Face it, Nigel, this is a losing battle.  You can try to come up with
-ever-more complex schemes to try and force FUSE into the freezer's
-framework, but it just won't fit.  Or if it does, the next filesystem
-to come along will require an even more baroque type of special-case 
-handling.
+You are confusing "userspace" with "user tasks".  And not only that,
+you often use the term "userspace" when you should say "user mode".
 
-The general problem is that task A may be in an unfreezable state,
-waiting for task B to do something, while task B is already frozen.  
-Since there's no reasonable way to determine that A really is waiting
-for B, you're just stuck.  (To make matters worse, A may not even
-realize which task it is waiting for; it may know only that it's
-waiting for somebody to do something!)  A and B could be user tasks, 
-kernel threads, or one of each.
+If you want I can explain the differences.
 
-The only thing to do is what Rafael has been working on: unfreeze
-things, hope the tasks sort themselves out, and try again.
+> now, if you are talking instead about the fact that when userspace makes a 
+> system call, the execution of that system call involves aquiring locks 
+> that are released before the system call completes you have a very 
+> different situation.
+
+That is exactly what I have been talking about.  It may be different
+from what you _thought_, but it's not different from what I actually
+_said_.
+
+> if you have locks that are held across system calls then you should 
+> already have problems. becouse you can't count on userspace ever taking 
+> whatever action is appropriate to release the lock.
+> 
+> what am I missing that concerns you so much?
+
+Here's what you are missing:
+
+The new kexec approach eliminates the freezer and relies instead on the
+fact that none of the tasks in the original kernel can execute while
+the new kexec'd kernel is running.  This means the new kernel can write
+out a memory image with no fear of interference or corruption.
+
+But it also means that tasks which otherwise would have been frozen are 
+actually free to run before the kexec call is made (and after the call 
+returns, if the kexec'd kernel returns back to the original kernel).  
+Any driver which was written with the assumption that tasks would be 
+frozen at those times will need to be changed.
+
+For example, drivers know that they have to quiesce their device in
+preparation for creating the memory snapshot.  But they assume that no
+I/O requests will be made while the device is quiesced (because no user
+task is capable of generating an I/O request if they are all frozen),
+so the driver doesn't try to prevent such requests from reactivating
+the device.
+
+The situation as regards locking is harder to discuss since I don't 
+know of any code examples to use as a guide.  The fact remains that if 
+user tasks aren't frozen then they can make system calls, and while 
+running in kernel mode they can acquire locks, which might cause 
+problems -- even though I can't identify any definite examples.
+
+Because of these problems, it's too early to start trying to use kexec
+to avoid the need for the freezer.
+
+Of course, exactly the same possible problems exist when one tries to
+remove the freezer from suspend-to-RAM.  It has nothing to do with 
+kexec in particular (and certainly nothing to do with ACPI).
+
+> having read through Documentation/power/devices.txt I remain convinced 
+> that you are making a fundamental mistake.
+> 
+> you are designing a system
+
+I'm not designing anything!  _You_ are.  I'm merely pointing out
+problems in your design which you haven't considered.
+
+>  that will only work if everything (every 
+> driver, every state transition) participates fully in the process at all 
+> times. You started with the facts 'this is the info that ACPI provides
+
+Look again; I wasn't talking about ACPI.  You have mixed up the issues
+in this email thread.  (Not hard to do, since it has been a very long
+and complicated thread.)
+
+> and 
+> this is how it is designed to be used' and worked from there instead of 
+> looking to see what the kernel really needed and figuring how to provide a 
+> good interface for that that happens to be implemented (today) with ACPI. 
+> (a proper power management framework shouldn't care if you have ACPI, APM, 
+> or some other method of controlling the devices)
+
+This and the rest of your email have no bearing on what I was talking
+about, so I have snipped out the remainder.
 
 Alan Stern
