@@ -1,12 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: Re: Hibernation considerations
-Date: Mon, 23 Jul 2007 16:22:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.64.0707231121220.3828@asgard.lang.hm>
+Date: Tue, 24 Jul 2007 07:55:00 +1000
+Message-ID: <200707240755.01820.nigel__13522.9829386391$1185227753$gmane$org@nigel.suspend2.net>
+References: <Pine.LNX.4.44L0.0707231120380.3545-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="===============3180324534714766052=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0707231121220.3828@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.44L0.0707231120380.3545-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,100 +14,95 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Jul 2007 david@lang.hm wrote:
+--===============3180324534714766052==
+Content-Type: multipart/signed; boundary="nextPart1483447.JhtF0ov2Er";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> > For one thing, checking for a suspend-in-progress at the beginning of
-> > each and every system call would add overhead to a hot path in the
-> > kernel, one which is already very heavily optimized.  People wouldn't
-> > stand for it.
-> 
-> I thought that the suspend stuff did this easily,
+--nextPart1483447.JhtF0ov2Er
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It does not do it at all.  Do you know how the freezer works?
+Hi.
 
->  but the freezer really 
-> starts running into trouble when it wants to freeze some things, but not 
-> other things. this seems to be the biggest area of churn and problems.
+On Tuesday 24 July 2007 01:23:15 Alan Stern wrote:
+> On Mon, 23 Jul 2007, Nigel Cunningham wrote:
+>=20
+> > Take a step back for a second.
+> >=20
+> > The problem we're facing now is that we're getting some userspace threa=
+ds,=20
+> > used in processing I/O, that are functioning as exceptions to the "free=
+ze=20
+> > userspace, then freezeable kernel threads" rule. They are only exceptio=
+ns=20
+> > because of that role in processing I/O - because they're de facto kerne=
+l=20
+> > threads. So, if we orient our thinking more in terms of I/O processing =
+and=20
+> > less in terms of the userspace/kernelspace distinction, we'll have a=20
+> > solution:
+> >=20
+> > 1) Freeze processes that aren't fs related (ie stop them generating I/O=
+).
+>=20
+> The problem here is that with things like FUSE, _every_ process is=20
+> potentially fs related.  Nothing prevents a FUSE thread from doing IPC=20
+> with any other thread.
 
-No.  The freezer starts running into trouble when it wants to freeze a
-thread but can't, because that thread is waiting for some event to
-occur and the only thread which can cause the event is already frozen.  
-Or is itself waiting for a third thread which is already frozen...
+Yes, but the fuse thread is going to know what other thread it's doing IPC=
+=20
+with, so it can get that thread flagged too.
 
-> > You get similar problems from system calls that wait in kernel mode
-> > until something has happened.  For example, a read() call for the
-> > console device will wait until somebody types on the keyboard.  At any
-> > point in time, many (or even most) user threads are blocked in a system
-> > call.
-> 
-> but are locks held while they are blocked like this?
+> > 2) Flush pending I/O.
+> > 3) Freeze filesystems in reverse order of dependency, the primary purpo=
+se=20
+> > being to stop them generating further I/O on their metadata.
+> >=20
+> > Locks that are being held are only being held because work is being don=
+e.=20
+If=20
+> > we progressively focus on threads in terms of their create/process work=
+=20
+> > dependencies, we'll see that the problem isn't at all intractable.
+>=20
+> As has been mentioned before, keeping track of all that dependency=20
+> information would be very fragile and time-consuming.
 
-Sometimes they are, sometimes they aren't.
+I disagree. It's at least going to be less fragile and time-consuming then=
+=20
+maintaining new/extra code for kexec.
 
-> > Let's let kernel K1 be the original kernel, the one which is going into
-> > hibernation.  Kernel K2 is the one started by kexec to write out the
-> > memory image.
-> >
-> > Your question becomes: Why should K2 jumping back to K1 cause K1
-> > immediately to start running user tasks?  Answer: Because K1 has been
-> > running user tasks all along (except while K2 was active) and nothing
-> > has told it to stop.  In fact, about the only things which _can_ cause
-> > K1 to stop running user threads are the freezer (which you want to
-> > eliminate) and disabling interrupts (not possible since some drivers
-> > require interrupts to be enabled when putting devices in low-power
-> > mode).
-> 
-> when you jump to a body of code you jump to a specific point in the code, 
-> not to some nebulous 'everything running' state.
+Nigel
 
-How is that relevant?  When K2 jumps back to K1, it jumps to some 
-designated location in K1.  It might just after the place where K1 
-called K2; I'm not familiar with the details of kexec.  In any event, 
-K1 will still be in the same state as it was when it called K2.
 
-> > So when K2 starts up, it will have a phase in which user threads don't
-> > run.  That doesn't affect K1.  When K2 returns to K1, K1 does not go
-> > through this sort of phase.  It simply picks up from where it left off.
-> 
-> then how can it restart drivers before the user threads need them?
+--nextPart1483447.JhtF0ov2Er
+Content-Type: application/pgp-signature
 
-It can't.  Indeed, in the absence of a freezer, user threads will need 
-devices (more accurately, will submit I/O requests for devices) that 
-have to be kept quiescent or low-power.  Drivers will need to delay 
-those requests until the devices are returned to full operation.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-That's exactly what I've been saying all along: Drivers will need to 
-be changed to delay I/O requests, if there is no freezer.
+iD8DBQBGpSO1N0y+n1M3mo0RAk3RAKDAb98mqiRLbzd3FCufl+9NxNO6zACgjv4u
+mmH/Mz3esbPmL1FSGHVFvvw=
+=Kgxx
+-----END PGP SIGNATURE-----
 
-> > However there still remains the problem of user tasks running after
-> > devices are supposed to be quiescent and before K1 starts.  There's
-> > currently nothing to stop such tasks from making I/O requests and
-> > thereby causing a quiescent device to become active again.
-> 
-> but if the devices are in low power mode then K1 needs to get them out of 
-> low power mode before user tasks try to access them.
+--nextPart1483447.JhtF0ov2Er--
 
-No -- which is good because it can't.  If a user task is running
-there's no way to stop it from submitting I/O requests.  K1 needs to
-delay these requests until after the device has returned to full 
-operation.
+--===============3180324534714766052==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> > We aren't talking about drivers initializing devices.  We are talking
-> > about what happens during the time when drivers are trying to quiesce
-> > devices (i.e., before K1 has started up K2) or power them down (after
-> > K2 has returned to K1).
-> 
-> or if you are doing a resume instead of a suspend to ram the drivers need 
-> to initialize or otherwise move to full power on K1 before user tasks hit 
-> them.
 
-Correct.  User tasks are allowed to submit requests, but the requests 
-can't be carried out until the device returns to full operation.
-
-Alan Stern
+--===============3180324534714766052==--
