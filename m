@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Hibernation considerations
-Date: Mon, 23 Jul 2007 11:23:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707231120380.3545-100000__26139.508575625$1185204240$gmane$org@iolanthe.rowland.org>
-References: <200707231311.56398.nigel@nigel.suspend2.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: bogosort (was Re: Re: [RFC][PATCH -mm 5/6] Freezer:
+	Use freezing timeout more efficiently)
+Date: Mon, 23 Jul 2007 10:04:54 +0200
+Message-ID: <20070723080454.GB9162@elf.ucw.cz>
+References: <200707092229.08898.rjw@sisk.pl> <200707102339.18192.rjw@sisk.pl>
+	<20070710213935.GE7091@elf.ucw.cz> <200707110007.35449.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707231311.56398.nigel@nigel.suspend2.net>
+Content-Disposition: inline
+In-Reply-To: <200707110007.35449.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,37 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@suspend2.net
-Cc: david@lang.hm, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <miklos@szeredi.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 23 Jul 2007, Nigel Cunningham wrote:
+Hi!
 
-> Take a step back for a second.
+> > > > Task here is to sort the tasks, and freeze them in such order that
+> > > > freezing works, right? Yep, we do not know the dependencies
+> > > > explicitely... but what you invented is bogosort.
+> > > 
+> > > Define, please?
+> > 
+> > Uff, sorry. http://en.wikipedia.org/wiki/Bogosort .
 > 
-> The problem we're facing now is that we're getting some userspace threads, 
-> used in processing I/O, that are functioning as exceptions to the "freeze 
-> userspace, then freezeable kernel threads" rule. They are only exceptions 
-> because of that role in processing I/O - because they're de facto kernel 
-> threads. So, if we orient our thinking more in terms of I/O processing and 
-> less in terms of the userspace/kernelspace distinction, we'll have a 
-> solution:
+> So this thing is not bogosort, because it makes the tasks that haven't frozen
+> appear on the bottom.  IOW, the first (failing) freezing attempt is used as
+> a sieve, so the process is not completely random.
+
+Aha..
+
+> > Hmm, if someone wants to retry... perhaps we should just return
+> > specific error and let the _userland_ do the retries? It can do it as
+> > efficiently as outer loop in freezer...
 > 
-> 1) Freeze processes that aren't fs related (ie stop them generating I/O).
+> No, because _that_ would be bogosort, as defined in Wikipedia. :-)
 
-The problem here is that with things like FUSE, _every_ process is 
-potentially fs related.  Nothing prevents a FUSE thread from doing IPC 
-with any other thread.
-
-> 2) Flush pending I/O.
-> 3) Freeze filesystems in reverse order of dependency, the primary purpose 
-> being to stop them generating further I/O on their metadata.
-> 
-> Locks that are being held are only being held because work is being done. If 
-> we progressively focus on threads in terms of their create/process work 
-> dependencies, we'll see that the problem isn't at all intractable.
-
-As has been mentioned before, keeping track of all that dependency 
-information would be very fragile and time-consuming.
-
-Alan Stern
+Ok, I see. It is better than bogosort... but still ugly. Can we at
+least have someone tell us it helps with fuse before we proceed?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
