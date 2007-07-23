@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Towards eliminating the freezer
-Date: Mon, 23 Jul 2007 16:05:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707231124590.3545-100000__43855.3498279818$1185221253$gmane$org@iolanthe.rowland.org>
-References: <200707231623.17958.oliver@neukum.org>
+Subject: Re: Re: Hibernation considerations
+Date: Mon, 23 Jul 2007 16:22:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.64.0707231121220.3828@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707231623.17958.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.64.0707231121220.3828@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,82 +16,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-[Note changed $SUBJECT]
+On Mon, 23 Jul 2007 david@lang.hm wrote:
 
-On Mon, 23 Jul 2007, Oliver Neukum wrote:
-
-> > > > You are correct about the need to delay/stop device addition.  I don't
-> > > > know how this can be done in general; each code path calling
-> > > > device_add() may have to be treated individually.
-> > > 
-> > > What about the old API?
-> > 
-> > What old API do you mean?
+> > For one thing, checking for a suspend-in-progress at the beginning of
+> > each and every system call would add overhead to a hot path in the
+> > kernel, one which is already very heavily optimized.  People wouldn't
+> > stand for it.
 > 
-> The find_device() stuff.
+> I thought that the suspend stuff did this easily,
 
-You mean like bus_find_device() or driver_find_device()?  I don't see 
-any problem with them.  They aren't involved in device registration or 
-locking.
+It does not do it at all.  Do you know how the freezer works?
 
-> > >  Do we have to block module loading?
-> > 
-> > No.  Registering new drivers is okay, registering new devices is bad.
+>  but the freezer really 
+> starts running into trouble when it wants to freeze some things, but not 
+> other things. this seems to be the biggest area of churn and problems.
+
+No.  The freezer starts running into trouble when it wants to freeze a
+thread but can't, because that thread is waiting for some event to
+occur and the only thread which can cause the event is already frozen.  
+Or is itself waiting for a third thread which is already frozen...
+
+> > You get similar problems from system calls that wait in kernel mode
+> > until something has happened.  For example, a read() call for the
+> > console device will wait until somebody types on the keyboard.  At any
+> > point in time, many (or even most) user threads are blocked in a system
+> > call.
 > 
-> What if it is a driver for virtual devices that don't need probe()
-> for actual hardware?
+> but are locks held while they are blocked like this?
 
-Like I said, registering the new driver is okay.  Registering the 
-virtual devices could cause a problem.
+Sometimes they are, sometimes they aren't.
 
-> > Of course, some modules do want to register a new device in their init 
-> > method.  I don't know what we should do about them.  Force the 
-> > registration to fail, I suppose.  How often will people suspend while a 
-> > module is loading?
-> > 
-> > > What happens if a scsi error handler is woken? If it cannot be woken,
-> > > how are errors handled?
-> > 
-> > Why should the error handler wake up?  There isn't supposed to be any 
-> > I/O going on, hence no errors to handle.
+> > Let's let kernel K1 be the original kernel, the one which is going into
+> > hibernation.  Kernel K2 is the one started by kexec to write out the
+> > memory image.
+> >
+> > Your question becomes: Why should K2 jumping back to K1 cause K1
+> > immediately to start running user tasks?  Answer: Because K1 has been
+> > running user tasks all along (except while K2 was active) and nothing
+> > has told it to stop.  In fact, about the only things which _can_ cause
+> > K1 to stop running user threads are the freezer (which you want to
+> > eliminate) and disabling interrupts (not possible since some drivers
+> > require interrupts to be enabled when putting devices in low-power
+> > mode).
 > 
-> What about shared busses? Firewire, FibreChannel? They can get external
-> resets, etc ...
+> when you jump to a body of code you jump to a specific point in the code, 
+> not to some nebulous 'everything running' state.
 
-The same reasoning applies: If no I/O is going on, why should there be
-a reset?  If a reset or any other event is generated externally then it
-is handled in the kernel by some device driver for the bus, which
-should be smart enough not to register new devices or start up an error
-handler until I/O is once again permitted.
+How is that relevant?  When K2 jumps back to K1, it jumps to some 
+designated location in K1.  It might just after the place where K1 
+called K2; I'm not familiar with the details of kexec.  In any event, 
+K1 will still be in the same state as it was when it called K2.
 
+> > So when K2 starts up, it will have a phase in which user threads don't
+> > run.  That doesn't affect K1.  When K2 returns to K1, K1 does not go
+> > through this sort of phase.  It simply picks up from where it left off.
+> 
+> then how can it restart drivers before the user threads need them?
 
-=============================
+It can't.  Indeed, in the absence of a freezer, user threads will need 
+devices (more accurately, will submit I/O requests for devices) that 
+have to be kept quiescent or low-power.  Drivers will need to delay 
+those requests until the devices are returned to full operation.
 
+That's exactly what I've been saying all along: Drivers will need to 
+be changed to delay I/O requests, if there is no freezer.
 
-Now here's an idea which might work.  Can we require every caller of
-device_add() to hold some existing device's semaphore?  Normally it
-would be the semaphore of the new device's parent, but it could be a
-higher ancestor.  There even could be a single "root" semaphore for
-drivers registering a top-level device with no parent.
+> > However there still remains the problem of user tasks running after
+> > devices are supposed to be quiescent and before K1 starts.  There's
+> > currently nothing to stop such tasks from making I/O requests and
+> > thereby causing a quiescent device to become active again.
+> 
+> but if the devices are in low power mode then K1 needs to get them out of 
+> low power mode before user tasks try to access them.
 
-(Some testing shows that during startup things like ACPI and IDE don't 
-fulfill this requirement, so maybe we should require it only after 
-userspace has begun running.  After all, the system can't suspend 
-until then.)
+No -- which is good because it can't.  If a user task is running
+there's no way to stop it from submitting I/O requests.  K1 needs to
+delay these requests until after the device has returned to full 
+operation.
 
-It seems like a reasonable sort of thing to do.  Hotplugged devices
-tend to be registered as they are discovered by their parent's driver,
-so it shouldn't be too much to ask that the parent's semaphore be held
-when the new device is registered.  Static devices generally aren't
-quite so nice; the serial and floppy drivers in particular would need a
-little work (and probably some other drivers too).
+> > We aren't talking about drivers initializing devices.  We are talking
+> > about what happens during the time when drivers are trying to quiesce
+> > devices (i.e., before K1 has started up K2) or power them down (after
+> > K2 has returned to K1).
+> 
+> or if you are doing a resume instead of a suspend to ram the drivers need 
+> to initialize or otherwise move to full power on K1 before user tasks hit 
+> them.
 
-If we do this, then once the PM core has acquired the semaphore for 
-every device it will be guaranteed that no new devices can be added.  
-It would be a simple solution to a rather nasty problem.
+Correct.  User tasks are allowed to submit requests, but the requests 
+can't be carried out until the device returns to full operation.
 
 Alan Stern
