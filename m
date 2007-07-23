@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: bogosort (was Re: Re: [RFC][PATCH -mm 5/6] Freezer:
-	Use freezing timeout more efficiently)
-Date: Mon, 23 Jul 2007 21:16:43 +0200
-Message-ID: <200707232116.44146.rjw@sisk.pl>
-References: <200707092229.08898.rjw@sisk.pl> <200707110007.35449.rjw@sisk.pl>
-	<20070723080454.GB9162@elf.ucw.cz>
+From: david@lang.hm
+Subject: Re: Re: Hibernation considerations
+Date: Mon, 23 Jul 2007 12:08:08 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707231205500.3828__12743.2581656196$1185218000$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
+	<200707231408.32051.rjw@sisk.pl>
+	<E1ICwoE-0004q8-00@dorka.pomaz.szeredi.hu>
+	<200707231431.30372.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-1671903907-1185217688=:3828"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070723080454.GB9162@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <200707231431.30372.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,46 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-pm@lists.linux-foundation.org, Oleg Nesterov <oleg@tv-sign.ru>, Miklos Szeredi <miklos@szeredi.hu>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, jbms@cmu.edu
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Monday, 23 July 2007 10:04, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > Task here is to sort the tasks, and freeze them in such order that
-> > > > > freezing works, right? Yep, we do not know the dependencies
-> > > > > explicitely... but what you invented is bogosort.
-> > > > 
-> > > > Define, please?
-> > > 
-> > > Uff, sorry. http://en.wikipedia.org/wiki/Bogosort .
-> > 
-> > So this thing is not bogosort, because it makes the tasks that haven't frozen
-> > appear on the bottom.  IOW, the first (failing) freezing attempt is used as
-> > a sieve, so the process is not completely random.
-> 
-> Aha..
-> 
-> > > Hmm, if someone wants to retry... perhaps we should just return
-> > > specific error and let the _userland_ do the retries? It can do it as
-> > > efficiently as outer loop in freezer...
-> > 
-> > No, because _that_ would be bogosort, as defined in Wikipedia. :-)
-> 
-> Ok, I see. It is better than bogosort... but still ugly. Can we at
-> least have someone tell us it helps with fuse before we proceed?
+--680960-1671903907-1185217688=:3828
+Content-Type: TEXT/PLAIN; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp2.linux-foundation.org id l6NJBjwC018568
 
-Well, I think Matthew has a failing system. :-)
+On Mon, 23 Jul 2007, Oliver Neukum wrote:
 
-Anyway, I have an idea how to improve it, but first I'd like to flush the
-patch queue ...
+> Am Montag 23 Juli 2007 schrieb Miklos Szeredi:
+>>> The reason is that we want them to "park" in safe places, ie. where t=
+here
+>>> are no locks held etc. =C2=A0Thus, these safe places need to be chose=
+n somehow
+>>> and since they are not marked throughout the code, we choose the obvi=
+ous
+>>> one. :-)
+>>
+>> Why shouldn't locks be held?
+>>
+>> No locks which are required for suspend must be held, sure. =C2=A0But
+>> otherwise holding locks doesn't matter at all.
+>
+> If you can provide a way to tell them apart, this would work.
 
-Greetings,
-Rafael
+can you just tell the driver to try and suspend and if it reports back=20
+that it fails back out of the suspend? or will the driver deadlock instea=
+d=20
+of reporting a failure if a lock is held.
+
+David Lang
+--680960-1671903907-1185217688=:3828
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--680960-1671903907-1185217688=:3828--
