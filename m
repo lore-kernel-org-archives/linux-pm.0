@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: Hibernation considerations
-Date: Tue, 24 Jul 2007 00:10:34 +0200
-Message-ID: <200707240010.35639.rjw__46718.6756585308$1185228210$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707231120380.3545-100000@iolanthe.rowland.org>
-	<200707240755.01820.nigel@nigel.suspend2.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Power Management framework proposal
+Date: Tue, 24 Jul 2007 08:23:25 +1000
+Message-ID: <1185229405.5439.148.camel__1689.18276108361$1185229501$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	<1185125189.2714.13.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707240755.01820.nigel@nigel.suspend2.net>
-Content-Disposition: inline
+In-Reply-To: <1185125189.2714.13.camel@laptopd505.fenrus.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: david@lang.hm, Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: david@lang.hm, linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 23 July 2007 23:55, Nigel Cunningham wrote:
-> Hi.
+On Sun, 2007-07-22 at 10:26 -0700, Arjan van de Ven wrote:
+> On Sat, 2007-07-21 at 23:49 -0700, david@lang.hm wrote:
 > 
-> On Tuesday 24 July 2007 01:23:15 Alan Stern wrote:
-> > On Mon, 23 Jul 2007, Nigel Cunningham wrote:
-> > 
-> > > Take a step back for a second.
-> > > 
-> > > The problem we're facing now is that we're getting some userspace threads, 
-> > > used in processing I/O, that are functioning as exceptions to the "freeze 
-> > > userspace, then freezeable kernel threads" rule. They are only exceptions 
-> > > because of that role in processing I/O - because they're de facto kernel 
-> > > threads. So, if we orient our thinking more in terms of I/O processing and 
-> > > less in terms of the userspace/kernelspace distinction, we'll have a 
-> > > solution:
-> > > 
-> > > 1) Freeze processes that aren't fs related (ie stop them generating I/O).
-> > 
-> > The problem here is that with things like FUSE, _every_ process is 
-> > potentially fs related.  Nothing prevents a FUSE thread from doing IPC 
-> > with any other thread.
+> > this approach would allow the transition of ALL drivers to the new mode of 
+> > operation in one fell swoop, and then adding additional power management 
+> > features is just adding to the existing list rather then implementing new 
+> > functions.
 > 
-> Yes, but the fuse thread is going to know what other thread it's doing IPC 
-> with, so it can get that thread flagged too.
-
-Yes, but that thread may do IPC with yet another one and so on.
-
-> > > 2) Flush pending I/O.
-> > > 3) Freeze filesystems in reverse order of dependency, the primary purpose 
-> > > being to stop them generating further I/O on their metadata.
-> > > 
-> > > Locks that are being held are only being held because work is being done. 
-> If 
-> > > we progressively focus on threads in terms of their create/process work 
-> > > dependencies, we'll see that the problem isn't at all intractable.
-> > 
-> > As has been mentioned before, keeping track of all that dependency 
-> > information would be very fragile and time-consuming.
 > 
-> I disagree. It's at least going to be less fragile and time-consuming then 
-> maintaining new/extra code for kexec.
+> I have a concern with this approach though. It seems to assume that
+> there is one global thing somewhere that sets the system state; in my
+> experience that is the wrong approach; in fact there is a very definite
+> evidence that there are many decisions on power that are to be made
+> local at a high frequency. An example of this is the processor speed;
+> the ondemand governer does exactly this for the cpus that can switch
+> speeds fast; it's just impossible to beat such a local, fast decision
+> with anything on a global scale.
+> 
+> On the other hand, some things (the high level goals and constraints)
+> are obviously global.
 
-Well, I think the issue is real, so we need to find a solution (the simpler,
-the better) and that need not be related to kexec. ;-)
+I think we need a set of constraints that trickle down the power tree
+and limit what a given driver can do locally.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Ben.
