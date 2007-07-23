@@ -1,15 +1,12 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Hibernation considerations
-Date: Mon, 23 Jul 2007 16:23:17 +0200
-Message-ID: <200707231623.17958.oliver__5571.02482202954$1185200534$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
+Date: Mon, 23 Jul 2007 11:19:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707231035150.3545-100000__20831.911735195$1185204133$gmane$org@iolanthe.rowland.org>
+References: <Pine.LNX.4.64.0707221426290.6350@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707221426290.6350@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,56 +16,139 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Am Samstag 21 Juli 2007 schrieb Alan Stern:
-> On Fri, 20 Jul 2007, Oliver Neukum wrote:
-> 
-> > > We already have a pre-suspend notification available for drivers that 
-> > > need to allocate large amounts of memory.
-> > 
-> > Is that facility fine grained enough?
-> 
-> It's a notifier chain that gets called at several points during the 
-> suspend transition.  One of those points is right at the start, while 
-> userspace is still running and reasonably large amounts of memory can 
-> be allocated.
-> 
-> Is it fine-grained enough?  I don't know -- hard to tell, since nothing 
-> much is using it yet.
-> 
-> > > You are correct about the need to delay/stop device addition.  I don't
-> > > know how this can be done in general; each code path calling
-> > > device_add() may have to be treated individually.
-> > 
-> > What about the old API?
-> 
-> What old API do you mean?
+On Sun, 22 Jul 2007 david@lang.hm wrote:
 
-The find_device() stuff.
-
-> >  Do we have to block module loading?
+> > You are confusing "userspace" with "user tasks".  And not only that,
+> > you often use the term "userspace" when you should say "user mode".
+> >
+> > If you want I can explain the differences.
 > 
-> No.  Registering new drivers is okay, registering new devices is bad.
+> please do, I have been treating all three as the same catagory.
 
-What if it is a driver for virtual devices that don't need probe()
-for actual hardware?
+Very briefly then: "User mode" and "kernel mode" refer to the CPU's
+hardware privilege level.  A process makes the transition from user
+mode to kernel mode by executing a system call.  Interrupt and
+exception handlers also run in kernel mode, but they generally are not
+considered to be part of any process.  The reverse transition occurs
+when a process returns from a system call, or when an interrupt which
+occurred while the CPU was in user mode completes.  (It's interesting
+to note that system calls are somewhat similar to interrupts; in fact
+sometimes they are implemented by a "software interrupt".)
 
-> Of course, some modules do want to register a new device in their init 
-> method.  I don't know what we should do about them.  Force the 
-> registration to fail, I suppose.  How often will people suspend while a 
-> module is loading?
+"Kernel threads" are processes that run entirely in kernel mode.  They
+usually don't have a memory mapping for any user-owned memory and they
+never go into user mode.  All other processes are "user threads".
+
+"Userspace" is a rather general term referring to things not in the
+kernel.  It comprises both user tasks (while running in user mode) and
+user memory.
+
+> Ok, I did misunderstand you. it sound slike all you need to do to make 
+> sure that locks are not held is to allow system calls to return before 
+> trying to do the suspend/kexec/etc. that sounds like not only a trivial 
+> thing to do, but something that would probably be done anyway.
+
+If you could actually do it, it would work.  But you can't do it.  If 
+it were feasible, the freezer would have used that approach in the 
+first place.
+
+For one thing, checking for a suspend-in-progress at the beginning of
+each and every system call would add overhead to a hot path in the
+kernel, one which is already very heavily optimized.  People wouldn't
+stand for it.
+
+> although syscalls that then call out to userspace tasks before they can 
+> complete cause potential deadlocks (without that issue you can just wait 
+> until all syscalls have returned, and not allow anything to issue new 
+> syscalls) is this the issue that's killing FUSE+suspend?
+
+You get similar problems from system calls that wait in kernel mode 
+until something has happened.  For example, a read() call for the 
+console device will wait until somebody types on the keyboard.  At any 
+point in time, many (or even most) user threads are blocked in a system 
+call.
+
+> > Here's what you are missing:
+> >
+> > The new kexec approach eliminates the freezer and relies instead on the
+> > fact that none of the tasks in the original kernel can execute while
+> > the new kexec'd kernel is running.  This means the new kernel can write
+> > out a memory image with no fear of interference or corruption.
 > 
-> > What happens if a scsi error handler is woken? If it cannot be woken,
-> > how are errors handled?
+> correct
 > 
-> Why should the error handler wake up?  There isn't supposed to be any 
-> I/O going on, hence no errors to handle.
+> > But it also means that tasks which otherwise would have been frozen are
+> > actually free to run before the kexec call is made (and after the call
+> > returns, if the kexec'd kernel returns back to the original kernel).
+> > Any driver which was written with the assumption that tasks would be
+> > frozen at those times will need to be changed.
+> 
+> here is where you loose me.
+> 
+> why should jumping back to the original kernel immedialty start running 
+> these processes?
 
-What about shared busses? Firewire, FibreChannel? They can get external
-resets, etc ...
+Let's let kernel K1 be the original kernel, the one which is going into
+hibernation.  Kernel K2 is the one started by kexec to write out the
+memory image.
 
-	Regards
-		Oliver
+Your question becomes: Why should K2 jumping back to K1 cause K1
+immediately to start running user tasks?  Answer: Because K1 has been
+running user tasks all along (except while K2 was active) and nothing
+has told it to stop.  In fact, about the only things which _can_ cause
+K1 to stop running user threads are the freezer (which you want to
+eliminate) and disabling interrupts (not possible since some drivers
+require interrupts to be enabled when putting devices in low-power 
+mode).
+
+>  the process of doing a kexec requires things to happen in 
+> the drivers before normal activity can happen, so there is a phase in 
+> there where the kernel being jumped to has drivers initializing, but still 
+> does not allow anything else to run.
+
+So when K2 starts up, it will have a phase in which user threads don't 
+run.  That doesn't affect K1.  When K2 returns to K1, K1 does not go 
+through this sort of phase.  It simply picks up from where it left off.
+
+> why can't this phase be extended to 
+> allow for the possibility of transitioning these drivers to a sleep mode 
+> instead of to full operation?
+
+Indeed, Rafael has suggested that K2 be responsible for putting devices
+in low-power mode.  This has the disadvantage of requiring K2 to 
+include drivers for every device used by K1, but otherwise it would 
+work.
+
+However there still remains the problem of user tasks running after 
+devices are supposed to be quiescent and before K1 starts.  There's 
+currently nothing to stop such tasks from making I/O requests and 
+thereby causing a quiescent device to become active again.
+
+> > The situation as regards locking is harder to discuss since I don't
+> > know of any code examples to use as a guide.  The fact remains that if
+> > user tasks aren't frozen then they can make system calls, and while
+> > running in kernel mode they can acquire locks, which might cause
+> > problems -- even though I can't identify any definite examples.
+> 
+> yes, if userspace is running jobs and submitting I/O and system calls 
+> while drivers are trying to initalize there is a big problem, but I am 
+> missing the reason this must be the case.
+
+We aren't talking about drivers initializing devices.  We are talking
+about what happens during the time when drivers are trying to quiesce
+devices (i.e., before K1 has started up K2) or power them down (after
+K2 has returned to K1).
+
+> the part of the freezer that everyone is trying to eliminate is the 
+> exceptions (freeze everything except X,Y,Z becouse we will need to use 
+> those later for A)
+
+Wrong.  People are trying to eliminate the freezer entirely.  Go back 
+and reread some of the postings at the beginning of this long thread, 
+especially those from Paul Mackerras and Ben Herrenschmidt.
+
+Alan Stern
