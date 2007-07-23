@@ -1,21 +1,13 @@
 From: david@lang.hm
-Subject: Re: Power Management framework proposal
-Date: Sun, 22 Jul 2007 22:25:57 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707222207210.6350__4899.61593780226$1185168487$gmane$org@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	<1185091022.19678.28.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
-	<1185105911.29238.43.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
-	<1185145766.2714.27.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0707221914550.6350@asgard.lang.hm>
-	<1185162647.2714.35.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0707222054060.6350@asgard.lang.hm>
-	<1185164357.2714.49.camel@laptopd505.fenrus.org>
+Subject: Re: Re: Hibernation considerations
+Date: Sun, 22 Jul 2007 22:31:56 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707222230050.6350@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.0707221116060.15224-100000@netrider.rowland.org>
+	<200707230842.22121.nigel@nigel.suspend2.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1185164357.2714.49.camel@laptopd505.fenrus.org>
+In-Reply-To: <200707230842.22121.nigel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,80 +17,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "ext linux-pm-bounces@lists.linux-foundation.org" <linux-pm-bounces@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, nigel@suspend2.net, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 22 Jul 2007, Arjan van de Ven wrote:
+On Mon, 23 Jul 2007, Nigel Cunningham wrote:
 
-> On Sun, 2007-07-22 at 21:04 -0700, david@lang.hm wrote:
+> Hi Alan.
 >
->>>> this strategy should work well on the normal unpredictable workload that
->>>> most people deal with, but there are some cases where the workload becomes
->>>> pretty predictable (media players for example) where there really is less
->>>> variation, and a need for a constant availability of the cpu, so it may
->>>> actually save a smidge of power to run below the highest freq that the
->>>> voltage allows rather then running faster and being idle more cycles.
->>>
->>> that actually is the example showcase of race-to-idle where you
->>> absolutely want to run at the highest frequency..
+> On Monday 23 July 2007 01:26:23 Alan Stern wrote:
+>> On Sun, 22 Jul 2007, Nigel Cunningham wrote:
 >>
->> only if the transitions don't cost anything significant,
+>>> Hi.
+>>>
+>>> On Sunday 22 July 2007 02:13:56 Jeremy Maitin-Shepard wrote:
+>>>> It seems that you could still potentially get a failure to freeze if one
+>>>> FUSE process depends on another, and the one that is frozen second just
+>>>> happens to be waiting on the one that is frozen first when it is frozen.
+>>>> I admit that this situation is unlikely, and perhaps acceptable.
+>>>>
+>>>> A larger concern is that it seems that freezing FUSE processes at all
+>>>> _will_ generate deadlocks if a non-synchronous or memory-map-supporting
+>>>> filesystem is loopback mounted from a FUSE filesystem.  In that case, if
+>>>> you attempt to sync or free memory once FUSE is frozen, you are sure to
+>>>> get a deadlock.
+>>>
+>>> Ok. So then (in response to Alan too), how about keeping a tree of mounts,
+>>> akin to the device tree, and working from the deepest nodes up? (In
+>>> conjunction with what I already suggested)?
+>>
+>> Face it, Nigel, this is a losing battle.  You can try to come up with
+>> ever-more complex schemes to try and force FUSE into the freezer's
+>> framework, but it just won't fit.  Or if it does, the next filesystem
+>> to come along will require an even more baroque type of special-case
+>> handling.
 >
-> these are second order effects though. On a pc, the transition costs are
-> quite low (as I said, single or low double digit microseconds).
-
-including pausing all drivers before the transition and unpausing them 
-aftrwords?
-
->> and the
->> computation capacity per watt of power is the same at all frequencies. the
->> chip performance numbers I've been seeing (which I admit are mostly
->> embedded datasheets) indicate that neither of these hold true.
+> It does seem to be a losing battle, but I'm wondering whether that's really
+> because it's an intractable problem, or because people have given up on it
+> before its time. We are talking about a computer system, so things should be
+> predictable.
 >
-> let me give you a real world example then, and the numbers I'm using are
-> ballpark the same as you'll find in a (mobile) core 2 duo datasheet, I
-> just rounded them a little so that the math works out nice.
+>> The general problem is that task A may be in an unfreezable state,
+>> waiting for task B to do something, while task B is already frozen.
+>> Since there's no reasonable way to determine that A really is waiting
+>> for B, you're just stuck.  (To make matters worse, A may not even
+>> realize which task it is waiting for; it may know only that it's
+>> waiting for somebody to do something!)  A and B could be user tasks,
+>> kernel threads, or one of each.
 >
-> power at full speed: 34W
-> power at half speed: 24W
-> power at idle: 1W
-
-are these numbers for the CPU itself or for the a larger chunk? I could 
-easily see these numbers for motherboard (including CPU and RAM), but it 
-would surprise me if these numbers are for the CPU itself. I'm used to 
-seeing datasheets that have a much more linear voltage/freq (and therefor 
-a quadratic voltage/power) curve. in some cases the voltage requirements 
-drop faster then the frequency.
-
-> assume media playback, and a dumb one, that takes half a second to
-> decode a second of media. (again to make the math simple)
+> I guess I want to persist because all of these issues aren't utterly
+> unsolvable. It's just that we don't have the infrastructure yet to figure out
+> the solutions to these issues trivially. Take, for example, the locking
+> issue. If we could call some function to say "What process holds this lock?",
+> then task A could know that it's waiting on task B and put that information
+> somewhere. We could then use the information to freeze task B before task A.
 >
-> at half speed: Energy for a second is 0.5 * 24 + 0.5 * 1 = 12.5 J
-> at full speed: Energy for a second is 0.25 * 34 + 0.75 * 1 = 9.25 J
->
-> this works for all systems where the idle power is more lower than the
-> power you save by dropping speed... and that is almost all of them in
-> the PC world.
 
-if you can idle the system as a whole I agree with you fully. most PC 
-hardware (including the mobile stuff) doesn't change it's power 
-consumption much with load. at Usenix there was a presentiation (I don't 
-remember if it was by Amazon or Google) about this subject, showing that 
-current PC hardware only goes down to 50% power when idle (short of 
-switching power modes) and that they and other big companies were pushing 
-vendors to improve their hardware, aiming to get the idle power down to 
-10% (again without suspending anything). so there's some chance that this 
-will change before too long.
-
-> now you can argue that 0.5 seconds is a really really long time, and
-> you'd be right. so for really really short stints (say a timer
-> interrupt) you don't want to change the voltage at all (nor would you
-> want to change the plls to change frequency for that matter). But once
-> you start chaning those, you might as well go full speed.
-
-this assumes that you can cache 1 second of video, if you have more 
-real-time requirements you have a much harder time (say video confrancing 
-where you don't get the frame until just before you need to display it)
+this sounds like the standard priority inversion problem taken to 
+extremes. Ingo has been working this issue, but IIRC the problem is that 
+tracking what owns the lock so that you can get that thing to run ends up 
+being enough overhead that it's not acceptable in the general case.
 
 David Lang
+
+>> The only thing to do is what Rafael has been working on: unfreeze
+>> things, hope the tasks sort themselves out, and try again.
+>
+> That's what I'm questioning. Is there a more reliable way and we've just given
+> up too quickly?
+>
+> Regards,
+>
+> Nigel
+>
