@@ -1,12 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Towards eliminating the freezer
-Date: Tue, 24 Jul 2007 18:14:11 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707241807420.17124-100000__40455.3767446943$1185315296$gmane$org@iolanthe.rowland.org>
-References: <200707242314.52355.rjw@sisk.pl>
+From: david@lang.hm
+Subject: Re: Power Management framework proposal
+Date: Tue, 24 Jul 2007 16:02:46 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707241556140.6590__33113.475298933$1185318351$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	<1185125189.2714.13.camel@laptopd505.fenrus.org>
+	<1185229405.5439.148.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707241313580.6590@asgard.lang.hm>
+	<1185313138.5439.285.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707242314.52355.rjw@sisk.pl>
+In-Reply-To: <1185313138.5439.285.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,57 +20,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
+On Wed, 25 Jul 2007, Benjamin Herrenschmidt wrote:
 
-> > Then device_suspend() can be simplified:
-> > 
-> > int device_suspend(pm_message_t state)
-> > {
-> > 	int error = 0;
-> > 
-> > 	might_sleep();
-> > 	list_for_each_entry_reverse(dev, &dpm_locked, power.entry) {
-> > 		error = suspend_device(dev, state);
-> > 
-> > 		if (error) {
-> > 			printk(KERN_ERR "Could not suspend device %s: "
-> > 				"error %d%s\n",
-> > 				kobject_name(&dev->kobj), error,
-> > 				error == -EAGAIN ? " (please convert to suspend_late)" : "");
-> > 			break;
-> > 		}
-> > 		list_move(&dev->power.entry, &dpm_off);
-> 
-> Is that safe with list_for_each_entry_reverse?
+> On Tue, 2007-07-24 at 13:14 -0700, david@lang.hm wrote:
+>>> I think we need a set of constraints that trickle down the power
+>> tree
+>>> and limit what a given driver can do locally.
+>>
+>> what sort of contraints are you thinking of?
+>
+> A parent power state defines what states children can be in. For
+> example. A way to express those dependencies would be nice. Or
+> alternatiely, the power state of all the children defines the power
+> state a parent can go in automatically.
 
-No.  I guess it'll have to resemble the other code.
+Ok, I see tow things here.
 
-> Yes, that looks fine. 
-> 
-> So, who's writing the patch? ;-)
+1. do you really want to try and propogate things like this from one to 
+the other, or would it be good enough to flag the issue and let the 
+software selecting the modes implement this contraint?
 
-I can do it.  You haven't made any changes to this part of the code, 
-have you?  My work tends to be based on Linus's tree, not -mm.
+2. how can you standardize the requirements?
 
-Something to watch out for: With all the extra locking, we run the risk
-of blocking the keventd workqueue.  This may or may not matter, but to
-be safe perhaps there should be a new general-purpose workqueue which
-_expects_ to block (or freeze) during suspends.  Any work routine that 
-involves adding or removing a device should go on the new workqueue.
+at the very least you have
 
-> > Incidentally, what is dpm_mtx for?  It doesn't seem to do anything 
-> > useful.  Is it a relic of the former runtime PM support?
-> 
-> I think so.  IMO it can be removed.
-> 
-> I also think it would be nicer to have all of the functions in
-> drivers/base/power/{main|suspend|resume}.c moved to one file.
+for this mode all children must be off
 
-Yes, they are all similar enough that there isn't much point keeping 
-them separate.
+for this mode all children must be in a mode that includes a 'suspended' 
+flag (this could be made implicit by saying that you must suspend children 
+before parents) and then just flagging the 'suspended, but not off' modes)
 
-Alan Stern
+what requirements are needed? (I'm sure that there are others, but 
+hopefully it's possible to avoid requirements like 'the clock speed for 
+device A must be >X to allow device B to operate in mode Y')
+
+David Lang
