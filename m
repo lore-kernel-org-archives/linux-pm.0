@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Towards eliminating the freezer
-Date: Tue, 24 Jul 2007 10:29:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707241027280.3568-100000__35817.8746224896$1185287434$gmane$org@iolanthe.rowland.org>
-References: <200707241133.40287.rjw@sisk.pl>
+Subject: RE: Re: Hibernation considerations
+Date: Tue, 24 Jul 2007 10:50:22 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707241046060.3568-100000@iolanthe.rowland.org>
+References: <9D7649D18729DE4BB2BD7B494F7FEDC236CF5C@pdsmsx415.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707241133.40287.rjw@sisk.pl>
+In-Reply-To: <9D7649D18729DE4BB2BD7B494F7FEDC236CF5C@pdsmsx415.ccr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,48 +16,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Pavel Machek <pavel@ucw.cz>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
+On Tue, 24 Jul 2007, Huang, Ying wrote:
 
-> > Now here's an idea which might work.  Can we require every caller of
-> > device_add() to hold some existing device's semaphore?  Normally it
-> > would be the semaphore of the new device's parent, but it could be a
-> > higher ancestor.  There even could be a single "root" semaphore for
-> > drivers registering a top-level device with no parent.
-> > 
-> > (Some testing shows that during startup things like ACPI and IDE don't 
-> > fulfill this requirement, so maybe we should require it only after 
-> > userspace has begun running.  After all, the system can't suspend 
-> > until then.)
-> > 
-> > It seems like a reasonable sort of thing to do.  Hotplugged devices
-> > tend to be registered as they are discovered by their parent's driver,
-> > so it shouldn't be too much to ask that the parent's semaphore be held
-> > when the new device is registered.  Static devices generally aren't
-> > quite so nice; the serial and floppy drivers in particular would need a
-> > little work (and probably some other drivers too).
-> > 
-> > If we do this, then once the PM core has acquired the semaphore for 
-> > every device it will be guaranteed that no new devices can be added.  
-> > It would be a simple solution to a rather nasty problem.
+> >From: Alan Stern [mailto:stern@rowland.harvard.edu]
+> >It can't.  Indeed, in the absence of a freezer, user threads will need
+> >devices (more accurately, will submit I/O requests for devices) that
+> >have to be kept quiescent or low-power.  Drivers will need to delay
+> >those requests until the devices are returned to full operation.
+> >
+> >That's exactly what I've been saying all along: Drivers will need to
+> >be changed to delay I/O requests, if there is no freezer.
 > 
-> Hmm, in device_pm_add() and device_pm_remove() we acquire dpm_list_mtx which
-> also is acquired by device_suspend() and device_resume().  Thus, every attempt
-> to register a new device or unregister an existing one will be blocked while
-> either device_suspend() or device_resume() is running.
+> If it is a too big work to implement "delaying I/O requests" for every
+> driver, is it possible to implement it as follow:
 > 
-> If we arrange things so that dpm_list_mtx is acquired, but not released, by
-> device_suspend() and released, but not acquired, by device_resume(), then it
-> won't be possible to register/unregister a device during a suspend-resume
-> cycle.
+> 1. It is triggered to suspend to RAM/DISK.
+> 2. Replace the driver related syscall entries (such as sys_read,
+> sys_write, sys_ioctl, etc) in sys_call_table with special wrapper
+> entries provided by "suspend to RAM/DISK" subsystem, which will delay
+> I/O requests if appropriate.
+> 3. When devices are quiesced, they are put into "low power" state and
+> system is put into suspend state; or the image is written to disk
+> (through snapshot/uswsusp or kexeced kernel).
+> 4. After resuming from RAM/DISK, devices are put into "normal" state and
+> the syscall entries replaced in step 2 are restored.
 
-As with Oliver's suggestion, this would create a locking order 
-violation.  Drivers registering children (and thus acquiring 
-dpm_list_mtx) will often already hold the parent's sem.  But 
-device_suspend() needs to acquire device sems while holding 
-dpm_list_mtx.
+Ha!  I made exactly this same suggestion (URL lost in the mists of 
+time), except that I proposed changing the syscall entries for every 
+system call, not just the driver-related ones.
+
+Nobody seemed to think it would work very well.
+
+It leaves a few loose ends.  For example, suppose a user thread is 
+already in the middle of a system call and is about to start doing some 
+I/O (maybe it's waiting for a timer to expire).
+
+In the end, this doesn't seem to be very different from freezing all 
+user threads.
 
 Alan Stern
