@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Towards eliminating the freezer
-Date: Tue, 24 Jul 2007 23:14:51 +0200
-Message-ID: <200707242314.52355.rjw__33160.0482728847$1185311267$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707241549280.17124-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 2.6.23-rc1] PM: fix compiler error of PPC
+	dart_iommu
+Date: Tue, 24 Jul 2007 23:19:54 +0200
+Message-ID: <200707242319.55234.rjw@sisk.pl>
+References: <200707241120.AA00211@paprika.lab.ntt.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707241549280.17124-100000@iolanthe.rowland.org>
+In-Reply-To: <200707241120.AA00211@paprika.lab.ntt.co.jp>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,121 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: ryusuke@osrg.net
+Cc: moriai.satoshi@lab.ntt.co.jp, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 24 July 2007 22:24, Alan Stern wrote:
-> On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
+On Tuesday, 24 July 2007 13:20, Ryusuke Konishi wrote:
+> A dummy inline function of register_nosave_region_late was accidentally
+> removed by the recent PM patch that introduced suspend notifiers.
+> This elimination causes the following compiler error on PPC machines.
 > 
-> > Hmm, I still don't understand why we can't lock dpm_list_mutex before the
-> > "For each" loop (we already do something like this in device_suspend() and
-> > device_resume()) and that would simplify things.
-> > 
-> > It seems that we can do something like this:
-> > 
-> > device_suspend:
-> > 	Lock dpm_list_mutex (from now on, new devices cannot be added)
-> > 	For each device on dpm_active, reverse
-> > 		acquire dev->sem (from now on, no new drivers can bind to dev)
-> > 		suspend(dev)
-> > 		move dev to dpm_off
+>   CC      arch/powerpc/sysdev/dart_iommu.o
+> arch/powerpc/sysdev/dart_iommu.c: In function 'iommu_init_late_dart':
+> arch/powerpc/sysdev/dart_iommu.c:376: error: implicit declaration of function 
+> 'register_nosave_region_late'
+> make[1]: *** [arch/powerpc/sysdev/dart_iommu.o] Error 1
+> make: *** [arch/powerpc/sysdev] Error 2
 > 
-> You have a minor error there; it's necessary to unlock dpm_list_mutex 
-> while acquiring dev-sem and then lock it again.
-
-Ah, right, now I see that.
-
-> But more importantly, this code acquires the device semaphores in the wrong
-> order.  They have to be acquired going forward (from the top of the device
-> tree down), not backward.
-
-Yes, I've overlooked that too.
-
-> Here's my proposal in a more explicit form.  Before doing
-> device_suspend() we call lock_all_devices():
+> This patch fixes the problem.
 > 
-> struct list_head dpm_locked;
+> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+> ---
+
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+Thanks!
+
+>  include/linux/suspend.h |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> static void lock_all_devices()
-> {
-> 	mutex_lock(&dpm_list_mtx);
-> 	while (!list_empty(&dpm_active)) {
-> 		struct list_head *entry = dpm_active.next;
-> 		struct device *dev = to_device(entry);
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index e8e6da3..618f93c 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -125,6 +125,9 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
+>  static inline void register_nosave_region(unsigned long b, unsigned long e)
+>  {
+>  }
+> +static inline void register_nosave_region_late(unsigned long b, unsigned long e)
+> +{
+> +}
+>  #endif
+>  
+>  #endif /* _LINUX_SWSUSP_H */
 > 
-> 		get_device(dev);
-> 		mutex_unlock(&dpm_list_mtx);
-> 		down(&dev->sem);
-> 		mutex_lock(&dpm_list_mtx);
 > 
-> 		if (list_empty(entry))		/* Device was removed */
-> 			up(&dev->sem);
-> 		else			/* Move it to the dpm_locked list */
-> 			list_move_tail(entry, &dpm_locked);
-> 		put_device(dev);
-> 	}
-> }
-> 
-> Then device_suspend() can be simplified:
-> 
-> int device_suspend(pm_message_t state)
-> {
-> 	int error = 0;
-> 
-> 	might_sleep();
-> 	list_for_each_entry_reverse(dev, &dpm_locked, power.entry) {
-> 		error = suspend_device(dev, state);
-> 
-> 		if (error) {
-> 			printk(KERN_ERR "Could not suspend device %s: "
-> 				"error %d%s\n",
-> 				kobject_name(&dev->kobj), error,
-> 				error == -EAGAIN ? " (please convert to suspend_late)" : "");
-> 			break;
-> 		}
-> 		list_move(&dev->power.entry, &dpm_off);
-
-Is that safe with list_for_each_entry_reverse?
-
-> 	}
-> 	if (error)
-> 		dpm_resume();
-> 	return error;
-> }
-> 
-> Appropriate changes are needed in the resume pathway as well, together 
-> with an unlock_all_devices() routine:
-
-Sure.
-
-> static void unlock_all_devices(void)
-> {
-> 	while (!list_empty(&dpm_locked)) {
-> 		struct list_head *entry = dpm_locked.prev;
-> 		struct device *dev = to_device(entry);
-> 
-> 		list_move(entry, &dpm_active);
-> 		up(&dev->sem);
-> 	}
-> 	mutex_unlock(&dpm_list_mtx);
-> }
-
-Yes, that looks fine. 
-
-So, who's writing the patch? ;-)
-
-> Incidentally, what is dpm_mtx for?  It doesn't seem to do anything 
-> useful.  Is it a relic of the former runtime PM support?
-
-I think so.  IMO it can be removed.
-
-I also think it would be nicer to have all of the functions in
-drivers/base/power/{main|suspend|resume}.c moved to one file.
-
-Greetings,
-Rafael
-
 
 -- 
 "Premature optimization is the root of all evil." - Donald Knuth
