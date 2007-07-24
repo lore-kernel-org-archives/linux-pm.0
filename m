@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2.6.23-rc1] PM: fix compiler error of PPC
-	dart_iommu
-Date: Tue, 24 Jul 2007 23:19:54 +0200
-Message-ID: <200707242319.55234.rjw@sisk.pl>
-References: <200707241120.AA00211@paprika.lab.ntt.co.jp>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Power Management framework proposal
+Date: Wed, 25 Jul 2007 07:38:58 +1000
+Message-ID: <1185313138.5439.285.camel__16737.6974401579$1185313230$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	<1185125189.2714.13.camel@laptopd505.fenrus.org>
+	<1185229405.5439.148.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707241313580.6590@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707241120.AA00211@paprika.lab.ntt.co.jp>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707241313580.6590@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,50 +20,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ryusuke@osrg.net
-Cc: moriai.satoshi@lab.ntt.co.jp, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Andrew Morton <akpm@linux-foundation.org>
+To: david@lang.hm
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 24 July 2007 13:20, Ryusuke Konishi wrote:
-> A dummy inline function of register_nosave_region_late was accidentally
-> removed by the recent PM patch that introduced suspend notifiers.
-> This elimination causes the following compiler error on PPC machines.
+On Tue, 2007-07-24 at 13:14 -0700, david@lang.hm wrote:
+> > I think we need a set of constraints that trickle down the power
+> tree
+> > and limit what a given driver can do locally.
 > 
->   CC      arch/powerpc/sysdev/dart_iommu.o
-> arch/powerpc/sysdev/dart_iommu.c: In function 'iommu_init_late_dart':
-> arch/powerpc/sysdev/dart_iommu.c:376: error: implicit declaration of function 
-> 'register_nosave_region_late'
-> make[1]: *** [arch/powerpc/sysdev/dart_iommu.o] Error 1
-> make: *** [arch/powerpc/sysdev] Error 2
-> 
-> This patch fixes the problem.
-> 
-> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-> ---
+> what sort of contraints are you thinking of?
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+A parent power state defines what states children can be in. For
+example. A way to express those dependencies would be nice. Or
+alternatiely, the power state of all the children defines the power
+state a parent can go in automatically.
 
-Thanks!
-
->  include/linux/suspend.h |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index e8e6da3..618f93c 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -125,6 +125,9 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
->  static inline void register_nosave_region(unsigned long b, unsigned long e)
->  {
->  }
-> +static inline void register_nosave_region_late(unsigned long b, unsigned long e)
-> +{
-> +}
->  #endif
->  
->  #endif /* _LINUX_SWSUSP_H */
-> 
-> 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Ben.
