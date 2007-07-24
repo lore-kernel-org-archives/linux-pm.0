@@ -1,20 +1,13 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: Power Management framework proposal
-Date: Tue, 24 Jul 2007 17:18:16 +0300
-Message-ID: <1185286696.12325.6.camel__40938.6398540393$1185286986$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	<1185091022.19678.28.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
-	<1185105911.29238.43.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
-	<1185187720.26628.23.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0707231033430.3828@asgard.lang.hm>
-	<4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Towards eliminating the freezer
+Date: Tue, 24 Jul 2007 10:27:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707241025020.3568-100000__31554.8562597998$1185287290$gmane$org@iolanthe.rowland.org>
+References: <200707241021.35573.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
+In-Reply-To: <200707241021.35573.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,44 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Jerome Glisse <j.glisse@gmail.com>
-Cc: "david@lang.hm" <david@lang.hm>, "ext linux-pm-bounces@lists.linux-foundation.org" <linux-pm-bounces@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-07-24 at 10:43 +0200, ext Jerome Glisse wrote:
+On Tue, 24 Jul 2007, Oliver Neukum wrote:
 
-> I believe a central place where user can set/change hw state to save
-> power or to increase computational power is definitely a goal to pursue.
-> But i truly think that the OHM approach is the best one ie using plugins
-> so that one can make a plugin specific for each device. The point is that
-> i believe there is no way to do an abstract interface for this and trying to
-> do so will endup doing ugly code and any interface would fail to encompass
-> all possible tweak that might exist for all devices.
-> 
-> For instance on graphics card you could do the following (maybe more):
-> -change GPU clock
-> -change memory clock
-> -disable part of engine
-> -disable unit
-> i truly don't think you can make a common interface for all this, more
-> over there might be constraint on how you can change things (GPU &
-> memory clock might need to follow a given ratio). So you definitely
-> need knowledge in the user space program to handle this.
+> Am Montag 23 Juli 2007 schrieb Alan Stern:
+> > Now here's an idea which might work. =A0Can we require every caller o=
+f
+> > device_add() to hold some existing device's semaphore? =A0Normally it
+> > would be the semaphore of the new device's parent, but it could be a
+> > higher ancestor. =A0There even could be a single "root" semaphore for
+> > drivers registering a top-level device with no parent.
+>=20
+> What prevents us from having a device addition semaphore?
+> Adding device is not critical to performance, is it?
 
-Even simpler case: LCD backlight can come in many flavors, both in terms
-of brightness levels and fixed amount of current required to keep it ON.
+It would create a locking order violation.  Many drivers hold a device
+semaphore while registering a child device, so they would acquire your
+new semaphore while holding a device sem.  But the PM core needs to
+prevent registration while calling suspend() methods, so it would need
+to acquire the device sems while holding your new semaphore.
 
-Trying to abstract such details from the decision-making makes little
-sense.
-Isolating that into a separate module, instead, brings the best of both
-worlds:
--containment of the HW-specific code
--leveraging every possible, no matter how exotic, power saving mode
-available.
-
-
--- 
-Cheers, Igor
-
-Igor Stoppa <igor.stoppa@nokia.com>
-(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
+Alan Stern
