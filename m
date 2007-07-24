@@ -1,15 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Towards eliminating the freezer
-Date: Tue, 24 Jul 2007 21:20:21 +0200
-Message-ID: <200707242120.22529.rjw__40442.4958084293$1185304569$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0707241155420.14025-100000@iolanthe.rowland.org>
+From: david@lang.hm
+Subject: Re: Power Management framework proposal
+Date: Tue, 24 Jul 2007 13:06:21 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707241303010.6590__30867.1016515747$1185307817$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	<1185091022.19678.28.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
+	<1185105911.29238.43.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
+	<1185187720.26628.23.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707231033430.3828@asgard.lang.hm>
+	<4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707241155420.14025-100000@iolanthe.rowland.org>
-Content-Disposition: inline
+In-Reply-To: <4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,73 +23,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Jerome Glisse <j.glisse@gmail.com>
+Cc: "ext linux-pm-bounces@lists.linux-foundation.org" <linux-pm-bounces@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 24 July 2007 18:06, Alan Stern wrote:
-> On Tue, 24 Jul 2007, Rafael J. Wysocki wrote:
-> 
-> > > As with Oliver's suggestion, this would create a locking order 
-> > > violation.  Drivers registering children (and thus acquiring 
-> > > dpm_list_mtx) will often already hold the parent's sem.  But 
-> > > device_suspend() needs to acquire device sems while holding 
-> > > dpm_list_mtx.
-> > 
-> > Hmm, but this is done already (ie. device_suspend() acquires device sems
-> > while holding dpm_list_mtx in the current code).
-> > 
-> > What I'm suggesting is not to let device_suspend() release dpm_list_mtx
-> > when it's finished.  The appended patch illustrates that I mean.
-> 
-> Oh, okay, I see what you mean.
-> 
-> I should have explained earlier that my proposal was meant to be in the 
-> context of a previous discussion, where I suggested that 
-> device_suspend() should go through a preliminary step of acquiring all 
-> the device semaphores.  This would have the beneficial effect of 
-> blocking all attempts at driver binding or unbinding while a suspend is 
-> underway.
-> 
-> Still, this isn't a bad approach.  Maybe the following algorithm could 
-> be used:
-> 
->  get_more:
-> 	For each device on dpm_list
-> 		Acquire dev->sem
-> 		Move dev from dpm_list to a temporary list
-> 	Lock dpm_list_mutex
-> 	If (!list_empty(dpm_list)) {
-> 		Unlock dpm_list_mutex
-> 		Goto get_more
-> 	}
-> 
-> (The "For each" loop would have to be written carefully to allow for 
-> device removal.)
+On Tue, 24 Jul 2007, Jerome Glisse wrote:
 
-Hmm, I still don't understand why we can't lock dpm_list_mutex before the
-"For each" loop (we already do something like this in device_suspend() and
-device_resume()) and that would simplify things.
+> On 7/23/07, david@lang.hm <david@lang.hm> wrote:
+>>  On Mon, 23 Jul 2007, Igor Stoppa wrote:
+>> >  again, HAL / OHM / Mobilin
+>>
+>>  I was trying to define the lower level interfaces that these tools need.
+>>  today they can only know what is possible by reading the source code for
+>>  each driver and implementing the driver-specific interfaces nessasary to
+>>  set things, I was proposing a common interface that tools like this could
+>>  use instead of requiring all the driver-specific knowledge.
+>> 
+>>
+>>  in a nutshell (and I know this is probably not detailed to be acceptable)
+>>
+>>  1. the software needs to know what the interconnects and dependancies
+>>      between devices are (supposedly this is provided via sysfs)
+>>
+>>  2. the software needs to know what type of device this is (again,
+>>      supposedly this is provided via sysfs)
+>>
+>>  3. the software needs to know what modes exist for a driver/piece of
+>>      hardware. to make any decisions this infomation needs to provide some
+>>      information about the capability of the mode and the power consumed in
+>>      that mode. in addition there will need to be flags to indicate any
+>>      special restrictions of a mode
+>>
+>>  4. the software needs to know the cost of switching from any mode to any
+>>      other mode. since some transitions will interact with other devices
+>>      there will need to be flags to indicate such requirements for specific
+>>      transitions.
+>>
+>>  5. the software needs to be able to find out what mode a device is in.
+>>
+>>  6. the software needs to be able to tell the driver to switch to a
+>>      different mode (I think it would be a very good thing if going to a
+>>      particular mode was always the same command, no matter what mode it is
+>>      currently in)
+>>
+>>  7. the software needs to figure out the desire of the user.
+>>
+>>  my proposal was addressing items #3-#6. it isn't trying to decide what to
+>>  do, simply to allow the software that _is_ trying to decide what to do a
+>>  way to find out what it can do.
+>>
+>>  David Lang
+>
+> I believe a central place where user can set/change hw state to save
+> power or to increase computational power is definitely a goal to pursue.
+> But i truly think that the OHM approach is the best one ie using plugins
+> so that one can make a plugin specific for each device. The point is that
+> i believe there is no way to do an abstract interface for this and trying to
+> do so will endup doing ugly code and any interface would fail to encompass
+> all possible tweak that might exist for all devices.
 
-It seems that we can do something like this:
+will each plugin have it's own interface? or will you have one interface 
+to access the plugins and then the plugins do things behind the scenes?
 
-device_suspend:
-	Lock dpm_list_mutex (from now on, new devices cannot be added)
-	For each device on dpm_active, reverse
-		acquire dev->sem (from now on, no new drivers can bind to dev)
-		suspend(dev)
-		move dev to dpm_off
+I'll bet that the API for the plugins is common, and if so then it could 
+be similar to the API that I suggested.
 
-device_resume:
-	For each device on dpm_off
-		move dev to dpm_active
-		resume(dev) (this cannot fail)
-		release dev->sem (allow new drivers to bind to dev)
-	Unlock dpm_list_mutex (allow new devices to be added)
+> For instance on graphics card you could do the following (maybe more):
+> -change GPU clock
+> -change memory clock
+> -disable part of engine
+> -disable unit
+> i truly don't think you can make a common interface for all this, more
+> over there might be constraint on how you can change things (GPU &
+> memory clock might need to follow a given ratio). So you definitely
+> need knowledge in the user space program to handle this.
 
-Greetings,
-Rafael
+sure you can, just enumerate all the options the driver writer wants to 
+offer as options. yes this could be a lengthy list, so what?
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+David Lang
