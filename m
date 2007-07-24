@@ -1,12 +1,15 @@
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 2.6.23-rc1] PM: fix compiler error of PPC
-	dart_iommu
-Date: Tue, 24 Jul 2007 20:20:56 +0900
-Message-ID: <200707241120.AA00211@paprika.lab.ntt.co.jp>
-Reply-To: ryusuke@osrg.net
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: RE: Re: Hibernation considerations
+Date: Tue, 24 Jul 2007 21:26:35 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC236CF5C__21051.1234392927$1185283654$gmane$org@pdsmsx415.ccr.corp.intel.com>
+References: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.44L0.0707231605410.2556-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,39 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: moriai.satoshi@lab.ntt.co.jp, Andrew Morton <akpm@linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>, david@lang.hm
+Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Pavel Machek <pavel@ucw.cz>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-A dummy inline function of register_nosave_region_late was accidentally
-removed by the recent PM patch that introduced suspend notifiers.
-This elimination causes the following compiler error on PPC machines.
+>From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>It can't.  Indeed, in the absence of a freezer, user threads will need
+>devices (more accurately, will submit I/O requests for devices) that
+>have to be kept quiescent or low-power.  Drivers will need to delay
+>those requests until the devices are returned to full operation.
+>
+>That's exactly what I've been saying all along: Drivers will need to
+>be changed to delay I/O requests, if there is no freezer.
 
-  CC      arch/powerpc/sysdev/dart_iommu.o
-arch/powerpc/sysdev/dart_iommu.c: In function 'iommu_init_late_dart':
-arch/powerpc/sysdev/dart_iommu.c:376: error: implicit declaration of function 
-'register_nosave_region_late'
-make[1]: *** [arch/powerpc/sysdev/dart_iommu.o] Error 1
-make: *** [arch/powerpc/sysdev] Error 2
+If it is a too big work to implement "delaying I/O requests" for every
+driver, is it possible to implement it as follow:
 
-This patch fixes the problem.
+1. It is triggered to suspend to RAM/DISK.
+2. Replace the driver related syscall entries (such as sys_read,
+sys_write, sys_ioctl, etc) in sys_call_table with special wrapper
+entries provided by "suspend to RAM/DISK" subsystem, which will delay
+I/O requests if appropriate.
+3. When devices are quiesced, they are put into "low power" state and
+system is put into suspend state; or the image is written to disk
+(through snapshot/uswsusp or kexeced kernel).
+4. After resuming from RAM/DISK, devices are put into "normal" state and
+the syscall entries replaced in step 2 are restored.
 
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
----
- include/linux/suspend.h |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index e8e6da3..618f93c 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -125,6 +125,9 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
- static inline void register_nosave_region(unsigned long b, unsigned long e)
- {
- }
-+static inline void register_nosave_region_late(unsigned long b, unsigned long e)
-+{
-+}
- #endif
- 
- #endif /* _LINUX_SWSUSP_H */
+Best Regards,
+Huang Ying
