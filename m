@@ -1,20 +1,21 @@
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c
-	blk_remove_plug()
-Date: Wed, 25 Jul 2007 05:52:05 +0530
-Message-ID: <a781481a0707241722y5ef33a72qe61d5f4299cff273__42502.2230171182$1185322974$gmane$org@mail.gmail.com>
-References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk>
-	<469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk>
-	<469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk>
-	<46A38B1E.3090605@bfs.de>
-	<a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com>
-	<20070722221717.GV11657@kernel.dk>
+From: david@lang.hm
+Subject: Re: Power Management framework proposal
+Date: Tue, 24 Jul 2007 17:40:29 -0700 (PDT)
+Message-ID: <Pine.LNX.4.64.0707241735230.6590__2379.96726432375$1185324167$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	<1185091022.19678.28.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707220057210.6350@asgard.lang.hm>
+	<1185105911.29238.43.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707221156210.6350@asgard.lang.hm>
+	<1185187720.26628.23.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0707231033430.3828@asgard.lang.hm>
+	<4240b9160707240143u6cdaba64rae93528661f4475c@mail.gmail.com>
+	<Pine.LNX.4.64.0707241303010.6590@asgard.lang.hm>
+	<4240b9160707241614k5d8d51ack9c231c4a023ae110@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070722221717.GV11657@kernel.dk>
-Content-Disposition: inline
+In-Reply-To: <4240b9160707241614k5d8d51ack9c231c4a023ae110@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,78 +25,150 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, wharms@bfs.de
+To: Jerome Glisse <j.glisse@gmail.com>
+Cc: "ext linux-pm-bounces@lists.linux-foundation.org" <linux-pm-bounces@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Sun, Jul 22 2007, Satyam Sharma wrote:
-> > Hi Walter,
-> >
-> > Thanks for reporting this.
-> >
-> > On 7/22/07, walter harms <wharms@bfs.de> wrote:
-> >> hello all,
-> >> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
-> >
-> > Did this happen when you were resuming from a suspend-to-ram/disk?
-> > [ I ask because I see swsusp in the trace below, linux-pm added to Cc: ]
-> >
-> >> ....
-> >> Using IPI Shortcut mode
-> >> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
-> >>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
-> >>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
-> >>  [<c01ad587>] __make_request+0x39b/0x49c
-> >>  [<c01abc8c>] generic_make_request+0x228/0x255
-> >>  [<c01adb54>] submit_bio+0xa5/0xac
-> >>  [<c013e233>] mempool_alloc+0x37/0xae
-> >>  [<c01314dc>] submit+0xc2/0x11d
-> >>  [<c0131585>] bio_read_page+0x24/0x27
-> >>  [<c013188b>] swsusp_check+0x4f/0xaf
-> >>  [<c012f6c2>] software_resume+0x5f/0x108
-> >>  [<c037867e>] kernel_init+0xb0/0x212
-> >>  [<c0103a16>] ret_from_fork+0x6/0x1c
-> >>  [<c03785ce>] kernel_init+0x0/0x212
-> >>  [<c03785ce>] kernel_init+0x0/0x212
-> >>  [<c010465b>] kernel_thread_helper+0x7/0x10
-> >>  =======================
-> >
-> > Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
-> > alright on that codepath. OTOH, __make_request() is heavily goto-driven,
-> > uses the non-save/restore variants of spin_lock_irq, and does not even
-> > balance locks / unlocks for some error paths ... gaah.
+On Wed, 25 Jul 2007, Jerome Glisse wrote:
+
+> On 7/24/07, david@lang.hm <david@lang.hm> wrote:
+>>  On Tue, 24 Jul 2007, Jerome Glisse wrote:
+>> 
+>> >  On 7/23/07, david@lang.hm <david@lang.hm> wrote:
+>> > >   On Mon, 23 Jul 2007, Igor Stoppa wrote:
+>> > > >   again, HAL / OHM / Mobilin
+>> > > 
+>> > >   I was trying to define the lower level interfaces that these tools 
+>> > >   need.
+>> > >   today they can only know what is possible by reading the source code 
+>> > >   for
+>> > >   each driver and implementing the driver-specific interfaces nessasary 
+>> > >   to
+>> > >   set things, I was proposing a common interface that tools like this 
+>> > >   could
+>> > >   use instead of requiring all the driver-specific knowledge.
+>> > > 
+>> > > 
+>> > >   in a nutshell (and I know this is probably not detailed to be 
+>> > >   acceptable)
+>> > > 
+>> > >   1. the software needs to know what the interconnects and dependancies
+>> > >       between devices are (supposedly this is provided via sysfs)
+>> > > 
+>> > >   2. the software needs to know what type of device this is (again,
+>> > >       supposedly this is provided via sysfs)
+>> > > 
+>> > >   3. the software needs to know what modes exist for a driver/piece of
+>> > >       hardware. to make any decisions this infomation needs to provide 
+>> > >       some
+>> > >       information about the capability of the mode and the power 
+>> > >       consumed in
+>> > >       that mode. in addition there will need to be flags to indicate 
+>> > >       any
+>> > >       special restrictions of a mode
+>> > > 
+>> > >   4. the software needs to know the cost of switching from any mode to 
+>> > >   any
+>> > >       other mode. since some transitions will interact with other 
+>> > >       devices
+>> > >       there will need to be flags to indicate such requirements for 
+>> > >       specific
+>> > >       transitions.
+>> > > 
+>> > >   5. the software needs to be able to find out what mode a device is 
+>> > >   in.
+>> > > 
+>> > >   6. the software needs to be able to tell the driver to switch to a
+>> > >       different mode (I think it would be a very good thing if going to 
+>> > >       a
+>> > >       particular mode was always the same command, no matter what mode 
+>> > >       it is
+>> > >       currently in)
+>> > > 
+>> > >   7. the software needs to figure out the desire of the user.
+>> > > 
+>> > >   my proposal was addressing items #3-#6. it isn't trying to decide 
+>> > >   what to
+>> > >   do, simply to allow the software that _is_ trying to decide what to 
+>> > >   do a
+>> > >   way to find out what it can do.
+>> > > 
+>> > >   David Lang
+>> > 
+>> >  I believe a central place where user can set/change hw state to save
+>> >  power or to increase computational power is definitely a goal to pursue.
+>> >  But i truly think that the OHM approach is the best one ie using plugins
+>> >  so that one can make a plugin specific for each device. The point is 
+>> >  that
+>> >  i believe there is no way to do an abstract interface for this and 
+>> >  trying to
+>> >  do so will endup doing ugly code and any interface would fail to 
+>> >  encompass
+>> >  all possible tweak that might exist for all devices.
+>>
+>>  will each plugin have it's own interface? or will you have one interface
+>>  to access the plugins and then the plugins do things behind the scenes?
+>>
+>>  I'll bet that the API for the plugins is common, and if so then it could
+>>  be similar to the API that I suggested.
 >
-> __make_request() must be called from process context, hence
-> spin_lock_irq() is perfectly already and the fastest way to go. And of
-> course the locking is balanced! So please save your 'gaah's for code
-> you actually took the time to try and understand.
+> I take here ohm as a reference (this come from my limited understanding of
+> this daemon so there might be inaccuracy) driver export through HAL
+> there power management tunning capacity, Then an ohm plugin would use
+> HAL to give a higher
+> view of this capacity and also manage policy, preference, permission, ...
+>
+> Last consumer in power management food chain would be an user interface which
+> will communicate with ohm (and with all ohm plugin) so desktop writter 
+> (gnome,
+> kde, ...) can write some kind of power management center where each ohm 
+> plugin
+> can have its own panel. So in the end the user got one place to do all its
+> power management which is the goal i think you are trying to aim.
 
-You're right, I didn't really look at that code for long (it even explicitly
-comments about what's going with the locking in there!) sorry about
-that.
+no. I am talking about the interface to the drivers that things like HAL 
+would use
 
-[ Off-topic: BTW does every call to __make_request() end up in
-blk_remove_plug()? Since you're explicitly making the assumption
-that it *must* be called from process context (and hence the use of
-the non-save/restore variants), you could consider putting a
-WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
-(!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
-other such similar functions that currently have the !irqs_disabled
-check. This way you'd effectively cover _both_ the assertions,
-and in appropriate places -- just a suggestion. ]
+>> >  For instance on graphics card you could do the following (maybe more):
+>> >  -change GPU clock
+>> >  -change memory clock
+>> >  -disable part of engine
+>> >  -disable unit
+>> >  i truly don't think you can make a common interface for all this, more
+>> >  over there might be constraint on how you can change things (GPU &
+>> >  memory clock might need to follow a given ratio). So you definitely
+>> >  need knowledge in the user space program to handle this.
+>>
+>>  sure you can, just enumerate all the options the driver writer wants to
+>>  offer as options. yes this could be a lengthy list, so what?
+>> 
+>
+> My point was that your interface by trying to fit square pegs into round hole
+> will fail to expose all subtility of each device which might in the end bring
+> to wrong power management decision. So i believe we can't sum up
+> power management to list of mode whose attribute are power consumption
+> & capacity.
 
-> But it does look like unbalanced irq disable/enable calls. I'd guess in
-> the suspend/resume path. Obviously something more esoteric, since this
-> is the first such report for 2.6.22, so like some not-very-used driver
-> for instance.
+it's possible (which is part of the reason I started the thread), but so 
+far there hasn't been anything identified that is a really bad fit.
 
-Now that I do look at the codepath, it does seem surprising irqs were
-not disabled there. There are a bunch of calls to _other_ functions
-between the spin_lock_irq and the blk_remove_plug via
-__generic_unplug_device that would also have complained about
-!irqs_disabled.
+> And there is no way to design an abstraction given that all hw we will have
+> to deal with are too much different and do not follow any standard things
+> (beside ACPI there is other way to save power brightness, gpu/memory
+> clock, pll, ...) so i don't see how one might give a common view of things
+> which are fundamentally different in how they affect consumption (same end
+> result with many different paths leading to it).
 
-Walter, does this happen reproducibly?
+so you are saying that the power management software must know the details 
+of each and every driver, and if you add a new driver you must change the 
+power management software before it can do anything (including allowing 
+manual control of the modes)
 
-Satyam
+seems to me I heard similar arguments several years ago about the CPU 
+speed settings, it turns out that the cpufreq interface works really well 
+for them and the software that's controlling things no longer needs to 
+know the details of every CPU.
+
+why did it work there but can't work anywhere else?
+
+David Lang
