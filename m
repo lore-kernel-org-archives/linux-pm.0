@@ -1,11 +1,21 @@
-From: "Sonia. Hesua" <sonia.hesua300@yahoo.com>
-Subject: From Miss.Sonia
-Date: Tue, 24 Jul 2007 18:27:16 -0700 (PDT)
-Message-ID: <838904.81217.qm@web45408.mail.sp1.yahoo.com>
-Reply-To: miss.sonia1@yahoo.com
+From: walter harms <wharms@bfs.de>
+Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c
+	blk_remove_plug()
+Date: Wed, 25 Jul 2007 09:05:27 +0200
+Message-ID: <46A6F637.5080405__20178.7945152775$1185347205$gmane$org@bfs.de>
+References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk>	
+	<469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk>	
+	<469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk>	
+	<46A38B1E.3090605@bfs.de>	
+	<a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com>	
+	<20070722221717.GV11657@kernel.dk>
+	<a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
+Reply-To: wharms@bfs.de
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3341920412814509795=="
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,80 +23,90 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: sonia.hesua300@yahoo.com
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============3341920412814509795==
-Content-Type: multipart/alternative; boundary="0-804444079-1185326836=:81217"
-Content-Transfer-Encoding: 8bit
-
---0-804444079-1185326836=:81217
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
->From Miss.Sonia Michael
-  House13B makori estate
-Abidjan, Cote D'Ivoire.          
- West Africa. 
-   
-   
-  Dear One,
-   
-  Greetings to you. My name is Sonia Michael. I am writing you from Cote D'ivoire. As you are aware there is a civil war here and  the war claim the life of my parents that is why I am writing you for assistance. My late father was from Bouake in the north. This place is now in the rebels hands. He was killed for supporting the government side.
-I am 22 years old girl and my school has been terminated by the crisis.
- 
-I want to reveal to you that my late father made a deposit in a security company  here of $5,000,000( Five million dollars)
-This money was for an investment in overseas when he died. 
- I have all the proof with me. I am now leaving with a pastor, a man of God whom I am staying with. He and the family are good to me. He will handle everything when you reply and are ready to help me retrieve the money and invest on my behalf. 
- 
-You will need to arrange a school for me and keep the money safe.
-Please write me back and send your detail
-  1,telephone number,,,,,,,,,,,,,,
-2,your country,,,,,,,,,,,,,,,,,
-3,your occpuation,,,,,,,,,,,,,,,
-3,your fax,,,,,,,,,,,,,,,
-3,copy of your passport..............
-4,residential area............. 
-5,your photo,,,,,,,,,,,,,,,
-6,Bank Name and Address ...............
-7,Account Number...........
-8,Scanned copy of your International Passport or Drivers' Licence or any form of genuine indentity you have.
-  
-phone number so that i call you and discuss with you.
- 
-May God bless you for caring for an orphan.
-Awaiting to hear from you soonest.
-
-  Best Regards
-  Miss Sonia Michael
-    
----------------------------------
-  Looking for a deal? Find great prices on flights and hotels with Yahoo! FareChase.
-
-       
----------------------------------
-Get the free Yahoo! toolbar and rest assured with the added security of spyware protection. 
---0-804444079-1185326836=:81217
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<DIV><STRONG>From Miss.Sonia Michael</STRONG></DIV>  <DIV><STRONG>House13B makori estate<BR>Abidjan, Cote D'Ivoire.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <BR>&nbsp;West Africa.&nbsp;</STRONG></DIV>  <DIV><STRONG></STRONG>&nbsp;</DIV>  <DIV><STRONG></STRONG>&nbsp;</DIV>  <DIV><STRONG>Dear One,</STRONG></DIV>  <DIV><STRONG></STRONG>&nbsp;</DIV>  <DIV><STRONG>Greetings to you. My name is Sonia Michael. I am writing you from Cote D'ivoire. As you are aware there is a civil war here and&nbsp; the war claim the life of my parents that is why I am writing you for assistance.&nbsp;My late father was from Bouake in the north. This place is now in the rebels hands. He was killed for supporting the government side.<BR>I am 22 years old girl and my school has been terminated by the crisis.<BR>&nbsp;<BR>I want to reveal to you that my late father made a deposit in a security company&n
- bsp; here of $5,000,000( Five million dollars)<BR>This money was for an investment in
- overseas when he died.&nbsp;<BR>&nbsp;I have all the proof with me. I am now leaving with a pastor, a man of God whom I am staying with. He and the family are good to me. He will handle everything when you reply and are ready to help me retrieve the money and invest on my behalf. <BR>&nbsp;<BR>You will need to arrange a school for me and keep the money safe.<BR>Please write me back and send your detail</STRONG></DIV>  <DIV><STRONG>1,telephone number,,,,,,,,,,,,,,<BR>2,your country,,,,,,,,,,,,,,,,,<BR>3,your occpuation,,,,,,,,,,,,,,,<BR>3,your fax,,,,,,,,,,,,,,,<BR>3,copy of your passport..............<BR>4,residential area............. <BR>5,your photo,,,,,,,,,,,,,,,<BR>6,Bank Name and Address ...............<BR>7,Account Number...........<BR>8,Scanned copy of your International Passport or Drivers' Licence or any form of genuine indentity you have.</STRONG></DIV>  <DIV><BR><STRONG>phon
- e number so that&nbsp;i call you and discuss with you.<BR>&nbsp;<BR>May God bless you
- for caring for an orphan.<BR>Awaiting to hear from you soonest.<BR></STRONG></DIV>  <DIV><STRONG>Best Regards</STRONG></DIV>  <DIV><STRONG>Miss Sonia Michael</STRONG></DIV>  <DIV>  <HR SIZE=1>  Looking for a deal? <A href="http://us.rd.yahoo.com/evt=47094/*http://farechase.yahoo.com/;_ylc=X3oDMTFicDJoNDllBF9TAzk3NDA3NTg5BHBvcwMxMwRzZWMDZ3JvdXBzBHNsawNlbWFpbC1uY20-">Find great prices on flights and hotels</A> with Yahoo! FareChase.</DIV><p>&#32;
-      <hr size=1><a href="http://us.rd.yahoo.com/evt=48226/*http://new.toolbar.yahoo.com/toolbar/features/norton/index.php">Get the free Yahoo! toolbar</a> and rest assured with the added security of spyware protection.
- 
---0-804444079-1185326836=:81217--
-
---===============3341920412814509795==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 
---===============3341920412814509795==--
+Satyam Sharma wrote:
+> On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+>> On Sun, Jul 22 2007, Satyam Sharma wrote:
+>> > Hi Walter,
+>> >
+>> > Thanks for reporting this.
+>> >
+>> > On 7/22/07, walter harms <wharms@bfs.de> wrote:
+>> >> hello all,
+>> >> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
+>> >
+>> > Did this happen when you were resuming from a suspend-to-ram/disk?
+>> > [ I ask because I see swsusp in the trace below, linux-pm added to
+>> Cc: ]
+>> >
+>> >> ....
+>> >> Using IPI Shortcut mode
+>> >> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
+>> >>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
+>> >>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
+>> >>  [<c01ad587>] __make_request+0x39b/0x49c
+>> >>  [<c01abc8c>] generic_make_request+0x228/0x255
+>> >>  [<c01adb54>] submit_bio+0xa5/0xac
+>> >>  [<c013e233>] mempool_alloc+0x37/0xae
+>> >>  [<c01314dc>] submit+0xc2/0x11d
+>> >>  [<c0131585>] bio_read_page+0x24/0x27
+>> >>  [<c013188b>] swsusp_check+0x4f/0xaf
+>> >>  [<c012f6c2>] software_resume+0x5f/0x108
+>> >>  [<c037867e>] kernel_init+0xb0/0x212
+>> >>  [<c0103a16>] ret_from_fork+0x6/0x1c
+>> >>  [<c03785ce>] kernel_init+0x0/0x212
+>> >>  [<c03785ce>] kernel_init+0x0/0x212
+>> >>  [<c010465b>] kernel_thread_helper+0x7/0x10
+>> >>  =======================
+>> >
+>> > Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
+>> > alright on that codepath. OTOH, __make_request() is heavily
+>> goto-driven,
+>> > uses the non-save/restore variants of spin_lock_irq, and does not even
+>> > balance locks / unlocks for some error paths ... gaah.
+>>
+>> __make_request() must be called from process context, hence
+>> spin_lock_irq() is perfectly already and the fastest way to go. And of
+>> course the locking is balanced! So please save your 'gaah's for code
+>> you actually took the time to try and understand.
+> 
+> You're right, I didn't really look at that code for long (it even
+> explicitly
+> comments about what's going with the locking in there!) sorry about
+> that.
+> 
+> [ Off-topic: BTW does every call to __make_request() end up in
+> blk_remove_plug()? Since you're explicitly making the assumption
+> that it *must* be called from process context (and hence the use of
+> the non-save/restore variants), you could consider putting a
+> WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
+> (!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
+> other such similar functions that currently have the !irqs_disabled
+> check. This way you'd effectively cover _both_ the assertions,
+> and in appropriate places -- just a suggestion. ]
+> 
+>> But it does look like unbalanced irq disable/enable calls. I'd guess in
+>> the suspend/resume path. Obviously something more esoteric, since this
+>> is the first such report for 2.6.22, so like some not-very-used driver
+>> for instance.
+> 
+> Now that I do look at the codepath, it does seem surprising irqs were
+> not disabled there. There are a bunch of calls to _other_ functions
+> between the spin_lock_irq and the blk_remove_plug via
+> __generic_unplug_device that would also have complained about
+> !irqs_disabled.
+> 
+> Walter, does this happen reproducibly?
+> 
+
+yes, with 2.6.21 and 2.6.22.1
+
+re,
+ wh
