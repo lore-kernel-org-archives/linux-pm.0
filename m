@@ -1,10 +1,9 @@
-From: "Ina Diaz" <mvareawide@money-programs.info>
-Subject: Thanks,
-	we are ready to lend you some cash regardless of Credit
-Date: Thu, 26 Jul 2007 05:31:28 +0200
-Message-ID: <001101c7cf46$71338290$06727934@ujiostf9b7hoci>
+From: "Geoffrey Mcnair" <vascertain@ms31.hinet.net>
+Subject: Fwd: Thank you, we are ready to lend you some cash
+Date: Wed, 25 Jul 2007 23:37:55 -0400
+Message-ID: <001801c7cf15$433ef210$001a711c@ownerk36uds8t2>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3141278936958367280=="
+Content-Type: multipart/mixed; boundary="===============6245369054013552967=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,54 +18,53 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============3141278936958367280==
+--===============6245369054013552967==
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_000E_01C7CF46.71338290"
+	boundary="----=_NextPart_000_0015_01C7CF15.433EF210"
 
-------=_NextPart_000_000E_01C7CF46.71338290
+------=_NextPart_000_0015_01C7CF15.433EF210
 Content-Type: text/plain;
-        charset="iso-8859-1"
+        charset="windows-1251"
 Content-Transfer-Encoding: quoted-printable
 
 
-Your credit does not matter to us!
+Your credit score does not matter to us!
  
-If you have your own business and require IMMEDIATE ready money to spend =
-ANY way you like or require Extra money to give your business a boost or =
- require A low interest loan - NO STRINGS ATTACHED, here is best deal we =
-can offer you TODAY (hurry, this offer will expire TONIGHT):
+If you have your own business and want IMMEDIATE money to spend ANY way =
+you like or need Extra money to give your business a boost or  want A =
+low interest loan - NO STRINGS ATTACHED, here is our best deal we can =
+offer you THIS EVENING (hurry, this tender will expire THIS EVENING):
  
-$24,000+ loan
+$39,000+ loan
  
-Hurry, when best deal is gone, it is gone. Simply Call Us... 
+Hurry, when our best deal is gone, it is gone. Simply Call Us... 
  
-Don't worry about approval, your your credit report will not disqualify =
-you!
+Don't worry about approval, your credit history will not disqualify you!
  
 Call Us Free on 877-542-1880
-------=_NextPart_000_000E_01C7CF46.71338290
+------=_NextPart_000_0015_01C7CF15.433EF210
 Content-Type: text/html;
-        charset="iso-8859-1"
+        charset="windows-1251"
 Content-Transfer-Encoding: quoted-printable
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML><HEAD>
 <META http-equiv=3DContent-Type content=3D"text/html; charset=3D=
-iso-8859-1">
-<META content=3D"MSHTML 6.00.2462.1158" name=3DGENERATOR>
+windows-1251">
+<META content=3D"MSHTML 6.00.2900.2869" name=3DGENERATOR>
 <STYLE></STYLE>
 </HEAD>
 <BODY bgColor=3D#ffffff>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Your credit history =
-does not matter to us!</B></FONT></DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Your credit doesn't =
+matter to us!</B></FONT></DIV>
 <DIV align=3Dcenter> &nbsp;</DIV>
 <DIV align=3Dleft><FONT face=3DArial size=3D2>If you have your own =
-business and wish IMMEDIATE money to spend ANY way you like or require =
-Extra money to give the company a boost or  wish A low interest loan - =
-NO STRINGS ATTACHED, here is the deal we can offer you THIS NIGHT =
-(hurry, this tender will expire THIS NIGHT):</FONT></DIV>
+business and need IMMEDIATE money to spend ANY way you like or wish =
+Extra money to give your business a boost or  require A low interest =
+loan - NO STRINGS ATTACHED, here is the deal we can offer you NOW =
+(hurry, this offer will expire THIS EVENING):</FONT></DIV>
 <DIV align=3Dcenter> &nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>$61,000+ =
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>$42,000+ =
 loan</B></FONT></DIV>
 <DIV align=3Dcenter> &nbsp;</DIV>
 <DIV align=3Dleft><FONT face=3DArial size=3D2><B>Hurry, when best deal =
@@ -79,13 +77,13 @@ approval, your your credit report will not disqualify you!</FONT></DIV>
 877-542-1880</B></FONT></DIV>
 </BODY></HTML>
 
-------=_NextPart_000_000E_01C7CF46.71338290--
+------=_NextPart_000_0015_01C7CF15.433EF210--
 
---===============3141278936958367280==
+--===============6245369054013552967==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============3141278936958367280==--
+--===============6245369054013552967==--
