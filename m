@@ -1,17 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFC][PATCH -mm 2/2] Freezer: Use wait queue
-	instead of busy looping
-Date: Thu, 26 Jul 2007 14:43:11 +0200
-Message-ID: <200707261443.12539.rjw@sisk.pl>
-References: <200707251401.48340.rjw@sisk.pl> <20070725142429.GA299@tv-sign.ru>
-	<200707261424.49503.rjw@sisk.pl>
+From: "Sydney Bullard" <ycripple@making-cash.be>
+Subject: Thank you, we are accepting your refinance debt request
+Date: Thu, 26 Jul 2007 14:03:24 -0400
+Message-ID: <001101c7cf8d$f8bbe3f0$063e0d64@paulslaptop>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="----------=_1185473109-16911-136"
+Content-Transfer-Encoding: binary
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707261424.49503.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,112 +15,124 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, Pavel Machek <pavel@ucw.cz>, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: linux-pm <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 26 July 2007 14:24, Rafael J. Wysocki wrote:
-> On Wednesday, 25 July 2007 16:24, Oleg Nesterov wrote:
-> > On 07/25, Rafael J. Wysocki wrote:
-> > >
-> > > On Wednesday, 25 July 2007 15:29, Oleg Nesterov wrote:
-> > > > On 07/25, Rafael J. Wysocki wrote:
-> > > > >
-> > > > >  void refrigerator(void)
-> > > > >  {
-> > > > > @@ -50,6 +73,9 @@ void refrigerator(void)
-> > > > >  	   processes around? */
-> > > > >  	long save;
-> > > > >
-> > > > > +	refrigerator_called =3D 1;
-> > > > > +	wake_up(&refrigerator_waitq);
-> > > > > +
-> > > >=20
-> > > > This is a bit racy. Unless I missed something, the task should no=
-t set
-> > > > refrigerator_called =3D=3D 1 until it has PF_FROZEN.
-> > >=20
-> > > No, it's just to signal that the task has entered the refrigerator,=
- not that
-> > > it has actually frozen.
-> >=20
-> > Yes, I see.
-> >=20
-> > > > Otherwise, try_to_freeze_tasks() can set refrigerator_called =3D=3D=
- 0 after
-> > > > refrigerator() sets it =3D=3D 1, the the main loop notices this u=
-nfrozen task,
-> > > > and goes to sleep.
-> > >=20
-> > > refrigerator_called is only reset after try_to_freeze_tasks() has f=
-ound it
-> > > equal to one.  There is only a small window between checking it in
-> > > wait_event_timeout() and resetting it,
-> >=20
-> > Yes.
-> >=20
-> > > but then we go to send freeze requests
-> > > to the remaining tasks and we count 'todo' from the start, so that =
-shouldn't
-> > > be a problem.
-> >=20
-> > ... and we find the task which is not frozen() yet, but which has alr=
-eady passed
-> > the "set condition and wakeup", increment todo, and wait for the even=
-t. If it was
-> > the last task, we will sleep until timeout.
-> >=20
-> > I agree, this is not fatal and unlikely, but still it is a race. I th=
-ink it is
-> > better to move this code down, after frozen_process().
->=20
-> OK, I see your point.  The updated patch is appended.
->=20
-> > (offtopic: strictly speaking, we don't even need the "refrigerator_ca=
-lled", we
-> >  only need the wait_queue_head_t. try_to_freeze_tasks() just adds the=
- "current"
-> >  to wq at the very start of the main loop).
->=20
-> Hmm, yes, I think so.
->=20
-> Greetings,
-> Rafael
->=20
->=20
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->=20
-> Use the observation that try_to_freeze() need not loop while waiting fo=
-r the
-> freezing tasks to enter the refrigerator and make it use a wait queue.
->=20
-> The idea is that after sending freeze requests to the tasks regarded as
-> freezable try_to_freeze() can go to sleep and wait until at least one t=
-ask
-> enters the refrigerator. =A0The first task that does it wakes up try_to=
-_freeze()
-> and the procedure is repeated. =A0If the refrigerator is not entered by=
- any tasks
-> before TIMEOUT expires, try_to_freeze() increases the counter of expire=
-d
-> timeouts and sends freeze requests to the remaining tasks. =A0If the nu=
-mber of
-> expired timeouts becomes greater than MAX_WAITS, the freezing of tasks =
-fails
-> (the counter of expired timeouts is reset whenever a task enters the
-> refrigerator).
->=20
-> This way, try_to_freeze() doesn't occupy the CPU unnecessarily when som=
-e
-> freezing tasks are waiting for I/O to complete and we have more fine gr=
-ained
-> control over the freezing procedure.
->=20
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
+This is a multi-part message in MIME format...
 
-Well, s/try_to_freeze()/try_to_freeze_tasks()/ all in the changelog above.
+------------=_1185473109-16911-136
+Message-ID: <001101c7cf8d$f8bbe3f0$063e0d64@paulslaptop>
+From: "Sydney Bullard" <ycripple@making-cash.be>
+To: "linux-pm" <linux-pm@osdl.org>
+Subject: Thank you, we are accepting your refinance debt request
+Date: Thu, 26 Jul 2007 14:03:24 -0400
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_000E_01C7CF8D.F8BBE3F0"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2720.1158
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2720.181
 
-Greetings,
-Rafael
+
+------=_NextPart_000_000E_01C7CF8D.F8BBE3F0
+Content-Type: text/plain;
+        charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+=0A=
+Your your credit report does not matter to us!=0A=
+=0A=
+If you have your own business and need IMMEDIATE cash to spend ANY way you =
+like or want Extra money to give your company a boost or  want A low intere=
+st loan - NO STRINGS ATTACHED, here is the deal we can offer you THIS NIGHT=
+ (hurry, this deal will expire TODAY):=0A=
+=0A=
+$64,000+ loan=0A=
+=0A=
+Hurry, when the deal is gone, it is gone. Simply Call Us...=0A=
+=0A=
+Do not worry about approval, your your credit report will not disqualify yo=
+u!=0A=
+=0A=
+Call Us Free on 877-542-1880=
+
+------=_NextPart_000_000E_01C7CF8D.F8BBE3F0
+Content-Type: text/html;
+        charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">=0A=
+<HTML><HEAD>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+2">=0A=
+<META content=3D"MSHTML 6.00.2720.4682" name=3DGENERATOR>=0A=
+<STYLE></STYLE>=0A=
+</HEAD>=0A=
+<BODY bgColor=3D#ffffff>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Your your credit report do=
+esn't matter to us!</B></FONT></DIV>=0A=
+<DIV align=3Dcenter> &nbsp;</DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2>If you have your own business=
+ and want IMMEDIATE money to spend ANY way you like or require Extra money =
+to give your business a boost or  want A low interest loan - NO STRINGS ATT=
+ACHED, here is our deal we can offer you THIS EVENING (hurry, this deal wil=
+l expire TONIGHT):</FONT></DIV>=0A=
+<DIV align=3Dcenter> &nbsp;</DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>$24,000+ loan</B></FONT></=
+DIV>=0A=
+<DIV align=3Dcenter> &nbsp;</DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Hurry, when our best deal =
+is gone, it is gone. Simply Call Us... </B></FONT></DIV>=0A=
+<DIV align=3Dcenter> &nbsp;</DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Do not worry about approval, =
+your credit score will not disqualify you!</FONT></DIV>=0A=
+<DIV align=3Dcenter> &nbsp;</DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Call Us Free on 877-542-18=
+80</B></FONT></DIV>=0A=
+</BODY></HTML>=0A=
+
+------=_NextPart_000_000E_01C7CF8D.F8BBE3F0--
+
+------------=_1185473109-16911-136
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.419 (Entity 5.419)
+
+Spam detection software, running on the system "daredevil.linux-foundation.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or label
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  Your your credit report does not matter to us! If you
+  have your own business and need IMMEDIATE cash to spend ANY way you like
+  or want Extra money to give your company a boost or want A low interest
+  loan - NO STRINGS ATTACHED, here is the deal we can offer you THIS NIGHT
+  (hurry, this deal will expire TODAY): [...] 
+
+Content analysis details:   (7.6 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 3.8 HELO_DYNAMIC_HCC       Relay HELO'd using suspicious hostname (HCC)
+ 3.8 HELO_DYNAMIC_IPADDR2   Relay HELO'd using suspicious hostname (IP addr
+                            2)
+ 0.0 HTML_MESSAGE           BODY: HTML included in message
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.4952]
+
+
+
+------------=_1185473109-16911-136
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+------------=_1185473109-16911-136--
