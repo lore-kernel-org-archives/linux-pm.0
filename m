@@ -1,11 +1,13 @@
-From: "Cannon hitting" <ytclbira@zicom.pl>
-Subject: Fw: Thanks,
-	we accepted your company business loan request
-Date: Fri, 27 Jul 2007 21:59:16 -0200
-Message-ID: <9C793346402373E.E95E9BC477@zicom.pl>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [2/2] 2.6.23-rc1: known regressions with patches v2
+Date: Fri, 27 Jul 2007 22:53:30 +0200
+Message-ID: <46AA5B4A.40500__11255.9900888757$1185569850$gmane$org@googlemail.com>
+References: <46AA5A28.3090205@googlemail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7615127227782001956=="
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <46AA5A28.3090205@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,47 +15,113 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mikael Pettersson <mikpe@it.uu.se>, Peter Zijlstra <peterz@infradead.org>, Thierry MERLE <thierry.merle@free.fr>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, linux-usb-devel@lists.sourceforge.net, Kay Sievers <kay.sievers@vrfy.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Mel Gorman <mel@skynet.ie>, Simon Arlott <simon@fire.lp0.eu>, Ingo Molnar <mingo@elte.hu>, Mauro Carvalho Chehab <mchehab@infradead.org>, Pekka Enberg <penberg@cs.helsinki.fi>, Cornelia Huck <cornelia.huck@de.ibm.com>, "Dwaine P. Garden" <dwainegarden@rogers.com>, v4l-dvb-maintainer@linuxtv.org, linux-pm@lists.linux-foundation.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.o>
 List-Id: linux-pm@vger.kernel.org
 
---===============7615127227782001956==
-Content-Type: multipart/related;
-	boundary="----=_NextPart_000_0005_01C7D099.5FE538E0"
+Hi all,
 
-------=_NextPart_000_0005_01C7D099.5FE538E0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Here is a list of some known regressions in 2.6.23-rc1
+with patches available.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2912" name=3D"GENERATOR">
-</HEAD>
-<BODY>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Your credit doesn't matter to us!</B></FONT></DIV>
-<DIV align=3Dcenter> &nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>If you have your own business and wish IMMEDIATE money to spend ANY way you like or need Extra money to give your company a boost or  wish A low interest loan - NO STRINGS ATTACHED, here is the deal we can offer you THIS NIGHT (hurry, this offer will expire TONIGHT):</FONT></DIV>
-<DIV align=3Dcenter> &nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>$31,000+ loan</B></FONT></DIV>
-<DIV align=3Dcenter> &nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Hurry, when the deal is gone, it is gone. Simply Call Us... </B></FONT></DIV>
-<DIV align=3Dcenter> &nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2>Don't worry about approval, your your credit report will not disqualify you!</FONT></DIV>
-<DIV align=3Dcenter> &nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DArial size=3D2><B>Call Us Free on 877-542-1880</B></FONT></DIV></BODY></HTML>
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-------=_NextPart_000_0005_01C7D099.5FE538E0--
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            6
+Andi Kleen                             4
+Andrew Morton                          4
+Linus Torvalds                         4
+Al Viro                                3
+Jens Axboe                             3
+Tejun Heo                              3
+David Woodhouse                        2
+Hugh Dickins                           2
 
 
---===============7615127227782001956==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+
+Media
+
+Subject         : usbvision: don't return an uninitialized value
+References      : http://lkml.org/lkml/2007/7/23/65
+Last known good : ?
+Submitter       : Adrian Bunk <bunk@stusta.de>
+Caused-By       : ?
+Handled-By      : Adrian Bunk <bunk@stusta.de>
+Patch           : http://lkml.org/lkml/2007/7/23/65
+Status          : patch available
 
 
---===============7615127227782001956==--
+
+Memory management
+
+Subject         : [bug] SLUB & freeing locks
+References      : http://lkml.org/lkml/2007/7/26/90
+Last known good : ?
+Submitter       : Ingo Molnar <mingo@elte.hu>
+Caused-By       : ?
+Handled-By      : Peter Zijlstra <peterz@infradead.org>
+Patch           : http://lkml.org/lkml/2007/7/26/97
+Status          : patch available
+
+
+
+Power Management
+
+Subject         : ACPI-related oops on x86_64
+References      : http://lkml.org/lkml/2007/7/23/111
+Last known good : ?
+Submitter       : Mel Gorman <mel@skynet.ie>
+Caused-By       : ?
+Handled-By      : Len Brown <lenb@kernel.org>
+Patch           : http://lkml.org/lkml/2007/7/23/300
+Status          : patch available
+
+Subject         : 2.6.23-rc1 broke APM
+References      : http://lkml.org/lkml/2007/7/23/169
+Last known good : ?
+Submitter       : Mikael Pettersson <mikpe@it.uu.se>
+Caused-By       : ?
+Handled-By      : H. Peter Anvin <hpa@zytor.com>
+Patch           : http://lkml.org/lkml/2007/7/23/489
+Status          : patch available
+
+
+
+SYSFS
+
+Subject         : sysfs/udev broken in 2.6.23-rc1
+References      : http://lkml.org/lkml/2007/7/24/276
+Last known good : ?
+Submitter       : Simon Arlott <simon@fire.lp0.eu>
+Caused-By       : ?
+Handled-By      : Kay Sievers <kay.sievers@vrfy.org>
+                  Cornelia Huck <cornelia.huck@de.ibm.com>
+Patch           : http://lkml.org/lkml/2007/7/25/83
+Status          : patch available
+
+
+
+USB
+
+Subject         : BUG: sleeping function called from invalid context at drivers/usb/core/urb.c:524,in_atomic():1, irqs_disabled():0
+References      : http://lkml.org/lkml/2007/7/23/400
+Last known good : ?
+Submitter       : Jeremy Fitzhardinge <jeremy@goop.org>
+Caused-By       : ?
+Handled-By      : Oliver Neukum <oliver@neukum.org>
+Patch           : http://lkml.org/lkml/2007/7/24/203
+Status          : patch available
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
