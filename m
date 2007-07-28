@@ -1,17 +1,10 @@
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-Subject: CPUFREQ/CPU-IDLE: Dynamic addition and removal driver
-	P/C-states with constraints
-Date: Fri, 27 Jul 2007 19:45:20 -0500
-Message-ID: <3B6D69C3A9EBCA4BA5DA60D9130274290182BC7D@dlee13.ent.ti.com>
-References: <200704051249.10407.david-b@pacbell.net><200707251304.03191.david-b@pacbell.net>
-	<20070726070739.GB3901@inferi.kami.home>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Possible problem with device_move()
+Date: Sat, 28 Jul 2007 11:36:42 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707281123080.16987-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20070726070739.GB3901@inferi.kami.home>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,19 +14,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "Dasu, Karthik P" <karthik-dp@ti.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>, Marcel Holtmann <marcel@holtmann.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Cornelia and Marcel:
 
-I was wondering if anyone had an opinion about dynamically changing the available p-states based on constraints.
+The only places in the kernel that call device_move() are in 
+drivers/s390/cio/device.c and net/bluetooth/rfcomm/tty.c, so I want to 
+check with the two of you.
 
-The same thought goes for C-States with use with cpu-idle.
+I'm in the midst of changing the Power Management core to make it
+acquire the device semaphore of every device during a suspend and
+resume.  The order of acquisition is the order of device registration, 
+which normally agrees with the way locks are acquired when going 
+through the device tree (i.e., parents before children).
 
-The governor at its next sample time would hopefully adjust asking within the range of what is left.
+But when you call device_move() that might no longer be true.  If a 
+device is moved so that its new parent was registered _after_ it was, 
+then the two orders will disagree.  This raises the possibility of a 
+deadlock if any thread ever tries to lock the device while holding the 
+new parent's lock -- as might happen during an unregistration, for 
+example.
 
-Recently Nokia talked about doing this at by changing policies this I think would be at a bit lower level.
+Can you tell whether this will ever cause a problem?  Or is it known to
+be safe because whenever you call device_move(), the new parent was
+registered before the device being moved?
 
-Regards,
-Richard W.
+Thanks,
+
+Alan Stern
