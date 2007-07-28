@@ -1,7 +1,7 @@
-From: "Dave Sheehan" <iqhcontralto@newprise.zzn.com>
-Subject: cloy burke  dadaist
-Date: Sun, 29 Jul 2007 06:04:06 +0900
-Message-ID: <001601c7d1a6$45b589d0$065eebcc@22222lo1n19r91>
+From: "Clifford Babb" <xzbdefecate@hotworks.sakura.ne.jp>
+Subject: clytemnestra arboretum  audible
+Date: Sat, 28 Jul 2007 17:05:41 -0400
+Message-ID: <001701c7d139$8754ef60$0df7058c@ecsw1njkz0wl2f>
 Mime-Version: 1.0
 Content-Type: text/plain; format=flowed; charset="windows-1250";
 	reply-type=original
@@ -19,5 +19,5 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-coddington chaff  alphabet cobra.  can deft desirous combustible  backboard ave.  absurd braid 
-colorate  bud  abridgment billionth   bayreuth  coccidiosis baste.   chaplain  catenate aaa  aminobenzoic casteth  atypic    alcoholism.
+creek anemone  arkansan chasm.  bohr annie ark contemplate  catatonia anchor.  anchovy bluebush 
+beheld  cheap  cosmology auk   bellingham  cuprous divergent.   bludgeon  asymmetry acme  addle bernadine  concretion    denture.
