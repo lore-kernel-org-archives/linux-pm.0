@@ -1,13 +1,17 @@
-From: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [v4l-dvb-maintainer] [2/2] 2.6.23-rc1: known
- regressions with patches v2
-Date: Fri, 27 Jul 2007 14:16:44 -0700 (PDT)
-Message-ID: <Pine.LNX.4.58.0707271414420.30561@shell4.speakeasy.net>
-References: <46AA5A28.3090205@googlemail.com> <46AA5B4A.40500@googlemail.com>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+Subject: CPUFREQ/CPU-IDLE: Dynamic addition and removal driver
+	P/C-states with constraints
+Date: Fri, 27 Jul 2007 19:45:20 -0500
+Message-ID: <3B6D69C3A9EBCA4BA5DA60D9130274290182BC7D@dlee13.ent.ti.com>
+References: <200704051249.10407.david-b@pacbell.net><200707251304.03191.david-b@pacbell.net>
+	<20070726070739.GB3901@inferi.kami.home>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46AA5B4A.40500@googlemail.com>
+Content-class: urn:content-classes:message
+In-Reply-To: <20070726070739.GB3901@inferi.kami.home>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,23 +21,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Mikael Pettersson <mikpe@it.uu.se>, Peter Zijlstra <peterz@infradead.org>, Thierry MERLE <thierry.merle@free.fr>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, linux-usb-devel@lists.sourceforge.net, Kay Sievers <kay.sievers@vrfy.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Mel Gorman <mel@skynet.ie>, Simon Arlott <simon@fire.lp0.eu>, Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>, Mauro Carvalho Chehab <mchehab@infradead.org>, Pekka Enberg <penberg@cs.helsinki.fi>, Cornelia Huck <cornelia.huck@de.ibm.com>, "Dwaine P. Garden" <dwainegarden@rogers.com>, v4l-dvb-maintainer@linuxtv.org, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foun>
+To: linux-pm@lists.linux-foundation.org
+Cc: "Dasu, Karthik P" <karthik-dp@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 27 Jul 2007, Michal Piotrowski wrote:
-> Media
->
-> Subject         : usbvision: don't return an uninitialized value
-> References      : http://lkml.org/lkml/2007/7/23/65
-> Last known good : ?
-> Submitter       : Adrian Bunk <bunk@stusta.de>
-> Caused-By       : ?
-> Handled-By      : Adrian Bunk <bunk@stusta.de>
-> Patch           : http://lkml.org/lkml/2007/7/23/65
-> Status          : patch available
+Hi,
 
-I've made a real fix for this one:
+I was wondering if anyone had an opinion about dynamically changing the available p-states based on constraints.
 
-http://lkml.org/lkml/2007/7/23/114
-http://linuxtv.org/hg/v4l-dvb/rev/d5c4fffbbad3
+The same thought goes for C-States with use with cpu-idle.
+
+The governor at its next sample time would hopefully adjust asking within the range of what is left.
+
+Recently Nokia talked about doing this at by changing policies this I think would be at a bit lower level.
+
+Regards,
+Richard W.
