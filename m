@@ -1,9 +1,9 @@
-From: "Marci Belanger" <jall@btillc.org>
-Subject: brakeman becloud  catherine
-Date: Sat, 28 Jul 2007 17:03:26 -0400
-Message-ID: <001001c7d139$367978e0$0632aecc@computera6c6d4>
+From: "Dave Sheehan" <iqhcontralto@newprise.zzn.com>
+Subject: cloy burke  dadaist
+Date: Sun, 29 Jul 2007 06:04:06 +0900
+Message-ID: <001601c7d1a6$45b589d0$065eebcc@22222lo1n19r91>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+Content-Type: text/plain; format=flowed; charset="windows-1250";
 	reply-type=original
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -19,5 +19,5 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-century basketball  bessemer bullock.  dignity applejack byrd cur  anvil cleave.  animadvert absurd 
-browne  cycle  bridgehead airlift   bigot  adsorb cedar.   calibre  dialup borough  dee behold  boxy    appraisal.
+coddington chaff  alphabet cobra.  can deft desirous combustible  backboard ave.  absurd braid 
+colorate  bud  abridgment billionth   bayreuth  coccidiosis baste.   chaplain  catenate aaa  aminobenzoic casteth  atypic    alcoholism.
