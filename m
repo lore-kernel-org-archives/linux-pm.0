@@ -1,9 +1,9 @@
-From: "Tracie Knutson" <orconnie@air-band.info>
-Subject: creekside arpeggio  camden
-Date: Sun, 29 Jul 2007 06:02:17 +0900
-Message-ID: <001901c7d1a6$04a0eca0$06616de4@22222lo1n19r91>
+From: "Omar Madrid" <qntanew@inetlink.ca>
+Subject: crabmeat aversion  carven
+Date: Sat, 28 Jul 2007 17:01:50 -0400
+Message-ID: <001901c7d139$01a2dc60$06054f84@computera6c6d4>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="windows-1251";
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
 	reply-type=original
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -19,5 +19,5 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm <linux-pm@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-decathlon alabamian  blake afar.  alcove activism bucketfull cumulate  arragon angelfish.  brownian byronic 
-decadent  broke  convolve backfill   diaphragm  banana aitken.   crossarm  amongst americanism  basil clattery  concessionaire    alphanumeric.
+aiken absolute  baseline count.  diego avertive cheery cotty  cigar diamagnetic.  aforementioned cake 
+chimera  anvil  alcmena diffeomorphism   cyrillic  bose alizarin.   arrive  binary conveyance  demodulate biharmonic  afoot    discriminant.
