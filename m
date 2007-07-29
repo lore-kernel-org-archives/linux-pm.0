@@ -1,19 +1,16 @@
-From: david@lang.hm
-Subject: Re: Power Management framework proposal
-Date: Sun, 29 Jul 2007 15:00:07 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0707291456460.15835__46191.2993844182$1185746645$gmane$org@asgard.lang.hm>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
-	<1185125189.2714.13.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0707221130380.6350@asgard.lang.hm>
-	<1185143240.2714.24.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0707221946170.6350@asgard.lang.hm>
-	<1185163239.2714.37.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0707222105310.6350@asgard.lang.hm>
-	<20070727114637.GC11895@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
+Date: Mon, 30 Jul 2007 00:22:53 +0200
+Message-ID: <200707300022.54633.rjw__23135.8771947727$1185747391$gmane$org@sisk.pl>
+References: <200707251238.50218.lenb@kernel.org>
+	<200707292336.55588.rjw@sisk.pl> <1185744640.2295.4.camel@work>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070727114637.GC11895@ucw.cz>
+In-Reply-To: <1185744640.2295.4.camel@work>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,65 +20,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
+To: Richard Hughes <hughsient@gmail.com>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 27 Jul 2007, Pavel Machek wrote:
+On Sunday, 29 July 2007 23:30, Richard Hughes wrote:
+> On Sun, 2007-07-29 at 23:36 +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 29 July 2007 23:18, Adrian Bunk wrote:
+> > > On Sun, Jul 29, 2007 at 11:17:20PM +0200, Rafael J. Wysocki wrote:
+> > > > On Sunday, 29 July 2007 22:40, Adrian Bunk wrote:
+> > > > > On Sun, Jul 29, 2007 at 02:38:05PM +0200, Rafael J. Wysocki wrote:
+> > > > > >...
+> > > > > > +config SUSPEND
+> > > > > > +	bool "Suspend"
+> > > > >              "Suspend to RAM"
+> > > > 
+> > > > Not only.  This also includes "standby".
+> > > 
+> > > Whatever it includes - please tell it to the user in the prompt.
+> > > 
+> > > Technical issues are important, but it's often forgotten how many 
+> > > problems people run into because the description of a kconfig option 
+> > > could have been better.
+> > 
+> > Sure.  Please see the updated patch I've just sent. :-)
+> 
+> So are you guys using:
+> 
+> "standby" = idle state, ~0.5 seconds
+> "suspend" = sleep to ram, ~10 seconds
+> "hibernate" = sleep to disk, ~30 seconds
 
-> Hi!
->
->>>> example 1: a laptop screen
->>>>
->>>> mode  capacity power description
->>>> 0        0        0    off
->>>> 1      100      100    full brightness
->>>> 2       70       60    half power to the backlight
->>>> 3       50       35    quarter power to the backlight
->>>> 4       30       25    eighth power to the backlight
->>>> 5        5       10    backlight off.
->>>>
->>>> example 2: a front-panel display on a server (no
->>>> variable backlight
->>>> control)
->>>>
->>>> mode capacity power description
->>>> 0       0        0   off
->>>> 1     100      100   backlight on
->>>> 2      50       10   backlight off
->>>
->>>
->>> the problem is: the person who SETS these needs to know
->>> what they mean.
->>
->> that's what the description is for. this info can be
->> provided by the driver as part of the list_modes()
->> function.
->
-> That's what /sys/class/backlight/ is for :-).
+Something like this, but "suspend" is not reserved as a name of specific state.
 
-yes it is, and each type of device is growing it's own, incompatible, 
-interfaces for controlling things like this. I was aiming to do two 
-things.
+The second state is usually referred to as "suspend to RAM" or "STR" and is
+denoted by "mem" in /sys/power/state, if implemented.  Moreover, "standby" and
+"mem" are both entered using the same code path, so they may generally be
+referred to as "suspend" states.
 
-1. head this off and try and get a more common api
+The times aren't strictly defined for "mem" and "standby", too.  The general
+rule is that the times for "mem" are greater then for "standby" and the power
+drawn in "mem" is smaller than the power drawn in "standby", but the exact
+values will always depend on the platform.  Apart from this, if the platform
+supports only one "suspend" state, it decides if that's "mem" or "standby".
 
-2. simplify the confusion that there is with multiple functions needing to 
-be implemented during the suspend/resume cycle by chaning them from 
-independant suspend-only functions to being just part of the device 
-settings
+On ACPI systems "standby" and "mem" correspond to the S1 and S3 sleep states,
+respectively.
 
->>> as someone who wrote (part of) a power policy manager;
->>> sorry but you
->>> take away information I need, and in addition the
->>> different API's are
->>> absolutely no big deal.
->>
->> assuming that nobody else chimes in to disagree with you
->> I'll accept your judgement and drop the issue.
->
-> Just for the record, I agree with Arjan here.
+Greetings,
+Rafael
+ 
 
-oh well. sorry to take up everyone's time.
-
-David Lang
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
