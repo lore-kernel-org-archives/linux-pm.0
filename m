@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation considerations
-Date: Sun, 29 Jul 2007 11:56:36 +0200
-Message-ID: <200707291156.38046.rjw__44244.9507689618$1185702537$gmane$org@sisk.pl>
-References: <200707151433.34625.rjw@sisk.pl> <200707160038.12943.rjw@sisk.pl>
-	<20070729065352.GB17084@suse.cz>
+Subject: [PATCH 0/2] Introduce CONFIG_HIBERNATION and
+	CONFIG_SUSPEND (was: CONFIG_SUSPEND?)
+Date: Sun, 29 Jul 2007 12:20:13 +0200
+Message-ID: <200707291220.14880.rjw__44082.0719850764$1185711869$gmane$org@sisk.pl>
+References: <200707251238.50218.lenb@kernel.org>
+	<200707282029.03563.rjw@sisk.pl>
+	<alpine.LFD.0.999.0707281130110.3442@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070729065352.GB17084@suse.cz>
+In-Reply-To: <alpine.LFD.0.999.0707281130110.3442@woody.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,52 +22,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vojtech Pavlik <vojtech@suse.cz>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, "Dr. David Alan Gilbert" <linux@treblig.org>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 29 July 2007 08:53, Vojtech Pavlik wrote:
-> On Mon, Jul 16, 2007 at 12:38:11AM +0200, Rafael J. Wysocki wrote:
+On Saturday, 28 July 2007 20:31, Linus Torvalds wrote:
 > 
-> > > Or the user unplugs their flash drive after hibernation rather than before.
-> > > 
-> > > Two things which I think would be nice to consider are:
-> > >    1) Encryption - I'd actually prefer if my luks device did not
-> > >        remember the key accross a hibernation; I want to be forced to
-> > >        reenter the phrase.  However I don't know what the best thing
-> > >        to do to partitions/applications using the luks device is.
+> On Sat, 28 Jul 2007, Rafael J. Wysocki wrote:
 > > 
-> > Encryption is possible with both the userland hibernation (aka uswsusp) and
-> > TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a "must
-> > have" feature for a framework to be generally useful (many users don't use it
-> > anyway).
+> > OK, I'll prepare a patch to introduce CONFIG_SUSPEND, but that will require
+> > quite a bit of (compilation) testing on different architectures.
 > 
-> If a user uses an encrypted filesystem, then he also needs an encrypted
-> swap and encrypted hibernation image: Otherwise the fileystem encryption
-> is not very useful.
+> Sure. I'm not too worried, the fallout should be of the trivial kind. 
+>
+> Also, mind basing it on the (independent) cleanups that Adrian already 
+> sent out. This is all intertwined..
 
-I was talking about hibernation image encryption.  Arguably, if the image is
-encrypted, you don't need to worry about its contents, including the keys for
-other kinds of encryption (eg. fs encryption).
- 
-> Forgetting the filesystem/swap decryption keys before hibernation is
-> probably harder to do - there may be sensitive data in the kernel memory
-> image that weren't cleared - even if the key itself is not there.
+OK, it took more time than I had hoped, but I wanted CONFIG_HIBERNATION and
+CONFIG_SUSPEND to be really independent of each other.
 
-If the image is encrypted, its contents are not available to anyone
-unauthorized and that includes the filesystem/swap decryption keys.
-
-> In my opinion, encrypted hibernation is what every notebook user should
-> want - that's the only way how to make sure data from the notebook
-> aren't available when the notebook is physically stolen.
-
-Provided that there are any sensitive (to the user or her employer etc.) data
-in the notebook.
+The two patches in the next messages implement the idea:
+* replace CONFIG_SOFTWARE_SUSPEND with CONFIG_HIBERNATION
+* introduce CONFIG_SUSPEND that selects CONFIG_HOTPLUG_CPU, if necessary,
+  and make it possible to choose suspend and hibernation independently of each
+  other.
 
 Greetings,
 Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
