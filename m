@@ -1,7 +1,8 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/base/power/: make 2 functions static
-Date: Sun, 29 Jul 2007 16:56:50 +0200
-Message-ID: <20070729145650.GH16817@stusta.de>
+Subject: [2.6 patch] make kernel/power/main.c:suspend_enter()
+	static
+Date: Sun, 29 Jul 2007 16:57:42 +0200
+Message-ID: <20070729145742.GP16817@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -19,51 +20,34 @@ To: pavel@suse.cz, rjw@sisk.pl
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-suspend_device() and resume_device() can now become static.
+suspend_enter() can now become static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/base/power/power.h   |    6 ------
- drivers/base/power/resume.c  |    2 +-
- drivers/base/power/suspend.c |    2 +-
- 3 files changed, 2 insertions(+), 8 deletions(-)
+ kernel/power/main.c  |    2 +-
+ kernel/power/power.h |    1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
---- linux-2.6.23-rc1-mm1/drivers/base/power/power.h.old	2007-07-26 05:14:12.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/base/power/power.h	2007-07-26 05:15:49.000000000 +0200
-@@ -55,12 +55,6 @@
+--- linux-2.6.23-rc1-mm1/kernel/power/power.h.old	2007-07-26 14:49:29.000000000 +0200
++++ linux-2.6.23-rc1-mm1/kernel/power/power.h	2007-07-26 14:49:36.000000000 +0200
+@@ -177,7 +177,6 @@
+ 				unsigned int, char *);
  
- extern void dpm_resume(void);
- extern void dpm_power_up(void);
--extern int resume_device(struct device *);
--
--/*
-- * suspend.c
-- */
--extern int suspend_device(struct device *, pm_message_t);
+ /* kernel/power/main.c */
+-extern int suspend_enter(suspend_state_t state);
+ extern int suspend_devices_and_enter(suspend_state_t state);
+ extern struct blocking_notifier_head pm_chain_head;
  
- #else /* CONFIG_PM */
- 
---- linux-2.6.23-rc1-mm1/drivers/base/power/resume.c.old	2007-07-26 05:14:28.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/base/power/resume.c	2007-07-26 05:14:39.000000000 +0200
-@@ -20,7 +20,7 @@
+--- linux-2.6.23-rc1-mm1/kernel/power/main.c.old	2007-07-26 14:49:44.000000000 +0200
++++ linux-2.6.23-rc1-mm1/kernel/power/main.c	2007-07-26 14:50:05.000000000 +0200
+@@ -120,7 +120,7 @@
   *
+  *	This function should be called after devices have been suspended.
   */
- 
--int resume_device(struct device * dev)
-+static int resume_device(struct device * dev)
- {
- 	int error = 0;
- 
---- linux-2.6.23-rc1-mm1/drivers/base/power/suspend.c.old	2007-07-26 05:16:00.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/base/power/suspend.c	2007-07-26 05:16:17.000000000 +0200
-@@ -54,7 +54,7 @@
-  *	@state:	Power state device is entering.
-  */
- 
--int suspend_device(struct device * dev, pm_message_t state)
-+static int suspend_device(struct device * dev, pm_message_t state)
+-int suspend_enter(suspend_state_t state)
++static int suspend_enter(suspend_state_t state)
  {
  	int error = 0;
  
