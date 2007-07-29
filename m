@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [2.6 patch] unexport pm_power_off_prepare
-Date: Sun, 29 Jul 2007 18:38:18 +0200
-Message-ID: <200707291838.19309.rjw__33873.8067810938$1185726611$gmane$org@sisk.pl>
-References: <20070729145935.GJ16817@stusta.de>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
+Date: Sun, 29 Jul 2007 22:40:01 +0200
+Message-ID: <20070729204001.GJ16817__40341.7613976218$1185741707$gmane$org@stusta.de>
+References: <200707251238.50218.lenb@kernel.org>
+	<alpine.LFD.0.999.0707281130110.3442@woody.linux-foundation.org>
+	<200707291220.14880.rjw@sisk.pl> <200707291438.06849.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070729145935.GJ16817@stusta.de>
 Content-Disposition: inline
+In-Reply-To: <200707291438.06849.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 29 July 2007 16:59, Adrian Bunk wrote:
-> This patch removes the unused EXPORT_SYMBOL(pm_power_off_prepare).
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+On Sun, Jul 29, 2007 at 02:38:05PM +0200, Rafael J. Wysocki wrote:
+>...
+> +config SUSPEND
+> +	bool "Suspend"
+=C2=A0            "Suspend to RAM"
+>...
+>  config HIBERNATION
+>  	bool "Hibernation"
+>...         "Hibernation (Suspend to disk)"
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+cu
+Adrian
 
-> ---
-> --- linux-2.6.23-rc1-mm1/kernel/sys.c.old	2007-07-28 07:38:45.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/kernel/sys.c	2007-07-28 07:38:59.000000000 +0200
-> @@ -104,7 +104,6 @@ EXPORT_SYMBOL(cad_pid);
->   */
->  
->  void (*pm_power_off_prepare)(void);
-> -EXPORT_SYMBOL(pm_power_off_prepare);
->  
->  static int set_one_prio(struct task_struct *p, int niceval, int error)
->  {
-> 
-> 
-> 
+--=20
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
