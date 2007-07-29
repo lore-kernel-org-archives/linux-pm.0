@@ -1,15 +1,10 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/2] Introduce CONFIG_HIBERNATION and
- CONFIG_SUSPEND (updated)
-Date: Sun, 29 Jul 2007 17:21:22 -0700 (PDT)
-Message-ID: <alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org>
-	<alpine.LFD.0.999.0707281130110.3442@woody.linux-foundation.org>
-	<200707291220.14880.rjw@sisk.pl> <200707292323.29601.rjw@sisk.pl>
+From: "Gabrielle Langford" <MarisolhuskyDiamond@slashdot.org>
+Subject: Fwd: Thank you, we are ready to lend you money
+Date: Sun, 29 Jul 2007 20:27:18 +0500
+Message-ID: <12c101c7d240$6f018920$6401a8c0@your09dedafe33>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: multipart/mixed; boundary="===============2395421503188024638=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707292323.29601.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +12,89 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format.
+
+--===============2395421503188024638==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_12BD_01C7D240.6F018920"
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_12BD_01C7D240.6F018920
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Your credit history does not matter to us!
+
+If you have your own business and require IMMEDIATE cash to spend ANY =
+way you like or wish Extra money to give the company a boost or wish A =
+low interest loan - NO STRINGS ATTACHED, here is our deal we can offer =
+you THIS NIGHT (hurry, this deal will expire THIS EVENING):
+
+$63,000+ loan
+
+Hurry, when our best deal is gone, it is gone. Simply Call Us...
+
+Don't worry about approval, your your credit report will not disqualify =
+you!
+
+Call Us Free on 877-542-1884
+------=_NextPart_000_12BD_01C7D240.6F018920
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.3790.2759" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>=20
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DImpact size=3D3><B>Your credit history does not matter =
+to=20
+us!</B></FONT></DIV>  =20
+<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DImpact size=3D3>If you have your own business and =
+require=20
+IMMEDIATE cash to spend ANY way you like or wish Extra money to give the =
+
+company a boost or  wish A low interest loan - NO STRINGS ATTACHED, here =
+is our=20
+deal we can offer you THIS NIGHT (hurry, this deal will expire THIS=20
+EVENING):</FONT></DIV> =20
+<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DImpact size=3D3><B>$63,000+ loan</B></FONT></DIV>
+<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DImpact size=3D3><B>Hurry, when our best deal is gone, =
+it is gone.=20
+Simply Call Us... </B></FONT></DIV>    =20
+<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DImpact size=3D3>Don't worry about approval, your your =
+credit=20
+report will not disqualify you!</FONT></DIV> =20
+<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DImpact size=3D3><B>Call Us Free on =
+877-542-1884</B></FONT></DIV>
+</BODY></HTML>
 
 
-Ok, I took this, and modified Len's patch to re-introduce ACPI_SLEEP on 
-top of it (I took the easy way out, and just made PM_SLEEP imply 
-ACPI_SLEEP, which should make everything come out right. I could have 
-dropped ACPI_SLEEP entirely in favour of PM_SLEEP, but that would have 
-implied changing more of Len's patch than I was really comfy with).
+------=_NextPart_000_12BD_01C7D240.6F018920--
 
-Len, Rafael, please do check that the end result looks ok. 
 
-I suspect ACPI could now take the PM_SLEEP/SUSPEND/HIBERNATE details into 
-account, and that some of the code is not necessary when HIBERNATE is not 
-selected, for example, but I'm not at all sure that it's worth it being 
-very fine-grained.
+--===============2395421503188024638==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-		Linus
+
+--===============2395421503188024638==--
