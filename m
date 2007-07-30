@@ -1,12 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Possible problem with device_move()
-Date: Mon, 30 Jul 2007 13:37:18 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707301334590.9339-100000@iolanthe.rowland.org>
-References: <1185778420.5868.90.camel@violet>
+From: "Stambaugh" <Stambaughtlvrq@sseward.com>
+Subject: broker news-12645
+Date: Mon, 30 Jul 2007 11:28:49 -0700
+Message-ID: <200707301828.l6UISj94016839@smtp2.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed;
+	boundary="=====================_15824015==_"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1185778420.5868.90.camel@violet>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,37 +15,133 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 30 Jul 2007, Marcel Holtmann wrote:
+--=====================_15824015==_
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 
-> Hi Alan,
-> 
-> > I'm in the midst of changing the Power Management core to make it
-> > acquire the device semaphore of every device during a suspend and
-> > resume.  The order of acquisition is the order of device registration, 
-> > which normally agrees with the way locks are acquired when going 
-> > through the device tree (i.e., parents before children).
-> > 
-> > But when you call device_move() that might no longer be true.  If a 
-> > device is moved so that its new parent was registered _after_ it was, 
-> > then the two orders will disagree.  This raises the possibility of a 
-> > deadlock if any thread ever tries to lock the device while holding the 
-> > new parent's lock -- as might happen during an unregistration, for 
-> > example.
-> 
-> the Bluetooth subsystem or the RFCOMM TTY code to be more precise uses
-> device_move() to attach an registered /dev/rfcommX device node (but not
-> connected) to the appropriate Bluetooth adapter and the low-level
-> piconet connection when you open (and thus connect) it.
-> 
-> So mainly we re-parent the TTY to the Bluetooth connection and after the
-> connection terminates we re-parent it to the virtual tree (NULL).
 
-What would happen to the TTY if the Bluetooth adapter was unplugged 
-while it was in use?  Would the adapter's release routine try to 
-acquire the TTY's device sem?
+--=====================_15824015==_
+Content-Type: application/pdf; name="broker news-12645.pdf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="broker news-12645.pdf"
 
-Alan Stern
+JVBERi0xLjUNJeLjz9MNCjQgMCBvYmo8PC9IWzQzNiAxMTldL0xpbmVhcml6ZWQgMS9FIDIzNzIv
+TCA2MjYwL04gMS9PIDgvVCA2MTIwPj4NZW5kb2JqDSAgICAgICAgICAgICAgICAgICAgICAgICAg
+DQp4cmVmDQo0IDcNCjAwMDAwMDAwMTYgMDAwMDAgbg0KMDAwMDAwMDU1NSAwMDAwMCBuDQowMDAw
+MDAwNjg5IDAwMDAwIG4NCjAwMDAwMDA0MzYgMDAwMDAgbg0KMDAwMDAwMDc4NyAwMDAwMCBuDQow
+MDAwMDAwOTY3IDAwMDAwIG4NCjAwMDAwMDEwODggMDAwMDAgbg0KdHJhaWxlcg0KPDwvU2l6ZSAx
+MS9QcmV2IDYxMTAvUm9vdCA2IDAgUi9FbmNyeXB0IDUgMCBSL0luZm8gMyAwIFIvSURbPDMzODU3
+MTFkNjMzMThkNDNhMDI3NjE2MTkyN2FhOTRjPjwzMzg1NzExZDYzMzE4ZDQzYTAyNzYxNjE5Mjdh
+YTk0Yz5dPj4NCnN0YXJ0eHJlZg0KMA0KJSVFT0YNCiAgICANCjcgMCBvYmo8PC9MZW5ndGggNDcv
+RmlsdGVyL0ZsYXRlRGVjb2RlL1MgMzg+PnN0cmVhbQ0Kldo9IdREzO1zSwynxnWgcs7uhDCkU4B7
+gDyq15gF9ErJz66bJEHXPnHYiTbfBaENCmVuZHN0cmVhbQ1lbmRvYmoNNSAwIG9iajw8L1IgMy9M
+ZW5ndGggMTI4L0ZpbHRlci9TdGFuZGFyZC9PKDA74WqmZBESCWxnn81NdBsXPR9Z6kbVx6qJZqmj
+W2xjKS9QIC0zOTA0L1Uoj2PMzlCNNscV2GQfZljUqQAAAAAAAAAAAAAAAAAAAAApL1YgMj4+DWVu
+ZG9iag02IDAgb2JqPDwvUGFnZXMgMSAwIFIvVHlwZS9DYXRhbG9nL1BhZ2VNb2RlL1VzZU5vbmUv
+UGFnZUxheW91dC9TaW5nbGVQYWdlL01ldGFkYXRhIDIgMCBSPj4NZW5kb2JqDTggMCBvYmo8PC9D
+b250ZW50cyAxMCAwIFIvVHlwZS9QYWdlL1BhcmVudCAxIDAgUi9Sb3RhdGUgMC9NZWRpYUJveFsw
+IDAgNzEzIDg2NV0vQ3JvcEJveFswIDAgNzEzIDg2NV0vUmVzb3VyY2VzPDwvRm9udDw8L0YwIDkg
+MCBSPj4vWE9iamVjdDw8Pj4vUHJvY1NldFsvUERGL1RleHQvSW1hZ2VDXT4+Pj4NZW5kb2JqDTkg
+MCBvYmo8PC9UeXBlL0ZvbnQvTmFtZS9GMC9FbmNvZGluZy9XaW5BbnNpRW5jb2RpbmcvQmFzZUZv
+bnQvSGVsdmV0aWNhL0ZpcnN0Q2hhciAzMi9MYXN0Q2hhciAyNTUvU3VidHlwZS9UeXBlMT4+DWVu
+ZG9iag0xMCAwIG9iajw8L0xlbmd0aCAxMjE0L0ZpbHRlci9GbGF0ZURlY29kZT4+c3RyZWFtDQph
+fWMeYos4J5GvuFz4/ZeZcSbzn9GM1W6ZcNgviJNYvqlxRHSU6VZSONkMYOPOSM+lNzMnI2XPNvYs
+V7jlI9TAHAbVxM1kGWc8Ep/pp8t0ovo6DFdHNIP0GqNNDia/6E3uBC2FIPAhtU4ZlJz4kDeP+Wud
+fzu61TOKDE0vsWQc/lVY2YbqB5MF7yN2xq82WGPxTG/oKb+G1MlaMiropjGJ9xKlCLw56NEBSstk
+lmjXLjbnQD1GzpKAbUWUrFQlz+t2je8DE6LZunVtnlv+IuTSPHpoJf0+KxnzWACNUozBqk4y1l6g
++BnJXtFXZZsIYtoKl0Vl0ilis1S8fi2jaxZ8/OEb51bNO75mm3O0QXH3W2pXKRmqH269ztaC/nzM
+hrYNM3IRsAdz3oHLZn8E1z5Zs1n7NuyTVO1s/ZBdrJXaXut2qswQ8So3leajxHdgzXqtc3sqIxxY
+z9lcic2c+Ts1lfcq3gCHKi9vWwt+SD3Nly+qNq0PQiChkGmxH+LGn+fMcaanbX6UaEwiWpeoYydT
+v+09LjDE11yVChtfvuB4/za2GIPAyzZFUn8Vr0Dpq1Cb88ivvMjO3wVpv1FrmAk+LPeE95rgYK2c
+JMHXWYTWihTlPrYaYPp8NiGVxPqeo5K8amV9waVrCgHsuh4HiGCT4lOZQifqyMo4KydkKUzO6+Bo
+tELaep8Axz/acdgT4sY9wzM7YrGZB5SDLbD2LPfLRSBCo7DbsA5P1g+aqFoqZQC56IsM/ZPxLL7a
+nQuioxnvIXds7LOaHLJ6nJu/IQXal/lmM9pCI4GDhC8HgagL00wAtL0nIj5zy6A0zlAMICQC5Del
+aUMIqHHzaUKKOq0wJtRVYgsXjJTeuNBcnQiQdis/IAM+FI4nqeawOtKRAxA0wcO9bkmoYTNBLczz
+7p82nRRp9/Hex29H3u+geDvEd+yCf3uPiN31+xPCqRnigL8Aj7q3AftfEKeXNtAdrQYaINHRaoTD
+M/KALUVuRbb3OZ0W6E6Izi3TJNBYk2Lbjcq0ZhzinbnEf5AHoqqIR4Za9QRMdg8vf3t3AFpds1QK
+juLPmAp+DUchD65J2/hn36aH6T6oEIOQ9iGJU3BL7jk2crhUGhh0wWRSPzmtF6iO4uE6JzCkDr85
+WRoDgLWGgK5KfYX71h8w38B98FjbPI7cTKHDS3a53jm+SU6EzzpCG6IU060CBUSF7KE6++aoJ9KI
+hy/cCaiYxCIPqlWMpBzETM2K+wNJodmSvqDNbq+7JP7suU+IBntohsizVFNc5eDzokVZ/dhzT9yV
+KGBBCJhVBUI6CA6wiFwTdjkWSWHmq6FLEEYurRe7WFa/8Ed9k/7RE9OU3lUlTjkvKfwRRTaIVn1U
+gE5WpEyw0sgpyiTgGBUi1nk9UTqXPbSBlxgdf1Ldj/ykXsdxmbi6vGAwiSR4+U/WGwRxQ/SdJRo+
+w7dDaEA9ouo9Co4RVTIN+u6Ju5I9PU2H+P27eP07EuBWBjUT212oNevwX7HtsISm1+N4gRHbIXut
+3+YxJHeEH15b0Jh59OcSh0k/wsMRtWwny96EaESeVxxrUEZIO+LpbAUMU7kFB2LgTCxOUY6JKqjS
+rI4vvvTOTonXyozE7WUj4A0KZW5kc3RyZWFtDWVuZG9iag0xIDAgb2JqPDwvQ291bnQgMS9LaWRz
+WzggMCBSXS9UeXBlL1BhZ2VzPj4NZW5kb2JqDTIgMCBvYmo8PC9MZW5ndGggMzQxOC9UeXBlL01l
+dGFkYXRhL1N1YnR5cGUvWE1MPj5zdHJlYW0NCqhBXkRhNS1oRMm23Uuham8qiXTMmXc+hhHka/gW
+pX/Ki50UKrAq23di4NIBF2YamhF7yLnZNWZVGpX+0tlGSywqPv7W5OKPH2SMWStoGPXVmplz08sv
+SH/xs9am7FvzMjP6k9jIdj5nztd6Wd68U9Lc3cBVRTBDB0Cl5UFSuj59p8dz/Nv5qYyYCfEv4MiH
+dig5fBziMZHh2ufHxuEVJOM9a+ZZu1j6wzG5BVIlu1XJdbMV11XSN+ujQajUuibqCmx9ibRspZ7e
+kHdik3RU4Edz62QPky9dRy8mqMbnk3/JWwjjXknU1gh2AE0W8yKxQidd0kiMYwzAmYXr+VbgCsuF
+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
+qYAJ5RX2NuSff1XJTO9rmTW0NLrua3UtAXYKCYnz1N6QlAwa2YqPuXT4pFKvDsNT4V4k1aV4sEYI
+j1mlf8ttJIrRxWPe7TkS5WwTTdzxPH8T4sOeWXYrcXB4dJo5xjTNqkwvGTHhu+te2FEQjPFmGoN4
+ykrxA0uSGbDofZbYebXbrFT+/20v+X4UXAVVUcJt9XTichKVAgM0VGyOpUQsLPXwW2RGHf/mQOyk
+oqMm36Dm3RTRWeMB75wFeWS+HcBQDH5HPeuXrW9yUviDBR7wPgnf/69srL3TcJAYFUeR0ac5ybm4
+mTY4vXNan7rfLSJUQKtdIny3DXqM5qZyHvKYP28XHIt0/apYNhvCNh2OUbOeHa1OFrgWpMoV13E8
+Dsh9YOBX4KUD7PlLlUnNR7D+6/IU2m9Wm1WqkRALCq11Z+dmUDH5m+LH/yIUO/GyjRKi9b7C5ZfQ
+OiPNWibECJsq/KOj2f13uB1OCe/+ZmeHrsM+UIryvNubT3b2KzgZQIrEARWFlaENgH1TIH5nCJPO
+R+85HeqDpvhyxeC+k3SXTinAgjUkZQhhB4YNCmVuZHN0cmVhbQ1lbmRvYmoNMyAwIG9iajw8L01v
+ZERhdGUogq7ORKlAB5matx6S85QD7H0Y9gjvsycpL0NyZWF0aW9uRGF0ZSiCrs5EqUAHmZq3HpLw
+kwHvXG4pL1RpdGxlKCkvQ3JlYXRvciiM5JkT0BpWyczCVsqs1lxcuykvQXV0aG9yKJL1lxHqH16O
+4uZAxa4pL0tleXdvcmRzKCkvU3ViamVjdCgpL1Byb2R1Y2VyKJb7ixHrJ1PIifFL2bLPX7BwGO8W
+KT4+DWVuZG9iag14cmVmDQowIDQNCjAwMDAwMDAwMDAgNjU1MzUgZg0KMDAwMDAwMjM3MiAwMDAw
+MCBuDQowMDAwMDAyNDIyIDAwMDAwIG4NCjAwMDAwMDU5MTYgMDAwMDAgbg0KdHJhaWxlcg0KPDwv
+U2l6ZSA0L0VuY3J5cHQgNSAwIFI+Pg0Kc3RhcnR4cmVmDQoxMTYNCiUlRU9GDQo=
+--=====================_15824015==_
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--=====================_15824015==_--
