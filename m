@@ -1,10 +1,21 @@
-From: "Gabrielle Langford" <MarisolhuskyDiamond@slashdot.org>
-Subject: Fwd: Thank you, we are ready to lend you money
-Date: Sun, 29 Jul 2007 20:27:18 +0500
-Message-ID: <12c101c7d240$6f018920$6401a8c0@your09dedafe33>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Power Management framework proposal
+Date: Mon, 30 Jul 2007 02:05:20 +0100
+Message-ID: <20070730010520.GC27398@srcf.ucam.org>
+References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm>
+	<1185125189.2714.13.camel@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0707221130380.6350@asgard.lang.hm>
+	<1185143240.2714.24.camel@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0707221946170.6350@asgard.lang.hm>
+	<1185163239.2714.37.camel@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0707222105310.6350@asgard.lang.hm>
+	<20070727114637.GC11895@ucw.cz>
+	<Pine.LNX.4.64.0707291456460.15835@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2395421503188024638=="
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707291456460.15835@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,89 +23,26 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@osdl.org
+To: david@lang.hm
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Sun, Jul 29, 2007 at 03:00:07PM -0700, david@lang.hm wrote:
 
---===============2395421503188024638==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_12BD_01C7D240.6F018920"
+> yes it is, and each type of device is growing it's own, incompatible, 
+> interfaces for controlling things like this. I was aiming to do two 
+> things.
 
-This is a multi-part message in MIME format.
+Anything playing with power management needs to be aware of the 
+limitations of the hardware. Many devices have reduced functionality 
+when in reduced power states, and it's vital that the caller be aware of 
+that. There's no way to express that information in a consistent way 
+because the limitations vary widely between different types of device. 
+So, given that software will need to be aware of the different special 
+cases for different types of hardware, there's very little cost to each 
+of them exposing a different interface.
 
-------=_NextPart_000_12BD_01C7D240.6F018920
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Your credit history does not matter to us!
-
-If you have your own business and require IMMEDIATE cash to spend ANY =
-way you like or wish Extra money to give the company a boost or wish A =
-low interest loan - NO STRINGS ATTACHED, here is our deal we can offer =
-you THIS NIGHT (hurry, this deal will expire THIS EVENING):
-
-$63,000+ loan
-
-Hurry, when our best deal is gone, it is gone. Simply Call Us...
-
-Don't worry about approval, your your credit report will not disqualify =
-you!
-
-Call Us Free on 877-542-1884
-------=_NextPart_000_12BD_01C7D240.6F018920
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.3790.2759" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>=20
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DImpact size=3D3><B>Your credit history does not matter =
-to=20
-us!</B></FONT></DIV>  =20
-<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
-<DIV><FONT face=3DImpact size=3D3>If you have your own business and =
-require=20
-IMMEDIATE cash to spend ANY way you like or wish Extra money to give the =
-
-company a boost or  wish A low interest loan - NO STRINGS ATTACHED, here =
-is our=20
-deal we can offer you THIS NIGHT (hurry, this deal will expire THIS=20
-EVENING):</FONT></DIV> =20
-<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
-<DIV><FONT face=3DImpact size=3D3><B>$63,000+ loan</B></FONT></DIV>
-<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
-<DIV><FONT face=3DImpact size=3D3><B>Hurry, when our best deal is gone, =
-it is gone.=20
-Simply Call Us... </B></FONT></DIV>    =20
-<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
-<DIV><FONT face=3DImpact size=3D3>Don't worry about approval, your your =
-credit=20
-report will not disqualify you!</FONT></DIV> =20
-<DIV><FONT face=3DImpact size=3D3>&nbsp;</FONT></DIV>
-<DIV><FONT face=3DImpact size=3D3><B>Call Us Free on =
-877-542-1884</B></FONT></DIV>
-</BODY></HTML>
-
-
-------=_NextPart_000_12BD_01C7D240.6F018920--
-
-
---===============2395421503188024638==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2395421503188024638==--
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
