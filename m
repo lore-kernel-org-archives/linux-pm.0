@@ -1,15 +1,13 @@
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
-Date: Sun, 29 Jul 2007 22:47:57 -0400
-Message-ID: <094CE21F-9AB6-4DD5-AF89-3A72116887E6__24242.4328033396$1185763771$gmane$org@mac.com>
-References: <200707251238.50218.lenb@kernel.org>
-	<200707292317.21419.rjw@sisk.pl> <20070729211824.GL16817@stusta.de>
-	<200707292336.55588.rjw@sisk.pl> <1185744640.2295.4.camel@work>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: Possible problem with device_move()
+Date: Mon, 30 Jul 2007 08:42:29 +0200
+Message-ID: <20070730084229.1df8757c@gondolin.boeblingen.de.ibm.com>
+References: <Pine.LNX.4.44L0.0707281123080.16987-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1185744640.2295.4.camel@work>
+In-Reply-To: <Pine.LNX.4.44L0.0707281123080.16987-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Richard Hughes <hughsient@gmail.com>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Jul 29, 2007, at 17:30:40, Richard Hughes wrote:
-> So are you guys using:
->
-> "standby" = idle state, ~0.5 seconds
-> "suspend" = sleep to ram, ~10 seconds
-> "hibernate" = sleep to disk, ~30 seconds
->
-> If so - you rock. This is the common nomenclature I've been pushing  
-> for
-> a few months now in GNOME, KDE and general userspace. I've written  
-> up a
-> spec here:
-> http://cvs.gnome.org/viewcvs/*checkout*/gnome-power-manager/docs/ 
-> sleep-names.html
+On Sat, 28 Jul 2007 11:36:42 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Well, those times don't quite work for my PowerBook.  If we fixed  
-suspend-to-RAM to reinitialize devices in parallel then it would  
-easily hit 0.5 second transition times, but even now it's only at  
-most 2 seconds.  Also once in a while I'll be too hasty plugging my  
-USB devices and manage to hardlock one of the USB busses, but that's  
-an isolated USB driver suspend issue.
+> Can you tell whether this will ever cause a problem?  Or is it known to
+> be safe because whenever you call device_move(), the new parent was
+> registered before the device being moved?
 
-And it's certainly not called "standby", because the box can  
-literally remain asleep for 7 days on a full charge, versus about 5  
-hours when just idle with wireless, backlight, and HDD off.
+Unfortunately, we can't make any assumptions in cio whether the new
+parent was registered before the moving device.
 
-Cheers,
-Kyle Moffett
+(A little background: We have each ccw_device as parent of a subchannel
+as discovered during initial sense. In the case of z/VM (a hypervisor),
+all subchannels are always consecutively numbered. Now the following
+may happen: A dasd on subchannel 0 is detached and a new device, say a
+ctc, is defined. As subchannel 0 was free from z/VMs perspective, the
+ctc ccw_device now sits on subchannel 0 and the dasd ccw_device is
+moved to the artificial 'defunct' subchannel. When the dasd is attached
+again, z/VM will hand out the next free subchannel, which we allocate a
+subchannel structure for and move the dasd ccw_device to. And here's
+the case where the child is older than the parent...)
+
+While we don't do suspend/resume yet on s390, I don't want to rule it
+out for the future...
