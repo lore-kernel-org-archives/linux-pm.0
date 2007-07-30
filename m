@@ -1,9 +1,10 @@
-From: Trujillo <pez@motifator.com>
-Subject: (no subject)
-Date: Mon, 30 Jul 2007 12:54:41 +0530
-Message-ID: <46AD9239.5040507@motifator.com>
+From: "Gail Guy" <LucioforsookBritt@japanesestreets.com>
+Subject: Fwd: Thanks,
+	we are ready to lend some cash regardless of Credit
+Date: Mon, 30 Jul 2007 06:38:29 +0500
+Message-ID: <585a401c7d295$cf440510$6501a8c0@yourus67pi6luv>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------000007060105040703040002"
+Content-Type: multipart/mixed; boundary="===============2080852137755753555=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -12,184 +13,89 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format.
 
---------------000007060105040703040002
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--===============2080852137755753555==
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_585A0_01C7D295.CF440510"
 
+This is a multi-part message in MIME format.
 
+------=_NextPart_000_585A0_01C7D295.CF440510
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
---------------000007060105040703040002
-Content-Type: application/pdf;
- name="advertisement.pdf"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline; filename="advertisement.pdf"
+Your credit history doesn't matter to us!
 
-JVBERi0xLjEKJeLjz9MKMSAwIG9iaiAKPDwKL1BhZ2VzIDIgMCBSCi9UeXBl
-IC9DYXRhbG9nCj4+CmVuZG9iaiAKMiAwIG9iaiAKPDwKL01lZGlhQm94IFsw
-IDAgNjEyIDc5Ml0KL0tpZHMgWzMgMCBSIDQgMCBSIDUgMCBSXQovQ291bnQg
-MwovVHlwZSAvUGFnZXMKPj4KZW5kb2JqIAo2IDAgb2JqIAo8PAovQmFzZUZv
-bnQgL0NvdXJpZXIKL1N1YnR5cGUgL1R5cGUxCi9OYW1lIC9GMQovVHlwZSAv
-Rm9udAo+PgplbmRvYmogCjcgMCBvYmogCjw8Ci9Gb250IAo8PAovRjEgNiAw
-IFIKPj4KL1Byb2NTZXQgWy9QREYgL1RleHRdCj4+CmVuZG9iaiAKMyAwIG9i
-aiAKPDwKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQov
-UmVzb3VyY2VzIDcgMCBSCi9Db250ZW50cyA4IDAgUgovVHlwZSAvUGFnZQo+
-PgplbmRvYmogCjggMCBvYmogCjw8Ci9MZW5ndGggNjYyCj4+CnN0cmVhbQrC
-jscfo2CZghUtCfOR79Ol/cGVHbD/+xT6JA2nbIkMrKam8wkeCWk4X3dARB2o
-aamf19ZEvsdabEOHprPJXs27WF26byJkev8zRxF+x8gXxGFI3ONofFM0vYHK
-RSGhjmvBOS2kj2O/HNlllAzwxL1ifXpglspNFkDoYyCOU0ax0GnXtYZpLEvd
-DeYBbg8Ugx2wPIRfGTJAVMFMTjW0p3E56ftmPvdJ+NxqY/1GRM8ydVYv4834
-E8Znf0S3N4tdjJ9vp9X1lBK/1HsvovyHwoB9M79Do9k2DvZvCSFZDaQyKnZL
-Ki0wMDTSmIfRdfm249rh9TjlJ3Sv0fT9Fs6AHNrXXywiS1C647FizNzlG9yo
-KkVFQn3xl9XcfKWw4D8OQg9ONCxn/Oq77AEj0M3xlXIipluNk5BDlTsCJFRT
-x8YmKzc8XD6kpLk1xxeElXQd6MO5FJ57eIetyg6DWw5QkKzS3A9r4Mb+6qlK
-PZQ5j9PRplzvPaAQwJ3L4M5wCEaBoHQzs3svMsby9OMpxUOqL/gQj5V0R4OC
-brd1o+vX0SYBcyBHQa6At9onKGOqzdgIkNDPoanJt2x39WGSrjw1CMIzjDAD
-4XhUcJ78vhHwFZf4M6z8So2mVNIkR3dCb/tAcZQ0Bi1N5QpisYWlp4cQ3xjn
-wZX9gsztl02UmBpGkTQuFOy8FHWPthBGrEbssTR/4KnSpHpa1jxbNkOTgKVz
-uPMkACYZbqTQ7OdWpnw0qQ7bg7JdyLtbfqcwF4UTBbWKm03MHXOO9OTs8bw3
-teG2LSzQJRYdn2S8N949oP+zJPCXwkLVWiGWhU0PE7l98324TVBQKdSRNJ0e
-LX6/C7LLPyRJH4FRNlqLrQ3fV12tLPdAO1DwcGjItwplbmRzdHJlYW0gCmVu
-ZG9iaiAKNCAwIG9iaiAKPDwKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAg
-MCA2MTIgNzkyXQovUmVzb3VyY2VzIDcgMCBSCi9Db250ZW50cyA5IDAgUgov
-VHlwZSAvUGFnZQo+PgplbmRvYmogCjkgMCBvYmogCjw8Ci9MZW5ndGggMjY5
-NAo+PgpzdHJlYW0KCisjc38V1QMdE0V8ZebWwxqVGdNEHxEE/3+qvnxxmDA1
-AX+ObK3pJ3SOTMXWBzD4VH3LYl6Mprj/RqEv9M/pGfo7v66kpkDHImSnWFNK
-3jacr8fwkmDstkOpdLQsS35ZI9mm6u1pTsDgDXVWzrWW5owhlH2v3j8RwPf9
-hxD0V92BqcGf1zRTQuUNjMCvgrCaDDk2AMqI1cV0DVwyXqXeSXdKlH2n0PDj
-ttacVrFAI/FBcVEUamZYebAXtiXiZ4gR4pAKKD6XxHbMddB3nZzFi5pIdaKF
-yPRBCjFjwmB/tiNjIF/IF7VGah+WnySSkaJVecanMQmV+SQQGJpyv6FSOal3
-5dejhksqnY2qDv76QPT7Js8Xa1fJPx6NUKyHAE+PWQ6PdzGrcOlC8s9jpb1J
-//THa0jNjuHgqyVT3w4voWk0JsOt7m+lN0l538KBSBEEFsPFLmN/mLXkeTOR
-wLgefjUgaqTesGGY+Li+7k8N4VtEBiFSWQ+wsj7NswRHWBGk+PvFPQEM3gdz
-AhUhK8uDwEnpAqqrw0h18idN6Y7/p930PaIaw+hOxoFYuhJlllu1rhGTgakU
-1dMITRgFsiP4z0v3P5frFamnIEca+7wtYiDQvhB+f7Ya8Q/dKNIVEpJ4gFFW
-oQQc5rhOELgaX7hJ0wfts/AJZe02KNyDiXLPUkkAXsr1OQ0yCNKh3Kj/z0rZ
-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
-IW8mbYiGLLb6repZ9BKHMecwZKGv72whx1MDGwrRqYu0DaJCfXnM1tSbxcfa
-TsG/EByitPBRI0hI6+EwAvilkH07cKWn3K/EyZQqI/SCioc1Gup+btunU6AC
-crbXYl3m5eZUdBzxcwIHt7yV71T5DQJt6+kZ4MztsPltBj82ZWSviNOqh9EB
-plsMCiQ7sogojVNU+Ec3qfvr7rlKyUSh5mPaEmFFVA0fjOgifY8baTbkvdox
-bfRUdl6jBQ10wPELQt5dDd1lCtm1gPv46SoTisVdRSC1S57n+fpvHunumHYl
-8TCytyXRpqh50msVUv/Td4tVP4gqEUt7tuxJqsKyEup0s5we4MDW2iJKg090
-Qxy9e5yrVItOM8/qYmLJrMwnnAwTevkDbswlbba0F9rxu5C9KEhMNgiaVcng
-d1C3uycEYp3hMTji9FiYugFU308xQ8i8J/7yCHz8B9AWSjYg3+kycRyoOKPs
-x9MIP8bICmVuZHN0cmVhbSAKZW5kb2JqIAo1IDAgb2JqIAo8PAovUGFyZW50
-IDIgMCBSCi9NZWRpYUJveCBbMCAwIDYxMiA3OTJdCi9SZXNvdXJjZXMgNyAw
-IFIKL0NvbnRlbnRzIDEwIDAgUgovVHlwZSAvUGFnZQo+PgplbmRvYmogCjEw
-IDAgb2JqIAo8PAovTGVuZ3RoIDc4Mgo+PgpzdHJlYW0K6ynwDWFnOJhJWyEZ
-TRHojTALVvGmSS9PJDSwlwJqjiPYU+eeEjgwtjN4MLrfAwrWEN2gf9RYr8J1
-HanhItKYOjfGObfYGqkkKvR4LkWu/Wf1RVuOiqYEKxAsaglxeh1jmakVXhVu
-TkmCPoGHOfRhE4QuGRzSph36L56U+gogGQfzJi5eu4O7fuzi2hb1wx+i/YyA
-kZlvunfXH/9XU0tzugXU1Z5DY2r2Zrz1tCYm1KraSJu2qaiDUU/mpETcDvn8
-5PK8VN23adKnM1cTJTdTPQwv/pfOVZss/jnqaJvOIINS7UPybIvTBAm2gqTE
-r2G7gWHoV4oZQAW1lfNEwZ5aTFOxLtbJQIsmHU2O2av9cYjjRkVrelXGrC/9
-T53q4UqvCLRecYKAqiTuuhCOzuDcgay1/xdhwghyhVbOtvBkWINBqnyjiARd
-d+m/y+J3Hf1XYo+xM1TNIlUmyju21BqscYmKu4BUrhIDWPjtkVXP7vHxSbbT
-i4Xo+b+kDS0zspbTLT0f5M4gSDOTQCR6xl1H1jJx06s9lWJzB0+7v3VGQOQy
-zqBAKIA23nEf+B+vv0jX2RzwYQH8hKAEpvgLuN/JY0exNFQofNrkDgpaMCbA
-yqeRMZqbhdonCJGP6rzrqmsoqNZMg3cmJU09r+QgnKunwT1iELFyeoKB7bqQ
-n0Cn8xp36tR960Pp4fGzaLGDW/X8DbUoWGH/7CZF/3EKhR8R9ZwRtp8QYUtY
-SXDfj70YZwQdtjO5lZR8G/aRpnWlJ47/aTzKBjp0YyQlMHtGpAKbwqtf5Wop
-FCqm0PNuV5KGqGbvDWc2EhKxc73lDS3IO5vQ5Oyv5INoF0BfK4M1g0TWpEX7
-LglokL/L5OtU8cgLCHsuz85AxBPQN+YDba9vOmtso9orIYT+ILPSZ/dcr5OY
-toVpcyDR9FXkoIeZAbVS2Nsl8TGjFba7Fex/xQ71ZtQEezx+SR9kJRdCvtuU
-mYSLy0FvohEpOWtOCMWNyOAcz1z+rzT4MwplvgOXZwZMuavSidlIGb5x1e0+
-7mAaGtAKZW5kc3RyZWFtIAplbmRvYmogCjExIDAgb2JqIAo8PAovUiAzCi9Q
-IC0zOTA0Ci9PIChCSxqPVB+RQTW7y9l+VW2iZmxcYthl3vO0QxTZsVX5cq0p
-Ci9GaWx0ZXIgL1N0YW5kYXJkCi9MZW5ndGggMTI4Ci9WIDIKL1UgKKA4etk9
-B6axfZJQQCB8IO0AAAAAAAAAAAAAAAAAAAAAKQo+PgplbmRvYmogCjEyIDAg
-b2JqIAo8PAovVGl0bGUgKEqL+xt4ONHhkwVcdNRPNS/0cuIDEfgWKQovUHJv
-ZHVjZXIgKGSF+FN2PoXtnE5H0BtcKTX2fvcaEPxdRvUqahkn4xxQbSRKz3ip
-/EAY3EyRUJir75MeliGPjudCFru6Jr4rkLGLRyw+uykKL0NyZWF0aW9uRGF0
-ZSAobd6kCyd7wb7CUVaBDm1ztCkKPj4KZW5kb2JqIHhyZWYKMCAxMwowMDAw
-MDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDA2
-NiAwMDAwMCBuIAowMDAwMDAwMzA5IDAwMDAwIG4gCjAwMDAwMDExMzEgMDAw
-MDAgbiAKMDAwMDAwMzk4NiAwMDAwMCBuIAowMDAwMDAwMTYxIDAwMDAwIG4g
-CjAwMDAwMDAyNDEgMDAwMDAgbiAKMDAwMDAwMDQxNSAwMDAwMCBuIAowMDAw
-MDAxMjM3IDAwMDAwIG4gCjAwMDAwMDQwOTMgMDAwMDAgbiAKMDAwMDAwNDkz
-MCAwMDAwMCBuIAowMDAwMDA1MDgwIDAwMDAwIG4gCnRyYWlsZXIKCjw8Ci9F
-bmNyeXB0IDExIDAgUgovSW5mbyAxMiAwIFIKL1Jvb3QgMSAwIFIKL1NpemUg
-MTMKL0lEIFs8NzY5MTVkNWE3NDIyMTFiNzBmY2E2YjU4NGJmOGNlZDk+PDc0
-NWQ2NTliMjE1NzM0NTc3ZjRmNTc1ZGJiNmY5MzEzPl0KPj4Kc3RhcnR4cmVm
-CjUyNTEKJSVFT0YK
+If you have your own business and require IMMEDIATE ready money to spend =
+ANY way you like or require Extra money to give your company a boost or =
+require A low interest loan - NO STRINGS ATTACHED, here is our best deal =
+we can offer you TODAY (hurry, this lot will expire NOW):
 
---------------000007060105040703040002
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
+$21,000+ loan
 
-Spam detection software, running on the system "daredevil.linux-foundation.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
+Hurry, when our best deal is gone, it is gone. Simply Call Us...
 
-Content preview:  [...] 
+Do not worry about approval, your credit history will not disqualify you!
 
-Content analysis details:   (6.8 points, 5.0 required)
+Call Us Free on 877-542-1884
+------=_NextPart_000_585A0_01C7D295.CF440510
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 3.0 BAYES_95               BODY: Bayesian spam probability is 95 to 99%
-                            [score: 0.9658]
- 2.0 MISSING_SUBJECT        Missing Subject: header
- 1.7 EMPTY_MESSAGE          Message appears to be empty with no Subject: text
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1458" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>=20
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DBookman size=3D2><B>Your credit history doesn't matter =
+to=20
+us!</B></FONT></DIV>  =20
+<DIV><FONT face=3DBookman size=3D2>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DBookman size=3D2>If you have your own business and =
+require 
+IMMEDIATE ready money to spend ANY way you like or require Extra money =
+to give=20
+your company a boost or  require A low interest loan - NO STRINGS =
+ATTACHED,=20
+here is our best deal we can offer you TODAY (hurry, this lot will =
+expire=20
+NOW):</FONT></DIV> =20
+<DIV><FONT face=3DBookman size=3D2>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DBookman size=3D2><B>$21,000+ loan</B></FONT></DIV>
+<DIV><FONT face=3DBookman size=3D2>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DBookman size=3D2><B>Hurry, when our best deal is gone, =
+it is=20
+gone. Simply Call Us... </B></FONT></DIV>    =20
+<DIV><FONT face=3DBookman size=3D2>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DBookman size=3D2>Do not worry about approval, your =
+credit history=20
+will not disqualify you!</FONT></DIV> =20
+<DIV><FONT face=3DBookman size=3D2>&nbsp;</FONT></DIV>
+<DIV><FONT face=3DBookman size=3D2><B>Call Us Free on =
+877-542-1884</B></FONT></DIV>
+</BODY></HTML>
 
 
+------=_NextPart_000_585A0_01C7D295.CF440510--
 
---------------000007060105040703040002
+
+--===============2080852137755753555==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---------------000007060105040703040002--
+--===============2080852137755753555==--
