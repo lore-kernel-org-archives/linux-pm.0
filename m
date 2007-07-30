@@ -1,10 +1,10 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Marcel Holtmann <marcel@holtmann.org>
 Subject: Re: Possible problem with device_move()
-Date: Mon, 30 Jul 2007 08:42:29 +0200
-Message-ID: <20070730084229.1df8757c@gondolin.boeblingen.de.ibm.com>
+Date: Mon, 30 Jul 2007 08:53:30 +0200
+Message-ID: <1185778420.5868.90.camel@violet>
 References: <Pine.LNX.4.44L0.0707281123080.16987-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <Pine.LNX.4.44L0.0707281123080.16987-100000@netrider.rowland.org>
@@ -18,29 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Marcel Holtmann <marcel@holtmann.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 28 Jul 2007 11:36:42 -0400 (EDT),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+Hi Alan,
 
-> Can you tell whether this will ever cause a problem?  Or is it known to
-> be safe because whenever you call device_move(), the new parent was
-> registered before the device being moved?
+> I'm in the midst of changing the Power Management core to make it
+> acquire the device semaphore of every device during a suspend and
+> resume.  The order of acquisition is the order of device registration, 
+> which normally agrees with the way locks are acquired when going 
+> through the device tree (i.e., parents before children).
+> 
+> But when you call device_move() that might no longer be true.  If a 
+> device is moved so that its new parent was registered _after_ it was, 
+> then the two orders will disagree.  This raises the possibility of a 
+> deadlock if any thread ever tries to lock the device while holding the 
+> new parent's lock -- as might happen during an unregistration, for 
+> example.
 
-Unfortunately, we can't make any assumptions in cio whether the new
-parent was registered before the moving device.
+the Bluetooth subsystem or the RFCOMM TTY code to be more precise uses
+device_move() to attach an registered /dev/rfcommX device node (but not
+connected) to the appropriate Bluetooth adapter and the low-level
+piconet connection when you open (and thus connect) it.
 
-(A little background: We have each ccw_device as parent of a subchannel
-as discovered during initial sense. In the case of z/VM (a hypervisor),
-all subchannels are always consecutively numbered. Now the following
-may happen: A dasd on subchannel 0 is detached and a new device, say a
-ctc, is defined. As subchannel 0 was free from z/VMs perspective, the
-ctc ccw_device now sits on subchannel 0 and the dasd ccw_device is
-moved to the artificial 'defunct' subchannel. When the dasd is attached
-again, z/VM will hand out the next free subchannel, which we allocate a
-subchannel structure for and move the dasd ccw_device to. And here's
-the case where the child is older than the parent...)
+So mainly we re-parent the TTY to the Bluetooth connection and after the
+connection terminates we re-parent it to the virtual tree (NULL).
 
-While we don't do suspend/resume yet on s390, I don't want to rule it
-out for the future...
+Regards
+
+Marcel
