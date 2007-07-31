@@ -1,12 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Suspend without the freezer
-Date: Tue, 31 Jul 2007 11:24:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707311112590.3520-100000@iolanthe.rowland.org>
-References: <200707311105.40449.rjw@sisk.pl>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: Possible problem with device_move()
+Date: Tue, 31 Jul 2007 17:30:27 +0200
+Message-ID: <20070731173027.02934c71@gondolin.boeblingen.de.ibm.com>
+References: <20070731103305.39b76a5d@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.44L0.0707311104270.3520-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707311105.40449.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0707311104270.3520-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,38 +18,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 31 Jul 2007, Rafael J. Wysocki wrote:
+On Tue, 31 Jul 2007 11:11:50 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> > > One thought was to have the PM core acquire and hold the dpm_list_mutex 
-> > > throughout the suspend.  This would block registration attempts at the 
-> > > point where the new device is added to the PM core's device-list.
-> > >
-> > 
-> > I think blocking at this point is too late - many drivers muck with
-> > the device in different ways before registering the "result" with
-> > driver core. The device may be half-awaken by then.
+> I wonder if device_move() shouldn't change the order of entries in the 
+> dpm_active list so that the new parent (and all its ancestors) get 
+> moved up ahead of the device's position?  But that might cause other 
+> problems...
 
-> An alternative could be to have a rwsem taken for writing by the PM core and
-> for reading by registration/binding/unbinding (and other suspend-sensitive code
-> paths).
-
-I think this is subject to the same weakness Dmitry mentions: By the
-time the driver would block on the new rwsem, it has already started
-mucking with the device.  Worse yet, it may hold a mutex that the 
-suspend method needs, thereby deadlocking the suspend.  (That's what 
-would happen with serio->drv_mutex in the input layer.)
-
-Maybe the best answer is simply to fail all attempts at device
-registration while a suspend is underway.  At least that is a known
-error path which drivers are prepared (in theory) to deal with.  It
-could be implemented quite easily with an rwsem, by making the
-registration code use down_read_trylock.
-
-Binding and unbinding aren't an issue once the PM core owns all the
-device semaphores.
-
-Alan Stern
+This may be necessary if walking the list is the single determining
+factor to the order of suspend/resume. Are there any other dependencies
+not covered by time of registration order? I would imagine those needed
+moving devices on the dpm_active list as well...
