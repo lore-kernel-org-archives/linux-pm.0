@@ -1,14 +1,17 @@
-From: Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: Suspend without the freezer
-Date: Mon, 30 Jul 2007 23:52:55 -0400
-Message-ID: <200707302352.56033.dtor@insightbb.com>
-References: <Pine.LNX.4.44L0.0707301634250.2546-100000@iolanthe.rowland.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/2] Introduce CONFIG_HIBERNATION and
+	CONFIG_SUSPEND (updated)
+Date: Mon, 30 Jul 2007 23:54:17 -0400
+Message-ID: <200707302354.18212.lenb__42501.2836502448$1185854352$gmane$org@kernel.org>
+References: <200707251238.50218.lenb@kernel.org>
+	<200707292323.29601.rjw@sisk.pl>
+	<alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707301634250.2546-100000@iolanthe.rowland.org>
+In-Reply-To: <alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,51 +22,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
-
-On Monday 30 July 2007 16:48, Alan Stern wrote:
-> Dmitry:
+On Sunday 29 July 2007 20:21, Linus Torvalds wrote:
 > 
-> I'm trying to help eliminate the need for the freezer during suspend.  
-> For it to work, we have to prevent threads which otherwise would have 
-> been frozen from trying to bind drivers to suspended devices or trying 
-> to register new devices whose parents are already suspended.
+> Ok, I took this, and modified Len's patch to re-introduce ACPI_SLEEP on 
+> top of it (I took the easy way out, and just made PM_SLEEP imply 
+> ACPI_SLEEP, which should make everything come out right. I could have 
+> dropped ACPI_SLEEP entirely in favour of PM_SLEEP, but that would have 
+> implied changing more of Len's patch than I was really comfy with).
 > 
-> To help accomplish this, the PM core can acquire the device semaphores
-> for all existing devices before suspending any of them.  That will
-> prevent attempts at binding.  It would also prevent registration of new
-> children, _if_ the driver doing the registration had to acquire the
-> parent's semaphore first.  But many drivers don't do this.
-> 
-> One thought was to have the PM core acquire and hold the dpm_list_mutex 
-> throughout the suspend.  This would block registration attempts at the 
-> point where the new device is added to the PM core's device-list.
->
+> Len, Rafael, please do check that the end result looks ok. 
 
-I think blocking at this point is too late - many drivers muck with
-the device in different ways before registering the "result" with
-driver core. The device may be half-awaken by then.
-  
-> Unfortunately it creates several lockdep violations.  For example, the 
-> serio core holds serio->drv_mutex while input_register_device is 
-> called (which acquires dpm_list_mutex), and it acquires 
-> serio->drv_mutex in serio_suspend and serio_resume (which would be 
-> called while the PM core holds dpm_list_mutex).
-> 
-> I'm having trouble coming up with a way to block registrations during 
-> suspend that won't create a possibility for deadlock.  Do you have any 
-> suggestions?  A scheme that would work for the input layer ought to be 
-> generally applicable.
->
+SUSPEND depends only on (!SMP || SUSPEND_SMP_POSSIBLE).
+This means that while we limit the architectures it can build on
+if they are SMP, it can build on any !SMP architecture --
+which probably isn't what we want.
 
-One option would be to have a separate thread running registration/binding/
-unbinding (like serio core does). You can stop this thead during suspend
-and resume so that requests are queued up and you process them later, when
-you are ready...
+I think the right way to go is your SUSPEND_UP_POSSIBLE suggestion.
+Honestly, I though it was overly verbose when I first read it,
+but I like it better now, especially since it works;-)
+I'll reply w/ an incremental patch.
 
--- 
-Dmitry
+> I suspect ACPI could now take the PM_SLEEP/SUSPEND/HIBERNATE details into 
+> account, and that some of the code is not necessary when HIBERNATE is not 
+> selected, for example, but I'm not at all sure that it's worth it being 
+> very fine-grained.
+
+As you know, I don't think that it is worth dedicated config options
+to save 16KB on an SMP+ACPI kernel.  The prospect of adding code to
+slice that 16KB into finer grain savings seems even less worthwhile.
+
+-Len
