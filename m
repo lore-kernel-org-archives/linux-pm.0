@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 2/2] Freezer: Use wait queue instead
-	of busy looping
-Date: Tue, 31 Jul 2007 10:01:31 +0200
-Message-ID: <20070731080131.GF22419@elf.ucw.cz>
-References: <200707251401.48340.rjw@sisk.pl> <200707251603.02297.rjw@sisk.pl>
-	<20070725142429.GA299@tv-sign.ru> <200707261424.49503.rjw@sisk.pl>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: Possible problem with device_move()
+Date: Tue, 31 Jul 2007 10:33:05 +0200
+Message-ID: <20070731103305.39b76a5d@gondolin.boeblingen.de.ibm.com>
+References: <20070730084229.1df8757c@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.44L0.0707301330040.9339-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200707261424.49503.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0707301330040.9339-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +18,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, pm list <linux-pm@lists.linux-foundation.org>, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Mon, 30 Jul 2007 13:34:35 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> > > refrigerator_called is only reset after try_to_freeze_tasks() has found it
-> > > equal to one.  There is only a small window between checking it in
-> > > wait_event_timeout() and resetting it,
-> > 
-> > Yes.
-> > 
-> > > but then we go to send freeze requests
-> > > to the remaining tasks and we count 'todo' from the start, so that shouldn't
-> > > be a problem.
-> > 
-> > ... and we find the task which is not frozen() yet, but which has already passed
-> > the "set condition and wakeup", increment todo, and wait for the event. If it was
-> > the last task, we will sleep until timeout.
-> > 
-> > I agree, this is not fatal and unlikely, but still it is a race. I think it is
-> > better to move this code down, after frozen_process().
-> 
-> OK, I see your point.  The updated patch is appended.
-> 
-> > (offtopic: strictly speaking, we don't even need the "refrigerator_called", we
-> >  only need the wait_queue_head_t. try_to_freeze_tasks() just adds the "current"
-> >  to wq at the very start of the main loop).
-> 
-> Hmm, yes, I think so.
+> As long as you never hold the device semaphores of both the parent and 
+> the child there shouldn't be any problem.  Could this happen when a 
+> subchannel structure is deallocated?
 
-Ok, could we just do schedule_timeout(HZ/10) or something, but when we
-_know_ we woke someone, wakeup() that task? No new variables, keep
-existing logic. That should still get most of the benefits, and be two
-liner, no?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This is indeed what happens, since we unregister the child ccw_device
+from the (io_)subchannel's remove function.
+
+(We used to do unregistering of the ccw_device via a workqueue (in
+order to avoid livelocks on a no longer existing bus semaphore), but
+removed it since it seemed to be needlessly complicated code.)
