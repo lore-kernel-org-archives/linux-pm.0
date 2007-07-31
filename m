@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 3/3] Freezer: Replace the timeout
-Date: Wed, 1 Aug 2007 00:29:42 +0200
-Message-ID: <200708010029.43652.rjw@sisk.pl>
-References: <200707251401.48340.rjw@sisk.pl> <20070731100254.GC3462@elf.ucw.cz>
-	<200708010025.27018.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 0/3] Freezer: Use wait queue instead of
+	busy looping (updated)
+Date: Wed, 1 Aug 2007 00:25:26 +0200
+Message-ID: <200708010025.27018.rjw@sisk.pl>
+References: <200707251401.48340.rjw@sisk.pl> <200707311208.41795.rjw@sisk.pl>
+	<20070731100254.GC3462@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708010025.27018.rjw@sisk.pl>
+In-Reply-To: <20070731100254.GC3462@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,110 +25,77 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tuesday, 31 July 2007 12:02, Pavel Machek wrote:
+> On Tue 2007-07-31 12:08:40, Rafael J. Wysocki wrote:
+> > On Tuesday, 31 July 2007 11:39, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > On Tuesday, 31 July 2007 10:01, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > > > refrigerator_called is only reset after try_to_freeze_tasks() has found it
+> > > > > > > equal to one.  There is only a small window between checking it in
+> > > > > > > wait_event_timeout() and resetting it,
+> > > > > > 
+> > > > > > Yes.
+> > > > > > 
+> > > > > > > but then we go to send freeze requests
+> > > > > > > to the remaining tasks and we count 'todo' from the start, so that shouldn't
+> > > > > > > be a problem.
+> > > > > > 
+> > > > > > ... and we find the task which is not frozen() yet, but which has already passed
+> > > > > > the "set condition and wakeup", increment todo, and wait for the event. If it was
+> > > > > > the last task, we will sleep until timeout.
+> > > > > > 
+> > > > > > I agree, this is not fatal and unlikely, but still it is a race. I think it is
+> > > > > > better to move this code down, after frozen_process().
+> > > > > 
+> > > > > OK, I see your point.  The updated patch is appended.
+> > > > > 
+> > > > > > (offtopic: strictly speaking, we don't even need the "refrigerator_called", we
+> > > > > >  only need the wait_queue_head_t. try_to_freeze_tasks() just adds the "current"
+> > > > > >  to wq at the very start of the main loop).
+> > > > > 
+> > > > > Hmm, yes, I think so.
+> > > > 
+> > > > Ok, could we just do schedule_timeout(HZ/10) or something, but when we
+> > > > _know_ we woke someone, wakeup() that task? No new variables, keep
+> > > > existing logic.
+> > > 
+> > > The logic doesn't change that much. :-)
+> > > 
+> > > > That should still get most of the benefits, and be two liner, no?
+> > > 
+> > > Well, I think we can avoid using refrigerator_called, if this is a problem, but
+> > > the patch won't be a two liner.
+> > 
+> > To be precise, we'd need to add current to the wait queue manually, which
+> > would require us to open code wait_event_timeout(), more or less.
+> > 
+> > Still, maybe to many things are done in this patch at a time.  I'll try to
+> > split it into smaller steps. :-)
+> 
+> Ok, whatever.
+> 
+> Hmm, you could be sneaky and send signals to refrigerator, that should
+> trigger early return from schedule_timeout()...
 
-Instead of using the global timeout, we can use a more fine grained metho=
-d of
-checking if the freezing of tasks should fail.  Namely, we can measure th=
-e time
-in which no tasks have entered the refrigerator by counting the number of=
- calls
-to wait_event_timeout() in try_to_freeze_tasks() that have returned 0 (in=
- a
-row).
+Hmm, did you mean *from* the refrigerator?
 
-After sending freeze requests to the tasks regarded as freezable
-try_to_freeze_tasks() goes to sleep and waits until at least one task ent=
-ers the
-refrigerator. =A0If the refrigerator is not entered by any tasks before W=
-AIT_TIME
-expires, try_to_freeze_tasks() increases the counter of expired timeouts =
-and
-sends freeze requests to the remaining tasks.  If the number of expired t=
-imeouts
-becomes greater than MAX_WAITS, the freezing of tasks fails (the counter =
-of
-expired timeouts is reset whenever a task enters the refrigerator).
+> <runs away, hides> 
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/process.c |   29 +++++++++++++++++------------
- 1 file changed, 17 insertions(+), 12 deletions(-)
+Well, that wasn't really necessary. ;-)
 
-Index: linux-2.6.23-rc1/kernel/power/process.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc1.orig/kernel/power/process.c	2007-07-31 23:01:10.0000=
-00000 +0200
-+++ linux-2.6.23-rc1/kernel/power/process.c	2007-07-31 23:12:34.000000000=
- +0200
-@@ -14,17 +14,21 @@
- #include <linux/syscalls.h>
- #include <linux/freezer.h>
-=20
--/*=20
-- * Timeout for stopping processes
-- */
--#define TIMEOUT	(20 * HZ)
--
- /*
-  * Time to wait until one or more tasks enter the refrigerator after sen=
-ding
-  * freeze requests to them.
-  */
- #define WAIT_TIME (HZ / 5)
-=20
-+/*
-+ * Each time after sending freeze requests to tasks the freezer will wai=
-t until
-+ * some of them enter the refrigerater, but no longer than TIMEOUT.  If =
-TIMEOUT
-+ * has been exceeded, the freezer increases the number of waits by one a=
-nd
-+ * repeats.  If the number of waits becomes greater than MAX_WAITS, the
-+ * freezing fails.
-+ */
-+#define MAX_WAITS 5
-+
- #define FREEZER_KERNEL_THREADS 0
- #define FREEZER_USER_SPACE 1
-=20
-@@ -188,16 +192,15 @@ static void cancel_freezing(struct task_
- static int try_to_freeze_tasks(int freeze_user_space)
- {
- 	struct task_struct *g, *p;
--	unsigned long end_time;
--	unsigned int todo;
-+	unsigned int todo, waits;
- 	struct timeval start, end;
- 	s64 elapsed_csecs64;
- 	unsigned int elapsed_csecs;
-=20
- 	do_gettimeofday(&start);
-=20
--	end_time =3D jiffies + TIMEOUT;
- 	refrigerator_called =3D 0;
-+	waits =3D 0;
- 	do {
- 		todo =3D 0;
- 		read_lock(&tasklist_lock);
-@@ -223,12 +226,14 @@ static int try_to_freeze_tasks(int freez
-=20
- 			ret =3D wait_event_timeout(refrigerator_waitq,
- 					refrigerator_called, WAIT_TIME);
--			if (ret)
-+			if (ret) {
- 				refrigerator_called =3D 0;
-+				waits =3D 0;
-+			} else {
-+				if (++waits > MAX_WAITS)
-+					break;
-+			}
- 		}
--
--		if (time_after(jiffies, end_time))
--			break;
- 	} while (todo);
-=20
- 	do_gettimeofday(&end);
+The three patches in the next messages are functionally equivalent to this one.
+
+They do the following:
+* make try_to_freeze_tasks() wait instead of busy looping
+* make try_to_freeze_tasks() measure the time it takes to freeze tasks
+* replace the timeout with counting "waits"
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
