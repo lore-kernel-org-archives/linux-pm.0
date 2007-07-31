@@ -1,16 +1,15 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
-Date: Mon, 30 Jul 2007 23:54:22 -0400
-Message-ID: <200707302354.23237.lenb__15924.9303200797$1185854462$gmane$org@kernel.org>
+Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND (updated)
+Date: Tue, 31 Jul 2007 00:59:49 -0400
+Message-ID: <200707310059.50329.lenb@kernel.org>
 References: <200707251238.50218.lenb@kernel.org>
-	<200707292323.29601.rjw@sisk.pl>
-	<alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
+	<200707292323.29601.rjw@sisk.pl> <200707292327.19884.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
+In-Reply-To: <200707292327.19884.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,45 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+On Sunday 29 July 2007 17:27, Rafael J. Wysocki wrote:
+> Still, there are many other files in which CONFIG_PM can be replaced
+> with CONFIG_PM_SLEEP or even with CONFIG_SUSPEND, but they can be updated in
+> the future.
 
-Without this change, it is possible to build CONFIG_HIBERNATE
-on all !SMP architectures, but not necessarily their SMP versions.
+There is #ifdef CONFIG_PM
+around all the .suspend and .resume methods.
 
-I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
-is correct.  For now it simply matches the list for SUSPEND_SMP_POSSIBLE.
+Technically they are PM_DEVICE_STATES or something,
+that could really be under PM, and both SUSPEND and HIBERNATE
+would depend on PM_DEVICE_STATES, but it is also possible to have
+PM_DEVICE_STATES without SUSPEND and HIBERNATE.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- Kconfig |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+oh no, I just suggested more instead of fewer config options:-O
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 412859f..ccf6576 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -72,6 +72,11 @@ config PM_TRACE
- 	CAUTION: this option will cause your machine's real-time clock to be
- 	set to an invalid time after a resume.
- 
-+config SUSPEND_UP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
-+	default y
-+
- config SUSPEND_SMP_POSSIBLE
- 	bool
- 	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
-@@ -92,7 +97,7 @@ config PM_SLEEP
- config SUSPEND
- 	bool "Suspend to RAM and standby"
- 	depends on PM
--	depends on !SMP || SUSPEND_SMP_POSSIBLE
-+	depends on (!SMP && SUSPEND_UP_POSSIBLE) || (SMP && SUSPEND_SMP_POSSIBLE)
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
+but i agree, this can wait a bit...
+
+-Len
