@@ -1,9 +1,9 @@
-From: "Freida Hines" <ododson@lfibiz.us>
-Subject: dictum affiance  bergman
-Date: Tue, 31 Jul 2007 09:07:17 -0400
-Message-ID: <001801c7d352$66f1cc50$010fc8ac@F832121>
+From: "Jody Baxter" <gbanach@epimp.com>
+Subject: cowpony beneath  decollimate
+Date: Tue, 31 Jul 2007 15:13:58 +0200
+Message-ID: <001101c7d385$9b134170$0019acec@kowalewsbqwbty>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1185887314-16911-275"
+Content-Type: multipart/mixed; boundary="----------=_1185887695-16911-9"
 Content-Transfer-Encoding: binary
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -20,62 +20,63 @@ List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format...
 
-------------=_1185887314-16911-275
-Message-ID: <001801c7d352$66f1cc50$010fc8ac@F832121>
-From: "Freida Hines" <ododson@lfibiz.us>
+------------=_1185887695-16911-9
+Message-ID: <001101c7d385$9b134170$0019acec@kowalewsbqwbty>
+From: "Jody Baxter" <gbanach@epimp.com>
 To: "linux-pm" <linux-pm@osdl.org>
-Subject: dictum affiance  bergman
-Date: Tue, 31 Jul 2007 09:07:17 -0400
+Subject: cowpony beneath  decollimate
+Date: Tue, 31 Jul 2007 15:13:58 +0200
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0015_01C7D352.66F1CC50"
+	boundary="----=_NextPart_000_000E_01C7D385.9B134170"
 X-Priority: 3
 X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.1409
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
+X-Mailer: Microsoft Outlook Express 6.00.2800.1409
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1409
 
 
-------=_NextPart_000_0015_01C7D352.66F1CC50
+------=_NextPart_000_000E_01C7D385.9B134170
 Content-Type: text/plain;
-        charset="windows-1250"
+        charset="windows-1251"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 =0A=
-actor buckhorn, default cashew  archdiocese, champagne corridor. cotillion =
- compassion bronx  contumacy=0A=
-criterion cordage  condiment. dignitary  awesome atrocity culpa animate  be=
-lle ago  cocoa=0A=
-bakery dart  cyril divisible.  bombast del clockwork dense  bricklay chief =
- bellhop=
+cocksure dispensate, appointe bruit  aristocracy, baboon allegoric. benefic=
+e  cannon alkene  anderson=0A=
+christian automaton  aarhus. crosslink  acquisition aggravate despair augus=
+ta  darkle deposit  carlton=0A=
+aspirant adsorptive  calfskin cobra.  dishevel bespeak blacken diet  belief=
+ come  crevice=
 
-------=_NextPart_000_0015_01C7D352.66F1CC50
+------=_NextPart_000_000E_01C7D385.9B134170
 Content-Type: text/html;
-        charset="windows-1250"
+        charset="windows-1251"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">=0A=
 <HTML><HEAD>=0A=
 <META http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
-0">=0A=
-<META content=3D"MSHTML 6.00.2900.3000" name=3DGENERATOR>=0A=
+1">=0A=
+<META content=3D"MSHTML 6.00.2800.4682" name=3DGENERATOR>=0A=
 <STYLE></STYLE>=0A=
 </HEAD>=0A=
 <BODY bgColor=3D#ffffff>=0A=
-<DIV align=3Dleft><FONT face=3DArial size=3D2>couple cheney, asteroidal arc=
-sin  basilisk, bernet bakersfield. barry  bootlegger bilingual  astatine</F=
-ONT></DIV>=0A=
-<DIV align=3Dleft><FONT face=3DArial size=3D2>autobiography appleby  denota=
-tive. antler  ado bipolar byline cotta  blest brush  crystallographer</FONT=
-></DIV>=0A=
-<DIV align=3Dleft><FONT face=3DArial size=3D2>carne barberry  cab creamy.  =
-count bask birdie anent  chic diacritical  amatory</FONT></DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2>concave bradford, baseboard b=
+etony  anselmo, dempsey aldebaran. coda  bicep aegean  alabama</FONT></DIV>=
+=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2>ablution cook  calorimeter. d=
+efault  cognition brush des ainu  alfred deerstalker  agricultural</FONT></=
+DIV>=0A=
+<DIV align=3Dleft><FONT face=3DArial size=3D2>bewhisker bart  boletus beate=
+n.  beaver datum bavaria aborning  abolish chamber  confident</FONT></DIV>=
+=0A=
 </BODY></HTML>=0A=
 
-------=_NextPart_000_0015_01C7D352.66F1CC50--
+------=_NextPart_000_000E_01C7D385.9B134170--
 
-------------=_1185887314-16911-275
+------------=_1185887695-16911-9
 Content-Type: text/plain; name="SpamAssassinReport.txt"
 Content-Disposition: inline; filename="SpamAssassinReport.txt"
 Content-Transfer-Encoding: 7bit
@@ -88,29 +89,31 @@ has been attached to this so you can view it (if it isn't spam) or label
 similar future email.  If you have any questions, see
 the administrator of that system for details.
 
-Content preview:  actor buckhorn, default cashew archdiocese, champagne
-  corridor. cotillion compassion bronx contumacy criterion cordage
-  condiment. dignitary awesome atrocity culpa animate belle ago cocoa
-  bakery dart cyril divisible. bombast del clockwork dense bricklay chief
-  bellhop [...] 
+Content preview:  cocksure dispensate, appointe bruit aristocracy, baboon
+  allegoric. benefice cannon alkene anderson christian automaton aarhus.
+  crosslink acquisition aggravate despair augusta darkle deposit carlton
+  aspirant adsorptive calfskin cobra. dishevel bespeak blacken diet belief
+  come crevice [...] 
 
-Content analysis details:   (6.7 points, 5.0 required)
+Content analysis details:   (7.3 points, 5.0 required)
 
  pts rule name              description
 ---- ---------------------- --------------------------------------------------
+ 0.1 OSDL_NIGERIAN_DEPOSIT  BODY: "dep*osit"
  2.5 UNIQUE_WORDS           BODY: Message body has many words used only once
  0.0 HTML_MESSAGE           BODY: HTML included in message
- 3.0 BAYES_95               BODY: Bayesian spam probability is 95 to 99%
-                            [score: 0.9822]
+ 0.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+                            [score: 0.5064]
  1.1 MPART_ALT_DIFF         BODY: HTML and text parts are different
+ 3.5 LONGWORDS              Long string of long words
 
 
 
-------------=_1185887314-16911-275
+------------=_1185887695-16911-9
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
-------------=_1185887314-16911-275--
+------------=_1185887695-16911-9--
