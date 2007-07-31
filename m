@@ -1,12 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Possible problem with device_move()
-Date: Tue, 31 Jul 2007 16:37:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707311628150.2787-100000@iolanthe.rowland.org>
-References: <200707312112.51043.rjw@sisk.pl>
+Subject: [RFC 1/2] PM: merge drivers/base/power/{main, suspend,
+	resume}.c
+Date: Tue, 31 Jul 2007 16:48:49 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707311645460.4896-100000@iolanthe.rowland.org>
+References: <200707312108.11786.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707312112.51043.rjw@sisk.pl>
+In-Reply-To: <200707312108.11786.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +18,828 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Tue, 31 Jul 2007, Rafael J. Wysocki wrote:
 
-> > There is a dependency in the USB subsystem, wherein I need an EHCI
-> > controller to be _resumed_ after its companion UHCI or OHCI
-> > controllers.  This works out, thanks to the fact that manufacturers
-> > tend to give the EHCI controller the largest PCI function number and
-> > the Linux PCI core enumerates functions in numerical order.  This is
-> > just pure luck, however, and if anything changed I'd have to add an
-> > explicit fix.
+> > Binding and unbinding aren't an issue once the PM core owns all the
+> > device semaphores.
 > 
-> That sounds really worrying to me.
-> 
-> The design appears to be very fragile if such things are possible, even in
-> theory.
+> Yes, but currently they aren't held accross the entire suspend.
 
-It wouldn't break the entire resume; it would only prevent the 
-USB-Persist facility from working with non-high-speed devices.  So it's 
-not quite as bad as it may seem.
-
-Still, I suppose it would be best to add a "move device A to the end of
-the dpm_active list" routine for use in this sort of situation.  This 
-should be easy to do.
+Here's my answer to that.  The first patch in this series simply merges 
+several files into one, allowing stuff to be eliminated from the header 
+file and various symbols to be made static.  The second patch makes 
+some genuine changes... coming up.
 
 Alan Stern
+
+
+Index: usb-2.6/drivers/base/power/Makefile
+===================================================================
+--- usb-2.6.orig/drivers/base/power/Makefile
++++ usb-2.6/drivers/base/power/Makefile
+@@ -1,5 +1,5 @@
+ obj-y			:= shutdown.o
+-obj-$(CONFIG_PM)	+= main.o suspend.o resume.o sysfs.o
++obj-$(CONFIG_PM)	+= main.o sysfs.o
+ obj-$(CONFIG_PM_TRACE)	+= trace.o
+ 
+ ifeq ($(CONFIG_DEBUG_DRIVER),y)
+Index: usb-2.6/drivers/base/power/power.h
+===================================================================
+--- usb-2.6.orig/drivers/base/power/power.h
++++ usb-2.6/drivers/base/power/power.h
+@@ -11,32 +11,11 @@ extern void device_shutdown(void);
+  * main.c
+  */
+ 
+-/*
+- * Used to synchronize global power management operations.
+- */
+-extern struct mutex dpm_mtx;
+-
+-/*
+- * Used to serialize changes to the dpm_* lists.
+- */
+-extern struct mutex dpm_list_mtx;
+-
+-/*
+- * The PM lists.
+- */
+-extern struct list_head dpm_active;
+-extern struct list_head dpm_off;
+-extern struct list_head dpm_off_irq;
+-
+-
+-static inline struct dev_pm_info * to_pm_info(struct list_head * entry)
+-{
+-	return container_of(entry, struct dev_pm_info, entry);
+-}
++extern struct list_head dpm_active;	/* The active device list */
+ 
+ static inline struct device * to_device(struct list_head * entry)
+ {
+-	return container_of(to_pm_info(entry), struct device, power);
++	return container_of(entry, struct device, power.entry);
+ }
+ 
+ extern int device_pm_add(struct device *);
+@@ -49,19 +28,6 @@ extern void device_pm_remove(struct devi
+ extern int dpm_sysfs_add(struct device *);
+ extern void dpm_sysfs_remove(struct device *);
+ 
+-/*
+- * resume.c
+- */
+-
+-extern void dpm_resume(void);
+-extern void dpm_power_up(void);
+-extern int resume_device(struct device *);
+-
+-/*
+- * suspend.c
+- */
+-extern int suspend_device(struct device *, pm_message_t);
+-
+ #else /* CONFIG_PM */
+ 
+ 
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -20,19 +20,24 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/kallsyms.h>
+ #include <linux/mutex.h>
++#include <linux/pm.h>
++#include <linux/resume-trace.h>
+ 
++#include "../base.h"
+ #include "power.h"
+ 
+ LIST_HEAD(dpm_active);
+-LIST_HEAD(dpm_off);
+-LIST_HEAD(dpm_off_irq);
++static LIST_HEAD(dpm_off);
++static LIST_HEAD(dpm_off_irq);
+ 
+-DEFINE_MUTEX(dpm_mtx);
+-DEFINE_MUTEX(dpm_list_mtx);
++static DEFINE_MUTEX(dpm_mtx);
++static DEFINE_MUTEX(dpm_list_mtx);
+ 
+ int (*platform_enable_wakeup)(struct device *dev, int is_on);
+ 
++
+ int device_pm_add(struct device *dev)
+ {
+ 	int error;
+@@ -61,3 +66,334 @@ void device_pm_remove(struct device *dev
+ }
+ 
+ 
++/*------------------------- Resume routines -------------------------*/
++
++/**
++ *	resume_device - Restore state for one device.
++ *	@dev:	Device.
++ *
++ */
++
++int resume_device(struct device * dev)
++{
++	int error = 0;
++
++	TRACE_DEVICE(dev);
++	TRACE_RESUME(0);
++
++	down(&dev->sem);
++
++	if (dev->bus && dev->bus->resume) {
++		dev_dbg(dev,"resuming\n");
++		error = dev->bus->resume(dev);
++	}
++
++	if (!error && dev->type && dev->type->resume) {
++		dev_dbg(dev,"resuming\n");
++		error = dev->type->resume(dev);
++	}
++
++	if (!error && dev->class && dev->class->resume) {
++		dev_dbg(dev,"class resume\n");
++		error = dev->class->resume(dev);
++	}
++
++	up(&dev->sem);
++
++	TRACE_RESUME(error);
++	return error;
++}
++
++
++static int resume_device_early(struct device * dev)
++{
++	int error = 0;
++
++	TRACE_DEVICE(dev);
++	TRACE_RESUME(0);
++	if (dev->bus && dev->bus->resume_early) {
++		dev_dbg(dev,"EARLY resume\n");
++		error = dev->bus->resume_early(dev);
++	}
++	TRACE_RESUME(error);
++	return error;
++}
++
++/*
++ * Resume the devices that have either not gone through
++ * the late suspend, or that did go through it but also
++ * went through the early resume
++ */
++static void dpm_resume(void)
++{
++	mutex_lock(&dpm_list_mtx);
++	while(!list_empty(&dpm_off)) {
++		struct list_head * entry = dpm_off.next;
++		struct device * dev = to_device(entry);
++
++		get_device(dev);
++		list_move_tail(entry, &dpm_active);
++
++		mutex_unlock(&dpm_list_mtx);
++		resume_device(dev);
++		mutex_lock(&dpm_list_mtx);
++		put_device(dev);
++	}
++	mutex_unlock(&dpm_list_mtx);
++}
++
++
++/**
++ *	device_resume - Restore state of each device in system.
++ *
++ *	Walk the dpm_off list, remove each entry, resume the device,
++ *	then add it to the dpm_active list.
++ */
++
++void device_resume(void)
++{
++	might_sleep();
++	mutex_lock(&dpm_mtx);
++	dpm_resume();
++	mutex_unlock(&dpm_mtx);
++}
++
++EXPORT_SYMBOL_GPL(device_resume);
++
++
++/**
++ *	dpm_power_up - Power on some devices.
++ *
++ *	Walk the dpm_off_irq list and power each device up. This
++ *	is used for devices that required they be powered down with
++ *	interrupts disabled. As devices are powered on, they are moved
++ *	to the dpm_active list.
++ *
++ *	Interrupts must be disabled when calling this.
++ */
++
++static void dpm_power_up(void)
++{
++	while(!list_empty(&dpm_off_irq)) {
++		struct list_head * entry = dpm_off_irq.next;
++		struct device * dev = to_device(entry);
++
++		list_move_tail(entry, &dpm_off);
++		resume_device_early(dev);
++	}
++}
++
++
++/**
++ *	device_power_up - Turn on all devices that need special attention.
++ *
++ *	Power on system devices then devices that required we shut them down
++ *	with interrupts disabled.
++ *	Called with interrupts disabled.
++ */
++
++void device_power_up(void)
++{
++	sysdev_resume();
++	dpm_power_up();
++}
++
++EXPORT_SYMBOL_GPL(device_power_up);
++
++
++/*------------------------- Suspend routines -------------------------*/
++
++/*
++ * The entries in the dpm_active list are in a depth first order, simply
++ * because children are guaranteed to be discovered after parents, and
++ * are inserted at the back of the list on discovery.
++ *
++ * All list on the suspend path are done in reverse order, so we operate
++ * on the leaves of the device tree (or forests, depending on how you want
++ * to look at it ;) first. As nodes are removed from the back of the list,
++ * they are inserted into the front of their destintation lists.
++ *
++ * Things are the reverse on the resume path - iterations are done in
++ * forward order, and nodes are inserted at the back of their destination
++ * lists. This way, the ancestors will be accessed before their descendents.
++ */
++
++static inline char *suspend_verb(u32 event)
++{
++	switch (event) {
++	case PM_EVENT_SUSPEND:	return "suspend";
++	case PM_EVENT_FREEZE:	return "freeze";
++	case PM_EVENT_PRETHAW:	return "prethaw";
++	default:		return "(unknown suspend event)";
++	}
++}
++
++
++static void
++suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
++{
++	dev_dbg(dev, "%s%s%s\n", info, suspend_verb(state.event),
++		((state.event == PM_EVENT_SUSPEND) && device_may_wakeup(dev)) ?
++		", may wakeup" : "");
++}
++
++/**
++ *	suspend_device - Save state of one device.
++ *	@dev:	Device.
++ *	@state:	Power state device is entering.
++ */
++
++int suspend_device(struct device * dev, pm_message_t state)
++{
++	int error = 0;
++
++	down(&dev->sem);
++	if (dev->power.power_state.event) {
++		dev_dbg(dev, "PM: suspend %d-->%d\n",
++			dev->power.power_state.event, state.event);
++	}
++
++	if (dev->class && dev->class->suspend) {
++		suspend_device_dbg(dev, state, "class ");
++		error = dev->class->suspend(dev, state);
++		suspend_report_result(dev->class->suspend, error);
++	}
++
++	if (!error && dev->type && dev->type->suspend) {
++		suspend_device_dbg(dev, state, "type ");
++		error = dev->type->suspend(dev, state);
++		suspend_report_result(dev->type->suspend, error);
++	}
++
++	if (!error && dev->bus && dev->bus->suspend) {
++		suspend_device_dbg(dev, state, "");
++		error = dev->bus->suspend(dev, state);
++		suspend_report_result(dev->bus->suspend, error);
++	}
++	up(&dev->sem);
++	return error;
++}
++
++
++/*
++ * This is called with interrupts off, only a single CPU
++ * running. We can't acquire a mutex or semaphore (and we don't
++ * need the protection)
++ */
++static int suspend_device_late(struct device *dev, pm_message_t state)
++{
++	int error = 0;
++
++	if (dev->bus && dev->bus->suspend_late) {
++		suspend_device_dbg(dev, state, "LATE ");
++		error = dev->bus->suspend_late(dev, state);
++		suspend_report_result(dev->bus->suspend_late, error);
++	}
++	return error;
++}
++
++/**
++ *	device_suspend - Save state and stop all devices in system.
++ *	@state:		Power state to put each device in.
++ *
++ *	Walk the dpm_active list, call ->suspend() for each device, and move
++ *	it to the dpm_off list.
++ *
++ *	(For historical reasons, if it returns -EAGAIN, that used to mean
++ *	that the device would be called again with interrupts disabled.
++ *	These days, we use the "suspend_late()" callback for that, so we
++ *	print a warning and consider it an error).
++ *
++ *	If we get a different error, try and back out.
++ *
++ *	If we hit a failure with any of the devices, call device_resume()
++ *	above to bring the suspended devices back to life.
++ *
++ */
++
++int device_suspend(pm_message_t state)
++{
++	int error = 0;
++
++	might_sleep();
++	mutex_lock(&dpm_mtx);
++	mutex_lock(&dpm_list_mtx);
++	while (!list_empty(&dpm_active) && error == 0) {
++		struct list_head * entry = dpm_active.prev;
++		struct device * dev = to_device(entry);
++
++		get_device(dev);
++		mutex_unlock(&dpm_list_mtx);
++
++		error = suspend_device(dev, state);
++
++		mutex_lock(&dpm_list_mtx);
++
++		/* Check if the device got removed */
++		if (!list_empty(&dev->power.entry)) {
++			/* Move it to the dpm_off list */
++			if (!error)
++				list_move(&dev->power.entry, &dpm_off);
++		}
++		if (error)
++			printk(KERN_ERR "Could not suspend device %s: "
++				"error %d%s\n",
++				kobject_name(&dev->kobj), error,
++				error == -EAGAIN ? " (please convert to suspend_late)" : "");
++		put_device(dev);
++	}
++	mutex_unlock(&dpm_list_mtx);
++	if (error)
++		dpm_resume();
++
++	mutex_unlock(&dpm_mtx);
++	return error;
++}
++
++EXPORT_SYMBOL_GPL(device_suspend);
++
++/**
++ *	device_power_down - Shut down special devices.
++ *	@state:		Power state to enter.
++ *
++ *	Walk the dpm_off_irq list, calling ->power_down() for each device that
++ *	couldn't power down the device with interrupts enabled. When we're
++ *	done, power down system devices.
++ */
++
++int device_power_down(pm_message_t state)
++{
++	int error = 0;
++	struct device * dev;
++
++	while (!list_empty(&dpm_off)) {
++		struct list_head * entry = dpm_off.prev;
++
++		dev = to_device(entry);
++		error = suspend_device_late(dev, state);
++		if (error)
++			goto Error;
++		list_move(&dev->power.entry, &dpm_off_irq);
++	}
++
++	error = sysdev_suspend(state);
++ Done:
++	return error;
++ Error:
++	printk(KERN_ERR "Could not power down device %s: "
++		"error %d\n", kobject_name(&dev->kobj), error);
++	dpm_power_up();
++	goto Done;
++}
++
++EXPORT_SYMBOL_GPL(device_power_down);
++
++void __suspend_report_result(const char *function, void *fn, int ret)
++{
++	if (ret) {
++		printk(KERN_ERR "%s(): ", function);
++		print_fn_descriptor_symbol("%s() returns ", (unsigned long)fn);
++		printk("%d\n", ret);
++	}
++}
++EXPORT_SYMBOL_GPL(__suspend_report_result);
+Index: usb-2.6/drivers/base/power/resume.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/resume.c
++++ /dev/null
+@@ -1,149 +0,0 @@
+-/*
+- * resume.c - Functions for waking devices up.
+- *
+- * Copyright (c) 2003 Patrick Mochel
+- * Copyright (c) 2003 Open Source Development Labs
+- *
+- * This file is released under the GPLv2
+- *
+- */
+-
+-#include <linux/device.h>
+-#include <linux/resume-trace.h>
+-#include "../base.h"
+-#include "power.h"
+-
+-
+-/**
+- *	resume_device - Restore state for one device.
+- *	@dev:	Device.
+- *
+- */
+-
+-int resume_device(struct device * dev)
+-{
+-	int error = 0;
+-
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-
+-	down(&dev->sem);
+-
+-	if (dev->bus && dev->bus->resume) {
+-		dev_dbg(dev,"resuming\n");
+-		error = dev->bus->resume(dev);
+-	}
+-
+-	if (!error && dev->type && dev->type->resume) {
+-		dev_dbg(dev,"resuming\n");
+-		error = dev->type->resume(dev);
+-	}
+-
+-	if (!error && dev->class && dev->class->resume) {
+-		dev_dbg(dev,"class resume\n");
+-		error = dev->class->resume(dev);
+-	}
+-
+-	up(&dev->sem);
+-
+-	TRACE_RESUME(error);
+-	return error;
+-}
+-
+-
+-static int resume_device_early(struct device * dev)
+-{
+-	int error = 0;
+-
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-	if (dev->bus && dev->bus->resume_early) {
+-		dev_dbg(dev,"EARLY resume\n");
+-		error = dev->bus->resume_early(dev);
+-	}
+-	TRACE_RESUME(error);
+-	return error;
+-}
+-
+-/*
+- * Resume the devices that have either not gone through
+- * the late suspend, or that did go through it but also
+- * went through the early resume
+- */
+-void dpm_resume(void)
+-{
+-	mutex_lock(&dpm_list_mtx);
+-	while(!list_empty(&dpm_off)) {
+-		struct list_head * entry = dpm_off.next;
+-		struct device * dev = to_device(entry);
+-
+-		get_device(dev);
+-		list_move_tail(entry, &dpm_active);
+-
+-		mutex_unlock(&dpm_list_mtx);
+-		resume_device(dev);
+-		mutex_lock(&dpm_list_mtx);
+-		put_device(dev);
+-	}
+-	mutex_unlock(&dpm_list_mtx);
+-}
+-
+-
+-/**
+- *	device_resume - Restore state of each device in system.
+- *
+- *	Walk the dpm_off list, remove each entry, resume the device,
+- *	then add it to the dpm_active list.
+- */
+-
+-void device_resume(void)
+-{
+-	might_sleep();
+-	mutex_lock(&dpm_mtx);
+-	dpm_resume();
+-	mutex_unlock(&dpm_mtx);
+-}
+-
+-EXPORT_SYMBOL_GPL(device_resume);
+-
+-
+-/**
+- *	dpm_power_up - Power on some devices.
+- *
+- *	Walk the dpm_off_irq list and power each device up. This
+- *	is used for devices that required they be powered down with
+- *	interrupts disabled. As devices are powered on, they are moved
+- *	to the dpm_active list.
+- *
+- *	Interrupts must be disabled when calling this.
+- */
+-
+-void dpm_power_up(void)
+-{
+-	while(!list_empty(&dpm_off_irq)) {
+-		struct list_head * entry = dpm_off_irq.next;
+-		struct device * dev = to_device(entry);
+-
+-		list_move_tail(entry, &dpm_off);
+-		resume_device_early(dev);
+-	}
+-}
+-
+-
+-/**
+- *	device_power_up - Turn on all devices that need special attention.
+- *
+- *	Power on system devices then devices that required we shut them down
+- *	with interrupts disabled.
+- *	Called with interrupts disabled.
+- */
+-
+-void device_power_up(void)
+-{
+-	sysdev_resume();
+-	dpm_power_up();
+-}
+-
+-EXPORT_SYMBOL_GPL(device_power_up);
+-
+-
+Index: usb-2.6/drivers/base/power/suspend.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/suspend.c
++++ /dev/null
+@@ -1,210 +0,0 @@
+-/*
+- * suspend.c - Functions for putting devices to sleep.
+- *
+- * Copyright (c) 2003 Patrick Mochel
+- * Copyright (c) 2003 Open Source Development Labs
+- *
+- * This file is released under the GPLv2
+- *
+- */
+-
+-#include <linux/device.h>
+-#include <linux/kallsyms.h>
+-#include <linux/pm.h>
+-#include "../base.h"
+-#include "power.h"
+-
+-/*
+- * The entries in the dpm_active list are in a depth first order, simply
+- * because children are guaranteed to be discovered after parents, and
+- * are inserted at the back of the list on discovery.
+- *
+- * All list on the suspend path are done in reverse order, so we operate
+- * on the leaves of the device tree (or forests, depending on how you want
+- * to look at it ;) first. As nodes are removed from the back of the list,
+- * they are inserted into the front of their destintation lists.
+- *
+- * Things are the reverse on the resume path - iterations are done in
+- * forward order, and nodes are inserted at the back of their destination
+- * lists. This way, the ancestors will be accessed before their descendents.
+- */
+-
+-static inline char *suspend_verb(u32 event)
+-{
+-	switch (event) {
+-	case PM_EVENT_SUSPEND:	return "suspend";
+-	case PM_EVENT_FREEZE:	return "freeze";
+-	case PM_EVENT_PRETHAW:	return "prethaw";
+-	default:		return "(unknown suspend event)";
+-	}
+-}
+-
+-
+-static void
+-suspend_device_dbg(struct device *dev, pm_message_t state, char *info)
+-{
+-	dev_dbg(dev, "%s%s%s\n", info, suspend_verb(state.event),
+-		((state.event == PM_EVENT_SUSPEND) && device_may_wakeup(dev)) ?
+-		", may wakeup" : "");
+-}
+-
+-/**
+- *	suspend_device - Save state of one device.
+- *	@dev:	Device.
+- *	@state:	Power state device is entering.
+- */
+-
+-int suspend_device(struct device * dev, pm_message_t state)
+-{
+-	int error = 0;
+-
+-	down(&dev->sem);
+-	if (dev->power.power_state.event) {
+-		dev_dbg(dev, "PM: suspend %d-->%d\n",
+-			dev->power.power_state.event, state.event);
+-	}
+-
+-	if (dev->class && dev->class->suspend) {
+-		suspend_device_dbg(dev, state, "class ");
+-		error = dev->class->suspend(dev, state);
+-		suspend_report_result(dev->class->suspend, error);
+-	}
+-
+-	if (!error && dev->type && dev->type->suspend) {
+-		suspend_device_dbg(dev, state, "type ");
+-		error = dev->type->suspend(dev, state);
+-		suspend_report_result(dev->type->suspend, error);
+-	}
+-
+-	if (!error && dev->bus && dev->bus->suspend) {
+-		suspend_device_dbg(dev, state, "");
+-		error = dev->bus->suspend(dev, state);
+-		suspend_report_result(dev->bus->suspend, error);
+-	}
+-	up(&dev->sem);
+-	return error;
+-}
+-
+-
+-/*
+- * This is called with interrupts off, only a single CPU
+- * running. We can't acquire a mutex or semaphore (and we don't
+- * need the protection)
+- */
+-static int suspend_device_late(struct device *dev, pm_message_t state)
+-{
+-	int error = 0;
+-
+-	if (dev->bus && dev->bus->suspend_late) {
+-		suspend_device_dbg(dev, state, "LATE ");
+-		error = dev->bus->suspend_late(dev, state);
+-		suspend_report_result(dev->bus->suspend_late, error);
+-	}
+-	return error;
+-}
+-
+-/**
+- *	device_suspend - Save state and stop all devices in system.
+- *	@state:		Power state to put each device in.
+- *
+- *	Walk the dpm_active list, call ->suspend() for each device, and move
+- *	it to the dpm_off list.
+- *
+- *	(For historical reasons, if it returns -EAGAIN, that used to mean
+- *	that the device would be called again with interrupts disabled.
+- *	These days, we use the "suspend_late()" callback for that, so we
+- *	print a warning and consider it an error).
+- *
+- *	If we get a different error, try and back out.
+- *
+- *	If we hit a failure with any of the devices, call device_resume()
+- *	above to bring the suspended devices back to life.
+- *
+- */
+-
+-int device_suspend(pm_message_t state)
+-{
+-	int error = 0;
+-
+-	might_sleep();
+-	mutex_lock(&dpm_mtx);
+-	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_active) && error == 0) {
+-		struct list_head * entry = dpm_active.prev;
+-		struct device * dev = to_device(entry);
+-
+-		get_device(dev);
+-		mutex_unlock(&dpm_list_mtx);
+-
+-		error = suspend_device(dev, state);
+-
+-		mutex_lock(&dpm_list_mtx);
+-
+-		/* Check if the device got removed */
+-		if (!list_empty(&dev->power.entry)) {
+-			/* Move it to the dpm_off list */
+-			if (!error)
+-				list_move(&dev->power.entry, &dpm_off);
+-		}
+-		if (error)
+-			printk(KERN_ERR "Could not suspend device %s: "
+-				"error %d%s\n",
+-				kobject_name(&dev->kobj), error,
+-				error == -EAGAIN ? " (please convert to suspend_late)" : "");
+-		put_device(dev);
+-	}
+-	mutex_unlock(&dpm_list_mtx);
+-	if (error)
+-		dpm_resume();
+-
+-	mutex_unlock(&dpm_mtx);
+-	return error;
+-}
+-
+-EXPORT_SYMBOL_GPL(device_suspend);
+-
+-/**
+- *	device_power_down - Shut down special devices.
+- *	@state:		Power state to enter.
+- *
+- *	Walk the dpm_off_irq list, calling ->power_down() for each device that
+- *	couldn't power down the device with interrupts enabled. When we're
+- *	done, power down system devices.
+- */
+-
+-int device_power_down(pm_message_t state)
+-{
+-	int error = 0;
+-	struct device * dev;
+-
+-	while (!list_empty(&dpm_off)) {
+-		struct list_head * entry = dpm_off.prev;
+-
+-		dev = to_device(entry);
+-		error = suspend_device_late(dev, state);
+-		if (error)
+-			goto Error;
+-		list_move(&dev->power.entry, &dpm_off_irq);
+-	}
+-
+-	error = sysdev_suspend(state);
+- Done:
+-	return error;
+- Error:
+-	printk(KERN_ERR "Could not power down device %s: "
+-		"error %d\n", kobject_name(&dev->kobj), error);
+-	dpm_power_up();
+-	goto Done;
+-}
+-
+-EXPORT_SYMBOL_GPL(device_power_down);
+-
+-void __suspend_report_result(const char *function, void *fn, int ret)
+-{
+-	if (ret) {
+-		printk(KERN_ERR "%s(): ", function);
+-		print_fn_descriptor_symbol("%s() returns ", (unsigned long)fn);
+-		printk("%d\n", ret);
+-	}
+-}
+-EXPORT_SYMBOL_GPL(__suspend_report_result);
