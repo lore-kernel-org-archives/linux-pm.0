@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND (updated)
-Date: Tue, 31 Jul 2007 11:15:27 +0200
-Message-ID: <200707311115.29057.rjw__43150.458604987$1185872838$gmane$org@sisk.pl>
-References: <200707251238.50218.lenb@kernel.org>
-	<200707292327.19884.rjw@sisk.pl>
-	<200707310059.50329.lenb@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec
+	based hibernation
+Date: Tue, 31 Jul 2007 11:10:04 +0200
+Message-ID: <20070731091004.GA2022__13328.6822042011$1185873062$gmane$org@elf.ucw.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707310059.50329.lenb@kernel.org>
 Content-Disposition: inline
+In-Reply-To: <1184483593.1898.98.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +18,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 31 July 2007 06:59, Len Brown wrote:
-> On Sunday 29 July 2007 17:27, Rafael J. Wysocki wrote:
-> > Still, there are many other files in which CONFIG_PM can be replaced
-> > with CONFIG_PM_SLEEP or even with CONFIG_SUSPEND, but they can be updated in
-> > the future.
-> 
-> There is #ifdef CONFIG_PM
-> around all the .suspend and .resume methods.
-> 
-> Technically they are PM_DEVICE_STATES or something,
-> that could really be under PM, and both SUSPEND and HIBERNATE
-> would depend on PM_DEVICE_STATES, but it is also possible to have
-> PM_DEVICE_STATES without SUSPEND and HIBERNATE.
-
-Well, the people on linux-pm seem to agree that the .suspend() and .resume()
-callbacks are not suitable for runtime power management, so having them
-built without SUSPEND or HIBERNATION wouldn't be very useful. ;-)
-
-Greetings,
-Rafael
+Hi!
 
 
+> Index: kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c
+> ===================================================================
+> --- kexec-tools-1.101.orig/kexec/arch/i386/crashdump-x86.c	2007-07-08 23:00:25.000000000 +0800
+> +++ kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c	2007-07-14 17:06:45.000000000 +0800
+> @@ -428,6 +428,29 @@
+>  	return 0;
+>  }
+>  
+> +/* Adds the kexec_backup= command line parameter to command line. */
+> +static int cmdline_add_backup(char *cmdline, unsigned long addr)
+> +{
+> +	int cmdlen, len, align = 1024;
+> +	char str[30], *ptr;
+> +
+> +	/* Passing in kexec_backup=xxxK format. Saves space required
+> +	 * in cmdline. Ensure 1K alignment*/
+> +	if (addr%align)
+> +		return -1;
+> +	addr = addr/align;
+> +	ptr = str;
+> +	strcpy(str, " kexec_backup=");
+> +	ptr += strlen(str);
+> +	ultoa(addr, ptr);
+> +	strcat(str, "K");
+> +	len = strlen(str);
+> +	cmdlen = strlen(cmdline) + len;
+> +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+> +		die("Command line overflow\n");
+> +	strcat(cmdline, str);
+> +	return 0;
+> +}
+
+This part did not apply for me -- it seems crashdump related and I did
+not have that applied. Is it critical?
+
+> Index: kexec-tools-1.101/kexec/kexec.c
+> ===================================================================
+> --- kexec-tools-1.101.orig/kexec/kexec.c	2007-07-14 16:57:26.000000000 +0800
+> +++ kexec-tools-1.101/kexec/kexec.c	2007-07-14 21:04:51.000000000 +0800
+> @@ -660,6 +660,17 @@
+>  	return -1;
+>  }
+>  
+> +/*
+> + *	Jump to the new kernel
+> + */
+> +static int my_jump(void)
+> +{
+> +	int result;
+> +
+> +	result = kexec_jump();
+> +	return result;
+> +}
+> +
+>  static void version(void)
+>  {
+>  	printf("kexec " VERSION " released " RELEASE_DATE "\n");
+> @@ -683,6 +694,7 @@
+>  		" -p, --load-panic     Load the new kernel for use on panic.\n"
+>  		" -u, --unload         Unload the current kexec target kernel.\n"
+>  		" -e, --exec           Execute a currently loaded kernel.\n"
+> +		" -j, --jump           Jump to a currently loaded kernel or jump back to the previous kernel.\n"
+>  		" -t, --type=TYPE      Specify the new kernel is of this type.\n"
+>  		"     --mem-min=<addr> Specify the lowest memory addres to load code into.\n"
+>  		"     --mem-max=<addr> Specify the highest memory addres to load code into.\n"
+> @@ -715,6 +727,7 @@
+>  {
+>  	int do_load = 1;
+>  	int do_exec = 0;
+> +	int do_jump = 0;
+>  	int do_shutdown = 1;
+>  	int do_sync = 1;
+>  	int do_ifdown = 0;
+> @@ -768,6 +781,14 @@
+>  			do_ifdown = 1;
+>  			do_exec = 1;
+>  			break;
+> +		case OPT_JUMP:
+> +			do_load = 0;
+> +			do_shutdown = 0;
+> +			do_sync = 1;
+> +			do_ifdown = 0;
+> +			do_exec = 0;
+> +			do_jump = 1;
+> +			break;
+>  		case OPT_TYPE:
+>  			type = optarg;
+>  			break;
+> @@ -833,6 +854,9 @@
+>  	if ((result == 0) && do_exec) {
+>  		result = my_exec();
+>  	}
+> +	if ((result == 0) && do_jump) {
+> +		result = my_jump();
+> +	}
+>  
+
+Well, it may be nice to print something to the user he. kexec
+-j does nothing, and does not print error message in case something is
+wrong...
+									Pavel
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
