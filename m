@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Suspend without the freezer
-Date: Tue, 31 Jul 2007 10:58:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707311053200.3520-100000@iolanthe.rowland.org>
-References: <200707302352.56033.dtor@insightbb.com>
+Subject: Re: Possible problem with device_move()
+Date: Tue, 31 Jul 2007 11:11:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0707311104270.3520-100000@iolanthe.rowland.org>
+References: <20070731103305.39b76a5d@gondolin.boeblingen.de.ibm.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200707302352.56033.dtor@insightbb.com>
+In-Reply-To: <20070731103305.39b76a5d@gondolin.boeblingen.de.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,59 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 30 Jul 2007, Dmitry Torokhov wrote:
+On Tue, 31 Jul 2007, Cornelia Huck wrote:
 
-> Hi Alan,
+> On Mon, 30 Jul 2007 13:34:35 -0400 (EDT),
+> Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
-> On Monday 30 July 2007 16:48, Alan Stern wrote:
-> > Dmitry:
-> > 
-> > I'm trying to help eliminate the need for the freezer during suspend.  
-> > For it to work, we have to prevent threads which otherwise would have 
-> > been frozen from trying to bind drivers to suspended devices or trying 
-> > to register new devices whose parents are already suspended.
-> > 
-> > To help accomplish this, the PM core can acquire the device semaphores
-> > for all existing devices before suspending any of them.  That will
-> > prevent attempts at binding.  It would also prevent registration of new
-> > children, _if_ the driver doing the registration had to acquire the
-> > parent's semaphore first.  But many drivers don't do this.
-> > 
-> > One thought was to have the PM core acquire and hold the dpm_list_mutex 
-> > throughout the suspend.  This would block registration attempts at the 
-> > point where the new device is added to the PM core's device-list.
-> >
+> > As long as you never hold the device semaphores of both the parent and 
+> > the child there shouldn't be any problem.  Could this happen when a 
+> > subchannel structure is deallocated?
 > 
-> I think blocking at this point is too late - many drivers muck with
-> the device in different ways before registering the "result" with
-> driver core. The device may be half-awaken by then.
-
-In other words, the core can't do anything to prevent these problems.  
-The drivers themselves will have to be audited.  That's a disappointing 
-conclusion.
-
-> > Unfortunately it creates several lockdep violations.  For example, the 
-> > serio core holds serio->drv_mutex while input_register_device is 
-> > called (which acquires dpm_list_mutex), and it acquires 
-> > serio->drv_mutex in serio_suspend and serio_resume (which would be 
-> > called while the PM core holds dpm_list_mutex).
-> > 
-> > I'm having trouble coming up with a way to block registrations during 
-> > suspend that won't create a possibility for deadlock.  Do you have any 
-> > suggestions?  A scheme that would work for the input layer ought to be 
-> > generally applicable.
-> >
+> This is indeed what happens, since we unregister the child ccw_device
+> from the (io_)subchannel's remove function.
 > 
-> One option would be to have a separate thread running registration/binding/
-> unbinding (like serio core does). You can stop this thead during suspend
-> and resume so that requests are queued up and you process them later, when
-> you are ready...
+> (We used to do unregistering of the ccw_device via a workqueue (in
+> order to avoid livelocks on a no longer existing bus semaphore), but
+> removed it since it seemed to be needlessly complicated code.)
 
-That's how USB works too.  But I can't see changing every subsystem to 
-work this way.
+It sounds like you might be in trouble with suspend anyway (if S390
+implemented it).  As things stand now, the PM core would try to suspend
+the subchannel before suspending the ccw_device, because the subchannel 
+was registered later.
+
+Marcel, you might be in a similar position.  The PM core could try to 
+suspend a Bluetooth adapter before suspending its child TTY node.
+
+I wonder if device_move() shouldn't change the order of entries in the 
+dpm_active list so that the new parent (and all its ancestors) get 
+moved up ahead of the device's position?  But that might cause other 
+problems...
 
 Alan Stern
