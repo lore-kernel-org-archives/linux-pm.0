@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Possible problem with device_move()
-Date: Tue, 31 Jul 2007 14:17:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0707311404110.7256-100000@iolanthe.rowland.org>
-References: <20070731173027.02934c71@gondolin.boeblingen.de.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: Suspend without the freezer
+Date: Tue, 31 Jul 2007 21:08:11 +0200
+Message-ID: <200707312108.11786.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0707311112590.3520-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070731173027.02934c71@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0707311112590.3520-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,40 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 31 Jul 2007, Cornelia Huck wrote:
-
-> On Tue, 31 Jul 2007 11:11:50 -0400 (EDT),
-> Alan Stern <stern@rowland.harvard.edu> wrote:
+On Tuesday, 31 July 2007 17:24, Alan Stern wrote:
+> On Tue, 31 Jul 2007, Rafael J. Wysocki wrote:
 > 
-> > I wonder if device_move() shouldn't change the order of entries in the 
-> > dpm_active list so that the new parent (and all its ancestors) get 
-> > moved up ahead of the device's position?  But that might cause other 
-> > problems...
+> > > > One thought was to have the PM core acquire and hold the dpm_list_mutex 
+> > > > throughout the suspend.  This would block registration attempts at the 
+> > > > point where the new device is added to the PM core's device-list.
+> > > >
+> > > 
+> > > I think blocking at this point is too late - many drivers muck with
+> > > the device in different ways before registering the "result" with
+> > > driver core. The device may be half-awaken by then.
 > 
-> This may be necessary if walking the list is the single determining
-> factor to the order of suspend/resume.
+> > An alternative could be to have a rwsem taken for writing by the PM core and
+> > for reading by registration/binding/unbinding (and other suspend-sensitive code
+> > paths).
+> 
+> I think this is subject to the same weakness Dmitry mentions: By the
+> time the driver would block on the new rwsem, it has already started
+> mucking with the device.  Worse yet, it may hold a mutex that the 
+> suspend method needs, thereby deadlocking the suspend.  (That's what 
+> would happen with serio->drv_mutex in the input layer.)
 
-It is.
+Not if the rule is that the "suspend" rwsem should be acquired before any
+other locks and before the device is actually accessed.
 
-> Are there any other dependencies
-> not covered by time of registration order? I would imagine those needed
-> moving devices on the dpm_active list as well...
+> Maybe the best answer is simply to fail all attempts at device
+> registration while a suspend is underway.  At least that is a known
+> error path which drivers are prepared (in theory) to deal with.  It
+> could be implemented quite easily with an rwsem, by making the
+> registration code use down_read_trylock.
 
-I'm not sure what you mean.  Devices where A needs to be suspended 
-before B even though A was discovered first?  I'm not aware of anything 
-like that, other than your case and Marcel's.  Right now there's no 
-code in the PM core to handle such things.
+Yes.
 
-There is a dependency in the USB subsystem, wherein I need an EHCI
-controller to be _resumed_ after its companion UHCI or OHCI
-controllers.  This works out, thanks to the fact that manufacturers
-tend to give the EHCI controller the largest PCI function number and
-the Linux PCI core enumerates functions in numerical order.  This is
-just pure luck, however, and if anything changed I'd have to add an
-explicit fix.
+> Binding and unbinding aren't an issue once the PM core owns all the
+> device semaphores.
 
-Alan Stern
+Yes, but currently they aren't held accross the entire suspend.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
