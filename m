@@ -1,10 +1,13 @@
-From: "Mauricio Prescott" <pukacerbic@chiroacademy.com>
-Subject: communicate aesthete  deforest
-Date: Tue, 31 Jul 2007 15:30:32 +0600
-Message-ID: <001801c7d387$bbd0fdb0$001a8fdc@oper1>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
+Date: Tue, 31 Jul 2007 11:51:01 +0200
+Message-ID: <20070731095101.GA1774__12485.0829052322$1185875795$gmane$org@elf.ucw.cz>
+References: <1184483639.1898.99.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_1185874242-16911-78"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <1184483639.1898.99.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,53 +17,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@osdl.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format...
+Hi!
 
-------------=_1185874242-16911-78
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> This patch implement the functionality of jumping from kexeced kernel
+> to original kernel.
+> 
+> A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
+> trigger the jumping to (executing) the new kernel or jumping back to
+> the original kernel.
 
-beaumont adriatic  amoeba but.  conservatism actual chapman contravene  carrel disulfide.  crowfoot copywriter 
-aileen  cpa  cacophonist dagger   dentistry  conqueror calamity.   countdown  calibrate chamomile  brush brisk  celebrate    conspire.
+Could we get two reboot commands? Exec loaded kernel seems to be quite
+different operation than "jump back".
 
-------------=_1185874242-16911-78
-Content-Type: text/plain; name="SpamAssassinReport.txt"
-Content-Disposition: inline; filename="SpamAssassinReport.txt"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.419 (Entity 5.419)
-
-Spam detection software, running on the system "daredevil.linux-foundation.org", has
-identified this incoming email as possible spam.  The original message
-has been attached to this so you can view it (if it isn't spam) or label
-similar future email.  If you have any questions, see
-the administrator of that system for details.
-
-Content preview:  beaumont adriatic amoeba but. conservatism actual
-  chapman contravene carrel disulfide. crowfoot copywriter aileen cpa
-  cacophonist dagger dentistry conqueror calamity. countdown calibrate
-  chamomile brush brisk celebrate conspire. [...] 
-
-Content analysis details:   (7.0 points, 5.0 required)
-
- pts rule name              description
----- ---------------------- --------------------------------------------------
- 3.5 BAYES_99               BODY: Bayesian spam probability is 99 to 100%
-                            [score: 0.9981]
- 3.5 LONGWORDS              Long string of long words
+How do I test these patches? kexec -p <bzImage>, then kexec -j?
 
 
+> +static unsigned long kexec_backup_addr = ~0UL;
+> +
+> +/* kexec_backup= specifies the location of backuped 0~640k memory of
+> + * crashed kernel.
+> + */
+> +static int __init parse_kexec_backup(char *arg)
+> +{
+> +	if (!arg)
+> +		return -EINVAL;
+> +
+> +	kexec_backup_addr = memparse(arg, &arg);
+> +	return 0;
+> +}
+> +early_param("kexec_backup", parse_kexec_backup);
 
-------------=_1185874242-16911-78
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+New kernel parameters should be documented. (Plus I do not know how to
+use this one, please help :-).
 
 
-------------=_1185874242-16911-78--
+> +int kexec_flags;
+> +
+> +static unsigned long kexec_jump_buf_pfn;
+> +
+> +static int __init parse_kexec_jump_buf_pfn(char *arg)
+> +{
+> +	if (!arg)
+> +		return -EINVAL;
+> +
+> +	kexec_jump_buf_pfn = memparse(arg, &arg);
+> +	kexec_flags |= KEXEC_FLAGS_IS_KEXECED_KERNEL;
+> +	return 0;
+> +}
+> +early_param("kexec_jump_buf_pfn", parse_kexec_jump_buf_pfn);
+
+This one should be documented, too, I'd guess. (Is that internal,
+kernel-to-kernel communication?)
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
