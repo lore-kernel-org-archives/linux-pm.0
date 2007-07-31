@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
-Date: Tue, 31 Jul 2007 08:38:33 +0200
-Message-ID: <20070731063833.GD22419__7378.11605581573$1185864074$gmane$org@elf.ucw.cz>
-References: <200707251238.50218.lenb@kernel.org>
-	<200707292323.29601.rjw@sisk.pl>
-	<alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
-	<200707302354.23237.lenb@kernel.org>
+Subject: Re: [RFC][PATCH -mm 2/2] Freezer: Use wait queue instead
+	of busy looping
+Date: Tue, 31 Jul 2007 10:01:31 +0200
+Message-ID: <20070731080131.GF22419@elf.ucw.cz>
+References: <200707251401.48340.rjw@sisk.pl> <200707251603.02297.rjw@sisk.pl>
+	<20070725142429.GA299@tv-sign.ru> <200707261424.49503.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200707302354.23237.lenb@kernel.org>
+In-Reply-To: <200707261424.49503.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,44 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, pm list <linux-pm@lists.linux-foundation.org>, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Without this change, it is possible to build CONFIG_HIBERNATE
-> on all !SMP architectures, but not necessarily their SMP versions.
-
-Did you want to say "CONFIG_SUSPEND"?
-
-> I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
-> is correct.  For now it simply matches the list for
-> SUSPEND_SMP_POSSIBLE.
-
-I do not think it is.
-
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  Kconfig |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> > > refrigerator_called is only reset after try_to_freeze_tasks() has found it
+> > > equal to one.  There is only a small window between checking it in
+> > > wait_event_timeout() and resetting it,
+> > 
+> > Yes.
+> > 
+> > > but then we go to send freeze requests
+> > > to the remaining tasks and we count 'todo' from the start, so that shouldn't
+> > > be a problem.
+> > 
+> > ... and we find the task which is not frozen() yet, but which has already passed
+> > the "set condition and wakeup", increment todo, and wait for the event. If it was
+> > the last task, we will sleep until timeout.
+> > 
+> > I agree, this is not fatal and unlikely, but still it is a race. I think it is
+> > better to move this code down, after frozen_process().
 > 
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 412859f..ccf6576 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -72,6 +72,11 @@ config PM_TRACE
->  	CAUTION: this option will cause your machine's real-time clock to be
->  	set to an invalid time after a resume.
->  
-> +config SUSPEND_UP_POSSIBLE
-> +	bool
-> +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
+> OK, I see your point.  The updated patch is appended.
+> 
+> > (offtopic: strictly speaking, we don't even need the "refrigerator_called", we
+> >  only need the wait_queue_head_t. try_to_freeze_tasks() just adds the "current"
+> >  to wq at the very start of the main loop).
+> 
+> Hmm, yes, I think so.
 
-At least ARM can do suspend, too... probably others. I was under
-impression that SUSPEND is "supported" by all the architectures, just
-some of them veto it at runtime (using pm_ops or how was it renamed).
-									Pavel
+Ok, could we just do schedule_timeout(HZ/10) or something, but when we
+_know_ we woke someone, wakeup() that task? No new variables, keep
+existing logic. That should still get most of the benefits, and be two
+liner, no?
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
