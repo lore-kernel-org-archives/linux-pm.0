@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/2] Introduce CONFIG_HIBERNATION and
-	CONFIG_SUSPEND (updated)
-Date: Mon, 30 Jul 2007 23:54:17 -0400
-Message-ID: <200707302354.18212.lenb__42501.2836502448$1185854352$gmane$org@kernel.org>
+Subject: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
+Date: Mon, 30 Jul 2007 23:54:22 -0400
+Message-ID: <200707302354.23237.lenb__15924.9303200797$1185854462$gmane$org@kernel.org>
 References: <200707251238.50218.lenb@kernel.org>
 	<200707292323.29601.rjw@sisk.pl>
 	<alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
@@ -26,33 +25,41 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 29 July 2007 20:21, Linus Torvalds wrote:
-> 
-> Ok, I took this, and modified Len's patch to re-introduce ACPI_SLEEP on 
-> top of it (I took the easy way out, and just made PM_SLEEP imply 
-> ACPI_SLEEP, which should make everything come out right. I could have 
-> dropped ACPI_SLEEP entirely in favour of PM_SLEEP, but that would have 
-> implied changing more of Len's patch than I was really comfy with).
-> 
-> Len, Rafael, please do check that the end result looks ok. 
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-SUSPEND depends only on (!SMP || SUSPEND_SMP_POSSIBLE).
-This means that while we limit the architectures it can build on
-if they are SMP, it can build on any !SMP architecture --
-which probably isn't what we want.
+Without this change, it is possible to build CONFIG_HIBERNATE
+on all !SMP architectures, but not necessarily their SMP versions.
 
-I think the right way to go is your SUSPEND_UP_POSSIBLE suggestion.
-Honestly, I though it was overly verbose when I first read it,
-but I like it better now, especially since it works;-)
-I'll reply w/ an incremental patch.
+I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
+is correct.  For now it simply matches the list for SUSPEND_SMP_POSSIBLE.
 
-> I suspect ACPI could now take the PM_SLEEP/SUSPEND/HIBERNATE details into 
-> account, and that some of the code is not necessary when HIBERNATE is not 
-> selected, for example, but I'm not at all sure that it's worth it being 
-> very fine-grained.
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ Kconfig |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-As you know, I don't think that it is worth dedicated config options
-to save 16KB on an SMP+ACPI kernel.  The prospect of adding code to
-slice that 16KB into finer grain savings seems even less worthwhile.
-
--Len
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 412859f..ccf6576 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -72,6 +72,11 @@ config PM_TRACE
+ 	CAUTION: this option will cause your machine's real-time clock to be
+ 	set to an invalid time after a resume.
+ 
++config SUSPEND_UP_POSSIBLE
++	bool
++	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
++	default y
++
+ config SUSPEND_SMP_POSSIBLE
+ 	bool
+ 	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
+@@ -92,7 +97,7 @@ config PM_SLEEP
+ config SUSPEND
+ 	bool "Suspend to RAM and standby"
+ 	depends on PM
+-	depends on !SMP || SUSPEND_SMP_POSSIBLE
++	depends on (!SMP && SUSPEND_UP_POSSIBLE) || (SMP && SUSPEND_SMP_POSSIBLE)
+ 	default y
+ 	---help---
+ 	  Allow the system to enter sleep states in which main memory is
