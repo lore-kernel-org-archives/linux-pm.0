@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 2/2] PM: Lock all devices during
-	suspend/hibernate
-Date: Wed, 1 Aug 2007 00:20:46 +0200
-Message-ID: <200708010020.47144.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0707311648530.4896-100000@iolanthe.rowland.org>
+Subject: [RFC][PATCH -mm 3/3] Freezer: Replace the timeout
+Date: Wed, 1 Aug 2007 00:29:42 +0200
+Message-ID: <200708010029.43652.rjw@sisk.pl>
+References: <200707251401.48340.rjw@sisk.pl> <20070731100254.GC3462@elf.ucw.cz>
+	<200708010025.27018.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707311648530.4896-100000@iolanthe.rowland.org>
+In-Reply-To: <200708010025.27018.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,102 +20,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 31 July 2007 22:51, Alan Stern wrote:
-> This patch adds an extra step to the device suspend/resume procedures, 
-> in which every device is locked/unlocked.  In addition, a new global 
-> rwsem prevents additional devices from being registered at these times.
-> 
-> Alan Stern
-> 
-> 
-> Index: usb-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/main.c
-> +++ usb-2.6/drivers/base/power/main.c
-> @@ -24,17 +24,38 @@
->  #include <linux/mutex.h>
->  #include <linux/pm.h>
->  #include <linux/resume-trace.h>
-> +#include <linux/rwsem.h>
->  
->  #include "../base.h"
->  #include "power.h"
->  
-> +/*
-> + * The entries in the dpm_active list are in a depth first order, simply
-> + * because children are guaranteed to be discovered after parents, and
-> + * are inserted at the back of the list on discovery.
-> + *
-> + * All the other lists are kept in the same order, for consistency.
-> + * However the lists aren't always traversed in the same order.
-> + * Semaphores must be acquired from the top (i.e., front) down
-> + * and released in the opposite order.  Devices must be suspended
-> + * from the bottom (i.e., end) up and resumed in the opposite order.
-> + * That way no parent will be suspended while it still has an active
-> + * child.
-> + *
-> + * Since device_pm_add() may be called with a device semaphore held,
-> + * we must never try to acquire a device semaphore while holding
-> + * dpm_list_mutex.
-> + */
-> +
->  LIST_HEAD(dpm_active);
-> +static LIST_HEAD(dpm_locked);
->  static LIST_HEAD(dpm_off);
->  static LIST_HEAD(dpm_off_irq);
->  
-> -static DEFINE_MUTEX(dpm_mtx);
->  static DEFINE_MUTEX(dpm_list_mtx);
->  
-> +static DECLARE_RWSEM(device_registration_rwsem);
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Is it only intended for device registration, or can it be used in some other
-code paths too?
+Instead of using the global timeout, we can use a more fine grained metho=
+d of
+checking if the freezing of tasks should fail.  Namely, we can measure th=
+e time
+in which no tasks have entered the refrigerator by counting the number of=
+ calls
+to wait_event_timeout() in try_to_freeze_tasks() that have returned 0 (in=
+ a
+row).
 
-> +
->  int (*platform_enable_wakeup)(struct device *dev, int is_on);
->  
->  
-> @@ -59,29 +80,112 @@ void device_pm_remove(struct device *dev
->  	pr_debug("PM: Removing info for %s:%s\n",
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
-> +
-> +	/* Don't remove a device while the PM core has it locked for suspend */
-> +	down(&dev->sem);
->  	mutex_lock(&dpm_list_mtx);
->  	dpm_sysfs_remove(dev);
->  	list_del_init(&dev->power.entry);
->  	mutex_unlock(&dpm_list_mtx);
-> +	up(&dev->sem);
-> +}
-> +
-> +/**
-> + *	device_add_pm_lock - mutual exclusion for registration and suspend
-> + *
-> + *	Returns 0 if no suspend is underway and device registration
-> + *	may proceed, otherwise -EBUSY.
-> + */
-> +int device_add_pm_lock(void)
-> +{
-> +	if (down_read_trylock(&device_registration_rwsem))
-> +		return 0;
-> +	return -EBUSY;
-> +}
+After sending freeze requests to the tasks regarded as freezable
+try_to_freeze_tasks() goes to sleep and waits until at least one task ent=
+ers the
+refrigerator. =A0If the refrigerator is not entered by any tasks before W=
+AIT_TIME
+expires, try_to_freeze_tasks() increases the counter of expired timeouts =
+and
+sends freeze requests to the remaining tasks.  If the number of expired t=
+imeouts
+becomes greater than MAX_WAITS, the freezing of tasks fails (the counter =
+of
+expired timeouts is reset whenever a task enters the refrigerator).
 
-I would do:
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/process.c |   29 +++++++++++++++++------------
+ 1 file changed, 17 insertions(+), 12 deletions(-)
 
-+	return down_read_trylock(&device_registration_rwsem) ? 0 : -EBUSY;
-
-Apart from this, I have no comments. :-)
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Index: linux-2.6.23-rc1/kernel/power/process.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.23-rc1.orig/kernel/power/process.c	2007-07-31 23:01:10.0000=
+00000 +0200
++++ linux-2.6.23-rc1/kernel/power/process.c	2007-07-31 23:12:34.000000000=
+ +0200
+@@ -14,17 +14,21 @@
+ #include <linux/syscalls.h>
+ #include <linux/freezer.h>
+=20
+-/*=20
+- * Timeout for stopping processes
+- */
+-#define TIMEOUT	(20 * HZ)
+-
+ /*
+  * Time to wait until one or more tasks enter the refrigerator after sen=
+ding
+  * freeze requests to them.
+  */
+ #define WAIT_TIME (HZ / 5)
+=20
++/*
++ * Each time after sending freeze requests to tasks the freezer will wai=
+t until
++ * some of them enter the refrigerater, but no longer than TIMEOUT.  If =
+TIMEOUT
++ * has been exceeded, the freezer increases the number of waits by one a=
+nd
++ * repeats.  If the number of waits becomes greater than MAX_WAITS, the
++ * freezing fails.
++ */
++#define MAX_WAITS 5
++
+ #define FREEZER_KERNEL_THREADS 0
+ #define FREEZER_USER_SPACE 1
+=20
+@@ -188,16 +192,15 @@ static void cancel_freezing(struct task_
+ static int try_to_freeze_tasks(int freeze_user_space)
+ {
+ 	struct task_struct *g, *p;
+-	unsigned long end_time;
+-	unsigned int todo;
++	unsigned int todo, waits;
+ 	struct timeval start, end;
+ 	s64 elapsed_csecs64;
+ 	unsigned int elapsed_csecs;
+=20
+ 	do_gettimeofday(&start);
+=20
+-	end_time =3D jiffies + TIMEOUT;
+ 	refrigerator_called =3D 0;
++	waits =3D 0;
+ 	do {
+ 		todo =3D 0;
+ 		read_lock(&tasklist_lock);
+@@ -223,12 +226,14 @@ static int try_to_freeze_tasks(int freez
+=20
+ 			ret =3D wait_event_timeout(refrigerator_waitq,
+ 					refrigerator_called, WAIT_TIME);
+-			if (ret)
++			if (ret) {
+ 				refrigerator_called =3D 0;
++				waits =3D 0;
++			} else {
++				if (++waits > MAX_WAITS)
++					break;
++			}
+ 		}
+-
+-		if (time_after(jiffies, end_time))
+-			break;
+ 	} while (todo);
+=20
+ 	do_gettimeofday(&end);
