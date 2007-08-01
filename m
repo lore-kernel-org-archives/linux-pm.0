@@ -1,8 +1,14 @@
-From: uklot@mchsi.com
-Subject: Congratulations Your E-mail Won
-Date: Wed, 01 Aug 2007 11:35:09 +0000
-Message-ID: <080120071135.16612.46B06FEC00028EFC000040E4219791336303010CD2079C080C03BF9B0104059A__23354.7015618116$1185968571$gmane$org@mchsi.com>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: Re: Possible problem with device_move()
+Date: Wed, 1 Aug 2007 15:03:32 +0200
+Message-ID: <20070801150332.41f447c8@gondolin.boeblingen.de.ibm.com>
+References: <200707312112.51043.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0707311628150.2787-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707311628150.2787-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,53 +18,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
 List-Id: linux-pm@vger.kernel.org
 
-HOME OFFICE: 165 FULHAM PALACE RD. W6 8JB UNITED KINGDOM.
-(Customer Services)
-REFERENCE NUMBER:UK/839030X2/14
-BATCH NUMBER:065/088/XY24
-TICKET NUMBER:023-1111-790-458
- 
- 
-                             WINNING NOTIFICATIONWe are pleased to
- inform you of the final announcement today, 1st of APRILE,2007 of winners of
- the UK NATIONAL LOTTERY EMAIL PROMO PROGRAMME.
- 
-Your ticket number 023-1111-790-458 attached with serial number 5073-12
- drew the lucky numbers 05-11-12-16-17-45-42(bonus no.42),this lucky
- number subsequently won you the lottery in the 2nd category.
- 
-You have therefore been approved for a lump sum pay out of £552,000,00
- (Five hundred and fifty-two thousand pounds sterling) in cash credited
- to file XYL/26510460037/04. This is from a total cash prize of
- £5,520,000,00(Five million, five hundred and twenty thousand pounds sterling)
- shared amongst the first ten (10) lucky winners in this category i.e
- Match 5 plus bonus.
- 
-All participants of this online promotion programme were selected
- randomly from numerous World Wide Web sites through computer draw system and
- extracted from close to 125,000 unions, associations and corporate
- bodies listed online. This promotion takes place Quarterly.
- 
-To file for your claim, please contact our claims agent;Official:
- Elizabeth Walter (MRS)
-Email:infoclaimsagent0@yahoo.co.uk
-Provide her with the information below:
-1.Full Name_______2.Full Address_______3.Marital 
-Status_______4.Occupation_______5.Age_______6.Sex_______7.Nationality_______8.C
-ountry
- Of 
-Residence _______
-                      9.Telephone Numbe_______10.Fax 
-Number_______11.Ticket Number(above)_______12.Reference
- Number(above)_______13.Batch 
-Number(above)
+On Tue, 31 Jul 2007 16:37:03 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-For due processing and remittance of your prize money.
- 
-Yours Truly,
- 
-SIR RICHARD K. LIOYD.
-Co-ordinator(Online Promo Programme).
- 
+> Still, I suppose it would be best to add a "move device A to the end of
+> the dpm_active list" routine for use in this sort of situation.  This 
+> should be easy to do.
+
+Would it make sense if device_move() moved the new parent (and its
+parents) after the device in the dpm_active list automatically? Then we
+would only have to worry about reordering manually in very special
+cases.
