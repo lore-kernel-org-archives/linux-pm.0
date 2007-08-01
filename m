@@ -1,15 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 2/3] Freezer: Measure the time of
-	freezing tasks
-Date: Wed, 1 Aug 2007 10:28:19 +0200
-Message-ID: <20070801082819.GW2087@elf.ucw.cz>
+Subject: Re: [RFC][PATCH -mm 3/3] Freezer: Replace the timeout
+Date: Wed, 1 Aug 2007 10:31:46 +0200
+Message-ID: <20070801083146.GX2087@elf.ucw.cz>
 References: <200707251401.48340.rjw@sisk.pl> <20070731100254.GC3462@elf.ucw.cz>
-	<200708010025.27018.rjw@sisk.pl> <200708010028.44511.rjw@sisk.pl>
+	<200708010025.27018.rjw@sisk.pl> <200708010029.43652.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708010028.44511.rjw@sisk.pl>
+In-Reply-To: <200708010029.43652.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,39 +25,40 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Measure the time of the freezing of tasks, even if it doesn't fail.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Instead of using the global timeout, we can use a more fine grained met=
+hod of
+> checking if the freezing of tasks should fail.  Namely, we can measure =
+the time
+> in which no tasks have entered the refrigerator by counting the number =
+of calls
+> to wait_event_timeout() in try_to_freeze_tasks() that have returned 0 (=
+in a
+> row).
+>=20
+> After sending freeze requests to the tasks regarded as freezable
+> try_to_freeze_tasks() goes to sleep and waits until at least one task e=
+nters the
+> refrigerator. =A0If the refrigerator is not entered by any tasks before=
+ WAIT_TIME
+> expires, try_to_freeze_tasks() increases the counter of expired timeout=
+s and
+> sends freeze requests to the remaining tasks.  If the number of expired=
+ timeouts
+> becomes greater than MAX_WAITS, the freezing of tasks fails (the counte=
+r of
+> expired timeouts is reset whenever a task enters the refrigerator).
 
-Ok, why not.
+I do not get logic behind this.
 
-> @@ -233,10 +243,9 @@ static int try_to_freeze_tasks(int freez
->  		 * but it cleans up leftover PF_FREEZE requests.
->  		 */
->  		printk("\n");
-> -		printk(KERN_ERR "Freezing of %s timed out after %d seconds "
-> +		printk(KERN_ERR "Freezing of tasks failed after %d.%d seconds "
+Old logic was "we give system 20 seconds to come into quiet state".
 
-%d.%02d... or it will report bogus numbers.
+New logic is "if we do no progress within second, we fail"... which is
+quite a big change. What happens on loaded ext3 filesystem, for
+example? Bunch of userland tasks will wait on data to be synced to
+disk, taking more than second, no?
 
->  				"(%d tasks refusing to freeze):\n",
-> -				freeze_user_space ? "user space " : "tasks ",
-> -				TIMEOUT / HZ, todo);
-> +				elapsed_csecs / 100, elapsed_csecs % 100, todo);
->  		show_state();
->  		read_lock(&tasklist_lock);
->  		do_each_thread(g, p) {
-> @@ -247,6 +256,9 @@ static int try_to_freeze_tasks(int freez
->  			task_unlock(p);
->  		} while_each_thread(g, p);
->  		read_unlock(&tasklist_lock);
-> +	} else {
-> +		printk("(elapsed %d.%d seconds) ", elapsed_csecs / 100,
-> +			elapsed_csecs % 100);
->  	}
-
-Same here. You have my ACK with that change.
-									Pavel
--- 
+								Pavel
+--=20
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
