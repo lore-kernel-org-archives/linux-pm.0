@@ -1,14 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Re: Hibernation considerations
-Date: Wed, 1 Aug 2007 09:34:37 +0000
-Message-ID: <20070801093437.GC4808__45343.5390991673$1186070628$gmane$org@ucw.cz>
-References: <200707202335.05519.oliver@neukum.org>
-	<Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
+Date: Wed, 1 Aug 2007 09:22:28 +0000
+Message-ID: <20070801092227.GB4808__26693.056888371$1186070652$gmane$org@ucw.cz>
+References: <Pine.LNX.4.64.0707171319140.2467@asgard.lang.hm>
+	<87lkd9ohtn.fsf@jbms.ath.cx>
+	<E1ICJRG-0000OG-00@dorka.pomaz.szeredi.hu>
+	<200707212120.04645.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
+In-Reply-To: <200707212120.04645.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org, miltonm@bga.com, ying.huang@intel.com, linux-pm@lists.linux-foundation.org, jbms@cmu.edu
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> >  Do we have to block module loading?
+> > Hmm, wonder why this isn't affecting people with VPNs?  Probably
+> > network mounts over VPN are rare, and ever rarer to have fs activity
+> > on them during suspend.
+> > 
+> > Anyway, I think it's long overdue to stop thinking about how to "fix"
+> > fuse, and concentrate on fixing the underlying problem instead ;)
 > 
-> No.  Registering new drivers is okay, registering new devices is bad.
-> 
-> Of course, some modules do want to register a new device in their init 
-> method.  I don't know what we should do about them.  Force the 
-> registration to fail, I suppose.  How often will people suspend while a 
-> module is loading?
+> To conclude this branch of the thread, I have a patch in the works that may
+> help a bit with unfreezable FUSE filesystems and it only affects the freezer.
+> I'll post it when 2.6.23-rc1 is out, because it's on top of some other patches
+> that need to go first.
 
-Well... plug this pcmcia card into the slot so that I do not have to
-carry it separately, close the lid and go?
-
-...not that impossible to imagine...
+I'm interested... which one is that?
 							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
