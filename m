@@ -1,17 +1,18 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: 2.6.21-rc1: T60 ACPI issues
-Date: Wed, 1 Aug 2007 13:18:25 -0300
-Message-ID: <20070801161825.GN23111__11515.1456477635$1185986285$gmane$org@khazad-dum.debian.net>
-References: <20070801135820.GA8266@mellanox.co.il>
-	<Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
-	<20070801145607.GB8480@mellanox.co.il>
-	<20070801154749.GK23111@khazad-dum.debian.net>
-	<20070801155510.GA11758@mellanox.co.il>
+From: Stefan Seyfried <seife@suse.de>
+Subject: Re: Hibernation considerations
+Date: Wed, 1 Aug 2007 18:58:15 +0200
+Message-ID: <20070801165815.GA19065__26227.1414780573$1185987581$gmane$org@suse.de>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org>
+	<200707171802.30903.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm>
+	<200707172150.44417.rjw@sisk.pl>
+	<Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070801155510.GA11758@mellanox.co.il>
+In-Reply-To: <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,37 +22,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: len.brown@intel.com, ibm-acpi-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@linux-foundation.org, linux-acpi@vger.kernel.org, mingo@redhat.com, Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
+To: david@lang.hm
+Cc: Al Boldi <a1426z@gawab.com>, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 01 Aug 2007, Michael S. Tsirkin wrote:
-> My guess is that upon resume, I normally get some other acpi event
-> which gets blocked with CONFIG_THINKPAD_ACPI_INPUT_ENABLED.
+Hi,
 
-*Nothing* should be using any such events like that (that is an bug by
-itself), but let's find out if that's what happening first.
+Sorry for joining late, just a small annotation:
 
-acpid logs can probably tell you that.
+On Tue, Jul 17, 2007 at 01:18:13PM -0700, david@lang.hm wrote:
+=20
+> non-ACPI hibernate
+>=20
+>   since the box powers off
+>     it uses zero power while suspended
+>     another OS could be run before a resume
+>     hardware can be swapped, suspend image could be sent around the wor=
+ld to be restored on another system.
+>     restore makes no assumptions about the state of the hardware when i=
+t is restored
+>     restore is slower (full BIOS boot is required)
+>   should be able to work on just about any hardware (the limit is the a=
+bility to initialize the devices)
+>=20
+>=20
+> ACPI suspends
+>=20
+>   since the box never completely powers off:A
 
-> > Please open a bug in bugzilla.kernel.org about it, and attach the full debug
-> > output of a suspend+resume cycle with and without thinkpad-acpi loaded.
-> > 
-> > Also, please try the same with thinkpad-acpi loaded, but
-> > CONFIG_THINKPAD_ACPI_INPUT_ENABLED set to N.  If the problem goes away,
-> > please retest, but set hotkey_enable to 1 and do an "cat
-> > /sys/bus/platform/devices/thinkpad_acpi/hotkey_recommended_mask >
-> > /sys/bus/platform/devices/thinkpad_acpi/hotkey_mask" before the sleep.
-> 
-> what's hotkey_enable?
+wrong
 
-/sys/bus/platform/devices/thinkpad_acpi/hotkey_enable.
+>     a complete power failure breaks the suspend
 
-Please read the full thinkpad-acpi documentation (it is in
-Documentation/thinkpad-acpi.txt in the kernel tree).
+wrong
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+>     the OS must remain in control so other uses must be prevented.
+>     hardware must remain in the ACPI state from suspend until restore.
+>     restore can be faster (some initialization may be able to be skippe=
+d)
+>   requires ACPI hardware support
+>=20
+> under the catagory of ACPI suspends you have
+
+ACPI S4 turns off the machine completely and you can remove the battery (=
+this
+is even required somewhere in the spec). Any state saving is done in CMOS=
+ RAM
+or flash.
+
+But for example many Notebooks resume much faster if they go through the
+ACPI S4 hooks during suspend (less than one second from "lid open" to "gr=
+ub"
+while they need ~10 seconds through the BIOS on a "normal" boot.
+My Toughbook resumes on "Lid Opened" after S4, it doesn't after a shutdow=
+n.
+
+So there will be differences.
+I'm not saying that they are too important, but 20% faster resume still i=
+s
+a good saving for me.
+
+No need to restart this thread btw ;-)
+
+Have fun,
+
+    Stefan
+--=20
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, N=FCrnberg  | "Well, surrounding them's out."=20
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG N=FCrnberg)
