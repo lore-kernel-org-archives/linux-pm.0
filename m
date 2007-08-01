@@ -1,8 +1,8 @@
 From: LOTTERY BOARD <uklottery147@bellsouth.net>
 Subject: Confirm Receipt...................Dear
 	Winner...................
-Date: Tue, 31 Jul 2007 23:00:47 -0400
-Message-ID: <20070801030048.MBER275.ibm65aec.bellsouth.net@mail.bellsouth.net>
+Date: Tue, 31 Jul 2007 23:00:54 -0400
+Message-ID: <20070801030054.MBFV275.ibm65aec.bellsouth.net@mail.bellsouth.net>
 Reply-To: uknational_claimsofficer00@yahoo.co.uk
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
