@@ -1,14 +1,16 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
-Date: Wed, 01 Aug 2007 15:56:18 +0800
-Message-ID: <1185954978.1363.23.camel__35151.3704554693$1185955098$gmane$org@caritas-dev.intel.com>
-References: <1184483639.1898.99.camel@caritas-dev.intel.com>
-	<20070731095101.GA1774@elf.ucw.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm 1/3] Freezer: Use wait queue instead
+	of busy looping
+Date: Wed, 1 Aug 2007 09:59:40 +0200
+Message-ID: <20070801075940.GS2087@elf.ucw.cz>
+References: <200707251401.48340.rjw@sisk.pl> <20070731100254.GC3462@elf.ucw.cz>
+	<200708010025.27018.rjw@sisk.pl> <200708010026.56427.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070731095101.GA1774@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <200708010026.56427.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,79 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-07-31 at 11:51 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > This patch implement the functionality of jumping from kexeced kernel
-> > to original kernel.
-> > 
-> > A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
-> > trigger the jumping to (executing) the new kernel or jumping back to
-> > the original kernel.
-> 
-> Could we get two reboot commands? Exec loaded kernel seems to be quite
-> different operation than "jump back".
+Hi!
 
-Exec loaded kernel for jumping back is also different from exec loaded
-kernel normally.
+> Use the observation that try_to_freeze_tasks() need not loop while wait=
+ing for
+> the freezing tasks to enter the refrigerator and make it use a wait que=
+ue.
+>=20
+> The idea is that after sending freeze requests to the tasks regarded as
+> freezable try_to_freeze_tasks() can go to sleep and wait until at least=
+ one task
+> enters the refrigerator. =A0The first task that does it wakes up
+> try_to_freeze_tasks() and the procedure is repeated. =A0If the refriger=
+ator is not
+> entered by any tasks before TIMEOUT expires, the freezing of tasks fail=
+s.
+>=20
+> This way, try_to_freeze_tasks() doesn't occupy the CPU unnecessarily wh=
+en some
+> freezing tasks are waiting for I/O to complete.
 
-Maybe the two reboot operations in kexec jump can be seen as "jump to"
-and "jump back"?
+Ok, I guess this is as simple as it gets. ACK.
+								Pavel
 
-> How do I test these patches? kexec -p <bzImage>, then kexec -j?
-
-Yes.
-
-> > +static unsigned long kexec_backup_addr = ~0UL;
-> > +
-> > +/* kexec_backup= specifies the location of backuped 0~640k memory of
-> > + * crashed kernel.
-> > + */
-> > +static int __init parse_kexec_backup(char *arg)
-> > +{
-> > +	if (!arg)
-> > +		return -EINVAL;
-> > +
-> > +	kexec_backup_addr = memparse(arg, &arg);
-> > +	return 0;
-> > +}
-> > +early_param("kexec_backup", parse_kexec_backup);
-> 
-> New kernel parameters should be documented. (Plus I do not know how to
-> use this one, please help :-).
-
-This kernel parameter will be added to kernel command line by
-kexec-tools automatically.
-
-I will add corresponding document in next version.
-
-> 
-> > +int kexec_flags;
-> > +
-> > +static unsigned long kexec_jump_buf_pfn;
-> > +
-> > +static int __init parse_kexec_jump_buf_pfn(char *arg)
-> > +{
-> > +	if (!arg)
-> > +		return -EINVAL;
-> > +
-> > +	kexec_jump_buf_pfn = memparse(arg, &arg);
-> > +	kexec_flags |= KEXEC_FLAGS_IS_KEXECED_KERNEL;
-> > +	return 0;
-> > +}
-> > +early_param("kexec_jump_buf_pfn", parse_kexec_jump_buf_pfn);
-> 
-> This one should be documented, too, I'd guess. (Is that internal,
-> kernel-to-kernel communication?)
-
-Document will be added in next version too.
-
-This parameter is used for kernel-to-kernel communication. But now, it
-must be setup by user, as in usage guide.
-
-Best Regards,
-Huang Ying
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
