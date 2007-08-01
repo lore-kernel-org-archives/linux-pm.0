@@ -1,12 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Possible problem with device_move()
-Date: Thu, 2 Aug 2007 11:23:26 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0708021114240.2573-100000@iolanthe.rowland.org>
-References: <200708021658.12991.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Re: Hibernation considerations
+Date: Wed, 1 Aug 2007 09:34:37 +0000
+Message-ID: <20070801093437.GC4808__45343.5390991673$1186070628$gmane$org@ucw.cz>
+References: <200707202335.05519.oliver@neukum.org>
+	<Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708021658.12991.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,38 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Lang <david@lang.hm>, LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Aug 2007, Rafael J. Wysocki wrote:
+Hi!
 
-> > > Well, my idea is not to change the order, but to create the list from scratch
-> > > when we need it and not in advance, because creating the list in advance
-> > > causes problems to appear.
-> > 
-> > Doing it that way will almost certainly result in a different order 
-> > from the one we have now.
+> >  Do we have to block module loading?
 > 
-> Yes, but wouldn't that order be more accurate?
-
-I'm not so sure.  There might be hidden dependencies, things we aren't
-aware of because they are automatically satisfied by
-order-of-discovery.  With an arbitrary parent-first traversal of the
-device tree those dependencies could be violated.
-
-And then there are the weird possibilities created by device_move().  
-Isn't it possible that if an older child is moved under a younger 
-parent, we actually might _want_ to suspend the parent first?  Only the 
-driver doing the move would know for sure.
-
-> > And it won't help the EHCI issue, because there the question is which of
-> > several siblings should come last. 
+> No.  Registering new drivers is okay, registering new devices is bad.
 > 
-> Why not?  If the device can indicate something like "place me after that one"
-> to the code creating the list, we can handle that too. 
+> Of course, some modules do want to register a new device in their init 
+> method.  I don't know what we should do about them.  Force the 
+> registration to fail, I suppose.  How often will people suspend while a 
+> module is loading?
 
-Yes, but currently we don't have any way of indicating that.  And if we 
-did, it work work just as well with the current dpm_active list, right?
+Well... plug this pcmcia card into the slot so that I do not have to
+carry it separately, close the lid and go?
 
-Alan Stern
+...not that impossible to imagine...
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
