@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 1/3] Freezer: Be more verbose
-Date: Wed, 1 Aug 2007 23:30:43 +0200
-Message-ID: <200708012330.44719.rjw@sisk.pl>
+Subject: [PATCH -mm 3/3] Freezer: Measure freezing time
+Date: Wed, 1 Aug 2007 23:36:39 +0200
+Message-ID: <200708012336.40388.rjw@sisk.pl>
 References: <200708012328.23939.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -25,45 +25,62 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Increase the freezer's verbosity a bit, so that it's easier to read problem
-reports related to it.
+Measure the time of the freezing of tasks, even if it doesn't fail.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/process.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ kernel/power/process.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
 Index: linux-2.6.23-rc1/kernel/power/process.c
 ===================================================================
---- linux-2.6.23-rc1.orig/kernel/power/process.c	2007-07-24 00:13:46.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/power/process.c	2007-07-24 00:13:58.000000000 +0200
-@@ -227,18 +227,21 @@ int freeze_processes(void)
- {
- 	int error;
+--- linux-2.6.23-rc1.orig/kernel/power/process.c	2007-07-31 23:00:43.000000000 +0200
++++ linux-2.6.23-rc1/kernel/power/process.c	2007-07-31 23:00:52.000000000 +0200
+@@ -190,6 +190,11 @@ static int try_to_freeze_tasks(int freez
+ 	struct task_struct *g, *p;
+ 	unsigned long end_time;
+ 	unsigned int todo;
++	struct timeval start, end;
++	s64 elapsed_csecs64;
++	unsigned int elapsed_csecs;
++
++	do_gettimeofday(&start);
  
--	printk("Stopping tasks ... ");
-+	printk("Freezing user space processes ... ");
- 	error = try_to_freeze_tasks(FREEZER_USER_SPACE);
- 	if (error)
--		return error;
-+		goto Exit;
-+	printk("done.\n");
+ 	end_time = jiffies + TIMEOUT;
+ 	refrigerator_called = 0;
+@@ -226,6 +231,11 @@ static int try_to_freeze_tasks(int freez
+ 			break;
+ 	} while (todo);
  
-+	printk("Freezing remaining freezable tasks ... ");
- 	error = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
- 	if (error)
--		return error;
--
--	printk("done.\n");
-+		goto Exit;
-+	printk("done.");
-+ Exit:
- 	BUG_ON(in_atomic());
--	return 0;
-+	printk("\n");
-+	return error;
- }
++	do_gettimeofday(&end);
++	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
++	do_div(elapsed_csecs64, NSEC_PER_SEC / 100);
++	elapsed_csecs = elapsed_csecs64;
++
+ 	if (todo) {
+ 		/* This does not unfreeze processes that are already frozen
+ 		 * (we have slightly ugly calling convention in that respect,
+@@ -233,10 +243,9 @@ static int try_to_freeze_tasks(int freez
+ 		 * but it cleans up leftover PF_FREEZE requests.
+ 		 */
+ 		printk("\n");
+-		printk(KERN_ERR "Freezing of %s timed out after %d seconds "
++		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
+ 				"(%d tasks refusing to freeze):\n",
+-				freeze_user_space ? "user space " : "tasks ",
+-				TIMEOUT / HZ, todo);
++				elapsed_csecs / 100, elapsed_csecs % 100, todo);
+ 		show_state();
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+@@ -247,6 +256,9 @@ static int try_to_freeze_tasks(int freez
+ 			task_unlock(p);
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
++	} else {
++		printk("(elapsed %d.%02d seconds) ", elapsed_csecs / 100,
++			elapsed_csecs % 100);
+ 	}
  
- static void thaw_tasks(int thaw_user_space)
+ 	return todo ? -EBUSY : 0;
