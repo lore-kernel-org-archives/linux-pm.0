@@ -1,15 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 3/3] Freezer: Replace the timeout
-Date: Wed, 1 Aug 2007 10:31:46 +0200
-Message-ID: <20070801083146.GX2087@elf.ucw.cz>
-References: <200707251401.48340.rjw@sisk.pl> <20070731100254.GC3462@elf.ucw.cz>
-	<200708010025.27018.rjw@sisk.pl> <200708010029.43652.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] ACPI: delete CONFIG_ACPI_PROCFS_SLEEP (again)
+Date: Wed, 1 Aug 2007 12:24:34 +0200
+Message-ID: <200708011224.35917.rjw__1294.42316615513$1185963400$gmane$org@sisk.pl>
+References: <200707251238.50218.lenb@kernel.org>
+	<alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
+	<200707312327.10755.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200707312327.10755.lenb@kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200708010029.43652.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +21,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: Len Brown <lenb@kernel.org>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday, 1 August 2007 05:27, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> CONFIG_ACPI_PROCFS_SLEEP is a NO-OP -- delete it (again).
+> 
+> Apparently 296699de6bdc717189a331ab6bbe90e05c94db06 creating CONFIG_SUSPEND
+> and CONFIG_PM_SLEEP was based on an out-dated version of drivers/acpi/Kconfig,
+> as it erroneously restored this recently deleted config option.
 
-> Instead of using the global timeout, we can use a more fine grained met=
-hod of
-> checking if the freezing of tasks should fail.  Namely, we can measure =
-the time
-> in which no tasks have entered the refrigerator by counting the number =
-of calls
-> to wait_event_timeout() in try_to_freeze_tasks() that have returned 0 (=
-in a
-> row).
->=20
-> After sending freeze requests to the tasks regarded as freezable
-> try_to_freeze_tasks() goes to sleep and waits until at least one task e=
-nters the
-> refrigerator. =A0If the refrigerator is not entered by any tasks before=
- WAIT_TIME
-> expires, try_to_freeze_tasks() increases the counter of expired timeout=
-s and
-> sends freeze requests to the remaining tasks.  If the number of expired=
- timeouts
-> becomes greater than MAX_WAITS, the freezing of tasks fails (the counte=
-r of
-> expired timeouts is reset whenever a task enters the refrigerator).
+Some chunks of code in drivers/acpi/sleep/proc.c depend on
+CONFIG_ACPI_PROCFS_SLEEP.  Do you also intend to remove that code?
 
-I do not get logic behind this.
-
-Old logic was "we give system 20 seconds to come into quiet state".
-
-New logic is "if we do no progress within second, we fail"... which is
-quite a big change. What happens on loaded ext3 filesystem, for
-example? Bunch of userland tasks will wait on data to be synced to
-disk, taking more than second, no?
-
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
+Greetings,
+Rafael
