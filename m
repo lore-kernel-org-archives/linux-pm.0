@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Suspend without the freezer
-Date: Wed, 1 Aug 2007 10:33:42 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0708011013260.3764-100000@iolanthe.rowland.org>
-References: <18096.779.270253.318946@cargo.ozlabs.ibm.com>
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Subject: Re: 2.6.21-rc1: T60 ACPI issues
+Date: Wed, 1 Aug 2007 17:56:07 +0300
+Message-ID: <20070801145607.GB8480__37023.7184725285$1185985171$gmane$org@mellanox.co.il>
+References: <20070801135820.GA8266@mellanox.co.il>
+	<Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <18096.779.270253.318946@cargo.ozlabs.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,55 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: Hugh Dickins <hugh@veritas.com>
+Cc: len.brown@intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@linux-foundation.org, linux-acpi@vger.kernel.org, mingo@redhat.com, "Michael S. Tsirkin" <mst@dev.mellanox.co.il>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Borislav Deianov <borislav@users.sourceforge.net>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 1 Aug 2007, Paul Mackerras wrote:
-
-> Alan Stern writes:
+> Quoting Hugh Dickins <hugh@veritas.com>:
+> Subject: Re: 2.6.21-rc1: T60 ACPI issues
 > 
-> > I think this is subject to the same weakness Dmitry mentions: By the
-> > time the driver would block on the new rwsem, it has already started
-> > mucking with the device.  Worse yet, it may hold a mutex that the 
-> > suspend method needs, thereby deadlocking the suspend.  (That's what 
-> > would happen with serio->drv_mutex in the input layer.)
+> On Wed, 1 Aug 2007, Michael S. Tsirkin wrote:
+> 
+> > Hi!
+> > ACPI appears to have been broken with 2.6.23-rc1 on my T60
+> > Userspace from ubuntu dapper.
+> 
+> (Whereas I'm using a T43p with openSUSE 10.2.)
+> 
 > > 
-> > Maybe the best answer is simply to fail all attempts at device
-> > registration while a suspend is underway.  At least that is a known
-> > error path which drivers are prepared (in theory) to deal with.  It
-> > could be implemented quite easily with an rwsem, by making the
-> > registration code use down_read_trylock.
+> > 1. During boot, I see a lot of messages like this:
+> > [   41.034204] acpi LNXSYSTM:00: uevent: unsupported action-string; this will be ignored in a future kernel version
 > 
-> What about making a list of devices that drivers have attempted to
-> register?  While the system is suspending, if a driver attempts to
-> register a device, put it on a list and return success.  Then, after
-> resuming, run through the list and actually process them.
+> (I've not seen those.)
+> 
+> > 
+> > 2. Pressing Fn/F4 does not trigger suspend to ram
+> >    This normally triigers ACPI event which triggers suspend to RAM on Ubuntu
+> >    (echo mem > /sys/power/state works)
+> 
+> I'll bet this is your CONFIG_THINKPAD_ACPI_INPUT_ENABLED=y.
+> I got the same, see my "THINKPAD_ACPI_INPUT_ENABLED seems regressive"
+> mail to Henrique and lkml an hour ago.
 
-I'm not sure it's safe to lie to drivers, telling them that their 
-device has been registered when in fact it hasn't.  For instance, what 
-if the driver then calls device_create_file()?  Safe or not, it 
-certainly isn't transparent and therefore isn't a good thing to do.
+This? http://lkml.org/lkml/2007/8/1/176
 
-Of course, the problem with my approach is that it puts the burden on
-drivers of blocking threads which want to register devices.  This turns
-out to be distressingly difficult -- easier just to let them fail.  I
-was hoping to find a centralized solution but apparently there isn't
-one.
 
-A better approach would be to fail registrations only if the parent is
-already suspended.  Maybe that can be made to work... but I'm doubtful.  
-(What if the parent gets suspended _during_ the child's registration?)
+> > 
+> > 3. After suspend to RAM, system wakes up but laptop's screen is blank,
+> >    switching VTs etc does not help.
+> >    External screen wakes up OK though.
+> >    dmesg output from boot attached.
+> 
+> (I've not had that.)
 
-> I guess removal during suspend/resume should remove the list entry, if
-> the device is one of the ones on the list.  Otherwise, is there a
-> problem with letting removals proceed during suspend/resume?  (In
-> general removal can be notified after the device has physically
-> disappeared IIRC, so driver unbind functions have to avoid touching
-> the device or at least be prepared to deal with it not responding.)
+Bingo.
+sudo rmmod thinkpad_acpi cures both 2 and 3.
+Thanks for pointing this out.
 
-I don't think removal during suspend poses a serious problem.  It can
-never lead to a situation where a suspended parent has an unsuspended
-child, which is what we need to avoid.
+Henrique, if there's a patch to test, pls let me know.
+Or maybe CONFIG_THINKPAD_ACPI_INPUT_ENABLED should be N by default.
 
-Alan Stern
+-- 
+MST
