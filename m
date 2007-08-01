@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Suspend without the freezer
-Date: Wed, 1 Aug 2007 16:16:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0708011607570.3174-100000@iolanthe.rowland.org>
-References: <200708012108.24061.rjw@sisk.pl>
+Subject: Re: Re: Possible problem with device_move()
+Date: Wed, 1 Aug 2007 16:27:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0708011619050.3174-100000@iolanthe.rowland.org>
+References: <200708012125.15755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708012108.24061.rjw@sisk.pl>
+In-Reply-To: <200708012125.15755.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,28 +17,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, 1 Aug 2007, Rafael J. Wysocki wrote:
 
-> > I don't think removal during suspend poses a serious problem.  It can
-> > never lead to a situation where a suspended parent has an unsuspended
-> > child, which is what we need to avoid.
+> > > (The whole list based on registration order thing seems a bit fragile
+> > > to me, but I don't know enough of the PM core and suspend/resume in
+> > > general to make a better suggestion :/)
+> > 
+> > It hasn't been bad in the past.  If A was discovered before B then ipso 
+> > facto it is safe to suspend B before suspending A.  Likewise, in the 
+> > absence of device_move, if A was discovered before B then A cannot 
+> > appear below B in the device tree.  Of course, this assumes devices are 
+> > registered as they are discovered.
 > 
-> With our current design, removal during resume, before the device is put back
-> onto dpm_active, may lead to nasty problems.  I haven't analysed that in
-> detail, but at least generally it seems highly suspicious to me.
+> Which is a weak assupmtion ...
+> 
+> Well, we seem to have some examples of possible situations in which the
+> design might not be adequate and that's alarming.
+> 
+> Perhaps we should create dpm_active right before the suspend, by really
+> traversing the device tree, when we own all device semaphores and no device
+> objects can be added/removed?
 
-In the patch set I posted, device removal during suspend or resume is 
-blocked.  The PM core acquires every device's semaphore at the start of 
-the suspend and doesn't release it until the end of the resume -- and I 
-added a line to device_pm_remove() to lock the semaphore.
+We're doing okay the way things are.  Changing the order is more likely
+to cause new problems than to solve existing ones.
 
-My best guess is that allowing removal at these times wouldn't hurt
-anything.  But if the device is on one of the lists other than
-dpm_active, taking it off would mean the PM core never gets a chance to
-unlock the device's semaphore and could lead to hangups later.  So I
-disallowed it.
+In fact, I would go even farther.  Let's document the ordering given by
+dpm_active (by default, in order of registration) so that drivers can
+depend on it, and let's add special routines to change the order for
+the few cases that require it -- under driver control.
+
+A "move to the end" routine would solve the EHCI issue.  It ought to 
+solve the problems associated with device_move() also, provided the 
+device being moved doesn't have any children.
+
+Cornelia and Marcel, is that the case?  When a ccw_device or RFCOMM TTY 
+is reparented under a new device, do any children get moved along with 
+it?
 
 Alan Stern
