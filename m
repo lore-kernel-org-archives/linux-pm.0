@@ -1,14 +1,14 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: Re: Suspend without the freezer
-Date: Wed, 1 Aug 2007 13:50:35 +1000
-Message-ID: <18096.779.270253.318946@cargo.ozlabs.ibm.com>
-References: <200707311105.40449.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0707311112590.3520-100000@iolanthe.rowland.org>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
+Date: Wed, 01 Aug 2007 15:56:18 +0800
+Message-ID: <1185954978.1363.23.camel__35151.3704554693$1185955098$gmane$org@caritas-dev.intel.com>
+References: <1184483639.1898.99.camel@caritas-dev.intel.com>
+	<20070731095101.GA1774@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0707311112590.3520-100000@iolanthe.rowland.org>
+In-Reply-To: <20070731095101.GA1774@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +18,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern writes:
-
-> I think this is subject to the same weakness Dmitry mentions: By the
-> time the driver would block on the new rwsem, it has already started
-> mucking with the device.  Worse yet, it may hold a mutex that the 
-> suspend method needs, thereby deadlocking the suspend.  (That's what 
-> would happen with serio->drv_mutex in the input layer.)
+On Tue, 2007-07-31 at 11:51 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Maybe the best answer is simply to fail all attempts at device
-> registration while a suspend is underway.  At least that is a known
-> error path which drivers are prepared (in theory) to deal with.  It
-> could be implemented quite easily with an rwsem, by making the
-> registration code use down_read_trylock.
+> > This patch implement the functionality of jumping from kexeced kernel
+> > to original kernel.
+> > 
+> > A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
+> > trigger the jumping to (executing) the new kernel or jumping back to
+> > the original kernel.
+> 
+> Could we get two reboot commands? Exec loaded kernel seems to be quite
+> different operation than "jump back".
 
-What about making a list of devices that drivers have attempted to
-register?  While the system is suspending, if a driver attempts to
-register a device, put it on a list and return success.  Then, after
-resuming, run through the list and actually process them.
+Exec loaded kernel for jumping back is also different from exec loaded
+kernel normally.
 
-I guess removal during suspend/resume should remove the list entry, if
-the device is one of the ones on the list.  Otherwise, is there a
-problem with letting removals proceed during suspend/resume?  (In
-general removal can be notified after the device has physically
-disappeared IIRC, so driver unbind functions have to avoid touching
-the device or at least be prepared to deal with it not responding.)
+Maybe the two reboot operations in kexec jump can be seen as "jump to"
+and "jump back"?
 
-Paul.
+> How do I test these patches? kexec -p <bzImage>, then kexec -j?
+
+Yes.
+
+> > +static unsigned long kexec_backup_addr = ~0UL;
+> > +
+> > +/* kexec_backup= specifies the location of backuped 0~640k memory of
+> > + * crashed kernel.
+> > + */
+> > +static int __init parse_kexec_backup(char *arg)
+> > +{
+> > +	if (!arg)
+> > +		return -EINVAL;
+> > +
+> > +	kexec_backup_addr = memparse(arg, &arg);
+> > +	return 0;
+> > +}
+> > +early_param("kexec_backup", parse_kexec_backup);
+> 
+> New kernel parameters should be documented. (Plus I do not know how to
+> use this one, please help :-).
+
+This kernel parameter will be added to kernel command line by
+kexec-tools automatically.
+
+I will add corresponding document in next version.
+
+> 
+> > +int kexec_flags;
+> > +
+> > +static unsigned long kexec_jump_buf_pfn;
+> > +
+> > +static int __init parse_kexec_jump_buf_pfn(char *arg)
+> > +{
+> > +	if (!arg)
+> > +		return -EINVAL;
+> > +
+> > +	kexec_jump_buf_pfn = memparse(arg, &arg);
+> > +	kexec_flags |= KEXEC_FLAGS_IS_KEXECED_KERNEL;
+> > +	return 0;
+> > +}
+> > +early_param("kexec_jump_buf_pfn", parse_kexec_jump_buf_pfn);
+> 
+> This one should be documented, too, I'd guess. (Is that internal,
+> kernel-to-kernel communication?)
+
+Document will be added in next version too.
+
+This parameter is used for kernel-to-kernel communication. But now, it
+must be setup by user, as in usage guide.
+
+Best Regards,
+Huang Ying
