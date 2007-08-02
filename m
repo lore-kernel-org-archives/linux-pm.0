@@ -1,14 +1,12 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Re: Possible problem with device_move()
-Date: Thu, 2 Aug 2007 16:50:24 +0200
-Message-ID: <20070802165024.09cd6a13@gondolin.boeblingen.de.ibm.com>
-References: <20070802100633.2bd6f72c@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.44L0.0708021012410.3611-100000@iolanthe.rowland.org>
+Date: Thu, 2 Aug 2007 11:23:26 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0708021114240.2573-100000@iolanthe.rowland.org>
+References: <200708021658.12991.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0708021012410.3611-100000@iolanthe.rowland.org>
+In-Reply-To: <200708021658.12991.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +16,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Aug 2007 10:19:32 -0400 (EDT),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Thu, 2 Aug 2007, Rafael J. Wysocki wrote:
 
-> Come to think of it, "move to the end" won't solve the EHCI issue.  I 
-> would need a "move A up so that it comes before B" routine.  For this 
-> special case we wouldn't need to worry about ancestors of A because A 
-> and B will have the same parent, but in general A's ancestors would 
-> have to be moved also.  That's a little worrisome because the ancestors 
-> might have dependencies of their own.
+> > > Well, my idea is not to change the order, but to create the list from scratch
+> > > when we need it and not in advance, because creating the list in advance
+> > > causes problems to appear.
+> > 
+> > Doing it that way will almost certainly result in a different order 
+> > from the one we have now.
+> 
+> Yes, but wouldn't that order be more accurate?
 
-In bad cases, we would need to touch the whole tree. This sounds like
-people are likely to mess the tree up if given the power :(
+I'm not so sure.  There might be hidden dependencies, things we aren't
+aware of because they are automatically satisfied by
+order-of-discovery.  With an arbitrary parent-first traversal of the
+device tree those dependencies could be violated.
 
-> So you would want to move the sub-channel plus its ancestors in front
-> of the ccw_device, right?  Can you think of a safe way to satisfy 
-> everybody?
+And then there are the weird possibilities created by device_move().  
+Isn't it possible that if an older child is moved under a younger 
+parent, we actually might _want_ to suspend the parent first?  Only the 
+driver doing the move would know for sure.
 
-Unless I'm confused, I would need to have the order
-(children of ccw_device) -> ccw_device -> subchannel -> channel_subsystem,
-no? (Note that currently all subchannels are children of the same
-channel subsystem.)
+> > And it won't help the EHCI issue, because there the question is which of
+> > several siblings should come last. 
+> 
+> Why not?  If the device can indicate something like "place me after that one"
+> to the code creating the list, we can handle that too. 
 
-Correct order for moved devices could be most easily obtained by
-Rafael's suggestion of generating the list just before it is needed;
-but as this doesn't help with other dependencies, we would additionally
-need a way to specify those at device registration time (or when it is
-already registered), which doesn't sound like a terribly good solution
-either...
+Yes, but currently we don't have any way of indicating that.  And if we 
+did, it work work just as well with the current dpm_active list, right?
+
+Alan Stern
