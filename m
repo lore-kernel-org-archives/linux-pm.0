@@ -1,12 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: Possible problem with device_move()
-Date: Fri, 3 Aug 2007 10:56:52 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0708031042440.2597-100000@iolanthe.rowland.org>
-References: <200708030039.53368.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
+Date: Fri, 3 Aug 2007 15:23:19 -0400
+Message-ID: <200708031523.19623.lenb__22597.715984057$1186169155$gmane$org@kernel.org>
+References: <200707251238.50218.lenb@kernel.org>
+	<200707302354.23237.lenb@kernel.org>
+	<20070731063833.GD22419@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708030039.53368.rjw@sisk.pl>
+In-Reply-To: <20070731063833.GD22419@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,48 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 3 Aug 2007, Rafael J. Wysocki wrote:
-
-> > > Why not?  If the device can indicate something like "place me after that one"
-> > > to the code creating the list, we can handle that too. 
-> > 
-> > Yes, but currently we don't have any way of indicating that.  And if we 
-> > did, it work work just as well with the current dpm_active list, right?
+On Tuesday 31 July 2007 02:38, Pavel Machek wrote:
+> Hi!
 > 
-> Well, I don't know. :-)
+> > Without this change, it is possible to build CONFIG_HIBERNATE
+> > on all !SMP architectures, but not necessarily their SMP versions.
 > 
-> It seems the problem is _exactly_ that we have no means to represent the
-> dependencies between devices other than the order of registration and/or
-> the parent-child relationships.
+> Did you want to say "CONFIG_SUSPEND"?
 
 Yes.
 
-> Now, the simplest things that comes to mind is to do what we're doing (ie.
-> use the order of registration) with a modification allowing the exceptional
-> devices to have a "please move me to the end of list" flag set.  The PM core
-> would then browse the list during suspend and move the devices marked like
-> this to the end of dpm_active along with their children, if need be.
+> > I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
+> > is correct.  For now it simply matches the list for
+> > SUSPEND_SMP_POSSIBLE.
+> 
+> I do not think it is.
+> 
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > ---
+> >  Kconfig |    7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> > index 412859f..ccf6576 100644
+> > --- a/kernel/power/Kconfig
+> > +++ b/kernel/power/Kconfig
+> > @@ -72,6 +72,11 @@ config PM_TRACE
+> >  	CAUTION: this option will cause your machine's real-time clock to be
+> >  	set to an invalid time after a resume.
+> >  
+> > +config SUSPEND_UP_POSSIBLE
+> > +	bool
+> > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
+> 
+> At least ARM can do suspend, too... probably others. I was under
+> impression that SUSPEND is "supported" by all the architectures, just
+> some of them veto it at runtime (using pm_ops or how was it renamed).
 
-Code is more flexible than flags.  Why not export a function drivers
-can call, or better yet, a handful of functions to do different things?  
-It ought to suffice for drivers to call them during probing or
-registration, rather than every time the system is suspended.  They
-also could be called after device_move() -- and to prevent races we
-should export pm_sleep_[un]lock().
+The reason this entire thread started is because Linus, Jeff and others
+said that they didn't want code magically compiled into their kernel
+that they did not explicitly ask for -- even if the savings were small
+and that kernel was already something rather beefy, such as ACPI+SMP.
 
-Suggested functions:
+The current code is simply broken, because it allows SUSPEND
+on IA64 if UP, but not on SMP.  It should really be neither.
 
-     1. Move A in front of B, together with all of A's ancestors which
-	aren't already ahead of B (or maybe require that A's parent be
-	ahead of B already).
+Further, the only requirement to enable CONFIG_SUSPEND by default
+is PM && CONFIG_SMP=n, and that doesn't make much sense -- particularly
+since many of the non X86 architectures are small and according
+to the logic above, if SUSPEND (and PM_SLEEP, which it enables)
+adds any code to those kernels when they don't need it,
+then it would be a regression.
 
-     2. Move device A to the end (A must not have any children).
-
-Anything else?  I think this will cover all the cases we currently are 
-concerned about.
-
-Alan Stern
+thus my patch, if there is a list for SMP, there should
+be a list for !SMP.  If the list is incomplete, we need to fix it.
+ 
+-Len
