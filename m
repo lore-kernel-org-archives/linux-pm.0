@@ -1,14 +1,12 @@
-From: david@lang.hm
-Subject: Re: Re: Hibernation considerations
-Date: Thu, 2 Aug 2007 20:50:35 -0700 (PDT)
-Message-ID: <Pine.LNX.4.64.0708022049400.6905__35341.4258490831$1186151201$gmane$org@asgard.lang.hm>
-References: <200707202335.05519.oliver@neukum.org>
-	<Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
-	<20070801093437.GC4808@ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: Possible problem with device_move()
+Date: Fri, 3 Aug 2007 10:56:52 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0708031042440.2597-100000@iolanthe.rowland.org>
+References: <200708030039.53368.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070801093437.GC4808@ucw.cz>
+In-Reply-To: <200708030039.53368.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +16,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 1 Aug 2007, Pavel Machek wrote:
+On Fri, 3 Aug 2007, Rafael J. Wysocki wrote:
 
-> Hi!
->
->>>  Do we have to block module loading?
->>
->> No.  Registering new drivers is okay, registering new devices is bad.
->>
->> Of course, some modules do want to register a new device in their init
->> method.  I don't know what we should do about them.  Force the
->> registration to fail, I suppose.  How often will people suspend while a
->> module is loading?
->
-> Well... plug this pcmcia card into the slot so that I do not have to
-> carry it separately, close the lid and go?
->
-> ...not that impossible to imagine...
+> > > Why not?  If the device can indicate something like "place me after that one"
+> > > to the code creating the list, we can handle that too. 
+> > 
+> > Yes, but currently we don't have any way of indicating that.  And if we 
+> > did, it work work just as well with the current dpm_active list, right?
+> 
+> Well, I don't know. :-)
+> 
+> It seems the problem is _exactly_ that we have no means to represent the
+> dependencies between devices other than the order of registration and/or
+> the parent-child relationships.
 
-I useually leave my broadband card in the slot, but not seated. I wouldn't 
-bet against it getting pushed in enough to be detected while putting the 
-laptop in the bag.
+Yes.
 
-David Lang
+> Now, the simplest things that comes to mind is to do what we're doing (ie.
+> use the order of registration) with a modification allowing the exceptional
+> devices to have a "please move me to the end of list" flag set.  The PM core
+> would then browse the list during suspend and move the devices marked like
+> this to the end of dpm_active along with their children, if need be.
+
+Code is more flexible than flags.  Why not export a function drivers
+can call, or better yet, a handful of functions to do different things?  
+It ought to suffice for drivers to call them during probing or
+registration, rather than every time the system is suspended.  They
+also could be called after device_move() -- and to prevent races we
+should export pm_sleep_[un]lock().
+
+Suggested functions:
+
+     1. Move A in front of B, together with all of A's ancestors which
+	aren't already ahead of B (or maybe require that A's parent be
+	ahead of B already).
+
+     2. Move device A to the end (A must not have any children).
+
+Anything else?  I think this will cover all the cases we currently are 
+concerned about.
+
+Alan Stern
