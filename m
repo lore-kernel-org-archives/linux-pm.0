@@ -1,16 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
-Date: Sun, 5 Aug 2007 20:36:33 +0200
-Message-ID: <20070805183633.GA1758__5019.49870163134$1186339034$gmane$org@elf.ucw.cz>
-References: <200707251238.50218.lenb@kernel.org>
-	<200707302354.23237.lenb@kernel.org>
-	<20070731063833.GD22419@elf.ucw.cz>
-	<200708031523.19623.lenb@kernel.org>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec
+	based hibernation
+Date: Sun, 5 Aug 2007 20:55:58 +0200
+Message-ID: <20070805185558.GE1758__10704.2522904978$1186340331$gmane$org@elf.ucw.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	<20070731110458.GA1777@elf.ucw.cz>
+	<1185932071.1363.13.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708031523.19623.lenb@kernel.org>
+In-Reply-To: <1185932071.1363.13.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,59 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2007-08-03 15:23:19, Len Brown wrote:
-> On Tuesday 31 July 2007 02:38, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Without this change, it is possible to build CONFIG_HIBERNATE
-> > > on all !SMP architectures, but not necessarily their SMP versions.
-> > 
-> > Did you want to say "CONFIG_SUSPEND"?
-> 
-> Yes.
-> 
-> > > I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
-> > > is correct.  For now it simply matches the list for
-> > > SUSPEND_SMP_POSSIBLE.
-> > 
-> > I do not think it is.
-> > 
-> > > Signed-off-by: Len Brown <len.brown@intel.com>
-> > > ---
-> > >  Kconfig |    7 ++++++-
-> > >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > > index 412859f..ccf6576 100644
-> > > --- a/kernel/power/Kconfig
-> > > +++ b/kernel/power/Kconfig
-> > > @@ -72,6 +72,11 @@ config PM_TRACE
-> > >  	CAUTION: this option will cause your machine's real-time clock to be
-> > >  	set to an invalid time after a resume.
-> > >  
-> > > +config SUSPEND_UP_POSSIBLE
-> > > +	bool
-> > > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
-> > 
-> > At least ARM can do suspend, too... probably others. I was under
-> > impression that SUSPEND is "supported" by all the architectures, just
-> > some of them veto it at runtime (using pm_ops or how was it renamed).
-> 
-> The reason this entire thread started is because Linus, Jeff and others
-> said that they didn't want code magically compiled into their kernel
-> that they did not explicitly ask for -- even if the savings were small
-> and that kernel was already something rather beefy, such as ACPI+SMP.
-> 
-> The current code is simply broken, because it allows SUSPEND
-> on IA64 if UP, but not on SMP.  It should really be neither.
+Hi!
 
-Actually, it should be both, AFAICT. Suspend infrastructure should be
-there, just returing -EINVAL... that's how it worked in 2.6.22 IIRC.
+> > root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage --append="init=/bin/bash kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+> > Could not find a free area of memory of 9000 bytes...
+> > locate_hole failed
+> > root@amd:~#
+> > 
+> > What am I doing wrong?
+> 
+> The kexec-tools version 1.101 does not work perfectly with relocatable
+> kernel. This would have been solved if I worked against kexec-tools
+> testing tree. I will work against testing tree in the next version.
+> 
+> But, with some trick, it can work. When configure kernel, make sure the
+> following option is set:
+> 
+> CONFIG_PHYSICAL_START=0x4000000 # if crashkernel=<XX>M@64M
 
+Did the trick, I got the kernel to load, and it even attempted
+exec... but I got doublefault (or what is it?)
+
+Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
+
+Do I have to disable ACPI completely? I tried with acpi=off,
+nosmp... but problem does not seem device related.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
