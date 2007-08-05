@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH] uli526x: Add suspend and resume routines
-Date: Sun, 5 Aug 2007 21:14:01 +0200
-Message-ID: <200708052114.01790.rjw__22008.4005305127$1186341056$gmane$org@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
+Date: Sun, 5 Aug 2007 20:50:08 +0200
+Message-ID: <20070805185008.GD1758__40211.6026999012$1186341066$gmane$org@elf.ucw.cz>
+References: <1184483639.1898.99.camel@caritas-dev.intel.com>
+	<20070731095101.GA1774@elf.ucw.cz>
+	<1185954978.1363.23.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <1185954978.1363.23.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,168 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, Grant Grundler <grundler@parisc-linux.org>, Jeff Garzik <jeff@garzik.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-[Sorry for the excessive CCs, but I don't know who's the maintainer. ;-)]
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi!
 
-Add suspend/resume support to the uli526x network driver (tested on x86_64,
-with "Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40").
+> > > This patch implement the functionality of jumping from kexeced kernel
+> > > to original kernel.
+> > > 
+> > > A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
+> > > trigger the jumping to (executing) the new kernel or jumping back to
+> > > the original kernel.
+> > 
+> > Could we get two reboot commands? Exec loaded kernel seems to be quite
+> > different operation than "jump back".
+> 
+> Exec loaded kernel for jumping back is also different from exec loaded
+> kernel normally.
+> 
+> Maybe the two reboot operations in kexec jump can be seen as "jump to"
+> and "jump back"?
 
-This patch is based on the suspend/resume code in the tg3 driver.
+Yes, that would be better.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/tulip/uli526x.c |  108 +++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 102 insertions(+), 6 deletions(-)
+> Document will be added in next version too.
+> 
+> This parameter is used for kernel-to-kernel communication. But now, it
+> must be setup by user, as in usage guide.
 
-Index: linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
-===================================================================
---- linux-2.6.23-rc2.orig/drivers/net/tulip/uli526x.c	2007-08-05 20:18:57.000000000 +0200
-+++ linux-2.6.23-rc2/drivers/net/tulip/uli526x.c	2007-08-05 20:47:07.000000000 +0200
-@@ -1110,19 +1110,15 @@ static void uli526x_timer(unsigned long 
- 
- 
- /*
-- *	Dynamic reset the ULI526X board
-  *	Stop ULI526X board
-  *	Free Tx/Rx allocated memory
-- *	Reset ULI526X board
-- *	Re-initialize ULI526X board
-+ *	Init system variable
-  */
- 
--static void uli526x_dynamic_reset(struct net_device *dev)
-+static void uli526x_reset_prepare(struct net_device *dev)
- {
- 	struct uli526x_board_info *db = netdev_priv(dev);
- 
--	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
--
- 	/* Sopt MAC controller */
- 	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);	/* Disable Tx/Rx */
- 	update_cr6(db->cr6_data, dev->base_addr);
-@@ -1141,6 +1137,22 @@ static void uli526x_dynamic_reset(struct
- 	db->link_failed = 1;
- 	db->init=1;
- 	db->wait_reset = 0;
-+}
-+
-+
-+/*
-+ *	Dynamic reset the ULI526X board
-+ *	Stop ULI526X board
-+ *	Free Tx/Rx allocated memory
-+ *	Reset ULI526X board
-+ *	Re-initialize ULI526X board
-+ */
-+
-+static void uli526x_dynamic_reset(struct net_device *dev)
-+{
-+	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
-+
-+	uli526x_reset_prepare(dev);
- 
- 	/* Re-initialize ULI526X board */
- 	uli526x_init(dev);
-@@ -1150,6 +1162,88 @@ static void uli526x_dynamic_reset(struct
- }
- 
- 
-+#ifdef CONFIG_PM_SLEEP
-+
-+/*
-+ *	Suspend the interface.
-+ */
-+
-+static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
-+{
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	int err = 0;
-+
-+	ULI526X_DBUG(0, "uli526x_suspend", 0);
-+
-+	if (dev && netdev_priv(dev)) {
-+		pci_power_t power_state;
-+
-+		pci_save_state(pdev);
-+
-+		if (!netif_running(dev))
-+			return 0;
-+
-+		netif_device_detach(dev);
-+		uli526x_reset_prepare(dev);
-+
-+		power_state = pci_choose_state(pdev, state);
-+		pci_enable_wake(pdev, power_state, 0);
-+		err = pci_set_power_state(pdev, power_state);
-+		if (err) {
-+			netif_device_attach(dev);
-+			/* Re-initialize ULI526X board */
-+			uli526x_init(dev);
-+			/* Restart upper layer interface */
-+			netif_wake_queue(dev);
-+		}
-+	}
-+	return err;
-+}
-+
-+/*
-+ *	Resume the interface.
-+ */
-+
-+static int uli526x_resume(struct pci_dev *pdev)
-+{
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct uli526x_board_info *db = netdev_priv(dev);
-+
-+	ULI526X_DBUG(0, "uli526x_resume", 0);
-+
-+	if (dev && db) {
-+		int err;
-+
-+		pci_restore_state(pdev);
-+
-+		if (!netif_running(dev))
-+			return 0;
-+
-+		err = pci_set_power_state(pdev, PCI_D0);
-+		if (err) {
-+			printk(KERN_WARNING
-+				"%s: Could not put device into D0\n",
-+				dev->name);
-+			return err;
-+		}
-+
-+		netif_device_attach(dev);
-+		/* Re-initialize ULI526X board */
-+		uli526x_init(dev);
-+		/* Restart upper layer interface */
-+		netif_wake_queue(dev);
-+	}
-+	return 0;
-+}
-+
-+#else /* !CONFIG_PM_SLEEP */
-+
-+#define uli526x_suspend	NULL
-+#define uli526x_resume	NULL
-+
-+#endif /* !CONFIG_PM_SLEEP */
-+
-+
- /*
-  *	free all allocated rx buffer
-  */
-@@ -1689,6 +1783,8 @@ static struct pci_driver uli526x_driver 
- 	.id_table	= uli526x_pci_tbl,
- 	.probe		= uli526x_init_one,
- 	.remove		= __devexit_p(uli526x_remove_one),
-+	.suspend	= uli526x_suspend,
-+	.resume		= uli526x_resume,
- };
- 
- MODULE_AUTHOR("Peer Chen, peer.chen@uli.com.tw");
+Thanks for your help :-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
