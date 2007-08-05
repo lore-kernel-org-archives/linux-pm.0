@@ -1,11 +1,13 @@
-From: Simon Arlott <simon@fire.lp0.eu>
-Subject: e1000 doesn't resume properly from standby (2.6.23-rc2)
-Date: Sun, 05 Aug 2007 09:52:04 +0100
-Message-ID: <46B58FB4.6050207__34248.6409158029$1186415541$gmane$org@simon.arlott.org.uk>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [2/3] 2.6.23-rc2: known regressions
+Date: Sun, 05 Aug 2007 18:26:26 +0200
+Message-ID: <46B5FA32.50208__37665.2429615662$1186415607$gmane$org@googlemail.com>
+References: <46B5F74D.7010708@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <46B5F74D.7010708@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,105 +17,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: netdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Florian Lohoff <flo@rfc822.org>, Andrew Clayton <andrew@digital-domain.net>, Netdev <netdev@vger.kernel.org>, Meelis Roos <mroos@linux.ee>, LKML <linux-kernel@vger.kernel.org>, Uwe Bugla <uwe.bugla@gmx.de>, nfs@lists.sourceforge.net, Thomas Meyer <thomas@m3y3r.de>, Pavel Machek <pavel@ucw.cz>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Stephen Hemminger <shemminger@osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet Controller (Copper) (rev 01)
-        Subsystem: Intel Corp.: Unknown device 1012
-        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
-        Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
-        I/O ports at b000 [size=64]
-        Capabilities: [dc] Power Management version 2
-        Capabilities: [e4] PCI-X non-bridge device.
-        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+Hi all,
 
-00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet Controller (Copper) (rev 01)
-        Subsystem: Intel Corp.: Unknown device 1012
-        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
-        Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
-        I/O ports at b400 [size=64]
-        Capabilities: [dc] Power Management version 2
-        Capabilities: [e4] PCI-X non-bridge device.
-        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+Here is a list of some known regressions in 2.6.23-rc2.
 
-[  950.132046] Stopping tasks ... done.
-[  950.459794] Suspending console(s)
-[  951.776277] pnp: Device 00:0c disabled.
-[  951.776673] pnp: Device 00:0a disabled.
-[  951.776984] pnp: Device 00:09 disabled.
-[  951.777306] pnp: Device 00:08 disabled.
-[  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-[  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
-[  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
-[  952.022243] ACPI handle has no context!
-[  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
-[  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
-[  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
-[  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
-[  952.282221] ACPI handle has no context!
-[  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
-[  952.537495] ACPI handle has no context!
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-[  956.857085] Back to C!
-[  957.295035] ACPI: Unable to turn cooling device [b18d0e00] 'off'
-[  957.521400] PCI: Setting latency timer of device 0000:00:01.0 to 64
-[  957.521478] ACPI: PCI Interrupt 0000:00:09.0[A] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
-[  957.532256] PM: Writing back config space on device 0000:00:0a.0 at offset f (was ff0100, writing ff0105)
-[  957.532277] PM: Writing back config space on device 0000:00:0a.0 at offset 8 (was 1, writing b001)
-[  957.532291] PM: Writing back config space on device 0000:00:0a.0 at offset 4 (was 4, writing e3020004)
-[  957.532299] PM: Writing back config space on device 0000:00:0a.0 at offset 3 (was 800000, writing 802008)
-[  957.532309] PM: Writing back config space on device 0000:00:0a.0 at offset 1 (was 2300000, writing 2300007)
-[  957.532339] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
-[  957.567251] PM: Writing back config space on device 0000:00:0a.1 at offset f (was ff0200, writing ff020c)
-[  957.567275] PM: Writing back config space on device 0000:00:0a.1 at offset 8 (was 1, writing b401)
-[  957.567290] PM: Writing back config space on device 0000:00:0a.1 at offset 4 (was 4, writing e3000004)
-[  957.567298] PM: Writing back config space on device 0000:00:0a.1 at offset 3 (was 800000, writing 802008)
-[  957.567308] PM: Writing back config space on device 0000:00:0a.1 at offset 1 (was 2300000, writing 2300007)
-[  957.567346] ACPI: PCI Interrupt 0000:00:0a.1[B] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.589975] ACPI: PCI Interrupt 0000:00:0b.0[A] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.600217] ACPI: PCI Interrupt 0000:00:0c.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  957.611230] ACPI: PCI Interrupt 0000:00:0c.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
-[  957.838282] ACPI: PCI Interrupt 0000:00:0c.2[C] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
-[  957.902166] ohci1394: fw-host0: OHCI-1394 1.0 (PCI): IRQ=[11]  MMIO=[e3046000-e30467ff]  Max Packet=[512]  IR/IT contexts=[4/8]
-[  957.911656] ACPI: PCI Interrupt 0000:00:11.1[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  957.911666] PCI: VIA VLink IRQ fixup for 0000:00:11.1, from 255 to 11
-[  957.922034] ACPI: PCI Interrupt 0000:00:11.2[D] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.933028] ACPI: PCI Interrupt 0000:00:11.3[D] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.944076] ACPI: PCI Interrupt 0000:00:11.5[C] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
-[  957.944091] PCI: Setting latency timer of device 0000:00:11.5 to 64
-[  957.946061] ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  957.947464] pnp: Device 00:08 activated.
-[  957.948724] pnp: Device 00:09 activated.
-[  957.950635] pnp: Device 00:0a activated.
-[  957.950664] pnp: Failed to activate device 00:0b.
-[  957.951942] pnp: Device 00:0c activated.
-[  959.883939] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[  961.866287] hde: selected mode 0x45
-[  965.310493] hdg: selected mode 0x45
-[  965.316152] hdh: selected mode 0x42
-[  969.135523] hda: selected mode 0x46
-[  973.454631] hdb: selected mode 0x45
-[  973.457179] hdc: selected mode 0x44
-[  973.459550] hdd: selected mode 0x42
-[  973.950474] Restarting tasks ... done.
-[  974.261357] agpgart: Found an AGP 2.0 compliant device at 0000:00:00.0.
-[  974.262099] agpgart: Putting AGP V2 device at 0000:00:00.0 into 4x mode
-[  974.262620] agpgart: Putting AGP V2 device at 0000:01:00.0 into 4x mode
-[  974.262894] [drm] Loading R200 Microcode
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            6
+Andi Kleen                             4
+Andrew Morton                          4
+Linus Torvalds                         4
+Al Viro                                3
+Cornelia Huck                          3
+Jens Axboe                             3
+Tejun Heo                              3
+David Woodhouse                        2
+Hugh Dickins                           2
+Trent Piepho                           2
 
 
-eth0 now doesn't receive anything - it's transmitting ok because 
-I can receive its packets on another host. It's also still getting 
-interrupts.
 
-If I then ifconfig eth0 down and up, or change the MTU (since 
-that resets the link on e1000), it starts working again:
+FS
 
-[  993.926603] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+References      : http://lkml.org/lkml/2007/8/2/462
+Last known good : ?
+Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
 
 
-There's a link up at 959.883939 too...
 
--- 
-Simon Arlott
+Networking
+
+Subject         : IP v4 routing is broken
+References      : http://www.stardust.webpages.pl/files/tbf/bugs/bug_report01.txt
+Last known good : 2.6.22-git2
+Submitter       : Uwe Bugla <uwe.bugla@gmx.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : sky2 boot crash in sky2_mac_intr
+References      : http://lkml.org/lkml/2007/7/24/91
+Last known good : ?
+Submitter       : Florian Lohoff <flo@rfc822.org>
+Caused-By       : 
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
+Last known good : ?
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+
+
+Power management
+
+Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+References      : http://lkml.org/lkml/2007/8/4/39
+Last known good : ?
+Submitter       : Meelis Roos <mroos@linux.ee>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
