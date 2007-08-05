@@ -1,15 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: encrypted hibernation (was Re: Hibernation
-	considerations)
-Date: Sun, 5 Aug 2007 21:56:29 +0200
-Message-ID: <20070805195628.GA1947__33675.3728487112$1186343947$gmane$org@elf.ucw.cz>
-References: <200707151433.34625.rjw@sisk.pl> <20070715125855.GA1737@gallifrey>
-	<200707160038.12943.rjw@sisk.pl> <20070729065352.GB17084@suse.cz>
+Subject: Re: [RFC][PATCH -mm 3/3] Freezer: Replace the timeout
+Date: Sun, 5 Aug 2007 23:37:28 +0200
+Message-ID: <20070805213728.GA30770@elf.ucw.cz>
+References: <200707251401.48340.rjw@sisk.pl> <200708010029.43652.rjw@sisk.pl>
+	<20070801083146.GX2087@elf.ucw.cz> <200708011243.25276.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070729065352.GB17084@suse.cz>
+In-Reply-To: <200708011243.25276.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,98 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vojtech Pavlik <vojtech@suse.cz>, seife@suse.de
-Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, LKML <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>, "Eric W. Biederman" <ebiederm@xmission.com>, "Dr. David Alan Gilbert" <linux@treblig.org>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > Two things which I think would be nice to consider are:
-> > >    1) Encryption - I'd actually prefer if my luks device did not
-> > >        remember the key accross a hibernation; I want to be forced to
-> > >        reenter the phrase.  However I don't know what the best thing
-> > >        to do to partitions/applications using the luks device is.
-> > 
-> > Encryption is possible with both the userland hibernation (aka uswsusp) and
-> > TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a "must
-> > have" feature for a framework to be generally useful (many users don't use it
-> > anyway).
+> > What happens on loaded ext3 filesystem, for example? Bunch of userland tasks
+> > will wait on data to be synced to disk, taking more than second, no?
 > 
-> If a user uses an encrypted filesystem, then he also needs an encrypted
-> swap and encrypted hibernation image: Otherwise the fileystem encryption
-> is not very useful.
+> IMHO this only is a question of what the value of MAX_WAITS should be.
+> [I took 5 because it turned to be enough in my testing, but that could be 10 or
+> more.]
+> 
+> The point is that in 99.(9)% of cases the 20s timeout is unnecessary, because:
+> (1) most often we succeed within 1s
+> (2) if we are going to fail, we can say that we'll fail way before the 20s
+>     expires.
 
-Actually, we can do most of that stuff already. 
+Well, I've just reproduced 10seconds and 17seconds
+time-to-freeze. Okay, I did 
 
-We can encrypt filesystems, encrypt swaps (LVM), and encrypt hibernation.
+make clean; time make -j 350
 
-What we _can't_ do is to hibernate on LVM encrypted partition, and we
-could only suspend to swap partition. Bad combination, but here's way
-out: just use separate (raw) partition for hibernation.
+on kernel (2GB machine). Can you try with something similary evil?
 
-Ok, that needs re-partitioning; if that's bad, just swapoff before
-hibernation and mkswap/swapon after its done.
+> Anyway, eventually, I'd like the freezer to detect failures relatively early,
+> so the user won't have to wait 20s each time it's going to fail.
 
-Index: suspend.c
-===================================================================
-RCS file: /cvsroot/suspend/suspend/suspend.c,v
-retrieving revision 1.82
-diff -u -u -r1.82 suspend.c
---- suspend.c	29 Jul 2007 12:48:10 -0000	1.82
-+++ suspend.c	5 Aug 2007 19:49:05 -0000
-@@ -59,6 +59,7 @@
- static unsigned long pref_image_size = IMAGE_SIZE;
- static int suspend_loglevel = SUSPEND_LOGLEVEL;
- static char compute_checksum;
-+static int raw_partition = 1;
- #ifdef CONFIG_COMPRESS
- static char compress;
- #else
-@@ -184,6 +185,9 @@
- 	int error;
- 	loff_t free_swap;
- 
-+	if (raw_partition)
-+		return 1*1024*1024*1024;
-+
- 	error = ioctl(dev, SNAPSHOT_AVAIL_SWAP, &free_swap);
- 	if (!error)
- 		return free_swap;
-@@ -197,6 +201,12 @@
- 	int error;
- 	loff_t offset;
- 
-+	if (raw_partition) {
-+		static int cur_offset = 0;
-+		cur_offset += page_size;
-+		return cur_offset;
-+	}
-+
- 	error = ioctl(dev, SNAPSHOT_GET_SWAP_PAGE, &offset);
- 	if (!error)
- 		return offset;
-@@ -205,6 +215,8 @@
- 
- static inline int free_swap_pages(int dev)
- {
-+	if (raw_partition)
-+		return 0;
- 	return ioctl(dev, SNAPSHOT_FREE_SWAP_PAGES, 0);
- }
- 
-@@ -213,6 +225,8 @@
- 	struct resume_swap_area swap;
- 	int error;
- 
-+	if (raw_partition)
-+		return 0;
- 	swap.dev = blkdev;
- 	swap.offset = offset;
- 	error = ioctl(dev, SNAPSHOT_SET_SWAP_AREA, &swap);
+It should not fail ;-). And failures are _really_ rare these days. Is
+20second wait in case of kernel bug that bad? (FUSE case _is_ a kernel
+bug, I'm just not sure how to solve it. It is still rare.)
 
-
-
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
