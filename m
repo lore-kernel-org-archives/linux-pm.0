@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH] PM: Fix dependencies of CONFIG_SUSPEND
-	and CONFIG_HIBERNATION (updated)
-Date: Sun, 5 Aug 2007 19:06:21 +0200
-Message-ID: <200708051906.22865.rjw__7377.11968035928$1186333179$gmane$org@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
+Date: Sun, 5 Aug 2007 20:36:33 +0200
+Message-ID: <20070805183633.GA1758__5019.49870163134$1186339034$gmane$org@elf.ucw.cz>
+References: <200707251238.50218.lenb@kernel.org>
+	<200707302354.23237.lenb@kernel.org>
+	<20070731063833.GD22419@elf.ucw.cz>
+	<200708031523.19623.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <200708031523.19623.lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,256 +20,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
+To: Len Brown <lenb@kernel.org>
+Cc: david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>, linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-[I'm not sure if this patch reached LKML plus some CCs were missing.
-Sorry for duplicates.]
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri 2007-08-03 15:23:19, Len Brown wrote:
+> On Tuesday 31 July 2007 02:38, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Without this change, it is possible to build CONFIG_HIBERNATE
+> > > on all !SMP architectures, but not necessarily their SMP versions.
+> > 
+> > Did you want to say "CONFIG_SUSPEND"?
+> 
+> Yes.
+> 
+> > > I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
+> > > is correct.  For now it simply matches the list for
+> > > SUSPEND_SMP_POSSIBLE.
+> > 
+> > I do not think it is.
+> > 
+> > > Signed-off-by: Len Brown <len.brown@intel.com>
+> > > ---
+> > >  Kconfig |    7 ++++++-
+> > >  1 file changed, 6 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> > > index 412859f..ccf6576 100644
+> > > --- a/kernel/power/Kconfig
+> > > +++ b/kernel/power/Kconfig
+> > > @@ -72,6 +72,11 @@ config PM_TRACE
+> > >  	CAUTION: this option will cause your machine's real-time clock to be
+> > >  	set to an invalid time after a resume.
+> > >  
+> > > +config SUSPEND_UP_POSSIBLE
+> > > +	bool
+> > > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
+> > 
+> > At least ARM can do suspend, too... probably others. I was under
+> > impression that SUSPEND is "supported" by all the architectures, just
+> > some of them veto it at runtime (using pm_ops or how was it renamed).
+> 
+> The reason this entire thread started is because Linus, Jeff and others
+> said that they didn't want code magically compiled into their kernel
+> that they did not explicitly ask for -- even if the savings were small
+> and that kernel was already something rather beefy, such as ACPI+SMP.
+> 
+> The current code is simply broken, because it allows SUSPEND
+> on IA64 if UP, but not on SMP.  It should really be neither.
 
-Dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION introduced by commi=
-t
-296699de6bdc717189a331ab6bbe90e05c94db06 "Introduce CONFIG_SUSPEND for
-suspend-to-Ram and standby" are incorrect, as they don't cover the facts =
-that
-(1) not all architectures support suspend and (2) SMP hibernation is only
-possible on X86 and PPC64 (if CONFIG_PPC64_SWSUSP is set).
+Actually, it should be both, AFAICT. Suspend infrastructure should be
+there, just returing -EINVAL... that's how it worked in 2.6.22 IIRC.
 
-Moreover, SMP suspend and hibernation are only possible if CONFIG_HOTPLUG=
- is
-set, because they select HOTPLUG_CPU that depends on it. =A0Also, since s=
-uspend
-and hibernation don't depend on EXPERIMENTAL, arrange things so that CPU
-hotplug can be selected if it is not set.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/arm/Kconfig      |    2 +-
- arch/i386/Kconfig     |    3 ++-
- arch/powerpc/Kconfig  |    3 ++-
- arch/x86_64/Kconfig   |    2 +-
- arch/x86_64/defconfig |    1 -
- include/linux/cpu.h   |    6 +++---
- kernel/cpu.c          |    4 ++--
- kernel/power/Kconfig  |   44 ++++++++++++++++++++++++++++++++++---------=
--
- 8 files changed, 45 insertions(+), 20 deletions(-)
-
-Index: linux-2.6.23-rc2/kernel/power/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/kernel/power/Kconfig	2007-08-05 00:45:11.000000=
-000 +0200
-+++ linux-2.6.23-rc2/kernel/power/Kconfig	2007-08-05 01:10:36.000000000 +=
-0200
-@@ -72,15 +72,10 @@ config PM_TRACE
- 	CAUTION: this option will cause your machine's real-time clock to be
- 	set to an invalid time after a resume.
-=20
--config SUSPEND_SMP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC)=
-)
--	depends on SMP
--	default y
--
--config SUSPEND_SMP
-+config PM_SLEEP_SMP
- 	bool
--	depends on SUSPEND_SMP_POSSIBLE && PM_SLEEP
-+	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-+	depends on PM_SLEEP
- 	select HOTPLUG_CPU
- 	default y
-=20
-@@ -89,20 +84,49 @@ config PM_SLEEP
- 	depends on SUSPEND || HIBERNATION
- 	default y
-=20
-+config SUSPEND_UP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
-+		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
-+		   || MIPS || SUPERH || FRV
-+	depends on !SMP
-+	default y
-+
-+config SUSPEND_SMP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) \
-+		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM
-+	depends on SMP
-+	depends on HOTPLUG
-+	default y
-+
- config SUSPEND
- 	bool "Suspend to RAM and standby"
- 	depends on PM
--	depends on !SMP || SUSPEND_SMP_POSSIBLE
-+	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
- 	  powered and thus its contents are preserved, such as the
- 	  suspend-to-RAM state (i.e. the ACPI S3 state).
-=20
-+config HIBERNATION_UP_POSSIBLE
-+	bool
-+	depends on X86 || PPC64_SWSUSP || FRV || PPC32
-+	depends on !SMP
-+	default y
-+
-+config HIBERNATION_SMP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
-+	depends on SMP
-+	depends on HOTPLUG
-+	default y
-+
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
- 	depends on PM && SWAP
--	depends on ((X86 || PPC64_SWSUSP || FRV || PPC32) && !SMP) || SUSPEND_S=
-MP_POSSIBLE
-+	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
- 	---help---
- 	  Enable the suspend to disk (STD) functionality, which is usually
- 	  called "hibernation" in user interfaces.  STD checkpoints the
-Index: linux-2.6.23-rc2/kernel/cpu.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/kernel/cpu.c	2007-08-05 00:45:11.000000000 +020=
-0
-+++ linux-2.6.23-rc2/kernel/cpu.c	2007-08-05 01:10:36.000000000 +0200
-@@ -273,7 +273,7 @@ int __cpuinit cpu_up(unsigned int cpu)
- 	return err;
- }
-=20
--#ifdef CONFIG_SUSPEND_SMP
-+#ifdef CONFIG_PM_SLEEP_SMP
- static cpumask_t frozen_cpus;
-=20
- int disable_nonboot_cpus(void)
-@@ -334,4 +334,4 @@ void enable_nonboot_cpus(void)
- out:
- 	mutex_unlock(&cpu_add_remove_lock);
- }
--#endif
-+#endif /* CONFIG_PM_SLEEP_SMP */
-Index: linux-2.6.23-rc2/include/linux/cpu.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/include/linux/cpu.h	2007-08-05 00:45:11.0000000=
-00 +0200
-+++ linux-2.6.23-rc2/include/linux/cpu.h	2007-08-05 01:10:36.000000000 +0=
-200
-@@ -128,16 +128,16 @@ static inline void cpuhotplug_mutex_unlo
- static inline int cpu_is_offline(int cpu) { return 0; }
- #endif		/* CONFIG_HOTPLUG_CPU */
-=20
--#ifdef CONFIG_SUSPEND_SMP
-+#ifdef CONFIG_PM_SLEEP_SMP
- extern int suspend_cpu_hotplug;
-=20
- extern int disable_nonboot_cpus(void);
- extern void enable_nonboot_cpus(void);
--#else
-+#else /* !CONFIG_PM_SLEEP_SMP */
- #define suspend_cpu_hotplug	0
-=20
- static inline int disable_nonboot_cpus(void) { return 0; }
- static inline void enable_nonboot_cpus(void) {}
--#endif
-+#endif /* !CONFIG_PM_SLEEP_SMP */
-=20
- #endif /* _LINUX_CPU_H_ */
-Index: linux-2.6.23-rc2/arch/x86_64/defconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/arch/x86_64/defconfig	2007-08-04 11:59:25.00000=
-0000 +0200
-+++ linux-2.6.23-rc2/arch/x86_64/defconfig	2007-08-05 12:07:51.000000000 =
-+0200
-@@ -201,7 +201,6 @@ CONFIG_PM=3Dy
- # CONFIG_PM_DEBUG is not set
- CONFIG_HIBERNATION=3Dy
- CONFIG_PM_STD_PARTITION=3D""
--CONFIG_SUSPEND_SMP=3Dy
-=20
- #
- # ACPI (Advanced Configuration and Power Interface) Support
-Index: linux-2.6.23-rc2/arch/x86_64/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/arch/x86_64/Kconfig	2007-08-04 11:59:25.0000000=
-00 +0200
-+++ linux-2.6.23-rc2/arch/x86_64/Kconfig	2007-08-05 12:10:03.000000000 +0=
-200
-@@ -445,7 +445,7 @@ config PHYSICAL_ALIGN
-=20
- config HOTPLUG_CPU
- 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
--	depends on SMP && HOTPLUG && EXPERIMENTAL
-+	depends on SMP && HOTPLUG && (EXPERIMENTAL || PM_SLEEP_SMP)
- 	help
- 		Say Y here to experiment with turning CPUs off and on.  CPUs
- 		can be controlled through /sys/devices/system/cpu/cpu#.
-Index: linux-2.6.23-rc2/arch/arm/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/arch/arm/Kconfig	2007-08-04 11:59:17.000000000 =
-+0200
-+++ linux-2.6.23-rc2/arch/arm/Kconfig	2007-08-05 12:13:29.000000000 +0200
-@@ -594,7 +594,7 @@ config NR_CPUS
-=20
- config HOTPLUG_CPU
- 	bool "Support for hot-pluggable CPUs (EXPERIMENTAL)"
--	depends on SMP && HOTPLUG && EXPERIMENTAL
-+	depends on SMP && HOTPLUG && (EXPERIMENTAL || PM_SLEEP_SMP)
- 	help
- 	  Say Y here to experiment with turning CPUs off and on.  CPUs
- 	  can be controlled through /sys/devices/system/cpu.
-Index: linux-2.6.23-rc2/arch/i386/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/arch/i386/Kconfig	2007-08-04 11:59:18.000000000=
- +0200
-+++ linux-2.6.23-rc2/arch/i386/Kconfig	2007-08-05 12:15:19.000000000 +020=
-0
-@@ -904,7 +904,8 @@ config PHYSICAL_ALIGN
-=20
- config HOTPLUG_CPU
- 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
--	depends on SMP && HOTPLUG && EXPERIMENTAL && !X86_VOYAGER
-+	depends on SMP && HOTPLUG && (EXPERIMENTAL || PM_SLEEP_SMP) \
-+		   && !X86_VOYAGER
- 	---help---
- 	  Say Y here to experiment with turning CPUs off and on, and to
- 	  enable suspend on SMP systems. CPUs can be controlled through
-Index: linux-2.6.23-rc2/arch/powerpc/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc2.orig/arch/powerpc/Kconfig	2007-08-05 12:16:38.000000=
-000 +0200
-+++ linux-2.6.23-rc2/arch/powerpc/Kconfig	2007-08-05 12:17:13.000000000 +=
-0200
-@@ -194,7 +194,8 @@ config IOMMU_VMERGE
-=20
- config HOTPLUG_CPU
- 	bool "Support for enabling/disabling CPUs"
--	depends on SMP && HOTPLUG && EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC)
-+	depends on SMP && HOTPLUG && (EXPERIMENTAL || PM_SLEEP_SMP) \
-+		   && (PPC_PSERIES || PPC_PMAC)
- 	---help---
- 	  Say Y here to be able to disable and re-enable individual
- 	  CPUs at runtime on SMP machines.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
