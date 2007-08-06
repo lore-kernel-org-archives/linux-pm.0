@@ -1,14 +1,18 @@
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: Re: Possible problem with device_move()
-Date: Mon, 6 Aug 2007 11:31:41 +0200
-Message-ID: <20070806113141.2289e5e3@gondolin.boeblingen.de.ibm.com>
-References: <Pine.LNX.4.44L0.0708031042440.2597-100000@iolanthe.rowland.org>
-	<200708032339.32161.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Re: [Resend][PATCH] PM: Fix dependencies of
+	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
+Date: Mon, 6 Aug 2007 13:14:41 +0200
+Message-ID: <200708061314.42632.rjw__44419.5594326176$1186398375$gmane$org@sisk.pl>
+References: <200708051906.22865.rjw@sisk.pl>
+	<20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
+	<1186392591.28655.35.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708032339.32161.rjw@sisk.pl>
+In-Reply-To: <1186392591.28655.35.camel@johannes.berg>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +22,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
+To: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 3 Aug 2007 23:39:31 +0200,
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> > Suggested functions:
+On Monday, 6 August 2007 11:29, Johannes Berg wrote:
+> On Mon, 2007-08-06 at 11:07 +0200, Pavel Machek wrote:
+> > Hi!
 > > 
-> >      1. Move A in front of B, together with all of A's ancestors which
-> > 	aren't already ahead of B (or maybe require that A's parent be
-> > 	ahead of B already).
-
-I'd prefer "move includes ancestors" as not to introduce another
-possibility where users can get it wrong.
-
+> > > +config SUSPEND_UP_POSSIBLE
+> > > +	bool
+> > > +	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
+> > > +		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
+> > > +		   || MIPS || SUPERH || FRV
+> > > +	depends on !SMP
+> > > +	default y
 > > 
-> >      2. Move device A to the end (A must not have any children).
-> > 
-> > Anything else?
+> > I guess I'd rather left SUSPEND_UP_POSSIBLE to allways y (as it always
+> > was), and let architectures that can't handle it  not return "mem"
+> > from list of valid states...
 > 
-> Nothing more comes to mind at the moment.
-> 
-> > I think this will cover all the cases we currently are concerned about.
-> 
-> I agree.
+> Yeah, that's the utterly broken interface we used to have. Until I fixed
+> it to have no valid states until architectures implement suspend_ops.
+> Still, I disagree, why bother with compiling code that can't ever be
+> used?
 
-Yes, I think this should be sufficient.
+Yes, that's the idea.
+
+BTW, Pavel please see: http://lkml.org/lkml/2007/8/3/303
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
