@@ -1,16 +1,17 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: RE: [PATH 0/1] Kexec jump - v2 - the first step to kexec
-	based hibernation
-Date: Mon, 6 Aug 2007 21:22:46 +0800
-Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC2437517__14275.7988338873$1186415824$gmane$org@pdsmsx415.ccr.corp.intel.com>
-References: <20070806090210.GA15329@atrey.karlin.mff.cuni.cz>
+From: "Joonwoo Park" <joonwpark81@gmail.com>
+Subject: Re: [PATCH] kexec: fix pci device initialization fail
+	after kexec (2.6.23-rc2). (Related to e1000 doesn't resume
+	properly from standby)
+Date: Tue, 7 Aug 2007 00:50:13 +0900
+Message-ID: <b25c3fa70708060850p26b7b3e6yb8a523a479c714c0__27929.7139881693$1186416124$gmane$org@mail.gmail.com>
+References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>
+	<200708061650.16555.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <20070806090210.GA15329@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <200708061650.16555.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,47 +21,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Simon Arlott <simon@fire.lp0.eu>, "Kok, Auke" <auke-jan.h.kok@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
->-----Original Message-----
->From: Pavel Machek [mailto:pavel@ucw.cz]
->> > Did the trick, I got the kernel to load, and it even attempted
->> > exec... but I got doublefault (or what is it?)
->> >
->> > Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
->> >
->> > Do I have to disable ACPI completely? I tried with acpi=off,
->> > nosmp... but problem does not seem device related.
->>
->> It seems that the problem has nothing to do with device or ACPI. Can
-you
->> do a normal kexec? That is:
->>
->> kexec -l <...>
->> kexec -e
->>
->> or
->>
->> kexec -p <...>
->> ALT-SysRq-c to trigger a crash dump.
+2007/8/6, Rafael J. Wysocki <rjw@sisk.pl>:
+> On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
+> > Hi.
+> > I think that the pci_set_power_state() has bug.
+> > The specification says that some delays is required.
 >
->...that was indeed a problem. I can do successful kexec, as long as I
->load bzImage (and not vmlinux). (Both kernels 2.6.22 and
->2.6.23-rc2-git). Problem is, I can only load bzImage using -l, attempt
->to load bzImage using -p results in
+> And they are in place, AFAICS (from drivers/pci/pci.c):
 >
->"Could not find a free area of memory of 9000 bytes"
->locate_hole failed
+>        /* Mandatory power management transition delays */
+>        /* see PCI PM 1.1 5.6.1 table 18 */
+>        if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
+>                msleep(pci_pm_d3_delay);
+>        else if (state == PCI_D2 || dev->current_state == PCI_D2)
+>                udelay(200);
 >
->. Any ideas?
 
-The Kexec-tools 1.101 can not deal with bzImage with "-p" properly. So
-vmlinux must be used with "-p". And the tricks previous mentioned must
-be used for normal kexec -p too. The example command line is as follow:
+The problem is occurred when state is 'PCI_D0', so those codes can't cover it.
+But pci pm specification 5.4.1 says that when programmed to D0 the
+equivalent of a warm reset, delay for the duration of the D3hot to D0
+Uninitialized state
+transition (10ms) to pci signal drivers remain disabled is required.
 
-kexec -p --args-linux vmlinux --append="root=/dev/<xxx> ..."
+> > Simon, please can I know whether it works to you?
+> > It is seems to the things are related.
+> >
+> > Joonwoo Park.
+> >
+> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > index 37c00f6..9f78064 100644
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -493,8 +493,14 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+> >    * restore at least the BARs so that the device will be
+> >    * accessible to its driver.
+> >    */
+> > - if (need_restore)
+> > + if (need_restore) {
+> > +   /* The specification also says that "Must ensure that all of
+> > +    * its PCI signal drivers remain disabled for the duration of
+> > +    * the D3hot to D0 Uninitialized state transition".
+> > +    */
+> > +   msleep(10);
+>
+> It's too late for the delay.
+>
 
-Best Regards,
-Huang Ying
+How about this?
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 37c00f6..974dd04 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -471,6 +471,8 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+                msleep(pci_pm_d3_delay);
+        else if (state == PCI_D2 || dev->current_state == PCI_D2)
+                udelay(200);
++      else if (state == PCI_D0)
++              msleep(10);
+
+        /*
+         * Give firmware a chance to be called, such as ACPI _PRx, _PSx
+
+
+> >     pci_restore_bars(dev);
+> > + }
+> >
+> >   return 0;
+> >  }
+>
+> Greetings,
+> Rafael
+>
+>
+> --
+> "Premature optimization is the root of all evil." - Donald Knuth
+>
+
+Thanks,
+Joonwoo Park.
