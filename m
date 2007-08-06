@@ -1,15 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 3/3] Freezer: Replace the timeout
-Date: Mon, 6 Aug 2007 00:53:04 +0200
-Message-ID: <20070805225304.GC30770@elf.ucw.cz>
-References: <200707251401.48340.rjw@sisk.pl> <200708011243.25276.rjw@sisk.pl>
-	<20070805213728.GA30770@elf.ucw.cz>
-	<200708060038.01938.rjw@sisk.pl>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec
+	based hibernation
+Date: Mon, 6 Aug 2007 11:02:10 +0200
+Message-ID: <20070806090210.GA15329@atrey.karlin.mff.cuni.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	<20070731110458.GA1777@elf.ucw.cz>
+	<1185932071.1363.13.camel@caritas-dev.intel.com>
+	<20070805185558.GE1758@elf.ucw.cz>
+	<1186367486.527.5.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708060038.01938.rjw@sisk.pl>
+In-Reply-To: <1186367486.527.5.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andres Salomon <dilinger@debian.org>, linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, David Woodhouse <dwmw2@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > > Anyway, eventually, I'd like the freezer to detect failures relatively early,
-> > > so the user won't have to wait 20s each time it's going to fail.
+> > Did the trick, I got the kernel to load, and it even attempted
+> > exec... but I got doublefault (or what is it?)
 > > 
-> > It should not fail ;-). And failures are _really_ rare these days. Is
-> > 20second wait in case of kernel bug that bad? (FUSE case _is_ a kernel
-> > bug, I'm just not sure how to solve it. It is still rare.)
+> > Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
+> > 
+> > Do I have to disable ACPI completely? I tried with acpi=off,
+> > nosmp... but problem does not seem device related.
 > 
-> Well, not very bad, but still.  Perhaps we should use a progress meter of
-> some kind to let the user know that something's going on. ;-)
+> It seems that the problem has nothing to do with device or ACPI. Can you
+> do a normal kexec? That is:
+> 
+> kexec -l <...>
+> kexec -e
+> 
+> or 
+> 
+> kexec -p <...>
+> ALT-SysRq-c to trigger a crash dump.
 
-Maybe we should move the process freezing to userspace :-))).
+...that was indeed a problem. I can do successful kexec, as long as I
+load bzImage (and not vmlinux). (Both kernels 2.6.22 and
+2.6.23-rc2-git). Problem is, I can only load bzImage using -l, attempt
+to load bzImage using -p results in 
 
-Wait... that would do the trick. We would blame userspace for FUSE
-problems, then ;-).
-									Pavel
+"Could not find a free area of memory of 9000 bytes"
+locate_hole failed
+
+. Any ideas?
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
