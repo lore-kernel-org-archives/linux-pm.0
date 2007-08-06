@@ -1,14 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Re: [Resend][PATCH] PM: Fix dependencies of
-	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
-Date: Mon, 06 Aug 2007 11:29:51 +0200
-Message-ID: <1186392591.28655.35.camel__49219.6879037239$1186392573$gmane$org@johannes.berg>
-References: <200708051906.22865.rjw@sisk.pl>
-	<20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: Re: Possible problem with device_move()
+Date: Mon, 6 Aug 2007 11:31:41 +0200
+Message-ID: <20070806113141.2289e5e3@gondolin.boeblingen.de.ibm.com>
+References: <Pine.LNX.4.44L0.0708031042440.2597-100000@iolanthe.rowland.org>
+	<200708032339.32161.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4932052347595405233=="
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <200708032339.32161.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,66 +16,33 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 3 Aug 2007 23:39:31 +0200,
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
---===============4932052347595405233==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-+qbqYYTwXoVvc/ZA0mqh"
+> > Suggested functions:
+> > 
+> >      1. Move A in front of B, together with all of A's ancestors which
+> > 	aren't already ahead of B (or maybe require that A's parent be
+> > 	ahead of B already).
 
+I'd prefer "move includes ancestors" as not to introduce another
+possibility where users can get it wrong.
 
---=-+qbqYYTwXoVvc/ZA0mqh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > 
+> >      2. Move device A to the end (A must not have any children).
+> > 
+> > Anything else?
+> 
+> Nothing more comes to mind at the moment.
+> 
+> > I think this will cover all the cases we currently are concerned about.
+> 
+> I agree.
 
-On Mon, 2007-08-06 at 11:07 +0200, Pavel Machek wrote:
-> Hi!
->=20
-> > +config SUSPEND_UP_POSSIBLE
-> > +	bool
-> > +	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
-> > +		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
-> > +		   || MIPS || SUPERH || FRV
-> > +	depends on !SMP
-> > +	default y
->=20
-> I guess I'd rather left SUSPEND_UP_POSSIBLE to allways y (as it always
-> was), and let architectures that can't handle it  not return "mem"
-> from list of valid states...
-
-Yeah, that's the utterly broken interface we used to have. Until I fixed
-it to have no valid states until architectures implement suspend_ops.
-Still, I disagree, why bother with compiling code that can't ever be
-used?
-
-johannes
-
---=-+qbqYYTwXoVvc/ZA0mqh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGtuoP/ETPhpq3jKURAtl9AKCZV5oFZ/uHnjhCSL+vgMo6fnub6gCeOiBY
-LxfwT9+1NwXAFkhhkWEfHyM=
-=oiNh
------END PGP SIGNATURE-----
-
---=-+qbqYYTwXoVvc/ZA0mqh--
-
-
---===============4932052347595405233==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4932052347595405233==--
+Yes, I think this should be sufficient.
