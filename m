@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] kexec: fix pci device initialization fail
-	after kexec (2.6.23-rc2). (Related to e1000 doesn't resume
-	properly from standby)
-Date: Mon, 6 Aug 2007 16:50:15 +0200
-Message-ID: <200708061650.16555.rjw__6977.90439376167$1186411324$gmane$org@sisk.pl>
-References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: e1000 doesn't resume properly from standby
+	(2.6.23-rc2)
+Date: Sun, 05 Aug 2007 20:01:28 -0700
+Message-ID: <46B68F08.60106__49628.5077454106$1186415304$gmane$org@intel.com>
+References: <46B58FB4.6050207@simon.arlott.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <46B58FB4.6050207@simon.arlott.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,56 +18,113 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Joonwoo Park <joonwpark81@gmail.com>
-Cc: Simon Arlott <simon@fire.lp0.eu>, "Kok, Auke" <auke-jan.h.kok@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
-> Hi.
-> I think that the pci_set_power_state() has bug.
-> The specification says that some delays is required.
-
-And they are in place, AFAICS (from drivers/pci/pci.c):
-
-	/* Mandatory power management transition delays */
-	/* see PCI PM 1.1 5.6.1 table 18 */
-	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
-		msleep(pci_pm_d3_delay);
-	else if (state == PCI_D2 || dev->current_state == PCI_D2)
-		udelay(200);
-
-> Simon, please can I know whether it works to you?
-> It is seems to the things are related.
+Simon Arlott wrote:
+> 00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet Controller (Copper) (rev 01)
+>         Subsystem: Intel Corp.: Unknown device 1012
+>         Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
+>         Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
+>         I/O ports at b000 [size=64]
+>         Capabilities: [dc] Power Management version 2
+>         Capabilities: [e4] PCI-X non-bridge device.
+>         Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
 > 
-> Joonwoo Park.
+> 00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet Controller (Copper) (rev 01)
+>         Subsystem: Intel Corp.: Unknown device 1012
+>         Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
+>         Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
+>         I/O ports at b400 [size=64]
+>         Capabilities: [dc] Power Management version 2
+>         Capabilities: [e4] PCI-X non-bridge device.
+>         Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
 > 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 37c00f6..9f78064 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -493,8 +493,14 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
->    * restore at least the BARs so that the device will be
->    * accessible to its driver.
->    */
-> - if (need_restore)
-> + if (need_restore) {
-> +   /* The specification also says that "Must ensure that all of
-> +    * its PCI signal drivers remain disabled for the duration of
-> +    * the D3hot to D0 Uninitialized state transition".
-> +    */
-> +   msleep(10);
-
-It's too late for the delay.
-
->     pci_restore_bars(dev);
-> + }
+> [  950.132046] Stopping tasks ... done.
+> [  950.459794] Suspending console(s)
+> [  951.776277] pnp: Device 00:0c disabled.
+> [  951.776673] pnp: Device 00:0a disabled.
+> [  951.776984] pnp: Device 00:09 disabled.
+> [  951.777306] pnp: Device 00:08 disabled.
+> [  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
+> [  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
+> [  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
+> [  952.022243] ACPI handle has no context!
+> [  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
+> [  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
+> [  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
+> [  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
+> [  952.282221] ACPI handle has no context!
+> [  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
+> [  952.537495] ACPI handle has no context!
 > 
->   return 0;
->  }
+> [  956.857085] Back to C!
+> [  957.295035] ACPI: Unable to turn cooling device [b18d0e00] 'off'
+> [  957.521400] PCI: Setting latency timer of device 0000:00:01.0 to 64
+> [  957.521478] ACPI: PCI Interrupt 0000:00:09.0[A] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
+> [  957.532256] PM: Writing back config space on device 0000:00:0a.0 at offset f (was ff0100, writing ff0105)
+> [  957.532277] PM: Writing back config space on device 0000:00:0a.0 at offset 8 (was 1, writing b001)
+> [  957.532291] PM: Writing back config space on device 0000:00:0a.0 at offset 4 (was 4, writing e3020004)
+> [  957.532299] PM: Writing back config space on device 0000:00:0a.0 at offset 3 (was 800000, writing 802008)
+> [  957.532309] PM: Writing back config space on device 0000:00:0a.0 at offset 1 (was 2300000, writing 2300007)
+> [  957.532339] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
+> [  957.567251] PM: Writing back config space on device 0000:00:0a.1 at offset f (was ff0200, writing ff020c)
+> [  957.567275] PM: Writing back config space on device 0000:00:0a.1 at offset 8 (was 1, writing b401)
+> [  957.567290] PM: Writing back config space on device 0000:00:0a.1 at offset 4 (was 4, writing e3000004)
+> [  957.567298] PM: Writing back config space on device 0000:00:0a.1 at offset 3 (was 800000, writing 802008)
+> [  957.567308] PM: Writing back config space on device 0000:00:0a.1 at offset 1 (was 2300000, writing 2300007)
+> [  957.567346] ACPI: PCI Interrupt 0000:00:0a.1[B] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
+> [  957.589975] ACPI: PCI Interrupt 0000:00:0b.0[A] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
+> [  957.600217] ACPI: PCI Interrupt 0000:00:0c.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
+> [  957.611230] ACPI: PCI Interrupt 0000:00:0c.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
+> [  957.838282] ACPI: PCI Interrupt 0000:00:0c.2[C] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
+> [  957.902166] ohci1394: fw-host0: OHCI-1394 1.0 (PCI): IRQ=[11]  MMIO=[e3046000-e30467ff]  Max Packet=[512]  IR/IT contexts=[4/8]
+> [  957.911656] ACPI: PCI Interrupt 0000:00:11.1[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
+> [  957.911666] PCI: VIA VLink IRQ fixup for 0000:00:11.1, from 255 to 11
+> [  957.922034] ACPI: PCI Interrupt 0000:00:11.2[D] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
+> [  957.933028] ACPI: PCI Interrupt 0000:00:11.3[D] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
+> [  957.944076] ACPI: PCI Interrupt 0000:00:11.5[C] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
+> [  957.944091] PCI: Setting latency timer of device 0000:00:11.5 to 64
+> [  957.946061] ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
+> [  957.947464] pnp: Device 00:08 activated.
+> [  957.948724] pnp: Device 00:09 activated.
+> [  957.950635] pnp: Device 00:0a activated.
+> [  957.950664] pnp: Failed to activate device 00:0b.
+> [  957.951942] pnp: Device 00:0c activated.
+> [  959.883939] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> [  961.866287] hde: selected mode 0x45
+> [  965.310493] hdg: selected mode 0x45
+> [  965.316152] hdh: selected mode 0x42
+> [  969.135523] hda: selected mode 0x46
+> [  973.454631] hdb: selected mode 0x45
+> [  973.457179] hdc: selected mode 0x44
+> [  973.459550] hdd: selected mode 0x42
+> [  973.950474] Restarting tasks ... done.
+> [  974.261357] agpgart: Found an AGP 2.0 compliant device at 0000:00:00.0.
+> [  974.262099] agpgart: Putting AGP V2 device at 0000:00:00.0 into 4x mode
+> [  974.262620] agpgart: Putting AGP V2 device at 0000:01:00.0 into 4x mode
+> [  974.262894] [drm] Loading R200 Microcode
+> 
+> 
+> eth0 now doesn't receive anything - it's transmitting ok because 
+> I can receive its packets on another host. It's also still getting 
+> interrupts.
+> 
+> If I then ifconfig eth0 down and up, or change the MTU (since 
+> that resets the link on e1000), it starts working again:
+> 
+> [  993.926603] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> 
+> 
+> There's a link up at 959.883939 too...
 
-Greetings,
-Rafael
 
+OK, I'll try to look into this coming week.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Can you run `ethtool -d ethX` immediately after resuming and post that output? 
+it might help to know that upfront.
+
+Thanks,
+
+Auke
