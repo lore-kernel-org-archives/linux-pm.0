@@ -1,18 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [Resend][PATCH] PM: Fix dependencies of
-	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
-Date: Mon, 6 Aug 2007 13:56:22 +0200
-Message-ID: <200708061356.23030.rjw__7208.16725302047$1186400895$gmane$org@sisk.pl>
-References: <200708051906.22865.rjw@sisk.pl>
-	<1186398917.28655.69.camel@johannes.berg>
-	<20070806113644.GA1790@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: Possible problem with device_move()
+Date: Mon, 6 Aug 2007 09:53:29 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0708060952180.3265-100000@iolanthe.rowland.org>
+References: <20070806113141.2289e5e3@gondolin.boeblingen.de.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070806113644.GA1790@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <20070806113141.2289e5e3@gondolin.boeblingen.de.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +16,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>, Adrian Bunk <bunk@stusta.de>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org, Marcel Holtmann <marcel@holtmann.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 6 August 2007 13:36, Pavel Machek wrote:
-> On Mon 2007-08-06 13:15:17, Johannes Berg wrote:
-> > On Mon, 2007-08-06 at 12:26 +0200, Pavel Machek wrote:
-> > 
-> > > Well, so that it does not bitrot? This is few bytes, I'd say, and I
-> > > believe we have too many config options already.
-> > 
-> > This is not an option the user is ever going to see. I think I'd
-> > prefer
+On Mon, 6 Aug 2007, Cornelia Huck wrote:
+
+> On Fri, 3 Aug 2007 23:39:31 +0200,
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Ok, option that users can't set is probably not evil.
+> > > Suggested functions:
+> > > 
+> > >      1. Move A in front of B, together with all of A's ancestors which
+> > > 	aren't already ahead of B (or maybe require that A's parent be
+> > > 	ahead of B already).
 > 
-> > having two new per-ARCH config symbols though:
-> > config SUSPEND_UP_POSSIBLE
-> > 	depends on ARCH_SUSPEND_UP_POSSIBLE
-> > 
-> > and then the architecture gets to define that when it can suspend.
-> 
-> Looks like a plan.
+> I'd prefer "move includes ancestors" as not to introduce another
+> possibility where users can get it wrong.
 
-Hmm, why don't we do the $subject change first (the advantage if it is that
-the patch is ready) and then move the necessary definitions to the arch level?
+We'll see how it ends up being used.  If we check that A's parent is 
+already ahead of B then callers won't be able to get it wrong.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Alan Stern
