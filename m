@@ -1,17 +1,13 @@
-From: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH] kexec: fix pci device initialization fail
- after kexec
- (2.6.23-rc2). (Related to e1000 doesn't resume properly from standby)
-Date: Mon, 06 Aug 2007 18:18:15 +0100
-Message-ID: <46B757D7.4070804__30187.9470389851$1186420891$gmane$org@simon.arlott.org.uk>
-References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>	
-	<200708061650.16555.rjw@sisk.pl>
-	<b25c3fa70708060850p26b7b3e6yb8a523a479c714c0@mail.gmail.com>
+From: David Brownell <david-b@pacbell.net>
+Subject: [patch 2.6.23-rc2 1/2] define clk_must_disable()
+Date: Mon, 6 Aug 2007 11:11:03 -0700
+Message-ID: <200708061111.03407.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b25c3fa70708060850p26b7b3e6yb8a523a479c714c0@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,83 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Joonwoo Park <joonwpark81@gmail.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Victor <andrew@sanpeople.com>, linux-pm@lists.linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/08/07 16:50, Joonwoo Park wrote:
-> 2007/8/6, Rafael J. Wysocki <rjw@sisk.pl>:
->> On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
->> > Hi.
->> > I think that the pci_set_power_state() has bug.
->> > The specification says that some delays is required.
->>
->> And they are in place, AFAICS (from drivers/pci/pci.c):
->>
->>        /* Mandatory power management transition delays */
->>        /* see PCI PM 1.1 5.6.1 table 18 */
->>        if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
->>                msleep(pci_pm_d3_delay);
->>        else if (state == PCI_D2 || dev->current_state == PCI_D2)
->>                udelay(200);
->>
-> 
-> The problem is occurred when state is 'PCI_D0', so those codes can't cover it.
-> But pci pm specification 5.4.1 says that when programmed to D0 the
-> equivalent of a warm reset, delay for the duration of the D3hot to D0
-> Uninitialized state
-> transition (10ms) to pci signal drivers remain disabled is required.
-> 
->> > Simon, please can I know whether it works to you?
->> > It is seems to the things are related.
->> >
->> > Joonwoo Park.
->> >
->> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> > index 37c00f6..9f78064 100644
->> > --- a/drivers/pci/pci.c
->> > +++ b/drivers/pci/pci.c
->> > @@ -493,8 +493,14 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
->> >    * restore at least the BARs so that the device will be
->> >    * accessible to its driver.
->> >    */
->> > - if (need_restore)
->> > + if (need_restore) {
->> > +   /* The specification also says that "Must ensure that all of
->> > +    * its PCI signal drivers remain disabled for the duration of
->> > +    * the D3hot to D0 Uninitialized state transition".
->> > +    */
->> > +   msleep(10);
->>
->> It's too late for the delay.
->>
-> 
-> How about this?
+This patch adds a clk_must_disable() operation, exposing the clock constraints
+which often distinguish system power states.  Systems with such constraints
+include ones using ARM-based AT91, OMAP, and PXA chips.  The new operation
+lets driver methods check those constraints.
 
-It doesn't fix it.
+A common benefit to leaving some device clocks enabled is that a suspended
+device may then be able to issue system wakeup events.  RS232, USB, Ethernet,
+and other drivers can use driver model wakeup flags as userspace directions
+about how to trade off between the lowest power "full off" states and more
+functional wakeup-enabled ones.
 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 37c00f6..974dd04 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -471,6 +471,8 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
->                 msleep(pci_pm_d3_delay);
->         else if (state == PCI_D2 || dev->current_state == PCI_D2)
->                 udelay(200);
-> +      else if (state == PCI_D0)
-> +              msleep(10);
-> 
->         /*
->          * Give firmware a chance to be called, such as ACPI _PRx, _PSx
-> 
-> 
->> >     pci_restore_bars(dev);
->> > + }
->> >
->> >   return 0;
->> >  }
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-Your patches have spaces everywhere instead of tabs.
-
--- 
-Simon Arlott
+--- at91.orig/include/linux/clk.h	2007-02-16 08:47:11.000000000 -0800
++++ at91/include/linux/clk.h	2007-02-16 08:47:17.000000000 -0800
+@@ -121,4 +121,24 @@ int clk_set_parent(struct clk *clk, stru
+  */
+ struct clk *clk_get_parent(struct clk *clk);
+ 
++/**
++ * clk_must_disable - report whether a clock's users must disable it
++ * @clk: one node in the clock tree
++ *
++ * This routine returns true only if the upcoming system state requires
++ * disabling the specified clock.
++ *
++ * It's common for platform power states to constrain certain clocks (and
++ * their descendants) to be unavailable, while other states allow that
++ * clock to be active.  A platform's power states often include an "all on"
++ * mode; system wide sleep states like "standby" and "suspend-to-RAM"; and
++ * operating states which sacrifice functionality for lower power usage.
++ *
++ * The constraint value is commonly tested in device driver suspend(), to
++ * leave clocks active if they are needed for features like wakeup events.
++ * On platforms that support reduced functionality operating states, the
++ * constraint may also need to be tested during resume() and probe() calls.
++ */
++int clk_must_disable(struct clk *clk);
++
+ #endif
