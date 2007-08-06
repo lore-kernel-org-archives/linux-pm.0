@@ -1,15 +1,18 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.23-rc2 2/2] AT91 implements
-	clk_must_disable()
-Date: Mon, 6 Aug 2007 11:23:30 -0700
-Message-ID: <200708061123.30727.david-b@pacbell.net>
-References: <200708061112.23177.david-b@pacbell.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] kexec: fix pci device initialization fail
+	after kexec (2.6.23-rc2). (Related to e1000 doesn't resume
+	properly from standby)
+Date: Mon, 6 Aug 2007 20:48:36 +0200
+Message-ID: <200708062048.37160.rjw__16348.570949822$1186425613$gmane$org@sisk.pl>
+References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>
+	<200708061650.16555.rjw@sisk.pl>
+	<b25c3fa70708060850p26b7b3e6yb8a523a479c714c0@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708061112.23177.david-b@pacbell.net>
+In-Reply-To: <b25c3fa70708060850p26b7b3e6yb8a523a479c714c0@mail.gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,24 +23,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrew Victor <andrew@sanpeople.com>, linux-pm@lists.linux-foundation.org, Russell King <rmk@arm.linux.org.uk>
+To: Joonwoo Park <joonwpark81@gmail.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>, "Kok, Auke" <auke-jan.h.kok@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 06 August 2007, David Brownell wrote:
-> This supports the clk_must_disable() interface for AT91 systems:
-> ...
+On Monday, 6 August 2007 17:50, Joonwoo Park wrote:
+> 2007/8/6, Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
+> > > Hi.
+> > > I think that the pci_set_power_state() has bug.
+> > > The specification says that some delays is required.
+> >
+> > And they are in place, AFAICS (from drivers/pci/pci.c):
+> >
+> >        /* Mandatory power management transition delays */
+> >        /* see PCI PM 1.1 5.6.1 table 18 */
+> >        if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
+> >                msleep(pci_pm_d3_delay);
+> >        else if (state == PCI_D2 || dev->current_state == PCI_D2)
+> >                udelay(200);
+> >
+> 
+> The problem is occurred when state is 'PCI_D0', so those codes can't cover it.
+> But pci pm specification 5.4.1 says that when programmed to D0 the
+> equivalent of a warm reset, delay for the duration of the D3hot to D0
+> Uninitialized state
+> transition (10ms) to pci signal drivers remain disabled is required.
 
-Note that these two patches have now become a build fix, courtesy of
-a 2.6.22-early patch:
+Section 5.4.1 of PCI PM 1.1. spec is about D3_hot.  Specifically, it says
+that if a device in D3_hot is programmed to D0, it performs the equivalent of
+a warm reset.  IOW, this is supposed to happen if the current state is D3_hot
+and the targed state is D0, which is covered by the code snippet above.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=94bed2a9c4ae980838003f5d32681eef794ecc28
+Greetings,
+Rafael
 
-When these patches were posted before, nobody objected; so I'm
-assuming nobody's had a change-of-mind.  They're obviously
-correct, and I've been running with them for over a year now
-(which explains why my at91 builds still work).
 
-So these should probably be fast-tracked into kernel.org ...
-
-- Dave
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
