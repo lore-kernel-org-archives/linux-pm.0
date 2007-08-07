@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [patch 2.6.23-rc2 1/2] define clk_must_disable()
-Date: Wed, 8 Aug 2007 00:20:09 +0200
-Message-ID: <200708080020.10147.rjw@sisk.pl>
-References: <200708061111.03407.david-b@pacbell.net>
-	<20070807125054.GC2833@flint.arm.linux.org.uk>
-	<200708071417.47706.david-b@pacbell.net>
+Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines
+Date: Wed, 8 Aug 2007 00:24:28 +0200
+Message-ID: <200708080024.28692.rjw__2466.99256026677$1186525135$gmane$org@sisk.pl>
+References: <200708052114.01790.rjw@sisk.pl> <46B8E6D4.30405@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708071417.47706.david-b@pacbell.net>
+In-Reply-To: <46B8E6D4.30405@garzik.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,74 +19,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Victor <andrew@sanpeople.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Grant Grundler <grundler@parisc-linux.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 7 August 2007 23:17, David Brownell wrote:
-> On Tuesday 07 August 2007, Russell King wrote:
+On Tuesday, 7 August 2007 23:40, Jeff Garzik wrote:
+> Rafael J. Wysocki wrote:
+> > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> > +{
+> > +	struct net_device *dev = pci_get_drvdata(pdev);
+> > +	int err = 0;
+> > +
+> > +	ULI526X_DBUG(0, "uli526x_suspend", 0);
+> > +
+> > +	if (dev && netdev_priv(dev)) {
+> > +		pci_power_t power_state;
+> > +
+> > +		pci_save_state(pdev);
+> > +
+> > +		if (!netif_running(dev))
+> > +			return 0;
+> > +
+> > +		netif_device_detach(dev);
+> > +		uli526x_reset_prepare(dev);
+> > +
+> > +		power_state = pci_choose_state(pdev, state);
+> > +		pci_enable_wake(pdev, power_state, 0);
+> > +		err = pci_set_power_state(pdev, power_state);
+> > +		if (err) {
+> > +			netif_device_attach(dev);
+> > +			/* Re-initialize ULI526X board */
+> > +			uli526x_init(dev);
+> > +			/* Restart upper layer interface */
+> > +			netif_wake_queue(dev);
+> > +		}
+> > +	}
+> > +	return err;
+> > +}
+> > +
+> > +/*
+> > + *	Resume the interface.
+> > + */
+> > +
+> > +static int uli526x_resume(struct pci_dev *pdev)
+> > +{
+> > +	struct net_device *dev = pci_get_drvdata(pdev);
+> > +	struct uli526x_board_info *db = netdev_priv(dev);
+> > +
+> > +	ULI526X_DBUG(0, "uli526x_resume", 0);
+> > +
+> > +	if (dev && db) {
+> > +		int err;
+> > +
+> > +		pci_restore_state(pdev);
+> > +
+> > +		if (!netif_running(dev))
+> > +			return 0;
+> > +
+> > +		err = pci_set_power_state(pdev, PCI_D0);
+> > +		if (err) {
+> > +			printk(KERN_WARNING
+> > +				"%s: Could not put device into D0\n",
+> > +				dev->name);
+> > +			return err;
+> > +		}
+> > +
+> > +		netif_device_attach(dev);
+> > +		/* Re-initialize ULI526X board */
+> > +		uli526x_init(dev);
+> > +		/* Restart upper layer interface */
+> > +		netif_wake_queue(dev);
+> > +	}
+> > +	return 0;
 > 
-> > 4. the description of the function implies that this function may be
-> >    called when we are not suspending:
-> > 
-> >   + * On platforms that support reduced functionality operating states, the
-> >   + * constraint may also need to be tested during resume() and probe() calls.
 > 
-> Right ... support for multiple "run" states will imply this same kind
-> of predicate, and I couldn't justify chosing a name which forces the
-> existence of more than one such predicate.  Ergo a generic name.
+> Ugh -- please fix indentation.  This is not proper Linux code.
 > 
-> However, right now no platforms support them (cpufreq aside), so this
-> text could be rather harmlessly removed:  the second half of the sentence
-> doesn't apply to anything yet.  And maybe it *should* be removed, since
-> such platforms might do arbitrarily surprising stuff ... they might use
-> driver-level "reclock yourself" callbacks/notifiers (like the original
-> DPM stuff).
-> 
-> 
-> >    With SoCs with multiple power states affecting which clocks are
-> >    available, and the need in point (2) for the architecture code to
-> >    record which PM mode we're entering via the pm_ops set_target method,
-> 
-> Your point (2) was that it's "unclear" how that information becomes
-> available.  But the presumption of (4) here is that it's set_target().
-> So either it's clear enough, and (2) was wrong; or (4) has a false
-> premise; or both.  From false premises, anything can be proven...
-> 
-> I'd certainly not expect pm_ops.set_target() to apply in any context
-> other than the start of a suspend sequence.  Any platform choosing
-> to implement multiple run states necessarily provides some more
-> mechanisms...
-> 
-> (Purely as an example ... this is much the same kind of thing that goes
-> on with cpufreq updating a CPU clock that's also exposed through the
-> clock API:  multiple interfaces to the same PM-related state.  In both
-> cases, the public interface doesn't say how the implementation might
-> be done; it doesn't even care.)
-> 
-> 
-> >    calling clk_must_disable() outside of the suspend methods results in
-> >    this function essentially returning undefined values at driver probe
-> >    time.  Note: there is no locking between driver probing and the
-> >    set_target method.
-> > 
-> >    Moreover, if used in a driver probe() path, the return value could
-> >    well depend on the _last_ system suspend state entered, and would be
-> >    undefined for a system which hasn't been suspended from boot.
-> 
-> No, this platform maintains an invariant that the target PM state is
-> always PM_SUSPEND_ON except while suspending.  (So does ACPI, as I
-> recall.)  You're presuming a broken platform; but it's not broken...
-> 
-> Re locking, that issue would be addressed as part of supporting
-> multiple run states.  I still don't see suspend ops being involved
-> in non-suspend transitions.
+> If you have the -vast majority- of code on an indented branch, as you 
+> have here, then you should either add an early 'return x;' or a goto, 
+> and unindent the main body of code.
 
-Well, I'll go further and say that in principle the .suspend() callbacks have
-nothing to do with non-suspend transitions.  In some situations they may
-perform similar operations, but in that case the common code should be put
-into a separate function and called _explicitly_ from the two places, to avoid
-confusion.
+OK, I will.
+
+> I'll let our new tulip maintainer see what he thinks about the 
+> implementation.  Seems fairly sane to me, but should at least get an "it 
+> works" test.
+
+It has been tested, as stated in the changelog, and works (on my test system).
 
 Greetings,
 Rafael
