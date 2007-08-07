@@ -1,17 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Jeff Garzik <jeff@garzik.org>
 Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines
-Date: Wed, 8 Aug 2007 14:09:41 +0200
-Message-ID: <200708081409.42384.rjw@sisk.pl>
+Date: Tue, 07 Aug 2007 17:40:36 -0400
+Message-ID: <46B8E6D4.30405__30821.987524587$1186586416$gmane$org@garzik.org>
 References: <200708052114.01790.rjw@sisk.pl>
-	<20070807160357.d6ea9731.akpm@linux-foundation.org>
-	<200708081405.00778.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708081405.00778.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200708052114.01790.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,33 +17,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>, Grant Grundler <grundler@parisc-linux.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Grant Grundler <grundler@parisc-linux.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 8 August 2007 14:05, Rafael J. Wysocki wrote:
-> On Wednesday, 8 August 2007 01:03, Andrew Morton wrote:
-> > On Sun, 5 Aug 2007 21:14:01 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > +#ifdef CONFIG_PM_SLEEP
-> > > +
-> > > +/*
-> > > + *	Suspend the interface.
-> > > + */
-> > > +
-> > > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
-> > 
-> > Since when did suspend and resume methods become dependent upon CONFIG_PM_SLEEP?
-> > 
-> > We have eight thousand implementations of this, all of which presently
-> > use CONFIG_PM.
-> 
-> Yes, they do, but if CONFIG_PM_SLEEP is not set, they won't be used.
+Rafael J. Wysocki wrote:
+> +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	int err = 0;
+> +
+> +	ULI526X_DBUG(0, "uli526x_suspend", 0);
+> +
+> +	if (dev && netdev_priv(dev)) {
+> +		pci_power_t power_state;
+> +
+> +		pci_save_state(pdev);
+> +
+> +		if (!netif_running(dev))
+> +			return 0;
+> +
+> +		netif_device_detach(dev);
+> +		uli526x_reset_prepare(dev);
+> +
+> +		power_state = pci_choose_state(pdev, state);
+> +		pci_enable_wake(pdev, power_state, 0);
+> +		err = pci_set_power_state(pdev, power_state);
+> +		if (err) {
+> +			netif_device_attach(dev);
+> +			/* Re-initialize ULI526X board */
+> +			uli526x_init(dev);
+> +			/* Restart upper layer interface */
+> +			netif_wake_queue(dev);
+> +		}
+> +	}
+> +	return err;
+> +}
+> +
+> +/*
+> + *	Resume the interface.
+> + */
+> +
+> +static int uli526x_resume(struct pci_dev *pdev)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	struct uli526x_board_info *db = netdev_priv(dev);
+> +
+> +	ULI526X_DBUG(0, "uli526x_resume", 0);
+> +
+> +	if (dev && db) {
+> +		int err;
+> +
+> +		pci_restore_state(pdev);
+> +
+> +		if (!netif_running(dev))
+> +			return 0;
+> +
+> +		err = pci_set_power_state(pdev, PCI_D0);
+> +		if (err) {
+> +			printk(KERN_WARNING
+> +				"%s: Could not put device into D0\n",
+> +				dev->name);
+> +			return err;
+> +		}
+> +
+> +		netif_device_attach(dev);
+> +		/* Re-initialize ULI526X board */
+> +		uli526x_init(dev);
+> +		/* Restart upper layer interface */
+> +		netif_wake_queue(dev);
+> +	}
+> +	return 0;
 
-Well, not all of them.  There are some in USB used for runtime power
-management and there may be some others like that, but the majority of them
-are really only useful for suspend/hibernation.  Like the ones in this patch.
 
-Greetings,
-Rafael
+Ugh -- please fix indentation.  This is not proper Linux code.
+
+If you have the -vast majority- of code on an indented branch, as you 
+have here, then you should either add an early 'return x;' or a goto, 
+and unindent the main body of code.
+
+I'll let our new tulip maintainer see what he thinks about the 
+implementation.  Seems fairly sane to me, but should at least get an "it 
+works" test.
+
+	Jeff
