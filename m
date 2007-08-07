@@ -1,19 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] kexec: fix pci device initialization fail
-	after kexec (2.6.23-rc2). (Related to e1000 doesn't resume
-	properly from standby)
-Date: Tue, 7 Aug 2007 15:51:20 +0200
-Message-ID: <200708071551.21264.rjw__22842.9956747734$1186494337$gmane$org@sisk.pl>
-References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>
-	<200708062048.37160.rjw@sisk.pl>
-	<b25c3fa70708062130v5176fa9fu4b9300e6a313cf2f@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.23-rc2 1/2] define clk_must_disable()
+Date: Tue, 7 Aug 2007 10:21:06 -0700
+Message-ID: <20070807102106.58c8191f.akpm@linux-foundation.org>
+References: <200708061111.03407.david-b@pacbell.net>
+	<200708061338.08561.david-b@pacbell.net>
+	<20070806214805.GE3360@flint.arm.linux.org.uk>
+	<200708061646.41835.david-b@pacbell.net>
+	<20070806222351.090dc035.akpm@linux-foundation.org>
+	<20070807125054.GC2833@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b25c3fa70708062130v5176fa9fu4b9300e6a313cf2f@mail.gmail.com>
-Content-Disposition: inline
+In-Reply-To: <20070807125054.GC2833@flint.arm.linux.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,62 +22,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Joonwoo Park <joonwpark81@gmail.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Simon Arlott <simon@fire.lp0.eu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-pci@atrey.karlin.mff.cuni.cz, linux-pm@lists.linux-foundation.org
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Andrew Victor <andrew@sanpeople.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 7 August 2007 06:30, Joonwoo Park wrote:
-> 2007/8/7, Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Monday, 6 August 2007 17:50, Joonwoo Park wrote:
-> > > 2007/8/6, Rafael J. Wysocki <rjw@sisk.pl>:
-> > > > On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
-> > > > > Hi.
-> > > > > I think that the pci_set_power_state() has bug.
-> > > > > The specification says that some delays is required.
-> > > >
-> > > > And they are in place, AFAICS (from drivers/pci/pci.c):
-> > > >
-> > > >        /* Mandatory power management transition delays */
-> > > >        /* see PCI PM 1.1 5.6.1 table 18 */
-> > > >        if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
-> > > >                msleep(pci_pm_d3_delay);
-> > > >        else if (state == PCI_D2 || dev->current_state == PCI_D2)
-> > > >                udelay(200);
-> > > >
-> > >
-> > > The problem is occurred when state is 'PCI_D0', so those codes can't cover it.
-> > > But pci pm specification 5.4.1 says that when programmed to D0 the
-> > > equivalent of a warm reset, delay for the duration of the D3hot to D0
-> > > Uninitialized state
-> > > transition (10ms) to pci signal drivers remain disabled is required.
-> >
-> > Section 5.4.1 of PCI PM 1.1. spec is about D3_hot.  Specifically, it says
-> > that if a device in D3_hot is programmed to D0, it performs the equivalent of
-> > a warm reset.  IOW, this is supposed to happen if the current state is D3_hot
-> > and the targed state is D0, which is covered by the code snippet above.
+On Tue, 7 Aug 2007 13:50:54 +0100 Russell King <rmk@arm.linux.org.uk> wrote:
+
+> I do not think that the clk_must_disable() API is well enough thought out
+> for the following reasons:
 > 
-> IMHO, it is seems to the spec says just *programmed  to D0* not
-> *programmed from D3hot to D0*.
+> 1. the name sucks - it tells you nothing about it's purpose, which as
+>    the name currently stands can be interpreted in as many ways as there
+>    are species of animals on this planet.
+> 
+>    While the comments around the prototype help interpret its semantics,
+>    it is no subsitute for having a good name for the function.
+> 
+> 2. it's unclear how this function obtains information about the "upcoming
+>    system state" and therefore decides whether the particular clock may
+>    be available.
+> 
+> 3. due to the negative semantics, code such as the following is difficult
+>    to interpret and work out whether it's correct due to the double
+>    negative:
+> 
+>   +     if (device_may_wakeup(&pdev->dev)
+>   +                     && !clk_must_disable(atmel_port->clk))
+>                 enable_irq_wake(port->irq);
+> 
+> 4. the description of the function implies that this function may be
+>    called when we are not suspending:
+> 
+>   + * On platforms that support reduced functionality operating states, the
+>   + * constraint may also need to be tested during resume() and probe() calls.
+> 
+>    With SoCs with multiple power states affecting which clocks are
+>    available, and the need in point (2) for the architecture code to
+>    record which PM mode we're entering via the pm_ops set_target method,
+>    calling clk_must_disable() outside of the suspend methods results in
+>    this function essentially returning undefined values at driver probe
+>    time.  Note: there is no locking between driver probing and the
+>    set_target method.
+> 
+>    Moreover, if used in a driver probe() path, the return value could
+>    well depend on the _last_ system suspend state entered, and would be
+>    undefined for a system which hasn't been suspended from boot.
+> 
+> Changing the function name to "clk_available_in_suspend()" addresses at
+> least two of these points.  The other two points are addressed by
+> providing a way for the method to be passed the desired system suspend
+> state, which may be resolved by expanding pm_message_t to contain that
+> information.
 
-But the title of the section is "Software Accessible D3 (D3hot)", isn't it?
+I see, thanks.  clk_available_in_suspend() sure is a better name.
 
-And the first paragraph of the section is
+> Finally, concerning merging this during the -rc phase, I'd much rather
+> see the one liner simple build fix of adding the missing function
+> prototype going into the -rc kernels, and then a similar patch to this
+> going in during the next merge window.
 
-"Functions in D3hot must respond to configuration space accesses as long as
-power and clock are supplied so that they can be returned to D0 by software."
+Here's where confusion sets in.  I have this:
 
-If this doesn't imply D3hot to D0 transition being discussed in the next
-paragraph, then I don't know what it's there for.
+--- at91.orig/include/linux/clk.h	2007-02-16 08:47:11.000000000 -0800
++++ at91/include/linux/clk.h	2007-02-16 08:47:17.000000000 -0800
+@@ -121,4 +121,24 @@ int clk_set_parent(struct clk *clk, stru
+  */
+ struct clk *clk_get_parent(struct clk *clk);
+ 
++/**
++ * clk_must_disable - report whether a clock's users must disable it
++ * @clk: one node in the clock tree
++ *
++ * This routine returns true only if the upcoming system state requires
++ * disabling the specified clock.
++ *
++ * It's common for platform power states to constrain certain clocks (and
++ * their descendants) to be unavailable, while other states allow that
++ * clock to be active.  A platform's power states often include an "all on"
++ * mode; system wide sleep states like "standby" and "suspend-to-RAM"; and
++ * operating states which sacrifice functionality for lower power usage.
++ *
++ * The constraint value is commonly tested in device driver suspend(), to
++ * leave clocks active if they are needed for features like wakeup events.
++ * On platforms that support reduced functionality operating states, the
++ * constraint may also need to be tested during resume() and probe() calls.
++ */
++int clk_must_disable(struct clk *clk);
++
+ #endif
 
-> Actually, I got current_state UNKNOWN and state PCI_D0 after kexec's
-> start new kernel with dual port 82546EB fiber ethernet card.
-
-IMO, pci_set_power_state() is correct and your problem is related to something
-else.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+but it's a prototype for a function which doesn't exist.  You must
+be referring to a different patch.
