@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines
-Date: Wed, 8 Aug 2007 00:24:28 +0200
-Message-ID: <200708080024.28692.rjw__2466.99256026677$1186525135$gmane$org@sisk.pl>
-References: <200708052114.01790.rjw@sisk.pl> <46B8E6D4.30405@garzik.org>
+Subject: [RFC][PATCH] uli526x: Add suspend and resume routines
+	(updated)
+Date: Wed, 8 Aug 2007 00:56:41 +0200
+Message-ID: <200708080056.41651.rjw__47285.7178924189$1186526974$gmane$org@sisk.pl>
+References: <200708052114.01790.rjw@sisk.pl> <200708080024.28692.rjw@sisk.pl>
+	<46B8F19D.6060406@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46B8E6D4.30405@garzik.org>
+In-Reply-To: <46B8F19D.6060406@garzik.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,93 +25,185 @@ To: Jeff Garzik <jeff@garzik.org>
 Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Grant Grundler <grundler@parisc-linux.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 7 August 2007 23:40, Jeff Garzik wrote:
+On Wednesday, 8 August 2007 00:26, Jeff Garzik wrote:
 > Rafael J. Wysocki wrote:
-> > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +{
-> > +	struct net_device *dev = pci_get_drvdata(pdev);
-> > +	int err = 0;
-> > +
-> > +	ULI526X_DBUG(0, "uli526x_suspend", 0);
-> > +
-> > +	if (dev && netdev_priv(dev)) {
-> > +		pci_power_t power_state;
-> > +
-> > +		pci_save_state(pdev);
-> > +
-> > +		if (!netif_running(dev))
-> > +			return 0;
-> > +
-> > +		netif_device_detach(dev);
-> > +		uli526x_reset_prepare(dev);
-> > +
-> > +		power_state = pci_choose_state(pdev, state);
-> > +		pci_enable_wake(pdev, power_state, 0);
-> > +		err = pci_set_power_state(pdev, power_state);
-> > +		if (err) {
-> > +			netif_device_attach(dev);
-> > +			/* Re-initialize ULI526X board */
-> > +			uli526x_init(dev);
-> > +			/* Restart upper layer interface */
-> > +			netif_wake_queue(dev);
-> > +		}
-> > +	}
-> > +	return err;
-> > +}
-> > +
-> > +/*
-> > + *	Resume the interface.
-> > + */
-> > +
-> > +static int uli526x_resume(struct pci_dev *pdev)
-> > +{
-> > +	struct net_device *dev = pci_get_drvdata(pdev);
-> > +	struct uli526x_board_info *db = netdev_priv(dev);
-> > +
-> > +	ULI526X_DBUG(0, "uli526x_resume", 0);
-> > +
-> > +	if (dev && db) {
-> > +		int err;
-> > +
-> > +		pci_restore_state(pdev);
-> > +
-> > +		if (!netif_running(dev))
-> > +			return 0;
-> > +
-> > +		err = pci_set_power_state(pdev, PCI_D0);
-> > +		if (err) {
-> > +			printk(KERN_WARNING
-> > +				"%s: Could not put device into D0\n",
-> > +				dev->name);
-> > +			return err;
-> > +		}
-> > +
-> > +		netif_device_attach(dev);
-> > +		/* Re-initialize ULI526X board */
-> > +		uli526x_init(dev);
-> > +		/* Restart upper layer interface */
-> > +		netif_wake_queue(dev);
-> > +	}
-> > +	return 0;
+> > On Tuesday, 7 August 2007 23:40, Jeff Garzik wrote:
+> >> I'll let our new tulip maintainer see what he thinks about the 
+> >> implementation.  Seems fairly sane to me, but should at least get an "it 
+> >> works" test.
+> > 
+> > It has been tested, as stated in the changelog, and works (on my test system).
 > 
 > 
-> Ugh -- please fix indentation.  This is not proper Linux code.
-> 
-> If you have the -vast majority- of code on an indented branch, as you 
-> have here, then you should either add an early 'return x;' or a goto, 
-> and unindent the main body of code.
+> Apologies, I missed this.  I'll look to our new tulip maintainer to 
+> queue your resent patch, or at least ACK it...
 
-OK, I will.
+OK
 
-> I'll let our new tulip maintainer see what he thinks about the 
-> implementation.  Seems fairly sane to me, but should at least get an "it 
-> works" test.
-
-It has been tested, as stated in the changelog, and works (on my test system).
+Below is the updated version.  It's functionally equivalent to the previous one.
 
 Greetings,
 Rafael
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Add suspend/resume support to the uli526x network driver (tested on x86_64,
+with 'Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40').
+
+This patch is based on the suspend/resume code in the tg3 driver.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/tulip/uli526x.c |  109 +++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 103 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+===================================================================
+--- linux-2.6.23-rc2.orig/drivers/net/tulip/uli526x.c
++++ linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+@@ -1110,19 +1110,15 @@ static void uli526x_timer(unsigned long 
+ 
+ 
+ /*
+- *	Dynamic reset the ULI526X board
+  *	Stop ULI526X board
+  *	Free Tx/Rx allocated memory
+- *	Reset ULI526X board
+- *	Re-initialize ULI526X board
++ *	Init system variable
+  */
+ 
+-static void uli526x_dynamic_reset(struct net_device *dev)
++static void uli526x_reset_prepare(struct net_device *dev)
+ {
+ 	struct uli526x_board_info *db = netdev_priv(dev);
+ 
+-	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
+-
+ 	/* Sopt MAC controller */
+ 	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);	/* Disable Tx/Rx */
+ 	update_cr6(db->cr6_data, dev->base_addr);
+@@ -1141,6 +1137,22 @@ static void uli526x_dynamic_reset(struct
+ 	db->link_failed = 1;
+ 	db->init=1;
+ 	db->wait_reset = 0;
++}
++
++
++/*
++ *	Dynamic reset the ULI526X board
++ *	Stop ULI526X board
++ *	Free Tx/Rx allocated memory
++ *	Reset ULI526X board
++ *	Re-initialize ULI526X board
++ */
++
++static void uli526x_dynamic_reset(struct net_device *dev)
++{
++	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
++
++	uli526x_reset_prepare(dev);
+ 
+ 	/* Re-initialize ULI526X board */
+ 	uli526x_init(dev);
+@@ -1150,6 +1162,89 @@ static void uli526x_dynamic_reset(struct
+ }
+ 
+ 
++#ifdef CONFIG_PM_SLEEP
++
++/*
++ *	Suspend the interface.
++ */
++
++static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++	pci_power_t power_state;
++	int err;
++
++	ULI526X_DBUG(0, "uli526x_suspend", 0);
++
++	if (!(dev && netdev_priv(dev)))
++		return 0;
++
++	pci_save_state(pdev);
++
++	if (!netif_running(dev))
++		return 0;
++
++	netif_device_detach(dev);
++	uli526x_reset_prepare(dev);
++
++	power_state = pci_choose_state(pdev, state);
++	pci_enable_wake(pdev, power_state, 0);
++	err = pci_set_power_state(pdev, power_state);
++	if (err) {
++		netif_device_attach(dev);
++		/* Re-initialize ULI526X board */
++		uli526x_init(dev);
++		/* Restart upper layer interface */
++		netif_wake_queue(dev);
++	}
++
++	return err;
++}
++
++/*
++ *	Resume the interface.
++ */
++
++static int uli526x_resume(struct pci_dev *pdev)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++	struct uli526x_board_info *db = netdev_priv(dev);
++	int err;
++
++	ULI526X_DBUG(0, "uli526x_resume", 0);
++
++	if (!(dev && db))
++		return 0;
++
++	pci_restore_state(pdev);
++
++	if (!netif_running(dev))
++		return 0;
++
++	err = pci_set_power_state(pdev, PCI_D0);
++	if (err) {
++		printk(KERN_WARNING "%s: Could not put device into D0\n",
++			dev->name);
++		return err;
++	}
++
++	netif_device_attach(dev);
++	/* Re-initialize ULI526X board */
++	uli526x_init(dev);
++	/* Restart upper layer interface */
++	netif_wake_queue(dev);
++
++	return 0;
++}
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define uli526x_suspend	NULL
++#define uli526x_resume	NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
++
+ /*
+  *	free all allocated rx buffer
+  */
+@@ -1689,6 +1784,8 @@ static struct pci_driver uli526x_driver 
+ 	.id_table	= uli526x_pci_tbl,
+ 	.probe		= uli526x_init_one,
+ 	.remove		= __devexit_p(uli526x_remove_one),
++	.suspend	= uli526x_suspend,
++	.resume		= uli526x_resume,
+ };
+ 
+ MODULE_AUTHOR("Peer Chen, peer.chen@uli.com.tw");
