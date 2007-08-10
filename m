@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Date: Fri, 10 Aug 2007 22:06:57 +0200
-Message-ID: <200708102206.58438.rjw__14915.7615182505$1186775896$gmane$org@sisk.pl>
+Date: Fri, 10 Aug 2007 22:16:34 +0200
+Message-ID: <200708102216.35182.rjw__48007.4273924858$1186776541$gmane$org@sisk.pl>
 References: <46B9F664.9060600@googlemail.com> <200708102124.01218.rjw@sisk.pl>
 	<Pine.SOC.4.64.0708102220290.14225@math.ut.ee>
 Mime-Version: 1.0
@@ -34,24 +34,9 @@ On Friday, 10 August 2007 21:29, Meelis Roos wrote:
 > I hope no big trouble (i.e. only a warning during make *config) but I 
 > haven't boot-tested rc2 and newer kernels yet because it's a remote 
 > machine. Will try some day now.
-> 
-> > 3. Can you please check if this patch changes anything:
-> > http://marc.info/?l=linux-mm-commits&m=118669680811669&w=2
-> 
-> Tried it on current git, kernel/power/Kconfig gave 2 rejects.
-> Tried on 2.6.23-rc2, still 2 rejects from the same file, .rej below:
 
-Sorry, but:
-
-rafael@albercik:~/src/linux-2.6> git-pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-Already up-to-date.
-rafael@albercik:~/src/linux-2.6> cat ~/pm-fix-dependencies-of-config_suspend-and-config_hibernation-updated-3x.patch | patch -p1
-patching file arch/x86_64/defconfig
-patching file include/linux/cpu.h
-patching file kernel/cpu.c
-patching file kernel/power/Kconfig
-
-How come?
+What happens if you run "make" with the config created with the
+"make oldconfig"?  Does the warning show up again or not?
 
 Greetings,
 Rafael
