@@ -1,13 +1,16 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Date: Fri, 10 Aug 2007 22:03:38 +0300 (EEST)
-Message-ID: <Pine.SOC.4.64.0708102202400.13577__33298.0328276337$1186772704$gmane$org@math.ut.ee>
-References: <46B9F664.9060600@googlemail.com> <46B9F983.9020700@googlemail.com>
-	<200708082210.25836.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: resume from ram much slower
+Date: Fri, 10 Aug 2007 21:18:09 +0200
+Message-ID: <200708102118.10576.rjw__8616.12388766861$1186772991$gmane$org@sisk.pl>
+References: <200708101848.37222.arekm@maven.pl>
+	<6bffcb0e0708101034x44ef5bd0we6a94e398c30c511@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708082210.25836.rjw@sisk.pl>
+In-Reply-To: <6bffcb0e0708101034x44ef5bd0we6a94e398c30c511@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,24 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-> > Power management
-> > 
-> > Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-> > References      : http://lkml.org/lkml/2007/8/4/39
-> > Last known good : ?
-> > Submitter       : Meelis Roos <mroos@linux.ee>
-> > Caused-By       : ?
-> > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> > Status          : unknown
+On Friday, 10 August 2007 19:34, Michal Piotrowski wrote:
+> [S-T-R wizards CC'ed]
 > 
-> I can't reproduce this with my cross compilation toolchain for PPC.
+> On 10/08/07, Arkadiusz Miskiewicz <arekm@maven.pl> wrote:
+> > Hi,
+> >
+> > Starting 1-2 weeks ago I have very long resume from
+> > ram times. It takes more than 1 min to resume. Does anyone see such behaviour?
 
-Still present with todays git and make oldconfig, on native powerpc with 
-Debian unstable.
+No.
 
--- 
-Meelis Roos (mroos@linux.ee)
+Did it start after 2.6.23-rc1?
+
+Greetings,
+Rafael
