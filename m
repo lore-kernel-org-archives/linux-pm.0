@@ -1,15 +1,17 @@
-From: Thomas Voegtle <tv@lio96.de>
-Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
-Date: Tue, 14 Aug 2007 00:12:34 +0200 (CEST)
-Message-ID: <Pine.LNX.4.63.0708140009110.32395__23787.483390379$1187043202$gmane$org@er-systems.de>
-References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
-	<200708132306.27587.rjw@sisk.pl>
-	<Pine.LNX.4.63.0708132325580.29791@er-systems.de>
-	<200708132349.52763.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [discuss] [PATCH] x86_64: Save registers in
+	saved_context during suspend and hibernation
+Date: Tue, 14 Aug 2007 00:26:26 +0200
+Message-ID: <200708140026.27519.rjw@sisk.pl>
+References: <200708132347.07396.rjw@sisk.pl>
+	<20070813225229.GF3406@bingen.suse.de>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-121490045-1187043154=:32395"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708132349.52763.rjw@sisk.pl>
+In-Reply-To: <20070813225229.GF3406@bingen.suse.de>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,72 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: discuss@x86-64.org, pm list <linux-pm@lists.linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday, 14 August 2007 00:52, Andi Kleen wrote:
+> On Mon, Aug 13, 2007 at 11:47:06PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > During hibernation and suspend on x86_64 save CPU registers in the saved_context
+> > structure rather than in a handful of separate variables.
+> 
+> Nice. These variables always annoyed me too when looking
+> at that code.
+> 
+> >  	DEFINE(pbe_next, offsetof(struct pbe, next));
+> >  	BLANK();
+> > +	DEFINE(saved_context_rbx, offsetof(struct saved_context, rbx));
+> 
+> But is there a reason you can't just use a pt_regs and then an array
+> for the crNs ? 
 
---425052808-121490045-1187043154=:32395
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp2.linux-foundation.org id l7DMCdTn001483
+Hm, I think I can use pt_regs.  I'll try to redo the patch to use it.
 
-On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+OTOH, crNs already are members of saved_context and are accessed from C.
+I wouldn't like to change that code.
 
-> On Monday, 13 August 2007 23:31, Thomas Voegtle wrote:
-> > On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
-> >=20
-> > > On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
-> > > >=20
-> > > > Hi,
-> > > >=20
-> > > > today I saw this (output from my suspend script):
-> > > >=20
-> > > > -> woke up at Sun Aug 12 11:39:17 CEST 2007
-> > > > -> uptime is
-> > > >  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35,=
- 2.17
-> > > >=20
-> > > >=20
-> > > > Then I did a software suspend. After waking up, I saw this:
-> > > >=20
-> > > >=20
-> > > > -> woke up at Sun Aug 12 14:41:56 CEST 2007
-> > > > -> uptime is
-> > > >   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17=
-, 3.33
-> >=20
-> > I just want to add, I built 2.6.23-rc2 on Aug 4th and this happened o=
-n Aug=20
-> > 12 and I suspend once a day. And the only thing which was odd was the=
-=20
-> > uptime, nothing else.
-> >=20
-> > I rebooted with 2.6.23-rc3 today, so the odd uptime is gone.
-> > Should I try 8 suspend cycles or something to reproduce it again?
->=20
-> Well, if you can, please try to do something like this.
-
-I tried 20 suspend cycles, but this time with=20
- echo reboot > /sys/power/disk
-
-Nothing special happend.
-
-I could try with "echo shutdown" if this makes sense, tomorrow.
-Just let me know.
-
-      Thomas
-
---=20
- Thomas V=F6gtle    email: thomas@voegtle-clan.de
- ----- http://www.voegtle-clan.de/thomas ------
---425052808-121490045-1187043154=:32395
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Greetings,
+Rafael
 
 
---425052808-121490045-1187043154=:32395--
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
