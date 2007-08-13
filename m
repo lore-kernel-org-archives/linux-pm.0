@@ -1,14 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka
-	Software Suspend, aka swsusp):
-Date: Mon, 13 Aug 2007 16:18:22 +0200
-Message-ID: <20070813141822.GA16135@atrey.karlin.mff.cuni.cz>
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+Subject: Re: [PATCH] [444/2many] MAINTAINERS - SUSPEND TO RAM:
+Date: Mon, 13 Aug 2007 16:18:32 +0200
+Message-ID: <20070813141832.GB16135@atrey.karlin.mff.cuni.cz>
+References: <46bffbd5.kKrnXsYdLyNKojxF%joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+In-Reply-To: <46bffbd5.kKrnXsYdLyNKojxF%joe@perches.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,8 +26,6 @@ List-Id: linux-pm@vger.kernel.org
 > Signed-off-by: Joe Perches <joe@perches.com>
 
 ACK.
-								Pavel
-
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
