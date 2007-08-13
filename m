@@ -1,11 +1,16 @@
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: [1/4] 2.6.23-rc3: known regressions
-Date: Mon, 13 Aug 2007 19:59:06 +0200
-Message-ID: <46C09BEA.7010007__13095.9474052817$1187028163$gmane$org@googlemail.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+Date: Mon, 13 Aug 2007 20:35:03 +0200
+Message-ID: <20070813183503.GA18722__21788.6738283143$1187033480$gmane$org@uranus.ravnborg.org>
+References: <46B9F664.9060600@googlemail.com> <200708102206.58438.rjw@sisk.pl>
+	<Pine.SOC.4.64.0708111349520.725@math.ut.ee>
+	<200708112342.01989.rjw@sisk.pl>
+	<6bffcb0e0708130621s74411866mc07446854fb96cd4@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0708130621s74411866mc07446854fb96cd4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,85 +20,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christian Zankel <chris@zankel.net>, Jeff Chua <jeff.chua.linux@gmail.com>, "Antonino A. Daplas" <adaplas@gmail.com>, Thomas Voegtle <tv@lio96.de>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Jan Dittmer <jdi@l4x.org>, Ingo Molnar <mingo@elte.hu>, Arkadiusz Miskiewicz <arekm@maven.pl>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Meelis Roos <mroos@linux.ee>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+On Mon, Aug 13, 2007 at 03:21:54PM +0200, Michal Piotrowski wrote:
+> > >
+> > > The patch changes the warning to a different warning, it's now
+> > > kernel/power/Kconfig:79:warning: 'select' used by config symbol 'PM_SLEEP_SMP' refers to undefined symbol 'HOTPLUG_CPU'
 
-Here is a list of some known regressions in 2.6.23-rc3.
+So we have something like this for ppc:
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+config PM_SLEEP_SMP
+	bool "bla bla"
+	select HOTPLUG_CPU
 
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            9
-Andi Kleen                             5
-Linus Torvalds                         5
-Andrew Morton                          4
-Al Viro                                3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
+As it is not in my -linus tree it has been added by the referanced patch
+in the text I zapped.
 
 
+The warning is generated _independently_ of the actual configuration.
+All it says is that the symbol PM_SLEEP_SMP has a seelct statement
+for an unknown symbol - unknown for this architecture at least.
 
-Unclassified
+Grepping will reveal that HOTPLUG_CPU is not present for ppc and
+the easiet fix here seems to just add it like in the following:
 
-Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
-References      : http://lkml.org/lkml/2007/8/6/43
-Last known good : alpha: 2.6.22-git8
-                  xtensa: 2.6.22-git6
-Submitter       : Jan Dittmer <jdi@l4x.org>
-Caused-By       : ?
-Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
-Status          : unknown
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index 6bdeeb7..e7bcd57 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -65,6 +65,10 @@ config GENERIC_BUG
+        default y
+        depends on BUG
+ 
++config HOTPLUG_CPU
++       bool
++       default n
++
+ source "init/Kconfig"
+ 
+ menu "Processor"
 
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
-Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-Status          : problem is being debugged
-
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
-Last known good : ?
-Submitter       : Markus <lists4me@web.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Status          : problem is being debugged
+[cut'n'paste so whitespace damaged...]
+This will silence the warning...
 
 
-
-Power management
-
-Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
-References      : http://lkml.org/lkml/2007/8/12/249
-Last known good : ?
-Submitter       : Thomas Voegtle <tv@lio96.de>
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-Subject         : resume from ram much slower
-References      : http://lkml.org/lkml/2007/8/10/275
-Last known good : 2.6.23-rc1 ?
-Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
+Now as PM_SLEEP_SMP requires HOTPLUG_CPU there most be done
+something else to prevent this config symbol to be selected
+otherwise we would end up with a kernel that has HOTPLUG_CPU
+defined even it is not supported.
 
 
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+	Sam
