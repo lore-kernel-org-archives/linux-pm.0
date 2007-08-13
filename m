@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka
-	Software Suspend, aka swsusp):
-Date: Mon, 13 Aug 2007 22:50:14 +0200
-Message-ID: <200708132250.15466.rjw@sisk.pl>
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+Subject: Re: [PATCH] [444/2many] MAINTAINERS - SUSPEND TO RAM:
+Date: Mon, 13 Aug 2007 22:52:54 +0200
+Message-ID: <200708132252.55738.rjw@sisk.pl>
+References: <46bffbd5.kKrnXsYdLyNKojxF%joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+In-Reply-To: <46bffbd5.kKrnXsYdLyNKojxF%joe@perches.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -30,34 +29,28 @@ On Monday, 13 August 2007 08:36, joe@perches.com wrote:
 > Signed-off-by: Joe Perches <joe@perches.com>
 > 
 > diff --git a/MAINTAINERS b/MAINTAINERS
-> index 29a2179..5ae90a2 100644
+> index 5ae90a2..e9e7a00 100644
 > --- a/MAINTAINERS
 > +++ b/MAINTAINERS
-> @@ -4215,6 +4215,9 @@ P:	Rafael J. Wysocki
+> @@ -4226,6 +4226,7 @@ P:	Rafael J. Wysocki
 >  M:	rjw@sisk.pl
 >  L:	linux-pm@lists.linux-foundation.org
->  S:	Supported
-> +F:	Documentation/power/swsusp*
-> +F:	arch/i386/power/swsusp.S
+>  S:	Maintained
 > +F:	kernel/power/
 
-Well, the list isn't complete.  Please add
-
-arch/i386/power/
-arch/x86_64/kernel/suspend_asm.S
-arch/x86_64/kernel/suspend.c
-drivers/base/power/
-
-There also is a couple of headers.  Do you want to list them too?
++F:	drivers/base/power
++F:	arch/x86_64/kernel/acpi
++F:	arch/i386/kernel/acpi/
 
 >  
->  SUSPEND TO RAM:
->  P:	Pavel Machek
+>  SONIC NETWORK DRIVER
+>  P:	Thomas Bogendoerfer
 > 
 > 
 
 Greetings,
 Rafael
+
 
 -- 
 "Premature optimization is the root of all evil." - Donald Knuth
