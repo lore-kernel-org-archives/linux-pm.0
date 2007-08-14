@@ -1,12 +1,19 @@
-From: Adrian Bunk <bunk@kernel.org>
-Subject: [2.6 patch] make kernel/power/main.c:suspend_enter()
-	static
-Date: Tue, 14 Aug 2007 23:26:26 +0200
-Message-ID: <20070814212626.GB18945__35175.8027835332$1187130801$gmane$org@stusta.de>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka
+	Software Suspend, aka swsusp):
+Date: Tue, 14 Aug 2007 19:24:30 -0400
+Message-ID: <20070814232430.GA9325@redhat.com>
+References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
+	<200708132338.25925.rjw@sisk.pl> <20070814070528.GA2903@elf.ucw.cz>
+	<200708141937.06676.rjw@sisk.pl>
+	<1187114231.32555.105.camel@localhost>
+	<alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
+	<20070814112237.a5f1e1a4.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <20070814112237.a5f1e1a4.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,27 +23,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-suspend_enter() can now become static.
+On Tue, Aug 14, 2007 at 11:22:37AM -0700, Andrew Morton wrote:
+ > On Tue, 14 Aug 2007 11:15:41 -0700 (PDT)
+ > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+ > 
+ > > In other words, it would be much better to just have per-file markers, 
+ > > along with some per-subdirectory stuff or similar.
+ > 
+ > And a `make maintainers' target to pull it all together..
+ > 
+ > (perhaps we could add a
+ > 
+ > 	maintainer <keyword>
+ > 
+ > record to Kconfig, then `make maintainers' goes and looks up <keyword>
+ > somewhere and does something with it)
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Not everything that's in MAINTAINERS has a Kconfig entry though,
+so it really needs to live in the .c/.h files.
 
----
+	Dave
 
-This patch has been sent on:
-- 29 Jul 2007
 
---- linux-2.6.23-rc1-mm1/kernel/power/main.c.old	2007-07-26 14:49:44.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/kernel/power/main.c	2007-07-26 14:50:05.000000000 +0200
-@@ -120,7 +120,7 @@
-  *
-  *	This function should be called after devices have been suspended.
-  */
--int suspend_enter(suspend_state_t state)
-+static int suspend_enter(suspend_state_t state)
- {
- 	int error = 0;
- 
+-- 
+http://www.codemonkey.org.uk
