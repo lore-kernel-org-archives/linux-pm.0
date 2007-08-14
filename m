@@ -1,16 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [discuss] [PATCH] x86_64: Save registers in
-	saved_context during suspend and hibernation
-Date: Tue, 14 Aug 2007 21:06:44 +0200
-Message-ID: <20070814190644.GB4182@elf.ucw.cz>
-References: <200708132347.07396.rjw@sisk.pl>
-	<20070813225229.GF3406@bingen.suse.de>
-	<200708140026.27519.rjw@sisk.pl> <200708141927.58449.rjw@sisk.pl>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: [2.6 patch] make kernel/power/main.c:suspend_enter()
+	static
+Date: Tue, 14 Aug 2007 23:26:26 +0200
+Message-ID: <20070814212626.GB18945__35175.8027835332$1187130801$gmane$org@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708141927.58449.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,29 +16,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: discuss@x86-64.org, pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+suspend_enter() can now become static.
 
-> > > Nice. These variables always annoyed me too when looking
-> > > at that code.
-> > > 
-> > > >  	DEFINE(pbe_next, offsetof(struct pbe, next));
-> > > >  	BLANK();
-> > > > +	DEFINE(saved_context_rbx, offsetof(struct saved_context, rbx));
-> > > 
-> > > But is there a reason you can't just use a pt_regs and then an array
-> > > for the crNs ? 
-> > 
-> > Hm, I think I can use pt_regs.  I'll try to redo the patch to use it.
-> 
-> The updated patch (using pt_regs) is appended.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Looks ok to me.
-								Pavel
+---
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This patch has been sent on:
+- 29 Jul 2007
+
+--- linux-2.6.23-rc1-mm1/kernel/power/main.c.old	2007-07-26 14:49:44.000000000 +0200
++++ linux-2.6.23-rc1-mm1/kernel/power/main.c	2007-07-26 14:50:05.000000000 +0200
+@@ -120,7 +120,7 @@
+  *
+  *	This function should be called after devices have been suspended.
+  */
+-int suspend_enter(suspend_state_t state)
++static int suspend_enter(suspend_state_t state)
+ {
+ 	int error = 0;
+ 
