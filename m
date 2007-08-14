@@ -1,17 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.23-rc2 swsusp, suddenly increased uptime
-Date: Tue, 14 Aug 2007 00:35:23 +0200
-Message-ID: <200708140035.24240.rjw__27262.2906639755$1187044091$gmane$org@sisk.pl>
-References: <Pine.LNX.4.63.0708122137130.25343@er-systems.de>
-	<200708132349.52763.rjw@sisk.pl>
-	<Pine.LNX.4.63.0708140009110.32395@er-systems.de>
+From: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume
+	routines (updated)
+Date: Tue, 14 Aug 2007 01:58:17 -0400
+Message-ID: <46C14479.1080206__7631.93726675144$1187071258$gmane$org@garzik.org>
+References: <200708052114.01790.rjw@sisk.pl> <200708080024.28692.rjw@sisk.pl>
+	<46B8F19D.6060406@garzik.org> <200708080056.41651.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.63.0708140009110.32395@er-systems.de>
-Content-Disposition: inline
+In-Reply-To: <200708080056.41651.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,57 +19,128 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Voegtle <tv@lio96.de>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Grant Grundler <grundler@parisc-linux.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 14 August 2007 00:12, Thomas Voegtle wrote:
-> On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
+Rafael J. Wysocki wrote:
+> On Wednesday, 8 August 2007 00:26, Jeff Garzik wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Tuesday, 7 August 2007 23:40, Jeff Garzik wrote:
+>>>> I'll let our new tulip maintainer see what he thinks about the 
+>>>> implementation.  Seems fairly sane to me, but should at least get an "it 
+>>>> works" test.
+>>> It has been tested, as stated in the changelog, and works (on my test system).
+>>
+>> Apologies, I missed this.  I'll look to our new tulip maintainer to 
+>> queue your resent patch, or at least ACK it...
 > 
-> > On Monday, 13 August 2007 23:31, Thomas Voegtle wrote:
-> > > On Mon, 13 Aug 2007, Rafael J. Wysocki wrote:
-> > > 
-> > > > On Sunday, 12 August 2007 21:39, Thomas Voegtle wrote:
-> > > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > today I saw this (output from my suspend script):
-> > > > > 
-> > > > > -> woke up at Sun Aug 12 11:39:17 CEST 2007
-> > > > > -> uptime is
-> > > > >  11:39am  up 8 days  0:41,  10 users,  load average: 26.12, 6.35, 2.17
-> > > > > 
-> > > > > 
-> > > > > Then I did a software suspend. After waking up, I saw this:
-> > > > > 
-> > > > > 
-> > > > > -> woke up at Sun Aug 12 14:41:56 CEST 2007
-> > > > > -> uptime is
-> > > > >   2:41pm  up 44 days  9:11,  12 users,  load average: 35.17, 9.17, 3.33
-> > > 
-> > > I just want to add, I built 2.6.23-rc2 on Aug 4th and this happened on Aug 
-> > > 12 and I suspend once a day. And the only thing which was odd was the 
-> > > uptime, nothing else.
-> > > 
-> > > I rebooted with 2.6.23-rc3 today, so the odd uptime is gone.
-> > > Should I try 8 suspend cycles or something to reproduce it again?
-> > 
-> > Well, if you can, please try to do something like this.
+> OK
 > 
-> I tried 20 suspend cycles, but this time with 
->  echo reboot > /sys/power/disk
+> Below is the updated version.  It's functionally equivalent to the previous one.
 > 
-> Nothing special happend.
+> Greetings,
+> Rafael
 > 
-> I could try with "echo shutdown" if this makes sense, tomorrow.
-> Just let me know.
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Add suspend/resume support to the uli526x network driver (tested on x86_64,
+> with 'Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40').
+> 
+> This patch is based on the suspend/resume code in the tg3 driver.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/tulip/uli526x.c |  109 +++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 103 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+> ===================================================================
+> --- linux-2.6.23-rc2.orig/drivers/net/tulip/uli526x.c
+> +++ linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+> @@ -1110,19 +1110,15 @@ static void uli526x_timer(unsigned long 
+>  
+>  
+>  /*
+> - *	Dynamic reset the ULI526X board
+>   *	Stop ULI526X board
+>   *	Free Tx/Rx allocated memory
+> - *	Reset ULI526X board
+> - *	Re-initialize ULI526X board
+> + *	Init system variable
+>   */
+>  
+> -static void uli526x_dynamic_reset(struct net_device *dev)
+> +static void uli526x_reset_prepare(struct net_device *dev)
+>  {
+>  	struct uli526x_board_info *db = netdev_priv(dev);
+>  
+> -	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
+> -
+>  	/* Sopt MAC controller */
+>  	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);	/* Disable Tx/Rx */
+>  	update_cr6(db->cr6_data, dev->base_addr);
+> @@ -1141,6 +1137,22 @@ static void uli526x_dynamic_reset(struct
+>  	db->link_failed = 1;
+>  	db->init=1;
+>  	db->wait_reset = 0;
+> +}
+> +
+> +
+> +/*
+> + *	Dynamic reset the ULI526X board
+> + *	Stop ULI526X board
+> + *	Free Tx/Rx allocated memory
+> + *	Reset ULI526X board
+> + *	Re-initialize ULI526X board
+> + */
+> +
+> +static void uli526x_dynamic_reset(struct net_device *dev)
+> +{
+> +	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
+> +
+> +	uli526x_reset_prepare(dev);
+>  
+>  	/* Re-initialize ULI526X board */
+>  	uli526x_init(dev);
+> @@ -1150,6 +1162,89 @@ static void uli526x_dynamic_reset(struct
+>  }
+>  
+>  
+> +#ifdef CONFIG_PM_SLEEP
+> +
+> +/*
+> + *	Suspend the interface.
+> + */
+> +
+> +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	pci_power_t power_state;
+> +	int err;
+> +
+> +	ULI526X_DBUG(0, "uli526x_suspend", 0);
+> +
+> +	if (!(dev && netdev_priv(dev)))
+> +		return 0;
 
-Please try "platform" (ie. the default).  "shutdown" is very similar to
-"reboot", so I think it'll behave correctly.
+> +static int uli526x_resume(struct pci_dev *pdev)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	struct uli526x_board_info *db = netdev_priv(dev);
+> +	int err;
+> +
+> +	ULI526X_DBUG(0, "uli526x_resume", 0);
+> +
+> +	if (!(dev && db))
+> +		return 0;
 
-Greetings,
-Rafael
 
+Two comments:
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+1) Like akpm, the CONFIG_PM_SLEEP is out of place.  All other drivers 
+use CONFIG_PM
+
+2) just remove the !dev checks, that is an impossible condition
