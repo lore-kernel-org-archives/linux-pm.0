@@ -1,14 +1,15 @@
-From: Joe Perches <joe@perches.com>
+From: Rene Herman <rene.herman@gmail.com>
 Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka
-	Software Suspend, aka swsusp):
-Date: Tue, 14 Aug 2007 11:42:36 -0700
-Message-ID: <1187116957.32555.136.camel__25115.5237238438$1187117559$gmane$org@localhost>
+ Software Suspend, aka swsusp):
+Date: Tue, 14 Aug 2007 20:25:43 +0200
+Message-ID: <46C1F3A7.3090007__46721.7342732058$1187117562$gmane$org@gmail.com>
 References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
 	<200708132338.25925.rjw@sisk.pl> <20070814070528.GA2903@elf.ucw.cz>
-	<200708141937.06676.rjw@sisk.pl> <1187114231.32555.105.camel@localhost>
+	<200708141937.06676.rjw@sisk.pl>
+	<1187114231.32555.105.camel@localhost>
 	<alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
@@ -22,27 +23,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-08-14 at 11:15 -0700, Linus Torvalds wrote:
+On 08/14/2007 08:15 PM, Linus Torvalds wrote:
+
 > Quite frankly, I think the MAINTAINERS file gets a whole lot uglier this 
 > way.
-
-Me too.
-Chopping up the current file is simple.
-
-How about keeping the whole thing in git?
-Please look at thread:
-[PATCH] [1/2many] - Find the maintainer(s) for a patch - scripts/get_maintainer.pl
-
+> 
+> There's also a rather fundamental issue: this will likely make people 
+> touch the MAINTAINERS file *more*, and from a maintenance standpoint, that 
+> is exactly the wrong thing to have (one central file that everybody 
+> touches). It just tends to generate unnecessary merge conflicts etc. 
+> 
+> (We used to have that issue with the central configuration file, for 
+> example).
+> 
+> So the more I look at these things, the more convinced I am that this is 
+> not the right thing to do. These things should *not* be in one huge file, 
+> and I'd much much rather have the maintainership information be carried 
+> along with the subsystem itself, or the files it contains.
+> 
 > In other words, it would be much better to just have per-file markers, 
 > along with some per-subdirectory stuff or similar.
 
-Perhaps a single top-level MAINTAINERS subdirectory with
-500+ files or MAINTAINERS per subdirectory.
+Joe just now convinced me that rather than the per-file markers, the marker 
+is meta-information that could just be stored in GIT, with the MAINTAINERS 
+file turning into something generated.
 
-Doesn't matter to me.
+git info --maintainer and such (for many possible kinds of --flags) would 
+throw out the information.
 
-I'd prefer no per-file external markers,
-nor embedded per-file keywords.
+Rene.
