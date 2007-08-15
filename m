@@ -1,19 +1,17 @@
-From: Dave Jones <davej@redhat.com>
+From: Joe Perches <joe@perches.com>
 Subject: Re: [PATCH] [443/2many] MAINTAINERS - HIBERNATION (aka
 	Software Suspend, aka swsusp):
-Date: Tue, 14 Aug 2007 19:24:30 -0400
-Message-ID: <20070814232430.GA9325@redhat.com>
+Date: Tue, 14 Aug 2007 18:45:14 -0700
+Message-ID: <1187142314.32555.191.camel@localhost>
 References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
 	<200708132338.25925.rjw@sisk.pl> <20070814070528.GA2903@elf.ucw.cz>
-	<200708141937.06676.rjw@sisk.pl>
-	<1187114231.32555.105.camel@localhost>
+	<200708141937.06676.rjw@sisk.pl> <1187114231.32555.105.camel@localhost>
 	<alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
-	<20070814112237.a5f1e1a4.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070814112237.a5f1e1a4.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708141112110.30176@woody.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,31 +21,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 14, 2007 at 11:22:37AM -0700, Andrew Morton wrote:
- > On Tue, 14 Aug 2007 11:15:41 -0700 (PDT)
- > Linus Torvalds <torvalds@linux-foundation.org> wrote:
- > 
- > > In other words, it would be much better to just have per-file markers, 
- > > along with some per-subdirectory stuff or similar.
- > 
- > And a `make maintainers' target to pull it all together..
- > 
- > (perhaps we could add a
- > 
- > 	maintainer <keyword>
- > 
- > record to Kconfig, then `make maintainers' goes and looks up <keyword>
- > somewhere and does something with it)
+On Tue, 2007-08-14 at 11:15 -0700, Linus Torvalds wrote:
+> In other words, it would be much better to just have per-file markers, 
+> along with some per-subdirectory stuff or similar.
 
-Not everything that's in MAINTAINERS has a Kconfig entry though,
-so it really needs to live in the .c/.h files.
+So that there would be no hot single file, I cut the
+MAINTAINER file into single file segments in maintainers/*
 
-	Dave
+00_descriptions
+3c359_network_driver
+3c505_network_driver
+3c59x_network_driver
+3cr990_network_driver
+...
+zd1211rw_wireless_driver
+zf_machz_watchdog
+zr36067_video_for_linux_driver
+zs_decstation_z85c30_serial_driver
+zz_the_rest
 
+611 files.
 
--- 
-http://www.codemonkey.org.uk
+How could "make" make a single MAINTAINERS?
+
+	"cat [0-9a-z]* > ../MAINTAINERS"?
+
+Would it need to?
+Anyone have suggestions for Makefile/Kconfig support?
