@@ -1,15 +1,13 @@
-From: Markus <lists4me@web.de>
-Subject: Re: [1/4] 2.6.23-rc3: known regressions
-Date: Wed, 15 Aug 2007 18:53:34 +0200
-Message-ID: <200708151853.35643.lists4me__3319.63298745013$1187198164$gmane$org@web.de>
-References: <46C09BEA.7010007@googlemail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI: Make pnpacpi_suspend handle errors
+Date: Thu, 16 Aug 2007 10:41:02 +0200
+Message-ID: <20070816084102.GC1283@atrey.karlin.mff.cuni.cz>
+References: <200708151523.43921.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46C09BEA.7010007@googlemail.com>
 Content-Disposition: inline
+In-Reply-To: <200708151523.43921.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +17,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Christian Zankel <chris@zankel.net>, "Antonino A. Daplas" <adaplas@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Jan Dittmer <jdi@l4x.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Thomas Voegtle <tv@lio96.de>, Pavel Machek <pavel@ucw.cz>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Arkadiusz Miskiewicz <arekm@maven.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO 
-error: client killed"
-> References      : http://lkml.org/lkml/2007/7/22/86
-> Last known good : ?
-> Submitter       : Markus <lists4me@web.de>
-> Caused-By       : ?
-> Handled-By      : Ingo Molnar <mingo@elte.hu>
-> Status          : problem is being debugged
-Last working kernel was the 2.6.22 without cfs. With the patch applied 
-it shows the same problem (And so it does with the 2.6.23 as cfs was 
-merged). And its caused by the cfs(-patch).
+Hi!
 
-And the real problem is not just restricted to konqueror. Its just 
-easier to reproduce. (So the original mails started at 
-http://lkml.org/lkml/2007/7/14/60 )
+> pnpacpi_suspend() doesn't check the result returned by
+> acpi_pm_device_sleep_state() before passing it to acpi_bus_set_power(), which
+> may not be desirable.  Make it select the target power state of the device
+> using its second argument if acpi_pm_device_sleep_state() fails.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-   Markus
+Looks ok to me.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
