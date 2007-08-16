@@ -1,13 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI: Make pnpacpi_suspend handle errors
-Date: Thu, 16 Aug 2007 10:41:02 +0200
-Message-ID: <20070816084102.GC1283@atrey.karlin.mff.cuni.cz>
-References: <200708151523.43921.rjw@sisk.pl>
+Subject: Re: [2.6 patch] make kernel/power/main.c:suspend_enter()
+	static
+Date: Thu, 16 Aug 2007 11:09:10 +0200
+Message-ID: <20070816090910.GA11373__34284.0612087913$1187268775$gmane$org@elf.ucw.cz>
+References: <20070814212626.GB18945@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708151523.43921.rjw@sisk.pl>
+In-Reply-To: <20070814212626.GB18945@stusta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +18,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> pnpacpi_suspend() doesn't check the result returned by
-> acpi_pm_device_sleep_state() before passing it to acpi_bus_set_power(), which
-> may not be desirable.  Make it select the target power state of the device
-> using its second argument if acpi_pm_device_sleep_state() fails.
+On Tue 2007-08-14 23:26:26, Adrian Bunk wrote:
+> suspend_enter() can now become static.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Looks ok to me.
-								Pavel
+ACK.
+							Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
