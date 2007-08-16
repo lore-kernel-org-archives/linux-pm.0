@@ -1,17 +1,12 @@
-From: Rene Herman <rene.herman@gmail.com>
-Subject: Re: Storing Maintainers info around the kernel tree
-Date: Thu, 16 Aug 2007 17:13:41 +0200
-Message-ID: <46C469A5.8020003__35982.8033172109$1187277546$gmane$org@gmail.com>
-References: <46bffbd3.IqsNHrHU1Y9BF7Dd%joe@perches.com>
-	<20070814232430.GA9325@redhat.com>
-	<2ABEF126-D860-46D2-8E15-673C3ADB51A0@mac.com>
-	<200708151321.05959.rjw@sisk.pl>
-	<D31EF534-ACD1-426D-AF88-F152C23CB542@mac.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Re: Storing Maintainers info around the kernel tree
+Date: Thu, 16 Aug 2007 11:31:04 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0708161128540.3757-100000__20855.7105892853$1187278315$gmane$org@iolanthe.rowland.org>
+References: <46C469A5.8020003@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <D31EF534-ACD1-426D-AF88-F152C23CB542@mac.com>
+In-Reply-To: <46C469A5.8020003@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,119 +16,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Salikh Zakirov <salikh@gmail.com>, Junio C Hamano <gitster@pobox.com>, LKML Kernel <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, git@vger.kernel.org
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Salikh Zakirov <salikh@gmail.com>, LKML Kernel <linux-kernel@vger.kernel.org>, Kyle Moffett <mrmacman_g4@mac.com>, Junio C Hamano <gitster@pobox.com>, Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, git@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/16/2007 03:04 PM, Kyle Moffett wrote:
+On Thu, 16 Aug 2007, Rene Herman wrote:
 
-> On Aug 16, 2007, at 07:57:23, Rene Herman wrote:
-
->> category as .gitignore, which would _be_ a property.
->>
->> If you do this stuff in files scattered around the tree, updating and 
->> moving stuff becomes a pain -- the tool would need to go edit files.
+> > It would be much easier to put in the "kernel/somesubsys" directory a 
+> > Maintainers file which has:
 > 
-> From a practical standpoint we don't want to duplicate someone's 
-> maintainer information in the attributes of every file they maintain.  
+> It's ofcourse possible, but note that if we want this stuff to be minimally 
+> manual, moving files around (and deleting them) then requires editing these 
+> actual in-tree files via a tool.
+> 
+> With the properties deleting files just requires deleting any file-specific 
+> properties alongside which is trivial since those are linked from the file.
+> 
+> Moving stuff works by building a list of all properties that are set on the 
+> source starting at the source and destination's highest shared parent 
+> directory and then reconstructing this list at the destination, striking 
+> properties off the list that are already set at the destination.
+> 
+> Adding properties, alongside added files or after the fact, could be done 
+> via standard patch submissals via the kind of "meta-diff" that already 
+> exists for "git move".
+> 
+> I really believe this stuff should be meta-data -- and these properties as 
+> outlined work well it seems.
 
-In a tree structure, you don't have to. As described earlier, the tool 
-(git-prop) looks for the requested property being set first on the file 
-itself, then on the directory in which it resides, then its parent, and so 
-on. If I read things right, this is also how properties work in subversion 
-in fact.
+Please remember that not everybody uses git.  The MAINTAINERS data 
+should be available in the kernel source itself.
 
-So after
+(Maybe your suggestion is consistent with this -- I simply wanted to 
+raise the point.)
 
-$ git prop --set --name maintainer --value \
-	"Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>" drivers/ide/
-and
-
-$ git prop --set --name maintainer --value \
-	"Alan Cox <alan@lxorguk.ukuu.org.uk>" drivers/ide/ide-cd.*
-
-we get:
-
-$ git prop --get --name maintainer drivers/ide/ide-cd.c
-Alan Cox <alan@lxorguk.ukuu.org.uk>
-
-$ git prop --get --name maintainer drivers/ide/ide-generic.c
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Now, this override behaviour needs a tree structure ofcourse, but notice I 
-set the "maintainer" property only to the name/address. The other 
-information from the MAINTAINERS file would be using their own properties:
-
-$ git prop --set --name tree --value \
-     "quilt kernel.org/pub/linux/kernel/people/bart/pata-2.6/" drivers/ide/
-
-and nothing under drivers/ide/ would override this value nor would it be 
-repeated anywhere. Alan takes care of more than ide-cd but only the actual 
-"maintainer" value string would be set on the others as well and repeating 
-that much for different "maintenance units" is no different from the current 
-MAINTAINERS file where it also is (well, would be, Alan is in fact only 
-listed for ide-cd it seems...) repeated in different entries.
-
-(as a slight difference -- in the above example, Alan's information _is_ 
-repeated over ide-cd.c and ide-cd.h where the current MAINTAINERS file just 
-says "IDE/ATAPI CDROM DRIVER", but that's a bit of an oddbal situation since 
-you normally have either single files or a tree that make up a "maintenance 
-unit" -- and is in fact just a human versus tool difference).
-
-> It would be much easier to put in the "kernel/somesubsys" directory a 
-> Maintainers file which has:
-
-It's ofcourse possible, but note that if we want this stuff to be minimally 
-manual, moving files around (and deleting them) then requires editing these 
-actual in-tree files via a tool.
-
-With the properties deleting files just requires deleting any file-specific 
-properties alongside which is trivial since those are linked from the file.
-
-Moving stuff works by building a list of all properties that are set on the 
-source starting at the source and destination's highest shared parent 
-directory and then reconstructing this list at the destination, striking 
-properties off the list that are already set at the destination.
-
-Adding properties, alongside added files or after the fact, could be done 
-via standard patch submissals via the kind of "meta-diff" that already 
-exists for "git move".
-
-I really believe this stuff should be meta-data -- and these properties as 
-outlined work well it seems.
-
-$ git prop --set --name git.ignore -V ./.gitignore .
-$ rm .gitignore
-
-This is something I saw subversion also uses properties for. Takes the value 
-from a file instead of the command line. .gitattributes are also easily 
-incorporated into the property-system directly.
-
-$ git prop --set --name git.executable scripts/Lindent
-
-Must say I'm not particularly sure if this one has much value over the 
-current executable bit storage,but also from svn and example of a boolean 
-property.
-
-$ git prop --set --name license --value "GPL v2" .
-$ git prop --set --name license --value "GPL" sound/alsa/
-
-and so on. The GPL v2 on the source root only works if you set the property 
-on everything that's not, so you may not want to but as a "wouldn't it be 
-nice if" kinda thing. Makes for easy license analysis at least...
-
-$ git prop --set --name FIXME drivers/block/floppy.c
-
-Okay, that's probably overdoing it a bit, but as long as I'm having fun here...
-
-Note -- the properties would be versioned themselves ofcourse so that you'd 
-always have a tree where data and meta-data matched. Basically, I believe 
-you'd view the properties as just more data files, one per property, with 
-the exception that they'd not actually live in the working tree and are 
-linked from data (files/directories) that do.
-
-Long "letters of intent" this, but I'm by now in love with these things. 
-More comments (or implementations obviously :-) welcome. Any significant 
-misses in this?
-
-Rene.
+Alan Stern
