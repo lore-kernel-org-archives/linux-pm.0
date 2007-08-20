@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 2/4] Hibernation: Turn on ACPI during
-	restore if necessary
-Date: Mon, 20 Aug 2007 15:16:03 +0200
-Message-ID: <200708201516.03537.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 3/4] Hibernation: Use temporary kernel
+	text mapping during restore on x86_64
+Date: Mon, 20 Aug 2007 15:17:25 +0200
+Message-ID: <200708201517.25622.rjw@sisk.pl>
 References: <200708201510.03734.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,25 +26,98 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If the boot kernel doesn't support ACPI and ACPI is not enabled by the platform
-boot code, it may be possible to enable ACPI after restoring the system memory
-from a hibernation image.  Implement that.
+Use temporary page tables for the kernel text mapping during hibernation restore
+on x86_64.
+
+Without the patch, the original boot kernel's page tables that represent the
+kernel text mapping are used while the core of the image kernel is being
+restored.  However, in principle, if the boot kernel is not identical to the
+image kernel, the location of these page tables in the image kernel need not be
+the same, so we should create a safe copy of the kernel text mapping prior to
+restoring the core of the image kernel.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep/main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86_64/kernel/suspend.c |   41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
 
-Index: linux-2.6.23-rc3/drivers/acpi/sleep/main.c
+Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
 ===================================================================
---- linux-2.6.23-rc3.orig/drivers/acpi/sleep/main.c	2007-08-14 00:41:10.000000000 +0200
-+++ linux-2.6.23-rc3/drivers/acpi/sleep/main.c	2007-08-19 20:01:05.000000000 +0200
-@@ -240,6 +240,8 @@ static int acpi_hibernation_enter(void)
+--- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c	2007-08-14 01:06:28.000000000 +0200
++++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c	2007-08-14 01:06:34.000000000 +0200
+@@ -175,7 +175,7 @@ static int res_phys_pud_init(pud_t *pud,
  
- static void acpi_hibernation_finish(void)
+ 			if (paddr >= end)
+ 				break;
+-			pe = _PAGE_NX | _PAGE_PSE | _KERNPG_TABLE | paddr;
++			pe = __PAGE_KERNEL_LARGE | paddr;
+ 			pe &= __supported_pte_mask;
+ 			set_pmd(pmd, __pmd(pe));
+ 		}
+@@ -183,25 +183,42 @@ static int res_phys_pud_init(pud_t *pud,
+ 	return 0;
+ }
+ 
++static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
++{
++	pmd_t *pmd;
++	unsigned long paddr;
++
++	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pmd)
++		return -ENOMEM;
++	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
++	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
++		unsigned long pe;
++
++		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
++		pe &= __supported_pte_mask;
++		set_pmd(pmd, __pmd(pe));
++	}
++
++	return 0;
++}
++
+ static int set_up_temporary_mappings(void)
  {
-+	/* If the boot kernel doesn't support ACPI, we may need to enable it */
-+	acpi_enable();
- 	acpi_leave_sleep_state(ACPI_STATE_S4);
- 	acpi_disable_wakeup_device(ACPI_STATE_S4);
+ 	unsigned long start, end, next;
++	pud_t *pud;
+ 	int error;
  
+ 	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
+ 	if (!temp_level4_pgt)
+ 		return -ENOMEM;
+ 
+-	/* It is safe to reuse the original kernel mapping */
+-	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+-		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+-
+ 	/* Set up the direct mapping from scratch */
+ 	start = (unsigned long)pfn_to_kaddr(0);
+ 	end = (unsigned long)pfn_to_kaddr(end_pfn);
+ 
+ 	for (; start < end; start = next) {
+-		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+ 		if (!pud)
+ 			return -ENOMEM;
+ 		next = start + PGDIR_SIZE;
+@@ -212,7 +229,17 @@ static int set_up_temporary_mappings(voi
+ 		set_pgd(temp_level4_pgt + pgd_index(start),
+ 			mk_kernel_pgd(__pa(pud)));
+ 	}
+-	return 0;
++
++	/* Set up the kernel text mapping from scratch */
++	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++	if (!pud)
++		return -ENOMEM;
++	error = res_kernel_text_pud_init(pud, __START_KERNEL_map);
++	if (!error)
++		set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
++			__pgd(__pa(pud) | _PAGE_TABLE));
++
++	return error;
+ }
+ 
+ int swsusp_arch_resume(void)
