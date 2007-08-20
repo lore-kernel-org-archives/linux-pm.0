@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 3/4] Hibernation: Use temporary kernel
-	text mapping during restore on x86_64
-Date: Mon, 20 Aug 2007 15:17:25 +0200
-Message-ID: <200708201517.25622.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 4/4] Hibernation: Pass CR3 value in
+	hibernation header on x86_64
+Date: Mon, 20 Aug 2007 15:18:52 +0200
+Message-ID: <200708201518.52765.rjw@sisk.pl>
 References: <200708201510.03734.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,98 +26,93 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Use temporary page tables for the kernel text mapping during hibernation restore
-on x86_64.
-
-Without the patch, the original boot kernel's page tables that represent the
-kernel text mapping are used while the core of the image kernel is being
-restored.  However, in principle, if the boot kernel is not identical to the
-image kernel, the location of these page tables in the image kernel need not be
-the same, so we should create a safe copy of the kernel text mapping prior to
-restoring the core of the image kernel.
+Since we already pass the address of restore_registers() in the image header,
+we can also pass the value of the CR3 register from before the hibernation in
+the same way.  This will allow us to avoid using init_level4_pgt page tables
+during the restore.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/x86_64/kernel/suspend.c |   41 ++++++++++++++++++++++++++++++++++-------
- 1 file changed, 34 insertions(+), 7 deletions(-)
+ arch/x86_64/kernel/suspend.c     |   14 ++++++++++++--
+ arch/x86_64/kernel/suspend_asm.S |    8 +++++---
+ 2 files changed, 17 insertions(+), 5 deletions(-)
 
 Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
 ===================================================================
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c	2007-08-14 01:06:28.000000000 +0200
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c	2007-08-14 01:06:34.000000000 +0200
-@@ -175,7 +175,7 @@ static int res_phys_pud_init(pud_t *pud,
+--- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c	2007-08-19 15:12:33.000000000 +0200
++++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c	2007-08-19 15:28:24.000000000 +0200
+@@ -150,6 +150,12 @@ extern int restore_image(void);
+  */
+ unsigned long restore_jump_address;
  
- 			if (paddr >= end)
- 				break;
--			pe = _PAGE_NX | _PAGE_PSE | _KERNPG_TABLE | paddr;
-+			pe = __PAGE_KERNEL_LARGE | paddr;
- 			pe &= __supported_pte_mask;
- 			set_pmd(pmd, __pmd(pe));
- 		}
-@@ -183,25 +183,42 @@ static int res_phys_pud_init(pud_t *pud,
++/*
++ * Value of the cr3 register from before the hibernation (this value is passed
++ * in the image header).
++ */
++unsigned long restore_cr3;
++
+ pgd_t *temp_level4_pgt;
+ 
+ static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
+@@ -266,6 +272,7 @@ int pfn_is_nosave(unsigned long pfn)
+ 
+ struct restore_data_record {
+ 	unsigned long jump_address;
++	unsigned long cr3;
+ 	unsigned long control;
+ };
+ 
+@@ -283,7 +290,8 @@ int arch_hibernation_header_save(void *a
+ 	if (max_size < sizeof(struct restore_data_record))
+ 		return -EOVERFLOW;
+ 	rdr->jump_address = restore_jump_address;
+-	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
++	rdr->cr3 = restore_cr3;
++	rdr->control = (restore_jump_address ^ (restore_cr3 ^ RESTORE_MAGIC));
  	return 0;
  }
  
-+static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
-+{
-+	pmd_t *pmd;
-+	unsigned long paddr;
-+
-+	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pmd)
-+		return -ENOMEM;
-+	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
-+	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
-+		unsigned long pe;
-+
-+		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
-+		pe &= __supported_pte_mask;
-+		set_pmd(pmd, __pmd(pe));
-+	}
-+
-+	return 0;
-+}
-+
- static int set_up_temporary_mappings(void)
- {
- 	unsigned long start, end, next;
-+	pud_t *pud;
- 	int error;
+@@ -297,7 +305,9 @@ int arch_hibernation_header_restore(void
+ 	struct restore_data_record *rdr = addr;
  
- 	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
- 	if (!temp_level4_pgt)
- 		return -ENOMEM;
- 
--	/* It is safe to reuse the original kernel mapping */
--	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
--		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
--
- 	/* Set up the direct mapping from scratch */
- 	start = (unsigned long)pfn_to_kaddr(0);
- 	end = (unsigned long)pfn_to_kaddr(end_pfn);
- 
- 	for (; start < end; start = next) {
--		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-+		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
- 		if (!pud)
- 			return -ENOMEM;
- 		next = start + PGDIR_SIZE;
-@@ -212,7 +229,17 @@ static int set_up_temporary_mappings(voi
- 		set_pgd(temp_level4_pgt + pgd_index(start),
- 			mk_kernel_pgd(__pa(pud)));
- 	}
--	return 0;
-+
-+	/* Set up the kernel text mapping from scratch */
-+	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pud)
-+		return -ENOMEM;
-+	error = res_kernel_text_pud_init(pud, __START_KERNEL_map);
-+	if (!error)
-+		set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
-+			__pgd(__pa(pud) | _PAGE_TABLE));
-+
-+	return error;
+ 	restore_jump_address = rdr->jump_address;
+-	return (rdr->control == (restore_jump_address ^ RESTORE_MAGIC)) ?
++	restore_cr3 = rdr->cr3;
++	return (rdr->control ==
++		(restore_jump_address ^ (restore_cr3 ^ RESTORE_MAGIC))) ?
+ 			0 : -EINVAL;
  }
+ #endif /* CONFIG_HIBERNATION */
+Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S
+===================================================================
+--- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend_asm.S	2007-08-19 15:09:50.000000000 +0200
++++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S	2007-08-19 15:31:20.000000000 +0200
+@@ -39,6 +39,9 @@ ENTRY(swsusp_arch_suspend)
+ 	/* save the address of restore_registers */
+ 	movq	$restore_registers, %rax
+ 	movq	%rax, restore_jump_address(%rip)
++	/* save cr3 */
++	movq	%cr3, %rax
++	movq	%rax, restore_cr3(%rip)
  
- int swsusp_arch_resume(void)
+ 	call swsusp_save
+ 	ret
+@@ -66,6 +69,7 @@ ENTRY(restore_image)
+ 
+ 	/* prepare to jump to the image kernel */
+ 	movq	restore_jump_address(%rip), %rax
++	movq	restore_cr3(%rip), %rbx
+ 
+ 	/* copy image data to their original locations */
+ 	xorq	%r10, %r10
+@@ -114,9 +118,7 @@ ENTRY(restore_registers)
+ 	movsq
+ 
+ 	/* go back to the original page tables */
+-1:	movq    $(init_level4_pgt - __START_KERNEL_map), %rax
+-	addq    phys_base(%rip), %rax
+-	movq    %rax, %cr3
++1:	movq    %rbx, %cr3
+ 
+ 	/* Flush TLB, including "global" things (vmalloc) */
+ 	movq	mmu_cr4_features(%rip), %rax
