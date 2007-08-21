@@ -1,16 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [discuss] [RFC][PATCH -mm 1/4] Hibernation:
-	Arbitrary boot kernel support on x86_64
-Date: Tue, 21 Aug 2007 22:47:59 +0200
-Message-ID: <200708212248.00058.rjw@sisk.pl>
-References: <200708201510.03734.rjw@sisk.pl> <200708211637.11004.rjw@sisk.pl>
-	<200708212130.24597.rjw@sisk.pl>
+Subject: [PATCH] Hibernation: Make sure that ACPI is enabled in
+	acpi_hibernation_finish
+Date: Tue, 21 Aug 2007 23:16:51 +0200
+Message-ID: <200708212316.52638.rjw__47682.2084434845$1187730471$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708212130.24597.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,46 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: discuss@x86-64.org, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 21 August 2007 21:30, Rafael J. Wysocki wrote:
-> On Tuesday, 21 August 2007 16:37, Rafael J. Wysocki wrote:
-> > On Tuesday, 21 August 2007 09:57, Pavel Machek wrote:
-[--snip--]
-> > > >  
-> > > > -	movl	$24, %eax
-> > > > -	movl	%eax, %ds
-> > > > -
-> > > > -	/* We don't restore %rax, it must be 0 anyway */
-> > > > +	/* restore GPRs (we don't restore %rax, it must be 0 anyway) */
-> > > >  	movq	$saved_context, %rax
-> > > >  	movq	pt_regs_rsp(%rax), %rsp
-> > > >  	movq	pt_regs_rbp(%rax), %rbp
-> > > 
-> > > Hmm, in the old code, we knew we don't have to restore %ds, because it
-> > > is constant for one kernel. Now, we rely on %ds being constant accross
-> > > kernels. Not nice, and should be at least documented.
-> > 
-> > Well, in fact we rely on it all the time (eg. the
-> > "movq mmu_cr4_features(%rip), %rax" above wouldn't work if that's not true),
-> > but I can keep the old code here just fine. ;-)
-> 
-> Well, I was wrong.  The new code doesn't work without this change and I'm not
-> exactly sure why.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Actually, it works if the boot kernel is the same as the image kernel and it
-doesn't work if the boot kernel is different.
+If the BIOS does not enable ACPI and the "acpi=off" command line parameter is
+passed to the boot kernel, ACPI may be disabled when the (restored) image kernel
+attempts to execute acpi_hibernation_finish().  To prevent this from happening
+we can call acpi_enable() from acpi_hibernation_finish() (if ACPI is already
+enabled, this will have no effect).
 
-I think what happens is that by loading %ds with a new selector we cause
-the descriptor to be loaded from the descriptor table pointed to by the boot
-kernel's GDT and this need not be in the same area as the image kernel's
-global descriptor table.  If that is the case, an exception will trigger, so we
-should not load %ds until the GDTR value is restored.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ drivers/acpi/sleep/main.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Moreover, according to the AMD tech docs, in 64-bit mode the value of %ds is
-ignored, so we don't need to bother loading it anyway.
-
-Greetings,
-Rafael
+Index: linux-2.6.23-rc3/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.23-rc3.orig/drivers/acpi/sleep/main.c
++++ linux-2.6.23-rc3/drivers/acpi/sleep/main.c
+@@ -240,6 +240,11 @@ static int acpi_hibernation_enter(void)
+ 
+ static void acpi_hibernation_finish(void)
+ {
++	/*
++	 * If ACPI is not enabled by the BIOS and the boot kernel, we need to
++	 * enable it here.
++	 */
++	acpi_enable();
+ 	acpi_leave_sleep_state(ACPI_STATE_S4);
+ 	acpi_disable_wakeup_device(ACPI_STATE_S4);
+ 
