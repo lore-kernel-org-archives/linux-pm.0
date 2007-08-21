@@ -1,17 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 4/4] Hibernation: Pass CR3 value in
-	hibernation header on x86_64
-Date: Tue, 21 Aug 2007 16:46:20 +0200
-Message-ID: <200708211646.21192.rjw@sisk.pl>
-References: <200708201510.03734.rjw@sisk.pl> <200708201518.52765.rjw@sisk.pl>
-	<20070821080118.GH7258@elf.ucw.cz>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: Re: 2.6.23-rc3-git3 make warnings
+Date: Tue, 21 Aug 2007 18:57:46 +0200
+Message-ID: <20070821165746.GA30705__6045.86580670929$1187715574$gmane$org@stusta.de>
+References: <20070821132038.GA22254@ff.dom.local>
+	<20070821161723.GA8323@hacking> <20070821164429.GA18324@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070821080118.GH7258@elf.ucw.cz>
 Content-Disposition: inline
+In-Reply-To: <20070821164429.GA18324@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +18,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: discuss@x86-64.org, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Greg KH <greg@kroah.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 21 August 2007 10:01, Pavel Machek wrote:
-> Hi!
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, Aug 21, 2007 at 09:44:29AM -0700, Greg KH wrote:
+> On Wed, Aug 22, 2007 at 12:17:23AM +0800, WANG Cong wrote:
+> > On Tue, Aug 21, 2007 at 03:20:38PM +0200, Jarek Poplawski wrote:
+> > >Here are some more of, probably well-known, warnings with attached
+> > >testing-only .config.
+> > >
+> > >Regards,
+> > >Jarek P.
+> > >
+> > >
+> > >sed: -e expression #1, char 154: Unknown option to 's'
+> > >drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
+> > >drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
+> > >drivers/pci/search.c: In function `pci_find_slot':
+> > >drivers/pci/search.c:99: warning: `pci_find_device' is deprecated (declared at include/linux/pci.h:480)
+> > >drivers/pci/search.c: At top level:
+> > >drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
+> > >drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
+> > >drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
+> > >drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
+> > >drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
+> > >drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
+> > >drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
+> > >In file included from drivers/usb/host/ohci-hcd.c:859:
+> > >drivers/usb/host/ohci-pci.c: In function `ohci_pci_start':
+> > >drivers/usb/host/ohci-pci.c:202: warning: unused variable `pdev'
+> > 				^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 > > 
-> > Since we already pass the address of restore_registers() in the image header,
-> > we can also pass the value of the CR3 register from before the hibernation in
-> > the same way.  This will allow us to avoid using init_level4_pgt page tables
-> > during the restore.
+> > This warning is suspicious. In fact, 'pdev' is used when CONFIG_PM is defined.
+> > See the following:
 > > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > <snip>
+> >                 if (device_may_wakeup(&pdev->dev))
+> >                         ohci->hc_control |= OHCI_CTRL_RWC;
+> > <snip>
+> > 
+> > Or a bug of gcc?
 > 
-> > @@ -283,7 +290,8 @@ int arch_hibernation_header_save(void *a
-> >  	if (max_size < sizeof(struct restore_data_record))
-> >  		return -EOVERFLOW;
-> >  	rdr->jump_address = restore_jump_address;
-> > -	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
-> > +	rdr->cr3 = restore_cr3;
-> > +	rdr->control = (restore_jump_address ^ (restore_cr3 ^ RESTORE_MAGIC));
-> >  	return 0;
+> gcc bug, I have a patch for this queued up.
+
+No, gcc is all right.
+
+The problem is that with CONFIG_PM=y, CONFIG_PM_SLEEP=n 
+device_may_wakeup() is an empty macro, and the pdev usage is in this 
+case removed by the preprocessor and therefore invisible to the 
+compiler.
+
+> thanks,
 > 
-> Does control want to be renamed as "crc"?
+> greg k-h
 
-I think we should use CRC here, but I need to figure out how to get the
-dependencies right.
+cu
+Adrian
 
-> Or perphaps we want to just store MAGIC there, w/o any obfuscation, since
-> obfuscation does not really buy us anything?
+-- 
 
-Well, the idea is to avoid using corrupted cr3 value or the jump address ...
-
-Greetings,
-Rafael
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
