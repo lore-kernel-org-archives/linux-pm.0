@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 2/4] Hibernation: Turn on ACPI
-	during restore if necessary
-Date: Tue, 21 Aug 2007 16:39:01 +0200
-Message-ID: <200708211639.02204.rjw@sisk.pl>
-References: <200708201510.03734.rjw@sisk.pl> <200708201516.03537.rjw@sisk.pl>
-	<20070821075755.GF7258@elf.ucw.cz>
+Subject: Re: [discuss] [RFC][PATCH -mm 1/4] Hibernation:
+	Arbitrary boot kernel support on x86_64
+Date: Tue, 21 Aug 2007 16:37:10 +0200
+Message-ID: <200708211637.11004.rjw@sisk.pl>
+References: <200708201510.03734.rjw@sisk.pl> <200708201511.34254.rjw@sisk.pl>
+	<20070821075710.GE7258@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070821075755.GF7258@elf.ucw.cz>
+In-Reply-To: <20070821075710.GE7258@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -30,41 +30,66 @@ On Tuesday, 21 August 2007 09:57, Pavel Machek wrote:
 > 
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > If the boot kernel doesn't support ACPI and ACPI is not enabled by the platform
-> > boot code, it may be possible to enable ACPI after restoring the system memory
-> > from a hibernation image.  Implement that.
+> > Make it possible to restore a hibernation image on x86_64 with the help of a
+> > kernel different from the one in the image.
 > 
-> ACK... and I guess this should go in early. It is possible to test w/o
-> rest of patches, (just pass acpi=off to resume kernel, no?),
+> Looks mostly ok to me.
+> 
+> Should this be split in half (generic support, x86-64 support) and be
+> done last in the series, so that suspend still works when bisecting?
 
-Yup, that might work.
+Yes, I can do that, but the x86-64 support must go at least before the 4/4
+patch which depends on it.
 
-> and it  should get lot of testing.
+> >  done:
+> > +	/* jump to the restore_registers address from the image header */
+> > +	jmpq	*%rax
+> 
+> So this is where the change from kernel text 1 to kernel text 2
+> happens, right?
 
-Why do you think so?
+Yes.
 
+> I see you are using %r10 for something here, perhaps that should be
+> commented? 
+
+%r10 is used to store the address of the data to copy into the skipped page.
+I'll try to add a comment for that.
+
+> > +.balign PAGE_SIZE
+> > +ENTRY(restore_registers)
+> > +	/* we are in the image kernel's text now */
+> > +	testq	%r10, %r10
+> > +	jz	1f
+> > +	/* copy the skipped page */
+> > +	movq	%r10, %rsi
+> > +	movq	%r9, %rdi
+> > +	movq	$(PAGE_SIZE >> 3), %rcx
+> > +	rep
+> > +	movsq
+> 
+> > @@ -84,10 +127,7 @@ done:
+> >  	movq	%rcx, %cr3
+> >  	movq	%rax, %cr4;  # turn PGE back on
+> >  
+> > -	movl	$24, %eax
+> > -	movl	%eax, %ds
+> > -
+> > -	/* We don't restore %rax, it must be 0 anyway */
+> > +	/* restore GPRs (we don't restore %rax, it must be 0 anyway) */
+> >  	movq	$saved_context, %rax
+> >  	movq	pt_regs_rsp(%rax), %rsp
+> >  	movq	pt_regs_rbp(%rax), %rbp
+> 
+> Hmm, in the old code, we knew we don't have to restore %ds, because it
+> is constant for one kernel. Now, we rely on %ds being constant accross
+> kernels. Not nice, and should be at least documented.
+
+Well, in fact we rely on it all the time (eg. the
+"movq mmu_cr4_features(%rip), %rax" above wouldn't work if that's not true),
+but I can keep the old code here just fine. ;-)
+
+I'll send the reworked patch series in a new thread.
+
+Greetings,
 Rafael
-
-
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/acpi/sleep/main.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: linux-2.6.23-rc3/drivers/acpi/sleep/main.c
-> > ===================================================================
-> > --- linux-2.6.23-rc3.orig/drivers/acpi/sleep/main.c	2007-08-14 00:41:10.000000000 +0200
-> > +++ linux-2.6.23-rc3/drivers/acpi/sleep/main.c	2007-08-19 20:01:05.000000000 +0200
-> > @@ -240,6 +240,8 @@ static int acpi_hibernation_enter(void)
-> >  
-> >  static void acpi_hibernation_finish(void)
-> >  {
-> > +	/* If the boot kernel doesn't support ACPI, we may need to enable it */
-> > +	acpi_enable();
-> >  	acpi_leave_sleep_state(ACPI_STATE_S4);
-> >  	acpi_disable_wakeup_device(ACPI_STATE_S4);
-> >  
-> 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
