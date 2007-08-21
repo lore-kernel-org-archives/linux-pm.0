@@ -1,14 +1,17 @@
-From: Adrian Bunk <bunk@kernel.org>
-Subject: Re: 2.6.23-rc3-git3 make warnings
-Date: Tue, 21 Aug 2007 18:57:46 +0200
-Message-ID: <20070821165746.GA30705__6045.86580670929$1187715574$gmane$org@stusta.de>
-References: <20070821132038.GA22254@ff.dom.local>
-	<20070821161723.GA8323@hacking> <20070821164429.GA18324@kroah.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [discuss] [RFC][PATCH -mm 1/4] Hibernation:
+	Arbitrary boot kernel support on x86_64
+Date: Tue, 21 Aug 2007 21:30:24 +0200
+Message-ID: <200708212130.24597.rjw@sisk.pl>
+References: <200708201510.03734.rjw@sisk.pl> <20070821075710.GE7258@elf.ucw.cz>
+	<200708211637.11004.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200708211637.11004.rjw@sisk.pl>
 Content-Disposition: inline
-In-Reply-To: <20070821164429.GA18324@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,67 +21,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: discuss@x86-64.org, pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 09:44:29AM -0700, Greg KH wrote:
-> On Wed, Aug 22, 2007 at 12:17:23AM +0800, WANG Cong wrote:
-> > On Tue, Aug 21, 2007 at 03:20:38PM +0200, Jarek Poplawski wrote:
-> > >Here are some more of, probably well-known, warnings with attached
-> > >testing-only .config.
-> > >
-> > >Regards,
-> > >Jarek P.
-> > >
-> > >
-> > >sed: -e expression #1, char 154: Unknown option to 's'
-> > >drivers/acpi/ec.c: In function `acpi_ec_ecdt_probe':
-> > >drivers/acpi/ec.c:873: warning: passing arg 1 of `acpi_get_devices' discards qualifiers from pointer target type
-> > >drivers/pci/search.c: In function `pci_find_slot':
-> > >drivers/pci/search.c:99: warning: `pci_find_device' is deprecated (declared at include/linux/pci.h:480)
-> > >drivers/pci/search.c: At top level:
-> > >drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
-> > >drivers/pci/search.c:437: warning: `pci_find_device' is deprecated (declared at drivers/pci/search.c:244)
-> > >drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
-> > >drivers/pci/search.c:438: warning: `pci_find_slot' is deprecated (declared at drivers/pci/search.c:96)
-> > >drivers/pci/msi.c:686: warning: weak declaration of `arch_msi_check_device' after first use results in unspecified behavior
-> > >drivers/pci/msi.c:698: warning: weak declaration of `arch_setup_msi_irqs' after first use results in unspecified behavior
-> > >drivers/pci/msi.c:718: warning: weak declaration of `arch_teardown_msi_irqs' after first use results in unspecified behavior
-> > >In file included from drivers/usb/host/ohci-hcd.c:859:
-> > >drivers/usb/host/ohci-pci.c: In function `ohci_pci_start':
-> > >drivers/usb/host/ohci-pci.c:202: warning: unused variable `pdev'
-> > 				^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+On Tuesday, 21 August 2007 16:37, Rafael J. Wysocki wrote:
+> On Tuesday, 21 August 2007 09:57, Pavel Machek wrote:
+> > Hi!
 > > 
-> > This warning is suspicious. In fact, 'pdev' is used when CONFIG_PM is defined.
-> > See the following:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Make it possible to restore a hibernation image on x86_64 with the help of a
+> > > kernel different from the one in the image.
 > > 
-> > <snip>
-> >                 if (device_may_wakeup(&pdev->dev))
-> >                         ohci->hc_control |= OHCI_CTRL_RWC;
-> > <snip>
+> > Looks mostly ok to me.
 > > 
-> > Or a bug of gcc?
+> > Should this be split in half (generic support, x86-64 support) and be
+> > done last in the series, so that suspend still works when bisecting?
 > 
-> gcc bug, I have a patch for this queued up.
-
-No, gcc is all right.
-
-The problem is that with CONFIG_PM=y, CONFIG_PM_SLEEP=n 
-device_may_wakeup() is an empty macro, and the pdev usage is in this 
-case removed by the preprocessor and therefore invisible to the 
-compiler.
-
-> thanks,
+> Yes, I can do that, but the x86-64 support must go at least before the 4/4
+> patch which depends on it.
 > 
-> greg k-h
+> > >  done:
+> > > +	/* jump to the restore_registers address from the image header */
+> > > +	jmpq	*%rax
+> > 
+> > So this is where the change from kernel text 1 to kernel text 2
+> > happens, right?
+> 
+> Yes.
+> 
+> > I see you are using %r10 for something here, perhaps that should be
+> > commented? 
+> 
+> %r10 is used to store the address of the data to copy into the skipped page.
+> I'll try to add a comment for that.
+> 
+> > > +.balign PAGE_SIZE
+> > > +ENTRY(restore_registers)
+> > > +	/* we are in the image kernel's text now */
+> > > +	testq	%r10, %r10
+> > > +	jz	1f
+> > > +	/* copy the skipped page */
+> > > +	movq	%r10, %rsi
+> > > +	movq	%r9, %rdi
+> > > +	movq	$(PAGE_SIZE >> 3), %rcx
+> > > +	rep
+> > > +	movsq
+> > 
+> > > @@ -84,10 +127,7 @@ done:
+> > >  	movq	%rcx, %cr3
+> > >  	movq	%rax, %cr4;  # turn PGE back on
+> > >  
+> > > -	movl	$24, %eax
+> > > -	movl	%eax, %ds
+> > > -
+> > > -	/* We don't restore %rax, it must be 0 anyway */
+> > > +	/* restore GPRs (we don't restore %rax, it must be 0 anyway) */
+> > >  	movq	$saved_context, %rax
+> > >  	movq	pt_regs_rsp(%rax), %rsp
+> > >  	movq	pt_regs_rbp(%rax), %rbp
+> > 
+> > Hmm, in the old code, we knew we don't have to restore %ds, because it
+> > is constant for one kernel. Now, we rely on %ds being constant accross
+> > kernels. Not nice, and should be at least documented.
+> 
+> Well, in fact we rely on it all the time (eg. the
+> "movq mmu_cr4_features(%rip), %rax" above wouldn't work if that's not true),
+> but I can keep the old code here just fine. ;-)
 
-cu
-Adrian
+Well, I was wrong.  The new code doesn't work without this change and I'm not
+exactly sure why.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Greetings,
+Rafael
