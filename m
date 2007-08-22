@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH -mm 2/4] Hibernation: Arbitrary boot kernel
-	support on x86_64
-Date: Wed, 22 Aug 2007 10:19:03 +0200
-Message-ID: <200708221019.03798.rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 4/4] Hibernation: Use temporary page
+	tables for kernel text mapping on x86_64
+Date: Wed, 22 Aug 2007 10:21:28 +0200
+Message-ID: <200708221021.28877.rjw__20297.0954626382$1187770598$gmane$org@sisk.pl>
 References: <200708221015.16493.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -26,230 +26,98 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make it possible to restore a hibernation image on x86_64 with the help of a
-kernel different from the one in the image.
+Use temporary page tables for the kernel text mapping during hibernation restore
+on x86_64.
 
-The idea is to split the core restoration code into two separate parts and to
-place each of them in a different page.  The first part belongs to the boot
-kernel and is executed as the last step of the image kernel's memory restoration
-procedure.  It restores all of the image kernel's memory that has not been
-restored yet except for the one page containing the very code that is being
-executed at that time.  The final operation performed by it is a jump to the
-second part of the core restoration code that belongs to the image kernel and
-has just been restored.  This code restores the last remaining page of the image
-kernel's memory containing the first, already executed, part of the core
-restoration code (temporary page tables created by the boot kernel are used at
-this stage).  It also makes the CPU switch to the image kernel's page tables and
-restores the state of general purpose registers (including the stack pointer)
-from before the hibernation.
-
-The main issue with this idea is that in order to jump to the second part of the
-restoration code the boot kernel needs to know its address.  However, this
-address may be passed to it in the image header.  Namely, the part of the image
-header previously used for checking if the version of the image kernel is
-correct can be replaced with some architecture specific data that will allow
-the boot kernel to jump to the right address within the image kernel.  These
-data should also be used for checking if the image kernel is compatible with
-the boot kernel (as far as the memory restroration procedure is concerned).
-It can be done, for example, with the help of a "magic" value that has to be
-equal in both kernels, so that they can be regarded as compatible.
+Without the patch, the original boot kernel's page tables that represent the
+kernel text mapping are used while the core of the image kernel is being
+restored.  However, in principle, if the boot kernel is not identical to the
+image kernel, the location of these page tables in the image kernel need not be
+the same, so we should create a safe copy of the kernel text mapping prior to
+restoring the core of the image kernel.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/x86_64/kernel/suspend.c     |   43 ++++++++++++++++++++++++++
- arch/x86_64/kernel/suspend_asm.S |   63 +++++++++++++++++++++++++++++++++------
- include/asm-x86_64/suspend.h     |    6 +++
- 3 files changed, 103 insertions(+), 9 deletions(-)
+ arch/x86_64/kernel/suspend.c |   41 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 34 insertions(+), 7 deletions(-)
 
-Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S
-===================================================================
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend_asm.S	2007-08-21 20:36:49.000000000 +0200
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S	2007-08-21 21:16:01.000000000 +0200
-@@ -2,8 +2,8 @@
-  *
-  * Distribute under GPLv2.
-  *
-- * swsusp_arch_resume may not use any stack, nor any variable that is
-- * not "NoSave" during copying pages:
-+ * swsusp_arch_resume must not use any stack or any nonlocal variables while
-+ * copying pages:
-  *
-  * Its rewriting one kernel image with another. What is stack in "old"
-  * image could very well be data page in "new" image, and overwriting
-@@ -36,10 +36,20 @@ ENTRY(swsusp_arch_suspend)
- 	pushfq
- 	popq	pt_regs_eflags(%rax)
- 
-+	/* save the address of restore_registers */
-+	movq	$restore_registers, %rax
-+	movq	%rax, restore_jump_address(%rip)
-+
- 	call swsusp_save
- 	ret
- 
- ENTRY(restore_image)
-+	/* compute the address of the page we are at and store it in R9 */
-+	movq	$(restore_image - __START_KERNEL_map), %rax
-+	movq	$__PAGE_OFFSET, %r9
-+	addq	%rax, %r9
-+	andq	$PAGE_MASK, %r9
-+
- 	/* switch to temporary page tables */
- 	movq	$__PAGE_OFFSET, %rdx
- 	movq	temp_level4_pgt(%rip), %rax
-@@ -54,6 +64,11 @@ ENTRY(restore_image)
- 	movq	%rcx, %cr3;
- 	movq	%rax, %cr4;  # turn PGE back on
- 
-+	/* prepare to jump to the image kernel */
-+	movq	restore_jump_address(%rip), %rax
-+
-+	/* copy image data to their original locations */
-+	xorq	%r10, %r10
- 	movq	restore_pblist(%rip), %rdx
- loop:
- 	testq	%rdx, %rdx
-@@ -62,16 +77,46 @@ loop:
- 	/* get addresses from the pbe and copy the page */
- 	movq	pbe_address(%rdx), %rsi
- 	movq	pbe_orig_address(%rdx), %rdi
--	movq	$512, %rcx
-+	/* skip the page we are at (address stored in R9) */
-+	cmpq	%rdi, %r9
-+	jne	1f
-+	/* save the address of the data to be copied to the skipped page */
-+	movq	%rsi, %r10
-+	jmp	2f
-+1:	movq	$(PAGE_SIZE >> 3), %rcx
- 	rep
- 	movsq
- 
- 	/* progress to the next pbe */
--	movq	pbe_next(%rdx), %rdx
-+2:	movq	pbe_next(%rdx), %rdx
- 	jmp	loop
- done:
-+	/* jump to the restore_registers address from the image header */
-+	jmpq	*%rax
-+	/*
-+	 * NOTE: This assumes that the boot kernel's text mapping covers the
-+	 * image kernel's page containing restore_registers and the address of
-+	 * this page is the same as in the image kernel's text mapping (it
-+	 * should always be true, because the text mapping is linear, starting
-+	 * from 0, and is supposed to cover the entire kernel text for every
-+	 * kernel).
-+	 */
-+
-+.balign PAGE_SIZE
-+	/* code below belongs to the image kernel */
-+ENTRY(restore_registers)
-+	/* check if we have one more image page to copy */
-+	testq	%r10, %r10
-+	jz	1f
-+	/* copy the skipped page */
-+	movq	%r10, %rsi
-+	movq	%r9, %rdi
-+	movq	$(PAGE_SIZE >> 3), %rcx
-+	rep
-+	movsq
-+
- 	/* go back to the original page tables */
--	movq    $(init_level4_pgt - __START_KERNEL_map), %rax
-+1:	movq    $(init_level4_pgt - __START_KERNEL_map), %rax
- 	addq    phys_base(%rip), %rax
- 	movq    %rax, %cr3
- 
-@@ -84,10 +129,7 @@ done:
- 	movq	%rcx, %cr3
- 	movq	%rax, %cr4;  # turn PGE back on
- 
--	movl	$24, %eax
--	movl	%eax, %ds
--
--	/* We don't restore %rax, it must be 0 anyway */
-+	/* restore GPRs (we don't restore %rax, it must be 0 anyway) */
- 	movq	$saved_context, %rax
- 	movq	pt_regs_rsp(%rax), %rsp
- 	movq	pt_regs_rbp(%rax), %rbp
-@@ -109,4 +151,7 @@ done:
- 
- 	xorq	%rax, %rax
- 
-+	/* tell the hibernation core that we've just restored the memory */
-+	movq	%rax, in_suspend(%rip)
-+
- 	ret
 Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
 ===================================================================
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c	2007-08-21 20:36:49.000000000 +0200
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c	2007-08-21 21:07:45.000000000 +0200
-@@ -144,6 +144,12 @@ void fix_processor_context(void)
- /* Defined in arch/x86_64/kernel/suspend_asm.S */
- extern int restore_image(void);
+--- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c
++++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
+@@ -182,7 +182,7 @@ static int res_phys_pud_init(pud_t *pud,
  
-+/*
-+ * Address to jump to in the last phase of restore in order to get to the image
-+ * kernel's text (this value is passed in the image header).
-+ */
-+unsigned long restore_jump_address;
-+
- pgd_t *temp_level4_pgt;
- 
- static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
-@@ -230,4 +236,41 @@ int pfn_is_nosave(unsigned long pfn)
- 	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
- 	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+ 			if (paddr >= end)
+ 				break;
+-			pe = _PAGE_NX | _PAGE_PSE | _KERNPG_TABLE | paddr;
++			pe = __PAGE_KERNEL_LARGE | paddr;
+ 			pe &= __supported_pte_mask;
+ 			set_pmd(pmd, __pmd(pe));
+ 		}
+@@ -190,25 +190,42 @@ static int res_phys_pud_init(pud_t *pud,
+ 	return 0;
  }
-+
-+struct restore_data_record {
-+	unsigned long jump_address;
-+	unsigned long control;
-+};
-+
-+#define RESTORE_MAGIC	0x0123456789ABCDEFUL
-+
-+/**
-+ *	arch_hibernation_header_save - populate the architecture specific part
-+ *		of a hibernation image header
-+ *	@addr: address to save the data at
-+ */
-+int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 
++static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
 +{
-+	struct restore_data_record *rdr = addr;
++	pmd_t *pmd;
++	unsigned long paddr;
 +
-+	if (max_size < sizeof(struct restore_data_record))
-+		return -EOVERFLOW;
-+	rdr->jump_address = restore_jump_address;
-+	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
++	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pmd)
++		return -ENOMEM;
++	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
++	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
++		unsigned long pe;
++
++		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
++		pe &= __supported_pte_mask;
++		set_pmd(pmd, __pmd(pe));
++	}
++
 +	return 0;
 +}
 +
-+/**
-+ *	arch_hibernation_header_restore - read the architecture specific data
-+ *		from the hibernation image header
-+ *	@addr: address to read the data from
-+ */
-+int arch_hibernation_header_restore(void *addr)
-+{
-+	struct restore_data_record *rdr = addr;
-+
-+	restore_jump_address = rdr->jump_address;
-+	return (rdr->control == (restore_jump_address ^ RESTORE_MAGIC)) ?
-+			0 : -EINVAL;
-+}
- #endif /* CONFIG_HIBERNATION */
-Index: linux-2.6.23-rc3/include/asm-x86_64/suspend.h
-===================================================================
---- linux-2.6.23-rc3.orig/include/asm-x86_64/suspend.h	2007-08-21 20:36:49.000000000 +0200
-+++ linux-2.6.23-rc3/include/asm-x86_64/suspend.h	2007-08-21 20:37:47.000000000 +0200
-@@ -43,4 +43,10 @@ extern void fix_processor_context(void);
- /* routines for saving/restoring kernel state */
- extern int acpi_save_state_mem(void);
+ static int set_up_temporary_mappings(void)
+ {
+ 	unsigned long start, end, next;
++	pud_t *pud;
+ 	int error;
  
-+#define ARCH_HAS_HIBERNATION_HEADER
+ 	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
+ 	if (!temp_level4_pgt)
+ 		return -ENOMEM;
+ 
+-	/* It is safe to reuse the original kernel mapping */
+-	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+-		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+-
+ 	/* Set up the direct mapping from scratch */
+ 	start = (unsigned long)pfn_to_kaddr(0);
+ 	end = (unsigned long)pfn_to_kaddr(end_pfn);
+ 
+ 	for (; start < end; start = next) {
+-		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+ 		if (!pud)
+ 			return -ENOMEM;
+ 		next = start + PGDIR_SIZE;
+@@ -219,7 +236,17 @@ static int set_up_temporary_mappings(voi
+ 		set_pgd(temp_level4_pgt + pgd_index(start),
+ 			mk_kernel_pgd(__pa(pud)));
+ 	}
+-	return 0;
 +
-+/* arch/x86_64/kernel/suspend.c */
-+extern int arch_hibernation_header_save(void *addr, unsigned int max_size);
-+extern int arch_hibernation_header_restore(void *addr);
++	/* Set up the kernel text mapping from scratch */
++	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++	if (!pud)
++		return -ENOMEM;
++	error = res_kernel_text_pud_init(pud, __START_KERNEL_map);
++	if (!error)
++		set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
++			__pgd(__pa(pud) | _PAGE_TABLE));
 +
- #endif /* __ASM_X86_64_SUSPEND_H */
++	return error;
+ }
+ 
+ int swsusp_arch_resume(void)
