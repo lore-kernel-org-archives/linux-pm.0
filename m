@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm 4/4] Hibernation: Use temporary page
-	tables for kernel text mapping on x86_64
-Date: Wed, 22 Aug 2007 18:16:05 +0200
-Message-ID: <200708221816.05846.rjw__32616.4654958577$1187798830$gmane$org@sisk.pl>
-References: <200708221015.16493.rjw@sisk.pl> <200708221021.28877.rjw@sisk.pl>
-	<20070822082948.GD2479@elf.ucw.cz>
+Subject: Re: [RFC][PATCH -mm 3/4] Hibernation: Pass CR3 in the
+	image header on x86_64
+Date: Wed, 22 Aug 2007 18:17:50 +0200
+Message-ID: <200708221817.51334.rjw__2451.9638078802$1187798905$gmane$org@sisk.pl>
+References: <200708221015.16493.rjw@sisk.pl> <200708221020.34988.rjw@sisk.pl>
+	<20070822082825.GC2479@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070822082948.GD2479@elf.ucw.cz>
+In-Reply-To: <20070822082825.GC2479@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,80 +25,44 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 22 August 2007 10:29, Pavel Machek wrote:
+On Wednesday, 22 August 2007 10:28, Pavel Machek wrote:
 > Hi!
 > 
-> > Use temporary page tables for the kernel text mapping during hibernation restore
-> > on x86_64.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > Without the patch, the original boot kernel's page tables that represent the
-> > kernel text mapping are used while the core of the image kernel is being
-> > restored.  However, in principle, if the boot kernel is not identical to the
-> > image kernel, the location of these page tables in the image kernel need not be
-> > the same, so we should create a safe copy of the kernel text mapping prior to
-> > restoring the core of the image kernel.
+> > Since we already pass the address of restore_registers() in the image header,
+> > we can also pass the value of the CR3 register from before the hibernation in
+> > the same way.  This will allow us to avoid using init_level4_pgt page tables
+> > during the restore.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> 
-> > @@ -190,25 +190,42 @@ static int res_phys_pud_init(pud_t *pud,
+> > @@ -253,10 +262,13 @@ int arch_hibernation_header_save(void *a
+> >  {
+> >  	struct restore_data_record *rdr = addr;
+> >  
+> > -	if (max_size < sizeof(struct restore_data_record))
+> > +	if (max_size < sizeof(*rdr))
+> >  		return -EOVERFLOW;
+> >  	rdr->jump_address = restore_jump_address;
+> > -	rdr->control = (restore_jump_address ^ RESTORE_MAGIC);
+> > +	rdr->cr3 = restore_cr3;
+> > +	rdr->magic = RESTORE_MAGIC;
+> > +	rdr->crc = 0;
+> > +	rdr->crc = crc32_le(0, addr, sizeof(*rdr));
 > >  	return 0;
 > >  }
-> >  
-> > +static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
-> > +{
-> > +	pmd_t *pmd;
-> > +	unsigned long paddr;
-> > +
-> > +	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-> > +	if (!pmd)
-> > +		return -ENOMEM;
-> > +	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
-> > +	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
-> > +		unsigned long pe;
-> > +
-> > +		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
-> > +		pe &= __supported_pte_mask;
-> > +		set_pmd(pmd, __pmd(pe));
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static int set_up_temporary_mappings(void)
-> >  {
-> >  	unsigned long start, end, next;
-> > +	pud_t *pud;
-> >  	int error;
-> >  
-> >  	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
-> >  	if (!temp_level4_pgt)
-> >  		return -ENOMEM;
-> >  
-> > -	/* It is safe to reuse the original kernel mapping */
-> > -	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
-> > -		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
-> > -
-> >  	/* Set up the direct mapping from scratch */
-> >  	start = (unsigned long)pfn_to_kaddr(0);
-> >  	end = (unsigned long)pfn_to_kaddr(end_pfn);
-> >  
-> >  	for (; start < end; start = next) {
-> > -		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-> > +		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-> >  		if (!pud)
-> >  			return -ENOMEM;
 > 
-> I believe we leak temp_level4_pgt here.
+> No, I do not think I like that. I believe both -> control and -> crc
+> is just useless paranoia. Bitflip in this area is not going to be any
+> worse than bitflip anywhere else, we should not pretend this is
+> somehow "more important".
 > 
-> > +	/* Set up the kernel text mapping from scratch */
-> > +	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-> > +	if (!pud)
-> > +		return -ENOMEM;
-> 
-> ...and some more memory here :-(. 
+> -> control should really be "protocol version"... probably should
+> contain some field that is easy to increment.
 
-No, these pages will be freed by swsusp_free(), thanks to the get_safe_page().
+OK
 
-I'm not _that_ careless. ;-)
+Perhaps I'll just remove the crc field.  What do you think?
 
-Greetings,
 Rafael
