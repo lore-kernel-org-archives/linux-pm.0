@@ -1,18 +1,14 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
-Date: Wed, 22 Aug 2007 14:51:11 +0800
-Message-ID: <1187765471.20920.62.camel__5422.71933886713$1187765521$gmane$org@caritas-dev.intel.com>
-References: <1184483639.1898.99.camel@caritas-dev.intel.com>
-	<20070731095101.GA1774@elf.ucw.cz>
-	<1185954978.1363.23.camel@caritas-dev.intel.com>
-	<20070816102635.GA2039@elf.ucw.cz>
-	<1187331349.28497.9.camel@caritas-dev.intel.com>
-	<20070821101404.GA1704@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH -mm 0/4] Hibernation: Arbitrary boot kernel
+	support on x86_64
+Date: Wed, 22 Aug 2007 10:15:15 +0200
+Message-ID: <200708221015.16493.rjw__13716.0986931578$1187770379$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070821101404.GA1704@elf.ucw.cz>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,26 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2007-08-21 at 12:14 +0200, Pavel Machek wrote:
-> Ok, I got it to work -- thanks a lot.
-> 
-> Yes, acpi=off is mandatory. Unfortunately, thinkpad x60 does not boot
-> with acpi=off (should we add another test to linux firmware kit?
-> Machines should still boot in acpi=off mode...). acpi=off noapic
-> nolapic nosmp makes it boot, and that in turn makes kjump work.
-> 
-> Screen is not refreshed on kjump back to original kernel, but I guess
-> that's to be expected. I did not play with framebuffer, yet.
-> 
-> Maybe it is time to move kjump functionality into -mm and
-> kexec-testing?
+Hi,
 
-Now I have worked out a full kexec based hibernation prototype,
-including kexec, write out the image, reboot, restore the memory and
-jump back. I will release it recently. :)
+The following patches make it possible to restore a hibernation image with the
+help of a kernel different from the image one.
 
-Best Regards,
-Huang Ying
+The first patch adds the generic, platform independent code needed for that.
+The second patch implements the idea on x86_64 and the two remaining patches
+are generalizations.
+
+Details in the changelogs, comments welcome.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
