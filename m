@@ -1,14 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 2/4] Hibernation: Arbitrary boot
-	kernel support on x86_64
-Date: Wed, 22 Aug 2007 10:26:13 +0200
-Message-ID: <20070822082613.GB2479__17207.4704235003$1187795247$gmane$org@elf.ucw.cz>
-References: <200708221015.16493.rjw@sisk.pl> <200708221019.03798.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 4/4] Hibernation: Use temporary page
+	tables for kernel text mapping on x86_64
+Date: Wed, 22 Aug 2007 18:16:05 +0200
+Message-ID: <200708221816.05846.rjw__32616.4654958577$1187798830$gmane$org@sisk.pl>
+References: <200708221015.16493.rjw@sisk.pl> <200708221021.28877.rjw@sisk.pl>
+	<20070822082948.GD2479@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070822082948.GD2479@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200708221019.03798.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +21,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2007-08-22 10:19:03, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday, 22 August 2007 10:29, Pavel Machek wrote:
+> Hi!
 > 
-> Make it possible to restore a hibernation image on x86_64 with the help of a
-> kernel different from the one in the image.
+> > Use temporary page tables for the kernel text mapping during hibernation restore
+> > on x86_64.
+> > 
+> > Without the patch, the original boot kernel's page tables that represent the
+> > kernel text mapping are used while the core of the image kernel is being
+> > restored.  However, in principle, if the boot kernel is not identical to the
+> > image kernel, the location of these page tables in the image kernel need not be
+> > the same, so we should create a safe copy of the kernel text mapping prior to
+> > restoring the core of the image kernel.
 > 
-> The idea is to split the core restoration code into two separate parts and to
-> place each of them in a different page.  The first part belongs to the boot
-> kernel and is executed as the last step of the image kernel's memory restoration
-> procedure.  It restores all of the image kernel's memory that has not been
-> restored yet except for the one page containing the very code that is being
-> executed at that time.  The final operation performed by it is a jump to the
-> second part of the core restoration code that belongs to the image kernel and
-> has just been restored.  This code restores the last remaining page of the image
-> kernel's memory containing the first, already executed, part of the core
-> restoration code (temporary page tables created by the boot kernel are used at
-> this stage).  It also makes the CPU switch to the image kernel's page tables and
-> restores the state of general purpose registers (including the stack pointer)
-> from before the hibernation.
 > 
-> The main issue with this idea is that in order to jump to the second part of the
-> restoration code the boot kernel needs to know its address.  However, this
-> address may be passed to it in the image header.  Namely, the part of the image
-> header previously used for checking if the version of the image kernel is
-> correct can be replaced with some architecture specific data that will allow
-> the boot kernel to jump to the right address within the image kernel.  These
-> data should also be used for checking if the image kernel is compatible with
-> the boot kernel (as far as the memory restroration procedure is concerned).
-> It can be done, for example, with the help of a "magic" value that has to be
-> equal in both kernels, so that they can be regarded as compatible.
+> > @@ -190,25 +190,42 @@ static int res_phys_pud_init(pud_t *pud,
+> >  	return 0;
+> >  }
+> >  
+> > +static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
+> > +{
+> > +	pmd_t *pmd;
+> > +	unsigned long paddr;
+> > +
+> > +	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> > +	if (!pmd)
+> > +		return -ENOMEM;
+> > +	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
+> > +	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
+> > +		unsigned long pe;
+> > +
+> > +		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
+> > +		pe &= __supported_pte_mask;
+> > +		set_pmd(pmd, __pmd(pe));
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  static int set_up_temporary_mappings(void)
+> >  {
+> >  	unsigned long start, end, next;
+> > +	pud_t *pud;
+> >  	int error;
+> >  
+> >  	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
+> >  	if (!temp_level4_pgt)
+> >  		return -ENOMEM;
+> >  
+> > -	/* It is safe to reuse the original kernel mapping */
+> > -	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+> > -		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+> > -
+> >  	/* Set up the direct mapping from scratch */
+> >  	start = (unsigned long)pfn_to_kaddr(0);
+> >  	end = (unsigned long)pfn_to_kaddr(end_pfn);
+> >  
+> >  	for (; start < end; start = next) {
+> > -		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > +		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> >  		if (!pud)
+> >  			return -ENOMEM;
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> I believe we leak temp_level4_pgt here.
+> 
+> > +	/* Set up the kernel text mapping from scratch */
+> > +	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > +	if (!pud)
+> > +		return -ENOMEM;
+> 
+> ...and some more memory here :-(. 
 
-ACK.
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+No, these pages will be freed by swsusp_free(), thanks to the get_safe_page().
+
+I'm not _that_ careless. ;-)
+
+Greetings,
+Rafael
