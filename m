@@ -1,12 +1,18 @@
-From: Adam Belay <abelay@novell.com>
-Subject: [PATCH 6/6] CPUIDLE: load ACPI properly when CPUIDLE is
-	disabled
-Date: Tue, 21 Aug 2007 18:27:07 -0400
-Message-ID: <1187735227.7199.56.camel__21361.3939624794$1187740269$gmane$org@callisto.site>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
+Date: Wed, 22 Aug 2007 14:51:11 +0800
+Message-ID: <1187765471.20920.62.camel__5422.71933886713$1187765521$gmane$org@caritas-dev.intel.com>
+References: <1184483639.1898.99.camel@caritas-dev.intel.com>
+	<20070731095101.GA1774@elf.ucw.cz>
+	<1185954978.1363.23.camel@caritas-dev.intel.com>
+	<20070816102635.GA2039@elf.ucw.cz>
+	<1187331349.28497.9.camel@caritas-dev.intel.com>
+	<20070821101404.GA1704@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070821101404.GA1704@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,43 +22,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brown@smtp2.linux-foundation.org, Len <len.brown@intel.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-This patch changes the registration return codes for when CPUIDLE
-support is not compiled into the kernel.  As a result, the ACPI
-processor driver will load properly even if CPUIDLE is unavailable.
-However, it may be possible to cleanup the ACPI processor driver further
-and eliminate some dead code paths.
+On Tue, 2007-08-21 at 12:14 +0200, Pavel Machek wrote:
+> Ok, I got it to work -- thanks a lot.
+> 
+> Yes, acpi=off is mandatory. Unfortunately, thinkpad x60 does not boot
+> with acpi=off (should we add another test to linux firmware kit?
+> Machines should still boot in acpi=off mode...). acpi=off noapic
+> nolapic nosmp makes it boot, and that in turn makes kjump work.
+> 
+> Screen is not refreshed on kjump back to original kernel, but I guess
+> that's to be expected. I did not play with framebuffer, yet.
+> 
+> Maybe it is time to move kjump functionality into -mm and
+> kexec-testing?
 
-Please Apply,
-Adam
+Now I have worked out a full kexec based hibernation prototype,
+including kexec, write out the image, reboot, restore the memory and
+jump back. I will release it recently. :)
 
-Change Summary:
- cpuidle.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
----
-
---- a/include/linux/cpuidle.h	2007-08-21 17:33:17.000000000 -0400
-+++ b/include/linux/cpuidle.h	2007-08-21 17:30:54.000000000 -0400
-@@ -132,16 +132,16 @@
- #else
- 
- static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
--{return -EIO;}
-+{return 0;}
- static inline void cpuidle_unregister_driver(struct cpuidle_driver *drv) { }
- static inline int cpuidle_register_device(struct cpuidle_device *dev)
--{return -EIO;}
-+{return 0;}
- static inline void cpuidle_unregister_device(struct cpuidle_device *dev) { }
- 
- static inline void cpuidle_pause_and_lock(void) { }
- static inline void cpuidle_resume_and_unlock(void) { }
- static inline int cpuidle_enable_device(struct cpuidle_device *dev)
--{return -EIO;}
-+{return 0;}
- static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
- 
- #endif
+Best Regards,
+Huang Ying
