@@ -1,13 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI: Clean up acpi_enter_sleep_state_prep
-Date: Fri, 24 Aug 2007 10:13:05 +0200
-Message-ID: <20070824081305.GA2175__13887.825216125$1187989501$gmane$org@elf.ucw.cz>
-References: <200708221156.36235.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH -mm 4/4] Hibernation: Use temporary page
+	tables for kernel text mapping on x86_64
+Date: Fri, 24 Aug 2007 10:31:01 +0200
+Message-ID: <20070824083101.GC2175__7533.15749248049$1187989580$gmane$org@elf.ucw.cz>
+References: <200708221015.16493.rjw@sisk.pl> <200708221021.28877.rjw@sisk.pl>
+	<20070822082948.GD2479@elf.ucw.cz> <200708221816.05846.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708221156.36235.rjw@sisk.pl>
+In-Reply-To: <200708221816.05846.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,19 +20,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2007-08-22 11:56:35, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed 2007-08-22 18:16:05, Rafael J. Wysocki wrote:
+> On Wednesday, 22 August 2007 10:29, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Use temporary page tables for the kernel text mapping during hibernation restore
+> > > on x86_64.
+> > > 
+> > > Without the patch, the original boot kernel's page tables that represent the
+> > > kernel text mapping are used while the core of the image kernel is being
+> > > restored.  However, in principle, if the boot kernel is not identical to the
+> > > image kernel, the location of these page tables in the image kernel need not be
+> > > the same, so we should create a safe copy of the kernel text mapping prior to
+> > > restoring the core of the image kernel.
+> > 
+> > 
+> > > @@ -190,25 +190,42 @@ static int res_phys_pud_init(pud_t *pud,
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
+> > > +{
+> > > +	pmd_t *pmd;
+> > > +	unsigned long paddr;
+> > > +
+> > > +	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> > > +	if (!pmd)
+> > > +		return -ENOMEM;
+> > > +	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
+> > > +	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
+> > > +		unsigned long pe;
+> > > +
+> > > +		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
+> > > +		pe &= __supported_pte_mask;
+> > > +		set_pmd(pmd, __pmd(pe));
+> > > +	}
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > >  static int set_up_temporary_mappings(void)
+> > >  {
+> > >  	unsigned long start, end, next;
+> > > +	pud_t *pud;
+> > >  	int error;
+> > >  
+> > >  	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
+> > >  	if (!temp_level4_pgt)
+> > >  		return -ENOMEM;
+> > >  
+> > > -	/* It is safe to reuse the original kernel mapping */
+> > > -	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+> > > -		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+> > > -
+> > >  	/* Set up the direct mapping from scratch */
+> > >  	start = (unsigned long)pfn_to_kaddr(0);
+> > >  	end = (unsigned long)pfn_to_kaddr(end_pfn);
+> > >  
+> > >  	for (; start < end; start = next) {
+> > > -		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > > +		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > >  		if (!pud)
+> > >  			return -ENOMEM;
+> > 
+> > I believe we leak temp_level4_pgt here.
+> > 
+> > > +	/* Set up the kernel text mapping from scratch */
+> > > +	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > > +	if (!pud)
+> > > +		return -ENOMEM;
+> > 
+> > ...and some more memory here :-(. 
 > 
-> Remove some redundant code from acpi_enter_sleep_state_prep() and clean up
-> a comment in there.
+> No, these pages will be freed by swsusp_free(), thanks to the get_safe_page().
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> I'm not _that_ careless. ;-)
 
-ACK.
-								Pavel
+Ok, ACK.
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
