@@ -1,15 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH -mm 2/2] Hibernation: Arbitrary boot kernel
 	support on x86_64
-Date: Fri, 24 Aug 2007 20:46:33 +0000
-Message-ID: <20070824204632.GA5008__14389.3940993168$1188037184$gmane$org@ucw.cz>
+Date: Sat, 25 Aug 2007 20:27:25 +0200
+Message-ID: <200708252027.26721.rjw@sisk.pl>
 References: <200708241206.57178.rjw@sisk.pl> <200708241211.55319.rjw@sisk.pl>
+	<20070824204632.GA5008@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070824204632.GA5008@ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <200708241211.55319.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday, 24 August 2007 22:46, Pavel Machek wrote:
+> Hi!
 >=20
-> Make it possible to restore a hibernation image on x86_64 with the help=
- of a
-> kernel different from the one in the image.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >=20
+> > Make it possible to restore a hibernation image on x86_64 with the he=
+lp of a
+> > kernel different from the one in the image.
+> >=20
+> > The idea is to split the core restoration code into two separate part=
+s and to
+> > place each of them in a different page. =A0The first part belongs to =
+the boot
 >=20
-> The idea is to split the core restoration code into two separate parts =
-and to
-> place each of them in a different page. =A0The first part belongs to th=
-e boot
+> What happens in case where both parts want to be
+> at the same place? (Like kernel being restored is 4KB smaller, so that
+> routines now collide?)
 
-What happens in case where both parts want to be
-at the same place? (Like kernel being restored is 4KB smaller, so that
-routines now collide?)
-							Pavel
+Bad things, but I can't see how to avoid that reliably.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
+Greetings,
+Rafael
