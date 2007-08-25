@@ -1,17 +1,10 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 2/2] Hibernation: Arbitrary boot kernel
-	support on x86_64 (updated)
-Date: Sat, 25 Aug 2007 22:42:05 +0200
-Message-ID: <200708252242.06197.rjw@sisk.pl>
-References: <200708241206.57178.rjw@sisk.pl> <20070824204632.GA5008@ucw.cz>
-	<200708252027.26721.rjw@sisk.pl>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH, RFC] wake up from a serial port
+Date: Sun, 26 Aug 2007 00:22:00 +0200 (CEST)
+Message-ID: <Pine.LNX.4.60.0708260010250.3809__47184.7497662113$1188080573$gmane$org@poirot.grange>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708252027.26721.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,324 +14,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 25 August 2007 20:27, Rafael J. Wysocki wrote:
-> On Friday, 24 August 2007 22:46, Pavel Machek wrote:
-> > Hi!
-> >=20
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > >=20
-> > > Make it possible to restore a hibernation image on x86_64 with the =
-help of a
-> > > kernel different from the one in the image.
-> > >=20
-> > > The idea is to split the core restoration code into two separate pa=
-rts and to
-> > > place each of them in a different page. =A0The first part belongs t=
-o the boot
-> >=20
-> > What happens in case where both parts want to be
-> > at the same place? (Like kernel being restored is 4KB smaller, so tha=
-t
-> > routines now collide?)
->=20
-> Bad things, but I can't see how to avoid that reliably.
+Enable wakeup from serial ports, make it run-time configurable over sysfs, 
+e.g.,
 
-Below is an analogous patch without this problem.  The slightly ugly thin=
-g
-about it is that all pages in the temporary mapping have the NX bit clear=
-d
-now, so that we can run some code out of one of them.  Still, IMO, that i=
-sn't
-really important, because the temporary page tables are dropped as soon a=
-s
-we jump to restore_registers.
+echo enabled > /sys/devices/platform/serial8250.0/tty/ttyS0/power/wakeup
 
-Greetings,
-Rafael
+Requires
+
+# CONFIG_SYSFS_DEPRECATED is not set
+
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
 ---
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make it possible to restore a hibernation image on x86_64 with the help o=
-f a
-kernel different from the one in the image.
+I've sent this rfc/patch earlier to linuxppc-dev (I need it for a ppc 
+platform) and to linux-serial, and got no comments - but no objections 
+either from either of them. So, re-sending to a broader and hopefully more 
+relevant audience this time.
 
-The idea is to split the core restoration code into two separate parts an=
-d to
-place each of them in a different page. =A0The first part belongs to the =
-boot
-kernel and is executed as the last step of the image kernel's memory rest=
-oration
-procedure. =A0Before being executed, it is relocated to a safe page that =
-won't be
-overwritten while copying the image kernel pages.
+Thanks
+Guennadi
 
-The final operation performed by it is a jump to the second part of the c=
-ore
-restoration code that belongs to the image kernel and has just been resto=
-red.
-This code makes the CPU switch to the image kernel's page tables and
-restores the state of general purpose registers (including the stack poin=
-ter)
-from before the hibernation.
-
-The main issue with this idea is that in order to jump to the second part=
- of the
-core restoration code the boot kernel needs to know its address. =A0Howev=
-er, this
-address may be passed to it in the image header. =A0Namely, the part of t=
-he image
-header previously used for checking if the version of the image kernel is
-correct can be replaced with some architecture specific data that will al=
-low
-the boot kernel to jump to the right address within the image kernel. =A0=
-These
-data should also be used for checking if the image kernel is compatible w=
-ith
-the boot kernel (as far as the memory restroration procedure is concerned=
-).
-It can be done, for example, with the help of a "magic" value that has to=
- be
-equal in both kernels, so that they can be regarded as compatible.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86_64/Kconfig              |    5 +++
- arch/x86_64/kernel/suspend.c     |   54 ++++++++++++++++++++++++++++++++=
-++++++-
- arch/x86_64/kernel/suspend_asm.S |   41 ++++++++++++++++++++++++-----
- include/asm-x86_64/suspend.h     |    3 ++
- 4 files changed, 95 insertions(+), 8 deletions(-)
-
-Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend_asm.S	2007-08-25 22:=
-09:53.000000000 +0200
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend_asm.S	2007-08-25 22:10:25=
-.000000000 +0200
-@@ -2,8 +2,8 @@
-  *
-  * Distribute under GPLv2.
-  *
-- * swsusp_arch_resume may not use any stack, nor any variable that is
-- * not "NoSave" during copying pages:
-+ * swsusp_arch_resume must not use any stack or any nonlocal variables w=
-hile
-+ * copying pages:
-  *
-  * Its rewriting one kernel image with another. What is stack in "old"
-  * image could very well be data page in "new" image, and overwriting
-@@ -36,6 +36,10 @@ ENTRY(swsusp_arch_suspend)
- 	pushfq
- 	popq	pt_regs_eflags(%rax)
-=20
-+	/* save the address of restore_registers */
-+	movq	$restore_registers, %rax
-+	movq	%rax, restore_jump_address(%rip)
-+
- 	call swsusp_save
- 	ret
-=20
-@@ -54,7 +58,16 @@ ENTRY(restore_image)
- 	movq	%rcx, %cr3;
- 	movq	%rax, %cr4;  # turn PGE back on
-=20
-+	/* prepare to jump to the image kernel */
-+	movq	restore_jump_address(%rip), %rax
-+
-+	/* prepare to copy image data to their original locations */
- 	movq	restore_pblist(%rip), %rdx
-+	movq	relocated_restore_code(%rip), %rcx
-+	jmpq	*%rcx
-+
-+	/* code below has been relocated to a safe page */
-+ENTRY(core_restore_code)
- loop:
- 	testq	%rdx, %rdx
- 	jz	done
-@@ -62,7 +75,7 @@ loop:
- 	/* get addresses from the pbe and copy the page */
- 	movq	pbe_address(%rdx), %rsi
- 	movq	pbe_orig_address(%rdx), %rdi
--	movq	$512, %rcx
-+	movq	$(PAGE_SIZE >> 3), %rcx
- 	rep
- 	movsq
-=20
-@@ -70,6 +83,20 @@ loop:
- 	movq	pbe_next(%rdx), %rdx
- 	jmp	loop
- done:
-+	/* jump to the restore_registers address from the image header */
-+	jmpq	*%rax
-+	/*
-+	 * NOTE: This assumes that the boot kernel's text mapping covers the
-+	 * image kernel's page containing restore_registers and the address of
-+	 * this page is the same as in the image kernel's text mapping (it
-+	 * should always be true, because the text mapping is linear, starting
-+	 * from 0, and is supposed to cover the entire kernel text for every
-+	 * kernel).
-+	 *
-+	 * code below belongs to the image kernel
-+	 */
-+
-+ENTRY(restore_registers)
- 	/* go back to the original page tables */
- 	movq    $(init_level4_pgt - __START_KERNEL_map), %rax
- 	addq    phys_base(%rip), %rax
-@@ -84,10 +111,7 @@ done:
- 	movq	%rcx, %cr3
- 	movq	%rax, %cr4;  # turn PGE back on
-=20
--	movl	$24, %eax
--	movl	%eax, %ds
--
--	/* We don't restore %rax, it must be 0 anyway */
-+	/* restore GPRs (we don't restore %rax, it must be 0 anyway) */
- 	movq	$saved_context, %rax
- 	movq	pt_regs_rsp(%rax), %rsp
- 	movq	pt_regs_rbp(%rax), %rbp
-@@ -109,4 +133,7 @@ done:
-=20
- 	xorq	%rax, %rax
-=20
-+	/* tell the hibernation core that we've just restored the memory */
-+	movq	%rax, in_suspend(%rip)
-+
- 	ret
-Index: linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc3.orig/arch/x86_64/kernel/suspend.c	2007-08-25 22:09:5=
-3.000000000 +0200
-+++ linux-2.6.23-rc3/arch/x86_64/kernel/suspend.c	2007-08-25 22:11:43.000=
-000000 +0200
-@@ -144,8 +144,16 @@ void fix_processor_context(void)
- /* Defined in arch/x86_64/kernel/suspend_asm.S */
- extern int restore_image(void);
-=20
-+/*
-+ * Address to jump to in the last phase of restore in order to get to th=
-e image
-+ * kernel's text (this value is passed in the image header).
-+ */
-+unsigned long restore_jump_address;
-+
- pgd_t *temp_level4_pgt;
-=20
-+void *relocated_restore_code;
-+
- static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned=
- long end)
- {
- 	long i, j;
-@@ -169,7 +177,7 @@ static int res_phys_pud_init(pud_t *pud,
-=20
- 			if (paddr >=3D end)
- 				break;
--			pe =3D _PAGE_NX | _PAGE_PSE | _KERNPG_TABLE | paddr;
-+			pe =3D __PAGE_KERNEL_LARGE_EXEC | paddr;
- 			pe &=3D __supported_pte_mask;
- 			set_pmd(pmd, __pmd(pe));
- 		}
-@@ -216,6 +224,13 @@ int swsusp_arch_resume(void)
- 	/* We have got enough memory and from now on we cannot recover */
- 	if ((error =3D set_up_temporary_mappings()))
- 		return error;
-+
-+	relocated_restore_code =3D (void *)get_safe_page(GFP_ATOMIC);
-+	if (!relocated_restore_code)
-+		return -ENOMEM;
-+	memcpy(relocated_restore_code, &core_restore_code,
-+	       &restore_registers - &core_restore_code);
-+
- 	restore_image();
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 0b3ec38..5118914 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -130,6 +130,7 @@ struct uart_8250_port {
+ 	unsigned char		mcr_mask;	/* mask of user bits */
+ 	unsigned char		mcr_force;	/* mask of forced bits */
+ 	unsigned char		lsr_break_flag;
++	char			suspended;
+ 
+ 	/*
+ 	 * We provide a per-port pm hook.
+@@ -2673,6 +2674,14 @@ static int __devexit serial8250_remove(struct platform_device *dev)
  	return 0;
  }
-@@ -230,4 +245,41 @@ int pfn_is_nosave(unsigned long pfn)
- 	unsigned long nosave_end_pfn =3D PAGE_ALIGN(__pa_symbol(&__nosave_end))=
- >> PAGE_SHIFT;
- 	return (pfn >=3D nosave_begin_pfn) && (pfn < nosave_end_pfn);
- }
-+
-+struct restore_data_record {
-+	unsigned long jump_address;
-+	unsigned long control;
-+};
-+
-+#define RESTORE_MAGIC	0x0123456789ABCDEFUL
-+
-+/**
-+ *	arch_hibernation_header_save - populate the architecture specific par=
-t
-+ *		of a hibernation image header
-+ *	@addr: address to save the data at
-+ */
-+int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 
++static int serial8250_match_port(struct device *dev, void *data)
 +{
-+	struct restore_data_record *rdr =3D addr;
++	struct uart_port *port = data;
++	dev_t devt = MKDEV(serial8250_reg.major, serial8250_reg.minor) + port->line;
 +
-+	if (max_size < sizeof(struct restore_data_record))
-+		return -EOVERFLOW;
-+	rdr->jump_address =3D restore_jump_address;
-+	rdr->control =3D (restore_jump_address ^ RESTORE_MAGIC);
-+	return 0;
++	return dev->devt == devt; /* Actually, only one tty per port */
 +}
 +
-+/**
-+ *	arch_hibernation_header_restore - read the architecture specific data
-+ *		from the hibernation image header
-+ *	@addr: address to read the data from
-+ */
-+int arch_hibernation_header_restore(void *addr)
-+{
-+	struct restore_data_record *rdr =3D addr;
-+
-+	restore_jump_address =3D rdr->jump_address;
-+	return (rdr->control =3D=3D (restore_jump_address ^ RESTORE_MAGIC)) ?
-+			0 : -EINVAL;
-+}
- #endif /* CONFIG_HIBERNATION */
-Index: linux-2.6.23-rc3/arch/x86_64/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc3.orig/arch/x86_64/Kconfig	2007-08-25 22:09:53.0000000=
-00 +0200
-+++ linux-2.6.23-rc3/arch/x86_64/Kconfig	2007-08-25 22:10:25.000000000 +0=
-200
-@@ -710,6 +710,11 @@ menu "Power management options"
-=20
- source kernel/power/Kconfig
-=20
-+config ARCH_HIBERNATION_HEADER
-+	bool
-+	depends on HIBERNATION
-+	default y
-+
- source "drivers/acpi/Kconfig"
-=20
- source "arch/x86_64/kernel/cpufreq/Kconfig"
-Index: linux-2.6.23-rc3/include/asm-x86_64/suspend.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc3.orig/include/asm-x86_64/suspend.h	2007-08-25 22:09:5=
-3.000000000 +0200
-+++ linux-2.6.23-rc3/include/asm-x86_64/suspend.h	2007-08-25 22:10:25.000=
-000000 +0200
-@@ -43,4 +43,7 @@ extern void fix_processor_context(void);
- /* routines for saving/restoring kernel state */
- extern int acpi_save_state_mem(void);
-=20
-+extern char core_restore_code;
-+extern char restore_registers;
-+
- #endif /* __ASM_X86_64_SUSPEND_H */
+ static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ 	int i;
+@@ -2680,8 +2689,16 @@ static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
+-			uart_suspend_port(&serial8250_reg, &up->port);
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev) {
++			struct device *tty_dev = device_find_child(up->port.dev, &up->port,
++								   serial8250_match_port);
++			if (device_may_wakeup(tty_dev))
++				enable_irq_wake(up->port.irq);
++			else {
++				uart_suspend_port(&serial8250_reg, &up->port);
++				up->suspended = 1;
++			}
++		}
+ 	}
+ 
+ 	return 0;
+@@ -2694,8 +2711,13 @@ static int serial8250_resume(struct platform_device *dev)
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
+-			serial8250_resume_port(i);
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev) {
++			if (up->suspended) {
++				serial8250_resume_port(i);
++				up->suspended = 0;
++			} else
++				disable_irq_wake(up->port.irq);
++		}
+ 	}
+ 
+ 	return 0;
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 9c57486..716fbe2 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -2266,6 +2266,7 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
+ {
+ 	struct uart_state *state;
+ 	int ret = 0;
++	struct device *tty_dev;
+ 
+ 	BUG_ON(in_interrupt());
+ 
+@@ -2301,7 +2302,13 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
+ 	 * Register the port whether it's detected or not.  This allows
+ 	 * setserial to be used to alter this ports parameters.
+ 	 */
+-	tty_register_device(drv->tty_driver, port->line, port->dev);
++	tty_dev = tty_register_device(drv->tty_driver, port->line, port->dev);
++	if (likely(!IS_ERR(tty_dev))) {
++		device_can_wakeup(tty_dev) = 1;
++		device_set_wakeup_enable(tty_dev, 0);
++	} else
++		printk(KERN_ERR "Cannot register tty device on line %d\n",
++		       port->line);
+ 
+ 	/*
+ 	 * If this driver supports console, and it hasn't been
