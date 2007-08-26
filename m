@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PROBLEM: Suspend corrupts bios clock since 2.6.21
-Date: Mon, 27 Aug 2007 00:45:08 +0200
-Message-ID: <200708270045.09050.rjw__7950.24626791037$1188167742$gmane$org@sisk.pl>
-References: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
-	<46D1D6D1.5040203@shaw.ca>
+Subject: Re: [RFC][PATCH 0/3] PM: Improve ACPI handling during
+	suspend and hibernation
+Date: Mon, 27 Aug 2007 00:46:30 +0200
+Message-ID: <200708270046.31214.rjw__48029.0906773464$1188167795$gmane$org@sisk.pl>
+References: <200708261509.40118.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46D1D6D1.5040203@shaw.ca>
+In-Reply-To: <200708261509.40118.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,37 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-pm@lists.linux-foundation.org, pavel@suse.cz, Andreas Steffan <a.steffan@deas-online.de>, linux-kernel@vger.kernel.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 26 August 2007 21:38, Robert Hancock wrote:
-> Andreas Steffan wrote:
-> > Hallo everybody,
-> > 
-> > I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
-> > rev A05).
-> > 
-> > Since 2.6.21 I found that suspending (to disk and to ram) corrupts
-> > the bios clock most of the time (not always). The corruption is
-> > happening during suspend. When I enter the system bios right after
-> > I switch the system back on, I find the bios clock is set to a time
-> > far in the future (many years). I guess that problem is related to
-> > the clock changes that where introduced with 2.6.21.
-> > 
-> > Please let me know if you want me to provide further information to
-> > get this problem fixed.
-> > 
-> > If there is a known quirk to work around this problem, I would
-> > really appreciate a hint.
-> > 
-> > PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
-> > before showed the same behaviour for me.
+On Sunday, 26 August 2007 15:09, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> Please check if PM_TRACE is enabled in your kernel configuration. It 
-> will do this intentionally.
+> The next three patches are intended to improve the handling of the ACPI
+> platform during suspend and hibernation.
+> 
+> The do the following:
+> * make hibernation_platform_enter() consistent with the sleep state entering
+>   code in kernel/power/main.c
+> * introduce global platform callbacks allowing us to handle ACPI in a more fine
+>   grained way during suspend and hibernation
+> * improve the handling of the system status indicator during suspend and
+>   hibernation.
+> Details are in the changelogs.
 
-Yes, but only if you have "1" in /sys/power/pm_trace ...
+I the meantime, I have updated all of the patches in this series.  Please
+consider them as obsolete and I'll send the updated patches in a while, in a
+new thread.
 
 Greetings,
 Rafael
