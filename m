@@ -1,15 +1,13 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
-Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
-Date: Mon, 27 Aug 2007 10:37:27 +0200
-Message-ID: <1188203847.10738.357.camel__24691.8850848035$1188225719$gmane$org@thor.sulgenrain.local>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br>
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM: Suspend corrupts bios clock since 2.6.21
+Date: Sun, 26 Aug 2007 13:38:57 -0600
+Message-ID: <46D1D6D1.5040203__20825.6275662736$1188225856$gmane$org@shaw.ca>
+References: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070827065246.GA21220@ime.usp.br>
+In-reply-to: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@gmail.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Andreas Steffan <a.steffan@deas-online.de>
+Cc: linux-pm@lists.linux-foundation.org, pavel@suse.cz, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2007-08-27 at 03:52 -0300, Rog=C3=A9rio Brito wrote:
->=20
-> I did 13 compiles with git bisect and some of them were unsucessfuly
-> compiled, which I am afraid that may miss the real cause if I tag them =
-as
-> being "bad" (which I did).
+Andreas Steffan wrote:
+> Hallo everybody,
+> 
+> I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
+> rev A05).
+> 
+> Since 2.6.21 I found that suspending (to disk and to ram) corrupts
+> the bios clock most of the time (not always). The corruption is
+> happening during suspend. When I enter the system bios right after
+> I switch the system back on, I find the bios clock is set to a time
+> far in the future (many years). I guess that problem is related to
+> the clock changes that where introduced with 2.6.21.
+> 
+> Please let me know if you want me to provide further information to
+> get this problem fixed.
+> 
+> If there is a known quirk to work around this problem, I would
+> really appreciate a hint.
+> 
+> PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
+> before showed the same behaviour for me.
 
-Yes, don't mark such cases as bad or good but look for a nearby commit
-that compiles.
+Please check if PM_TRACE is enabled in your kernel configuration. It 
+will do this intentionally.
 
-
---=20
-Earthling Michel D=C3=A4nzer           |          http://tungstengraphics=
-.com
-Libre software enthusiast         |          Debian, X and DRI developer
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
