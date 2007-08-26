@@ -1,12 +1,11 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH, RFC] linkstation: implement standby
-Date: Sun, 26 Aug 2007 11:08:30 +1000
-Message-ID: <20070826110830.dfe6ea24.sfr__36484.9667101682$1188156667$gmane$org@canb.auug.org.au>
-References: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
+From: Andreas Steffan <a.steffan@deas-online.de>
+Subject: PROBLEM: Suspend corrupts bios clock since 2.6.21
+Date: Sun, 26 Aug 2007 20:31:00 +0200
+Message-ID: <1188153060.14603.31.camel__13066.429741639$1188156684$gmane$org@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8644263111478209511=="
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,72 +13,40 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: pavel@suse.cz, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============8644263111478209511==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R"
+Hallo everybody,
 
---Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
+rev A05).
 
-On Sun, 26 Aug 2007 02:03:49 +0200 (CEST) Guennadi Liakhovetski <g.liakhove=
-tski@gmx.de> wrote:
->
-> +static int ls_pm_enter(suspend_state_t state)
-> +{
-> +	char ier;
-> +	int ret =3D 0;
-> +	u64 tb;
-> +
-> +	if ((ret =3D mpc10x_suspend(state)) < 0)
-> +		return ret;
-> +
-> +	/* Get timebase */
-> +	tb =3D get_tb();
-> +
-> +	/* put CPU to sleep, re-enabling interrupts */
-> +	mpc6xx_enter_sleep();
-> +
-> +	local_irq_disable();
-> +
-> +	set_tb(tb >> 32, tb & 0xfffffffful);
-> +
-> +fail:
+Since 2.6.21 I found that suspending (to disk and to ram) corrupts
+the bios clock most of the time (not always). The corruption is
+happening during suspend. When I enter the system bios right after
+I switch the system back on, I find the bios clock is set to a time
+far in the future (many years). I guess that problem is related to
+the clock changes that where introduced with 2.6.21.
 
-Unused label?
+Please let me know if you want me to provide further information to
+get this problem fixed.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+If there is a known quirk to work around this problem, I would
+really appreciate a hint.
 
---Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R
-Content-Type: application/pgp-signature
+PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
+before showed the same behaviour for me.
+--
+regards 
+Andreas
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
++-----------------------------------------------------------+
+Andreas Steffan              email: a.steffan@deas-online.de
+Hamburg, Germany             mobil: +49179 3903615
++-----------------------------------------------------------+
 
-iD8DBQFG0NKUTgG2atn1QN8RAoV8AJ4zFSSVpZh54FVgXYo9sPYnt7Hr3ACfRkJC
-RjlQLdK9pglb/EMO0awtVIY=
-=9GuF
------END PGP SIGNATURE-----
-
---Signature=_Sun__26_Aug_2007_11_08_30_+1000_cH7VJvUkjfhc5E_R--
-
---===============8644263111478209511==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8644263111478209511==--
+In theory, practice and theory are the same, but in practice
+they are different -- Larry McVoy
