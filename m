@@ -1,7 +1,7 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Q: suspend_late() semantics
-Date: Sun, 26 Aug 2007 01:40:24 +0200 (CEST)
-Message-ID: <Pine.LNX.4.60.0708260131080.3809@poirot.grange>
+Subject: [PATCH, RFC] linkstation: implement standby
+Date: Sun, 26 Aug 2007 02:03:49 +0200 (CEST)
+Message-ID: <Pine.LNX.4.60.0708260157330.3809__47254.2950221852$1188086678$gmane$org@poirot.grange>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -14,28 +14,172 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: linuxppc-dev@ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi
+Implement suspend/resume for "mpc10x" compatible fsl host PCI controllers, 
+use it for linkstation standby.
 
-trying to understand when suspend_late gets called, I just wasn't quite 
-sure if I got the following points right:
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-1. seems to be a typo in the comment above 
-drivers/base/power/suspend.c::device_power_down() - the function walks the 
-dpm_off list and not the dpm_off_irq list, as claimed in the comment
+---
 
-2. in device_suspend() in the same file - this test:
-
-		if (!list_empty(&dev->power.entry)) {
-
-is it to catch concurrent device removal, say, from device_pm_remove()?
-
-Which would mean in normal case every device would be passed to bus_type's 
-suspend_late() if it's implemented?
+This requires patches from Scott Wood from this thread: 
+http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039109.html and my 
+recent patch to implement wakeup from serial ports.
 
 Thanks
 Guennadi
----
-Guennadi Liakhovetski
+
+ arch/powerpc/platforms/embedded6xx/linkstation.c |   57 +++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.c                    |   44 +++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h                    |    6 ++
+ include/asm-powerpc/mpc6xx.h                     |    2
+ 4 files changed, 108 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index ab9e3f9..8ee0f0b 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -197,3 +197,60 @@ define_machine(linkstation){
+ 	.halt	 		= linkstation_halt,
+ 	.calibrate_decr 	= generic_calibrate_decr,
+ };
++
++#ifdef CONFIG_PM
++
++#include <sysdev/fsl_soc.h>
++#include <asm/mpc6xx.h>
++
++static int ls_pm_valid(suspend_state_t state)
++{
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++static int ls_pm_enter(suspend_state_t state)
++{
++	char ier;
++	int ret = 0;
++	u64 tb;
++
++	if ((ret = mpc10x_suspend(state)) < 0)
++		return ret;
++
++	/* Get timebase */
++	tb = get_tb();
++
++	/* put CPU to sleep, re-enabling interrupts */
++	mpc6xx_enter_sleep();
++
++	local_irq_disable();
++
++	set_tb(tb >> 32, tb & 0xfffffffful);
++
++fail:
++	mpc10x_resume(state);
++
++	return ret;
++}
++
++static struct pm_ops ls_pm_ops = {
++	.valid		= ls_pm_valid,
++	.enter		= ls_pm_enter,
++};
++
++static int __init ls_pm_init(void)
++{
++	if (!machine_is(linkstation))
++		return 0;
++
++	pm_set_ops(&ls_pm_ops);
++	return 0;
++}
++
++device_initcall(ls_pm_init);
++#endif
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 727453d..c0d66df 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -1186,3 +1186,47 @@ err:
+ arch_initcall(cpm_smc_uart_of_init);
+ 
+ #endif /* CONFIG_8xx */
++
++#ifdef CONFIG_PM
++#include <linux/pci.h>
++#include <asm/pci-bridge.h>
++
++#define	MPC10X_LP_REF_EN	(1<<12)
++#define	MPC10X_PM		(1<<7)
++#define MPC10X_DOZE		(1<<5)
++#define	MPC10X_NAP		(1<<4)
++#define	MPC10X_SLEEP		(1<<3)
++
++int mpc10x_suspend(suspend_state_t state)
++{
++	struct pci_dev *bridge;
++	u16 pmcr1;
++
++	bridge = pci_find_slot(0, 0);
++	if (!bridge)
++		return -ENODEV;
++
++	pci_read_config_word(bridge, 0x70, &pmcr1);
++	pmcr1 &= ~(MPC10X_DOZE | MPC10X_NAP);
++	pmcr1 |= MPC10X_PM | MPC10X_SLEEP | MPC10X_LP_REF_EN;
++	pci_write_config_word(bridge, 0x70, pmcr1);
++
++	return 0;
++}
++
++int mpc10x_resume(suspend_state_t state)
++{
++	struct pci_dev *bridge;
++	u16 pmcr1;
++
++	bridge = pci_find_slot(0, 0);
++	if (!bridge)
++		return -ENODEV;
++
++	pci_read_config_word(bridge, 0x70, &pmcr1);
++	pmcr1 &= ~(MPC10X_PM | MPC10X_DOZE | MPC10X_SLEEP | MPC10X_NAP | MPC10X_LP_REF_EN);
++	pci_write_config_word(bridge, 0x70, pmcr1);
++
++	return 0;
++}
++#endif
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..bcb96cf 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -8,5 +8,11 @@ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
+ 
++#ifdef CONFIG_PM
++#include <linux/pm.h>
++extern int mpc10x_suspend(suspend_state_t state);
++extern int mpc10x_resume(suspend_state_t state);
++#endif
++
+ #endif
+ #endif
+diff --git a/include/asm-powerpc/mpc6xx.h b/include/asm-powerpc/mpc6xx.h
+index 01a33ed..be86967 100644
+--- a/include/asm-powerpc/mpc6xx.h
++++ b/include/asm-powerpc/mpc6xx.h
+@@ -1,6 +1,6 @@
+ #ifndef __ASM_POWERPC_MPC6xx_H
+ #define __ASM_POWERPC_MPC6xx_H
+ 
+-void mpc6xx_enter_sleep(void);
++extern void mpc6xx_enter_sleep(void);
+ 
+ #endif
