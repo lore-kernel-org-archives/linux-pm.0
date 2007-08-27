@@ -1,16 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 2/3] PM: More fine grained ACPI handling
-	during suspend and hibernation (rev. 2)
-Date: Mon, 27 Aug 2007 01:54:16 +0200
-Message-ID: <200708270154.16797.rjw__29046.3299294517$1188172035$gmane$org@sisk.pl>
-References: <200708270149.52585.rjw@sisk.pl>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: [RFC][PATCH 0/2 -mm] kexec based hibernation
+Date: Mon, 27 Aug 2007 09:14:05 +0800
+Message-ID: <1188177245.3247.36.camel__48179.5179228813$1188177358$gmane$org@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708270149.52585.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,586 +15,433 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms>
+Cc: linux-pm@lists.linux-foundation.org, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Kexec base hibernation has some potential advantages over uswsusp and
+TuxOnIce (suspend2). Some most obvious advantages are:
 
-According to the ACPI specification (eg. ACPI 2.0c, sec. 7.3.1, 7.3.3,
-ACPI 3.0b, sec. 7.3.1, 7.3.3) the _GTS and _BFS global control methods should
-be executed, respectively, right before entering a sleep state (S1-S4) and right
-after leaving it, but we don't follow this reqirement.  Namely, in our
-implementation the nonboot CPUs are disabled after executing _GTS and enabled
-before executing _BFS, which doesn't seem to be correct.  [In fact, the ACPI
-specification requires that no physical I/O and interrupt servicing be performed
-after the sleep state has been left and before _BFS is executed as well as after
-executing _GTS and before the sleep state is entered, but we can't follow this
-requirement literally, since our AML interpreter needs to run with interrupts
-enabled and we need to carry out some operations with interrupts disabled before
-entering the sleep state and after leaving it.]  Moreover, acpi_enable() called
-after restoring the system memory state from a hibernation image should really
-be executed before enabling the nonboot CPUs, since functional ACPI may be
-needed for that.  All of this means that we need to handle ACPI in a more fine
-grained manner during suspend and hibernation.
+1. The hibernation image size can exceed half of memory size easily.
 
-For this reason we can introduce new global platform callbacks prepare_late()
-and finish_early() to be executed, respectively, between disabling the nonboot
-CPUs and entering a sleep state and between leaving the sleep state and enabling
-the nonboot CPUs.  For ACPI systems they can be used to execute the _GTS and
-_BFS global control methods, respectively.
+2. The hibernation image can be written to and read from almost
+   anywhere, such as USB disk, NFS.
 
-It also seems to be a good idea to introduce new hibernation-related callback
-post_snapshot() to be executed after creating a hibernation image, instead of
-finish() (for now, both these callbacks are defined to point to the same
-function, but that will be changed in the future).
+3. It is possible to eliminate freezer from kexec based hibernation
+   implementation.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+4. Based on kexec/kdump implementation, the kernel code needed is
+   less.
+
+
+This patch set implements a prototype of kexec based hibernation. The
+kernel functionalities added are as follow:
+
+1. Jumping from kexeced kernel back to original kernel. This is used
+   by hibernation to save/load necessary state in original kernel and
+   jumping back to original kernel after restore the memory of
+   original kernel.
+
+2. Add writing support to /dev/oldmem. This is used by hibernation to
+   restore the memory of original kernel.
+
+
+The hibernation process with the patch set is as follow:
+
+1. Boot a kernel A
+
+2. Work under kernel A
+
+3. Kexec another kernel B (crash dump enabled) in kernel A.
+
+4. Save the memory image of kernel A through crash dump (such as "cp
+   /proc/vmcore ~"). Save the "jump buffer pfn".
+
+5. Shutdown or reboot
+
+
+The restore process with the patch set is as follow:
+
+1. Boot a kernel C
+
+2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
+   area used by kernel D must be a subset of memory area used by
+   kernel B.
+
+3. Restore the memory image of kernel A through /dev/oldmem. Restore
+   the "jump buffer pfn".
+
+4. Jump from kernel D back to kernel A
+
+5. Continue work under kernel A
+
+
+The following user-space tools are needed to implement hibernation and
+restore.
+
+1. kexec-tools needs to be patched to support kexec jump. The patch is
+   attached in this mail. The precompiled kexec can be download from:
+       http://linux-mcr700.sourceforge.net/kjump/kexec
+
+2. Memory image saving tool. Currently, the memory image saving is
+   done through: "cp /proc/vmcore <image file>". This will save all
+   memory pages of original kernel including the free pages. Maybe the
+   crash dump tool "makedumpfile" can be used for this, but it has not
+   been tested.
+
+3. Memory image restore tool. A simplest memory image restoring tool
+   named "krestore" is implemented. It can be downloaded from
+   following URL:
+       source: http://linux-mcr700.sourceforge.net/kjump/krestore.tar.gz
+       binary: http://linux-mcr700.sourceforge.net/kjump/krestore
+
+
+Known issues:
+
+1. The kernel B run as a crashdump kernel in reserved memory
+   region. This is the biggest constrains of the patch set and planed
+   to be eliminated in the future version. That is, instead of
+   reserving memory region previously, the needed memory region is
+   backupped before kexec and restored after jumping back.
+
+2. Another constrains of the patch set is that the CONFIG_ACPI must be
+   turned off to make kexec jump work. Because ACPI will put devices
+   into low power state, the kexeced kernel can not be booted properly
+   under it. This constrains can be eliminated by separating the
+   suspend method and hibernate method of the devices as proposed
+   earlier in the LKML.
+
+3. The setup of hibernation/restore is fairly complex. I will continue
+   working on simplifying.
+
+4. Memory pages including free pages of kernel A are saved. I think
+   the "makedumpfile" tool can be used to exclude "free pages", but I
+   have not tested it.
+
+Now, only the i386 architecture is supported. The patch is based on
+Linux kernel 2.6.23-rc3-mm1, and has been tested on my IBM T42.
+
+
+Usage:
+
+1. Compile kernel with following options selected:
+
+CONFIG_X86_32=y
+CONFIG_RELOCATABLE=y # not needed strictly, but it is more convenient with it
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y # only needed by kexeced kernel to save/restore memory image
+CONFIG_PM=y
+CONFIG_KEXEC_JUMP=y
+
+2. Download the kexec-tools-testing git tree, apply the kexec-tools
+   kjump patch and compile. The kexec-tools kjump patch is appended
+   with the mail. The precompiled kexec can be download from:
+       http://linux-mcr700.sourceforge.net/kjump/kexec
+
+3. Download and compile the krestore tool. The source code and
+   precompiled binary can be downloaded from the following URL:
+       source: http://linux-mcr700.sourceforge.net/kjump/krestore.tar.gz
+       binary: http://linux-mcr700.sourceforge.net/kjump/krestore
+
+4. Prepare 3 root partition used by kernel A, kernel B, kernel C,
+   refered as /dev/hda, /dev/hdb, /dev/hdc in following text. This is
+   not strictly necessary, I use this scheme for testing during
+   development.
+
+5. Boot kernel compiled for normal usage (kernel A), the reserved
+   crash kernel memory region must be added to kernel command line as
+   follow:
+
+   crashkernel=<XX>M@<XX>M
+
+   Where, <XX> should be replaced by the real memory size and
+   position. I use 16M@32M in my testing.
+
+6. Load kernel compiled for hibernating usage (kernel B) as a
+   crashdump kernel with kexec, the same kernel as that of 5 can be
+   used if CONFIG_RELOCATABLE=y and CONFIG_CRASH_DUMP=y are
+   selected. The kernel command line option as follow should be
+   appended to kernel command line.
+
+   kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
+
+   The --elf64-core-headers should be specified in command line of
+   kexec, because only the 64bit ELF is supported by krestore tool.
+
+   For example, the shell command line can be as follow:
+
+   kexec -p /boot/bzImage --elf64-core-headers --append="root=/dev/hdb
+       single kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+
+7. Jump to the hibernating kernel (kernel B) with following shell
+   command line:
+
+   kexec -j
+
+8. In the hibernating kernel (kernel B), the memory image of
+   hibernated kernel (kernel A) can be saved as follow:
+
+   cp /proc/vmcore .
+   cp /sys/kernel/kexec_jump_buf_pfn .
+
+9. Shutdown or reboot in hibernating kernel (kernel B).
+
+10. Boot kernel (kernel C) compiled for normal usage in another root
+    file system (/dev/hdc).
+
+11. Load restore kernel (kernel D) in kernel C through kexec. This is
+    almost same as step 6. The root file system of kernel D should be
+    /dev/hdb.
+
+12. In restore kernel (kernel D), the memory image of kernel A can be
+    restored as follow:
+
+    # get backup address through kernel command line
+    backup_addr=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_backup | cut -d '=' -f 2`
+    cp kexec_jump_buf_pfn /sys/kernel/kexec_jump_buf_pfn
+    krestore -b $backup_addr vmcore
+
+13. Jump back to hibernated kernel (kernel A)
+
+    kexec -b
+
+
 ---
- drivers/acpi/hardware/hwsleep.c |   98 ++++++++++++++++++++++++++++++++--------
- drivers/acpi/sleep/main.c       |   57 +++++++++++++++++++++--
- include/acpi/acpixf.h           |    4 +
- include/linux/suspend.h         |   57 +++++++++++++++++++----
- kernel/power/disk.c             |   50 +++++++++++++++++---
- kernel/power/main.c             |   16 +++++-
- 6 files changed, 241 insertions(+), 41 deletions(-)
 
-Index: linux-2.6.23-rc3/include/linux/suspend.h
+Changelog of kexec-tools
+
+A command line option -j/--jump-to is added to support jumping
+to/executing the currently loaded kernel. A command line option
+-b/--jump-back is added to support jumping back to the original
+kernel. The implementation of options is to call corresponding
+syscall.
+
+For i386 architecture, the address of backup of 0~640k is passed to
+kexeced kernel as a kernel command line option. This is used by
+kexeced kernel to restore the backup.
+
+This patch is against kexec-tools-testing git tree.
+
+Index: kexec-tools/kexec/arch/i386/crashdump-x86.c
 ===================================================================
---- linux-2.6.23-rc3.orig/include/linux/suspend.h
-+++ linux-2.6.23-rc3/include/linux/suspend.h
-@@ -49,7 +49,7 @@ typedef int __bitwise suspend_state_t;
-  *	passed to @enter() is meaningless and should be ignored.
-  *
-  * @prepare: Prepare the platform for entering the system sleep state indicated
-- *	by @set_target().
-+ *	by @set_target() (first stage).
-  *	@prepare() is called right after devices have been suspended (ie. the
-  *	appropriate .suspend() method has been executed for each device) and
-  *	before the nonboot CPUs are disabled (it is executed with IRQs enabled).
-@@ -57,12 +57,27 @@ typedef int __bitwise suspend_state_t;
-  *	error code otherwise, in which case the system cannot enter the desired
-  *	sleep state (@enter() and @finish() will not be called in that case).
-  *
-+ * @prepare_late: Prepare the platform for entering the system sleep state
-+ *	indicated by @set_target() (second stage).
-+ *	@prepare_late() is called right after the nonboot CPUs have been
-+ *	disabled (it is executed with on CPU on line and with IRQs enabled).
-+ *	This callback is optional.  It returns 0 on success or a negative
-+ *	error code otherwise, in which case the system cannot enter the desired
-+ *	sleep state (@enter() will not be called in that case).
-+ *
-  * @enter: Enter the system sleep state indicated by @set_target() or
-  *	represented by the argument if @set_target() is not implemented.
-  *	This callback is mandatory.  It returns 0 on success or a negative
-  *	error code otherwise, in which case the system cannot enter the desired
-  *	sleep state.
-  *
-+ * @finish_early: Called when the system has just left a sleep state, right
-+ *	prior to enabling the nonboot CPUs (it is executed with one CPU on line
-+ *	and with IRQs enabled).
-+ *	This callback is optional, but should be implemented by the platforms
-+ *	that implement @prepare_late().  If @enter() fails, this callback will
-+ *	not be executed.
-+ *
-  * @finish: Called when the system has just left a sleep state, right after
-  *	the nonboot CPUs have been enabled and before devices are resumed (it is
-  *	executed with IRQs enabled).
-@@ -74,7 +89,9 @@ struct platform_suspend_ops {
- 	int (*valid)(suspend_state_t state);
- 	int (*set_target)(suspend_state_t state);
- 	int (*prepare)(void);
-+	int (*prepare_late)(void);
- 	int (*enter)(suspend_state_t state);
-+	void (*finish_early)(void);
- 	void (*finish)(void);
- };
- 
-@@ -141,15 +158,32 @@ extern void mark_free_pages(struct zone 
-  *	Called right after devices have been frozen and before the nonboot
-  *	CPUs are disabled (runs with IRQs on).
-  *
-- * @finish: Restore the previous state of the platform after the hibernation
-- *	image has been created *or* put the platform into the normal operation
-- *	mode after the hibernation (the same method is executed in both cases).
-- *	Called right after the nonboot CPUs have been enabled and before
-- *	thawing devices (runs with IRQs on).
-- *
-- * @prepare: Prepare the platform for entering the low power state.
-- *	Called right after the hibernation image has been saved and before
-- *	devices are prepared for entering the low power state.
-+ * @post_snapshot: Prepare the platform for saving the hibernation image.
-+ *	Called right prior to thawing devices in order to save the hibernation
-+ *	image, after the nonboot CPUs have been enabled (runs with IRQs on).
-+ *
-+ * @finish_early: Restore the previous state of the platform putting it into the
-+ *	normal operation mode after hibernation (first stage).
-+ *	Called only during restore, prior to enabling the nonboot CPUs (runs
-+ *	with one CPU on line and with IRQs on).
-+ *
-+ * @finish: Restore the previous state of the platform putting it into the
-+ *	normal operation mode after hibernation (second stage).
-+ *	Called during restore after the nonboot CPUs have been enabled and prior
-+ *	to thawing devices.  Also called during hibernation if there's an error
-+ *	making it impossible to hibernate, but only after @pre_snapshot() have
-+ *	been successfully executed.  Runs with IRQs on.
-+ *
-+ * @prepare: Prepare the platform for entering the hibernation state (first
-+ *	stage).
-+ *	Called right after the hibernation image has been saved and devices have
-+ *	been prepared for entering the low power states.
-+ *
-+ * @prepare_late: Prepare the platform for entering the hibernation state
-+ *	(second stage).
-+ *	Called after the hibernation image has been saved, devices have been
-+ *	prepared for entering the low power states and the nonboot CPUs have
-+ *	been disabled.
-  *
-  * @enter: Put the system into the low power state after the hibernation image
-  *	has been saved to disk.
-@@ -167,8 +201,11 @@ extern void mark_free_pages(struct zone 
- struct platform_hibernation_ops {
- 	int (*start)(void);
- 	int (*pre_snapshot)(void);
-+	void (*post_snapshot)(void);
-+	void (*finish_early)(void);
- 	void (*finish)(void);
- 	int (*prepare)(void);
-+	int (*prepare_late)(void);
- 	int (*enter)(void);
- 	int (*pre_restore)(void);
- 	void (*restore_cleanup)(void);
-Index: linux-2.6.23-rc3/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.23-rc3.orig/drivers/acpi/sleep/main.c
-+++ linux-2.6.23-rc3/drivers/acpi/sleep/main.c
-@@ -58,7 +58,7 @@ static int acpi_pm_set_target(suspend_st
+--- kexec-tools.orig/kexec/arch/i386/crashdump-x86.c	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/arch/i386/crashdump-x86.c	2007-08-17 13:49:50.000000000 +0800
+@@ -428,6 +428,29 @@
+ 	return 0;
  }
  
- /**
-- *	acpi_pm_prepare - Do preliminary suspend work.
-+ *	acpi_pm_prepare - Do preliminary suspend work (first stage).
-  *
-  *	If necessary, set the firmware waking vector and do arch-specific
-  *	nastiness to get the wakeup code to the waking vector.
-@@ -75,6 +75,24 @@ static int acpi_pm_prepare(void)
++/* Adds the kexec_backup= command line parameter to command line. */
++static int cmdline_add_backup(char *cmdline, unsigned long addr)
++{
++	int cmdlen, len, align = 1024;
++	char str[30], *ptr;
++
++	/* Passing in kexec_backup=xxxK format. Saves space required
++	 * in cmdline. Ensure 1K alignment*/
++	if (addr%align)
++		return -1;
++	addr = addr/align;
++	ptr = str;
++	strcpy(str, " kexec_backup=");
++	ptr += strlen(str);
++	ultoa(addr, ptr);
++	strcat(str, "K");
++	len = strlen(str);
++	cmdlen = strlen(cmdline) + len;
++	if (cmdlen > (COMMAND_LINE_SIZE - 1))
++		die("Command line overflow\n");
++	strcat(cmdline, str);
++	return 0;
++}
+ 
+ /*
+  * This routine is specific to i386 architecture to maintain the
+@@ -575,6 +598,7 @@
+ 		return -1;
+ 	cmdline_add_memmap(mod_cmdline, memmap_p);
+ 	cmdline_add_elfcorehdr(mod_cmdline, elfcorehdr);
++	cmdline_add_backup(mod_cmdline, info->backup_start);
+ 	return 0;
  }
  
- /**
-+ *	acpi_pm_prepare_late - Do preliminary suspend work (second stage).
+Index: kexec-tools/kexec/kexec-syscall.h
+===================================================================
+--- kexec-tools.orig/kexec/kexec-syscall.h	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/kexec-syscall.h	2007-08-24 13:44:22.000000000 +0800
+@@ -21,6 +21,8 @@
+ #define LINUX_REBOOT_CMD_KEXEC_OLD	0x81726354
+ #define LINUX_REBOOT_CMD_KEXEC_OLD2	0x18263645
+ #define LINUX_REBOOT_CMD_KEXEC		0x45584543
++#define LINUX_REBOOT_CMD_KJUMP_TO	0x3928A5FD
++#define LINUX_REBOOT_CMD_KJUMP_BACK	0x4A39B60E
+ 
+ #ifdef __i386__
+ #define __NR_kexec_load		283
+@@ -63,6 +65,15 @@
+ 	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KEXEC, 0);
+ }
+ 
++static inline long kexec_jump_to(void)
++{
++	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KJUMP_TO, 0);
++}
++
++static inline long kexec_jump_back(void)
++{
++	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KJUMP_BACK, 0);
++}
+ 
+ #define KEXEC_ON_CRASH  0x00000001
+ #define KEXEC_ARCH_MASK 0xffff0000
+Index: kexec-tools/kexec/kexec.c
+===================================================================
+--- kexec-tools.orig/kexec/kexec.c	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/kexec.c	2007-08-24 13:53:43.000000000 +0800
+@@ -716,6 +716,33 @@
+ 	return -1;
+ }
+ 
++/*
++ *	Jump to the new kernel
 + */
-+
-+static int acpi_pm_prepare_late(void)
++static int my_jump_to(void)
 +{
-+	acpi_status status;
++	int result;
 +
-+	status = acpi_enter_sleep_state_prep_late(acpi_target_sleep_state);
-+
-+	if (ACPI_SUCCESS(status))
-+		return 0;
-+
-+	acpi_target_sleep_state = ACPI_STATE_S0;
-+
-+	return -EFAULT;
++	result = kexec_jump_to();
++	if (result)
++		fprintf(stderr, "kexec jump to failed: %s\n",
++			strerror(errno));
++	return result;
 +}
 +
-+/**
-  *	acpi_pm_enter - Actually enter a sleep state.
-  *	@pm_state: ignored
-  *
-@@ -139,10 +157,22 @@ static int acpi_pm_enter(suspend_state_t
- }
- 
- /**
-- *	acpi_pm_finish - Finish up suspend sequence.
-+ *	acpi_pm_finish_early - Finish up suspend sequence (first stage).
-  *
-  *	This is called after we wake back up (or if entering the sleep state
-- *	failed). 
-+ *	has failed).
++/*
++ *	Jump back to the original kernel
 + */
-+
-+static void acpi_pm_finish_early(void)
++static int my_jump_back(void)
 +{
-+	acpi_leave_sleep_state_prep(acpi_target_sleep_state);
++	int result;
++
++	result = kexec_jump_back();
++	fprintf(stderr, "kexec jump back failed: %s\n",
++		strerror(errno));
++	return -1;
 +}
 +
-+/**
-+ *	acpi_pm_finish - Finish up suspend sequence (second stage).
-+ *
-+ *	This is called after we wake back up (or if entering the sleep state
-+ *	has failed).
-  */
- 
- static void acpi_pm_finish(void)
-@@ -185,7 +215,9 @@ static struct platform_suspend_ops acpi_
- 	.valid = acpi_pm_state_valid,
- 	.set_target = acpi_pm_set_target,
- 	.prepare = acpi_pm_prepare,
-+	.prepare_late = acpi_pm_prepare_late,
- 	.enter = acpi_pm_enter,
-+	.finish_early = acpi_pm_finish_early,
- 	.finish = acpi_pm_finish,
- };
- 
-@@ -222,6 +254,15 @@ static int acpi_hibernation_prepare(void
- 	return acpi_sleep_prepare(ACPI_STATE_S4);
+ static void version(void)
+ {
+ 	printf(PACKAGE " " VERSION " released " RELEASE_DATE "\n");
+@@ -743,6 +770,8 @@
+ 	       "                      If capture kernel is being unloaded\n"
+ 	       "                      specify -p with -u.\n"
+ 	       " -e, --exec           Execute a currently loaded kernel.\n"
++ 	       " -j, --jump-to        Jump to a currently loaded kernel.\n"
++	       " -b, --jump-back      Jump back to the original kernel.\n"
+ 	       " -t, --type=TYPE      Specify the new kernel is of this type.\n"
+ 	       "     --mem-min=<addr> Specify the lowest memory address to\n"
+ 	       "                      load code into.\n"
+@@ -773,6 +802,19 @@
+ 	return ret;
  }
  
-+static int acpi_hibernation_prepare_late(void)
++static int kexec_crash_loaded(void)
 +{
-+	acpi_status status;
++	int ret;
++	FILE *fp;
 +
-+	status = acpi_enter_sleep_state_prep_late(ACPI_STATE_S4);
-+
-+	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
++	fp = fopen("/sys/kernel/kexec_crash_loaded", "r");
++	if (fp == NULL)
++		return -1;
++	fscanf(fp, "%d", &ret);
++	fclose(fp);
++	return ret;
 +}
 +
- static int acpi_hibernation_enter(void)
+ /* check we retained the initrd */
+ void check_reuse_initrd(void)
  {
- 	acpi_status status = AE_OK;
-@@ -238,13 +279,18 @@ static int acpi_hibernation_enter(void)
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
- }
- 
--static void acpi_hibernation_finish(void)
-+static void acpi_hibernation_finish_early(void)
+@@ -803,6 +845,8 @@
  {
- 	/*
- 	 * If ACPI is not enabled by the BIOS and the boot kernel, we need to
- 	 * enable it here.
- 	 */
- 	acpi_enable();
-+	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
-+}
-+
-+static void acpi_hibernation_finish(void)
-+{
- 	acpi_leave_sleep_state(ACPI_STATE_S4);
- 	acpi_disable_wakeup_device(ACPI_STATE_S4);
- 
-@@ -271,7 +317,10 @@ static void acpi_hibernation_restore_cle
- static struct platform_hibernation_ops acpi_hibernation_ops = {
- 	.start = acpi_hibernation_start,
- 	.pre_snapshot = acpi_hibernation_prepare,
-+	.post_snapshot = acpi_hibernation_finish,
- 	.finish = acpi_hibernation_finish,
-+	.finish_early = acpi_hibernation_finish_early,
-+	.prepare_late = acpi_hibernation_prepare_late,
- 	.prepare = acpi_hibernation_prepare,
- 	.enter = acpi_hibernation_enter,
- 	.pre_restore = acpi_hibernation_pre_restore,
-Index: linux-2.6.23-rc3/kernel/power/main.c
-===================================================================
---- linux-2.6.23-rc3.orig/kernel/power/main.c
-+++ linux-2.6.23-rc3/kernel/power/main.c
-@@ -173,9 +173,21 @@ int suspend_devices_and_enter(suspend_st
- 			goto Resume_devices;
+ 	int do_load = 1;
+ 	int do_exec = 0;
++	int do_jump_to = 0;
++	int do_jump_back = 0;
+ 	int do_shutdown = 1;
+ 	int do_sync = 1;
+ 	int do_ifdown = 0;
+@@ -858,6 +902,22 @@
+ 			do_ifdown = 1;
+ 			do_exec = 1;
+ 			break;
++		case OPT_JUMP_TO:
++			do_load = 0;
++			do_shutdown = 0;
++			do_sync = 1;
++			do_ifdown = 0;
++			do_exec = 0;
++			do_jump_to = 1;
++			break;
++		case OPT_JUMP_BACK:
++			do_load = 0;
++			do_shutdown = 0;
++			do_sync = 1;
++			do_ifdown = 1;
++			do_exec = 0;
++			do_jump_back = 1;
++			break;
+ 		case OPT_TYPE:
+ 			type = optarg;
+ 			break;
+@@ -936,6 +996,9 @@
+ 	if ((result == 0) && (do_shutdown || do_exec) && !kexec_loaded()) {
+ 		die("Nothing has been loaded!\n");
  	}
- 	error = disable_nonboot_cpus();
--	if (!error)
--		suspend_enter(state);
-+	if (error)
-+		goto Enable_cpus;
-+
-+	if (suspend_ops->prepare_late) {
-+		error = suspend_ops->prepare_late();
-+		if (error)
-+			goto Enable_cpus;
++	if ((result == 0) && do_jump_to && !kexec_crash_loaded()) {
++		die("Nothing has been loaded!\n");
 +	}
-+
-+	error = suspend_enter(state);
-+
-+	if (!error && suspend_ops->finish_early)
-+		suspend_ops->finish_early();
- 
-+ Enable_cpus:
- 	enable_nonboot_cpus();
- 	if (suspend_ops->finish)
- 		suspend_ops->finish();
-Index: linux-2.6.23-rc3/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.23-rc3.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6.23-rc3/drivers/acpi/hardware/hwsleep.c
-@@ -162,8 +162,8 @@ ACPI_EXPORT_SYMBOL(acpi_get_firmware_wak
-  *
-  * DESCRIPTION: Prepare to enter a system sleep state (see ACPI 2.0 spec p 231)
-  *              This function must execute with interrupts enabled.
-- *              We break sleeping into 2 stages so that OSPM can handle
-- *              various OS-specific tasks between the two steps.
-+ *              We break sleeping into 3 stages so that OSPM can handle
-+ *              various OS-specific tasks between the three steps.
-  *
-  ******************************************************************************/
- acpi_status acpi_enter_sleep_state_prep(u8 sleep_state)
-@@ -192,18 +192,13 @@ acpi_status acpi_enter_sleep_state_prep(
- 	arg.type = ACPI_TYPE_INTEGER;
- 	arg.integer.value = sleep_state;
- 
--	/* Run the _PTS and _GTS methods */
-+	/* Run the _PTS method */
- 
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__PTS, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		return_ACPI_STATUS(status);
+ 	if ((result == 0) && do_shutdown) {
+ 		result = my_shutdown();
  	}
- 
--	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		return_ACPI_STATUS(status);
--	}
--
- 	/* Setup the argument to _SST */
- 
- 	switch (sleep_state) {
-@@ -245,6 +240,43 @@ ACPI_EXPORT_SYMBOL(acpi_enter_sleep_stat
- 
- /*******************************************************************************
-  *
-+ * FUNCTION:    acpi_enter_sleep_state_prep_late
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state to enter
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Execute the _GTS ACPI global control method.
-+ *              This function must execute with interrupts enabled.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_enter_sleep_state_prep_late(u8 sleep_state)
-+{
-+	acpi_status status;
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+
-+	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state_prep_late);
-+
-+	/* Setup parameter object */
-+
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
-+
-+	/* Run the _GTS method */
-+
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-+
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		return_ACPI_STATUS(status);
+@@ -949,6 +1012,12 @@
+ 	if ((result == 0) && do_exec) {
+ 		result = my_exec();
+ 	}
++	if ((result == 0) && do_jump_to) {
++		result = my_jump_to();
 +	}
-+	return_ACPI_STATUS(AE_OK);
-+}
-+/*******************************************************************************
-+ *
-  * FUNCTION:    acpi_enter_sleep_state
-  *
-  * PARAMETERS:  sleep_state         - Which sleep state to enter
-@@ -478,17 +510,17 @@ ACPI_EXPORT_SYMBOL(acpi_enter_sleep_stat
- 
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_leave_sleep_state
-+ * FUNCTION:    acpi_leave_sleep_state_prep
-  *
-- * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ * PARAMETERS:  sleep_state         - Which sleep state we are exiting
-  *
-  * RETURN:      Status
-  *
-- * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep
-+ * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep (first stage)
-  *              Called with interrupts ENABLED.
-  *
-  ******************************************************************************/
--acpi_status acpi_leave_sleep_state(u8 sleep_state)
-+acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
- {
- 	struct acpi_object_list arg_list;
- 	union acpi_object arg;
-@@ -498,7 +530,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 	u32 PM1Acontrol;
- 	u32 PM1Bcontrol;
- 
--	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
-+	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state_prep);
- 
- 	/*
- 	 * Set SLP_TYPE and SLP_EN to state S0.
-@@ -560,17 +592,40 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 
- 	/* Ignore any errors from these methods */
- 
-+	arg.integer.value = sleep_state;
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
++	if ((result == 0) && do_jump_back) {
++		result = my_jump_back();
 +	}
-+
- 	arg.integer.value = ACPI_SST_WAKING;
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__SST, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_EXCEPTION((AE_INFO, status, "During Method _SST"));
- 	}
  
--	arg.integer.value = sleep_state;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
--	}
-+	return_ACPI_STATUS(AE_OK);
-+}
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_leave_sleep_state
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep (second stage)
-+ *              Called with interrupts ENABLED.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_leave_sleep_state(u8 sleep_state)
-+{
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+	acpi_status status;
-+
-+	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
- 
- 	/*
- 	 * GPEs must be enabled before _WAK is called as GPEs
-@@ -589,6 +644,13 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 		return_ACPI_STATUS(status);
- 	}
- 
-+	/* Setup parameter object */
-+
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
-+
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
-Index: linux-2.6.23-rc3/include/acpi/acpixf.h
+ 	fflush(stdout);
+ 	fflush(stderr);
+Index: kexec-tools/kexec/kexec.h
 ===================================================================
---- linux-2.6.23-rc3.orig/include/acpi/acpixf.h
-+++ linux-2.6.23-rc3/include/acpi/acpixf.h
-@@ -329,10 +329,14 @@ acpi_get_sleep_type_data(u8 sleep_state,
+--- kexec-tools.orig/kexec/kexec.h	2007-08-17 13:48:51.000000000 +0800
++++ kexec-tools/kexec/kexec.h	2007-08-24 11:15:27.000000000 +0800
+@@ -156,6 +156,8 @@
+ #define OPT_FORCE		'f'
+ #define OPT_NOIFDOWN		'x'
+ #define OPT_EXEC		'e'
++#define OPT_JUMP_TO		'j'
++#define OPT_JUMP_BACK		'b'
+ #define OPT_LOAD		'l'
+ #define OPT_UNLOAD		'u'
+ #define OPT_TYPE		't'
+@@ -172,13 +174,15 @@
+ 	{ "load",		0, 0, OPT_LOAD }, \
+ 	{ "unload",		0, 0, OPT_UNLOAD }, \
+ 	{ "exec",		0, 0, OPT_EXEC }, \
++ 	{ "jump-to",		0, 0, OPT_JUMP_TO }, \
++ 	{ "jump-back",		0, 0, OPT_JUMP_BACK }, \
+ 	{ "type",		1, 0, OPT_TYPE }, \
+ 	{ "load-panic",         0, 0, OPT_PANIC }, \
+ 	{ "mem-min",		1, 0, OPT_MEM_MIN }, \
+ 	{ "mem-max",		1, 0, OPT_MEM_MAX }, \
+ 	{ "reuseinitrd",	0, 0, OPT_REUSE_INITRD }, \
  
- acpi_status acpi_enter_sleep_state_prep(u8 sleep_state);
+-#define KEXEC_OPT_STR "hvdfxluet:p"
++#define KEXEC_OPT_STR "hvdfxluejbt:p"
  
-+acpi_status acpi_enter_sleep_state_prep_late(u8 sleep_state);
-+
- acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state);
- 
- acpi_status asmlinkage acpi_enter_sleep_state_s4bios(void);
- 
-+acpi_status acpi_leave_sleep_state_prep(u8 sleep_state);
-+
- acpi_status acpi_leave_sleep_state(u8 sleep_state);
- 
- #endif				/* __ACXFACE_H__ */
-Index: linux-2.6.23-rc3/kernel/power/disk.c
-===================================================================
---- linux-2.6.23-rc3.orig/kernel/power/disk.c
-+++ linux-2.6.23-rc3/kernel/power/disk.c
-@@ -54,9 +54,10 @@ static struct platform_hibernation_ops *
- 
- void hibernation_set_ops(struct platform_hibernation_ops *ops)
- {
--	if (ops && !(ops->start && ops->pre_snapshot && ops->finish
--	    && ops->prepare && ops->enter && ops->pre_restore
--	    && ops->restore_cleanup)) {
-+	if (ops && !(ops->start && ops->pre_snapshot && ops->post_snapshot
-+	    && ops->finish_early && ops->finish
-+	    && ops->prepare && ops->prepare_late && ops->enter
-+	    && ops->pre_restore && ops->restore_cleanup)) {
- 		WARN_ON(1);
- 		return;
- 	}
-@@ -93,8 +94,32 @@ static int platform_pre_snapshot(int pla
- }
- 
- /**
-+ *	platform_post_snapshot - use the platform driver, if so configured, to
-+ *	prepare the machine for saving the hibernation image.
-+ */
-+
-+static void platform_post_snapshot(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->post_snapshot();
-+}
-+
-+/**
-+ *	platform_finish_early - switch the machine to the normal mode of
-+ *	operation using the platform driver (first stage; called only after
-+ *	image restoration)
-+ */
-+
-+static void platform_finish_early(int platform_mode)
-+{
-+	if (platform_mode && hibernation_ops)
-+		hibernation_ops->finish_early();
-+}
-+
-+/**
-  *	platform_finish - switch the machine to the normal mode of operation
-- *	using the platform driver (must be called after platform_prepare())
-+ *	using the platform driver (second stage; called only after image
-+ *	restoration)
-  */
- 
- static void platform_finish(int platform_mode)
-@@ -165,14 +190,20 @@ int hibernation_snapshot(int platform_mo
- 			in_suspend = 1;
- 			error = swsusp_suspend();
- 			/* Control returns here after successful restore */
-+			if (!in_suspend)
-+				platform_finish_early(platform_mode);
- 		} else {
- 			printk("swsusp debug: Waiting for 5 seconds.\n");
- 			mdelay(5000);
- 		}
- 	}
- 	enable_nonboot_cpus();
-+
-+	if (in_suspend && !error)
-+		platform_post_snapshot(platform_mode);
-+	else
-+		platform_finish(platform_mode);
-  Resume_devices:
--	platform_finish(platform_mode);
- 	device_resume();
-  Resume_console:
- 	resume_console();
-@@ -227,8 +258,9 @@ int hibernation_platform_enter(void)
- 
- 	/*
- 	 * We have cancelled the power transition by running
--	 * hibernation_ops->finish() before saving the image, so we should let
--	 * the firmware know that we're going to enter the sleep state after all
-+	 * hibernation_ops->post_snapshot() before saving the image, so we
-+	 * should let the firmware know that we're going to enter the sleep
-+	 * state after all
- 	 */
- 	error = hibernation_ops->start();
- 	if (error)
-@@ -247,6 +279,10 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Finish;
- 
-+	error = hibernation_ops->prepare_late();
-+	if (error)
-+		goto Finish;
-+
- 	local_irq_disable();
- 	error = device_power_down(PMSG_SUSPEND);
- 	if (!error) {
+ extern void die(char *fmt, ...);
+ extern void *xmalloc(size_t size);
