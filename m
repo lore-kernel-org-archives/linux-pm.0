@@ -1,15 +1,14 @@
-From: "Tim Teulings" <rael@edge.ping.de>
-Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
-Date: 30 Aug 2007 22:42:46 +0200
-Message-ID: <46D72BC6.3020809__10257.8956437812$1188506620$gmane$org@edge.ping.de>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation: kexec
+	jump
+Date: Mon, 27 Aug 2007 18:48:29 +0000
+Message-ID: <20070827184829.GB4104__42810.8201049783$1188547360$gmane$org@ucw.cz>
+References: <1188177280.3247.37.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46D279E8.10001@edge.ping.de>
+Content-Disposition: inline
+In-Reply-To: <1188177280.3247.37.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,93 +18,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@gmail.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Hello!
+Hi!
 
-> I don't have traces at hand and due to lack of time cannot reproduce it=
-=20
-> up to tomorrow. However this hint may speed up your analysis!
+> To support jumping back from kexeced kernel, before executing the new
+> kernel, the devices are put into quiescent state (to be fully
+> implemented), and the state of devices and CPU is saved. After jumping
+> back from kexeced kernel, the state of devices and CPU are restored
+> accordingly. The devices/CPU state save/restore code of software
+> suspend is called to implement corresponding function.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Sorry for the delay, but my desktop PC had an urgent hard disk problem I=20
-had to fix ASASP.
+Looks quite ok to me...
 
-So here is the output from dmesg that suggested to me that firewire=20
-might be a problem:
 
-> usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2
-> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
-> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
-> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
-> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
-> eth2: Airport entering sleep mode
-> eth0: suspending, WakeOnLan disabled
-> pci_set_power_state(): 0002:20:0e.0: state=3D3, current state=3D5
-> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend=
-(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
-> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
-> Could not suspend device 0002:20:0e.0: error -22
-> eth0: resuming
-> PHY ID: 4061e4, addr: 0
-> eth2: Airport waking up
-> eth2: New link status: Connected (0001)
-> hda: Enabling Ultra DMA 2
-> eth0: Link is up at 100 Mbps, full-duplex.
-> eth0: Pause is disabled
-> ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-> hdb: Enabling Ultra DMA 2
-> usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
-> usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
-> usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
-> Driver sleep failed
-> Sleep rejected by devices
-> adb: starting probe task...
-> adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
-> ADB keyboard at 2, handler 1
-> ADB mouse at 3, handler set to 4 (trackpad)
-> adb: finished probe task...
-> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
-> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
-> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
-> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
-> eth2: Airport entering sleep mode
-> eth0: suspending, WakeOnLan disabled
-> Trying to free already-free IRQ 40
-> pci_set_power_state(): 0002:20:0e.0: state=3D3, current state=3D5
-> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend=
-(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
-> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
-> Could not suspend device 0002:20:0e.0: error -22
-> eth0: resuming
-> PHY ID: 4061e4, addr: 0
-> eth2: Airport waking up
-> eth2: New link status: Connected (0001)
-> hda: Enabling Ultra DMA 2
-> hdb: Enabling Ultra DMA 2
-> eth0: Link is up at 100 Mbps, full-duplex.
-> eth0: Pause is disabled
+> Index: linux-2.6.23-rc3/include/asm-i386/kexec.h
+> ===================================================================
+> --- linux-2.6.23-rc3.orig/include/asm-i386/kexec.h	2007-08-25 21:56:54.000000000 +0800
+> +++ linux-2.6.23-rc3/include/asm-i386/kexec.h	2007-08-25 21:57:00.000000000 +0800
+> @@ -94,6 +94,10 @@
+>  		unsigned long start_address,
+>  		unsigned int has_pae) ATTRIB_NORET;
+>  
+> +#ifdef CONFIG_KEXEC_JUMP
+> +extern asmlinkage int machine_kexec_real_jump(void *buf);
+> +#endif
 
-The problem wa sinitiated by closing the lid. The iBook then seems to=20
-permanetly try to go to sleep (I can hear the cd-rom drive get=20
-periodically initialized). So above contains more than one iteration.
+Is it really neccessery to have ifdef here?
 
-The kernel is:
-> Linux kismet 2.6.22-1-powerpc #1 Sun Jul 29 13:58:06 CEST 2007 ppc GNU/=
-Linux
+> +#ifdef CONFIG_KEXEC_JUMP
+> +#define KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL     0x1
+> +#endif /* CONFIG_KEXEC_JUMP */
 
-The relveant debian package:
-> linux-image-2.6.22-1-powerpc_2.6.22-3_powerpc.deb
+And here? ... It would be nice to use slightly shorter identifier.
+'KJUMP_IS_KEXECED' should be enough.
 
-I'm running a mixture of debian testing/unstable.
+> +/*
+> + * Must be relocatable PIC code callable as a C function
+> + */
+> +#define HALF_PAGE_ALIGNED (1 << (PAGE_SHIFT-1))
+> +
+> +#define EBX	0x0
+> +#define ESI	0x4
+> +#define EDI	0x8
+> +#define EBP	0xc
+> +#define ESP	0x10
+> +#define CR0	0x14
+> +#define CR3	0x18
+> +#define CR4	0x1c
+> +#define FLAG	0x20
+> +#define RET	0x24
 
-The firewire and the USB connector were unused, the network connector=20
-was used.
+Hmm, is this enough? Should it use struct ptregs for normal registers?
+What about segment registers -- they could change between kernel
+version. Should some kind of 'version of kjump protocol' be
+introduced?
 
-If there are questions regarding other packages, or somebody wants me to=20
-test a fix (I would prever a debian package), don't hesitate - I would=20
-like to get the bug fixed :-)
+What about CX/DX/fpu state? GDT pointer?
 
---=20
-Gru=DF...
-        Tim
+Actually I think that you _do_ need to save FPU. You should probably
+use relevant swsusp parts here.
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
