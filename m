@@ -1,14 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 3/3] PM: Improve handling of ACPI system
-	state indicator (rev. 2)
-Date: Mon, 27 Aug 2007 10:27:35 +0200
-Message-ID: <20070827082735.GG2060@elf.ucw.cz>
-References: <200708270149.52585.rjw@sisk.pl> <200708270155.30027.rjw@sisk.pl>
+Subject: Re: [PATCH, RFC] linkstation: implement standby
+Date: Mon, 27 Aug 2007 12:03:16 +0200
+Message-ID: <20070827100316.GD1972@elf.ucw.cz>
+References: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200708270155.30027.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +17,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Introduce a separate ACPI function for setting the system status indicator and
-> use it in the right places in the suspend and hibernation related ACPI callbacks
-> instead of setting the system status indicator implicitly in
-> acpi_enter_sleep_state_prep() and acpi_leave_sleep_state().
+On Sun 2007-08-26 02:03:49, Guennadi Liakhovetski wrote:
+> Implement suspend/resume for "mpc10x" compatible fsl host PCI controllers, 
+> use it for linkstation standby.
 > 
-> This allows us to avoid turning off the sleep state indicator during hibernation
-> on Thinkpads (currently, it is turned off before saving the image, because we
-> need to call finish() before unfreezing devices).
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-ACK.
-									Pavel
+Looks okay to me. I'm glad to see "standby" is present on non-i386
+machines, too.
+							Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
