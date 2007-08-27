@@ -1,13 +1,13 @@
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PROBLEM: Suspend corrupts bios clock since 2.6.21
-Date: Sun, 26 Aug 2007 13:38:57 -0600
-Message-ID: <46D1D6D1.5040203__20825.6275662736$1188225856$gmane$org@shaw.ca>
-References: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Subject: Re: [PATCH, RFC] linkstation: implement standby
+Date: Mon, 27 Aug 2007 10:44:28 +1000
+Message-ID: <20070827004428.GD10345__14988.7779298753$1188225915$gmane$org@bakeyournoodle.com>
+References: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +17,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andreas Steffan <a.steffan@deas-online.de>
-Cc: linux-pm@lists.linux-foundation.org, pavel@suse.cz, linux-kernel@vger.kernel.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Andreas Steffan wrote:
-> Hallo everybody,
-> 
-> I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
-> rev A05).
-> 
-> Since 2.6.21 I found that suspending (to disk and to ram) corrupts
-> the bios clock most of the time (not always). The corruption is
-> happening during suspend. When I enter the system bios right after
-> I switch the system back on, I find the bios clock is set to a time
-> far in the future (many years). I guess that problem is related to
-> the clock changes that where introduced with 2.6.21.
-> 
-> Please let me know if you want me to provide further information to
-> get this problem fixed.
-> 
-> If there is a known quirk to work around this problem, I would
-> really appreciate a hint.
-> 
-> PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
-> before showed the same behaviour for me.
+On Sun, Aug 26, 2007 at 02:03:49AM +0200, Guennadi Liakhovetski wrote:
+> Implement suspend/resume for "mpc10x" compatible fsl host PCI controllers, 
+> use it for linkstation standby.
 
-Please check if PM_TRACE is enabled in your kernel configuration. It 
-will do this intentionally.
+Hi Guennadi
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+<snip>
+
+> +static int __init ls_pm_init(void)
+> +{
+> +	if (!machine_is(linkstation))
+> +		return 0;
+
+This should probably be -ENODEV.
+
+<snip>
+
+> +int mpc10x_suspend(suspend_state_t state)
+
+You only seem to call this from ls_pm_enter() where you don't check the
+return value, perhaps this should be void ?
+
+> +{
+> +	struct pci_dev *bridge;
+> +	u16 pmcr1;
+> +
+> +	bridge = pci_find_slot(0, 0);
+> +	if (!bridge)
+> +		return -ENODEV;
+
+I think you want pci_get_bus_and_slot() here instead of pci_find_slot(),
+in fact I think it'd be cleaner, if you located the bridge in
+ls_pm_enter() and passed it in.
+
+> +int mpc10x_resume(suspend_state_t state)
+> +{
+> +	struct pci_dev *bridge;
+> +	u16 pmcr1;
+> +
+> +	bridge = pci_find_slot(0, 0);
+> +	if (!bridge)
+> +		return -ENODEV;
+
+Same comments ass mpc10x_suspend();
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
