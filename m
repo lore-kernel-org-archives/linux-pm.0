@@ -1,14 +1,15 @@
-From: Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
-Date: Mon, 27 Aug 2007 10:30:27 +0530
-Message-ID: <20070827050027.GB9809__22383.0109033317$1188225915$gmane$org@in.ibm.com>
-References: <1188177245.3247.36.camel@caritas-dev.intel.com>
-Reply-To: vgoyal@in.ibm.com
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+Date: Mon, 27 Aug 2007 03:52:46 -0300
+Message-ID: <20070827065246.GA21220__3518.86073262921$1188225927$gmane$org@ime.usp.br>
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1188177245.3247.36.camel@caritas-dev.intel.com>
+In-Reply-To: <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,94 +19,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@gmail.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 09:14:05AM +0800, Huang, Ying wrote:
-> Kexec base hibernation has some potential advantages over uswsusp and
-> TuxOnIce (suspend2). Some most obvious advantages are:
-> 
-> 1. The hibernation image size can exceed half of memory size easily.
-> 
-> 2. The hibernation image can be written to and read from almost
->    anywhere, such as USB disk, NFS.
-> 
-> 3. It is possible to eliminate freezer from kexec based hibernation
->    implementation.
-> 
-> 4. Based on kexec/kdump implementation, the kernel code needed is
->    less.
-> 
-> 
-> This patch set implements a prototype of kexec based hibernation. The
-> kernel functionalities added are as follow:
-> 
-> 1. Jumping from kexeced kernel back to original kernel. This is used
->    by hibernation to save/load necessary state in original kernel and
->    jumping back to original kernel after restore the memory of
->    original kernel.
-> 
-> 2. Add writing support to /dev/oldmem. This is used by hibernation to
->    restore the memory of original kernel.
-> 
-> 
-> The hibernation process with the patch set is as follow:
-> 
-> 1. Boot a kernel A
-> 
-> 2. Work under kernel A
-> 
-> 3. Kexec another kernel B (crash dump enabled) in kernel A.
-> 
-> 4. Save the memory image of kernel A through crash dump (such as "cp
->    /proc/vmcore ~"). Save the "jump buffer pfn".
-> 
-> 5. Shutdown or reboot
-> 
-> 
-> The restore process with the patch set is as follow:
-> 
-> 1. Boot a kernel C
-> 
-> 2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
->    area used by kernel D must be a subset of memory area used by
->    kernel B.
-> 
+Hi, Thanks, Michal.
 
-If one compiles the kernel C to boot from reserved memory area (subset
-of memory area used by kernel B), then I can skip the step of kexecing
-from C to D? (COFIG_PHYSICAL_START)
+I didn't know who to include as the wizards of the matter.
 
-Alternatively, can we give hint to kernel C to run from a specified address
-at run time with the help of command line parameters. What I mean boot-loader
-can load the kernel at any address, but kernel will move itself to run
-from a different location depending on command line parameter.  For example,
-let say kernel_run_addr = 0x1000000. This parameter will tell the kernel
-to move itself to 16MB address and run from there. I think it can be made
-to work with little work in existing setup of relocatable kernel.
+On Aug 27 2007, Michal Piotrowski wrote:
+> [Adding STR wizards to CC]
+>=20
+> On 26/08/07, Rog=E9rio Brito <rbrito@gmail.com> wrote:
+> > If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
+> > kernel with just the necessary parts for my work (version 2.6.23-rc3
+> > taken from kernel.org), then I can't make the machine sleep: when I
+> > press the button, it acts like if I had, in sequence, pressed anythin=
+g
+> > to wake it up (say, like pressing shift).
 
-Kernel run address can be put by some user space script which will save
-the hibernated image of original kernel. So after saving the /proc/vmcore,
-script can modify the boot loader config file to append the right
-command line to the kernel (kernel_run_addr).
+Things are getting now a little bit fishy.
 
-After hibernation, user will shutdown/reboot. Next time the kernel boots
-it will load at 16MB addr (because of kernel_run_addr) and then it can
-restore the previously saved image.
+Before, I was using gnome and all the little daemons that come with it
+(even though I just prefer a plain window manager), but, as I mentioned
+before, it didn't matter if I pressed the power button on X or on a
+console.
 
-We shall have to get rid of (kernel_run_addr) parameter from command
-line while resuming. One can restore the image (krestore) and then edit
-the boot loader config file to get rid of command line param, kernel_run_addr.
+I had the gnomee power-thingy sounding like an alarm (an ambulance!) on m=
+e
+when I pressed the power button with Debian kernels 2.6.22, for instance.=
+ I
+compiled my own (this time, from kernel.org) 2.6.23-rc3, with many module=
+s
+and subsystems removed (e.g., bluetooth, as this laptop doesn't have it)
+and I got the exact same behavior.
 
-In this scheme, with the help of relocatable kernel, we can use a single
-kernel for everything. (A, B, C, D). We will also avoid additional kexec
-from kernel C to kernel D.
+If I booted, OTOH, with Debian's kernel 2.6.18, things were fine and the
+machine would go to sleep without any problems.
 
-I think in the long run we shall have to work out so that a user does
-not have to maintain multiple kernels. 
+I am now suspecting of some module that prevented the machine from going =
+to
+sleep and I now using just a fluxbox as my window manager. This time, eve=
+n
+with a 2.6.23-rc3 kernel (again, from kernel.org) the machine went to sle=
+ep
+normally.
 
-Does this make sense?
+I did 13 compiles with git bisect and some of them were unsucessfuly
+compiled, which I am afraid that may miss the real cause if I tag them as
+being "bad" (which I did). (This was with just a bare minimum installatio=
+n
+of Debian).
 
-Thanks
-Vivek
+
+The course of action that I am taking right now is to pull GNOME and see =
+if
+my current 23-rc3 kernel has any problems and see which modules are loade=
+d.
+
+If things progress well, I will incrementally include features on the
+kernel that I need (I left out, for instance, the Firewire subsystem, so
+that compilation wouldn't take more than an hour here, despite the fact
+that I do need Firewire support on the kernel) and see the point where
+things are not normal.
+
+Again, I am willing to test anything that is useful to getting PowerPC
+working as well as it should with the final 2.6.23 release.
+
+Please, don't hesitate to ask for any further information.
+
+
+Regards, Rog=E9rio Brito.
+
+--=20
+Rog=E9rio Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
