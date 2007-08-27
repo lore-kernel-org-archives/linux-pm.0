@@ -1,15 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
-Date: Mon, 27 Aug 2007 09:53:17 +0200
-Message-ID: <20070827075317.GB2060__36848.8145097674$1188216851$gmane$org@elf.ucw.cz>
-References: <1188177245.3247.36.camel@caritas-dev.intel.com>
-	<20070827050027.GB9809@in.ibm.com>
-	<1188195529.3247.82.camel@caritas-dev.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/3] Hibernation: Enter platform
+	hibernation state in a consisten way (rev. 2)
+Date: Mon, 27 Aug 2007 14:31:11 +0200
+Message-ID: <200708271431.12482.rjw__12098.2833941982$1188217287$gmane$org@sisk.pl>
+References: <200708270149.52585.rjw@sisk.pl> <200708270151.33307.rjw@sisk.pl>
+	<20070827082405.GE2060@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070827082405.GE2060@elf.ucw.cz>
 Content-Disposition: inline
-In-Reply-To: <1188195529.3247.82.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +21,137 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, vgoyal@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > Does this make sense?
+On Monday, 27 August 2007 10:24, Pavel Machek wrote:
+> Hi!
 > 
-> Yes, this is a sensible optimization. But I think it may be better to
-> make bootloader load kernel D directly into a specified memory location.
-> For example, we can add a option to "kernel" command of grub. 
+> > Make hibernation_platform_enter() execute the enter-a-sleep-state sequence
+> > instead of the mixed shutdown-with-entering-S4 thing.
+> > 
+> > Replace the shutting down of devices done by kernel_shutdown_prepare(), before
+> > entering the ACPI S4 sleep state, with suspending them and the shutting down of
+> > sysdevs with calling device_power_down(PMSG_SUSPEND) (just like before entering
+> > S1 or S3, but the target state is now S4).  Also, disable the nonboot CPUs
+> > before entering the sleep state (S4), which generally always is a good idea.
+> > 
+> > This is known to fix the "double disk spin down during hibernation" on some
+> > machines, eg. HPC nx6325 (ref. http://lkml.org/lkml/2007/8/7/316 and the
+> > following thread).  It also generally causes the hibernation state (ACPI S4) to
+> > be entered faster.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  kernel/power/disk.c |   55 ++++++++++++++++++++++++++++++++++++++--------------
+> >  1 file changed, 41 insertions(+), 14 deletions(-)
+> > 
 > 
-> And, I think we can do more in bootloader. Such as we can prepare
-> two
+> > +	local_irq_disable();
+> > +	error = device_power_down(PMSG_SUSPEND);
+> > +	if (!error) {
+> > +		error = hibernation_ops->enter();
+> > +		/* We should never get here */
+> 
+> Are you sure it is good idea to enable interrupts/power up devices
+> when this happens?
 
-Yes, that would be nice.
+Hm.  No, I'm not.
 
-It will mean quite a bit of work, but I guess it should be the long
-term goal. Loading restore kernel directly from bootloader means:
+> AFAICT image is already on disk an intact at this point, safe thing to do is
+> while(1);... 
 
-1) it is fast -- no need to boot another kernel
+OK
 
-2) it is "classical" way of doing things
+Like this?
 
-On the other hand, we loose flexibility that way:
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-1) it locks you onto one bootloader
+Make hibernation_platform_enter() execute the enter-a-sleep-state sequence
+instead of the mixed shutdown-with-entering-S4 thing.
 
-2) you no longer have userland there to do uncompression, decryption,
-etc..
-									Pave
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Replace the shutting down of devices done by kernel_shutdown_prepare(), before
+entering the ACPI S4 sleep state, with suspending them and the shutting down of
+sysdevs with calling device_power_down(PMSG_SUSPEND) (just like before entering
+S1 or S3, but the target state is now S4).  Also, disable the nonboot CPUs
+before entering the sleep state (S4), which generally always is a good idea.
+
+This is known to fix the "double disk spin down during hibernation" on some
+machines, eg. HPC nx6325 (ref. http://lkml.org/lkml/2007/8/7/316 and the
+following thread).  It also generally causes the hibernation state (ACPI S4) to
+be entered faster.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |   55 ++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 41 insertions(+), 14 deletions(-)
+
+Index: linux-2.6.23-rc3/kernel/power/disk.c
+===================================================================
+--- linux-2.6.23-rc3.orig/kernel/power/disk.c
++++ linux-2.6.23-rc3/kernel/power/disk.c
+@@ -222,21 +222,48 @@ int hibernation_platform_enter(void)
+ {
+ 	int error;
+ 
+-	if (hibernation_ops) {
+-		kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
+-		/*
+-		 * We have cancelled the power transition by running
+-		 * hibernation_ops->finish() before saving the image, so we
+-		 * should let the firmware know that we're going to enter the
+-		 * sleep state after all
+-		 */
+-		error = hibernation_ops->prepare();
+-		sysdev_shutdown();
+-		if (!error)
+-			error = hibernation_ops->enter();
+-	} else {
+-		error = -ENOSYS;
++	if (!hibernation_ops)
++		return -ENOSYS;
++
++	/*
++	 * We have cancelled the power transition by running
++	 * hibernation_ops->finish() before saving the image, so we should let
++	 * the firmware know that we're going to enter the sleep state after all
++	 */
++	error = hibernation_ops->start();
++	if (error)
++		return error;
++
++	suspend_console();
++	error = device_suspend(PMSG_SUSPEND);
++	if (error)
++		return error;
++
++	error = hibernation_ops->prepare();
++	if (error)
++		goto Resume_devices;
++
++	error = disable_nonboot_cpus();
++	if (error)
++		goto Finish;
++
++	local_irq_disable();
++	error = device_power_down(PMSG_SUSPEND);
++	if (!error) {
++		hibernation_ops->enter();
++		/* We should never get here */
++		while (1);
+ 	}
++	local_irq_enable();
++
++	/*
++	 * We don't need to reenable the nonboot CPUs or resume consoles, since
++	 * the system is going to be halted anyway.
++	 */
++ Finish:
++	hibernation_ops->finish();
++ Resume_devices:
++	device_resume();
+ 	return error;
+ }
+ 
