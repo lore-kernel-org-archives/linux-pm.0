@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Re: [PATCH -mm 2/2] Hibernation: Arbitrary boot kernel
 	support on x86_64
-Date: Mon, 27 Aug 2007 13:06:46 +0200
-Message-ID: <200708271306.46778.rjw__17100.1350776807$1188212227$gmane$org@sisk.pl>
+Date: Mon, 27 Aug 2007 13:12:44 +0200
+Message-ID: <200708271312.45437.linux-kernel-owner@vger.kernel.org>
 References: <200708241206.57178.rjw@sisk.pl>
 	<20070824162346.ec57f508.akpm@linux-foundation.org>
 	<1188069225.9529.23.camel@johannes.berg>
@@ -23,8 +23,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>, pm list <linux-pm@lists.linux-foundation.org>, Pavel@smtp2.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>
 List-Id: linux-pm@vger.kernel.org
+
+[Sorry for the duplicate, but my mailer decided to mess up the CC list for an
+unknown reason.]
 
 On Saturday, 25 August 2007 21:13, Johannes Berg wrote:
 > On Fri, 2007-08-24 at 16:23 -0700, Andrew Morton wrote:
