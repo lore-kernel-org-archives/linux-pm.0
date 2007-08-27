@@ -1,13 +1,15 @@
-From: "Huang, Ying" <ying.huang@intel.com>
+From: "Hu, Fenghua" <fenghua.hu@intel.com>
 Subject: RE: [RFC][PATCH 0/2 -mm] kexec based hibernation
-Date: Mon, 27 Aug 2007 10:16:37 +0800
-Message-ID: <1188180997.3247.68.camel__14733.1519787715$1188181021$gmane$org@caritas-dev.intel.com>
-References: <9D7649D18729DE4BB2BD7B494F7FEDC257EA60@pdsmsx415.ccr.corp.intel.com>
+Date: Mon, 27 Aug 2007 10:19:45 +0800
+Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC257EB20@pdsmsx415.ccr.corp.intel.com>
+References: <1188180997.3247.68.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+	charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9D7649D18729DE4BB2BD7B494F7FEDC257EA60@pdsmsx415.ccr.corp.intel.com>
+Content-class: urn:content-classes:message
+In-Reply-To: <1188180997.3247.68.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,9 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Hu, Fenghua" <fenghua.hu@intel.com>
+To: "Huang, Ying" <ying.huang@intel.com>
 Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
+
+Thank Ying for the explanation!
+
+Best regards
+Hu, Fenghua
+
+
+-----Original Message-----
+From: Huang, Ying=20
+Sent: 2007=E5=B9=B48=E6=9C=8827=E6=97=A5 10:17
+To: Hu, Fenghua
+Cc: Eric W. Biederman; Pavel Machek; nigel@nigel.suspend2.net; Andrew Mor=
+ton; Jeremy Maitin-Shepard; Alan Stern; linux-pm@lists.linux-foundation.o=
+rg; Kexec Mailing List; linux-kernel@vger.kernel.org
+Subject: RE: [linux-pm] [RFC][PATCH 0/2 -mm] kexec based hibernation
 
 On Mon, 2007-08-27 at 09:28 +0800, Hu, Fenghua wrote:
 > One quick question is, can it improve hiberation/wakeup time?
