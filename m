@@ -1,13 +1,14 @@
-From: tony@bakeyournoodle.com (Tony Breeds)
-Subject: Re: [PATCH, RFC] linkstation: implement standby
-Date: Mon, 27 Aug 2007 10:44:28 +1000
-Message-ID: <20070827004428.GD10345__14988.7779298753$1188225915$gmane$org@bakeyournoodle.com>
-References: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
+From: Vivek Goyal <vgoyal@in.ibm.com>
+Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
+Date: Mon, 27 Aug 2007 10:30:27 +0530
+Message-ID: <20070827050027.GB9809__22383.0109033317$1188225915$gmane$org@in.ibm.com>
+References: <1188177245.3247.36.camel@caritas-dev.intel.com>
+Reply-To: vgoyal@in.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
+In-Reply-To: <1188177245.3247.36.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,56 +18,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 26, 2007 at 02:03:49AM +0200, Guennadi Liakhovetski wrote:
-> Implement suspend/resume for "mpc10x" compatible fsl host PCI controllers, 
-> use it for linkstation standby.
+On Mon, Aug 27, 2007 at 09:14:05AM +0800, Huang, Ying wrote:
+> Kexec base hibernation has some potential advantages over uswsusp and
+> TuxOnIce (suspend2). Some most obvious advantages are:
+> 
+> 1. The hibernation image size can exceed half of memory size easily.
+> 
+> 2. The hibernation image can be written to and read from almost
+>    anywhere, such as USB disk, NFS.
+> 
+> 3. It is possible to eliminate freezer from kexec based hibernation
+>    implementation.
+> 
+> 4. Based on kexec/kdump implementation, the kernel code needed is
+>    less.
+> 
+> 
+> This patch set implements a prototype of kexec based hibernation. The
+> kernel functionalities added are as follow:
+> 
+> 1. Jumping from kexeced kernel back to original kernel. This is used
+>    by hibernation to save/load necessary state in original kernel and
+>    jumping back to original kernel after restore the memory of
+>    original kernel.
+> 
+> 2. Add writing support to /dev/oldmem. This is used by hibernation to
+>    restore the memory of original kernel.
+> 
+> 
+> The hibernation process with the patch set is as follow:
+> 
+> 1. Boot a kernel A
+> 
+> 2. Work under kernel A
+> 
+> 3. Kexec another kernel B (crash dump enabled) in kernel A.
+> 
+> 4. Save the memory image of kernel A through crash dump (such as "cp
+>    /proc/vmcore ~"). Save the "jump buffer pfn".
+> 
+> 5. Shutdown or reboot
+> 
+> 
+> The restore process with the patch set is as follow:
+> 
+> 1. Boot a kernel C
+> 
+> 2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
+>    area used by kernel D must be a subset of memory area used by
+>    kernel B.
+> 
 
-Hi Guennadi
+If one compiles the kernel C to boot from reserved memory area (subset
+of memory area used by kernel B), then I can skip the step of kexecing
+from C to D? (COFIG_PHYSICAL_START)
 
-<snip>
+Alternatively, can we give hint to kernel C to run from a specified address
+at run time with the help of command line parameters. What I mean boot-loader
+can load the kernel at any address, but kernel will move itself to run
+from a different location depending on command line parameter.  For example,
+let say kernel_run_addr = 0x1000000. This parameter will tell the kernel
+to move itself to 16MB address and run from there. I think it can be made
+to work with little work in existing setup of relocatable kernel.
 
-> +static int __init ls_pm_init(void)
-> +{
-> +	if (!machine_is(linkstation))
-> +		return 0;
+Kernel run address can be put by some user space script which will save
+the hibernated image of original kernel. So after saving the /proc/vmcore,
+script can modify the boot loader config file to append the right
+command line to the kernel (kernel_run_addr).
 
-This should probably be -ENODEV.
+After hibernation, user will shutdown/reboot. Next time the kernel boots
+it will load at 16MB addr (because of kernel_run_addr) and then it can
+restore the previously saved image.
 
-<snip>
+We shall have to get rid of (kernel_run_addr) parameter from command
+line while resuming. One can restore the image (krestore) and then edit
+the boot loader config file to get rid of command line param, kernel_run_addr.
 
-> +int mpc10x_suspend(suspend_state_t state)
+In this scheme, with the help of relocatable kernel, we can use a single
+kernel for everything. (A, B, C, D). We will also avoid additional kexec
+from kernel C to kernel D.
 
-You only seem to call this from ls_pm_enter() where you don't check the
-return value, perhaps this should be void ?
+I think in the long run we shall have to work out so that a user does
+not have to maintain multiple kernels. 
 
-> +{
-> +	struct pci_dev *bridge;
-> +	u16 pmcr1;
-> +
-> +	bridge = pci_find_slot(0, 0);
-> +	if (!bridge)
-> +		return -ENODEV;
+Does this make sense?
 
-I think you want pci_get_bus_and_slot() here instead of pci_find_slot(),
-in fact I think it'd be cleaner, if you located the bridge in
-ls_pm_enter() and passed it in.
-
-> +int mpc10x_resume(suspend_state_t state)
-> +{
-> +	struct pci_dev *bridge;
-> +	u16 pmcr1;
-> +
-> +	bridge = pci_find_slot(0, 0);
-> +	if (!bridge)
-> +		return -ENODEV;
-
-Same comments ass mpc10x_suspend();
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+Thanks
+Vivek
