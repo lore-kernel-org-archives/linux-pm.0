@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm 3/3] PM: Improve handling of ACPI system
-	state indicator (rev. 3)
-Date: Wed, 29 Aug 2007 21:40:24 +0200
-Message-ID: <200708292140.25212.rjw__36805.5305713371$1188415838$gmane$org@sisk.pl>
-References: <200708272347.45438.rjw@sisk.pl> <200708290005.12323.rjw@sisk.pl>
-	<B28E9812BAF6E2498B7EC5C427F293A4031EFC32@orsmsx415.amr.corp.intel.com>
+Subject: Re: [PATCH -mm 0/3] PM: Improve ACPI handling during
+	suspend and hibernation (rev. 3)
+Date: Thu, 30 Aug 2007 00:31:25 +0200
+Message-ID: <200708300031.26699.rjw__38140.4775348075$1188426093$gmane$org@sisk.pl>
+References: <200708272347.45438.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A4031EFC32@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <200708272347.45438.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,57 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Moore,
+	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 29 August 2007 18:54, Moore, Robert wrote:
-> No, it's not safe to run the AML interpreter with interrupts disabled.
+On Monday, 27 August 2007 23:47, Rafael J. Wysocki wrote:
+> Hi,
+>=20
+> The patches in this series are intended to improve the handling of the =
+ACPI
+> platform during suspend and hibernation.
+>=20
+> They do the following things:
+> * make hibernation_platform_enter() consistent with the sleep state ent=
+ering
+> =A0 code in kernel/power/main.c
+> * introduce global platform callbacks allowing us to handle ACPI in a m=
+ore fine
+> =A0 grained way during suspend and hibernation
+> * improve the handling of the system status indicator during suspend an=
+d
+> =A0 hibernation.
 
-OK
+Please regard this patch series as withdrawn.
 
-> I don't have any problem with introducing finer granularity enter/exit
-> sleep interfaces if they are required.
-> 
-> I would suggest that we rename things a bit however.
-> 
-> Currently:
-> acpi_enter_sleep_state_prep
-> acpi_enter_sleep_state_prep_late
-> acpi_enter_sleep_state
-> 
-> acpi_leave_sleep_state_prep
-> acpi_leave_sleep_state
-> 
-> I think we can truncate and clarify:
-> 
-> acpi_sleep_setup1
-> acpi_sleep_setup2
-> acpi_sleep
-> 
-> acpi_wake_setup1
-> acpi_wake
-
-That's perfectly fine by me.  I'll update the 2/3 patch to use these names.
-
-Also, I think we can remove acpi_enter_sleep_state_s4bios() entirely (in a
-separate patch).
-
-> acpi_set_sleep_state_indicator:
-> 
-> I'm not sure if we have any external interfaces that simply execute a
-> control method, seems like overkill.
-> 
-> Please give me more information as to why _SSI needs to be moved (other
-> than executing it after _BFS)
-
-The _SST after _BFS is okay, but the invocation of _SST in acpi_wake()
-(currently acpi_leave_sleep_state) is problematic, since it causes the
-indicator to be set to "working" during hibernation, before the image is
-saved.  Thus, during hibernation _SST shouldn't be called from acpi_wake().
-
-For this reason, I thought it would be a good idea to call _SST from a separate
-routine that might be invoked by higher level functions as desired.
+I have found a corner case that requires special treatment clashing with =
+the
+2/3 and 3/3 patches and the 1/3 patch will be resubmitted separately.
 
 Greetings,
 Rafael
