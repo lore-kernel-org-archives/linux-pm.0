@@ -1,14 +1,14 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH, RFC] linkstation: implement standby
-Date: Wed, 29 Aug 2007 12:32:18 +0200
-Message-ID: <1188383538.19891.8.camel__17395.3640777201$1188383539$gmane$org@johannes.berg>
-References: <Pine.LNX.4.60.0708260157330.3809@poirot.grange>
-	<1188214327.7837.9.camel@johannes.berg>
-	<Pine.LNX.4.60.0708290015580.3552@poirot.grange>
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
+Date: Wed, 29 Aug 2007 12:41:25 +1000
+Message-ID: <46D4DCD5.4030601@yahoo.com.au>
+References: <9D7649D18729DE4BB2BD7B494F7FEDC257EA60@pdsmsx415.ccr.corp.intel.com>
+	<1188180997.3247.68.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0008973432943138162=="
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.60.0708290015580.3552@poirot.grange>
+In-Reply-To: <1188180997.3247.68.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,59 +16,50 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Tony Breeds <tony@bakeyournoodle.com>, linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>, linux-pm@lists.linux-foundation.org
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
+Huang, Ying wrote:
+> On Mon, 2007-08-27 at 09:28 +0800, Hu, Fenghua wrote:
+> 
+>>One quick question is, can it improve hiberation/wakeup time?
+> 
+> 
+> In general, for kexec based hibernation, what increases
+> hibernation/wakeup time:
+> 
+> - One extra Linux boot is needed to hibernate and wakeup.
+> 
+> 
+> What decreases hibernation/wakeup time:
+> 
+> - Most hibernation/wakeup work is done in full functional user space
+> program, so it is possible to do some optimization, such as parallel
+> compression.
 
---===============0008973432943138162==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-LYa5Qdaw79xbeo7vSDHy"
+- It does not have to reclaim pagecache before suspend?
 
+- It does not have to restore working set afterwards?
 
---=-LYa5Qdaw79xbeo7vSDHy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2007-08-29 at 00:30 +0200, Guennadi Liakhovetski wrote:
-
-> > > +#ifdef CONFIG_PM
-> >=20
-> > some of those probably want to be CONFIG_PM_SLEEP now.
->=20
-> Well, I wasn't sure when PM can be used not meaning PM_SLEEP, so, I left=20
-> PM for now. Can certainly change, if it really matters.
-
-You end up compiling more code than necessary if PM_SLEEP is disabled
-but PM is enabled (i.e. runtime powermanagement enabled but no sleep
-states)
-
-johannes
-
---=-LYa5Qdaw79xbeo7vSDHy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBG1Usy/ETPhpq3jKURAj2bAJ9rcatEc2DlfM7nMUqVSTldOpOB6wCfW/kF
-JU4UWPdFXqZg4WkYl4738x0=
-=D0k3
------END PGP SIGNATURE-----
-
---=-LYa5Qdaw79xbeo7vSDHy--
+(You could do this to reduce image size, of course, but it can
+be optional which is nice).
 
 
---===============0008973432943138162==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> So, I think the kexec based hibernation may be slower than original
+> implementation in general. In this prototype implementation, the
+> hibernation/wakeup time is much longer than original hibernation/wakeup
+> implementation. But it has much to be optimized and I think it can
+> approach the speed of the original implementation after optimization.
 
+Also, don't just look at the time to do a simple suspend/resume cycle,
+but the full cost of going from working state to working state (eg.
+grep a kernel tree or two!).
 
---===============0008973432943138162==--
+Although the kexec details are out of my league, I really like
+everything about the concept :) Nice work.
+
+-- 
+SUSE Labs, Novell Inc.
