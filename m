@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm 0/3] PM: Improve ACPI handling during
-	suspend and hibernation (rev. 3)
-Date: Thu, 30 Aug 2007 00:31:25 +0200
-Message-ID: <200708300031.26699.rjw__38140.4775348075$1188426093$gmane$org@sisk.pl>
-References: <200708272347.45438.rjw@sisk.pl>
+Subject: [PATCH -mm] Hibernation: Check if ACPI is enabled during
+	restore in the right place
+Date: Thu, 30 Aug 2007 12:44:44 +0200
+Message-ID: <200708301244.45354.rjw__48196.9444932931$1188470104$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200708272347.45438.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,34 +18,232 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Moore,
-	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 27 August 2007 23:47, Rafael J. Wysocki wrote:
-> Hi,
->=20
-> The patches in this series are intended to improve the handling of the =
-ACPI
-> platform during suspend and hibernation.
->=20
-> They do the following things:
-> * make hibernation_platform_enter() consistent with the sleep state ent=
-ering
-> =A0 code in kernel/power/main.c
-> * introduce global platform callbacks allowing us to handle ACPI in a m=
-ore fine
-> =A0 grained way during suspend and hibernation
-> * improve the handling of the system status indicator during suspend an=
-d
-> =A0 hibernation.
+[The patch below is on top of 2.6.23-rc4 with the patchset from
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc4/patches/ applied.]
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Please regard this patch series as withdrawn.
+The following scenario leads to total confusion of the platform firmware on
+some boxes (eg. HPC nx6325):
+* Hibernate with ACPI enabled
+* Pass "acpi=off" to the boot kernel
 
-I have found a corner case that requires special treatment clashing with =
-the
-2/3 and 3/3 patches and the 1/3 patch will be resubmitted separately.
+To prevent this from happening it's necessary to check if ACPI is enabled (and
+enable it if that's not the case) _right_ _after_ control has been transfered
+from the boot kernel to the image kernel, before device_power_up() is called
+(ie. with interrupts disabled).  Enabling ACPI after calling device_power_up()
+turns out to be insufficient.
 
-Greetings,
-Rafael
+For this reason, introduce new hibernation callback ->leave() that will be
+executed before device_power_up() by the restored image kernel.  To make it
+work, it also is necessary to move swsusp_suspend() from swsusp.c to disk.c
+(it's name is changed to "create_image", which is more up to the point).
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep/main.c |    7 ++++-
+ include/linux/suspend.h   |    7 +++++
+ kernel/power/disk.c       |   58 +++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/power/power.h      |    1 
+ kernel/power/swsusp.c     |   33 --------------------------
+ 5 files changed, 70 insertions(+), 36 deletions(-)
+
+Index: linux-2.6.23-rc4/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.23-rc4.orig/drivers/acpi/sleep/main.c	2007-08-29 23:52:29.000000000 +0200
++++ linux-2.6.23-rc4/drivers/acpi/sleep/main.c	2007-08-29 23:57:17.000000000 +0200
+@@ -238,13 +238,17 @@ static int acpi_hibernation_enter(void)
+ 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
+ }
+ 
+-static void acpi_hibernation_finish(void)
++static void acpi_hibernation_leave(void)
+ {
+ 	/*
+ 	 * If ACPI is not enabled by the BIOS and the boot kernel, we need to
+ 	 * enable it here.
+ 	 */
+ 	acpi_enable();
++}
++
++static void acpi_hibernation_finish(void)
++{
+ 	acpi_leave_sleep_state(ACPI_STATE_S4);
+ 	acpi_disable_wakeup_device(ACPI_STATE_S4);
+ 
+@@ -274,6 +278,7 @@ static struct platform_hibernation_ops a
+ 	.finish = acpi_hibernation_finish,
+ 	.prepare = acpi_hibernation_prepare,
+ 	.enter = acpi_hibernation_enter,
++	.leave = acpi_hibernation_leave,
+ 	.pre_restore = acpi_hibernation_pre_restore,
+ 	.restore_cleanup = acpi_hibernation_restore_cleanup,
+ };
+Index: linux-2.6.23-rc4/include/linux/suspend.h
+===================================================================
+--- linux-2.6.23-rc4.orig/include/linux/suspend.h	2007-08-29 23:52:29.000000000 +0200
++++ linux-2.6.23-rc4/include/linux/suspend.h	2007-08-29 23:57:32.000000000 +0200
+@@ -156,6 +156,12 @@ extern void mark_free_pages(struct zone 
+  *	Called after the nonboot CPUs have been disabled and all of the low
+  *	level devices have been shut down (runs with IRQs off).
+  *
++ * @leave: Perform the first stage of the cleanup after the system sleep state
++ *	indicated by @set_target() has been left.
++ *	Called right after the control has been passed from the boot kernel to
++ *	the image kernel, before the nonboot CPUs are enabled and before devices
++ *	are resumed.  Executed with interrupts disabled.
++ *
+  * @pre_restore: Prepare system for the restoration from a hibernation image.
+  *	Called right after devices have been frozen and before the nonboot
+  *	CPUs are disabled (runs with IRQs on).
+@@ -170,6 +176,7 @@ struct platform_hibernation_ops {
+ 	void (*finish)(void);
+ 	int (*prepare)(void);
+ 	int (*enter)(void);
++	void (*leave)(void);
+ 	int (*pre_restore)(void);
+ 	void (*restore_cleanup)(void);
+ };
+Index: linux-2.6.23-rc4/kernel/power/disk.c
+===================================================================
+--- linux-2.6.23-rc4.orig/kernel/power/disk.c	2007-08-29 23:52:29.000000000 +0200
++++ linux-2.6.23-rc4/kernel/power/disk.c	2007-08-30 00:02:51.000000000 +0200
+@@ -93,6 +93,17 @@ static int platform_pre_snapshot(int pla
+ }
+ 
+ /**
++ *	platform_leave - prepare the machine for switching to the normal mode
++ *	of operation using the platform driver (called with interrupts disabled)
++ */
++
++static void platform_leave(int platform_mode)
++{
++	if (platform_mode && hibernation_ops)
++		hibernation_ops->leave();
++}
++
++/**
+  *	platform_finish - switch the machine to the normal mode of operation
+  *	using the platform driver (must be called after platform_prepare())
+  */
+@@ -129,6 +140,51 @@ static void platform_restore_cleanup(int
+ }
+ 
+ /**
++ *	create_image - freeze devices that need to be frozen with interrupts
++ *	off, create the hibernation image and thaw those devices.  Control
++ *	reappears in this routine after a restore.
++ */
++
++int create_image(int platform_mode)
++{
++	int error;
++
++	error = arch_prepare_suspend();
++	if (error)
++		return error;
++
++	local_irq_disable();
++	/* At this point, device_suspend() has been called, but *not*
++	 * device_power_down(). We *must* call device_power_down() now.
++	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
++	 * become desynchronized with the actual state of the hardware
++	 * at resume time, and evil weirdness ensues.
++	 */
++	error = device_power_down(PMSG_FREEZE);
++	if (error) {
++		printk(KERN_ERR "Some devices failed to power down, "
++			KERN_ERR "aborting suspend\n");
++		goto Enable_irqs;
++	}
++
++	save_processor_state();
++	error = swsusp_arch_suspend();
++	if (error)
++		printk(KERN_ERR "Error %d while creating the image\n", error);
++	/* Restore control flow magically appears here */
++	restore_processor_state();
++	if (!in_suspend)
++		platform_leave(platform_mode);
++	/* NOTE:  device_power_up() is just a resume() for devices
++	 * that suspended with irqs off ... no overall powerup.
++	 */
++	device_power_up();
++ Enable_irqs:
++	local_irq_enable();
++	return error;
++}
++
++/**
+  *	hibernation_snapshot - quiesce devices and create the hibernation
+  *	snapshot image.
+  *	@platform_mode - if set, use the platform driver, if available, to
+@@ -163,7 +219,7 @@ int hibernation_snapshot(int platform_mo
+ 	if (!error) {
+ 		if (hibernation_mode != HIBERNATION_TEST) {
+ 			in_suspend = 1;
+-			error = swsusp_suspend();
++			error = create_image(platform_mode);
+ 			/* Control returns here after successful restore */
+ 		} else {
+ 			printk("swsusp debug: Waiting for 5 seconds.\n");
+Index: linux-2.6.23-rc4/kernel/power/power.h
+===================================================================
+--- linux-2.6.23-rc4.orig/kernel/power/power.h	2007-08-29 23:51:50.000000000 +0200
++++ linux-2.6.23-rc4/kernel/power/power.h	2007-08-30 00:00:39.000000000 +0200
+@@ -183,7 +183,6 @@ extern int swsusp_swap_in_use(void);
+ extern int swsusp_check(void);
+ extern int swsusp_shrink_memory(void);
+ extern void swsusp_free(void);
+-extern int swsusp_suspend(void);
+ extern int swsusp_resume(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+Index: linux-2.6.23-rc4/kernel/power/swsusp.c
+===================================================================
+--- linux-2.6.23-rc4.orig/kernel/power/swsusp.c	2007-08-29 23:51:44.000000000 +0200
++++ linux-2.6.23-rc4/kernel/power/swsusp.c	2007-08-29 23:59:56.000000000 +0200
+@@ -270,39 +270,6 @@ int swsusp_shrink_memory(void)
+ 	return 0;
+ }
+ 
+-int swsusp_suspend(void)
+-{
+-	int error;
+-
+-	if ((error = arch_prepare_suspend()))
+-		return error;
+-
+-	local_irq_disable();
+-	/* At this point, device_suspend() has been called, but *not*
+-	 * device_power_down(). We *must* device_power_down() now.
+-	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+-	 * become desynchronized with the actual state of the hardware
+-	 * at resume time, and evil weirdness ensues.
+-	 */
+-	if ((error = device_power_down(PMSG_FREEZE))) {
+-		printk(KERN_ERR "Some devices failed to power down, aborting suspend\n");
+-		goto Enable_irqs;
+-	}
+-
+-	save_processor_state();
+-	if ((error = swsusp_arch_suspend()))
+-		printk(KERN_ERR "Error %d suspending\n", error);
+-	/* Restore control flow magically appears here */
+-	restore_processor_state();
+-	/* NOTE:  device_power_up() is just a resume() for devices
+-	 * that suspended with irqs off ... no overall powerup.
+-	 */
+-	device_power_up();
+- Enable_irqs:
+-	local_irq_enable();
+-	return error;
+-}
+-
+ int swsusp_resume(void)
+ {
+ 	int error;
