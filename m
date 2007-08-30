@@ -1,13 +1,15 @@
-From: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [4/4] 2.6.23-rc4: known regressions
-Date: Thu, 30 Aug 2007 12:42:32 +0200
-Message-ID: <1188470552.22467.8.camel__35980.5481778041$1188502236$gmane$org@localhost>
-References: <46D58CC6.4020605@googlemail.com> <46D59073.4010101@googlemail.com>
+From: "Tim Teulings" <rael@edge.ping.de>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+Date: 30 Aug 2007 22:42:46 +0200
+Message-ID: <46D72BC6.3020809__10257.8956437812$1188506620$gmane$org@edge.ping.de>
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46D59073.4010101@googlemail.com>
+In-Reply-To: <46D279E8.10001@edge.ping.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,62 +19,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Tino Keitel <tino.keitel@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@gmail.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2007-08-29 at 17:27 +0200, Michal Piotrowski wrote:
+Hello!
 
-> Power management
-> 
-> Subject         : something broke resume from s2ram on mbp c1d (??? :))
-> References      : http://lkml.org/lkml/2007/8/28/67
-> Last known good : 2.6.23-rc3
-> Submitter       : Soeren Sonnenburg <kernel@nn7.de>
-> Caused-By       : ?
-> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> Status          : unknown
+> I don't have traces at hand and due to lack of time cannot reproduce it=
+=20
+> up to tomorrow. However this hint may speed up your analysis!
 
-> Subject         : resume from ram much slower
-> References      : http://lkml.org/lkml/2007/8/10/275
-> Last known good : 2.6.23-rc1 ?
-> Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-> Caused-By       : ?
-> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> Status          : problem is being debugged
+Sorry for the delay, but my desktop PC had an urgent hard disk problem I=20
+had to fix ASASP.
 
+So here is the output from dmesg that suggested to me that firewire=20
+might be a problem:
 
-I am not sure whether the problem I am having is not the very same as
-the one Arkadiusz is seeing. At least I've found resume from s2ram to be
-working a couple of times. Only sometimes it took long to resume, that
-is >30 seconds (around 5 - which I already consider long - is normal). 
+> usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2
+> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> eth2: Airport entering sleep mode
+> eth0: suspending, WakeOnLan disabled
+> pci_set_power_state(): 0002:20:0e.0: state=3D3, current state=3D5
+> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend=
+(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> Could not suspend device 0002:20:0e.0: error -22
+> eth0: resuming
+> PHY ID: 4061e4, addr: 0
+> eth2: Airport waking up
+> eth2: New link status: Connected (0001)
+> hda: Enabling Ultra DMA 2
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
+> ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+> hdb: Enabling Ultra DMA 2
+> usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
+> usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
+> usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
+> Driver sleep failed
+> Sleep rejected by devices
+> adb: starting probe task...
+> adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> ADB keyboard at 2, handler 1
+> ADB mouse at 3, handler set to 4 (trackpad)
+> adb: finished probe task...
+> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> eth2: Airport entering sleep mode
+> eth0: suspending, WakeOnLan disabled
+> Trying to free already-free IRQ 40
+> pci_set_power_state(): 0002:20:0e.0: state=3D3, current state=3D5
+> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend=
+(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> Could not suspend device 0002:20:0e.0: error -22
+> eth0: resuming
+> PHY ID: 4061e4, addr: 0
+> eth2: Airport waking up
+> eth2: New link status: Connected (0001)
+> hda: Enabling Ultra DMA 2
+> hdb: Enabling Ultra DMA 2
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
 
-anyway this this is with the closed source fglrx kernel module, as
-without the machine freezes when X is running on resume...
+The problem wa sinitiated by closing the lid. The iBook then seems to=20
+permanetly try to go to sleep (I can hear the cd-rom drive get=20
+periodically initialized). So above contains more than one iteration.
 
-well and fglrx seems to cause this ...
+The kernel is:
+> Linux kismet 2.6.22-1-powerpc #1 Sun Jul 29 13:58:06 CEST 2007 ppc GNU/=
+Linux
 
-BUG: scheduling while atomic: Xorg/0x00000002/3408
- [<c03c39a2>] schedule+0x5d2/0x6d0
- [<c0127038>] __wake_up+0x38/0x50
- [<f8c2df71>] irqmgr_wrap_shutdown+0xe1/0x150 [fglrx]
- [<f8c1b42f>] firegl_release_helper+0x55f/0x7d0 [fglrx]
- [<f8c1ed8b>] firegl_takedown+0x5b/0xc40 [fglrx]
- [<f8c1e41f>] firegl_release+0x12f/0x190 [fglrx]
- [<f8c126ff>] ip_firegl_release+0xf/0x20 [fglrx]
- [<c017a451>] __fput+0x91/0x160
- [<c01776f9>] filp_close+0x49/0x80
- [<c012f56c>] put_files_struct+0x9c/0xc0
- [<c013080e>] do_exit+0x12e/0x7c0
- [<f8c6dd09>] IRQMGR_WorkerThreadRoutine+0x29/0x30 [fglrx]
- [<f8c0fb90>] kasThreadRoutineHelper+0x0/0x20 [fglrx]
- [<f8c0fb90>] kasThreadRoutineHelper+0x0/0x20 [fglrx]
- [<f8c2dd1e>] IRQMGR_CallbackWrapper+0xe/0x20 [fglrx]
- [<f8c0fb90>] kasThreadRoutineHelper+0x0/0x20 [fglrx]
- [<c0104f85>] kernel_thread_helper+0xd/0x18
+The relveant debian package:
+> linux-image-2.6.22-1-powerpc_2.6.22-3_powerpc.deb
 
-well...
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+I'm running a mixture of debian testing/unstable.
+
+The firewire and the USB connector were unused, the network connector=20
+was used.
+
+If there are questions regarding other packages, or somebody wants me to=20
+test a fix (I would prever a debian package), don't hesitate - I would=20
+like to get the bug fixed :-)
+
+--=20
+Gru=DF...
+        Tim
