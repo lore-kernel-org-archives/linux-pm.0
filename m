@@ -1,15 +1,15 @@
-From: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation: kexec
-	jump
-Date: Fri, 31 Aug 2007 16:27:22 +0800
-Message-ID: <1188548842.1365.13.camel__18697.8551130325$1188548833$gmane$org@caritas-dev.intel.com>
-References: <1188177280.3247.37.camel@caritas-dev.intel.com>
-	<20070827184829.GB4104@ucw.cz>
+From: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume
+	routines (updated)
+Date: Fri, 31 Aug 2007 08:52:09 -0400
+Message-ID: <46D80EF9.7000300__7844.56506739861$1188564796$gmane$org@garzik.org>
+References: <200708052114.01790.rjw@sisk.pl> <200708080056.41651.rjw@sisk.pl>
+	<46C14479.1080206@garzik.org> <200708142009.03272.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070827184829.GB4104@ucw.cz>
+In-Reply-To: <200708142009.03272.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,87 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Grant Grundler <grundler@parisc-linux.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2007-08-27 at 18:48 +0000, Pavel Machek wrote:
-> Hi!
+Rafael J. Wysocki wrote:
+> On Tuesday, 14 August 2007 07:58, Jeff Garzik wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Wednesday, 8 August 2007 00:26, Jeff Garzik wrote:
+>>>> Rafael J. Wysocki wrote:
+>>>>> On Tuesday, 7 August 2007 23:40, Jeff Garzik wrote:
+>>>>>> I'll let our new tulip maintainer see what he thinks about the 
+>>>>>> implementation.  Seems fairly sane to me, but should at least get an "it 
+>>>>>> works" test.
+>>>>> It has been tested, as stated in the changelog, and works (on my test system).
+> [--snip--]
+>  
+>> Two comments:
+>>
+>> 1) Like akpm, the CONFIG_PM_SLEEP is out of place.  All other drivers 
+>> use CONFIG_PM
 > 
-> > To support jumping back from kexeced kernel, before executing the new
-> > kernel, the devices are put into quiescent state (to be fully
-> > implemented), and the state of devices and CPU is saved. After jumping
-> > back from kexeced kernel, the state of devices and CPU are restored
-> > accordingly. The devices/CPU state save/restore code of software
-> > suspend is called to implement corresponding function.
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> OK
 > 
-> Looks quite ok to me...
+>> 2) just remove the !dev checks, that is an impossible condition
 > 
+> OK
 > 
-> > Index: linux-2.6.23-rc3/include/asm-i386/kexec.h
-> > ===================================================================
-> > --- linux-2.6.23-rc3.orig/include/asm-i386/kexec.h	2007-08-25 21:56:54.000000000 +0800
-> > +++ linux-2.6.23-rc3/include/asm-i386/kexec.h	2007-08-25 21:57:00.000000000 +0800
-> > @@ -94,6 +94,10 @@
-> >  		unsigned long start_address,
-> >  		unsigned int has_pae) ATTRIB_NORET;
-> >  
-> > +#ifdef CONFIG_KEXEC_JUMP
-> > +extern asmlinkage int machine_kexec_real_jump(void *buf);
-> > +#endif
+> Updated patch follows.
 > 
-> Is it really neccessery to have ifdef here?
-
-It is not necessary. I will fix it in the next version.
-
-> > +#ifdef CONFIG_KEXEC_JUMP
-> > +#define KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL     0x1
-> > +#endif /* CONFIG_KEXEC_JUMP */
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> And here? ... It would be nice to use slightly shorter identifier.
-> 'KJUMP_IS_KEXECED' should be enough.
-
-Yes, that is nicer. I will fix it.
-
-> > +/*
-> > + * Must be relocatable PIC code callable as a C function
-> > + */
-> > +#define HALF_PAGE_ALIGNED (1 << (PAGE_SHIFT-1))
-> > +
-> > +#define EBX	0x0
-> > +#define ESI	0x4
-> > +#define EDI	0x8
-> > +#define EBP	0xc
-> > +#define ESP	0x10
-> > +#define CR0	0x14
-> > +#define CR3	0x18
-> > +#define CR4	0x1c
-> > +#define FLAG	0x20
-> > +#define RET	0x24
+> Add suspend/resume support to the uli526x network driver (tested on x86_64,
+> with 'Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40').
 > 
-> Hmm, is this enough? Should it use struct ptregs for normal registers?
-> What about segment registers -- they could change between kernel
-> version. Should some kind of 'version of kjump protocol' be
-> introduced?
-
-All "preserve" registers defined in ABI are saved, I think that is
-sufficient. The "swsusp_arch_suspend" saves only these registers too.
-
-An extensible inter-kernel kjump protocol and corresponding version
-number seems sensible. I will work on this.
-
+> This patch is based on the suspend/resume code in the tg3 driver.
 > 
-> What about CX/DX/fpu state? GDT pointer?
-> 
-> Actually I think that you _do_ need to save FPU. You should probably
-> use relevant swsusp parts here.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/tulip/uli526x.c |  108 +++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 102 insertions(+), 6 deletions(-)
 
-Before and after "machine_kexec_jump" is called, the
-save_processor_state() and restore_processor_state() are called, where
-the MTRR/FPU/GDT/IDT/TR/segments/cr are saved and restored. These two
-functions come from swsusp. Thanks swsusp guys. :)
-
-Best Regards,
-Huang Ying
+applied
