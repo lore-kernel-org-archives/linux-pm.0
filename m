@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm 2/5] Hibernation: Rework platform support
-	ioctls
-Date: Sun, 2 Sep 2007 23:19:38 +0200
-Message-ID: <200709022319.38762.rjw@sisk.pl>
-References: <200709022315.59652.rjw@sisk.pl>
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [4/4] 2.6.23-rc4: known regressions
+Date: Mon, 3 Sep 2007 00:33:28 +0200
+Message-ID: <6bffcb0e0709021533u1fd81db6pfb0d985d80f73995__47961.9637983435$1188772474$gmane$org@mail.gmail.com>
+References: <46D58CC6.4020605@googlemail.com> <46D59073.4010101@googlemail.com>
+	<1188470552.22467.8.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200709022315.59652.rjw@sisk.pl>
+In-Reply-To: <1188470552.22467.8.camel@localhost>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,189 +19,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arkadiusz Miskiewicz <arekm@maven.pl>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Modify the hibernation userland interface by adding two new ioctls to it,
-SNAPSHOT_PLATFORM_SUPPORT and SNAPSHOT_POWER_OFF, that can be used,
-respectively, to switch the hibernation platform support on/off and to make the
-kernel transition the system to the hibernation state (eg. ACPI S4) using the
-platform (eg. ACPI) driver.
+On 30/08/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> On Wed, 2007-08-29 at 17:27 +0200, Michal Piotrowski wrote:
+>
+> > Power management
+> >
+> > Subject         : something broke resume from s2ram on mbp c1d (??? :))
+> > References      : http://lkml.org/lkml/2007/8/28/67
+> > Last known good : 2.6.23-rc3
+> > Submitter       : Soeren Sonnenburg <kernel@nn7.de>
+> > Caused-By       : ?
+> > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+> > Status          : unknown
+>
+> > Subject         : resume from ram much slower
+> > References      : http://lkml.org/lkml/2007/8/10/275
+> > Last known good : 2.6.23-rc1 ?
+> > Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+> > Caused-By       : ?
+> > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+> > Status          : problem is being debugged
+>
+>
+> I am not sure whether the problem I am having is not the very same as
+> the one Arkadiusz is seeing. At least I've found resume from s2ram to be
+> working a couple of times. Only sometimes it took long to resume, that
+> is >30 seconds (around 5 - which I already consider long - is normal).
+>
+> anyway this this is with the closed source fglrx kernel module,
 
-These ioctls are intended to replace the misdesigned SNAPSHOT_PMOPS ioctl,
-which from now is regarded as obsolete and will be removed in the future.
+Arkadiusz, are you using any of these binary crap modules?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/userland-swsusp.txt |   24 ++++---------------
- kernel/power/power.h                    |    9 ++-----
- kernel/power/user.c                     |   39 +++++++++++++++++++++++---------
- 3 files changed, 38 insertions(+), 34 deletions(-)
+> as
+> without the machine freezes when X is running on resume...
+>
+> well and fglrx seems to cause this ...
+>
+> BUG: scheduling while atomic: Xorg/0x00000002/3408
+>  [<c03c39a2>] schedule+0x5d2/0x6d0
+>  [<c0127038>] __wake_up+0x38/0x50
+>  [<f8c2df71>] irqmgr_wrap_shutdown+0xe1/0x150 [fglrx]
+>  [<f8c1b42f>] firegl_release_helper+0x55f/0x7d0 [fglrx]
+>  [<f8c1ed8b>] firegl_takedown+0x5b/0xc40 [fglrx]
+>  [<f8c1e41f>] firegl_release+0x12f/0x190 [fglrx]
+>  [<f8c126ff>] ip_firegl_release+0xf/0x20 [fglrx]
+>  [<c017a451>] __fput+0x91/0x160
+>  [<c01776f9>] filp_close+0x49/0x80
+>  [<c012f56c>] put_files_struct+0x9c/0xc0
+>  [<c013080e>] do_exit+0x12e/0x7c0
+>  [<f8c6dd09>] IRQMGR_WorkerThreadRoutine+0x29/0x30 [fglrx]
+>  [<f8c0fb90>] kasThreadRoutineHelper+0x0/0x20 [fglrx]
+>  [<f8c0fb90>] kasThreadRoutineHelper+0x0/0x20 [fglrx]
+>  [<f8c2dd1e>] IRQMGR_CallbackWrapper+0xe/0x20 [fglrx]
+>  [<f8c0fb90>] kasThreadRoutineHelper+0x0/0x20 [fglrx]
+>  [<c0104f85>] kernel_thread_helper+0xd/0x18
+>
+> well...
+> Soeren
 
-Index: linux-2.6.23-rc4-mm1/kernel/power/power.h
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/kernel/power/power.h
-+++ linux-2.6.23-rc4-mm1/kernel/power/power.h
-@@ -158,15 +158,12 @@ struct resume_swap_area {
- #define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
- #define SNAPSHOT_SET_SWAP_FILE		_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
- #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
--#define SNAPSHOT_PMOPS			_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
- #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
- 							struct resume_swap_area)
- #define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
--#define SNAPSHOT_IOC_MAXNR	14
--
--#define PMOPS_PREPARE	1
--#define PMOPS_ENTER	2
--#define PMOPS_FINISH	3
-+#define SNAPSHOT_PLATFORM_SUPPORT	_IOR(SNAPSHOT_IOC_MAGIC, 15, int)
-+#define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
-+#define SNAPSHOT_IOC_MAXNR	16
- 
- /* If unset, the snapshot device cannot be open. */
- extern atomic_t snapshot_device_available;
-Index: linux-2.6.23-rc4-mm1/kernel/power/user.c
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/kernel/power/user.c
-+++ linux-2.6.23-rc4-mm1/kernel/power/user.c
-@@ -28,6 +28,18 @@
- 
- #include "power.h"
- 
-+/*
-+ * NOTE: The SNAPSHOT_PMOPS ioctl is obsolete and will be removed in the
-+ * future.  It is only preserved here for compatibility with existing userland
-+ * utilities.
-+ */
-+#define SNAPSHOT_PMOPS		_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
-+
-+#define PMOPS_PREPARE	1
-+#define PMOPS_ENTER	2
-+#define PMOPS_FINISH	3
-+
-+
- #define SNAPSHOT_MINOR	231
- 
- static struct snapshot_data {
-@@ -36,7 +48,7 @@ static struct snapshot_data {
- 	int mode;
- 	char frozen;
- 	char ready;
--	char platform_suspend;
-+	char platform_support;
- } snapshot_state;
- 
- atomic_t snapshot_device_available = ATOMIC_INIT(1);
-@@ -70,7 +82,7 @@ static int snapshot_open(struct inode *i
- 	}
- 	data->frozen = 0;
- 	data->ready = 0;
--	data->platform_suspend = 0;
-+	data->platform_support = 0;
- 
- 	return 0;
- }
-@@ -183,7 +195,7 @@ static int snapshot_ioctl(struct inode *
- 			error = -EPERM;
- 			break;
- 		}
--		error = hibernation_snapshot(data->platform_suspend);
-+		error = hibernation_snapshot(data->platform_support);
- 		if (!error)
- 			error = put_user(in_suspend, (unsigned int __user *)arg);
- 		if (!error)
-@@ -197,7 +209,7 @@ static int snapshot_ioctl(struct inode *
- 			error = -EPERM;
- 			break;
- 		}
--		error = hibernation_restore(data->platform_suspend);
-+		error = hibernation_restore(data->platform_support);
- 		break;
- 
- 	case SNAPSHOT_FREE:
-@@ -285,26 +297,33 @@ static int snapshot_ioctl(struct inode *
- 		mutex_unlock(&pm_mutex);
- 		break;
- 
--	case SNAPSHOT_PMOPS:
-+	case SNAPSHOT_PLATFORM_SUPPORT:
-+		data->platform_support = !!arg;
-+		break;
-+
-+	case SNAPSHOT_POWER_OFF:
-+		if (data->platform_support)
-+			error = hibernation_platform_enter();
-+		break;
-+
-+	case SNAPSHOT_PMOPS: /* This ioctl is deprecated */
- 		error = -EINVAL;
- 
- 		switch (arg) {
- 
- 		case PMOPS_PREPARE:
--			data->platform_suspend = 1;
-+			data->platform_support = 1;
- 			error = 0;
- 			break;
- 
- 		case PMOPS_ENTER:
--			if (data->platform_suspend)
-+			if (data->platform_support)
- 				error = hibernation_platform_enter();
--
- 			break;
- 
- 		case PMOPS_FINISH:
--			if (data->platform_suspend)
-+			if (data->platform_support)
- 				error = 0;
--
- 			break;
- 
- 		default:
-Index: linux-2.6.23-rc4-mm1/Documentation/power/userland-swsusp.txt
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/Documentation/power/userland-swsusp.txt
-+++ linux-2.6.23-rc4-mm1/Documentation/power/userland-swsusp.txt
-@@ -85,6 +85,12 @@ SNAPSHOT_SET_SWAP_AREA - set the resume 
- 	recommended to always use this call, because the code to set the resume
- 	partition may be removed from future kernels
- 
-+SNAPSHOT_PLATFORM_SUPPORT - enable/disable the hibernation platform support,
-+	depending on the argument value (enable, if the argument is nonzero)
-+
-+SNAPSHOT_POWER_OFF - make the kernel transition the system to the hibernation
-+	state (eg. ACPI S4) using the platform (eg. ACPI) driver
-+
- SNAPSHOT_S2RAM - suspend to RAM; using this call causes the kernel to
- 	immediately enter the suspend-to-RAM state, so this call must always
- 	be preceded by the SNAPSHOT_FREEZE call and it is also necessary
-@@ -95,24 +101,6 @@ SNAPSHOT_S2RAM - suspend to RAM; using t
- 	to resume the system from RAM if there's enough battery power or restore
- 	its state on the basis of the saved suspend image otherwise)
- 
--SNAPSHOT_PMOPS - enable the usage of the hibernation_ops->prepare,
--	hibernate_ops->enter and hibernation_ops->finish methods (the in-kernel
--	swsusp knows these as the "platform method") which are needed on many
--	machines to (among others) speed up the resume by letting the BIOS skip
--	some steps or to let the system recognise the correct state of the
--	hardware after the resume (in particular on many machines this ensures
--	that unplugged AC adapters get correctly detected and that kacpid does
--	not run wild after the resume).  The last ioctl() argument can take one
--	of the three values, defined in kernel/power/power.h:
--	PMOPS_PREPARE - make the kernel carry out the
--		hibernation_ops->prepare() operation
--	PMOPS_ENTER - make the kernel power off the system by calling
--		hibernation_ops->enter()
--	PMOPS_FINISH - make the kernel carry out the
--		hibernation_ops->finish() operation
--	Note that the actual constants are misnamed because they surface
--	internal kernel implementation details that have changed.
--
- The device's read() operation can be used to transfer the snapshot image from
- the kernel.  It has the following limitations:
- - you cannot read() more than one virtual memory page at a time
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
