@@ -1,16 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation: kexec
-	jump
-Date: Mon, 3 Sep 2007 03:11:45 +0000
-Message-ID: <20070903031145.GF21721__28913.7191408829$1188811209$gmane$org@ucw.cz>
-References: <1188177280.3247.37.camel@caritas-dev.intel.com>
-	<20070827184829.GB4104@ucw.cz>
-	<1188548842.1365.13.camel@caritas-dev.intel.com>
+Subject: Re: [PATCH -mm 1/5] Hibernation: Introduce
+	SNAPSHOT_GET_IMAGE_SIZE ioctl
+Date: Mon, 3 Sep 2007 03:17:35 +0000
+Message-ID: <20070903031734.GG21721@ucw.cz>
+References: <200709022315.59652.rjw@sisk.pl> <200709022317.41708.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1188548842.1365.13.camel@caritas-dev.intel.com>
+In-Reply-To: <200709022317.41708.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,57 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > @@ -94,6 +94,10 @@
-> > >  		unsigned long start_address,
-> > >  		unsigned int has_pae) ATTRIB_NORET;
-> > >  
-> > > +#ifdef CONFIG_KEXEC_JUMP
-> > > +extern asmlinkage int machine_kexec_real_jump(void *buf);
-> > > +#endif
-> > 
-> > Is it really neccessery to have ifdef here?
+On Sun 2007-09-02 23:17:41, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> It is not necessary. I will fix it in the next version.
-
-Looking forward to next version :-).
-
-> > > +#define CR3	0x18
-> > > +#define CR4	0x1c
-> > > +#define FLAG	0x20
-> > > +#define RET	0x24
-> > 
-> > Hmm, is this enough? Should it use struct ptregs for normal registers?
-> > What about segment registers -- they could change between kernel
-> > version. Should some kind of 'version of kjump protocol' be
-> > introduced?
+> Add a new ioctl, SNAPSHOT_GET_IMAGE_SIZE, returning the size of the (just created)
+> hibernation image, to the hibernation userland interface.
 > 
-> All "preserve" registers defined in ABI are saved, I think that is
-> sufficient. The "swsusp_arch_suspend" saves only these registers too.
+> This ioctl is necessary so that the userland utilities using the interface need
+> not access the hibernation image header, owned by the kernel, in order to obtain
+> the size of the image.
 > 
-> An extensible inter-kernel kjump protocol and corresponding version
-> number seems sensible. I will work on this.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Ok, perhaps that can wait after initial merge.
-
-> > What about CX/DX/fpu state? GDT pointer?
-> > 
-> > Actually I think that you _do_ need to save FPU. You should probably
-> > use relevant swsusp parts here.
-> 
-> Before and after "machine_kexec_jump" is called, the
-> save_processor_state() and restore_processor_state() are called, where
-> the MTRR/FPU/GDT/IDT/TR/segments/cr are saved and restored. These two
-> functions come from swsusp. Thanks swsusp guys. :)
-
-So I'm blind. Sorry for the noise.
+ACK.
 									Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
