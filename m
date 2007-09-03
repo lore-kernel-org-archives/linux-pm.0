@@ -1,13 +1,10 @@
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [4/4] 2.6.23-rc5: known regressions
-Date: Mon, 03 Sep 2007 12:11:01 +0200
-Message-ID: <46DBDDB5.7080307@googlemail.com>
-References: <46DBD982.3080102@googlemail.com>
+From: "valentin Petkov" <skyval@gmail.com>
+Subject: Toshiba L30-113A ACPI Ubuntu 7.04
+Date: Mon, 3 Sep 2007 13:56:01 +0300
+Message-ID: <97720510709030356kbc968fs853d05043ea0e1f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2745744103163306627=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46DBD982.3080102@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,87 +12,142 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Christian Leber <christian@leber.de>, Tino Keitel <tino.keitel@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+--===============2745744103163306627==
+Content-Type: multipart/alternative;
+	boundary="----=_Part_15197_2903666.1188816961798"
 
-Here is a list of some known regressions in 2.6.23-rc5.
+------=_Part_15197_2903666.1188816961798
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+Hi,
+In the past few days i became quite frustrated with my Toshiba Satellite
+L30-113a laptop. Thing is i can't get the ACPI to work. Or should i say it
+works partially, the functional keys work, i got the sound and the wireless
+working, yet an important thing in the laptop is not working =96 namely the
+CPU fan. I did some research and found that Toshiba are not very Linux
+friendly, yet there must be some solution.
 
-List of Aces
+So far i have done this:
 
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            9
-Linus Torvalds                         6
-Andi Kleen                             5
-Hugh Dickins                           5
-Andrew Morton                          4
-Al Viro                                3
-Alan Stern                             3
-Alexey Starikovskiy                    3
-Cornelia Huck                          3
-Jens Axboe                             3
-Stephen Hemminger                      3
-Tejun Heo                              3
+I turned on Toshiba support in the ACPI at the kernel and compile it.
+The ACPI recognized and displayed the battery and the functional keys
+
+#cat /proc/toshiba/ - missing
+#cat /proc/acpi/toshiba - missing
+
+#lsmod | grep acpi
+
+pcc_acpi 14080 0
+dev_acpi 12292 0
+asus_acpi 17308 0
+
+It is clear that toshiba_acpi is missing and the module is not loaded
+
+#sudo modprobe toshiba_acpi
+
+FATAL: Error inserting toshiba_acpi
+(/lib/modules/2.6.20-16-generic/kernel/drivers/acpi/toshiba_acpi.ko): No
+such device
+
+#find /lib/modules/`uname -r` -name "tosh*"
+
+/lib/modules/2.6.20-16-generic/kernel/drivers/acpi/toshiba_acpi.ko
+/lib/modules/2.6.20-16-generic/kernel/drivers/char/toshiba.ko
+
+Yet the module is present but it's not loaded!
+
+#lsmod | grep cpu
+
+cpufreq_userspace 5408 0
+cpufreq_stats 7744 0
+freq_table 6048 2 cpufreq_stats,cpufreq_ondemand
+cpufreq_powersave 2944 0
+cpufreq_ondemand 8876 0
+cpufreq_conservative 8712 0
+
+#toshset =96 says that the module is not loaded
+
+#acpi -V
+Battery 1: charged, 100%
+Thermal 1: ok, 54.0 degrees C
+AC Adapter 1: on-line
+
+#dmesg =96 nothing suspicious
+
+------=_Part_15197_2903666.1188816961798
+Content-Type: text/html; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi, <br>
+In the past few days i became quite frustrated with my Toshiba
+Satellite L30-113a laptop. Thing is i can't get the ACPI to work. Or
+should i say it works partially, the functional keys work, i got the
+sound and the wireless working, yet an important thing in the laptop is
+not working =96 namely the CPU fan. I did some research and found that
+Toshiba are not very Linux friendly, yet there must be some solution.<br>
+<br>
+So far i have done this:<br>
+<br>
+I turned on Toshiba support in the ACPI at the kernel and compile it.<br>
+The ACPI recognized and displayed the battery and the functional keys<br>
+<br>
+#cat /proc/toshiba/  - missing<br>
+#cat /proc/acpi/toshiba  - missing<br>
+<br>
+#lsmod | grep acpi<br>
+<br>
+pcc_acpi               14080  0<br>
+dev_acpi               12292  0<br>
+asus_acpi              17308  0<br>
+<br>
+It is clear that toshiba_acpi is missing and the module is not loaded<br>
+<br>
+#sudo modprobe toshiba_acpi<br>
+<br>
+FATAL: Error inserting toshiba_acpi (/lib/modules/2.6.20-16-generic/kernel/=
+drivers/acpi/toshiba_acpi.ko): No such device<br>
+<br>
+#find /lib/modules/`uname -r` -name &quot;tosh*&quot;<br>
+<br>
+/lib/modules/2.6.20-16-generic/kernel/drivers/acpi/toshiba_acpi.ko<br>
+/lib/modules/2.6.20-16-generic/kernel/drivers/char/toshiba.ko<br>
+<br>
+Yet the module is present but it's not loaded!<br>
+<br>
+#lsmod | grep cpu<br>
+<br>
+cpufreq_userspace       5408  0<br>
+cpufreq_stats           7744  0<br>
+freq_table              6048  2 cpufreq_stats,cpufreq_ondemand<br>
+cpufreq_powersave       2944  0<br>
+cpufreq_ondemand        8876  0<br>
+cpufreq_conservative     8712  0<br>
+<br>
+#toshset =96 says that the module is not loaded<br>
+<br>
+#acpi -V<br>
+    Battery 1: charged, 100%<br>
+    Thermal 1: ok, 54.0 degrees C<br>
+ AC Adapter 1: on-line<br>
+<br>
+#dmesg =96 nothing suspicious
+
+------=_Part_15197_2903666.1188816961798--
+
+--===============2745744103163306627==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-
-Power management
-
-Subject         : powersaving degradation, (time spend in C0 goes up after a while)
-References      : http://lkml.org/lkml/2007/9/2/142
-Last known good : ?
-Submitter       : Christian Leber <christian@leber.de>
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-Subject         : something broke resume from s2ram on mbp c1d (??? :))
-References      : http://lkml.org/lkml/2007/8/28/67
-Last known good : 2.6.23-rc3
-Submitter       : Soeren Sonnenburg <kernel@nn7.de>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : unknown
-
-Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
-References      : http://lkml.org/lkml/2007/8/12/249
-Last known good : ?
-Submitter       : Thomas Voegtle <tv@lio96.de>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
-
-Subject         : resume from ram much slower
-References      : http://lkml.org/lkml/2007/8/10/275
-Last known good : 2.6.23-rc1 ?
-Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
-
-
-USB
-
-Subject         : 2.6.23-rc1: USB hard disk broken
-References      : http://lkml.org/lkml/2007/7/25/62
-Last known good : ?
-Submitter       : Tino Keitel <tino.keitel@gmx.de>
-Caused-By       : ?
-Handled-By      : Oliver Neukum <oliver@neukum.org>
-Status          : unknown
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+--===============2745744103163306627==--
