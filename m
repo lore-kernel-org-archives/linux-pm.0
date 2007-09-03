@@ -1,14 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: Toshiba L30-113A ACPI Ubuntu 7.04
-Date: Mon, 3 Sep 2007 11:00:54 -0400
-Message-ID: <200709031100.55012.lenb__47837.7775325955$1188831502$gmane$org@kernel.org>
-References: <97720510709030356kbc968fs853d05043ea0e1f@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm 3/5] Hibernation: Correct definitions of
+	some ioctls
+Date: Mon, 3 Sep 2007 23:14:15 +0200
+Message-ID: <200709032314.15393.rjw@sisk.pl>
+References: <200709022315.59652.rjw@sisk.pl> <200709022321.04183.rjw@sisk.pl>
+	<20070903032523.GH21721@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <97720510709030356kbc968fs853d05043ea0e1f@mail.gmail.com>
+In-Reply-To: <20070903032523.GH21721@ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,62 +21,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-acpi@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-(probably linux-acpi is a better place for this thread than linux-pm...)
+On Monday, 3 September 2007 05:25, Pavel Machek wrote:
+> Hi!
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Three ioctl numbers belonging to the hibernation userland interface,
+> > SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_AVAIL_SWAP, SNAPSHOT_GET_SWAP_PAGE,
+> > are defined in a wrong way (eg. not portable).  Provide new ioctl numbers for
+> > these ioctls and mark the existing ones as deprecated.
+> 
+> It looks to me like
+> 
+> > @@ -149,12 +149,9 @@ struct resume_swap_area {
+> >  #define SNAPSHOT_IOC_MAGIC	'3'
+> >  #define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
+> >  #define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
+> > -#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
+> >  #define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
+> >  #define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
+> >  #define SNAPSHOT_SET_IMAGE_SIZE  _IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
+> 
+> at least set_image_size is wrong - too: we do not use argument as
+> unsigned long *, and we certainly don't write to it.
 
+Yes, it is.  I think it should be _IO(SNAPSHOT_IOC_MAGIC, a_number)
 
-On Monday 03 September 2007 06:56, valentin Petkov wrote:
-> Hi,
-> In the past few days i became quite frustrated with my Toshiba Satellit=
-e
-> L30-113a laptop. Thing is i can't get the ACPI to work. Or should i say=
- it
-> works partially, the functional keys work, i got the sound and the wire=
-less
-> working, yet an important thing in the laptop is not working =E2=80=93 =
-namely the
-> CPU fan.
+I'll update the patch to cover this.
 
-In what way does the CPU fan not work?  Does it not spin up
-when the system is under load?
+> > -#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
+> > -#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
+> >  #define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
+> >  #define SNAPSHOT_SET_SWAP_FILE		_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
+> >  #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
+> > @@ -163,7 +160,10 @@ struct resume_swap_area {
+> >  #define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
+> >  #define SNAPSHOT_PLATFORM_SUPPORT	_IOR(SNAPSHOT_IOC_MAGIC, 15, int)
 
-> I did some research and found that Toshiba are not very Linux=20
-> friendly, yet there must be some solution.
->
-> So far i have done this:
->=20
-> I turned on Toshiba support in the ACPI at the kernel and compile it.
-> The ACPI recognized and displayed the battery and the functional keys
->=20
-> #cat /proc/toshiba/ - missing
-> #cat /proc/acpi/toshiba - missing
->=20
-> #lsmod | grep acpi
->=20
-> pcc_acpi 14080 0
-> dev_acpi 12292 0
-> asus_acpi 17308 0
->=20
-> It is clear that toshiba_acpi is missing and the module is not loaded
->=20
-> #sudo modprobe toshiba_acpi
->=20
-> FATAL: Error inserting toshiba_acpi
-> (/lib/modules/2.6.20-16-generic/kernel/drivers/acpi/toshiba_acpi.ko): N=
-o
-> such device
+This one also should be _IO(...), BTW.
 
-toshiba_acpi is a reverse engineered platform specific driver,
-and it depends on specific code in the ACPI DSDT on toshiba machines.
-In this case, it apparently doesn't find that code, and gives up.
+> >  #define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
+> > -#define SNAPSHOT_IOC_MAXNR	16
+> > +#define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
+> > +#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 18, -#loff_t)
+> 
+> Should this be _IOW, because we return that value to userspace?
 
-Your fan should work correctly even without this driver.
+No.  The direction is from the userland POV, AFAICS.
 
-Perhaps you can open a sighting at bugzilla.kernel.org and
-attach the output from acpidump?
+> > +#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
+> 
+> Hmm, this looks like _IOW to me, too, plus it does put_user with u64
+> (at least in my copy, may have been hacked too much).
 
-thanks,
--Len
+In -rc5 it uses loff_t, and I believe that the direction is correct.
+
+Greetings,
+Rafael
