@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm 5/5] Hibernation: Introduce exportable
-	suspend ioctls header
-Date: Mon, 3 Sep 2007 23:15:37 +0200
-Message-ID: <200709032315.38299.rjw@sisk.pl>
-References: <200709022315.59652.rjw@sisk.pl> <200709022328.20720.rjw@sisk.pl>
-	<1188812627.14564.34.camel@johannes.berg>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: Suspend and hibernation status report
+Date: Tue, 4 Sep 2007 19:32:20 -0400
+Message-ID: <200709041932.21281.lenb__7387.02373714677$1188948940$gmane$org@kernel.org>
+References: <200707271057.05438.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1188812627.14564.34.camel@johannes.berg>
+In-Reply-To: <200707271057.05438.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,24 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 3 September 2007 11:43, Johannes Berg wrote:
-> On Sun, 2007-09-02 at 23:28 +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Move the definitions of hibernation ioctls to a separate header file in
-> > include/linux, which can be exported to the user space.
-> 
-> Missing the actual export to userspace:
-> 
-> --- include/linux/Kbuild
-> +++ include/linux/Kbuild
-> +header-y += suspend_ioctls.h
+On Friday 27 July 2007 04:57, Rafael J. Wysocki wrote:
 
-Good point, thanks.
+Thanks for writing this, Rafael.
 
-Greetings,
-Rafael
+> * system hibernation state - state, in which the system's processors are off and
+>   its main memory is not powered, but the information necessary for continuing
+>   the computations carried out when the system was last in a working state is
+>   preserved in a storage space, such as a disk
+> * ACPI S4 state - system hibernation state, in which some information is
+>   preserved by the ACPI platform, in accordance with the ACPI specification
+
+"some information is preserved by the ACPI platform" is sort of mis-leading.
+What ACPI adds to the hibernate flow is some platform hooks to handle
+wakeup devices, and a platform hook for the actual sleep request.
+I'm not aware of any information saved by ACPI during S4 that is
+not saved were the hibernate to be done with "acpi=off".
+
+thanks,
+-Len
