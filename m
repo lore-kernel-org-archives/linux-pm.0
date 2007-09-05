@@ -1,19 +1,20 @@
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] Re: Sleep problems with kernels >= 2.6.21 on
+Subject: Re: [PATCH] Re: Sleep problems with kernels >= 2.6.21 on
 	powerpc
-Date: Wed, 5 Sep 2007 20:06:50 +0200 (CEST)
-Message-ID: <tkrat.7174534bdd0ddaff__20748.2418082238$1189015727$gmane$org@s5r6.in-berlin.de>
+Date: Wed, 05 Sep 2007 20:24:14 +0200
+Message-ID: <46DEF44E.8070003__32975.8420041346$1189016752$gmane$org@s5r6.in-berlin.de>
 References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
 	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
-	<46D72BC6.3020809@edge.ping.de>
+	<20070827065246.GA21220@ime.usp.br>
+	<46D279E8.10001@edge.ping.de> <46D72BC6.3020809@edge.ping.de>
 	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
 	<46DEEBBE.4070201@s5r6.in-berlin.de>
+	<tkrat.7174534bdd0ddaff@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46DEEBBE.4070201@s5r6.in-berlin.de>
-Content-Disposition: INLINE
+In-Reply-To: <tkrat.7174534bdd0ddaff@s5r6.in-berlin.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,43 +24,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: michal.k.k.piotrowski@gmail.com, rbrito@gmail.com, =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, linux-pm@lists.linux-foundation.org, Tim Teulings <rael@edge.ping.de>
+To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@gmail.com>
+Cc: =?ISO-8859-1?Q?Kristian_H=F8gsber?=@smtp2.linux-foundation.org, michal.k.k.piotrowski@gmail.com, =?ISO-8859-1?Q?g?= <krh@redhat.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Tim Teulings <rael@edge.ping.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: firewire: fw-ohci: ignore failure of pci_set_power_state (fix suspend regression)
+Rog=E9rio Brito wrote on 2007-08-27:
+> If things progress well, I will incrementally include features on the
+> kernel that I need (I left out, for instance, the Firewire subsystem, s=
+o
+> that compilation wouldn't take more than an hour here, despite the fact
+> that I do need Firewire support on the kernel) and see the point where
+> things are not normal.
 
-Fixes "Sleep problems with kernels >= 2.6.21 on powerpc",
-http://lkml.org/lkml/2007/8/25/155.
-
-Like it was suggested earlier in http://lkml.org/lkml/2006/10/24/13,
-we do *not* fail .suspend anymore if pci_set_power_state failed.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.23-rc4/drivers/firewire/fw-ohci.c
-===================================================================
---- linux-2.6.23-rc4.orig/drivers/firewire/fw-ohci.c
-+++ linux-2.6.23-rc4/drivers/firewire/fw-ohci.c
-@@ -1946,8 +1946,11 @@ static int pci_suspend(struct pci_dev *p
- 	}
- 	err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
- 	if (err) {
-+		/*
-+		 * Some Apple onboard controllers are known to fail here.
-+		 * Ignore it and let the machine proceed to suspend.
-+		 */
- 		fw_error("pci_set_power_state failed\n");
--		return err;
- 	}
- 
- 	return 0;
-
--- 
+The trivial pci_set_power_state issue aside, resume is currently
+defective with the new firewire-ohci driver:
+  - The version in Linus' tree doesn't restore a certain detail of
+    IEEE 1394 state during resume, hence some protocols like SBP-2 don't
+    work after resume unless you unload and reload the drivers.
+  - The version in -mm restores everything but panics soon after resume
+    on an APM notebook in combination with some SBP-2 targets.  I have
+    yet to try netconsole or so to gather more information.
+--=20
 Stefan Richter
--=====-=-=== =--= --=-=
+-=3D=3D=3D=3D=3D-=3D-=3D=3D=3D =3D--=3D --=3D-=3D
 http://arcgraph.de/sr/
