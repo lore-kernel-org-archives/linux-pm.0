@@ -1,20 +1,17 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] Re: Sleep problems with kernels >= 2.6.21 on
-	powerpc
-Date: Wed, 05 Sep 2007 20:24:14 +0200
-Message-ID: <46DEF44E.8070003__32975.8420041346$1189016752$gmane$org@s5r6.in-berlin.de>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+Date: Wed, 5 Sep 2007 10:28:24 -0700
+Message-ID: <20070905102824.a481060c.randy.dunlap__20945.223948411$1189018774$gmane$org@oracle.com>
 References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
 	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br>
-	<46D279E8.10001@edge.ping.de> <46D72BC6.3020809@edge.ping.de>
+	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
+	<46D72BC6.3020809@edge.ping.de>
 	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
-	<46DEEBBE.4070201@s5r6.in-berlin.de>
-	<tkrat.7174534bdd0ddaff@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <tkrat.7174534bdd0ddaff@s5r6.in-berlin.de>
+In-Reply-To: <20070905100754.57ab4e3e.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,27 +21,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@gmail.com>
-Cc: =?ISO-8859-1?Q?Kristian_H=F8gsber?=@smtp2.linux-foundation.org, michal.k.k.piotrowski@gmail.com, =?ISO-8859-1?Q?g?= <krh@redhat.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Tim Teulings <rael@edge.ping.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: debian-powerpc@lists.debian.org, michal.k.k.piotrowski@gmail.com, rbrito@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-pm@lists.linux-foundation.org, Tim Teulings <rael@edge.ping.de>
 List-Id: linux-pm@vger.kernel.org
 
-Rog=E9rio Brito wrote on 2007-08-27:
-> If things progress well, I will incrementally include features on the
-> kernel that I need (I left out, for instance, the Firewire subsystem, s=
-o
-> that compilation wouldn't take more than an hour here, despite the fact
-> that I do need Firewire support on the kernel) and see the point where
-> things are not normal.
+On Wed, 5 Sep 2007 10:07:54 -0700 Andrew Morton wrote:
 
-The trivial pci_set_power_state issue aside, resume is currently
-defective with the new firewire-ohci driver:
-  - The version in Linus' tree doesn't restore a certain detail of
-    IEEE 1394 state during resume, hence some protocols like SBP-2 don't
-    work after resume unless you unload and reload the drivers.
-  - The version in -mm restores everything but panics soon after resume
-    on an APM notebook in combination with some SBP-2 targets.  I have
-    yet to try netconsole or so to gather more information.
---=20
-Stefan Richter
--=3D=3D=3D=3D=3D-=3D-=3D=3D=3D =3D--=3D --=3D-=3D
-http://arcgraph.de/sr/
+> > On 30 Aug 2007 22:42:46 +0200 "Tim Teulings" <rael@edge.ping.de> wrote:
+> > Hello!
+> > 
+> > > I don't have traces at hand and due to lack of time cannot reproduce it 
+> > > up to tomorrow. However this hint may speed up your analysis!
+> > 
+> > Sorry for the delay, but my desktop PC had an urgent hard disk problem I 
+> > had to fix ASASP.
+> > 
+> > So here is the output from dmesg that suggested to me that firewire 
+> > might be a problem:
+> 
+> Straightforward regression, two reporters, nothing happening.
+
+(material for ksummit discussion, e.g.)
+
+> > > usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2
+> > > usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> > > hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> > > eth2: Airport entering sleep mode
+> > > eth0: suspending, WakeOnLan disabled
+> > > pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+> > > firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> > > suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> > > Could not suspend device 0002:20:0e.0: error -22
+> > > eth0: resuming
+> > > PHY ID: 4061e4, addr: 0
+> > > eth2: Airport waking up
+> > > eth2: New link status: Connected (0001)
+> > > hda: Enabling Ultra DMA 2
+> > > eth0: Link is up at 100 Mbps, full-duplex.
+> > > eth0: Pause is disabled
+> > > ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+> > > hdb: Enabling Ultra DMA 2
+> > > usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
+> > > usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
+> > > usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
+> > > Driver sleep failed
+> > > Sleep rejected by devices
+> > > adb: starting probe task...
+> > > adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> > > ADB keyboard at 2, handler 1
+> > > ADB mouse at 3, handler set to 4 (trackpad)
+> > > adb: finished probe task...
+> > > usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> > > hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> > > eth2: Airport entering sleep mode
+> > > eth0: suspending, WakeOnLan disabled
+> > > Trying to free already-free IRQ 40
+> > > pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+> > > firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> 
+> I grepped the whole tree for firewire_ohci and came up blank.  What is it?
+
+See drivers/firewire/Makefile
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
