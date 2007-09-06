@@ -1,21 +1,15 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update] Re: Sleep problems with kernels >= 2.6.21
-	on powerpc
-Date: Thu, 6 Sep 2007 09:50:30 +0200 (CEST)
-Message-ID: <tkrat.c799685836167333__21428.622378926$1189065146$gmane$org@s5r6.in-berlin.de>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
-	<46D72BC6.3020809@edge.ping.de>
-	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
-	<46DEEBBE.4070201@s5r6.in-berlin.de>
-	<20070905124411.bc15f48c.akpm@linux-foundation.org>
-	<tkrat.29a16d2ec8698ff2@s5r6.in-berlin.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm] Hibernation: Check if ACPI is enabled
+	during restore in the right place
+Date: Thu, 6 Sep 2007 01:56:03 +0000
+Message-ID: <20070906015603.GA5097__42435.0743800916$1189069290$gmane$org@ucw.cz>
+References: <200709020021.37881.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <tkrat.29a16d2ec8698ff2@s5r6.in-berlin.de>
-Content-Disposition: INLINE
+Content-Disposition: inline
+In-Reply-To: <200709020021.37881.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,78 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: michal.k.k.piotrowski@gmail.com, rbrito@gmail.com, krh@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org, linux-pm@lists.linux-foundation.org, rael@edge.ping.de
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On  5 Sep, Stefan Richter wrote:
-> On  5 Sep, Andrew Morton wrote:
->>> >>> Trying to free already-free IRQ 40
->>> >>> pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
->>> >>> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
-...
->> It's not clear _why_ pci_set_power_state() is failing.
-> 
-> The only -22 error path in pci_set_power_state is this:
-> 
-> 	/* Validate current state:
-> 	 * Can enter D0 from any state, but if we can only go deeper 
-> 	 * to sleep if we're already in a low power state
-> 	 */
-> 	if (state != PCI_D0 && dev->current_state > state) {
-> 		printk(KERN_ERR "%s(): %s: state=%d, current state=%d\n",
-> 			__FUNCTION__, pci_name(dev), state, dev->current_state);
-> 		return -EINVAL;
-> 	} [...else...]
+On Sun 2007-09-02 00:21:37, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>=20
+> The following scenario leads to total confusion of the platform firmwar=
+e on
+> some boxes (eg. HPC nx6325):
+> * Hibernate with ACPI enabled
+> * Pass "acpi=3Doff" to the boot kernel
+>=20
+> To prevent this from happening it's necessary to check if ACPI is enabl=
+ed (and
+> enable it if that's not the case) _right_ _after_ control has been tran=
+sfered
+> from the boot kernel to the image kernel, before device_power_up() is c=
+alled
+> (ie. with interrupts disabled). =A0Enabling ACPI after calling device_p=
+ower_up()
+> turns out to be insufficient.
+>=20
+> For this reason, introduce new hibernation callback ->leave() that will=
+ be
+> executed before device_power_up() by the restored image kernel. =A0To m=
+ake it
+> work, it also is necessary to move swsusp_suspend() from swsusp.c to di=
+sk.c
+> (it's name is changed to "create_image", which is more up to the point).
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
+ACK.
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: firewire: fw-ohci: ignore failure of pci_set_power_state (fix suspend regression)
-
-Fixes (papers over) "Sleep problems with kernels >= 2.6.21 on powerpc",
-http://lkml.org/lkml/2007/8/25/155.  The issue is that the FireWire
-controller's pci_dev.current_state of iBook G3 and presumably older
-PowerBooks is still in PCI_UNKNOWN instead of PCI_D0 when the firewire
-driver's .suspend method is called.
-
-Like it was suggested earlier in http://lkml.org/lkml/2006/10/24/13, we
-do not fail .suspend anymore if pci_set_power_state failed.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
-
-Update:
-  - omit comment which will become outdated if the underlying problem is fixed
-  - log the error return value
-  - document the actual bug in the patch description
-
-IMO the actual bug here (operating the controller while it is in
-PCI_UNKNOWN state, which is surely a fault in the PPC platform code) is
-something to be fixed post 2.6.23 release.
-
- drivers/firewire/fw-ohci.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -1973,10 +1973,8 @@ static int pci_suspend(struct pci_dev *p
- 		return err;
- 	}
- 	err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
--	if (err) {
--		fw_error("pci_set_power_state failed\n");
--		return err;
--	}
-+	if (err)
-+		fw_error("pci_set_power_state failed with %d\n", err);
- 
- 	return 0;
- }
-
-
--- 
-Stefan Richter
--=====-=-=== =--= --==-
-http://arcgraph.de/sr/
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
