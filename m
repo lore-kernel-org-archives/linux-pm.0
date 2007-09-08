@@ -1,7 +1,7 @@
-From: Sam Ravnborg <sam@ravnborg.org>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [4/4] 2.6.23-rc5: known regressions v2
-Date: Sat, 8 Sep 2007 15:01:04 +0200
-Message-ID: <20070908130104.GA23408__22338.2986303934$1189256445$gmane$org@uranus.ravnborg.org>
+Date: Sat, 8 Sep 2007 16:33:28 +0000
+Message-ID: <20070908163328.GB4457__36805.6846702986$1189269375$gmane$org@ucw.cz>
 References: <46E27DEF.7060109@googlemail.com> <46E2835E.9010408@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,24 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, kbuild-devel@lists.sourceforge.net, Arkadiusz Miskiewicz <arekm@maven.pl>, Roman Zippel <zippel@linux-m68k.org>, Thomas Voegtle <tv@lio96.de>, LKML <linux-kernel@vger.kernel.org>, Christian Leber <christian@leber.de>, "Robert P. J. Day" <rpjday@mindspring.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+Cc: Soeren Sonnenburg <kernel@nn7.de>, Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Michal.
+Hi!
 
-> Kconfig/Kbuild
-> 
-> Subject         : building a specific in-tree module is currently a bit broken
-> References      : http://lkml.org/lkml/2007/9/5/40
-> Last known good : ?
-> Submitter       : Robert P. J. Day <rpjday@mindspring.com>
+> Subject         : resume from ram much slower
+> References      : http://lkml.org/lkml/2007/8/10/275
+> Last known good : 2.6.23-rc1 ?
+> Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
 > Caused-By       : ?
-> Handled-By      : Sam Ravnborg <sam@ravnborg.org>
+> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
 > Status          : problem is being debugged
 
-Known bug there has been there for ages so this is not a regression.
-I suggest removing it from this list - and I will see to have
-it fixed for 2.6.24.
-I will not push any fix for -rc for this.
+Can you try unloading acpi_cpufreq? I seen similar bug in suse
+kernel...
 
-	Sam
+If that does not help, try unloading as many modules as possible...
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
