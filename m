@@ -1,13 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [4/4] 2.6.23-rc5: known regressions v2
-Date: Sat, 8 Sep 2007 16:33:28 +0000
-Message-ID: <20070908163328.GB4457__36805.6846702986$1189269375$gmane$org@ucw.cz>
-References: <46E27DEF.7060109@googlemail.com> <46E2835E.9010408@googlemail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Suspend and hibernation status report
+Date: Sat, 8 Sep 2007 23:40:36 +0200
+Message-ID: <200709082340.37018.rjw@sisk.pl>
+References: <200707271057.05438.rjw@sisk.pl>
+	<200709041932.21281.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200709041932.21281.lenb@kernel.org>
 Content-Disposition: inline
-In-Reply-To: <46E2835E.9010408@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +20,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <nigel@nigel.suspend2.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday, 5 September 2007 01:32, Len Brown wrote:
+> On Friday 27 July 2007 04:57, Rafael J. Wysocki wrote:
+> 
+> Thanks for writing this, Rafael.
+> 
+> > * system hibernation state - state, in which the system's processors are off and
+> >   its main memory is not powered, but the information necessary for continuing
+> >   the computations carried out when the system was last in a working state is
+> >   preserved in a storage space, such as a disk
+> > * ACPI S4 state - system hibernation state, in which some information is
+> >   preserved by the ACPI platform, in accordance with the ACPI specification
+> 
+> "some information is preserved by the ACPI platform" is sort of mis-leading.
+> What ACPI adds to the hibernate flow is some platform hooks to handle
+> wakeup devices, and a platform hook for the actual sleep request.
+> I'm not aware of any information saved by ACPI during S4 that is
+> not saved were the hibernate to be done with "acpi=off".
 
-> Subject         : resume from ram much slower
-> References      : http://lkml.org/lkml/2007/8/10/275
-> Last known good : 2.6.23-rc1 ?
-> Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-> Caused-By       : ?
-> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> Status          : problem is being debugged
+Well, I am.
 
-Can you try unloading acpi_cpufreq? I seen similar bug in suse
-kernel...
+On HPC nx6325 the status of AC adapter after the restore is not reported
+correctly if hibernation is done without the ACPI hooks (eg. if you hibernate
+with the AC connected and then disconnect it and resume, it will still be
+reported as connected until you plug/unplug it).
 
-If that does not help, try unloading as many modules as possible...
+There are more machines that behave similarly, AFAICT.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings,
+Rafael
