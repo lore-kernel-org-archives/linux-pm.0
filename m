@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH -mm] Hibernation: Enter platform hibernation
-	state in a consistent way (rev. 4)
-Date: Sun, 9 Sep 2007 15:04:20 +0200
-Message-ID: <200709091504.21117.rjw@sisk.pl>
+Subject: [PATCH -mm 3/5] Hibernation: Mark SNAPSHOT_SET_SWAP_FILE
+	ioctl as deprecated (rev. 2)
+Date: Sun, 9 Sep 2007 23:12:38 +0200
+Message-ID: <200709092312.38788.rjw@sisk.pl>
+References: <200709092257.16085.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200709092257.16085.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,115 +20,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefan Becker <Stefan.Becker@nokia.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make hibernation_platform_enter() execute the enter-a-sleep-state sequence
-instead of the mixed shutdown-with-entering-S4 thing.
-
-Replace the shutting down of devices done by kernel_shutdown_prepare(), before
-entering the ACPI S4 sleep state, with suspending them and the shutting down of
-sysdevs with calling device_power_down(PMSG_SUSPEND) (just like before entering
-S1 or S3, but the target state is now S4).  Also, disable the nonboot CPUs
-before entering the sleep state (S4), which generally always is a good idea.
-
-This is known to fix the "double disk spin down during hibernation" on some
-machines, eg. HPC nx6325 (ref. http://lkml.org/lkml/2007/8/7/316 and the
-following thread).  Moreover, it has been reported to make
-/sys/class/rtc/rtc0/wakealarm work correctly with hibernation for some users.
-It also generally causes the hibernation state (ACPI S4) to be entered faster.
+Mark the SNAPSHOT_SET_SWAP_FILE ioctl belonging to the hibernation userland
+interface as deprecated.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/disk.c |   61 +++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 44 insertions(+), 17 deletions(-)
+ Documentation/power/userland-swsusp.txt |   14 ++------------
+ kernel/power/power.h                    |    1 -
+ kernel/power/user.c                     |    9 +++++----
+ 3 files changed, 7 insertions(+), 17 deletions(-)
 
-Index: linux-2.6.23-rc4-mm1/kernel/power/disk.c
+Index: linux-2.6.23-rc5/kernel/power/power.h
 ===================================================================
---- linux-2.6.23-rc4-mm1.orig/kernel/power/disk.c
-+++ linux-2.6.23-rc4-mm1/kernel/power/disk.c
-@@ -222,21 +222,48 @@ int hibernation_platform_enter(void)
- {
- 	int error;
+--- linux-2.6.23-rc5.orig/kernel/power/power.h	2007-09-09 22:30:21.000000000 +0200
++++ linux-2.6.23-rc5/kernel/power/power.h	2007-09-09 22:30:36.000000000 +0200
+@@ -156,7 +156,6 @@ struct resume_swap_area {
+ #define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
+ #define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
+ #define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
+-#define SNAPSHOT_SET_SWAP_FILE		_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
+ #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
+ #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
+ 							struct resume_swap_area)
+Index: linux-2.6.23-rc5/kernel/power/user.c
+===================================================================
+--- linux-2.6.23-rc5.orig/kernel/power/user.c	2007-09-09 22:30:21.000000000 +0200
++++ linux-2.6.23-rc5/kernel/power/user.c	2007-09-09 22:30:36.000000000 +0200
+@@ -29,10 +29,11 @@
+ #include "power.h"
  
--	if (hibernation_ops) {
--		kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
--		/*
--		 * We have cancelled the power transition by running
--		 * hibernation_ops->finish() before saving the image, so we
--		 * should let the firmware know that we're going to enter the
--		 * sleep state after all
--		 */
--		error = hibernation_ops->prepare();
--		sysdev_shutdown();
--		if (!error)
--			error = hibernation_ops->enter();
--	} else {
--		error = -ENOSYS;
-+	if (!hibernation_ops)
-+		return -ENOSYS;
-+
-+	/*
-+	 * We have cancelled the power transition by running
-+	 * hibernation_ops->finish() before saving the image, so we should let
-+	 * the firmware know that we're going to enter the sleep state after all
-+	 */
-+	error = hibernation_ops->start();
-+	if (error)
-+		return error;
-+
-+	suspend_console();
-+	error = device_suspend(PMSG_SUSPEND);
-+	if (error)
-+		return error;
-+
-+	error = hibernation_ops->prepare();
-+	if (error)
-+		goto Resume_devices;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Finish;
-+
-+	local_irq_disable();
-+	error = device_power_down(PMSG_SUSPEND);
-+	if (!error) {
-+		hibernation_ops->enter();
-+		/* We should never get here */
-+		while (1);
- 	}
-+	local_irq_enable();
-+
-+	/*
-+	 * We don't need to reenable the nonboot CPUs or resume consoles, since
-+	 * the system is going to be halted anyway.
-+	 */
-+ Finish:
-+	hibernation_ops->finish();
-+ Resume_devices:
-+	device_resume();
- 	return error;
- }
+ /*
+- * NOTE: The SNAPSHOT_PMOPS ioctl is obsolete and will be removed in the
+- * future.  It is only preserved here for compatibility with existing userland
+- * utilities.
++ * NOTE: The SNAPSHOT_SET_SWAP_FILE and SNAPSHOT_PMOPS ioctls are obsolete and
++ * will be removed in the future.  They are only preserved here for
++ * compatibility with existing userland utilities.
+  */
++#define SNAPSHOT_SET_SWAP_FILE	_IOW(SNAPSHOT_IOC_MAGIC, 10, unsigned int)
+ #define SNAPSHOT_PMOPS		_IOW(SNAPSHOT_IOC_MAGIC, 12, unsigned int)
  
-@@ -253,14 +280,14 @@ static void power_down(void)
- 	case HIBERNATION_TEST:
- 	case HIBERNATION_TESTPROC:
+ #define PMOPS_PREPARE	1
+@@ -260,7 +261,7 @@ static int snapshot_ioctl(struct inode *
+ 		free_all_swap_pages(data->swap);
  		break;
--	case HIBERNATION_SHUTDOWN:
--		kernel_power_off();
--		break;
- 	case HIBERNATION_REBOOT:
- 		kernel_restart(NULL);
- 		break;
- 	case HIBERNATION_PLATFORM:
- 		hibernation_platform_enter();
-+	case HIBERNATION_SHUTDOWN:
-+		kernel_power_off();
-+		break;
- 	}
- 	kernel_halt();
- 	/*
+ 
+-	case SNAPSHOT_SET_SWAP_FILE:
++	case SNAPSHOT_SET_SWAP_FILE: /* This ioctl is deprecated */
+ 		if (!swsusp_swap_in_use()) {
+ 			/*
+ 			 * User space encodes device types as two-byte values,
+Index: linux-2.6.23-rc5/Documentation/power/userland-swsusp.txt
+===================================================================
+--- linux-2.6.23-rc5.orig/Documentation/power/userland-swsusp.txt	2007-09-09 22:30:21.000000000 +0200
++++ linux-2.6.23-rc5/Documentation/power/userland-swsusp.txt	2007-09-09 22:32:45.000000000 +0200
+@@ -67,23 +67,13 @@ SNAPSHOT_GET_SWAP_PAGE - allocate a swap
+ SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated with
+ 	SNAPSHOT_GET_SWAP_PAGE
+ 
+-SNAPSHOT_SET_SWAP_FILE - set the resume partition (the last ioctl() argument
+-	should specify the device's major and minor numbers in the old
+-	two-byte format, as returned by the stat() function in the .st_rdev
+-	member of the stat structure)
+-
+ SNAPSHOT_SET_SWAP_AREA - set the resume partition and the offset (in <PAGE_SIZE>
+ 	units) from the beginning of the partition at which the swap header is
+ 	located (the last ioctl() argument should point to a struct
+ 	resume_swap_area, as defined in kernel/power/power.h, containing the
+-	resume device specification, as for the SNAPSHOT_SET_SWAP_FILE ioctl(),
+-	and the offset); for swap partitions the offset is always 0, but it is
+-	different to zero for swap files (please see
++	resume device specification and the offset); for swap partitions the
++	offset is always 0, but it is different from zero for swap files (see
+ 	Documentation/swsusp-and-swap-files.txt for details).
+-	The SNAPSHOT_SET_SWAP_AREA ioctl() is considered as a replacement for
+-	SNAPSHOT_SET_SWAP_FILE which is regarded as obsolete.   It is
+-	recommended to always use this call, because the code to set the resume
+-	partition may be removed from future kernels
+ 
+ SNAPSHOT_PLATFORM_SUPPORT - enable/disable the hibernation platform support,
+ 	depending on the argument value (enable, if the argument is nonzero)
