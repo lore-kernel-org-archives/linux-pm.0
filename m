@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH -mm] Hibernation: Enter platform
-	hibernation state in a consistent way (rev. 4)
-Date: Wed, 12 Sep 2007 13:14:08 +0200
-Message-ID: <200709121314.09676.rjw__13643.2287785739$1189594989$gmane$org@sisk.pl>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [4/4] 2.6.23-rc6: known regressions
+Date: Wed, 12 Sep 2007 18:59:08 +0200
+Message-ID: <46E81ADC.4030902__2407.38825309581$1189616914$gmane$org@googlemail.com>
+References: <46E8187E.9000006@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <46E8187E.9000006@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,128 +17,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefan Becker <Stefan.Becker@nokia.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Soeren Sonnenburg <kernel@nn7.de>, Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, Greg KH <gregkh@suse.de>, Tino Keitel <tino.keitel@gmx.de>, LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>, Christian Leber <christian@leber.de>, Andy Whitcroft <apw@shadowen.org>, Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi all,
 
-Make hibernation_platform_enter() execute the enter-a-sleep-state sequenc=
-e
-instead of the mixed shutdown-with-entering-S4 thing.
+Here is a list of some known regressions in 2.6.23-rc6.
 
-Replace the shutting down of devices done by kernel_shutdown_prepare(), b=
-efore
-entering the ACPI S4 sleep state, with suspending them and the shutting d=
-own of
-sysdevs with calling device_power_down(PMSG_SUSPEND) (just like before en=
-tering
-S1 or S3, but the target state is now S4). =A0Also, disable the nonboot C=
-PUs
-before entering the sleep state (S4), which generally always is a good id=
-ea.
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-This is known to fix the "double disk spin down during hibernation" on so=
-me
-machines, eg. HPC nx6325 (ref. http://lkml.org/lkml/2007/8/7/316 and the
-following thread). =A0Moreover, it has been reported to make
-/sys/class/rtc/rtc0/wakealarm work correctly with hibernation for some us=
-ers.
-It also generally causes the hibernation state (ACPI S4) to be entered fa=
-ster.
+List of Aces
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/disk.c |   61 +++++++++++++++++++++++++++++++++++++--------=
--------
- 1 file changed, 44 insertions(+), 17 deletions(-)
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            10
+Linus Torvalds                         6
+Alan Stern                             5
+Andi Kleen                             5
+Hugh Dickins                           5
+Trond Myklebust                        5
+Andrew Morton                          4
+Al Viro                                3
+Alexey Starikovskiy                    3
+Cornelia Huck                          3
+David S. Miller                        3
+Jens Axboe                             3
+Stephen Hemminger                      3
+Tejun Heo                              3
 
-Index: linux-2.6.23-rc6/kernel/power/disk.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.23-rc6.orig/kernel/power/disk.c
-+++ linux-2.6.23-rc6/kernel/power/disk.c
-@@ -222,21 +222,48 @@ int hibernation_platform_enter(void)
- {
- 	int error;
-=20
--	if (hibernation_ops) {
--		kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
--		/*
--		 * We have cancelled the power transition by running
--		 * hibernation_ops->finish() before saving the image, so we
--		 * should let the firmware know that we're going to enter the
--		 * sleep state after all
--		 */
--		error =3D hibernation_ops->prepare();
--		sysdev_shutdown();
--		if (!error)
--			error =3D hibernation_ops->enter();
--	} else {
--		error =3D -ENOSYS;
-+	if (!hibernation_ops)
-+		return -ENOSYS;
-+
-+	/*
-+	 * We have cancelled the power transition by running
-+	 * hibernation_ops->finish() before saving the image, so we should let
-+	 * the firmware know that we're going to enter the sleep state after al=
-l
-+	 */
-+	error =3D hibernation_ops->start();
-+	if (error)
-+		return error;
-+
-+	suspend_console();
-+	error =3D device_suspend(PMSG_SUSPEND);
-+	if (error)
-+		return error;
-+
-+	error =3D hibernation_ops->prepare();
-+	if (error)
-+		goto Resume_devices;
-+
-+	error =3D disable_nonboot_cpus();
-+	if (error)
-+		goto Finish;
-+
-+	local_irq_disable();
-+	error =3D device_power_down(PMSG_SUSPEND);
-+	if (!error) {
-+		hibernation_ops->enter();
-+		/* We should never get here */
-+		while (1);
- 	}
-+	local_irq_enable();
-+
-+	/*
-+	 * We don't need to reenable the nonboot CPUs or resume consoles, since
-+	 * the system is going to be halted anyway.
-+	 */
-+ Finish:
-+	hibernation_ops->finish();
-+ Resume_devices:
-+	device_resume();
- 	return error;
- }
-=20
-@@ -253,14 +280,14 @@ static void power_down(void)
- 	case HIBERNATION_TEST:
- 	case HIBERNATION_TESTPROC:
- 		break;
--	case HIBERNATION_SHUTDOWN:
--		kernel_power_off();
--		break;
- 	case HIBERNATION_REBOOT:
- 		kernel_restart(NULL);
- 		break;
- 	case HIBERNATION_PLATFORM:
- 		hibernation_platform_enter();
-+	case HIBERNATION_SHUTDOWN:
-+		kernel_power_off();
-+		break;
- 	}
- 	kernel_halt();
- 	/*
+
+
+Power management
+
+Subject         : powersaving degradation, (time spend in C0 goes up after a while)
+References      : http://lkml.org/lkml/2007/9/2/142
+Last known good : ?
+Submitter       : Christian Leber <christian@leber.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : something broke resume from s2ram on mbp c1d (??? :))
+References      : http://lkml.org/lkml/2007/8/28/67
+Last known good : 2.6.23-rc3
+Submitter       : Soeren Sonnenburg <kernel@nn7.de>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : unknown
+
+Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
+References      : http://lkml.org/lkml/2007/8/12/249
+Last known good : ?
+Submitter       : Thomas Voegtle <tv@lio96.de>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+Subject         : resume from ram much slower
+References      : http://lkml.org/lkml/2007/8/10/275
+Last known good : 2.6.23-rc1 ?
+Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+
+
+TTY things
+
+Subject         : 2.6.23-rc6-git1 -- termios *_1 compile failures on powerpc
+References      : http://lkml.org/lkml/2007/9/12/101
+Last known good : ?
+Submitter       : Andy Whitcroft <apw@shadowen.org>
+Caused-By       : David Miller <davem@davemloft.net>
+                  commit f629307c857c030d5a3dd777fee37c8bb395e171
+Handled-By      : ?
+Status          : unknown
+
+
+
+USB
+
+Subject         : 2.6.23-rc1: USB hard disk broken
+References      : http://lkml.org/lkml/2007/7/25/62
+Last known good : ?
+Submitter       : Tino Keitel <tino.keitel@gmx.de>
+Caused-By       : ?
+Handled-By      : Oliver Neukum <oliver@neukum.org>
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
