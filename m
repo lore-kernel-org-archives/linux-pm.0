@@ -1,12 +1,14 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [4/4] 2.6.23-rc6: known regressions
-Date: Wed, 12 Sep 2007 10:19:31 -0700 (PDT)
-Message-ID: <alpine.LFD.0.999.0709121018560.16478@woody.linux-foundation.org>
-References: <46E8187E.9000006@googlemail.com> <46E81ADC.4030902@googlemail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Resend][PATCH -mm] Hibernation: Enter platform
+ hibernation state in a consistent way (rev. 4)
+Date: Fri, 14 Sep 2007 16:37:17 -0700
+Message-ID: <20070914163717.8a0cb637.akpm__17549.0951551639$1189813109$gmane$org@linux-foundation.org>
+References: <200709121314.09676.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46E81ADC.4030902@googlemail.com>
+In-Reply-To: <200709121314.09676.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,24 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, Greg KH <gregkh@suse.de>, Tino Keitel <tino.keitel@gmx.de>, LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>, Christian Leber <christian@leber.de>, Andy Whitcroft <apw@shadowen.org>, Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stefan Becker <Stefan.Becker@nokia.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 12 Sep 2007 13:14:08 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
+> +	if (!hibernation_ops)
+> +		return -ENOSYS;
+> +
+> +	/*
+> +	 * We have cancelled the power transition by running
+> +	 * hibernation_ops->finish() before saving the image, so we should let
+> +	 * the firmware know that we're going to enter the sleep state after all
+> +	 */
+> +	error = hibernation_ops->start();
+> +	if (error)
+> +		return error;
+> +
+> +	suspend_console();
+> +	error = device_suspend(PMSG_SUSPEND);
+> +	if (error)
+> +		return error;
+> +
+> +	error = hibernation_ops->prepare();
+> +	if (error)
+> +		goto Resume_devices;
+> +
+> +	error = disable_nonboot_cpus();
+> +	if (error)
+> +		goto Finish;
+> +
+> +	local_irq_disable();
+> +	error = device_power_down(PMSG_SUSPEND);
+> +	if (!error) {
+> +		hibernation_ops->enter();
+> +		/* We should never get here */
+> +		while (1);
+>  	}
+> +	local_irq_enable();
+> +
 
-On Wed, 12 Sep 2007, Michal Piotrowski wrote:
-> 
-> Subject         : 2.6.23-rc6-git1 -- termios *_1 compile failures on powerpc
-> References      : http://lkml.org/lkml/2007/9/12/101
-> Last known good : ?
-> Submitter       : Andy Whitcroft <apw@shadowen.org>
-> Caused-By       : David Miller <davem@davemloft.net>
->                   commit f629307c857c030d5a3dd777fee37c8bb395e171
-> Handled-By      : ?
-> Status          : unknown
-
-Should be fixed by b0052fcaefb829a29fdc6567274daf0b75329fc3 ("Define 
-termios_1 functions for powerpc, s390, avr32 and frv").
-
-		Linus
+Confused.  afacit there's no way for the caller of this function to know
+whether or not suspend_console() was called, so the error recovery doesn't
+know whether or not to run resume_console().  How does all that work?
