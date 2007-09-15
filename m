@@ -1,17 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Resend][PATCH -mm] Hibernation: Enter platform
-	hibernation state in a consistent way (rev. 4)
-Date: Sat, 15 Sep 2007 02:30:36 +0200
-Message-ID: <200709150230.37615.rjw__5479.81458153135$1189815630$gmane$org@sisk.pl>
-References: <200709121314.09676.rjw@sisk.pl>
-	<20070914163717.8a0cb637.akpm@linux-foundation.org>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [3/3] 2.6.23-rc6: known regressions v2
+Date: Sat, 15 Sep 2007 04:29:08 +0200
+Message-ID: <46EB4374.50104@googlemail.com>
+References: <46EB3EF8.6040103@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070914163717.8a0cb637.akpm@linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <46EB3EF8.6040103@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,57 +17,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefan Becker <Stefan.Becker@nokia.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christian Volkmann <haveaniceday@cv-sv.de>, Soeren Sonnenburg <kernel@nn7.de>, Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Christian Leber <christian@leber.de>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 15 September 2007 01:37, Andrew Morton wrote:
-> On Wed, 12 Sep 2007 13:14:08 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > +	if (!hibernation_ops)
-> > +		return -ENOSYS;
-> > +
-> > +	/*
-> > +	 * We have cancelled the power transition by running
-> > +	 * hibernation_ops->finish() before saving the image, so we should let
-> > +	 * the firmware know that we're going to enter the sleep state after all
-> > +	 */
-> > +	error = hibernation_ops->start();
-> > +	if (error)
-> > +		return error;
-> > +
-> > +	suspend_console();
-> > +	error = device_suspend(PMSG_SUSPEND);
-> > +	if (error)
-> > +		return error;
-> > +
-> > +	error = hibernation_ops->prepare();
-> > +	if (error)
-> > +		goto Resume_devices;
-> > +
-> > +	error = disable_nonboot_cpus();
-> > +	if (error)
-> > +		goto Finish;
-> > +
-> > +	local_irq_disable();
-> > +	error = device_power_down(PMSG_SUSPEND);
-> > +	if (!error) {
-> > +		hibernation_ops->enter();
-> > +		/* We should never get here */
-> > +		while (1);
-> >  	}
-> > +	local_irq_enable();
-> > +
-> 
-> Confused.  afacit there's no way for the caller of this function to know
-> whether or not suspend_console() was called, so the error recovery doesn't
-> know whether or not to run resume_console().  How does all that work?
+Hi all,
 
-Well, if this fails, we try to power off and if that fails, we halt.
+Here is a list of some known regressions in 2.6.23-rc6.
 
-Resuming devices in case of an error is needed so that kernel_power_off()
-can work, but the consoles need not be resumed for that.
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-Still, now that I think of it, the resuming of consoles in case of an error
-will probably be useful in diagnostics.  I'll post a fix on top of this patch.
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            10
+Andi Kleen                             7
+Linus Torvalds                         6
+Alan Stern                             5
+Hugh Dickins                           5
+Trond Myklebust                        5
+Andrew Morton                          4
+David S. Miller                        4
+Al Viro                                3
+Alexey Starikovskiy                    3
+Cornelia Huck                          3
+Jens Axboe                             3
+Stephen Hemminger                      3
+Tejun Heo                              3
+
+
+
+Power management
+
+Subject         : powersaving degradation, (time spend in C0 goes up after a while)
+References      : http://lkml.org/lkml/2007/9/2/142
+Last known good : ?
+Submitter       : Christian Leber <christian@leber.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : something broke resume from s2ram on mbp c1d (??? :))
+References      : http://lkml.org/lkml/2007/8/28/67
+Last known good : 2.6.23-rc3
+Submitter       : Soeren Sonnenburg <kernel@nn7.de>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : unknown
+
+Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
+References      : http://lkml.org/lkml/2007/8/12/249
+Last known good : ?
+Submitter       : Thomas Voegtle <tv@lio96.de>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+Subject         : resume from ram much slower
+References      : http://lkml.org/lkml/2007/8/10/275
+Last known good : 2.6.23-rc1 ?
+Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+
+
+USB
+
+Subject         : usb 1-1: device not accepting address 2, error -62
+References      : http://lkml.org/lkml/2007/9/14/302
+Last known good : ?
+Submitter       : Christian Volkmann <haveaniceday@cv-sv.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+
+
+Farewell!
+Michal
+
+--
+LOGOUT
+http://www.stardust.webpages.pl/
