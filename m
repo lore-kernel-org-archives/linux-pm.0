@@ -1,15 +1,16 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [3/3] 2.6.23-rc6: known regressions v2
-Date: Mon, 17 Sep 2007 23:03:48 +0200
-Message-ID: <1190063028.2995.53.camel__8662.26052535257$1190063120$gmane$org@chaos>
-References: <46EB3EF8.6040103@googlemail.com>
-	<200709172144.43761.arekm@maven.pl> <1190058463.2995.14.camel@chaos>
-	<200709172251.07769.arekm@maven.pl>
+From: "Amit Kucheria" <kucheria.amit@gmail.com>
+Subject: Re: Info on LDM, domain system and SOCs
+Date: Tue, 18 Sep 2007 00:17:18 +0300
+Message-ID: <52d486620709171417o106f876dsb13ab7e4f334be48@mail.gmail.com>
+References: <46DEB51F.3010000@st.com>
+	<1189430227.8343.5.camel@localhost.localdomain>
+	<46E56E81.2050105@st.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200709172251.07769.arekm@maven.pl>
+In-Reply-To: <46E56E81.2050105@st.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +20,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, Thomas Voegtle <tv@lio96.de>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Francesco VIRLINZI <francesco.virlinzi@st.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2007-09-17 at 22:51 +0200, Arkadiusz Miskiewicz wrote:
-> > >     clockevents: fix resume logic
-> >
-> > Linus pulled a series of patches which are addressing this issue into
-> > his tree yesterday. Can you please retest against current git ?
-> 
-> Looks like the problem is fixed in current git for me. Thanks!
+On 9/10/07, Francesco VIRLINZI <francesco.virlinzi@st.com> wrote:
+> If you mean the <include/linux/clk.h>, I already saw it.
+> I think it's good but it isn't enough.
+> I want track also the devices on a clock to be able to notify (for each
+> device) if a clock changes.
 
-Thanks for testing.
+You should propose these changes to the clock framework. Designing a
+new framework is unlikely to be accepted in the kernel easily since a
+lot of platforms are using the clock framework already.
 
-> ps. The description about vaio not resuming without key pressing matches what 
-> I was seeing here on thinkpad z60m, too.
-
-Sigh, there were several subtle reason why you would need to press keys
-during resume. The one you are referring to is the one which is the most
-obscure. It would be nice if you could revert that particular one and
-check whether it still works on your box.
-
-	tglx
+/Amit
+--
+Amit Kucheria, Linux developer
