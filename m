@@ -1,13 +1,15 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: resume from suspended state with firewire
-Date: Thu, 20 Sep 2007 17:32:31 +0200
-Message-ID: <46F2928F.1000104__34930.9456687935$1190302433$gmane$org@s5r6.in-berlin.de>
-References: <465F5EBCEEBD4DC7BE325B4E55B88E20.MAI@mail.livedns.co.il>
+From: "Yuval Dafni" <yuvald@slydetech.com>
+Subject: RE: resume from suspended state with firewire
+Date: Thu, 20 Sep 2007 17:45:18 +0200
+Message-ID: <6954FEB9E3130645ABAFEE8D5E2C7C141FE8CA__45313.0697868348$1190303856$gmane$org@slydesvr.Slyde.local>
+References: <46F2928F.1000104@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <465F5EBCEEBD4DC7BE325B4E55B88E20.MAI@mail.livedns.co.il>
+Content-class: urn:content-classes:message
+In-Reply-To: <46F2928F.1000104@s5r6.in-berlin.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,9 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Yuval Dafni <yuval.d@slyde-tech.com>
-Cc: linux-pm@lists.linux-foundation.org, linux1394-user@lists.sourceforge.net
+To: linux1394-user@lists.sourceforge.net
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
+
+Thanks, 
+I don't know yet, I'm new to power management.
+I do know that PCI cards have a signal called PME by which they may
+change the power state of the system, but I'm not sure how this is
+helpful in my case. I'm also not sure yet how all this relates to the
+different power states d1,d2,d3 and their implementation on PowerPc.
+
+Since I'm not going to re-write ohci1394, I might try to keep the card
+alive,  hook on to one of the data pins and make it wake my cpu when a
+packet arrives. In this case, I'm wondering how many packets I'm going
+to loose by the time I wake up :-) ...
+
+Yuval.
+
+
+-----Original Message-----
+From: linux1394-user-bounces@lists.sourceforge.net
+[mailto:linux1394-user-bounces@lists.sourceforge.net] On Behalf Of
+Stefan Richter
+Sent: Thursday, September 20, 2007 5:33 PM
+To: Yuval Dafni
+Cc: linux-pm@lists.linux-foundation.org;
+linux1394-user@lists.sourceforge.net
+Subject: Re: resume from suspended state with firewire
 
 (Adding Cc: linux-pm)
 
@@ -39,3 +66,12 @@ hardware support?
 Stefan Richter
 -=====-=-=== =--= =-=--
 http://arcgraph.de/sr/
+
+------------------------------------------------------------------------
+-
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2005.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+_______________________________________________
+mailing list Linux1394-user@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux1394-user
