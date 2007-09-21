@@ -1,16 +1,16 @@
 From: Jeremy Maitin-Shepard <jbms@cmu.edu>
 Subject: Re: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
 	kexec jump
-Date: Fri, 21 Sep 2007 17:08:49 -0400
-Message-ID: <87d4wb680u.fsf__40572.4079734229$1190419196$gmane$org@jbms.ath.cx>
+Date: Fri, 21 Sep 2007 17:16:59 -0400
+Message-ID: <878x6z67n8.fsf__33788.0243816928$1190419320$gmane$org@jbms.ath.cx>
 References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org>
-	<200709212215.26978.rjw@sisk.pl> <87hcln69zv.fsf@jbms.ath.cx>
-	<200709212253.02158.rjw@sisk.pl>
+	<200709212253.02158.rjw@sisk.pl> <87d4wb680u.fsf@jbms.ath.cx>
+	<200709212325.39599.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200709212253.02158.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri\, 21 Sep 2007 22\:53\:00 +0200")
+In-Reply-To: <200709212325.39599.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri\, 21 Sep 2007 23\:25\:37 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,26 +27,41 @@ List-Id: linux-pm@vger.kernel.org
 
 "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> On Friday, 21 September 2007 22:26, Jeremy Maitin-Shepard wrote:
+> On Friday, 21 September 2007 23:08, Jeremy Maitin-Shepard wrote:
 >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 >> 
->> [snip]
+>> > On Friday, 21 September 2007 22:26, Jeremy Maitin-Shepard wrote:
+>> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> >> 
+>> >> [snip]
+>> >> 
+>> >> > The ACPI NVS area is explicitly marked as reserved and we don't save it.
+>> >> > On x86_64 we don't save any memory areas marked as reserved and yet the
+>> > above
+>> >> > happens.
+>> >> 
+>> >> I think you have mentioned before, though, that ACPI is first
+>> >> initialized by the boot kernel, before it is later initialized by
+>> >> resuming kernel.  This could well be the source of the problem.
 >> 
->> > The ACPI NVS area is explicitly marked as reserved and we don't save it.
->> > On x86_64 we don't save any memory areas marked as reserved and yet the
-> above
->> > happens.
+>> > No, it's not.  I have tested that too with an ACPI-less boot kernel.
 >> 
->> I think you have mentioned before, though, that ACPI is first
->> initialized by the boot kernel, before it is later initialized by
->> resuming kernel.  This could well be the source of the problem.
+>> Well, it seems that there just must be some other bug.  I would define
+>> anything that differs between the post-resume initialization of ACPI
 
-> No, it's not.  I have tested that too with an ACPI-less boot kernel.
+> I'm not sure what you mean.
 
-Well, it seems that there just must be some other bug.  I would define
-anything that differs between the post-resume initialization of ACPI from
-the normal boot initialization of ACPI as a bug.  If the interaction
-with the hardware is the same, then the behavior will be the same.
+>> from the normal boot initialization of ACPI as a bug.  If the interaction
+>> with the hardware is the same, then the behavior will be the same.
+
+> The ACPI platform firmware is allowed to preserve information accross the
+> hibernation-resume cycle, so this need not be the same.
+
+All of my comments related to the case where S4 is not being used
+(instead the system is just powered off normally), and a boot kernel
+that does not initialize ACPI is used.  In that case, the ACPI platform
+firmware should not be able to distinguish a normal boot from a resume
+from hibernation.
 
 -- 
 Jeremy Maitin-Shepard
