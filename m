@@ -1,16 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
 	kexec jump
-Date: Fri, 21 Sep 2007 11:49:08 +0200
-Message-ID: <20070921094908.GB20149__23599.882485769$1190368374$gmane$org@elf.ucw.cz>
+Date: Fri, 21 Sep 2007 13:56:29 +0200
+Message-ID: <200709211356.30291.rjw__7617.95969815484$1190375117$gmane$org@sisk.pl>
 References: <1190266447.21818.17.camel@caritas-dev.intel.com>
-	<20070920100941.GA12157@atrey.karlin.mff.cuni.cz>
-	<200709211024.35991.nigel@nigel.suspend2.net>
+	<200709211120.00448.ncunningham@crca.org.au>
+	<20070920184106.79e1858a.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20070920184106.79e1858a.akpm@linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200709211024.35991.nigel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +22,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@suspend2.net
-Cc: Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
+	Ying" <ying.huang@intel.com>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hi Andrew,
 
-> > Seems like good enough for -mm to me.
+On Friday, 21 September 2007 03:41, Andrew Morton wrote:
+> On Fri, 21 Sep 2007 11:19:59 +1000 Nigel Cunningham <ncunningham@crca.org.au> wrote:
+> 
+> > Hi.
+> > 
+> > On Friday 21 September 2007 11:06:23 Andrew Morton wrote:
+> > > On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham 
+> > <nigel@nigel.suspend2.net> wrote:
+> > > 
+> > > > Hi Andrew.
+> > > > 
+> > > > On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
+> > > > > Seems like good enough for -mm to me.
+> > > > > 
+> > > > > 									Pavel
+> > > > 
+> > > > Andrew, if I recall correctly, you said a while ago that you didn't want 
+> > > > another hibernation implementation in the vanilla kernel. If you're going 
+> > to 
+> > > > consider merging this kexec code, will you also please consider merging 
+> > > > TuxOnIce?
+> > > > 
+> > > 
+> > > The theory is that kexec-based hibernation will mainly use preexisting
+> > > kexec code and will permit us to delete the existing hibernation
+> > > implementation.
+> > > 
+> > > That's different from replacing it.
+> > 
+> > TuxOnIce doesn't remove the existing implementation either. It can 
+> > transparently replace it, but you can enable/disable that at compile time.
+> 
+> Right.  So we end up with two implementations in-tree.  Whereas
+> kexec-based-hibernation leads us to having zero implementations in-tree.
 
-(For the record, I do not think this is going to be
-hibernation-replacement any time soon. But it is functionality useful
-for other stuff -- dump memory and continue -- and yes it may be able
-to do hibernation in the long term.
+Well, I don't quite agree.
 
-It really comes from the other side of reliability:
+For now, the kexec-based approach is missing the handling of devices, AFAICS.
+Namely, it's quite easy to snapshot memory with the help of kexec, but the
+state of devices gets trashed in the process, so you need some additional code
+saving the state of devices for you, executed before the kexec.
 
-* swsusp is "if your kernel is perfectly healthy, it will work"
+Moreover, on ACPI systems the transition to the S4 sleep state and back to S0
+(working state) is more complicated than a system checkpointing, because we
+are supposed to take the platform firmware into consideration in that case.
+The more I think about this, the more it seems to me that it just can't be done
+on top of kexec in a reasonable fashion.  Of course, we could avoid handling
+the ACPI S4, but that would leave some people (including me ;-)) with
+semi-working hardware after the "restore".  I don't think that's generally
+acceptable in the long run.
 
-while this, coming from kdump is
+IMHO, for ACPI systems the way to go is to harden suspend to RAM (with s2ram
+in place and the graphics adapters specifications from Intel and AMD released
+we are in a good position to do that) and build the S4 transition mechanism
+on top of that.  It can be done easlily by adapting the current hibernation
+code, but not on top of kexec (I'm afraid).
 
-* "if your kernel is not completely trashed, it should work"
-
-...which is why can't use swsusp to do dump memory and continue -- you
-want to do dumps on "slightly broken" systems. And yes, as a
-sideeffect it may be able to do hibernation... why not, lets see how
-it works out).
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+[Besides, the current hibernation userland interface is used by default by
+openSUSE and it's also used by quite some Debian users, so we can't drop
+it overnight and it can't be implemented in a compatible way on top of the
+kexec-based solution.]
