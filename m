@@ -1,17 +1,18 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
 	kexec jump
-Date: Fri, 21 Sep 2007 11:19:59 +1000
-Message-ID: <200709211120.00448.ncunningham__40321.5080885731$1190385858$gmane$org@crca.org.au>
+Date: Fri, 21 Sep 2007 12:58:59 +1000
+Message-ID: <200709211259.00195.nigel__16754.8536359847$1190385861$gmane$org@nigel.suspend2.net>
 References: <1190266447.21818.17.camel@caritas-dev.intel.com>
-	<200709211024.35991.nigel@nigel.suspend2.net>
-	<20070920180623.5d7da7b9.akpm@linux-foundation.org>
+	<200709211225.25874.nigel@nigel.suspend2.net>
+	<1190342757.21818.75.camel@caritas-dev.intel.com>
+Reply-To: nigel@suspend2.net
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070920180623.5d7da7b9.akpm@linux-foundation.org>
+In-Reply-To: <1190342757.21818.75.camel@caritas-dev.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,46 +23,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On Friday 21 September 2007 11:06:23 Andrew Morton wrote:
-> On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham 
-<nigel@nigel.suspend2.net> wrote:
-> 
-> > Hi Andrew.
+On Friday 21 September 2007 12:45:57 Huang, Ying wrote:
+> On Fri, 2007-09-21 at 12:25 +1000, Nigel Cunningham wrote:
+> > Hi.
 > > 
-> > On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
-> > > Seems like good enough for -mm to me.
+> > On Friday 21 September 2007 12:18:57 Huang, Ying wrote:
+> > > > That's not true. Kexec will itself be an implementation, otherwise 
+you'd 
+> > end 
+> > > > up with people screaming about no hibernation support. And it won't 
+result 
+> > in 
+> > > > the complete removal of the existing hibernation code from the kernel. 
+At 
+> > the 
+> > > > very least, it's going to want the kernel being hibernated to have an 
+> > > > interface by which it can find out which pages need to be saved. I 
+> > wouldn't 
 > > > 
-> > > 									Pavel
+> > > This has been done by kexec/kdump guys. There is a makedumpfile utility
+> > > and vmcoreinfo kernel mechanism to implement this. We can just reuse the
+> > > work of kexec/kdump.
 > > 
-> > Andrew, if I recall correctly, you said a while ago that you didn't want 
-> > another hibernation implementation in the vanilla kernel. If you're going 
-to 
-> > consider merging this kexec code, will you also please consider merging 
-> > TuxOnIce?
-> > 
+> > You've already said that you are currently saving all pages. How are you 
+going 
+> > to avoid saving free pages if you don't get the information from the 
+kernel 
+> > being saved? This will require more than just code reuse.
 > 
-> The theory is that kexec-based hibernation will mainly use preexisting
-> kexec code and will permit us to delete the existing hibernation
-> implementation.
+> I have not tried "makedumpfile". The "makedumpfile" avoids saving free
+> pages through checking the "mem_map" of the original kernel. I think
+> there is nothing prevent it been used for kexec based hibernation image
+> writing.
 > 
-> That's different from replacing it.
+> This is an example of duplicated effort between kexec/kdump and original
+> hibernation implementation. Both kexec/kdump and hibernation need to
+> save memory image without saving the free pages. This can be done once
+> instead of twice.
 
-TuxOnIce doesn't remove the existing implementation either. It can 
-transparently replace it, but you can enable/disable that at compile time.
+Ok.
+
+> > > > be surprised if it also ends up with an interface in which the kernel 
+> > being 
+> > > > hibernated tells it what bdev/sectors in which to save the image as 
+well 
+> > > > (otherwise you're going to need a dedicated, otherwise untouched 
+partition 
+> > > > exclusively for the kexec'd kernel to use), or what network settings 
+to 
+> > use 
+> > > > if it wants to try to save the image to a network storage device. On 
+top 
+> > of
+> > > 
+> > > These can be done in user space. The image writing will be done in user
+> > > space for kexec base hibernation.
+> > 
+> > That only complicates things more. Now you need to get the information on 
+> > where to save the image from the kernel being saved, then transfer it to 
+> > userspace after switching to the kexec kernel. That's more kernel code, 
+not 
+> > less.
+> 
+> This is fairly simple in fact. For example, you can specify the
+> bdev/sectors in kernel command line when do kexec load "kexec -l <...>
+> --append='...'", then the image writing system can get it through
+> "cat /proc/cmdline".
+
+Sounds doable, as long as you can cope with long command lines (which 
+shouldn't be a biggie). (If you've got a swapfile or parts of a swap 
+partition already in use, it can be quite fragmented).
+
+Andrew, you're seeing that it really doesn't mean the removal of all 
+hibernation code from the kernel being suspended, aren't you? (And if the 
+kexec'd kernel is the same binary, then there's more code again).
 
 Regards,
 
 Nigel
 -- 
-Nigel Cunningham
-Christian Reformed Church of Cobden
-103 Curdie Street, Cobden 3266, Victoria, Australia
-Ph. +61 3 5595 1185 / +61 417 100 574
-Communal Worship: 11 am Sunday.
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
