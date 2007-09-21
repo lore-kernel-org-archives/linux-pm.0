@@ -1,19 +1,13 @@
-From: "huang ying" <huang.ying.caritas@gmail.com>
-Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation -v3
-Date: Fri, 21 Sep 2007 23:41:13 +0800
-Message-ID: <851fc09e0709210841w6d0beafdi2f6be9408027434f@mail.gmail.com>
-References: <1190266440.21818.16.camel@caritas-dev.intel.com>
-	<46F39345.3040201@kolumbus.fi>
-	<851fc09e0709210644y4a859a2bp223ef56b08a27f0@mail.gmail.com>
-	<46F3DBAB.9010308@kolumbus.fi>
-	<851fc09e0709210813s1bb3fb02y6096c74fdc9dc35d@mail.gmail.com>
-	<46F3DFA4.90909@kolumbus.fi>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [RFC 1/2] Merge power-management source files
+Date: Fri, 21 Sep 2007 10:40:32 -0700
+Message-ID: <20070921174032.GA13137@kroah.com>
+References: <Pine.LNX.4.44L0.0709201401470.3846-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <46F3DFA4.90909@kolumbus.fi>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0709201401470.3846-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,109 +17,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?Q?Mika_Penttil=C3=A4?= <mika.penttila@kolumbus.fi>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9/21/07, Mika Penttil=C3=A4 <mika.penttila@kolumbus.fi> wrote:
-> huang ying wrote:
-> > On 9/21/07, Mika Penttil=C3=A4 <mika.penttila@kolumbus.fi> wrote:
-> >
-> >> huang ying wrote:
-> >>
-> >>> On 9/21/07, Mika Penttil=C3=A4 <mika.penttila@kolumbus.fi> wrote:
-> >>>
-> >>>
-> >>>>> Usage:
-> >>>>>
-> >>>>> 1. Compile kernel with following options selected:
-> >>>>>
-> >>>>> CONFIG_X86_32=3Dy
-> >>>>> CONFIG_RELOCATABLE=3Dy # not needed strictly, but it is more conv=
-enient with it
-> >>>>> CONFIG_KEXEC=3Dy
-> >>>>> CONFIG_CRASH_DUMP=3Dy # only needed by kexeced kernel to save/res=
-tore memory image
-> >>>>> CONFIG_PM=3Dy
-> >>>>> CONFIG_KEXEC_JUMP=3Dy
-> >>>>>
-> >>>>> 2. Download the kexec-tools-testing git tree, apply the kexec-too=
-ls
-> >>>>>    kjump patches (or download the source tar ball directly) and
-> >>>>>    compile.
-> >>>>>
-> >>>>> 3. Download and compile the krestore tool.
-> >>>>>
-> >>>>> 4. Prepare 2 root partition used by kernel A and kernel B/C, refe=
-rred
-> >>>>>    as /dev/hda, /dev/hdb in following text. This is not strictly
-> >>>>>    necessary, I use this scheme for testing during development.
-> >>>>>
-> >>>>> 5. Boot kernel compiled for normal usage (kernal A).
-> >>>>>
-> >>>>> 6. Load kernel compiled for hibernating/restore usage (kernel B) =
-with
-> >>>>>    kexec, the same kernel as that of 5 can be used if
-> >>>>>    CONFIG_RELOCATABLE=3Dy and CONFIG_CRASH_DUMP=3Dy are selected.
-> >>>>>
-> >>>>>    The --elf64-core-headers should be specified in command line o=
-f
-> >>>>>    kexec, because only the 64bit ELF is supported by krestore too=
-l.
-> >>>>>
-> >>>>>    For example, the shell command line can be as follow:
-> >>>>>
-> >>>>>    kexec -p -n /boot/bzImage --mem-min=3D0x100000 --mem-max=3D0xf=
-fffff
-> >>>>>        --elf64-core-headers --append=3D"root=3D/dev/hdb single"
-> >>>>>
-> >>>>> 7. Jump to the hibernating kernel (kernel B) with following shell
-> >>>>>    command line:
-> >>>>>
-> >>>>>    kexec -j
-> >>>>>
-> >>>>> 8. In the hibernating kernel (kernel B), the memory image of
-> >>>>>    hibernated kernel (kernel A) can be saved as follow:
-> >>>>>
-> >>>>>    cp /proc/vmcore .
-> >>>>>    cp /sys/kernel/kexec_jump_back_entry .
-> >>>>>
-> >>>>>
-> >>>>>
-> >>>> Here we save also kernel B's pages.
-> >>>>
-> >>>>
-> >>> No, the kernel B's pages will not be saved. Because when we build t=
-he
-> >>> elfcore (/proc/vmcore) header, we exclude memory area used by kerne=
-l
-> >>> B. The details can be found in kexec-tools patches.
-> >>>
-> >>>
-> >>>
-> >> Ok I see. But should the kernel B's e820 mem map be limited to 1m-16=
-m in
-> >> order not to allocate pages found also in A's space? Or does does th=
-e
-> >> --mem-min and --mem-max do that also?
-> >>
-> >
-> > That is what "memmap=3Dexactmap memmap=3D640K@0K memmap=3D15M@1M" for=
-. The
-> > contents of e820 memmap will be overrided when these kernel parameter=
-s
-> > are specified.
-> >
-> > Best Regards,
-> > Huang Ying
-> >
-> Yes, you just didn't specify exactmap for kernel B in your instructions=
-,
-> but only for C. But it is also required for kernel B then?
->
+On Thu, Sep 20, 2007 at 02:05:03PM -0400, Alan Stern wrote:
+> This proposed patch applies to 2.6.23-rc6-mm1.  It merges the suspend.c 
+> and resume.c files in drivers/base/power into main.c, while making some 
+> public symbols private.
+> 
+> If nobody objects, I will submit it to Andrew Morton.
 
-They are specified for kernel B by /sbin/kexec automatically.
+Why Andrew?  I thought I had to handle all of the drivers/base/* stuff
+:)
 
-Best Regards,
-Huang Ying
+thanks,
+
+greg k-h
