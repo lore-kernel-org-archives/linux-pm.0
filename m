@@ -1,17 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
-	kexec jump
-Date: Fri, 21 Sep 2007 17:50:16 +0200
-Message-ID: <200709211750.17238.rjw__27861.2203700051$1190389143$gmane$org@sisk.pl>
-References: <1190266447.21818.17.camel@caritas-dev.intel.com>
-	<200709211631.19130.rjw@sisk.pl>
-	<851fc09e0709210802o3be2789s8e93410fa07f7066@mail.gmail.com>
+From: "huang ying" <huang.ying.caritas@gmail.com>
+Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation -v3
+Date: Fri, 21 Sep 2007 23:41:13 +0800
+Message-ID: <851fc09e0709210841w6d0beafdi2f6be9408027434f@mail.gmail.com>
+References: <1190266440.21818.16.camel@caritas-dev.intel.com>
+	<46F39345.3040201@kolumbus.fi>
+	<851fc09e0709210644y4a859a2bp223ef56b08a27f0@mail.gmail.com>
+	<46F3DBAB.9010308@kolumbus.fi>
+	<851fc09e0709210813s1bb3fb02y6096c74fdc9dc35d@mail.gmail.com>
+	<46F3DFA4.90909@kolumbus.fi>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <851fc09e0709210802o3be2789s8e93410fa07f7066@mail.gmail.com>
+In-Reply-To: <46F3DFA4.90909@kolumbus.fi>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,65 +23,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: huang ying <huang.ying.caritas@gmail.com>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: =?UTF-8?Q?Mika_Penttil=C3=A4?= <mika.penttila@kolumbus.fi>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
+	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 21 September 2007 17:02, huang ying wrote:
-> On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday, 21 September 2007 15:14, huang ying wrote:
-> > > On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > On Friday, 21 September 2007 05:33, Eric W. Biederman wrote:
-> > > > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
-> > [--snip--]
-> > > > >
-> > > > > No one has yet attacked the hard problem of coming up with separate
-> > > > > hibernate methods for drivers.
-> > > >
-> > > > Well, I've been playing a bit with that for some time, but it's not easy by any
-> > > > means.
-> > > >
-> > > > In short, I'm seeing some problems related to the handling of ACPI that seem to
-> > > > shatter the entire idea of having separate hibernate methods, at least as far
-> > > > as ACPI systems are concerned.
-> > >
-> > > So sadly to hear this. Can you details it a little? Or a link?
+On 9/21/07, Mika Penttil=C3=A4 <mika.penttila@kolumbus.fi> wrote:
+> huang ying wrote:
+> > On 9/21/07, Mika Penttil=C3=A4 <mika.penttila@kolumbus.fi> wrote:
 > >
-> > Well, the problem is that apparently some systems (eg. my HP nx6325) expect us
-> > to execute the _PTS ACPI global control method before creating the image _and_
-> > to execute acpi_enter_sleep_state(ACPI_STATE_S4) in order to finally put the
-> > system into the sleep state.  In particular, on nx6325, if we don't do that,
-> > then after the restore the status of the AC power will not be reported
-> > correctly (and if you replace the battery while in the sleep state, the
-> > battery status will not be updated correctly after the restore).  Similar
-> > issues have been reported for other machines.
+> >> huang ying wrote:
+> >>
+> >>> On 9/21/07, Mika Penttil=C3=A4 <mika.penttila@kolumbus.fi> wrote:
+> >>>
+> >>>
+> >>>>> Usage:
+> >>>>>
+> >>>>> 1. Compile kernel with following options selected:
+> >>>>>
+> >>>>> CONFIG_X86_32=3Dy
+> >>>>> CONFIG_RELOCATABLE=3Dy # not needed strictly, but it is more conv=
+enient with it
+> >>>>> CONFIG_KEXEC=3Dy
+> >>>>> CONFIG_CRASH_DUMP=3Dy # only needed by kexeced kernel to save/res=
+tore memory image
+> >>>>> CONFIG_PM=3Dy
+> >>>>> CONFIG_KEXEC_JUMP=3Dy
+> >>>>>
+> >>>>> 2. Download the kexec-tools-testing git tree, apply the kexec-too=
+ls
+> >>>>>    kjump patches (or download the source tar ball directly) and
+> >>>>>    compile.
+> >>>>>
+> >>>>> 3. Download and compile the krestore tool.
+> >>>>>
+> >>>>> 4. Prepare 2 root partition used by kernel A and kernel B/C, refe=
+rred
+> >>>>>    as /dev/hda, /dev/hdb in following text. This is not strictly
+> >>>>>    necessary, I use this scheme for testing during development.
+> >>>>>
+> >>>>> 5. Boot kernel compiled for normal usage (kernal A).
+> >>>>>
+> >>>>> 6. Load kernel compiled for hibernating/restore usage (kernel B) =
+with
+> >>>>>    kexec, the same kernel as that of 5 can be used if
+> >>>>>    CONFIG_RELOCATABLE=3Dy and CONFIG_CRASH_DUMP=3Dy are selected.
+> >>>>>
+> >>>>>    The --elf64-core-headers should be specified in command line o=
+f
+> >>>>>    kexec, because only the 64bit ELF is supported by krestore too=
+l.
+> >>>>>
+> >>>>>    For example, the shell command line can be as follow:
+> >>>>>
+> >>>>>    kexec -p -n /boot/bzImage --mem-min=3D0x100000 --mem-max=3D0xf=
+fffff
+> >>>>>        --elf64-core-headers --append=3D"root=3D/dev/hdb single"
+> >>>>>
+> >>>>> 7. Jump to the hibernating kernel (kernel B) with following shell
+> >>>>>    command line:
+> >>>>>
+> >>>>>    kexec -j
+> >>>>>
+> >>>>> 8. In the hibernating kernel (kernel B), the memory image of
+> >>>>>    hibernated kernel (kernel A) can be saved as follow:
+> >>>>>
+> >>>>>    cp /proc/vmcore .
+> >>>>>    cp /sys/kernel/kexec_jump_back_entry .
+> >>>>>
+> >>>>>
+> >>>>>
+> >>>> Here we save also kernel B's pages.
+> >>>>
+> >>>>
+> >>> No, the kernel B's pages will not be saved. Because when we build t=
+he
+> >>> elfcore (/proc/vmcore) header, we exclude memory area used by kerne=
+l
+> >>> B. The details can be found in kexec-tools patches.
+> >>>
+> >>>
+> >>>
+> >> Ok I see. But should the kernel B's e820 mem map be limited to 1m-16=
+m in
+> >> order not to allocate pages found also in A's space? Or does does th=
+e
+> >> --mem-min and --mem-max do that also?
+> >>
 > >
-> > Now, the ACPI specification requires us to put devices into low power states
-> > before executing _PTS and that's exactly what we're doing before a suspend to
-> > RAM.  Thus, it seems that in general we need to do the same for hibernation on
-> > ACPI systems.
-> 
-> Then, is it possible to separate device quiesce from device suspend.
+> > That is what "memmap=3Dexactmap memmap=3D640K@0K memmap=3D15M@1M" for=
+. The
+> > contents of e820 memmap will be overrided when these kernel parameter=
+s
+> > are specified.
+> >
+> > Best Regards,
+> > Huang Ying
+> >
+> Yes, you just didn't specify exactmap for kernel B in your instructions=
+,
+> but only for C. But it is also required for kernel B then?
+>
 
-It surely is possible, but I'm not sure if it's going to be useful.
+They are specified for kernel B by /sbin/kexec automatically.
 
-I mean, if we need to do exactly the same thing before a suspend to RAM and
-before a hibernation (ie. to put devices into low power states), why would we
-want to use different methods for that in both cases?
-
-> Perhaps not for swsusp, but for kexec based hibernation?
-
-Frankly, I don't know.
-
-Generally, changing the way in which device drivers handle suspend (to RAM)
-and hibernation is a huge task.  After considering this issue for some time
-I think that we really should start from hardening suspend (to RAM) so that it
-doesn't need the freezer any more, because _that_ would require us to change
-the suspend-related drivers' callbacks anyway.
-
-When we are sure how we are going to eliminate the freezer from suspend
-(to RAM), we'll know how that affects hibernation and what to do about it.
-
-Greetings,
-Rafael
+Best Regards,
+Huang Ying
