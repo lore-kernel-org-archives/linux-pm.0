@@ -1,17 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
 	kexec jump
-Date: Fri, 21 Sep 2007 14:09:23 +0200
-Message-ID: <200709211409.25008.rjw__47997.2526235089$1190375862$gmane$org@sisk.pl>
+Date: Fri, 21 Sep 2007 14:10:44 +0200
+Message-ID: <200709211410.45248.rjw__26979.3937019587$1190375893$gmane$org@sisk.pl>
 References: <1190266447.21818.17.camel@caritas-dev.intel.com>
-	<200709211157.28622.nigel@nigel.suspend2.net>
-	<m18x70ofp3.fsf@ebiederm.dsl.xmission.com>
+	<200709211024.35991.nigel@nigel.suspend2.net>
+	<20070921094908.GB20149@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <m18x70ofp3.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <20070921094908.GB20149@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,84 +23,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
+Cc: nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
 	Ying" <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 21 September 2007 05:33, Eric W. Biederman wrote:
-> Nigel Cunningham <nigel@nigel.suspend2.net> writes:
-> >
-> > That's not true. Kexec will itself be an implementation, otherwise you'd end 
-> > up with people screaming about no hibernation support. 
+On Friday, 21 September 2007 11:49, Pavel Machek wrote:
+> Hi!
 > 
-> There needs to be an implementation of hibernation based on kexec with
-> return yes.
+> > > Seems like good enough for -mm to me.
 > 
-> > And it won't result in 
-> > the complete removal of the existing hibernation code from the kernel. At the 
-> > very least, it's going to want the kernel being hibernated to have an 
-> > interface by which it can find out which pages need to be saved.
+> (For the record, I do not think this is going to be
+> hibernation-replacement any time soon. But it is functionality useful
+> for other stuff -- dump memory and continue -- and yes it may be able
+> to do hibernation in the long term.
 > 
-> That interface should be running kernel -> user space -> target kernel.
-> Not direct kernel to kernel.
+> It really comes from the other side of reliability:
 > 
-> > I wouldn't 
-> > be surprised if it also ends up with an interface in which the kernel being 
-> > hibernated tells it what bdev/sectors in which to save the image as well 
-> > (otherwise you're going to need a dedicated, otherwise untouched partition 
-> > exclusively for the kexec'd kernel to use), or what network settings to use 
-> > if it wants to try to save the image to a network storage device. 
+> * swsusp is "if your kernel is perfectly healthy, it will work"
 > 
-> initramfs.  We already seem to have that interface.  And distros
-> seems to do a pretty decent job of using it to configure systems.
+> while this, coming from kdump is
 > 
-> > On top of 
-> > that, there are all the issues related to device reinitialisation and so on, 
+> * "if your kernel is not completely trashed, it should work"
 > 
-> Yes.
-> 
-> > and it looks like there's greatly increased pain for users wanting to 
-> > configure this new implementation. 
-> 
-> Not to be callous but that really is a user space and distro issue.
-> 
-> > Kexec is by no means proven to be the panacea for all the issues.
-> 
-> I agree.  I'm still not quite convinced it will do a satisfactory job.
-> But I think it does make sense to implement a general kexec with
-> return and see if that can reasonably be used for handling hibernation
-> issues.  If done cleanly and with care the implementation won't be
-> hibernation specific.
+> ...which is why can't use swsusp to do dump memory and continue -- you
+> want to do dumps on "slightly broken" systems. And yes, as a
+> sideeffect it may be able to do hibernation... why not, lets see how
+> it works out).
 
-Yes, and that's worth doing anyway, IMO.
-
-> Frankly this looks like the best way I can see to implement a general
-> mechanism for calling silly firmware/BIOS/EFI services after we
-> have a kernel up and running.  It's a little bit like allowing
-> X to call iopl(3) and do inb/outb directly.
-> 
-> The configuration issues you raise pretty much exist for kexec on
-> panic, and they seem to be being resolved for that case in a
-> reasonable way.  I do agree that the current kexec+return effort seems
-> to be one of those unfortunate cases where we give every mechanism in
-> the kernel to do something in user space and then no one actually
-> implements the user space.  That doesn't do any one any good.
-> 
-> For hibernation we don't have the absolute need to step outside of the
-> current kernel that we do in the kexec on panic approach.  However we
-> have this practical fight about mechanism and policy, and kexec with
-> return has this seductive allure that it appears to be the minimal
-> necessary mechanism in the kernel.
-> 
-> No one has yet attacked the hard problem of coming up with separate
-> hibernate methods for drivers.
-
-Well, I've been playing a bit with that for some time, but it's not easy by any
-means.
-
-In short, I'm seeing some problems related to the handling of ACPI that seem to
-shatter the entire idea of having separate hibernate methods, at least as far
-as ACPI systems are concerned.
+I generally agree. :-)
 
 Greetings,
 Rafael
