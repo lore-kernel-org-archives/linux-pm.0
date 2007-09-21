@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
 	kexec jump
-Date: Fri, 21 Sep 2007 16:31:18 +0200
-Message-ID: <200709211631.19130.rjw__24775.8757476278$1190384433$gmane$org@sisk.pl>
+Date: Fri, 21 Sep 2007 12:25:24 +1000
+Message-ID: <200709211225.25874.nigel__2232.05903680555$1190385858$gmane$org@nigel.suspend2.net>
 References: <1190266447.21818.17.camel@caritas-dev.intel.com>
-	<200709211409.25008.rjw@sisk.pl>
-	<851fc09e0709210614q33cf3c81u1441fda17a66a6fd@mail.gmail.com>
+	<200709211157.28622.nigel@nigel.suspend2.net>
+	<1190341137.21818.52.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <851fc09e0709210614q33cf3c81u1441fda17a66a6fd@mail.gmail.com>
+In-Reply-To: <1190341137.21818.52.camel@caritas-dev.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,42 +22,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: huang ying <huang.ying.caritas@gmail.com>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
-	Ying" <ying.huang@intel.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 21 September 2007 15:14, huang ying wrote:
-> On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday, 21 September 2007 05:33, Eric W. Biederman wrote:
-> > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
-[--snip--]
-> > >
-> > > No one has yet attacked the hard problem of coming up with separate
-> > > hibernate methods for drivers.
-> >
-> > Well, I've been playing a bit with that for some time, but it's not easy by any
-> > means.
-> >
-> > In short, I'm seeing some problems related to the handling of ACPI that seem to
-> > shatter the entire idea of having separate hibernate methods, at least as far
-> > as ACPI systems are concerned.
+Hi.
+
+On Friday 21 September 2007 12:18:57 Huang, Ying wrote:
+> > That's not true. Kexec will itself be an implementation, otherwise you'd 
+end 
+> > up with people screaming about no hibernation support. And it won't result 
+in 
+> > the complete removal of the existing hibernation code from the kernel. At 
+the 
+> > very least, it's going to want the kernel being hibernated to have an 
+> > interface by which it can find out which pages need to be saved. I 
+wouldn't 
 > 
-> So sadly to hear this. Can you details it a little? Or a link?
+> This has been done by kexec/kdump guys. There is a makedumpfile utility
+> and vmcoreinfo kernel mechanism to implement this. We can just reuse the
+> work of kexec/kdump.
 
-Well, the problem is that apparently some systems (eg. my HP nx6325) expect us
-to execute the _PTS ACPI global control method before creating the image _and_
-to execute acpi_enter_sleep_state(ACPI_STATE_S4) in order to finally put the
-system into the sleep state.  In particular, on nx6325, if we don't do that,
-then after the restore the status of the AC power will not be reported
-correctly (and if you replace the battery while in the sleep state, the
-battery status will not be updated correctly after the restore).  Similar
-issues have been reported for other machines.
+You've already said that you are currently saving all pages. How are you going 
+to avoid saving free pages if you don't get the information from the kernel 
+being saved? This will require more than just code reuse.
 
-Now, the ACPI specification requires us to put devices into low power states
-before executing _PTS and that's exactly what we're doing before a suspend to
-RAM.  Thus, it seems that in general we need to do the same for hibernation on
-ACPI systems.
+> > be surprised if it also ends up with an interface in which the kernel 
+being 
+> > hibernated tells it what bdev/sectors in which to save the image as well 
+> > (otherwise you're going to need a dedicated, otherwise untouched partition 
+> > exclusively for the kexec'd kernel to use), or what network settings to 
+use 
+> > if it wants to try to save the image to a network storage device. On top 
+of
+> 
+> These can be done in user space. The image writing will be done in user
+> space for kexec base hibernation.
 
-Greetings,
-Rafael
+That only complicates things more. Now you need to get the information on 
+where to save the image from the kernel being saved, then transfer it to 
+userspace after switching to the kexec kernel. That's more kernel code, not 
+less.
+
+> > that, there are all the issues related to device reinitialisation and so 
+on, 
+> 
+> Yes. Device reinitialisation is needed. But all in all, kexec based
+> hibernation can be much simpler on the kernel side.
+
+Sorry, but I'm yet to be convinced. I'm not unwilling, I'm just not there yet.
+ 
+> > and it looks like there's greatly increased pain for users wanting to 
+> > configure this new implementation. Kexec is by no means proven to be the 
+> > panacea for all the issues.
+> 
+> Configuration is a problem, we will work on it.
+> 
+> But, because it is based on kexec/kdump instead of starting from
+> scratch, the duplicated part between hibernation and kexec/kdump can be
+> eliminated.
+
+Regards,
+
+Nigel
+-- 
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
