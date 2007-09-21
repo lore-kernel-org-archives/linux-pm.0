@@ -1,14 +1,17 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
 	kexec jump
-Date: Thu, 20 Sep 2007 22:01:27 -0600
-Message-ID: <m1y7f0k6p4.fsf__9663.58575174144$1190347509$gmane$org@ebiederm.dsl.xmission.com>
+Date: Thu, 20 Sep 2007 21:16:27 -0700
+Message-ID: <20070920211627.d18f97f9.akpm__45272.8130658672$1190348248$gmane$org@linux-foundation.org>
 References: <1190266447.21818.17.camel@caritas-dev.intel.com>
+	<200709211120.00448.ncunningham@crca.org.au>
+	<20070920184106.79e1858a.akpm@linux-foundation.org>
+	<200709211157.28622.nigel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1190266447.21818.17.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Thu, 20 Sep 2007 13:34:07 +0800")
+In-Reply-To: <200709211157.28622.nigel@nigel.suspend2.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,132 +21,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Jeremy@smtp2.linux-foundation.org, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, "Huang,
+	Ying" <ying.huang@intel.com>, linux-pm@lists.linux-foundation.org, Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+On Fri, 21 Sep 2007 11:57:26 +1000 Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
 
-> Index: linux-2.6.23-rc6/include/linux/kexec.h
-> ===================================================================
-> --- linux-2.6.23-rc6.orig/include/linux/kexec.h 2007-09-20 11:24:25.000000000
-> +0800
-> +++ linux-2.6.23-rc6/include/linux/kexec.h 2007-09-20 11:26:03.000000000 +0800
-> @@ -83,6 +83,7 @@
->  
->  	unsigned long start;
->  	struct page *control_code_page;
-> +	struct page *swap_page;
->  
->  	unsigned long nr_segments;
->  	struct kexec_segment segment[KEXEC_SEGMENT_MAX];
-> @@ -194,4 +195,12 @@
->  static inline void crash_kexec(struct pt_regs *regs) { }
->  static inline int kexec_should_crash(struct task_struct *p) { return 0; }
->  #endif /* CONFIG_KEXEC */
-> +
-> +#ifdef CONFIG_KEXEC_JUMP
-> +extern int machine_kexec_jump(struct kimage *image);
-> +extern unsigned long kexec_jump_back_entry;
-> +extern int kexec_jump(void);
-> +#else /* !CONFIG_KEXEC_JUMP */
-> +static inline int kexec_jump(void) { return 0; }
-> +#endif /* CONFIG_KEXEC_JUMP */
->  #endif /* LINUX_KEXEC_H */
+> Hi.
+> 
+> On Friday 21 September 2007 11:41:06 Andrew Morton wrote:
+> > > On Friday 21 September 2007 11:06:23 Andrew Morton wrote:
+> > > > On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham 
+> > > <nigel@nigel.suspend2.net> wrote:
+> > > > 
+> > > > > Hi Andrew.
+> > > > > 
+> > > > > On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
+> > > > > > Seems like good enough for -mm to me.
+> > > > > > 
+> > > > > > 									Pavel
+> > > > > 
+> > > > > Andrew, if I recall correctly, you said a while ago that you didn't 
+> want 
+> > > > > another hibernation implementation in the vanilla kernel. If you're 
+> going 
+> > > to 
+> > > > > consider merging this kexec code, will you also please consider 
+> merging 
+> > > > > TuxOnIce?
+> > > > > 
+> > > > 
+> > > > The theory is that kexec-based hibernation will mainly use preexisting
+> > > > kexec code and will permit us to delete the existing hibernation
+> > > > implementation.
+> > > > 
+> > > > That's different from replacing it.
+> > > 
+> > > TuxOnIce doesn't remove the existing implementation either. It can 
+> > > transparently replace it, but you can enable/disable that at compile time.
+> > 
+> > Right.  So we end up with two implementations in-tree.  Whereas
+> > kexec-based-hibernation leads us to having zero implementations in-tree.
+> > 
+> > See, it's different.
+> 
+> That's not true. Kexec will itself be an implementation, otherwise you'd end 
+> up with people screaming about no hibernation support. And it won't result in 
+> the complete removal of the existing hibernation code from the kernel. At the 
+> very least, it's going to want the kernel being hibernated to have an 
+> interface by which it can find out which pages need to be saved. I wouldn't 
+> be surprised if it also ends up with an interface in which the kernel being 
+> hibernated tells it what bdev/sectors in which to save the image as well 
+> (otherwise you're going to need a dedicated, otherwise untouched partition 
+> exclusively for the kexec'd kernel to use), or what network settings to use 
+> if it wants to try to save the image to a network storage device. On top of 
+> that, there are all the issues related to device reinitialisation and so on, 
+> and it looks like there's greatly increased pain for users wanting to 
+> configure this new implementation. Kexec is by no means proven to be the 
+> panacea for all the issues.
+> 
 
-Please the kexec_jump code just be triggered off of a flag in
-struct kimage.  We just need to define an extra flag to sys_kexec_load
-say KEXEC_RETURNS.  Ideally in the long term we would not have to
-do anything except to accept the flag.  Adding a flag makes
-a nice feature test if you want to see if your kernel supports
-the extended version of kexec.
-
-Until we get the hibernation methods sorted out storing the flag in
-struct kimage and making the methods that we call conditional feels
-like a more maintainable interface.  Especially since we have to
-know at kexec image load time what we are going to do with the
-kexec image.
-
-> +#ifdef CONFIG_KEXEC_JUMP
-> +unsigned long kexec_jump_back_entry;
-> +
-> +int kexec_jump(void)
-> +{
-> +	int error;
-> +
-> +	if (!kexec_image)
-> +		return -EINVAL;
-
-I understand where you are coming from with this implementation of
-kexec_jump but it looks like this is one of the big parts of this
-patch that have not reached their final form.
-
-The line above is racy with sys_kexec_load.
-
-> +	pm_prepare_console();
-> +	suspend_console();
-> +	error = device_suspend(PMSG_FREEZE);
-> +	if (error)
-> +		goto Resume_console;
-
-This as everyone knows needs to be device_shutdown or a better hibernation
-replacement.
-
-> +	error = disable_nonboot_cpus();
-> +	if (error)
-> +		goto Resume_devices;
-
-Can't we just catch the noboot cpu's in a mutex.
-disable_nonboot_cpus is actually impossible to implement 100% reliably
-with current hardware.  But something smp_call_function so we trap them
-at a specific location and then the equivalent when we come back should
-be simple.  I guess the tricky part is bringing the cpus back up again.
-
-Using the broken by design version of cpu hotplug really annoys me here.
-
-> +	local_irq_disable();
-> +	/* At this point, device_suspend() has been called, but *not*
-> +	 * device_power_down(). We *must* device_power_down() now.
-> +	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
-> +	 * become desynchronized with the actual state of the hardware
-> +	 * at resume time, and evil weirdness ensues.
-> +	 */
-> +	error = device_power_down(PMSG_FREEZE);
-> +	if (error)
-> +		goto Enable_irqs;
-
-This of course should go away when we have the proper methods.
-
-> +	save_processor_state();
-This line might even be reasonable.
-> +	error = machine_kexec_jump(kexec_image);
-> +	restore_processor_state();
->
-> +	/* NOTE:  device_power_up() is just a resume() for devices
-> +	 * that suspended with irqs off ... no overall powerup.
-> +	 */
-> +	device_power_up();
-Yep this can go away.
-> + Enable_irqs:
-> +	local_irq_enable();
-> +	enable_nonboot_cpus();
-
-I haven't looked at the cpu start up code yet to see if it
-is generally implementable.  I would think so, but I guess
-we need to be careful with our data structures.
-
-> + Resume_devices:
-> +	device_resume();
-This of course should change.
-> + Resume_console:
-> +	resume_console();
-> +	pm_restore_console();
-
-Odd.  I'm a little surprised that the console is the last
-thing we restore.  But it does make sense to treat it specially.
-
-> +	return error;
-> +}
-> +#endif /* CONFIG_KEXEC_JUMP */
-
-Eric
+Maybe, maybe not, dunno.  That's why we haven't merged it yet.  If it ends
+up being no good, we won't merge it!
