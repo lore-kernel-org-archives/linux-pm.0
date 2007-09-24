@@ -1,15 +1,15 @@
-From: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
-	kexec jump
-Date: Mon, 24 Sep 2007 19:37:10 +0200
-Message-ID: <46F7F5C6.3030909__38387.6899294139$1190655637$gmane$org@m3y3r.de>
-References: <1190266447.21818.17.camel@caritas-dev.intel.com>	<20070920100941.GA12157@atrey.karlin.mff.cuni.cz>	<200709211024.35991.nigel@nigel.suspend2.net>
-	<20070920180623.5d7da7b9.akpm@linux-foundation.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Ottawa Linux Power Management Summit, June 25-26,
+	2007 - Minutes
+Date: Mon, 24 Sep 2007 15:41:02 -0400
+Message-ID: <20070924194102.GH8127@redhat.com>
+References: <200709050426.04793.lenb@kernel.org>
+	<200709091426.39854.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070920180623.5d7da7b9.akpm@linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <200709091426.39854.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Andrew Morton schrieb:
-> On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
->
->   
->> Hi Andrew.
->>
->> On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
->>     
->>> Seems like good enough for -mm to me.
->>>
->>> 									Pavel
->>>       
->> Andrew, if I recall correctly, you said a while ago that you didn't want 
->> another hibernation implementation in the vanilla kernel. If you're going to 
->> consider merging this kexec code, will you also please consider merging 
->> TuxOnIce?
->>
->>     
->
-> The theory is that kexec-based hibernation will mainly use preexisting
-> kexec code and will permit us to delete the existing hibernation
-> implementation.
->
-> That's different from replacing it
-Before replacing existing hibernation implementations, someone should
-fix kexec for i386 (maybe others?) EFI systems...
+On Sun, Sep 09, 2007 at 02:26:39PM +0200, Rafael J. Wysocki wrote:
+
+ > > Dave mentioned that Fedora Core 7 32-bit is now shipping with
+ > > CONFIG_NOHZ=y and CONFIG_HZ=1000.
+ > 
+ > CONFIG_NOHZ is known to break suspend and resume on some machines.  These
+ > problems are being fixed over time, but that's a risky decision for a
+ > distribution to switch it on by default.
+
+Expect to see everyone else doing the same thing in the next versions.
+Without field-testing this stuff it remains busted.  A lot of bugs got
+found and fixed by having this in Fedora that weren't tripped over
+by linux-kernel testers at all.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
