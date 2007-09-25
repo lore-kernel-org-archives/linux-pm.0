@@ -1,57 +1,83 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Re: ehci_hcd causes box to resume
- immediately after suspend to RAM
-Date: Tue, 25 Sep 2007 10:39:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0709251034450.3909-100000@iolanthe.rowland.org>
-References: <1190696463.31978.8.camel@localhost.localdomain>
+From: "Yuval Dafni" <yuvald@slydetech.com>
+Subject: FW: resume from suspended state with firewire
+Date: Tue, 25 Sep 2007 17:07:19 +0200
+Message-ID: <6954FEB9E3130645ABAFEE8D5E2C7C141FE8D0__40578.0058856637$1190732926$gmane$org@slydesvr.Slyde.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <1190696463.31978.8.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-usb-devel>
-List-Post: <mailto:linux-usb-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-usb-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-usb-devel>,
-	<mailto:linux-usb-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-usb-devel-bounces@lists.sourceforge.net
-Errors-To: linux-usb-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm <linux-pm@lists.osdl.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-class: urn:content-classes:message
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org, linux1394-user@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 25 Sep 2007, Benjamin Herrenschmidt wrote:
-
-> > That's odd.  Where could these overcurrent changes be coming from?  
-> > And how come they don't show up on ports 1 and 2?
-> > 
-> > There's an excellent chance that they are responsible for your 
-> > immediate resumes.
-> 
-> I've seen quirks in Apple drivers a while ago where they tried to avoid
-> suspending some of the RH ports... possibly bcs they aren't connected to
-> anything and trying to suspend them does bad things.
-
-That is certainly possible.  I have seen exactly the same sort of thing
-on some HP systems, where (1) the overcurrent inputs for unused ports
-are permanently wired high, and (2) a bug in the Intel UHCI controller
-causes a resume event whenever any port has an overcurrent condition!
-
->  I wonder if maybe
-> ACPI might carry similar kind of informations...
-
-I wouldn't know where to look.
-
-Alan Stern
 
 
--------------------------------------------------------------------------
+-----Original Message-----
+From: Yuval Dafni 
+Sent: Tuesday, September 25, 2007 4:46 PM
+To: 'Stefan Richter'
+Subject: RE: resume from suspended state with firewire
+
+Hi, 
+Not a question this time, just some conclusions:
+In ohci1394.c I replaced #ifdef CONFIG_PM with #if 0, thus disabling
+suspend and resume. The result was immediate: the system went to sleep
+ (using "echo standby > /sys/power/state")  
+And woke up because of a bus reset or an  iso packet.
+Apparently, this feature is already supported by the cards
+firmware/hardware,  and all I had to do is let it be...
+
+Of course my card will consume power this way, and perhaps there is a
+way 
+To program ohci1394.c in a smarter way, but that's beyond me for now.
+Thanks,
+Yuval Dafni.
+ 
+
+-----Original Message-----
+From: linux1394-user-bounces@lists.sourceforge.net
+[mailto:linux1394-user-bounces@lists.sourceforge.net] On Behalf Of
+Stefan Richter
+Sent: Thursday, September 20, 2007 5:33 PM
+To: Yuval Dafni
+Cc: linux-pm@lists.linux-foundation.org;
+linux1394-user@lists.sourceforge.net
+Subject: Re: resume from suspended state with firewire
+
+(Adding Cc: linux-pm)
+
+Yuval Dafni wrote:
+> Can I make a suspended linux machine resume because of a 1394 packet?
+
+It's not possible, at least in the current implementation of ohci1394
+and firewire-ohci.  All interrupt events are disabled and the link layer
+controller is powered down when the machine enters suspended mode.  I
+don't know if it is possible for PCI drivers to leave interrupts and
+receive DMA contexts etc. enabled and wake the machine up when an
+interrupt event occurs.
+
+Does wake-on-LAN (Ethernet) and wake-on-USB work by means of special
+hardware support?
+-- 
+Stefan Richter
+-=====-=-=== =--= =-=--
+http://arcgraph.de/sr/
+
+------------------------------------------------------------------------
+-
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
 _______________________________________________
-linux-usb-devel@lists.sourceforge.net
-To unsubscribe, use the last form field at:
-https://lists.sourceforge.net/lists/listinfo/linux-usb-devel
+mailing list Linux1394-user@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux1394-user
