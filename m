@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: The evilness of struct usb_device->auto_pm
-Date: Thu, 27 Sep 2007 21:44:59 +0200
-Message-ID: <200709272145.00092.rjw__42853.5080202439$1190921608$gmane$org@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [linux-usb-devel] Re: The evilness of struct
+	usb_device->auto_pm
+Date: Thu, 27 Sep 2007 21:37:01 +0200
+Message-ID: <200709272137.02169.oliver__30831.2302142896$1190921911$gmane$org@neukum.org>
 References: <Pine.LNX.4.44L0.0709271202150.7735-100000@iolanthe.rowland.org>
+	<200709272145.00092.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0709271202150.7735-100000@iolanthe.rowland.org>
+In-Reply-To: <200709272145.00092.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,36 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: linux-usb-devel@lists.sourceforge.net
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 27 September 2007 18:05, Alan Stern wrote:
-> On Thu, 27 Sep 2007, Oliver Neukum wrote:
-> 
-> > Hi,
-> > 
-> > doing autosuspend for the storage driver, this feature was a sore point.
-> > At some point we have to cross subsystem borders when doing runtime
-> > suspend on a subtree of the device tree. Drivers need to know whether
-> > they are doing a system wide suspend or a runtime suspend. The locking
-> > requirements at the very least are different.
-> > We need a standardised way to tell drivers what kind of suspension they
-> > are dealing with. So I think it has to move into the generic struct device
-> > or become a part of the message parameter.
-> 
-> If it goes anywhere, it ought to be in the message parameter.  My
-> reason for putting it in struct usb_device originally was because there
-> was no other choice at the time.
-> 
-> But there's a problem, in that the resume methods don't take a message 
-> parameter.  So they wouldn't know whether they were doing a runtime 
-> resume or a system resume.
+Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> > But there's a problem, in that the resume methods don't take a messag=
+e=20
+> > parameter. =A0So they wouldn't know whether they were doing a runtime=
+=20
+> > resume or a system resume.
+>=20
+> This is a general problem with the .resume() routines.
+>=20
+> If you want to use one for runtime resume, the driver needs to preserve
+> information allowing it to figure out what kind of resume is going to h=
+appen.
 
-This is a general problem with the .resume() routines.
+How? Suppose you
 
-If you want to use one for runtime resume, the driver needs to preserve
-information allowing it to figure out what kind of resume is going to happen.
+1) runtime suspend
+2) whole system suspend
+3) whole system resume
 
-Greetings,
-Rafael
+What kind of resume do you do?
+
+	Regards
+		Oliver
