@@ -1,14 +1,17 @@
 From: Paul Mundt <lethal@linux-sh.org>
 Subject: Re: [RFC] QoS params patch
-Date: Thu, 27 Sep 2007 11:24:40 +0900
-Message-ID: <20070927022440.GB25873__17345.70032354$1190859968$gmane$org@linux-sh.org>
+Date: Thu, 27 Sep 2007 12:18:21 +0900
+Message-ID: <20070927031821.GA26307__4116.82685739851$1190863182$gmane$org@linux-sh.org>
 References: <20070926223712.GA22029@linux.intel.com>
 	<20070926224026.GA23218@linux.intel.com>
+	<20070926164159.3b43479b.randy.dunlap@oracle.com>
+	<20070927004020.GB29906@linux.intel.com>
+	<22087.1190861583@turing-police.cc.vt.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20070926224026.GA23218@linux.intel.com>
+In-Reply-To: <22087.1190861583@turing-police.cc.vt.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,136 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Gross <mgross@linux.intel.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 03:40:26PM -0700, Mark Gross wrote:
-> +	struct list_head list;
-> +	union {
-> +		s32 value;
-> +		s32 usec;
-> +		s32 kbps;
-> +		};
-> +	char *name;
-
-Your } is in a strange place. It looks like it wants to join its friends
-closer to the left margin ;-)
-
-> +};
-> +
-> +#define QOS_RESERVED 0
-> +#define QOS_CPU_DMA_LATENCY 1
-> +#define QOS_NETWORK_LATENCY 2
-> +#define QOS_NETWORK_THROUGHPUT 3
-> +
-> +#define QOS_NUM_CLASSES 4
-> +#define QOS_DEFAULT_VALUE -1
-
-an enum would be better for this, especially as people are likely to add
-new types, having to update QOS_NUM_CLASSES each time sucks.
-
-> +/* static helper functions */
-> +static s32 max_compare(s32 v1, s32 v2)
-> +{
-> +	if (v1 < v2)
-> +		return v2;
-> +	else
-> +		return v1;
-> +}
-> +
-> +static s32 min_compare(s32 v1, s32 v2)
-> +{
-> +	if (v1 < v2)
-> +		return v1;
-> +	else
-> +		return v2;
-> +}
-> +
-min()/max() instead?
-
-> +/* assumes qos_lock is held */
-> +static void update_target(int i)
-> +{
-'target' might be a more meaningful variable name.
-
-> +	qos->qos_power_miscdev.fops = &qos_power_fops;
-> +
-> +	ret = misc_register(& qos->qos_power_miscdev);
-> +	if (ret < 0 )
-> +		printk(KERN_ERR "qos_power: misc_register returns %d.\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-Just return misc_register(...); ?
-
-> +	if( i < QOS_NUM_CLASSES) {
-> +		qos = &qos_array[i];
-> +		qos->name = kstrdup(name, GFP_KERNEL);
-> +		if(!qos->name)
-> +			goto cleanup;
-> +
-> +		qos->default_value = default_value;
-> +		qos->target_value = default_value;
-> +		qos->comparitor = comparitor;
-> +		srcu_init_notifier_head(&qos->notifiers);
-> +		INIT_LIST_HEAD(&qos->requirements.list);
-> +		if (register_new_qos_misc(qos) < 0 )
-> +			goto cleanup;
-> +	}
-> +	return;
-> +cleanup:
-> +	kfree(qos->name);
-> +}
-
-This leaks. You'll have to scan down from i and clean up the kstrdup()
-per qos_array element. Presently this will only free the first one to fail
-registration.
-
-> +
-> +int qos_add_requirement(int i, char *name, s32 value)
-> +{
-> +	struct requirement_list * dep;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&qos_lock, flags);
-> +	dep = kzalloc(sizeof(struct requirement_list), GFP_KERNEL);
-
-kmalloc() under a spinlock. GFP_KERNEL implies __GFP_WAIT, which can
-sleep. Slab debugging would have caught this, too.
-
-> +	if (dep) {
-> +		if (value == QOS_DEFAULT_VALUE)
-> +			dep->value = qos_array[i].default_value;
-> +		else
-> +			dep->value = value;
-> +		dep->name = kstrdup(name, GFP_KERNEL);
-
-And here also, still under the spinlock. You can probably rework the
-locking just to protect the list, if you really need it at all, it
-doesn't seem to matter anywhere else here.
-
-> +		if(!dep->name)
-> +			goto cleanup;
-> +
-> +		list_add(&dep->list, &qos_array[i].requirements.list);
-> +		update_target(i);
-> +		spin_unlock_irqrestore(&qos_lock, flags);
-> +
-> +		return 0;
-> +	}
-> +	spin_unlock_irqrestore(&qos_lock, flags);
-> +	
-> +cleanup:
-> +	if(dep)
-> +		kfree(dep);
-
-no if() needed. 
-
-> +	return -ENOMEM;
-> +}
-> +EXPORT_SYMBOL_GPL(qos_add_requirement);
-
-You also didn't spin_unlock_irqrestore() in the error path, so this bails
-out with the lock held and IRQs disabled.
+On Wed, Sep 26, 2007 at 10:53:03PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 26 Sep 2007 17:40:20 PDT, Mark Gross said:
+> > --- linux-2.6.23-rc8/kernel/Makefile	2007-09-26 13:54:54.000000000 -0700
+> > +++ linux-2.6.23-rc8-qos/kernel/Makefile	2007-09-26 14:06:38.000000000 -
+> 0700
+> > @@ -9,7 +9,7 @@
+> >  	    rcupdate.o extable.o params.o posix-timers.o \
+> >  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+> >  	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
+> > -	    utsname.o
+> > +	    utsname.o qos_params.o
+> 
+> So I don't get a choice in the matter if I will be dragging this thing
+> around in my kernel, even if I have no intention of using the functionality?
+> 
+You don't get that option with latency.c either at the moment, and it's
+arguable whether it's even worth it. The more curious thing is that while
+this qos params seems to be an evolution of Arjan's latency.c (and the
+drivers that are using it are updated in the rest of the patch set),
+latency.c itself is still compiled in. Is this an oversight, or was it
+intentional? One set of latency hinting APIs only, please :-)
