@@ -1,17 +1,12 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: [RFC] QoS params patch
-Date: Thu, 27 Sep 2007 08:37:33 -0700
-Message-ID: <20070927153733.GF25718__26287.7240697437$1190907555$gmane$org@linux.intel.com>
-References: <20070926223712.GA22029@linux.intel.com>
-	<20070926224026.GA23218@linux.intel.com>
-	<20070927022440.GB25873@linux-sh.org>
-	<20070926210515.6725e745.randy.dunlap@oracle.com>
-Reply-To: mgross@linux.intel.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: The evilness of struct usb_device->auto_pm
+Date: Thu, 27 Sep 2007 12:05:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0709271202150.7735-100000__41128.9021409631$1190909304$gmane$org@iolanthe.rowland.org>
+References: <200709271356.28884.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20070926210515.6725e745.randy.dunlap@oracle.com>
+In-Reply-To: <200709271356.28884.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,43 +16,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 09:05:15PM -0700, Randy Dunlap wrote:
-> On Thu, 27 Sep 2007 11:24:40 +0900 Paul Mundt wrote:
-> 
-> > > +/* static helper functions */
-> > > +static s32 max_compare(s32 v1, s32 v2)
-> > > +{
-> > > +	if (v1 < v2)
-> > > +		return v2;
-> > > +	else
-> > > +		return v1;
-> > > +}
-> > > +
-> > > +static s32 min_compare(s32 v1, s32 v2)
-> > > +{
-> > > +	if (v1 < v2)
-> > > +		return v1;
-> > > +	else
-> > > +		return v2;
-> > > +}
-> > > +
-> > min()/max() instead?
-> 
-> Other code wants function pointers to the min & max functions.
-> That's why they are here AFAICT.
-> 
-> 
-> > > +/* assumes qos_lock is held */
-> > > +static void update_target(int i)
-> > > +{
-> > 'target' might be a more meaningful variable name.
-> 
-> Anything but 'i'.
+On Thu, 27 Sep 2007, Oliver Neukum wrote:
 
-The 'i' is gone.  Will post new patch later today.
+> Hi,
+> 
+> doing autosuspend for the storage driver, this feature was a sore point.
+> At some point we have to cross subsystem borders when doing runtime
+> suspend on a subtree of the device tree. Drivers need to know whether
+> they are doing a system wide suspend or a runtime suspend. The locking
+> requirements at the very least are different.
+> We need a standardised way to tell drivers what kind of suspension they
+> are dealing with. So I think it has to move into the generic struct device
+> or become a part of the message parameter.
 
---mgross
+If it goes anywhere, it ought to be in the message parameter.  My
+reason for putting it in struct usb_device originally was because there
+was no other choice at the time.
+
+But there's a problem, in that the resume methods don't take a message 
+parameter.  So they wouldn't know whether they were doing a runtime 
+resume or a system resume.
+
+Alan Stern
