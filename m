@@ -1,20 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: A unresponsive file system can hang all I/O in the
- system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Date: Fri, 28 Sep 2007 13:10:12 -0700
-Message-ID: <20070928131012.4a03c53e.akpm__27778.2083293006$1191010377$gmane$org@linux-foundation.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	<1190998853.6702.17.camel@heimdal.trondhjem.org>
-	<20070928114930.2c201324.akpm@linux-foundation.org>
-	<1191006971.6702.25.camel@heimdal.trondhjem.org>
-	<20070928122628.965137f2.akpm@linux-foundation.org>
-	<1191009148.6702.46.camel@heimdal.trondhjem.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-usb-devel] Re: The evilness of struct
+	usb_device->auto_pm
+Date: Fri, 28 Sep 2007 22:29:06 +0200
+Message-ID: <200709282229.06825.rjw__6213.9609981843$1191010525$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0709281109170.4062-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1191009148.6702.46.camel@heimdal.trondhjem.org>
+In-Reply-To: <Pine.LNX.4.44L0.0709281109170.4062-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,30 +20,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: nfs@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, chakriin5@gmail.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 Sep 2007 15:52:28 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-
-> On Fri, 2007-09-28 at 12:26 -0700, Andrew Morton wrote:
-> > On Fri, 28 Sep 2007 15:16:11 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > Looking back, they were getting caught up in
-> > > balance_dirty_pages_ratelimited() and friends. See the attached
-> > > example...
-> > 
-> > that one is nfs-on-loopback, which is a special case, isn't it?
+On Friday, 28 September 2007 17:11, Alan Stern wrote:
+> On Fri, 28 Sep 2007, Rafael J. Wysocki wrote:
 > 
-> I'm not sure that the hang that is illustrated here is so special. It is
-> an example of a bog-standard ext3 write, that ends up calling the NFS
-> client, which is hanging. The fact that it happens to be hanging on the
-> nfsd process is more or less irrelevant here: the same thing could
-> happen to any other process in the case where we have an NFS server that
-> is down.
+> > > That's because the notifications go up the device tree, not down.  When 
+> > > a child is suspended, the parent is notified.  Then if the driver sees 
+> > > that all the children are suspended, the parent can be suspended as 
+> > > well.
+> > > 
+> > > Oliver has been trying to subvert this model by making usb-storage 
+> > > responsible for suspending the SCSI disk and CD/DVD drivers, which are 
+> > > located beneath it in the device tree.  I've been trying to convince 
+> > > him that the proper way to handle things is to let the SCSI drivers 
+> > > decide for themselves when their devices can be suspended, and then 
+> > > have them inform usb-storage.
+> > 
+> > Yes, I think that the SCSI layer should decide.
+> > 
+> > I guess that the SCSI layer is not really autosuspend-aware, is it?
+> 
+> Not yet.  I would like it to become autosuspend-aware.  Oliver wants to
+> avoid that by keeping all the awareness in usb-storage.  (But then what
+> about all the other SCSI host-adapter drivers?  Will they each have
+> their own way of deciding when a SCSI device can be suspended?)
 
-hm, so ext3 got stuck in nfs via __alloc_pages direct reclaim?
+IMO, this is a more general issue.
 
-We should be able to fix that by marking the backing device as
-write-congested.  That'll have small race windows, but it should be a 99.9%
-fix?
+The problem, as I see it, is which layer of drivers should be responsible of
+making autosuspend decisions if there are many layers stacked on top of one
+another.
+
+I think that it should be the layer which communicates with processes, eg. via
+syscalls.
+
+Greetings,
+Rafael
