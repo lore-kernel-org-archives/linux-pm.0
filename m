@@ -1,18 +1,12 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: corbet@lwn.net (Jonathan Corbet)
 Subject: Re: A unresponsive file system can hang all I/O in the
 	system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Date: Fri, 28 Sep 2007 11:12:09 +0200
-Message-ID: <1190970729.31636.29.camel__30486.3811274574$1190993569$gmane$org@twins>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	<1190962752.31636.15.camel@twins>
-	<92cbf19b0709280127yba48b60wfe58e532944894ca@mail.gmail.com>
-	<1190968800.31636.26.camel@twins>
-	<92cbf19b0709280201o3778f945mf1d8d61cbb3d0558@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1076871873105045123=="
+Date: Fri, 28 Sep 2007 07:28:52 -0600
+Message-ID: <10659.1190986132__23089.7048641511$1190993793$gmane$org@lwn.net>
+References: <20070927235034.ae7bd73d.akpm@linux-foundation.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <92cbf19b0709280201o3778f945mf1d8d61cbb3d0558@mail.gmail.com>
+In-reply-to: Your message of "Thu, 27 Sep 2007 23:50:34 PDT."
+	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,70 +14,27 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Chakri n <chakriin5@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chakri n <chakriin5@gmail.com>, linux-pm <linux-pm@lists.linux-foundation.org>, nfs@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: linux-pm@vger.kernel.org
 
+Andrew wrote:
+> It's unrelated to the actual value of dirty_thresh: if the machine fills up
+> with dirty (or unstable) NFS pages then eventually new writers will block
+> until that condition clears.
+> 
+> 2.4 doesn't have this problem at low levels of dirty data because 2.4
+> VFS/MM doesn't account for NFS pages at all.
 
---===============1076871873105045123==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-zm6ysXZgiOYQu9hXaqPx"
+Is it really NFS-related?  I was trying to back up my 2.6.23-rc8 system
+to an external USB drive the other day when something flaked and the
+drive fell off the bus.  That, too, was sufficient to wedge the entire
+system, even though the only thing which needed the dead drive was one
+rsync process.  It's kind of a bummer to have to hit the reset button
+after the failure of (what should be) a non-critical piece of hardware.
 
+Not that I have a fix to propose...:)
 
---=-zm6ysXZgiOYQu9hXaqPx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2007-09-28 at 02:01 -0700, Chakri n wrote:
-> Thanks for explaining the adaptive logic.
->=20
-> > However other devices will at that moment try to maintain a limit of 0,
-> > which ends up being similar to a sync mount.
-> >
-> > So they'll not get stuck, but they will be slow.
-> >
-> >
->=20
-> Sync should be ok, when the situation is bad like this and some one
-> hijacked all the buffers.
->=20
-> But, I see my simple dd to write 10blocks on local disk never
-> completes even after 10 minutes.
->=20
-> [root@h46 ~]# dd if=3D/dev/zero of=3D/tmp/x count=3D10
->=20
-> I think the process is completely stuck and is not progressing at all.
->=20
-> Is something going wrong in the calculations where it does not fall
-> back to sync mode.
-
-What kernel is that?
-
-
---=-zm6ysXZgiOYQu9hXaqPx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG/MVpXA2jU0ANEf4RApYXAJ4pMrfaOLkfqxvL2jwsJbmKqGSElwCfSljX
-VUTEF8+u/t4ll3T9b5KJeHc=
-=eO/D
------END PGP SIGNATURE-----
-
---=-zm6ysXZgiOYQu9hXaqPx--
-
-
---===============1076871873105045123==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1076871873105045123==--
+jon
