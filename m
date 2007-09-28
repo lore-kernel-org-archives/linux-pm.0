@@ -1,15 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 1/2] Merge power-management source files
-Date: Fri, 28 Sep 2007 14:34:49 +0200
-Message-ID: <200709281434.50155.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0709211442140.4344-100000@iolanthe.rowland.org>
-	<200709212111.55823.rjw@sisk.pl> <20070928034204.GC23764@kroah.com>
+Subject: Re: [linux-usb-devel] Re: The evilness of struct
+	usb_device->auto_pm
+Date: Fri, 28 Sep 2007 15:25:53 +0200
+Message-ID: <200709281525.54410.rjw__3239.8963151083$1190985160$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0709271202150.7735-100000@iolanthe.rowland.org>
+	<200709272220.20503.rjw@sisk.pl>
+	<200709280904.17314.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070928034204.GC23764@kroah.com>
+In-Reply-To: <200709280904.17314.oliver@neukum.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,50 +22,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 28 September 2007 05:42, Greg KH wrote:
-> On Fri, Sep 21, 2007 at 09:11:55PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, 21 September 2007 20:44, Alan Stern wrote:
-> > > On Fri, 21 Sep 2007, Greg KH wrote:
-> > > 
-> > > > On Thu, Sep 20, 2007 at 02:05:03PM -0400, Alan Stern wrote:
-> > > > > This proposed patch applies to 2.6.23-rc6-mm1.  It merges the suspend.c 
-> > > > > and resume.c files in drivers/base/power into main.c, while making some 
-> > > > > public symbols private.
-> > > > > 
-> > > > > If nobody objects, I will submit it to Andrew Morton.
-> > > > 
-> > > > Why Andrew?  I thought I had to handle all of the drivers/base/* stuff
-> > > > :)
-> > > 
-> > > To tell the truth, I wasn't sure how all this was supposed to work.  
-> > > Rafael has been making a lot of changes to the PM infrastructure 
-> > > (though almost all of them affect the files in kernel/power, not 
-> > > drivers/base/power) and his work goes into -mm.
-> > > 
-> > > But never mind, I will shortly send the changes to you so they can go
-> > > into your tree.
-> > 
-> > Well, we're going to have a suspend branch in the ACPI tree and perhaps it's
-> > a good time to start it. :-)
-> > 
-> > These patches are strictly related to suspend, so maybe it's better to send
-> > them to Len, so that we can easily keep track of them in the future?
-> > 
-> > Greg, what do you think?
-> 
-> As long as they concern the driver core, I'd like to be notified of
-> them, and will be glad to host them in my tree.  Anything that is
-> ACPI-only, I have no problem ignoring and letting Len handle :)
-> 
-> So for these patches, I'll be glad to review them and add them to my
-> queue.  Give me a few days as my to-review queue is kind of big right
-> now and I'm supposed to be writing a speech for next week...
+On Friday, 28 September 2007 09:04, Oliver Neukum wrote:
+> Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> > On Thursday, 27 September 2007 21:59, Oliver Neukum wrote:
+> > > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> > > > On Thursday, 27 September 2007 21:37, Oliver Neukum wrote:
+> > > > > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> > > > > > > But there's a problem, in that the resume methods don't tak=
+e a message=20
+> > > > > > > parameter. =A0So they wouldn't know whether they were doing=
+ a runtime=20
+> > > > > > > resume or a system resume.
+> > > > > >=20
+> > > > > > This is a general problem with the .resume() routines.
+> > > > > >=20
+> > > > > > If you want to use one for runtime resume, the driver needs t=
+o preserve
+> > > > > > information allowing it to figure out what kind of resume is =
+going to happen.
+> > > > >=20
+> > > > > How? Suppose you
+> > > > >=20
+> > > > > 1) runtime suspend
+> > > > > 2) whole system suspend
+> > > > > 3) whole system resume
+> > > > >=20
+> > > > > What kind of resume do you do?
+> > > >=20
+> > > > System resume, I'd guess.
+> > >=20
+> > > How do you know unless resume() tells you to do so?
+> > >=20
+> > > > Anyway, if we are going to stop using the freezer during suspend,=
+ the locking
+> > > > requirements will probably have to unified between the runtime an=
+d system
+> > > > suspend.
+> > >=20
+> > > Even so, eg. for storage devices you should unquiesce them in case =
+of runtime
+> > > suspend, which makes no sense otherwise.
+> >=20
+> > OK
+> >=20
+> > What exactly would you like to do?
+>=20
+> Put the stuff into struct device and move the autosuspend code into
+> driver core.
 
-OK
+Well, I thought that it would be nicer if drivers handled autosuspend in =
+a
+transparent (from the point of view of the core) way.
+
+Now, it seems to follow from what you're saying that this is not possible=
+ in
+general, because of USB mass storage devices that need some special handl=
+ing.
+
+I'm not familiar with the USB code, so can you please tell me how the USB
+autosuspend is handled at present and what exactly the problem with that =
+is?
 
 Greetings,
 Rafael
