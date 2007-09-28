@@ -1,13 +1,14 @@
-From: "Chakri n" <chakriin5@gmail.com>
-Subject: A unresponsive file system can hang all I/O in the
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: A unresponsive file system can hang all I/O in the
 	system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Date: Thu, 27 Sep 2007 23:32:36 -0700
-Message-ID: <92cbf19b0709272332s25684643odaade0e98cb3a1f4__3447.39926881648$1190993056$gmane$org@mail.gmail.com>
+Date: Fri, 28 Sep 2007 08:59:12 +0200
+Message-ID: <1190962752.31636.15.camel__41063.8401903727$1190993194$gmane$org@twins>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============9075451629583142124=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <20070927235034.ae7bd73d.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,100 +16,64 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: akpm@linux-foundation.org, linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: nfs@lists.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Chakri n <chakriin5@gmail.com>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-In my testing, a unresponsive file system can hang all I/O in the system.
-This is not seen in 2.4.
+--===============9075451629583142124==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-B1Ooclvwi4GWFafBgg8h"
 
-I started 20 threads doing I/O on a NFS share. They are just doing 4K
-writes in a loop.
 
-Now I stop NFS server hosting the NFS share and start a
-"dd" process to write a file on local EXT3 file system.
+--=-B1Ooclvwi4GWFafBgg8h
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-# dd if=/dev/zero of=/tmp/x count=1000
+On Thu, 2007-09-27 at 23:50 -0700, Andrew Morton wrote:
 
-This process never progresses.
-There is plenty of HIGH MEMORY available in the system, but this
-process never progresses.
+> What we _don't_ want to happen is for other processes which are writing t=
+o
+> other, non-dead devices to get collaterally blocked.  We have patches whi=
+ch
+> might fix that queued for 2.6.24.  Peter?
 
-# free
-                        total       used          free
-shared    buffers     cached
-Mem:       3238004     609340    2628664          0              15136
-    551024
--/+ buffers/cache:      43180    3194824
-Swap:      4096532          0    4096532
+Nasty problem, don't do that :-)
 
-vmstat on the machine:
-# vmstat
-procs -----------memory---------- ---swap-- -----io---- --system--
------cpu------
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
- 0 21      0 2628416  15152 551024    0    0     0     0   28  344  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0    8  340  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0   26  343  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0    8  341  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0   26  357  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0    8  325  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0   26  343  0
-0  0 100  0
- 0 21      0 2628416  15152 551024    0    0     0     0    8  325  0
-0  0 100  0
+But yeah, with per BDI dirty limits we get stuck at whatever ratio that
+NFS server/mount (?) has - which could be 100%. Other processes will
+then work almost synchronously against their BDIs but it should work.
 
-The problem seems to be in balance_dirty_pages, which calculates
-dirty_thresh based on only ZONE_NORMAL. The same scenario works fine
-in 2.4. The dd processes finishes in no time.
-NFS file systems can go offline, due to multiple reasons, a failed
-switch, filer etc, but that should not effect other file systems in
-the machine.
-Can this behavior be fenced?, can the buffer cache be tuned so that
-other processes do not see the effect?
+[ They will lower the NFS-BDI's ratio, but some fancy clipping code will
+  limit the other BDIs their dirty limit to not exceed the total limit.
+  And with all these NFS pages stuck, that will still be nothing. ]
 
-The following is the back trace of the processes:
---------------------------------------
-PID: 3552   TASK: cb1fc610  CPU: 0   COMMAND: "dd"
- #0 [f5c04c38] schedule at c0624a34
- #1 [f5c04cac] schedule_timeout at c06250ee
- #2 [f5c04cf0] io_schedule_timeout at c0624c15
- #3 [f5c04d04] congestion_wait at c045eb7d
- #4 [f5c04d28] balance_dirty_pages_ratelimited_nr at c045ab91
- #5 [f5c04d7c] generic_file_buffered_write at c0457148
- #6 [f5c04e10] __generic_file_aio_write_nolock at c04576e5
- #7 [f5c04e84] generic_file_aio_write at c0457799
- #8 [f5c04eb4] ext3_file_write at f8888fd7
- #9 [f5c04ed0] do_sync_write at c0472e27
-#10 [f5c04f7c] vfs_write at c0473689
-#11 [f5c04f98] sys_write at c0473c95
-#12 [f5c04fb4] sysenter_entry at c0404ddf
-------------------------------------------
-PID: 3091  TASK: cb1f0100 CPU: 1   COMMAND: "test"
- #0 [f6050c10] schedule at c0624a34
- #1 [f6050c84] schedule_timeout at c06250ee
- #2 [f6050cc8] io_schedule_timeout at c0624c15
- #3 [f6050cdc] congestion_wait at c045eb7d
- #4 [f6050d00] balance_dirty_pages_ratelimited_nr at c045ab91
- #5 [f6050d54] generic_file_buffered_write at c0457148
- #6 [f6050de8] __generic_file_aio_write_nolock at c04576e5
- #7 [f6050e40] enqueue_entity at c042131f
- #8 [f6050e5c] generic_file_aio_write at c0457799
- #9 [f6050e8c] nfs_file_write at f8f90cee
-#10 [f6050e9c] getnstimeofday at c043d3f7
-#11 [f6050ed0] do_sync_write at c0472e27
-#12 [f6050f7c] vfs_write at c0473689
-#13 [f6050f98] sys_write at c0473c95
-#14 [f6050fb4] sysenter_entry at c0404ddf
 
-Thanks
---Chakri
+
+--=-B1Ooclvwi4GWFafBgg8h
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG/KZAXA2jU0ANEf4RAjISAJ9TSkJmNAVhOu/vmw1bCp3sJRQ79QCeOjWE
+ulcriUmObG9ScdbPLab3h9I=
+=Lkx1
+-----END PGP SIGNATURE-----
+
+--=-B1Ooclvwi4GWFafBgg8h--
+
+
+--===============9075451629583142124==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============9075451629583142124==--
