@@ -1,14 +1,18 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: A unresponsive file system can hang all I/O in the
- system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Date: Thu, 27 Sep 2007 23:50:34 -0700
-Message-ID: <20070927235034.ae7bd73d.akpm__1220.4440813095$1190962301$gmane$org@linux-foundation.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [linux-usb-devel] Re: The evilness of struct
+	usb_device->auto_pm
+Date: Fri, 28 Sep 2007 09:04:16 +0200
+Message-ID: <200709280904.17314.oliver__29276.052353862$1190963154$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0709271202150.7735-100000@iolanthe.rowland.org>
+	<200709272159.11731.oliver@neukum.org>
+	<200709272220.20503.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+In-Reply-To: <200709272220.20503.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,73 +22,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Chakri n <chakriin5@gmail.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, nfs@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-usb-devel@lists.sourceforge.net
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 Sep 2007 23:32:36 -0700 "Chakri n" <chakriin5@gmail.com> wrote:
+Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> On Thursday, 27 September 2007 21:59, Oliver Neukum wrote:
+> > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> > > On Thursday, 27 September 2007 21:37, Oliver Neukum wrote:
+> > > > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
+> > > > > > But there's a problem, in that the resume methods don't take =
+a message=20
+> > > > > > parameter. =A0So they wouldn't know whether they were doing a=
+ runtime=20
+> > > > > > resume or a system resume.
+> > > > >=20
+> > > > > This is a general problem with the .resume() routines.
+> > > > >=20
+> > > > > If you want to use one for runtime resume, the driver needs to =
+preserve
+> > > > > information allowing it to figure out what kind of resume is go=
+ing to happen.
+> > > >=20
+> > > > How? Suppose you
+> > > >=20
+> > > > 1) runtime suspend
+> > > > 2) whole system suspend
+> > > > 3) whole system resume
+> > > >=20
+> > > > What kind of resume do you do?
+> > >=20
+> > > System resume, I'd guess.
+> >=20
+> > How do you know unless resume() tells you to do so?
+> >=20
+> > > Anyway, if we are going to stop using the freezer during suspend, t=
+he locking
+> > > requirements will probably have to unified between the runtime and =
+system
+> > > suspend.
+> >=20
+> > Even so, eg. for storage devices you should unquiesce them in case of=
+ runtime
+> > suspend, which makes no sense otherwise.
+>=20
+> OK
+>=20
+> What exactly would you like to do?
 
-> Hi,
-> 
-> In my testing, a unresponsive file system can hang all I/O in the system.
-> This is not seen in 2.4.
-> 
-> I started 20 threads doing I/O on a NFS share. They are just doing 4K
-> writes in a loop.
-> 
-> Now I stop NFS server hosting the NFS share and start a
-> "dd" process to write a file on local EXT3 file system.
-> 
-> # dd if=/dev/zero of=/tmp/x count=1000
-> 
-> This process never progresses.
+Put the stuff into struct device and move the autosuspend code into
+driver core.
 
-yup.
-
-> There is plenty of HIGH MEMORY available in the system, but this
-> process never progresses.
-> 
-> ...
-> 
-> The problem seems to be in balance_dirty_pages, which calculates
-> dirty_thresh based on only ZONE_NORMAL. The same scenario works fine
-> in 2.4. The dd processes finishes in no time.
-> NFS file systems can go offline, due to multiple reasons, a failed
-> switch, filer etc, but that should not effect other file systems in
-> the machine.
-> Can this behavior be fenced?, can the buffer cache be tuned so that
-> other processes do not see the effect?
-
-It's unrelated to the actual value of dirty_thresh: if the machine fills up
-with dirty (or unstable) NFS pages then eventually new writers will block
-until that condition clears.
-
-2.4 doesn't have this problem at low levels of dirty data because 2.4
-VFS/MM doesn't account for NFS pages at all.
-
-I'm not sure what we can do about this from a design perspective, really. 
-We have data floating about in memory which we're not allowed to discard
-and if we allow it to increase without bound it will eventually either
-wedge userspace _anyway_ or it will take the machine down, resulting in
-data loss.
-
-What it would be nice to do would be to write that data to local disk if
-poss, then reclaim it.  Perhaps David Howells' fscache code can do that (or
-could be tweaked to do so).
-
-If you really want to fill all memory with pages whic are dirty against a
-dead NFS server then you can manually increase
-/proc/sys/vm/dirty_background_ratio and dirty_ratio - that should give you
-the 2.4 behaviour.
-
-
-<thinks>
-
-Actually we perhaps could address this at the VFS level in another way. 
-Processes which are writing to the dead NFS server will eventually block in
-balance_dirty_pages() once they've exceeded the memory limits and will
-remain blocked until the server wakes up - that's the behaviour we want.
-
-What we _don't_ want to happen is for other processes which are writing to
-other, non-dead devices to get collaterally blocked.  We have patches which
-might fix that queued for 2.6.24.  Peter?
+	Regards
+		Oliver
