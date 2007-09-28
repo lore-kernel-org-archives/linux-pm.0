@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] Re: The evilness of struct
-	usb_device->auto_pm
-Date: Fri, 28 Sep 2007 11:11:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0709281109170.4062-100000__35837.9964986399$1190992358$gmane$org@iolanthe.rowland.org>
-References: <200709281712.35721.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: khibernation and ACPI
+Date: Fri, 28 Sep 2007 17:28:43 +0200
+Message-ID: <200709281728.44401.rjw@sisk.pl>
+References: <1190970219.11480.5.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200709281712.35721.rjw@sisk.pl>
+In-Reply-To: <1190970219.11480.5.camel@caritas-dev.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +19,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 Sep 2007, Rafael J. Wysocki wrote:
-
-> > That's because the notifications go up the device tree, not down.  When 
-> > a child is suspended, the parent is notified.  Then if the driver sees 
-> > that all the children are suspended, the parent can be suspended as 
-> > well.
-> > 
-> > Oliver has been trying to subvert this model by making usb-storage 
-> > responsible for suspending the SCSI disk and CD/DVD drivers, which are 
-> > located beneath it in the device tree.  I've been trying to convince 
-> > him that the proper way to handle things is to let the SCSI drivers 
-> > decide for themselves when their devices can be suspended, and then 
-> > have them inform usb-storage.
+On Friday, 28 September 2007 11:03, Huang, Ying wrote:
+> In following text, khibernation is the abbreviation of "kexec based
+> hibernation".
 > 
-> Yes, I think that the SCSI layer should decide.
 > 
-> I guess that the SCSI layer is not really autosuspend-aware, is it?
+> 1. Kexec/kdump and ACPI
+> 
+> With Linux kernel 2.6.23-rc6-mm1 + khibernation patches on my IBM T42,
+> khibernation works well with ACPI. That is, the following is possible
+> with ACPI enabled.
+> 
+> a. Boot kernel A with ACPI on
+> b. Put devices in quiescent and low power state
 
-Not yet.  I would like it to become autosuspend-aware.  Oliver wants to
-avoid that by keeping all the awareness in usb-storage.  (But then what
-about all the other SCSI host-adapter drivers?  Will they each have
-their own way of deciding when a SCSI device can be suspended?)
+How exactly?
 
-Alan Stern
+> c. Kexec a new kernel B with ACPI on
+> d. Jump back to kernel A
+> 
+> I think it should be a standard feature that the kexeced kernel can be
+> booted properly with devices been put in low power state.
+
+Agreed.
+
+> Because, if the dynamic power management is enabled, some idle devices will
+> be put into low power state even in G0, when a crash dump is triggered, the
+> crash dump kernel should be booted properly even with devices been put
+> in low power state. If this not supported, the crash dump can not work
+> on system with dynamic power management on.
+> 
+> 
+> 2. Khibernation and ACPI
+> 
+> Khibernation can work with ACPI even without feature above, because
+> image-writing kernel with initramfs can be booted independent of
+> device state. The scheme is as follow:
+> 
+> a. Boot kernel A with ACPI on
+> b. Put all devices in quiescent and low power state
+> c. Execute _PTS of ACPI
+> d. Kexec a new kernel B with ACPI on.
+
+This may execute ACPI methods that should not be called after _PTS.
+
+Unless you tell the new kernel not to initialize ACPI, that is.
+
+> The root filesystem is initramfs, so that, the only devices needed by kernel
+> B is timer.
+> e. In kernel B, put needed devices back to normal state. 
+> f. Write memory image of kernel A out
+> g. Put all devices in quiescent and low power state
+> h. Execute acpi_enter_sleep_state(ACPI_STATE_S4)
+
+Yes, apart from d. this looks doable.
+
+Greetings,
+Rafael
