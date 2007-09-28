@@ -1,18 +1,13 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [linux-usb-devel] Re: The evilness of struct
 	usb_device->auto_pm
-Date: Fri, 28 Sep 2007 15:41:50 +0200
-Message-ID: <200709281541.50632.oliver__29596.0678639405$1190986960$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.0709271202150.7735-100000@iolanthe.rowland.org>
-	<200709280904.17314.oliver@neukum.org>
-	<200709281525.54410.rjw@sisk.pl>
+Date: Fri, 28 Sep 2007 10:33:15 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0709281011540.4062-100000__27630.616623401$1190990063$gmane$org@iolanthe.rowland.org>
+References: <200709281541.50632.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200709281525.54410.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <200709281541.50632.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,84 +17,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-usb-devel@lists.sourceforge.net
-Cc: linux-pm@lists.linux-foundation.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-Am Freitag 28 September 2007 schrieb Rafael J. Wysocki:
-> On Friday, 28 September 2007 09:04, Oliver Neukum wrote:
-> > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
-> > > On Thursday, 27 September 2007 21:59, Oliver Neukum wrote:
-> > > > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
-> > > > > On Thursday, 27 September 2007 21:37, Oliver Neukum wrote:
-> > > > > > Am Donnerstag 27 September 2007 schrieb Rafael J. Wysocki:
-> > > > > > > > But there's a problem, in that the resume methods don't t=
-ake a message=20
-> > > > > > > > parameter. =A0So they wouldn't know whether they were doi=
-ng a runtime=20
-> > > > > > > > resume or a system resume.
-> > > > > > >=20
-> > > > > > > This is a general problem with the .resume() routines.
-> > > > > > >=20
-> > > > > > > If you want to use one for runtime resume, the driver needs=
- to preserve
-> > > > > > > information allowing it to figure out what kind of resume i=
-s going to happen.
-> > > > > >=20
-> > > > > > How? Suppose you
-> > > > > >=20
-> > > > > > 1) runtime suspend
-> > > > > > 2) whole system suspend
-> > > > > > 3) whole system resume
-> > > > > >=20
-> > > > > > What kind of resume do you do?
-> > > > >=20
-> > > > > System resume, I'd guess.
-> > > >=20
-> > > > How do you know unless resume() tells you to do so?
-> > > >=20
-> > > > > Anyway, if we are going to stop using the freezer during suspen=
-d, the locking
-> > > > > requirements will probably have to unified between the runtime =
-and system
-> > > > > suspend.
-> > > >=20
-> > > > Even so, eg. for storage devices you should unquiesce them in cas=
-e of runtime
-> > > > suspend, which makes no sense otherwise.
-> > >=20
-> > > OK
-> > >=20
-> > > What exactly would you like to do?
-> >=20
-> > Put the stuff into struct device and move the autosuspend code into
-> > driver core.
->=20
-> Well, I thought that it would be nicer if drivers handled autosuspend i=
-n a
-> transparent (from the point of view of the core) way.
+On Fri, 28 Sep 2007, Oliver Neukum wrote:
 
-That is possible only for drivers which are leaves in the device tree.
+> > > > What exactly would you like to do?
+> > > 
+> > > Put the stuff into struct device and move the autosuspend code into
+> > > driver core.
 
-> Now, it seems to follow from what you're saying that this is not possib=
-le in
-> general, because of USB mass storage devices that need some special han=
-dling.
+Moving some of the data fields might be acceptable.  Moving the code is 
+premature at best.  You must always bear in mind that the autosuspend 
+model used by USB is not suitable for every type of device.  Each 
+subsystem needs to implement its own form of runtime PM; the core 
+should contain only the lowest-denominator common parts.
 
-No, they need the ordinary handling. All a device's children must be susp=
-ended
-if a device is suspended.
+> > Well, I thought that it would be nicer if drivers handled autosuspend in a
+> > transparent (from the point of view of the core) way.
+> 
+> That is possible only for drivers which are leaves in the device tree.
 
-> I'm not familiar with the USB code, so can you please tell me how the U=
-SB
-> autosuspend is handled at present and what exactly the problem with tha=
-t is?
+Not true.  For example, the USB hub driver handles autosuspend 
+perfectly well.  The main issue is what to do when the autosuspend 
+notifications need to cross a subsystem boundary.
 
-The drivers for interfaces manage a count. If all a device's interfaces' =
-count
-goes to zero, the device is suspended. The drivers are notified through t=
-he
-normal suspend() method. But children of these devices are not notified.
+> > Now, it seems to follow from what you're saying that this is not possible in
+> > general, because of USB mass storage devices that need some special handling.
+> 
+> No, they need the ordinary handling. All a device's children must be suspended
+> if a device is suspended.
+> 
+> > I'm not familiar with the USB code, so can you please tell me how the USB
+> > autosuspend is handled at present and what exactly the problem with that is?
+> 
+> The drivers for interfaces manage a count. If all a device's interfaces' count
+> goes to zero, the device is suspended. The drivers are notified through the
+> normal suspend() method. But children of these devices are not notified.
 
-	Regards
-		Oliver
+That's because the notifications go up the device tree, not down.  When 
+a child is suspended, the parent is notified.  Then if the driver sees 
+that all the children are suspended, the parent can be suspended as 
+well.
+
+Oliver has been trying to subvert this model by making usb-storage 
+responsible for suspending the SCSI disk and CD/DVD drivers, which are 
+located beneath it in the device tree.  I've been trying to convince 
+him that the proper way to handle things is to let the SCSI drivers 
+decide for themselves when their devices can be suspended, and then 
+have them inform usb-storage.
+
+Alan Stern
