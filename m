@@ -1,15 +1,16 @@
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: A unresponsive file system can hang all I/O in the
-	system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Date: Fri, 28 Sep 2007 13:00:53 -0400
-Message-ID: <1190998853.6702.17.camel__41967.0754847631$1191000059$gmane$org@heimdal.trondhjem.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: Re: [RFC] QoS params patch
+Date: Fri, 28 Sep 2007 10:19:21 -0700
+Message-ID: <20070928171921.GA3219__32602.0121727653$1191000059$gmane$org@linux.intel.com>
+References: <20070926223712.GA22029@linux.intel.com>
+	<20070926224026.GA23218@linux.intel.com>
+	<20070927232501.79f9f4bd.akpm@linux-foundation.org>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20070927235034.ae7bd73d.akpm@linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20070927232501.79f9f4bd.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,24 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nfs@lists.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, Chakri n <chakriin5@gmail.com>, lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-09-27 at 23:50 -0700, Andrew Morton wrote:
-
-> Actually we perhaps could address this at the VFS level in another way. 
-> Processes which are writing to the dead NFS server will eventually block in
-> balance_dirty_pages() once they've exceeded the memory limits and will
-> remain blocked until the server wakes up - that's the behaviour we want.
+On Thu, Sep 27, 2007 at 11:25:01PM -0700, Andrew Morton wrote:
+> On Wed, 26 Sep 2007 15:40:26 -0700 Mark Gross <mgross@linux.intel.com> wrote:
 > 
-> What we _don't_ want to happen is for other processes which are writing to
-> other, non-dead devices to get collaterally blocked.  We have patches which
-> might fix that queued for 2.6.24.  Peter?
+> > +#define QOS_RESERVED 0
+> > +#define QOS_CPU_DMA_LATENCY 1
+> > +#define QOS_NETWORK_LATENCY 2
+> > +#define QOS_NETWORK_THROUGHPUT 3
+> > +
+> > +#define QOS_NUM_CLASSES 4
+> > +#define QOS_DEFAULT_VALUE -1
+> > +
+> > +int qos_add_requirement(int qos, char *name, s32 value);
+> > +int qos_update_requirement(int qos, char *name, s32 new_value);
+> > +void qos_remove_requirement(int qos, char *name);
+> 
+> It's a bit rude stealing the entire "qos" namespace like this - there are
+> many different forms of QoS, some already in-kernel.
+> 
+> s/qos/pm_qos/g ?
 
-Do these patches also cause the memory reclaimers to steer clear of
-devices that are congested (and stop waiting on a congested device if
-they see that it remains congested for a long period of time)? Most of
-the collateral blocking I see tends to happen in memory allocation...
+I suppose it is a bit inconiderate.  I could grow to like pm_qos,
+performance_throttling_constraint_hint_infrastructure is a bit too
+wordy. 
 
-Cheers
-  Trond
+I suppose I should use qospm as thats the way it was put up on that
+lesswatts.org web page. 
+
+Would qospm be good enough?
+
+--mgross
