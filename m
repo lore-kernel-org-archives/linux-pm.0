@@ -1,16 +1,16 @@
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: [PATCH] writeback: avoid possible balance_dirty_pages()
-	lockup on a light-load bdi
-Date: Tue, 2 Oct 2007 10:00:40 +0800
-Message-ID: <20071002020040.GA5275__13574.159742757$1191290531$gmane$org@mail.ustc.edu.cn>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] writeback: avoid possible
+ balance_dirty_pages() lockup on a light-load bdi
+Date: Mon, 1 Oct 2007 19:14:57 -0700
+Message-ID: <20071001191457.2f7c7538.akpm@linux-foundation.org>
 References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
 	<391063897.19256@ustc.edu.cn> <470118EE.1020103@redhat.com>
+	<391290444.23950@ustc.edu.cn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Message-ID: <20071002020040.GA5275@mail.ustc.edu.cn>
-Content-Disposition: inline
-In-Reply-To: <470118EE.1020103@redhat.com>
+In-Reply-To: <391290444.23950@ustc.edu.cn>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,80 +20,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, Krzysztof Oledzki <olel@ans.pl>, akpm@linux-foundation.org, richard kennedy <richard@rsk.demon.co.uk>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Krzysztof@smtp2.linux-foundation.org, Chakri n <chakriin5@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>, Chuck Ebbert <cebbert@redhat.com>, Oledzki <olel@ans.pl>, linux-pm <linux-pm@lists.linux-foundation.org>, richard kennedy <richard@rsk.demon.co.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 01, 2007 at 11:57:34AM -0400, Chuck Ebbert wrote:
-> On 09/29/2007 07:04 AM, Fengguang Wu wrote:
-> > On Thu, Sep 27, 2007 at 11:32:36PM -0700, Chakri n wrote:
-> >> Hi,
-> >>
-> >> In my testing, a unresponsive file system can hang all I/O in the system.
-> >> This is not seen in 2.4.
-> >>
-> >> I started 20 threads doing I/O on a NFS share. They are just doing 4K
-> >> writes in a loop.
-> >>
-> >> Now I stop NFS server hosting the NFS share and start a
-> >> "dd" process to write a file on local EXT3 file system.
-> >>
-> >> # dd if=/dev/zero of=/tmp/x count=1000
-> >>
-> >> This process never progresses.
-> > 
-> > Peter, do you think this patch will help?
-> > 
-> > ===
-> > writeback: avoid possible balance_dirty_pages() lockup on light-load bdi
-[...] 
-> This looks better than the other candidate to fix the problem. Are we going
-> to fix 2.6.23 before release? Multiple people have reported this problem now...
+On Tue, 2 Oct 2007 10:00:40 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-(expecting real world confirmations...)
+> writeback: avoid possible balance_dirty_pages() lockup on a light-load bdi
+> 
+> On a busy-writing system, a writer could be hold up infinitely on a
+> light-load device. It will be trying to sync more than available dirty data.
+> 
+> The problem case:
+> 
+> 0. sda/nr_dirty >= dirty_limit;
+>    sdb/nr_dirty == 0
+> 1. dd writes 32 pages on sdb
+> 2. balance_dirty_pages() blocks dd, and tries to write 6MB.
+> 3. it never gets there: there's only 128KB dirty data.
+> 4. dd may be blocked for a loooong time
 
-Here is a new safer version.  It's more ugly though.
+Please quantify loooong.
+ 
+> Fix it by returning on 'zero dirty inodes' in the current bdi.
+> (In fact there are slight differences between 'dirty inodes' and 'dirty pages'.
+> But there is no available counters for 'dirty pages'.)
+> 
+> But the newly introduced 'break' could make the nr_writeback drift away
+> above the dirty limit. The workaround is to limit the error under 1MB.
 
----
-writeback: avoid possible balance_dirty_pages() lockup on a light-load bdi
+I'm still not sure that we fully understand this yet.
 
-On a busy-writing system, a writer could be hold up infinitely on a
-light-load device. It will be trying to sync more than available dirty data.
+If the sdb writer is stuck in balance_dirty_pages() then all sda writers
+will be in balance_dirty_pages() too, madly writing stuff out to sda.  And
+pdflush will be writing out sda as well.  All this writeout to sda should
+release the sdb writer.
 
-The problem case:
+Why isn't this happening?
 
-0. sda/nr_dirty >= dirty_limit;
-   sdb/nr_dirty == 0
-1. dd writes 32 pages on sdb
-2. balance_dirty_pages() blocks dd, and tries to write 6MB.
-3. it never gets there: there's only 128KB dirty data.
-4. dd may be blocked for a loooong time
 
-Fix it by returning on 'zero dirty inodes' in the current bdi.
-(In fact there are slight differences between 'dirty inodes' and 'dirty pages'.
-But there is no available counters for 'dirty pages'.)
+> Cc: Chuck Ebbert <cebbert@redhat.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> ---
+>  mm/page-writeback.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> --- linux-2.6.22.orig/mm/page-writeback.c
+> +++ linux-2.6.22/mm/page-writeback.c
+> @@ -250,6 +250,11 @@ static void balance_dirty_pages(struct a
+>  			pages_written += write_chunk - wbc.nr_to_write;
+>  			if (pages_written >= write_chunk)
+>  				break;		/* We've done our duty */
+> +			if (list_empty(&mapping->host->i_sb->s_dirty) &&
+> +			    list_empty(&mapping->host->i_sb->s_io) &&
+> +			    nr_reclaimable + global_page_state(NR_WRITEBACK) <=
+> +				    dirty_thresh + (1 << (20-PAGE_CACHE_SHIFT)))
+> +				break;
+>  		}
+>  		congestion_wait(WRITE, HZ/10);
+>  	}
 
-But the newly introduced 'break' could make the nr_writeback drift away
-above the dirty limit. The workaround is to limit the error under 1MB.
+Well that has a nice safetly net.  Perhaps it could fail a bit later on,
+but that depends on why it's failing.
 
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- mm/page-writeback.c |    5 +++++
- 1 file changed, 5 insertions(+)
+How well tested was this?
 
---- linux-2.6.22.orig/mm/page-writeback.c
-+++ linux-2.6.22/mm/page-writeback.c
-@@ -250,6 +250,11 @@ static void balance_dirty_pages(struct a
- 			pages_written += write_chunk - wbc.nr_to_write;
- 			if (pages_written >= write_chunk)
- 				break;		/* We've done our duty */
-+			if (list_empty(&mapping->host->i_sb->s_dirty) &&
-+			    list_empty(&mapping->host->i_sb->s_io) &&
-+			    nr_reclaimable + global_page_state(NR_WRITEBACK) <=
-+				    dirty_thresh + (1 << (20-PAGE_CACHE_SHIFT)))
-+				break;
- 		}
- 		congestion_wait(WRITE, HZ/10);
- 	}
+If we merge this for 2.6.23 then I expect that we'll immediately unmerge it
+for 2.6.24 because Peter's stuff fixes this problem by other means.
+
+Do we all agree with the above sentence?
