@@ -1,17 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [linux-usb-devel] Re: The evilness of
-	=?iso-8859-1?q?struct=09usb=5Fdevice-?=>auto_pm
-Date: Thu, 4 Oct 2007 12:27:29 +0200
-Message-ID: <200710041227.29817.oliver__10944.9569754817$1191493641$gmane$org@neukum.org>
-References: <200709281712.35721.rjw@sisk.pl>
-	<200710041205.38967.oliver@neukum.org>
-	<20071004101643.GJ22940@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: khibernation and ACPI
+Date: Thu, 4 Oct 2007 17:32:20 +0200
+Message-ID: <200710041732.21853.rjw@sisk.pl>
+References: <1190970219.11480.5.camel@caritas-dev.intel.com>
+	<1191033857.11480.47.camel@caritas-dev.intel.com>
+	<20071004101206.GI22940@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071004101643.GJ22940@elf.ucw.cz>
+In-Reply-To: <20071004101206.GI22940@elf.ucw.cz>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -22,36 +21,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-usb-devel@lists.sourceforge.net
-Cc: linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag 04 Oktober 2007 schrieb Pavel Machek:
-> On Thu 2007-10-04 12:05:38, Oliver Neukum wrote:
-> > Am Montag 01 Oktober 2007 schrieb Pavel Machek:
-> > > > > I guess that the SCSI layer is not really autosuspend-aware, is=
- it?
-> > > >=20
-> > > > Not yet. =A0I would like it to become autosuspend-aware. =A0Olive=
-r wants to
-> > > > avoid that by keeping all the awareness in usb-storage. =A0(But t=
-hen what
-> > > > about all the other SCSI host-adapter drivers? =A0Will they each =
-have
-> > > > their own way of deciding when a SCSI device can be suspended?)
-> > >=20
-> > > I think I'd prefer to have autosuspending in SCSI layer. That way, =
-we
-> > > should be able to handle automatic disk spindowns nicely...
-> >=20
-> > OK, so this is the consensus. Then the question arises, how does a
-> > driver learn that all it's children have gone into autosuspend?
->=20
-> atomic_t variable in the parent, with children updating it and calling
-> parent's callback when it goes to 1->0 and 0->1?
+On Thursday, 4 October 2007 12:12, Pavel Machek wrote:
+> Hi!
+> 
+> > > > The root filesystem is initramfs, so that, the only devices needed by kernel
+> > > > B is timer.
+> > > > e. In kernel B, put needed devices back to normal state. 
+> > > > f. Write memory image of kernel A out
+> > > > g. Put all devices in quiescent and low power state
+> > > > h. Execute acpi_enter_sleep_state(ACPI_STATE_S4)
+> > > 
+> > > Yes, apart from d. this looks doable.
+> > > 
+> > 
+> > To deal with the issue of d, the following scheme can be used:
+> > 
+> > a. Boot kernel A with ACPI on
+> > b. In kernel A, load the image of a new kernel B with sys_kexec_load
+> > c. In kernel A, put all devices in quiescent and low power state
+> > d. In kernel A, kexec kernel B with ACPI on (some devices may be put in
+> > normal state during boot)
+> > e. In kernel B, put all devices in quiescent and low power state
+> > f. In kernel B, Jump back to kernel A
+> > g. In kernel A, put all devices in normal state
+> > h. In kernel A, put all devices in low power state
+> > i. In kernel A, execute _PTS of ACPI
+> > j. In kernel A, jump to kernel B again
+> > k. In kernel B, put needed devices back to normal state.
+> > l. In kernel B, write memory image of kernel A out
+> > m. In kernel B, put all devices in quiescent and low power state
+> > n. In kernel B, Execute acpi_enter_sleep_state(ACPI_STATE_S4)
+> 
+> That starts looking pretty complex.
+> 
+> Maybe we should solve the !ACPI case first (should be useful for live
+> crashdumping, etc)?
 
-That's a viable proposal, but it means moving part of the autosuspend
-code into the generic model. Are you all okay with that?
+Yeah, I'd suggest leaving ACPI alone, at least for now. ;-)
 
-	Regards
-		Oliver
+Greetings,
+Rafael
