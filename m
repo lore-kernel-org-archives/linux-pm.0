@@ -1,18 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-usb-devel] Re: The evilness of
-	=?iso-8859-1?q?struct=09usb=5Fdevice-?=>auto_pm
-Date: Thu, 4 Oct 2007 17:36:21 +0200
-Message-ID: <200710041736.21789.rjw__24862.4124950313$1191511582$gmane$org@sisk.pl>
-References: <200709281712.35721.rjw@sisk.pl>
-	<20071004101643.GJ22940@elf.ucw.cz>
-	<200710041227.29817.oliver@neukum.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PM_QOS 1 of 2
+Date: Thu, 4 Oct 2007 12:53:56 -0700
+Message-ID: <20071004125356.69e01dfe.akpm__27606.5144841143$1191527708$gmane$org@linux-foundation.org>
+References: <20071001234528.GA5238@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200710041227.29817.oliver@neukum.org>
-Content-Disposition: inline
+In-Reply-To: <20071001234528.GA5238@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,40 +17,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb-devel@lists.sourceforge.net
+To: mgross@linux.intel.com
+Cc: mark.gross@intel.com, linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 4 October 2007 12:27, Oliver Neukum wrote:
-> Am Donnerstag 04 Oktober 2007 schrieb Pavel Machek:
-> > On Thu 2007-10-04 12:05:38, Oliver Neukum wrote:
-> > > Am Montag 01 Oktober 2007 schrieb Pavel Machek:
-> > > > > > I guess that the SCSI layer is not really autosuspend-aware, =
-is it?
-> > > > >=20
-> > > > > Not yet. =A0I would like it to become autosuspend-aware. =A0Oli=
-ver wants to
-> > > > > avoid that by keeping all the awareness in usb-storage. =A0(But=
- then what
-> > > > > about all the other SCSI host-adapter drivers? =A0Will they eac=
-h have
-> > > > > their own way of deciding when a SCSI device can be suspended?)
-> > > >=20
-> > > > I think I'd prefer to have autosuspending in SCSI layer. That way=
-, we
-> > > > should be able to handle automatic disk spindowns nicely...
-> > >=20
-> > > OK, so this is the consensus. Then the question arises, how does a
-> > > driver learn that all it's children have gone into autosuspend?
-> >=20
-> > atomic_t variable in the parent, with children updating it and callin=
-g
-> > parent's callback when it goes to 1->0 and 0->1?
->=20
-> That's a viable proposal, but it means moving part of the autosuspend
-> code into the generic model. Are you all okay with that?
+On Mon, 1 Oct 2007 16:45:28 -0700
+Mark Gross <mgross@linux.intel.com> wrote:
 
-I am.
+> The following is the cleaned up patch implementing the power management
+> quality of service infrastructure discussed at the pm summit last June.
+> 
+> It is a genralization of the latency code put into the kernel last year
+> by Arjan.
+> 
+> I would like to get this code included in the MM tree and to get some
+> milage on it.
+> 
+> One thing to note about this implementation is that it exposes an
+> interface to user space for registering pm_qos constraints in addition
+> to the kernel exports.  Its a file based interface where a module can
+> register a constraint and the constraint is valid only as long as the
+> device node is held open.  Upon closing of the device node that
+> constraint is cleaned up.
+> 
+> The patch set is in two postings.  
+> 1) the base parameter code (this email)
+> 2) replacing of latency.c/latenc.h with pm_qos_params.c/pm_qos_params.h
 
-Greetings,
-Rafael
+I wouldn't really view this as an adequate changelog.
+
+- The Subject:s are pretty pathetic (please see my suggesed replacements)
+
+- There is no description of the proposed new kernel<->userspace
+  interfaces.
+
+  As you are proposing new and permanent enhancements to the Linux API,
+  this is something which should be spelled out in some detail.  Because we
+  can change the implementation, but we can not ever change your interface.
+
+  It would be nice to get that interface described in Documentation/
+  somewhere, but it is *critical* that the design be fully revealed right
+  now, during review.
+
+
+Anyway, I am not a suitable person to review this submission.
+
+I'll put the patches in -mm for a bit of eyeball-and-test (not that anyone
+will know how to test it, due to the secret interfaces) but I do not want
+to move this code into mainline until someone who is familiar with the PM
+code has performed a detailed review of both the implementation and the
+design (whatever that is!).
+
+Please send new, complete descriptions of these patches.  I don't think
+they can be effectively reviewed without that information.  Except perhaps
+by someone who was at the PM summit, but that's cheating.
+
+
+Thanks.
