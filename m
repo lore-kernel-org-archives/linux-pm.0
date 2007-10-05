@@ -1,13 +1,17 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Fwd: USB suspending
-Date: Fri, 05 Oct 2007 12:04:02 -0700
-Message-ID: <20071005190401.47833238EE9__40160.0486635745$1191611430$gmane$org@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <200710051551.24781.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Q] APM depends on PM_SLEEP?
+Date: Fri, 5 Oct 2007 23:16:09 +0200
+Message-ID: <200710052316.10215.rjw@sisk.pl>
+References: <Pine.LNX.4.60.0710051615350.10392@poirot.grange>
+	<200710051749.52685.rjw@sisk.pl>
+	<Pine.LNX.4.60.0710051827020.10392@poirot.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200710051551.24781.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.60.0710051827020.10392@poirot.grange>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,27 +21,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, linux-pm@lists.linux-foundation.org
-Cc: xhejtman@ics.muni.cz, linux-usb-devel@lists.sourceforge.net
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> Subject: USB suspending
-> Date: Friday, 5 October 2007 14:54
-> From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-> To: "Rafael J. Wysocki" <rjw@sisk.pl>
->
-> Hello,
->
-> I've noticed that while suspended in RAM USB ports are powered so any device
-> connected to the port gets power. Can I turn off power of all USBs ports while
-> suspending to RAM?
+On Friday, 5 October 2007 18:27, Guennadi Liakhovetski wrote:
+> On Fri, 5 Oct 2007, Rafael J. Wysocki wrote:
+> 
+> > On Friday, 5 October 2007 16:18, Guennadi Liakhovetski wrote:
+> > > Why does APM depend on PM_SLEEP?
+> > 
+> > Because APM uses the suspend core functions in drivers/base/power .
+> 
+> Ok, perhaps, a "select" would be better?...
 
-Usually, no.  On PCs, most root hubs don't support the relevant
-root hub "port power off" request.  Also, their ACPI configurations
-are set up to expect port power to stay on.
+Select doesn't work really well.
 
-Of course, powering off the USB ports gives only minimal power
-savings.  Suspended devices aren't permitted to draw much power,
-typically only 0.5 mA.
+It probably would be better to add something like APM_SUSPEND
+depending on SUSPEND.
 
-- Dave
+Greetings,
+Rafael
