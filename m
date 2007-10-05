@@ -1,15 +1,13 @@
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: Re: [linux-usb-devel] Fwd: USB suspending
-Date: Fri, 5 Oct 2007 18:35:18 +0200
-Message-ID: <20071005163518.GA2389__10402.7336267338$1191602694$gmane$org@ics.muni.cz>
-References: <200710051559.43771.oliver@neukum.org>
-	<Pine.LNX.4.44L0.0710051117560.4446-100000@iolanthe.rowland.org>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Fwd: USB suspending
+Date: Fri, 05 Oct 2007 12:04:02 -0700
+Message-ID: <20071005190401.47833238EE9__40160.0486635745$1191611430$gmane$org@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <200710051551.24781.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0710051117560.4446-100000@iolanthe.rowland.org>
+In-Reply-To: <200710051551.24781.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-usb-devel@lists.sourceforge.net
+To: rjw@sisk.pl, linux-pm@lists.linux-foundation.org
+Cc: xhejtman@ics.muni.cz, linux-usb-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 05, 2007 at 11:25:11AM -0400, Alan Stern wrote:
-> > But power consumption on these ports is minimal for suspended devices=
-,
-> > so it is a bad idea.
->=20
-> Right.  Power consumption is even smaller on ports with no devices=20
-> plugged in.
+> Subject: USB suspending
+> Date: Friday, 5 October 2007 14:54
+> From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+> To: "Rafael J. Wysocki" <rjw@sisk.pl>
+>
+> Hello,
+>
+> I've noticed that while suspended in RAM USB ports are powered so any device
+> connected to the port gets power. Can I turn off power of all USBs ports while
+> suspending to RAM?
 
-For example, IBM ThinkPad T60 powers off all USB ports when hcd-uhci modu=
-le is
-unloaded. My ASUS M6A does not, it does not also in Windows XP though.=20
+Usually, no.  On PCs, most root hubs don't support the relevant
+root hub "port power off" request.  Also, their ACPI configurations
+are set up to expect port power to stay on.
 
-I still wonder why suspended machine consumes about 2Wh in S-T-R while th=
-e IBM
-consumes about 0.2Wh.
+Of course, powering off the USB ports gives only minimal power
+savings.  Suspended devices aren't permitted to draw much power,
+typically only 0.5 mA.
 
---=20
-Luk=E1=B9 Hejtm=E1nek
+- Dave
