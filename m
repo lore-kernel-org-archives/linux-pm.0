@@ -1,7 +1,7 @@
 From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [RFC] Documentation for USB power management
-Date: Mon, 8 Oct 2007 08:38:33 +0200
-Message-ID: <200710080838.33297.oliver__49664.9912013256$1191825485$gmane$org@neukum.org>
+Date: Mon, 8 Oct 2007 08:40:49 +0200
+Message-ID: <200710080840.49451.oliver__35237.1260560632$1191825609$gmane$org@neukum.org>
 References: <Pine.LNX.4.44L0.0710061607420.2264-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
@@ -24,19 +24,12 @@ Cc: USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
 Am Samstag 06 Oktober 2007 schrieb Alan Stern:
-> +=A0=A0=A0=A0=A0=A0=A0Other parts of the driver interface
-> +=A0=A0=A0=A0=A0=A0=A0-----------------------------------
-> +
-> +Sometimes a driver needs to make sure that remote wakeup is enabled
-> +during autosuspend. =A0For example, there's not much point
-> +autosuspending a keyboard if the user can't cause the keyboard to do a
-> +remote wakeup by typing on it. =A0If the driver sets
-> +intf->needs_remote_wakeup to 1, the kernel won't autosuspend the
-> +device if remote wakeup isn't available or has been disabled through
-> +the power/wakeup attribute.
+> +External suspend calls should never be allowed to fail in this way,
+> +only autosuspend calls. =A0The driver can tell them apart by checking
+> +udev->auto_pm; this flag will be set to 1 for internal PM events
 
-You should mention that a driver has to make sure that the device is
-awake for this to have immediate effect.
+This is a bit unclear, as suspend methods are called with interface
+pointers. I think you need to elaborate.
 
 	Regards
 		Oliver
