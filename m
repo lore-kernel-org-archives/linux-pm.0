@@ -1,11 +1,12 @@
-From: "Leo L. Schwab" <ewhac@best.com>
-Subject: acpi_video_flags Reset on Resume-From-RAM
-Date: Mon, 8 Oct 2007 17:00:38 -0700
-Message-ID: <20071009000038.GA23726@best.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: parallel suspend/resume
+Date: Tue, 9 Oct 2007 11:54:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0710091152190.4783-100000@iolanthe.rowland.org>
+References: <20071008194639.GA5301@dmt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <20071008194639.GA5301@dmt>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,45 +16,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-	Suspend-to-RAM used to (mostly) work on this machine, but there
-seems to have been a regression between 2.6.22.1 and 2.6.22.5.
+On Mon, 8 Oct 2007, Marcelo Tosatti wrote:
 
-	I have a ThinkPad Z61t, with an Intel Core 2 Duo and Intel 945GM
-graphics.  My kernel command line contains the argument,
-"acpi_sleep=s3_bios,s3_mode", which is the same as setting
-/proc/sys/kernel/acpi_video_flags to 3.  This setting is suggested by
-ThinkWiki.org for getting the Intel graphics to recover properly after
-suspend-to-RAM.
+> Hi,
+> 
+> I spent some time working with the parallel suspend/resume idea, even
+> wrote a simple patch (attached), but that obviously does not scale to
+> large number of devices.
+> 
+> What would be a better approach? 
 
-	Under 2.6.22.1, this arrangement worked fine.  However, since I
-upgraded the kernel to 2.6.22.5, the text console refuses to come back.
-When I inspect acpi_video_flags, the value has been reset to zero.
+In general, parallel suspend/resume isn't easy to do correctly.  There 
+are lots of constraints on the order in which devices can be suspended, 
+many of them not explicitly stated anywhere.  I don't think it is 
+feasible to encapsulate the constraint information in the PM core; if 
+anything, it should be left up to the individual subsystems to suspend 
+or resume their devices in parallel.
 
-	Sequence:
-	- Boot system.
-	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 3.
-	- Trigger suspend-to-RAM (done via 'hibernate-ram').  I have
-	  configured 'hibernate' to leave acpi_video_flags alone.
-	- Resume system.  Text console does not come back.  I can force X to
-	  recover the display by pressing CTRL-ALT-F1 (switch to console)
-	  followed by ALT-F7 (switch to X).
-	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 0.
-	- Force acpi_video_flags back to 3:
-	  echo 3 > /proc/sys/kernel/acpi_video_flags
-	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 3.
-	- Trigger suspend-to-RAM.
-	- Resume system.  Text console does not come back.  acpi_video_flags
-	  contains zero again.
-
-	I'm running a custom-compiled kernel (config available upon
-request).  The highlights are SMP, PREEMPT, and NOHZ.
-
-	Note that nothing short of a full reboot will restore the console.
-Switching to a virtual console results in a blank screen.  Switching back to
-X so far always works.  Since the console's busted, it's not immediately
-clear how I might diagnose this further.  Suggestions?
-
-					Schwab
+Alan Stern
