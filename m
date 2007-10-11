@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
-Date: Thu, 11 Oct 2007 12:17:57 +0200
-Message-ID: <200710111217.58473.rjw__9069.21619684926$1192097055$gmane$org@sisk.pl>
-References: <1192068833.27482.13.camel@caritas-dev.intel.com>
+From: Mark Gross <mgross@linux.intel.com>
+Subject: Re: pm qos infrastructure and interface
+Date: Thu, 11 Oct 2007 08:08:04 -0700
+Message-ID: <20071011150804.GA7293__16010.3036360399$1192115434$gmane$org@linux.intel.com>
+References: <20071004215139.GA20078@linux.intel.com>
+	<20071010221704.6e438c71.akpm@linux-foundation.org>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1192068833.27482.13.camel@caritas-dev.intel.com>
 Content-Disposition: inline
+In-Reply-To: <20071010221704.6e438c71.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mark.gross@intel.com, linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 11 October 2007 04:13, Huang, Ying wrote:
-> Kexec base hibernation has some potential advantages over uswsusp and
-> TuxOnIce (suspend2). Some most obvious advantages are:
+On Wed, Oct 10, 2007 at 10:17:04PM -0700, Andrew Morton wrote:
+> On Thu, 4 Oct 2007 14:51:39 -0700 Mark Gross <mgross@linux.intel.com> wrote:
+> 
+> > The following patch is a generalization of the latency.c implementation
+> > done by Arjan last year.  It provides infrastructure for more than one
+> > parameter, and exposes a user mode interface for processes to register
+> > pm_qos expectations of processes.
+> > 
+> > 
+> > This interface provides a kernel and user mode interface for registering
+> > performance expectations by drivers, subsystems and user space
+> > applications on one of the parameters.
+> > 
+> > Currently we have {cpu_dma_latency, network_latency, network_throughput}
+> > as the initial set of pm_qos parameters.
+> > 
+> > The infrastructure exposes multiple misc device nodes one per
+> > implemented parameter.  The set of parameters implement is defined by
+> > pm_qos_power_init() and pm_qos_params.h.  This is done because having
+> > the available parameters being runtime configurable or changeable from a
+> > driver was seen as too easy to abuse.
+> 
+> I'm a bit surprised that this change appears to have no configurability.
+> If one has set CONFIG_PM=n (for example), shouldn't it all go away?
 
-Well, I have some doubts as far as the obviousness is concerned.
+We considered that as an option but as latency.c didn't offer it I
+didn't either.  
 
-> 1. The hibernation image size can exceed half of memory size easily.
+I could see the user mode interface portion of the implementation be
+made as a compile time option but the kernel infrastructure will
+continue to be needed by at least cpu-idel, pcm_native.c and ipw2100.
 
-This is also possible with TuxOnIce.
+You know it could make sense to have the user mode interface part of the
+patch as configurable or a build time dependent of sysfs and misc device
+support for the linux-tiny guys.  Is it practical to make a linux-tiny
+without the sysfs infrastructure needed to make a misc device?  I'll ask
+on the linux-tiny list.
 
-> 2. The hibernation image can be written to and read from almost
->    anywhere, such as USB disk, NFS.
-
-This is possible with uswsusp, at least in theory, probably with TuxOnIce too.
-
-> 3. It is possible to eliminate freezer from kexec based hibernation
->    implementation.
-
-This isn't true as long as we have not changed the handling of devices
-(which is in the works, but will take time).
-
-> 4. Based on kexec/kdump implementation, the kernel code needed is
->    less.
-
-Well, maybe.
-
-Greetings,
-Rafael
+--mgross
