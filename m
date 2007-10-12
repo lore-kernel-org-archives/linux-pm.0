@@ -1,14 +1,17 @@
-From: "Huang, Ying" <ying.huang@intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
-Date: Fri, 12 Oct 2007 11:19:32 +0800
-Message-ID: <1192159172.17539.26.camel__3255.87680931694$1192159297$gmane$org@caritas-dev.intel.com>
+Date: Fri, 12 Oct 2007 13:37:17 +0200
+Message-ID: <200710121337.18499.rjw__6438.94619211114$1192188249$gmane$org@sisk.pl>
 References: <1192068833.27482.13.camel@caritas-dev.intel.com>
 	<200710111217.58473.rjw@sisk.pl>
+	<1192159172.17539.26.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200710111217.58473.rjw@sisk.pl>
+In-Reply-To: <1192159172.17539.26.camel@caritas-dev.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +21,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Huang, Ying" <ying.huang@intel.com>
 Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2007-10-11 at 12:17 +0200, Rafael J. Wysocki wrote:
-> On Thursday, 11 October 2007 04:13, Huang, Ying wrote:
-> > Kexec base hibernation has some potential advantages over uswsusp and
-> > TuxOnIce (suspend2). Some most obvious advantages are:
+On Friday, 12 October 2007 05:19, Huang, Ying wrote:
+> On Thu, 2007-10-11 at 12:17 +0200, Rafael J. Wysocki wrote:
+> > On Thursday, 11 October 2007 04:13, Huang, Ying wrote:
+> > > Kexec base hibernation has some potential advantages over uswsusp and
+> > > TuxOnIce (suspend2). Some most obvious advantages are:
+> > 
+> > Well, I have some doubts as far as the obviousness is concerned.
 > 
-> Well, I have some doubts as far as the obviousness is concerned.
-
-OK, I will remove the "obvious".
-
-> > 1. The hibernation image size can exceed half of memory size easily.
+> OK, I will remove the "obvious".
 > 
-> This is also possible with TuxOnIce.
-
-I will add detail description about this. It is possible with TuxOnIce,
-and hard with u/swsusp.
-
+> > > 1. The hibernation image size can exceed half of memory size easily.
+> > 
+> > This is also possible with TuxOnIce.
 > 
-> > 2. The hibernation image can be written to and read from almost
-> >    anywhere, such as USB disk, NFS.
+> I will add detail description about this. It is possible with TuxOnIce,
+> and hard with u/swsusp.
+
+Actually, possible with TuxOnIce, impossible with u/swsusp, at present.
+ 
+> > > 2. The hibernation image can be written to and read from almost
+> > >    anywhere, such as USB disk, NFS.
+> > 
+> > This is possible with uswsusp, at least in theory, probably with TuxOnIce too.
 > 
-> This is possible with uswsusp, at least in theory, probably with TuxOnIce too.
+> I will remove this.
 
-I will remove this.
-
-> > 3. It is possible to eliminate freezer from kexec based hibernation
-> >    implementation.
+OK, thanks.
+ 
+> > > 3. It is possible to eliminate freezer from kexec based hibernation
+> > >    implementation.
+> > 
+> > This isn't true as long as we have not changed the handling of devices
+> > (which is in the works, but will take time).
 > 
-> This isn't true as long as we have not changed the handling of devices
-> (which is in the works, but will take time).
+> I know it has not been implemented yet. I just say that it is possible
+> for khibernation and it is almost impossible for u/swsusp and TuxOnIce.
 
-I know it has not been implemented yet. I just say that it is possible
-for khibernation and it is almost impossible for u/swsusp and TuxOnIce.
+When that's implemented, it may be possible to avoid using the freezer for
+u/swsusp and TuxOnIce either.  Time will tell.
 
-> > 4. Based on kexec/kdump implementation, the kernel code needed is
-> >    less.
-> 
-> Well, maybe.
-> 
-
-Best Regards,
-Huang Ying
+Greetings,
+Rafael
