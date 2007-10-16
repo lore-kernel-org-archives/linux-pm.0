@@ -1,14 +1,17 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Question about suspending a system
-Date: Mon, 15 Oct 2007 09:41:59 -0700
-Message-ID: <20071015164159.3273923A692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <38b2ab8a0710150543k6d35ae12h6dceef96acb00a71@mail.gmail.com>
-	<1192464239.3349.57.camel@johannes.berg>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Common .suspend()/.resume() template for PCI devices
+	(was: Re: [PATCH 1/3] Misc: phantom, synchronize_irq() on suspend)
+Date: Tue, 16 Oct 2007 14:09:38 +0200
+Message-ID: <200710161409.39323.rjw__41489.9004078054$1192535763$gmane$org@sisk.pl>
+References: <3012721321185026886@pripojeni.net>
+	<20071015162344.dca7023c.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1192464239.3349.57.camel@johannes.berg>
+In-Reply-To: <20071015162344.dca7023c.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +21,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: johannes@sipsolutions.net, francis.moro@gmail.com
-Cc: linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> From: Johannes Berg <johannes@sipsolutions.net>
-> Date: Mon, 15 Oct 2007 18:03:59 +0200
->
-> On Mon, 2007-10-15 at 14:43 +0200, Francis Moreau wrote:
->
-> > So my question is that when we suspend the system, it seems that all
-> > IRQs are masked and I'm a bit suprise since the event that should wake
-> > up the system is an interrupt. This mask is done by
-> > arch_suspend_disable_irqs() and none of the arch is overriding this
-> > stub. If I'm right, how the system should be waked up ?
->
-> No, well, in most cases the CPU is actually turned off by some other
-> chip (like the PMU on powermac systems) and turned on again by it when
-> the system should wake up.
+On Tuesday, 16 October 2007 01:23, Andrew Morton wrote:
+> On Mon, 15 Oct 2007 09:32:28 -0700
+> Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+> > phantom, synchronize_irq() on suspend
+> > 
+> > Wait after disabling device's interrupt until the handler finishes its
+> > work if still in progress.
+> > 
+> > Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> > 
+> > ---
+> > commit 7e792ef384190b517f2fb27cd0237fa30dbe0775
+> > tree 17b15e5ab7c90eef0e7ae57e532839e81b831d58
+> > parent 5c008a5651ee92ebe020dd5108a66a7db74fe41d
+> > author Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 15:52:21 +0200
+> > committer Jiri Slaby <jirislaby@gmail.com> Mon, 15 Oct 2007 15:52:21 +0200
+> > 
+> >  drivers/misc/phantom.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/drivers/misc/phantom.c b/drivers/misc/phantom.c
+> > index 5108b7c..6e61a79 100644
+> > --- a/drivers/misc/phantom.c
+> > +++ b/drivers/misc/phantom.c
+> > @@ -378,6 +378,8 @@ static int phantom_suspend(struct pci_dev *pdev, pm_message_t state)
+> >  	iowrite32(0, dev->caddr + PHN_IRQCTL);
+> >  	ioread32(dev->caddr + PHN_IRQCTL); /* PCI posting */
+> >  
+> > +	synchronize_irq(pdev->irq);
+> > +
+> >  	return 0;
+> >  }
+> >  
+> 
+> What inspired this change?  Some bug report, or does it just seem the right
+> thing to do?
 
-Not true on most embedded systems using ARM SOCs I've seen ... most
-of those have the SOC enter a low power state which doesn't power off
-the SOC, and moreover leaves the CPU (and most peripherals) in a low
-power data-retaining state.
+Probably this thread: http://lkml.org/lkml/2007/10/10/261
 
-Coming back from suspend states (like "standby" or "suspend-to-RAM")
-then doesn't involve any kind of powerup/reset at all.  That's a goal,
-since it shrinks the suspend/resume cycle time substantially.
+> Would it be logical to do this operation from the PCI core somewhere, on
+> behalf of all PCI drivers?
 
-In conjunction with that model, the last step of entering a system
-suspend state should involve disabling all IRQs that aren't flagged as
-wakeup sources by enable_irq_wake().  That's shortly before the magic
-which powers down memory and CPU, but after devices have all been told
-to suspend themselves.
+Yes, it would.
 
-
-Of course, the CPU itself is often only a small part of the system's
-power usage.  More power is saved by powering devices down, or even
-off.  In that example of a disk drive, one way to handle that would
-be to introduce a power domain within which the drive's controller
-and the drive both live.  If that's properly located in the driver
-model tree, as a device node, then its suspend and resume methods
-could poer the drive off and on (respectively).
-
-- Dave
+The problem is that we don't have a common template for PCI devices' .suspend()
+and .resume() callbacks and I don't feel confident enough to propose one.
