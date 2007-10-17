@@ -1,11 +1,18 @@
-From: John Cherry <cherry@linux-foundation.org>
-Subject: Announcing the 2007 Linux Desktop/Client Survey
-Date: Tue, 16 Oct 2007 23:04:28 -0700
-Message-ID: <1192601068.6240.111.camel__33127.7599944316$1192601432$gmane$org@desktop-vaio>
+From: "Francis Moreau" <francis.moro@gmail.com>
+Subject: Re: Question about suspending a system
+Date: Wed, 17 Oct 2007 14:25:52 +0200
+Message-ID: <38b2ab8a0710170525g5a4736e4xc9c1c3420ed488fa@mail.gmail.com>
+References: <38b2ab8a0710150543k6d35ae12h6dceef96acb00a71@mail.gmail.com>
+	<1192464239.3349.57.camel@johannes.berg>
+	<20071015164159.3273923A692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<38b2ab8a0710160649r5085d5ccs3a7e298bbde7867a@mail.gmail.com>
+	<20071016173119.5266C23BD7D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20071016173119.5266C23BD7D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,35 +22,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: lf_desktop@linux-foundation.org, desktop_architects@linux-foundation.org, lf_vac@linux-foundation.org, lf_mobile@linux-foundation.org, lsb-discuss@linux-foundation.orgd
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net
 List-Id: linux-pm@vger.kernel.org
 
+On 10/16/07, David Brownell <david-b@pacbell.net> wrote:
+> Most of the systems I've worked with don't have rotating media, unless
+> someone sticks a MicroDrive into a CF slot.
+>
 
-Join Us in the Third Annual Desktop Linux Survey
--- Linux Foundation Desktop Linux Workgroup
+Even a hard drive connected through USB ?
 
-Have your say on what desktop Linux really needs! Please Join us in the
-Third Annual Desktop Linux Survey, at:
-
-www.linux-foundation.org/en/2007ClientSurvey
-
-The survey will take only few minutes of your time, and your feedback is
-essential in helping us to focus our development efforts and accelerate
-the global adoption of Linux desktops and clients. For example, past
-surveys highlighted the need to address printing and wireless issues, so
-we set up focused workgroups and conferences to help developers and
-vendors work out common solutions to these requirements.
-
-To encourage broad participation by companies, institutions, and
-individuals throughout the world, this year=E2=80=99s survey is available=
- in
-Chinese, English, French, Japanese, Portuguese, Russian, and Spanish.
-
-The survey is open from October 17 through November 30, 2007. Survey
-results will be made publicly available shortly after the close.=20
-
-Thank you,
-
-John Cherry
-Linux Foundation
-Desktop Linux Workgroup
+-- 
+Francis
