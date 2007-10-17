@@ -1,16 +1,11 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Question about suspending a system
-Date: Tue, 16 Oct 2007 10:31:19 -0700
-Message-ID: <20071016173119.5266C23BD7D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <38b2ab8a0710150543k6d35ae12h6dceef96acb00a71@mail.gmail.com>
-	<1192464239.3349.57.camel@johannes.berg>
-	<20071015164159.3273923A692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<38b2ab8a0710160649r5085d5ccs3a7e298bbde7867a@mail.gmail.com>
+From: John Cherry <cherry@linux-foundation.org>
+Subject: Announcing the 2007 Linux Desktop/Client Survey
+Date: Tue, 16 Oct 2007 23:04:28 -0700
+Message-ID: <1192601068.6240.111.camel__33127.7599944316$1192601432$gmane$org@desktop-vaio>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <38b2ab8a0710160649r5085d5ccs3a7e298bbde7867a@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,55 +15,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: francis.moro@gmail.com
-Cc: linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net
+To: lf_desktop@linux-foundation.org, desktop_architects@linux-foundation.org, lf_vac@linux-foundation.org, lf_mobile@linux-foundation.org, lsb-discuss@linux-foundation.orgd
 List-Id: linux-pm@vger.kernel.org
 
-> > In conjunction with that model, the last step of entering a system
-> > suspend state should involve disabling all IRQs that aren't flagged as
-> > wakeup sources by enable_irq_wake().
->
-> Ok, I missed that because I'm using a 2.6.17 kernel.
 
-Yeah, that part went mainline with the genirq framework, which
-ISTR merged sometime after that.  But then, few non-{ARM,x86}
-platforms do much with power management yet either.
+Join Us in the Third Annual Desktop Linux Survey
+-- Linux Foundation Desktop Linux Workgroup
 
+Have your say on what desktop Linux really needs! Please Join us in the
+Third Annual Desktop Linux Survey, at:
 
-> >  That's shortly before the magic
-> > which powers down memory and CPU, but after devices have all been told
-> > to suspend themselves.
->
-> Is it done in pm_ops->enter method ?
+www.linux-foundation.org/en/2007ClientSurvey
 
-Yes, that's the last step of entering the system power state.
-After IRQs are off, etc.
+The survey will take only few minutes of your time, and your feedback is
+essential in helping us to focus our development efforts and accelerate
+the global adoption of Linux desktops and clients. For example, past
+surveys highlighted the need to address printing and wireless issues, so
+we set up focused workgroups and conferences to help developers and
+vendors work out common solutions to these requirements.
 
+To encourage broad participation by companies, institutions, and
+individuals throughout the world, this year=E2=80=99s survey is available=
+ in
+Chinese, English, French, Japanese, Portuguese, Russian, and Spanish.
 
-> > Of course, the CPU itself is often only a small part of the system's
-> > power usage.  More power is saved by powering devices down, or even
-> > off.
->
-> I'm thinking of making powering the disk off because when suspended it
-> still uses more that 5W !
+The survey is open from October 17 through November 30, 2007. Survey
+results will be made publicly available shortly after the close.=20
 
-That would make me want to power it off too!
+Thank you,
 
-
-> >  In that example of a disk drive, one way to handle that would
-> > be to introduce a power domain within which the drive's controller
-> > and the drive both live.  If that's properly located in the driver
-> > model tree, as a device node, then its suspend and resume methods
-> > could poer the drive off and on (respectively).
->
-> Do you have any examples that you could give ?
-
-No example, sorry -- Linux has weak support of power/voltage domains,
-unlike clock domains.  Hence my suggestion of packaging it as a device
-tree node, so at least the suspend() and resume() methods get called
-in the right place in the system sleep/wake sequence.
-
-Most of the systems I've worked with don't have rotating media, unless
-someone sticks a MicroDrive into a CF slot.
-
-- Dave
+John Cherry
+Linux Foundation
+Desktop Linux Workgroup
