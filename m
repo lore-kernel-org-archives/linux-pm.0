@@ -1,15 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [linux-usb-devel] Fwd: USB suspending
-Date: Thu, 11 Oct 2007 18:13:39 +0000
-Message-ID: <20071011181339.GB3868@ucw.cz>
-References: <200710051559.43771.oliver@neukum.org>
-	<Pine.LNX.4.44L0.0710051117560.4446-100000@iolanthe.rowland.org>
-	<20071005163518.GA2389@ics.muni.cz>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: Question about suspending a system
+Date: Wed, 17 Oct 2007 10:43:51 -0700
+Message-ID: <20071017174351.81D6A236029@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <38b2ab8a0710150543k6d35ae12h6dceef96acb00a71@mail.gmail.com>
+	<1192464239.3349.57.camel@johannes.berg>
+	<20071015164159.3273923A692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<38b2ab8a0710160649r5085d5ccs3a7e298bbde7867a@mail.gmail.com>
+	<20071016173119.5266C23BD7D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<38b2ab8a0710170525g5a4736e4xc9c1c3420ed488fa@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071005163518.GA2389@ics.muni.cz>
+In-Reply-To: <38b2ab8a0710170525g5a4736e4xc9c1c3420ed488fa@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +22,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-usb-devel@lists.sourceforge.net
+To: francis.moro@gmail.com
+Cc: linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2007-10-05 18:35:18, Lukas Hejtmanek wrote:
-> On Fri, Oct 05, 2007 at 11:25:11AM -0400, Alan Stern wrote:
-> > > But power consumption on these ports is minimal for suspended devices,
-> > > so it is a bad idea.
-> > 
-> > Right.  Power consumption is even smaller on ports with no devices 
-> > plugged in.
-> 
-> For example, IBM ThinkPad T60 powers off all USB ports when hcd-uhci module is
-> unloaded. My ASUS M6A does not, it does not also in Windows XP though. 
-> 
-> I still wonder why suspended machine consumes about 2Wh in S-T-R while the IBM
-> consumes about 0.2Wh.
+> > Most of the systems I've worked with don't have rotating media, unless
+> > someone sticks a MicroDrive into a CF slot.
+>
+> Even a hard drive connected through USB ?
 
-Video card?
+Well, I meant "embedded" systems ... given that, yes.
 
-Leave machine sleeping for a while, then open it and search for warm
-components...?
-							Pavel
+For that matter, rotating media on USB drives generally
+need more than the 500 mA max power available through USB.
+They need independant power supplies.  So their power
+management doesn't really kick in with system suspend.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+- Dave
