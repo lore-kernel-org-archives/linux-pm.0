@@ -1,18 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Question about suspending a system
-Date: Wed, 17 Oct 2007 10:43:51 -0700
-Message-ID: <20071017174351.81D6A236029@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <38b2ab8a0710150543k6d35ae12h6dceef96acb00a71@mail.gmail.com>
-	<1192464239.3349.57.camel@johannes.berg>
-	<20071015164159.3273923A692@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<38b2ab8a0710160649r5085d5ccs3a7e298bbde7867a@mail.gmail.com>
-	<20071016173119.5266C23BD7D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<38b2ab8a0710170525g5a4736e4xc9c1c3420ed488fa@mail.gmail.com>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: [RFC][PATCH -mm] Freezer: Do not allow freezing
+	processes to clear TIF_SIGPENDING
+Date: Fri, 19 Oct 2007 08:09:02 +1000
+Message-ID: <200710190809.03042.nigel__39912.0854134255$1192745600$gmane$org@nigel.suspend2.net>
+References: <200710190022.36145.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <38b2ab8a0710170525g5a4736e4xc9c1c3420ed488fa@mail.gmail.com>
+In-Reply-To: <200710190022.36145.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,20 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: francis.moro@gmail.com
-Cc: linux-pm@lists.linux-foundation.org, johannes@sipsolutions.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: linux-pm@vger.kernel.org
 
-> > Most of the systems I've worked with don't have rotating media, unless
-> > someone sticks a MicroDrive into a CF slot.
->
-> Even a hard drive connected through USB ?
+Hi.
 
-Well, I meant "embedded" systems ... given that, yes.
+On Friday 19 October 2007 08:22:35 Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Do not allow processes to clear their TIF_SIGPENDING if TIF_FREEZE is set,
+> to prevent them from racing with the freezer (like mysqld does, for 
+example).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-For that matter, rotating media on USB drives generally
-need more than the 500 mA max power available through USB.
-They need independant power supplies.  So their power
-management doesn't really kick in with system suspend.
+Acked-by: Nigel Cunningham <nigel@suspend2.net>
 
-- Dave
+> ---
+>  kernel/signal.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23-mm1/kernel/signal.c
+> ===================================================================
+> --- linux-2.6.23-mm1.orig/kernel/signal.c
+> +++ linux-2.6.23-mm1/kernel/signal.c
+> @@ -124,7 +124,7 @@ void recalc_sigpending_and_wake(struct t
+>  
+>  void recalc_sigpending(void)
+>  {
+> -	if (!recalc_sigpending_tsk(current))
+> +	if (!recalc_sigpending_tsk(current) && !freezing(current))
+>  		clear_thread_flag(TIF_SIGPENDING);
+>  
+>  }
+> 
+
+
+
+-- 
+Nigel, Michelle, Alisdair and ____________ Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
