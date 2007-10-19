@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH -mm] Freezer: Do not allow freezing
-	processes to clear TIF_SIGPENDING
-Date: Fri, 19 Oct 2007 23:34:51 +0200
-Message-ID: <200710192334.52669.rjw__25185.9069605873$1192828834$gmane$org@sisk.pl>
-References: <200710190022.36145.rjw@sisk.pl> <20071019075555.GA9756@elf.ucw.cz>
+From: Phillip Susi <psusi@cfl.rr.com>
+Subject: Re: [PATCH 0/2 -mm] kexec based hibernation -v5
+Date: Fri, 19 Oct 2007 15:53:12 -0400
+Message-ID: <47190B28.6070405__353.427409618412$1192829887$gmane$org@cfl.rr.com>
+References: <1192068833.27482.13.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071019075555.GA9756@elf.ucw.cz>
-Content-Disposition: inline
+In-Reply-To: <1192068833.27482.13.camel@caritas-dev.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,22 +17,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jeremy Maitin-Shepard <jbms@cmu.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, 19 October 2007 09:55, Pavel Machek wrote:
-> On Fri 2007-10-19 00:22:35, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Do not allow processes to clear their TIF_SIGPENDING if TIF_FREEZE is set,
-> > to prevent them from racing with the freezer (like mysqld does, for example).
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Huang, Ying wrote:
+> The hibernation procedure with the patch set is as follow:
 > 
-> ACK. We want this in 2.6.24.
+> 1. Boot a kernel A
+> 
+> 2. Work under kernel A
+> 
+> 3. Kexec another kernel B (crash dump enabled) in kernel A.
+> 
+> 4. Save the memory image of kernel A through crash dump (such as "cp
+>    /proc/vmcore ~"). Save the "jump back entry".
 
-Sure, we do.
+Doesn't this also save the memory of kernel B?
 
-Greetings,
-Rafael
+> 5. Shutdown or reboot
+> 
+> 
+> The restore process with the patch set is as follow:
+> 
+> 1. Boot a kernel C (crash dump enabled), the memory area used by
+>    kernel C must be a subset of memory area used by kernel B.
+
+Why is a third kernel needed?  Why can't kernel B be used for this as 
+well?  In fact, if kernel A has been compiled to be relocatable and 
+crash dump enabled, why wouldn't it suffice for all 3 instances?
