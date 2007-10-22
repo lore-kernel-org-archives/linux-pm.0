@@ -1,10 +1,15 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: hibernate fails to freeze tasks
-Date: Mon, 22 Oct 2007 16:22:25 +0200
-Message-ID: <1193062945.9793.15.camel@johannes.berg>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Resume problems
+Date: Tue, 23 Oct 2007 00:35:32 +0200
+Message-ID: <200710230035.32924.rjw__17829.766465775$1193091752$gmane$org@sisk.pl>
+References: <471CCC98.10101@googlemail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8052052768359228404=="
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <471CCC98.10101@googlemail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,62 +17,90 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.osdl.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday, 22 October 2007 18:15, Gabriel C wrote:
+> Hi all ,
+> 
+> I'm running current git + aic7xxx suspend patch from  http://bugzilla.kernel.org/show_bug.cgi?id=3062
+> on a Dell Precision WorkStation 530 MT SMP box ( HT enabled ).
+> 
+> Suspend works fine but on resume I have some problems. 
+> All CPU's but boot CPU won't come back , everything else seems fine.
 
---===============8052052768359228404==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-O+lwDowPGYCisR2OOvo8"
+Can you please try to disable HT and suspend?
 
+> ...
+> 
+> Oct 22 15:02:28 lara [   49.618795] Enabling non-boot CPUs ...
+> Oct 22 15:02:28 lara [   49.622211] PM: Adding info for No Bus:msr1
+> Oct 22 15:02:28 lara [   49.622259] PM: Adding info for No Bus:cpu1
+> Oct 22 15:02:28 lara [   49.622302] SMP alternatives: switching to SMP code
+> Oct 22 15:02:28 lara [   49.623536] Booting processor 1/1 eip 3000
+> Oct 22 15:02:28 lara [   54.638093] Not responding.
+> Oct 22 15:02:28 lara [   54.638096] Inquiring remote APIC #1...
+> Oct 22 15:02:28 lara [   54.638099] ... APIC #1 ID: failed
+> Oct 22 15:02:28 lara [   54.638204] ... APIC #1 VERSION: failed
+> Oct 22 15:02:28 lara [   54.638307] ... APIC #1 SPIV: failed
+> Oct 22 15:02:28 lara [   54.638427] skipping cpu1, didn't come online
+> Oct 22 15:02:28 lara [   54.638602] PM: Removing info for No Bus:msr1
+> Oct 22 15:02:28 lara [   54.638643] PM: Removing info for No Bus:cpu1
+> Oct 22 15:02:28 lara [   54.638678] Error taking CPU1 up: -5
+> Oct 22 15:02:28 lara [   54.640908] PM: Adding info for No Bus:msr2
+> Oct 22 15:02:28 lara [   54.640939] PM: Adding info for No Bus:cpu2
+> Oct 22 15:02:28 lara [   54.640976] SMP alternatives: switching to SMP code
+> Oct 22 15:02:28 lara [   54.641961] Booting processor 2/2 eip 3000
+> Oct 22 15:02:28 lara [   59.656795] Not responding.
+> Oct 22 15:02:28 lara [   59.656799] Inquiring remote APIC #2...
+> Oct 22 15:02:28 lara [   59.656803] ... APIC #2 ID: failed
+> Oct 22 15:02:28 lara [   59.656907] ... APIC #2 VERSION: failed
+> Oct 22 15:02:28 lara [   59.657011] ... APIC #2 SPIV: failed
+> Oct 22 15:02:28 lara [   59.657131] skipping cpu2, didn't come online
+> Oct 22 15:02:28 lara [   59.657300] PM: Removing info for No Bus:msr2
+> Oct 22 15:02:28 lara [   59.657343] PM: Removing info for No Bus:cpu2
+> Oct 22 15:02:28 lara [   59.657379] Error taking CPU2 up: -5
+> Oct 22 15:02:28 lara [   59.659605] PM: Adding info for No Bus:msr3
+> Oct 22 15:02:28 lara [   59.659637] PM: Adding info for No Bus:cpu3
+> Oct 22 15:02:28 lara [   59.659673] SMP alternatives: switching to SMP code
+> Oct 22 15:02:28 lara [   59.660725] Booting processor 3/3 eip 3000
+> Oct 22 15:02:28 lara [   64.675517] Not responding.
+> Oct 22 15:02:28 lara [   64.675520] Inquiring remote APIC #3...
+> Oct 22 15:02:28 lara [   64.675524] ... APIC #3 ID: failed
+> Oct 22 15:02:28 lara [   64.675628] ... APIC #3 VERSION: failed
+> Oct 22 15:02:28 lara [   64.675731] ... APIC #3 SPIV: failed
+> Oct 22 15:02:28 lara [   64.675859] skipping cpu3, didn't come online
+> Oct 22 15:02:28 lara [   64.676017] PM: Removing info for No Bus:msr3
+> Oct 22 15:02:28 lara [   64.676059] PM: Removing info for No Bus:cpu3
+> Oct 22 15:02:28 lara [   64.676092] Error taking CPU3 up: -5
+> Oct 22 15:02:28 lara [   64.676326] evxfevnt-0079 [00] enable                : System is already in ACPI mode
+> 
+> ...
+> 
+> After I've played with a lot boot options I found out booting with ' acpi=ht ' will make the CPU's work again but now
+> I have a problem on Suspend. Everything seems to just go down disks etc but the box itself is for some reason still on.
+> So I've tested reboot=<> options with no luck.
+> ( after waiting 5 minutes to be sure everything is really off I can just hit power button). On resume now everything is fine.
+> 
+> I'm not really sure what is wrong here acpi/hibernation/cpu-hotplug or a mix of all so I'm CC'ing linux-acpi as well.
+> The only thing I noticed is the 'Breaking affinity for irq XX' on suspend without acpi=ht messages.
+> 
+> I can't even tell whatever other kernel versions are working because aic7xxx driver didn't got suspend support till now 
+> ( or at least never worked here ). I know suspend worked fine on windows with that box.
+> 
+> There is my config and dmesg ( good and bad one ) :
+> 
+> 
+> http://194.231.229.228/suspend/acpi=ht_working_dmesg.txt
+> http://194.231.229.228/suspend/dmesg_broken_cpus_on_resume.txt
+> http://194.231.229.228/suspend/config
 
---=-O+lwDowPGYCisR2OOvo8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Well, I think we have a problem with the CPU hotplug.
 
-On my quad powermac, with a current git snapshot, hibernating fails to
-freeze tasks and then dumps me a snapshot of the tasks. I've uploaded it
-here because it's so long:
-http://johannes.sipsolutions.net/files/quad-syslog-hibernate-fails
+Can you try to offline-online CPUs (without suspending) and see if that works?
 
-Haven't found time to look into it yet, any ideas are appreciated.
-
-johannes
-
---=-O+lwDowPGYCisR2OOvo8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARxyyIKVg1VMiehFYAQL1rg/+NdYnMukB0OTHzVl3Q2zbDIBFC6iBvOL8
-8fIxu3j5y4NDSYrZdDdyvansxS+3Aruzjtdy1x/UVDhM1VVA89CoKf7/k9SzUmdD
-l7tzeVhmS00M3Y//VvZ/UsrXldEHxP7sd+T/lRys7oi+oqNgOxeRi1jUgMCaX3Cs
-FMqY4cWeSQRqQLTwFaSng0twlQ8cJTqag0ejCBkC6NY5cmM5xWKz6bvxD/QcGOPe
-BBYm9ZqsFKo//apuZsNOBiWgsP3VzMFBwAAToLA6ZWEEc09OdpUfSY4FR9fUAgdm
-YtOJC4nCDJq1fYHAYlWtUTQPTx6YGJjdJpVh7oYR8y3k0ai4rNM2YCpVHEVk2Juz
-SxS6e8uyMo/c0zBtwZ/ljAQkt4L8OoVnj77cAspMSQS7ooV0sYCehKsprfircOGB
-EJjGzcIdtddPeMhm3XK+zNFlP3xf84efNDpC/hl5JkjnfjdHwUzf4PmR4fG1aJh9
-DpCJDA6PV8E8qq5K4GCTpFwgMN8ALqALmjTSGeEmKVLcigA+725CuiZI4kgPwyWQ
-iWubhxB5xpI43zvCQWIx+alu087GlfDJ1p5E6Q3n55ZYpLnaR1PZ49BEiZuJzYoj
-mPBF/axnYHS7UxgdaweWpYWyHVx7QLm+XPjR2QViOmcP5Q9QOmbWFChEB5R9BkPv
-fRiASJwUxX8=
-=9b3S
------END PGP SIGNATURE-----
-
---=-O+lwDowPGYCisR2OOvo8--
-
-
---===============8052052768359228404==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8052052768359228404==--
+Greetings,
+Rafael
