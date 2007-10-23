@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: lockdep report in hibernate code
-Date: Wed, 24 Oct 2007 00:18:02 +0200
-Message-ID: <200710240018.02655.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0710231750370.21581-100000@netrider.rowland.org>
+Subject: Re: Resume problems
+Date: Wed, 24 Oct 2007 00:57:09 +0200
+Message-ID: <200710240057.10131.rjw@sisk.pl>
+References: <471CCC98.10101@googlemail.com> <471D3C26.3090602@googlemail.com>
+	<471D47D2.2070707@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0710231750370.21581-100000@netrider.rowland.org>
+In-Reply-To: <471D47D2.2070707@googlemail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,35 +20,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-pm <linux-pm@lists.osdl.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 23 October 2007 23:56, Alan Stern wrote:
-> On Tue, 23 Oct 2007, Rafael J. Wysocki wrote:
+On Tuesday, 23 October 2007 03:01, Gabriel C wrote:
 > 
-> > > The problem here is that the buffer mutexes are not distinguishable.
+> > Also box just froze on level 3 but I got a ACPI error at least which I didn't got in any other dmesg till now :
+> > ( also patch was tested with HT disabled and Suspend and Hibernation enabled in kernel and BIOS )
 > > 
-> > I don't quite get the "which lock already depends on the new lock" part.
+> > ...
 > > 
-> > Well, I have always had problems with understanding what lockdep actually
-> > traces ...
+> > Oct 23 01:51:05 lara [  273.512374] PM: Removing info for No Bus:input0
+> > Oct 23 01:51:05 lara [  274.545158] PM: Removing info for No Bus:mouse0
+> > Oct 23 01:51:05 lara [  274.551435] PM: Removing info for No Bus:event1
+> > Oct 23 01:51:05 lara [  274.559493] PM: Removing info for No Bus:input1
+> > Oct 23 01:53:06 lara [  394.869468] ACPI Error (evevent-0303): No installed handler for fixed event [00000002] [20070126]
+> > 
+> > ....
+> > 
+> > ( I hard reseted after that ) 
+> > 
+> > I try level 2 and 1 now I just wanted to let you know.
+> > 
 > 
-> The basic idea is simple enough.  Lockdep looks for events which seem 
-> to be problematic, such as lock A being acquired while lock B is held 
-> if earlier on somebody acquired B while holding A.
+> Same issues with level 2 and 1.
+
+Yes.  If you have a problem at level n, it should always reappear for n-1 etc.
+
+> BTW I found out why my box does not shutdown with acpi=ht. It seems like libata does not like that 
+> acpi mode =) dropping the '... read http://linux-ata.org/shutdown.html , power down manually' message.
 > 
-> The difficulty lies in the "_seem_ to be" part -- lockdep can't keep 
-> track of each and every individual lock in the system.  Instead it 
-> groups them into categories based on the structures they lie in.  So if 
-> A and A' are both pm_mutex members but belonging to two different 
-> structures, lockdep won't be able to tell them apart without help.  If 
-> someone acquires A then B, and someone else acquires B then A', lockdep 
-> will report a violation.
+> That works perfectly with full acpi here.
+> 
+> After all I think all this problems may be some who ACPI related 
+> but the question is why they get triggered by Suspend/Hibernation.
 
-Yes, which is what I think is happening in this particular case.  More
-precisely, we get pm_mutex while holding a buffer mutex, so lockdep is warning
-when we get another buffer mutex afterwards.
+They certainly are ACPI-related, because the only difference between level 4
+and level 3 suspend testing is that some global ACPI methods are executed
+at level 3 (in addition to level 4).
 
-Greetings (not sure what to do about that),
+Unfortunately, I have no idea what to do next, for now.
+
+I think you can file a bug report at http://bugzilla.kernel.org and put a link
+to this thread in there (against ACPI and please add my address to the CC
+list).
+
+Greetings,
 Rafael
