@@ -1,16 +1,15 @@
-From: Mark Gross <mgross@linux.intel.com>
-Subject: Re: pm qos and cpufreq interaction [Was: pm qos
-	infrastructure and interface]
-Date: Wed, 24 Oct 2007 14:21:50 -0700
-Message-ID: <20071024212150.GA17504@linux.intel.com>
-References: <20071004215139.GA20078@linux.intel.com>
-	<20071023180343.GA2624@isilmar.linta.de>
-Reply-To: mgross@linux.intel.com
+From: Greg KH <greg@kroah.com>
+Subject: Re: Re: lockdep report in hibernate code
+Date: Wed, 24 Oct 2007 14:57:15 -0700
+Message-ID: <20071024215715.GA9524@kroah.com>
+References: <Pine.LNX.4.44L0.0710231750370.21581-100000@netrider.rowland.org>
+	<200710240018.02655.rjw@sisk.pl>
+	<1193215220.4097.8.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20071023180343.GA2624@isilmar.linta.de>
+In-Reply-To: <1193215220.4097.8.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 23, 2007 at 08:03:43PM +0200, Dominik Brodowski wrote:
-> Hi Mark,
->
-
-Its good to hear from you.  Will you be at the ELC conference in Linz
-next week?
-
-> On Thu, Oct 04, 2007 at 02:51:39PM -0700, Mark Gross wrote:
-> > Currently we have {cpu_dma_latency, network_latency, network_throughput}
-> > as the initial set of pm_qos parameters.
+On Wed, Oct 24, 2007 at 10:40:20AM +0200, Johannes Berg wrote:
+> On Wed, 2007-10-24 at 00:18 +0200, Rafael J. Wysocki wrote:
 > 
-> What about cpu_throughput{_min,_max}, as being something considered to be
-> proportional to the CPU frequency? This way, the cpufreq policy notifiers
-> might be able to utilize the pm_qos infrastructure; but maybe even also the
-> userspace interface (at least the min freq/max freq one)... Haven't thought
-> this through, but maybe you (or someone else) has.
+> > Yes, which is what I think is happening in this particular case.  More
+> > precisely, we get pm_mutex while holding a buffer mutex, so lockdep is warning
+> > when we get another buffer mutex afterwards.
+> 
+> Precisely. That's why I copied Greg on the second mail :) It seems that
+> sysfs already uses nested locks, but that only protects against lockdep
+> reporting a false positive for nested locks, not this case.
 
-I've only thought it though enough to choose to avoid cpufreq
-interactions.  
+Ok, I'm confused, where is the sysfs issue here?
 
-Sadly core frequency is not proportional to throughput on X86
-processors.  I don't know how one would reliably quantify cpu throughput
-in this context, other than defining latencies.  
+thanks,
 
-I could see something like this to prevent cpufreq throttling at bad
-times, but how common of an issue is this any more?  
-
-Are we wasting watts without such information?  Is CPUFREQ still making
-some applications behave poorly?  Ondemand and cpufreq are fairly mature
-now and I don't hear of such issues any more.  
-
---mgross
+greg k-h
