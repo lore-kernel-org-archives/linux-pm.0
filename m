@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
-	kexec jump
-Date: Wed, 24 Oct 2007 22:38:02 +0200
-Message-ID: <200710242238.02978.rjw__32940.679221838$1193257405$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org>
-	<200709221240.25614.rjw@sisk.pl> <20071011205445.GA3975@ucw.cz>
+Subject: Re: [discuss]disable PCI resource decode in D3?
+Date: Wed, 24 Oct 2007 22:57:43 +0200
+Message-ID: <200710242257.43742.rjw@sisk.pl>
+References: <1193194720.27150.27.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071011205445.GA3975@ucw.cz>
+In-Reply-To: <1193194720.27150.27.camel@sli10-conroe.sh.intel.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,27 +19,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, huang ying <huang.ying.caritas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 11 October 2007 22:54, Pavel Machek wrote:
-> Hi!
-> 
-> > > That's certainly possible. We already pass a very small amount of data between 
-> > > the boot and resuming kernels at the moment, and it's done quite simply - by 
-> > > putting the variables we want to 'transfer' in a nosave page/section.
-> > 
-> > Well, if the boot and image kernels are different, which is now possible on
-> > x86_64 with some recent patches (currently in -mm), the nosave trick won't
-> > work.
-> 
-> I guess we should remove the nosave.... at least from x86-64. If
-> someone tries to use it, he'll get a nasty surprise.
+On Wednesday, 24 October 2007 04:58, Shaohua Li wrote:
+> PCIPM spec requires OS to disable IO/Memory decode and bus master if a
+> device is put into D3 (spec 8.2.2). pci_set_power_state doesn't do this
+> for D3. Could this cause mysterious hang of S3 in some BIOS?
 
-Agreed.
+In principle, it could.
 
-I'll try to prepare a patch for that when I have a bit of time.
+In practice, it would be nice to ask someone who works on actual hardware/BIOS.
 
 Greetings,
 Rafael
