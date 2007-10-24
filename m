@@ -1,17 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3:
-	kexec jump
-Date: Thu, 11 Oct 2007 20:54:45 +0000
-Message-ID: <20071011205445.GA3975__16151.966332882$1193242828$gmane$org@ucw.cz>
-References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org>
-	<BF08447B-234F-4851-89BF-92A57EA801C6@mac.com>
-	<200709220947.58872.nigel@nigel.suspend2.net>
-	<200709221240.25614.rjw@sisk.pl>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: [2.6 patch] kernel/power/disk.c: make code static
+Date: Wed, 24 Oct 2007 18:23:42 +0200
+Message-ID: <20071024162342.GU30533@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200709221240.25614.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,23 +15,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Kyle Moffett <mrmacman_g4@mac.com>, "Eric W. Biederman" <ebiederm@xmission.com>, linux-pm@lists.linux-foundation.org, huang ying <huang.ying.caritas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Jeremy Maitin-Shepard <jbms@cmu.edu>
+To: pavel@suse.cz, rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+resume_file[] and create_image() can become static.
 
-> > That's certainly possible. We already pass a very small amount of data between 
-> > the boot and resuming kernels at the moment, and it's done quite simply - by 
-> > putting the variables we want to 'transfer' in a nosave page/section.
-> 
-> Well, if the boot and image kernels are different, which is now possible on
-> x86_64 with some recent patches (currently in -mm), the nosave trick won't
-> work.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I guess we should remove the nosave.... at least from x86-64. If
-someone tries to use it, he'll get a nasty surprise.
+---
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ kernel/power/disk.c |    4 ++--
+ kernel/power/swap.c |    2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index 8b15f77..cce9b9e 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -26,7 +26,7 @@
+ 
+ 
+ static int noresume = 0;
+-char resume_file[256] = CONFIG_PM_STD_PARTITION;
++static char resume_file[256] = CONFIG_PM_STD_PARTITION;
+ dev_t swsusp_resume_device;
+ sector_t swsusp_resume_block;
+ 
+@@ -145,7 +145,7 @@ static void platform_restore_cleanup(int platform_mode)
+  *	reappears in this routine after a restore.
+  */
+ 
+-int create_image(int platform_mode)
++static int create_image(int platform_mode)
+ {
+ 	int error;
+ 
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 917aba1..ef41440 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -28,8 +28,6 @@
+ 
+ #include "power.h"
+ 
+-extern char resume_file[];
+-
+ #define SWSUSP_SIG	"S1SUSPEND"
+ 
+ struct swsusp_header {
