@@ -1,13 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: QUESTION: How to fix race between .suspend routine
-	and watchdog timer
-Date: Thu, 25 Oct 2007 13:02:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0710251259230.7029-100000__48889.7664625712$1193331898$gmane$org@netrider.rowland.org>
-References: <200710250612.44296.maximlevitsky@gmail.com>
+Subject: Re: Re: lockdep report in hibernate code
+Date: Thu, 25 Oct 2007 13:13:28 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0710251310030.7029-100000@netrider.rowland.org>
+References: <1193319079.6092.22.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200710250612.44296.maximlevitsky@gmail.com>
+In-Reply-To: <1193319079.6092.22.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,40 +16,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 25 Oct 2007, Maxim Levitsky wrote:
+On Thu, 25 Oct 2007, Johannes Berg wrote:
 
-> Hi,
+> We have two paths here:
 > 
-> Recently, trying to fix saa7134 suspend/resume problems I found that there 
-> is a race between IRQ handler and .suspend , and that I cant let driver access the device
-> while its in D3 since it can lock up some systems.
+>  (a) sysfs write -> lock buffer -> call power management code 
+>      -> lock pm_mutex
+>  (b) boot code -> power management boot -> lock pm_mutex
+>      -> use name_to_dev_t() -> call sysfs -> lock buffer
 > 
-> Now I am looking to fix those issues in two drivers that have my .suspend/.resume routines.
-> the saa7134 capture chip and dmfe, the davicom network driver.
-> 
-> Looking through the dmfe code, I noticed yet another possible race.
-> A race between the .suspend, and a timer that serves both as a watchdog, and link state detector.
-> Again I need to prevent it from running during the suspend/resume, but how?
-> 
-> I can use del_timer in .suspend, and mod_timer in .resume, but that doesn't protect against
-> race with already running timer.
-> I can use del_timer_sync, but it states that it is useless if timer re-enables itself, and I agree with that.
-> In dmfe case the timer does re-enable itself.
+> As you can see, lockdep rightfully complains about a possible deadlock
+> scenario although of course (b) only happens once at boot at a time
+> where (a) cannot happen. And now we're wondering how to fix it.
 
-That comment isn't right.  del_timer_sync works perfectly well even if
-the timer routine re-enables itself, provided it stops doing so after a
-small number of iterations.
-
-> I can put checks in the timer for ->insuspend, and don't re enable it if set,
-> but that opens a new can of worms with memory barriers, etc...
-
-You don't have to worry about any of that stuff.  Just check the 
-insuspend flag and don't re-enable the timer if it is set.  Even 
-without any memory barriers, the timer routine won't iterate more than 
-once or twice.
+Why not use mutex_lock_nested() for the boot-time pm_mutex lock call?
 
 Alan Stern
