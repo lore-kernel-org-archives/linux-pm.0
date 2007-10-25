@@ -1,14 +1,14 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: QUESTION: How to fix race between .suspend routine and
-	watchdog timer
-Date: Thu, 25 Oct 2007 06:12:44 +0200
-Message-ID: <200710250612.44296.maximlevitsky__41301.6960527331$1193285674$gmane$org@gmail.com>
+From: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: Resume problems
+Date: Thu, 25 Oct 2007 15:09:50 +0200
+Message-ID: <4720959E.3030805__9734.97530580989$1193317957$gmane$org@googlemail.com>
+References: <471CCC98.10101@googlemail.com> <471D3C26.3090602@googlemail.com>
+	<471D47D2.2070707@googlemail.com> <200710240057.10131.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200710240057.10131.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Rafael J. Wysocki wrote:
+>>
+>> After all I think all this problems may be some who ACPI related 
+>> but the question is why they get triggered by Suspend/Hibernation.
+> 
+> They certainly are ACPI-related, because the only difference between level 4
+> and level 3 suspend testing is that some global ACPI methods are executed
+> at level 3 (in addition to level 4).
+> 
+> Unfortunately, I have no idea what to do next, for now.
+> 
+> I think you can file a bug report at http://bugzilla.kernel.org and put a link
+> to this thread in there (against ACPI and please add my address to the CC
+> list).
 
-Recently, trying to fix saa7134 suspend/resume problems I found that there 
-is a race between IRQ handler and .suspend , and that I cant let driver access the device
-while its in D3 since it can lock up some systems.
+Also I patched 2.6.23 with that patch and Hibernation works out of box , Suspend to Ram seems to work
+fine , just my video card is acting up ( old nvidia card ) I'll play with vbe tool on weekend.
 
-Now I am looking to fix those issues in two drivers that have my .suspend/.resume routines.
-the saa7134 capture chip and dmfe, the davicom network driver.
+Also I can reproduce that bug in 2.6.23 when I use standby.
 
-Looking through the dmfe code, I noticed yet another possible race.
-A race between the .suspend, and a timer that serves both as a watchdog, and link state detector.
-Again I need to prevent it from running during the suspend/resume, but how?
+I've started to bisect but it will take some time. When I'm done I will post an bug report.
 
-I can use del_timer in .suspend, and mod_timer in .resume, but that doesn't protect against
-race with already running timer.
-I can use del_timer_sync, but it states that it is useless if timer re-enables itself, and I agree with that.
-In dmfe case the timer does re-enable itself.
+Thanks for your help so far.
 
-I can put checks in the timer for ->insuspend, and don't re enable it if set,
-but that opens a new can of worms with memory barriers, etc...
+> 
+> Greetings,
+> Rafael
+> 
 
-So please tell me how properly to do that.
-
-By the way, this problem, together with synchronize_irq it very generic, since most drivers
-have and irq handler, and a timeout timer.
-
-Best regards,
-	Maxim Levitsky
+Gabriel
