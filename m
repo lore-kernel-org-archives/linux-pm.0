@@ -1,16 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: pm qos and cpufreq interaction [Was: pm qos
-	infrastructure and interface]
-Date: Thu, 25 Oct 2007 20:54:28 +0200
-Message-ID: <20071025185428.GA1692@isilmar.linta.de>
-References: <20071004215139.GA20078@linux.intel.com>
-	<20071023180343.GA2624@isilmar.linta.de>
-	<20071024212150.GA17504@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [2.6.24-rc1 regression] suspend fails
+Date: Thu, 25 Oct 2007 22:44:50 +0200
+Message-ID: <200710252244.50711.rjw@sisk.pl>
+References: <200710252147.22814.arvidjaar@mail.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200710252147.22814.arvidjaar@mail.ru>
 Content-Disposition: inline
-In-Reply-To: <20071024212150.GA17504@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,41 +19,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Gross <mgross@linux.intel.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark,
+On Thursday, 25 October 2007 19:47, Andrey Borzenkov wrote:
+> I can no more suspend with 2.6.24-rc1. 2.6.23 is fine. Here is kernel log; 
+> config attached
 
-On Wed, Oct 24, 2007 at 02:21:50PM -0700, Mark Gross wrote:
-> > On Thu, Oct 04, 2007 at 02:51:39PM -0700, Mark Gross wrote:
-> > What about cpu_throughput{_min,_max}, as being something considered to be
-> > proportional to the CPU frequency? This way, the cpufreq policy notifiers
-> > might be able to utilize the pm_qos infrastructure; but maybe even also the
-> > userspace interface (at least the min freq/max freq one)... Haven't thought
-> > this through, but maybe you (or someone else) has.
-> 
-> I've only thought it though enough to choose to avoid cpufreq
-> interactions.  
-> 
-> Sadly core frequency is not proportional to throughput on X86
-> processors.  I don't know how one would reliably quantify cpu throughput
-> in this context, other than defining latencies.  
+Please try the patch from:
+http://marc.info/?l=linux-mm-commits&m=119318609013090&w=2
 
-Well it's not exactly throughput, but the CPU frequency surely has an
-influence on it and also affects the quality of the service provided...
-
-> I could see something like this to prevent cpufreq throttling at bad
-> times, but how common of an issue is this any more?  
-
-Hopefully none :) I was just wondering whether this generalization would
-make sense in the big scheme of things (i.e. grand plan of unified power
-management)...
-
-> Its good to hear from you.  Will you be at the ELC conference in Linz
-> next week?
-
-Unfortunately not.
-
-Best,
-	Dominik
+Greetings,
+Rafael
