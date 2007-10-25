@@ -1,12 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: lockdep report in hibernate code
-Date: Thu, 25 Oct 2007 13:13:28 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0710251310030.7029-100000@netrider.rowland.org>
-References: <1193319079.6092.22.camel@johannes.berg>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: pm qos and cpufreq interaction [Was: pm qos
+	infrastructure and interface]
+Date: Thu, 25 Oct 2007 20:54:28 +0200
+Message-ID: <20071025185428.GA1692@isilmar.linta.de>
+References: <20071004215139.GA20078@linux.intel.com>
+	<20071023180343.GA2624@isilmar.linta.de>
+	<20071024212150.GA17504@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1193319079.6092.22.camel@johannes.berg>
+Content-Disposition: inline
+In-Reply-To: <20071024212150.GA17504@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,23 +20,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 25 Oct 2007, Johannes Berg wrote:
+Hi Mark,
 
-> We have two paths here:
+On Wed, Oct 24, 2007 at 02:21:50PM -0700, Mark Gross wrote:
+> > On Thu, Oct 04, 2007 at 02:51:39PM -0700, Mark Gross wrote:
+> > What about cpu_throughput{_min,_max}, as being something considered to be
+> > proportional to the CPU frequency? This way, the cpufreq policy notifiers
+> > might be able to utilize the pm_qos infrastructure; but maybe even also the
+> > userspace interface (at least the min freq/max freq one)... Haven't thought
+> > this through, but maybe you (or someone else) has.
 > 
->  (a) sysfs write -> lock buffer -> call power management code 
->      -> lock pm_mutex
->  (b) boot code -> power management boot -> lock pm_mutex
->      -> use name_to_dev_t() -> call sysfs -> lock buffer
+> I've only thought it though enough to choose to avoid cpufreq
+> interactions.  
 > 
-> As you can see, lockdep rightfully complains about a possible deadlock
-> scenario although of course (b) only happens once at boot at a time
-> where (a) cannot happen. And now we're wondering how to fix it.
+> Sadly core frequency is not proportional to throughput on X86
+> processors.  I don't know how one would reliably quantify cpu throughput
+> in this context, other than defining latencies.  
 
-Why not use mutex_lock_nested() for the boot-time pm_mutex lock call?
+Well it's not exactly throughput, but the CPU frequency surely has an
+influence on it and also affects the quality of the service provided...
 
-Alan Stern
+> I could see something like this to prevent cpufreq throttling at bad
+> times, but how common of an issue is this any more?  
+
+Hopefully none :) I was just wondering whether this generalization would
+make sense in the big scheme of things (i.e. grand plan of unified power
+management)...
+
+> Its good to hear from you.  Will you be at the ELC conference in Linz
+> next week?
+
+Unfortunately not.
+
+Best,
+	Dominik
