@@ -1,15 +1,14 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: Re: lockdep report in hibernate code
-Date: Wed, 24 Oct 2007 14:57:15 -0700
-Message-ID: <20071024215715.GA9524@kroah.com>
-References: <Pine.LNX.4.44L0.0710231750370.21581-100000@netrider.rowland.org>
-	<200710240018.02655.rjw@sisk.pl>
-	<1193215220.4097.8.camel@johannes.berg>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: QUESTION: How to fix race between .suspend routine and
+	watchdog timer
+Date: Thu, 25 Oct 2007 06:12:44 +0200
+Message-ID: <200710250612.44296.maximlevitsky__41301.6960527331$1193285674$gmane$org@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1193215220.4097.8.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +18,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-pm <linux-pm@lists.osdl.org>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 10:40:20AM +0200, Johannes Berg wrote:
-> On Wed, 2007-10-24 at 00:18 +0200, Rafael J. Wysocki wrote:
-> 
-> > Yes, which is what I think is happening in this particular case.  More
-> > precisely, we get pm_mutex while holding a buffer mutex, so lockdep is warning
-> > when we get another buffer mutex afterwards.
-> 
-> Precisely. That's why I copied Greg on the second mail :) It seems that
-> sysfs already uses nested locks, but that only protects against lockdep
-> reporting a false positive for nested locks, not this case.
+Hi,
 
-Ok, I'm confused, where is the sysfs issue here?
+Recently, trying to fix saa7134 suspend/resume problems I found that there 
+is a race between IRQ handler and .suspend , and that I cant let driver access the device
+while its in D3 since it can lock up some systems.
 
-thanks,
+Now I am looking to fix those issues in two drivers that have my .suspend/.resume routines.
+the saa7134 capture chip and dmfe, the davicom network driver.
 
-greg k-h
+Looking through the dmfe code, I noticed yet another possible race.
+A race between the .suspend, and a timer that serves both as a watchdog, and link state detector.
+Again I need to prevent it from running during the suspend/resume, but how?
+
+I can use del_timer in .suspend, and mod_timer in .resume, but that doesn't protect against
+race with already running timer.
+I can use del_timer_sync, but it states that it is useless if timer re-enables itself, and I agree with that.
+In dmfe case the timer does re-enable itself.
+
+I can put checks in the timer for ->insuspend, and don't re enable it if set,
+but that opens a new can of worms with memory barriers, etc...
+
+So please tell me how properly to do that.
+
+By the way, this problem, together with synchronize_irq it very generic, since most drivers
+have and irq handler, and a timeout timer.
+
+Best regards,
+	Maxim Levitsky
