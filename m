@@ -1,15 +1,16 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: QUESTION: How to fix race between .suspend routine and
-	watchdog timer
-Date: Sat, 27 Oct 2007 21:19:44 +0200
-Message-ID: <200710272119.44574.maximlevitsky__37643.1606397547$1193513110$gmane$org@gmail.com>
-References: <Pine.LNX.4.44L0.0710271516570.30287-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] Commit "Hibernation: Enter platform hibernation
+	state in a consistent way)" makes my system to resume instantly
+	from S4
+Date: Sat, 27 Oct 2007 23:46:45 +0200
+Message-ID: <200710272346.46226.rjw@sisk.pl>
+References: <200710271405.32908.maximlevitsky@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0710271516570.30287-100000@netrider.rowland.org>
+In-Reply-To: <200710271405.32908.maximlevitsky@gmail.com>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,40 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 27 October 2007 21:17:55 Alan Stern wrote:
-> On Fri, 26 Oct 2007, Maxim Levitsky wrote:
+On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
+> Hi,
 > 
-> > > > Looking through the dmfe code, I noticed yet another possible race.
-> > > > A race between the .suspend, and a timer that serves both as a watchdog, and link state detector.
-> > > > Again I need to prevent it from running during the suspend/resume, but how?
-> > > > 
-> > > > I can use del_timer in .suspend, and mod_timer in .resume, but that doesn't protect against
-> > > > race with already running timer.
-> > > > I can use del_timer_sync, but it states that it is useless if timer re-enables itself, and I agree with that.
-> > > > In dmfe case the timer does re-enable itself.
-> > > 
-> > > That comment isn't right.  del_timer_sync works perfectly well even if
-> > > the timer routine re-enables itself, provided it stops doing so after a
-> > > small number of iterations.
-> > Thanks for the info. but....
-> > Due to the "don't access the hardware, while powered-off" rule, I must know that the timer isn't running.
-> > and won't be.
-> > So what function to use (if possible) to be sure that the timer won't run anymore?
-> > (Taking in the account the fact that it re-enables itself)
+> Recently I noticed that my system resumes just after suspend to disk.
 > 
-> Use del_timer_sync().  It guarantees that when it returns, the timer 
-> will be stopped and the timer routine will no longer be running on any 
-> CPU.
+> I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
 > 
-Even if the timer re-enables itself, are you sure?
+> Note:
+> 
+> This happens only if I enable WOL using /proc/acpi/wakeup
+> (echo "ILAN" > /proc/acpi/wakeup)
 
-> Alan Stern
-> 
-> 
+What happens after a suspend to RAM?
 
-Best regards,
-	Maxim Levitsky
+> and have 
+> "ACPI-Hibernate-erroneously-disabled-Suspend-wakeup" applied, since otherwise
+> all wake-up sources are disabled in S4.
+> 
+> 
+> Clearly the above commit confuses the BIOS.
+> Using latest -git with the above patch reverted makes everything work again fine.
+
+Well, this patch is needed to make wakeup from peripherals (eg. RTC alarm) work
+on some boxes.
+
+The symptom that you describe is similar to what I'm observing after a suspend
+to RAM on one test box.
+
+Can you produce a log of kernel messages printed before powering off the
+system?
+
+Greetings,
+Rafael
