@@ -1,14 +1,12 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: cpufreq-set problems [Was: Re: Ottawa Linux Power
-	Management Summit, June 25-26, 2007 - Minutes]
-Date: Sun, 28 Oct 2007 14:54:46 +0100
-Message-ID: <20071028135446.GG26943@isilmar.linta.de>
-References: <200709050426.04793.lenb@kernel.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: USB_SUSPEND needs SUSPEND?
+Date: Sun, 28 Oct 2007 12:50:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0710281245130.28311-100000__41823.7333921299$1193590278$gmane$org@netrider.rowland.org>
+References: <200710281435.31690.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200709050426.04793.lenb@kernel.org>
+In-Reply-To: <200710281435.31690.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,19 +16,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Oliver Martin <oliver.martin@student.tuwien.ac.at>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, USB development list <linux-usb-devel@lists.sourceforge.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Sun, 28 Oct 2007, Rafael J. Wysocki wrote:
 
-On Wed, Sep 05, 2007 at 04:26:04AM -0400, Len Brown wrote:
-> cpufreq_set_policy() doesn't match Nokia's needs as it is a 1-way
-> notification, and there is no way to register constraints.
+> On Sunday, 28 October 2007 02:00, Oliver Martin wrote:
+> > Hello,
+> > 
+> > it seems that there is some dependency missing for CONFIG_USB_SUSPEND.
+> > When I compile a kernel without CONFIG_SUSPEND, USB suspend doesn't work
+> > (or at least doesn't expose its interface to userspace).
+> > /sys/bus/usb/devices/.../power doesn't exist, but it is there when I
+> > enable CONFIG_SUSPEND. So should CONFIG_USB_SUSPEND depend on
+> > CONFIG_SUSPEND (or something selected by CONFIG_SUSPEND)?
+> > 
+> > diff between the two configs follows, full config and dmesg for both
+> > kernels is available at http://stud4.tuwien.ac.at/~e0626486/usb_suspend/
+> > (though the dmesg diff doesn't seem to be all that interesting).
 
-Could you elaborate a bit on this? cpufreq_update_policy() and
-cpufreq_register_notifier() allows to register constraints, and then you can
-use cpufreq_update_policy().
+Actually I think the problem is the other way around.  /sys/.../power 
+should exist whenever CONFIG_PM is defined, not just when 
+CONFIG_SUSPEND is enabled.
 
-Best,
-	Dominik
+Alan Stern
