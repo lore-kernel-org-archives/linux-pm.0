@@ -1,15 +1,19 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: cpufreq-set problems [Was: Re: Ottawa Linux Power
-	Management Summit, June 25-26, 2007 - Minutes]
-Date: Mon, 29 Oct 2007 15:26:00 +0200
-Message-ID: <1193664360.23273.24.camel@localhost.localdomain>
-References: <200709050426.04793.lenb@kernel.org>
-	<20071028135446.GG26943@isilmar.linta.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] Commit "Hibernation: Enter platform hibernation
+	state in a consistent way)" makes my system to resume instantly
+	from S4
+Date: Mon, 29 Oct 2007 21:37:37 +0100
+Message-ID: <200710292137.37997.rjw__39743.8608030372$1193689353$gmane$org@sisk.pl>
+References: <200710271405.32908.maximlevitsky@gmail.com>
+	<200710282123.15653.rjw@sisk.pl>
+	<200710290845.11016.maximlevitsky@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071028135446.GG26943@isilmar.linta.de>
+In-Reply-To: <200710290845.11016.maximlevitsky@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +23,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Sun, 2007-10-28 at 14:54 +0100, ext Dominik Brodowski wrote:
-> Hi,
+On Monday, 29 October 2007 07:45, Maxim Levitsky wrote:
+> On Sunday 28 October 2007 22:23:15 Rafael J. Wysocki wrote:
+> > On Sunday, 28 October 2007 21:00, Maxim Levitsky wrote:
+> > > On Saturday 27 October 2007 23:46:45 Rafael J. Wysocki wrote:
+> > > > On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Recently I noticed that my system resumes just after suspend to disk.
+> > > > > 
+> > > > > I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
+> > > > > 
+> > > > > Note:
+> > > > > 
+> > > > > This happens only if I enable WOL using /proc/acpi/wakeup
+> > > > > (echo "ILAN" > /proc/acpi/wakeup)
+> > > > 
+> > > > What happens after a suspend to RAM?
+> > > I do more testing tomorrow, but what I remember is that,
+> > > I had no issues with suspend-to-ram.
+> > > (And take into account the fact that _all_ wakeup devices were enabled always,
+> > > the rc.local does that for me, and still I did quite a lot of suspends, but I
+> > > got the immediate resume, only and always after suspend to disk.
+> > 
+> > Hm, can you please retest with the above commit applied, but with
+> > device_suspend() in hibernation_platform_enter() replaced by device_shutdown()?
+> Bingo! doing the above fixes this problem.
+> And... strange, since I did test the system with e1000 unloaded, but still got same bug,
+> back when I chased that bug, thus it is probably not related to e1000 and WOL.
 > 
-> On Wed, Sep 05, 2007 at 04:26:04AM -0400, Len Brown wrote:
-> > cpufreq_set_policy() doesn't match Nokia's needs as it is a 1-way
-> > notification, and there is no way to register constraints.
+> the ACPI wake-up source (I have read the DSDT, and ICH datasheets, thus I know that this is a set of bits in southbridge)
+> of e1000 is shared with EHCI and HDA sound codec.
+> (But usb on my system only able to wake from S3, and the soundchip which can theoretically wake up from S3 too, doesn't have this ability)
 > 
-> Could you elaborate a bit on this? cpufreq_update_policy() and
-> cpufreq_register_notifier() allows to register constraints, and then you can
-> use cpufreq_update_policy().
+> (But disabling this wakeup source, fixes this bug too)
 
-we are using update policy, but the problem with the notifications as
-cpufreq handles them, is that we wanted to have a specific sequence of
-operations been done, while (if i'm not wrong) the cpufreq notifications
-do not provide this feature.
+OK
 
-Probably this is not really needed for traditional x86 systems, while
-SoC allow to know at design time what sort of devices will be present in
-the system.
+Please get back to device_suspend() in hibernation_platform_enter() and try
+to unload ehci_hcd before hibernation with the wakeup source enabled.
 
-
--- 
-Cheers, Igor
-
-Igor Stoppa <igor.stoppa@nokia.com>
-(Nokia Multimedia - CP - OSSO / Helsinki, Finland)
+Greetings,
+Rafael
