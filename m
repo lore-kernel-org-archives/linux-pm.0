@@ -1,13 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Date: Mon, 29 Oct 2007 22:24:14 +0100
-Message-ID: <20071029212414.GD3692__38815.715062856$1193693214$gmane$org@elf.ucw.cz>
-References: <20071029201955.GA1955@titan.lahn.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [RFC] PM: Add PM_RESUME_PREPARE and PM_POST_RESUME
+	notifiers
+Date: Mon, 29 Oct 2007 17:30:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0710291723280.11831-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071029201955.GA1955@titan.lahn.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,36 +15,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Rafael:
 
-> I have an IBM X41 tablet pc running 2.6.23 with the following problem:
-> Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
-> /sys/power/state), the notebook hangs showing the following lines:
->         Stopping tasks ... done.
->         Shrinking memory... done (49361 pages freed)
->         Freed 197444 kbytes in 0.64 seconds (308.50 MB/s)
->         Suspending console(s)
-> 
-> When I repeatedly press some keys or move the TrackPoint, the SwSusp
-> continues and the notebook powers off.
-> On reboot, the notebook resumes but hangs showing the following screen:
->         Stopping tasks ... done.
->         Loading image data pages (62483 pages) ... done
->         Read 249932 kbytes in 18.63 seconds (13.41 MB/s)
->         Suspending console(s)
-> 
-> Generating interrupts by pressing keys or moving the TrackPoints makes
-> the resume continue. But after that, the notebook looses time, xterms
-> don't get updated until I press a key, the beeper beeps until I press a
-> key, etc.
-> 
-> Any idea what the problem might be?
+How does this patch look?  Any reason not to have the resume notifiers?  
+After all, drivers need to know when an image is about to be restored 
+just as much as they need to know when one is about to be created.
 
-Yep, I seen that before. Try "nohz=off".
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Assuming this is okay, to whom should I submit it?  There will be a
+couple of follow-up patches, one adding the icebox and one converting
+the USB threads to use the icebox instead of the freezer.  This sort of
+cross-subsystem stuff is difficult to coordinate unless one person
+handles everything.
+
+Alan Stern
+
+
+
+Index: usb-2.6/Documentation/power/notifiers.txt
+===================================================================
+--- usb-2.6.orig/Documentation/power/notifiers.txt
++++ usb-2.6/Documentation/power/notifiers.txt
+@@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory st
+ 			hibernation.  Device drivers' .resume() callbacks have
+ 			been executed and tasks have been thawed.
+ 
++PM_RESUME_PREPARE	The system is going to restore a hibernation image.
++			If all goes well the restored kernel will issue a
++			PM_POST_HIBERNATION notification.
++
++PM_POST_RESUME		An error occurred during the hibernation resume.
++			Device drivers' .resume() callbacks have been executed
++			and tasks have been thawed.
++
+ PM_SUSPEND_PREPARE	The system is preparing for a suspend.
+ 
+ PM_POST_SUSPEND		The system has just resumed or an error occured during
+Index: usb-2.6/include/linux/notifier.h
+===================================================================
+--- usb-2.6.orig/include/linux/notifier.h
++++ usb-2.6/include/linux/notifier.h
+@@ -230,6 +230,8 @@ static inline int notifier_to_errno(int 
+ #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+ #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+ #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
++#define PM_RESUME_PREPARE	0x0005 /* Going to resume from hibernation */
++#define PM_POST_RESUME		0x0006 /* Resume failed */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+Index: usb-2.6/kernel/power/disk.c
+===================================================================
+--- usb-2.6.orig/kernel/power/disk.c
++++ usb-2.6/kernel/power/disk.c
+@@ -489,6 +489,10 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
++	error = pm_notifier_call_chain(PM_RESUME_PREPARE);
++	if (error)
++		goto Exit;
++
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Finish;
+@@ -512,6 +516,8 @@ static int software_resume(void)
+  Done:
+ 	free_basic_memory_bitmaps();
+  Finish:
++	pm_notifier_call_chain(PM_POST_RESUME);
++ Exit:
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
