@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Date: Mon, 29 Oct 2007 22:05:10 +0100
-Message-ID: <200710292205.11459.rjw__7949.80556606806$1193691087$gmane$org@sisk.pl>
+Date: Mon, 29 Oct 2007 22:24:14 +0100
+Message-ID: <20071029212414.GD3692__38815.715062856$1193693214$gmane$org@elf.ucw.cz>
 References: <20071029201955.GA1955@titan.lahn.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071029201955.GA1955@titan.lahn.de>
 Content-Disposition: inline
+In-Reply-To: <20071029201955.GA1955@titan.lahn.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,13 +17,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Cc: linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
-> Hello Thomas, Pavel, Rafael!
-> 
+Hi!
+
 > I have an IBM X41 tablet pc running 2.6.23 with the following problem:
 > Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
 > /sys/power/state), the notebook hangs showing the following lines:
@@ -49,16 +45,8 @@ On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
 > 
 > Any idea what the problem might be?
 
-Nope.
-
-> DMESG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.dmesg
-> CONFIG: http://corellon.svs.informatik.uni-oldenburg.de/~pmhahn/x41.config
-> 
-> If you need more data, just ask.
-
-Please try to do "echo shutdown > /sys/power/disk" before hibernation and
-see what happens.
-
-Also, is it an SMP kernel or UP?
-
-Rafael
+Yep, I seen that before. Try "nohz=off".
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
