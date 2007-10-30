@@ -1,11 +1,13 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] hibernate: fix lockdep report
-Date: Tue, 30 Oct 2007 11:38:44 +0100
-Message-ID: <1193740724.3912.10.camel@johannes.berg>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] PM: Add PM_RESUME_PREPARE and PM_POST_RESUME
+	notifiers
+Date: Tue, 30 Oct 2007 10:52:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0710301041140.4306-100000@iolanthe.rowland.org>
+References: <200710292334.12812.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <200710292334.12812.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,48 +17,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Lockdep reports a circular locking dependency in the hibernate code
-because
- - during system boot hibernate code (from an initcall) locks pm_mutex
-   and then a sysfs buffer mutex via name_to_dev_t
- - during regular operation hibernate code locks pm_mutex under a
-   sysfs buffer mutex because it's called from sysfs methods.
+On Mon, 29 Oct 2007, Rafael J. Wysocki wrote:
 
-The deadlock can never happen because during initcall invocation nothing
-can write to sysfs yet. This removes the lockdep report by marking the
-initcall locking as being in a different class.
+> On Monday, 29 October 2007 22:30, Alan Stern wrote:
+> > Rafael:
+> > 
+> > How does this patch look?  Any reason not to have the resume notifiers?  
+> 
+> Yes.
+> 
+> The userland interface already uses PM_HIBERNATION_PREPARE and
+> PM_POST_HIBERNATION for restore too, so if anything, we should call these
+> from software_resume() either.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-I can't seem to track the occurrence down to a commit, maybe something
-within sysfs. I'm fairly sure I first saw it on a git kernel after the
-2.6.24 merge period started but I haven't bisected it.
+I could use those same notifiers, but are you sure that's a good idea?  
+Drivers might want to do different things at the beginning of
+hibernation and the beginning of a restore.
 
- kernel/power/disk.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+Alternatively, the user interface can be changed.  The current 
+organization is slightly illogical; there should be different ioctls 
+for prepare-to-create-snapshot and prepare-to-restore-snapshot instead 
+of a single SNAPSHOT_FREEZE for both.  How about adding RESTORE_FREEZE 
+and RESTORE_UNFREEZE; does this sound good?
 
---- linux-2.6.orig/kernel/power/disk.c	2007-10-30 11:12:36.878080023 +0100
-+++ linux-2.6/kernel/power/disk.c	2007-10-30 11:14:53.838071832 +0100
-@@ -456,7 +456,17 @@ static int software_resume(void)
- 	int error;
- 	unsigned int flags;
- 
--	mutex_lock(&pm_mutex);
-+	/*
-+	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
-+	 * is configured into the kernel. Since the regular hibernate
-+	 * trigger path is via sysfs which takes a buffer mutex before
-+	 * calling hibernate functions (which take pm_mutex) this can
-+	 * cause lockdep to complain about a possible ABBA deadlock
-+	 * which cannot happen since we're in the boot code here and
-+	 * sysfs can't be invoked yet. Therefore, we use a subclass
-+	 * here to avoid lockdep complaining.
-+	 */
-+	mutex_lock_nested(&pm_mutex, 1);
- 	if (!swsusp_resume_device) {
- 		if (!strlen(resume_file)) {
- 			mutex_unlock(&pm_mutex);
+Alan Stern
+
+P.S.: While I'm updating things, the thought occurs that 
+PM_RESTORE_PREPARE and PM_POST_RESTORE would be better names than 
+PM_RESUME_PREPARE and PM_POST_RESUME.
