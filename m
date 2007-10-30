@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] PM: Add PM_RESUME_PREPARE and PM_POST_RESUME
-	notifiers
-Date: Tue, 30 Oct 2007 22:15:37 +0100
-Message-ID: <200710302215.37728.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0710301041140.4306-100000@iolanthe.rowland.org>
+Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
+Date: Tue, 30 Oct 2007 22:20:33 +0100
+Message-ID: <200710302220.34490.rjw__622.488643466745$1193778304$gmane$org@sisk.pl>
+References: <20071029201955.GA1955@titan.lahn.de>
+	<200710292205.11459.rjw@sisk.pl>
+	<20071030083537.GA2797@titan.lahn.de>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0710301041140.4306-100000@iolanthe.rowland.org>
+In-Reply-To: <20071030083537.GA2797@titan.lahn.de>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,48 +21,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+Cc: linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 30 October 2007 15:52, Alan Stern wrote:
-> On Mon, 29 Oct 2007, Rafael J. Wysocki wrote:
+On Tuesday, 30 October 2007 09:35, Philipp Matthias Hahn wrote:
+> Hello Rafael, Pavel!
 > 
-> > On Monday, 29 October 2007 22:30, Alan Stern wrote:
-> > > Rafael:
+> Thank you both for the fast help.
+> 
+> On Mon, Oct 29, 2007 at 10:05:10PM +0100, Rafael J. Wysocki wrote:
+> > On Monday, 29 October 2007 21:19, Philipp Matthias Hahn wrote:
+> > > I have an IBM X41 tablet pc running 2.6.23 with the following problem:
+> > > Suspend2Ram work fine, but when I do a Suspend2Disk (echo disk >
+> > > /sys/power/state), the notebook hangs showing the following lines:
+> ...
+> > >         Suspending console(s)
 > > > 
-> > > How does this patch look?  Any reason not to have the resume notifiers?  
-> > 
-> > Yes.
-> > 
-> > The userland interface already uses PM_HIBERNATION_PREPARE and
-> > PM_POST_HIBERNATION for restore too, so if anything, we should call these
-> > from software_resume() either.
+> > > When I repeatedly press some keys or move the TrackPoint, the SwSusp
+> > > continues and the notebook powers off.
+> > > On reboot, the notebook resumes but hangs showing the following screen:
+> ...
+> > >         Suspending console(s)
+> > > 
+> > > Generating interrupts by pressing keys or moving the TrackPoints makes
+> > > the resume continue. But after that, the notebook looses time, xterms
+> > > don't get updated until I press a key, the beeper beeps until I press a
+> > > key, etc.
+> ...
+> > Please try to do "echo shutdown > /sys/power/disk" before hibernation and
+> > see what happens.
 > 
-> I could use those same notifiers, but are you sure that's a good idea?  
+> I'm already doing that.
 
-I'm not sure, but also I have no counter examples.
+Well, have you tried doing "echo platform > /sys/power/disk" before hibernation
+instead?
 
-> Drivers might want to do different things at the beginning of
-> hibernation and the beginning of a restore.
+> > Also, is it an SMP kernel or UP?
 > 
-> Alternatively, the user interface can be changed.  The current 
-> organization is slightly illogical; there should be different ioctls 
-> for prepare-to-create-snapshot and prepare-to-restore-snapshot instead 
-> of a single SNAPSHOT_FREEZE for both.  How about adding RESTORE_FREEZE 
-> and RESTORE_UNFREEZE; does this sound good?
-
-Hm, we could define separate FREEZE ioctls for restore, but if they end up
-doing the same as the analogous snapshot ones, they'll be somewhat redundant
-...
-
-> Alan Stern
+> UP.
 > 
-> P.S.: While I'm updating things, the thought occurs that 
-> PM_RESTORE_PREPARE and PM_POST_RESTORE would be better names than 
-> PM_RESUME_PREPARE and PM_POST_RESUME.
+> 
+> On Mon, Oct 29, 2007 at 10:24:14PM +0100, Pavel Machek wrote:
+> > Yep, I seen that before. Try "nohz=off".
+> 
+> Okay, that seems to solve the "timer loosing time after resume" problem.
+> 
+> 
+> But I still need to press some keys on suspend (7-12 key presses and
+> releases) to unhang it. On resume not key presses are needed any more.
+> 
+> During on suspend-resume cycle ACPI barfed afer resume spewing messages
+> without end (error during execution of methode \...THM, error evaulation
+> operand ...) I had to remove the battery and pull the power-plug to
+> reboot it.
 
-Agreed.
+The ACPI platform firmware got confused, apparently.
 
 Greetings,
 Rafael
