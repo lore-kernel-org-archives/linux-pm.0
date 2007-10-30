@@ -1,17 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [2.6.23] IBM X41 looses time after Suspend2Disk
-Date: Tue, 30 Oct 2007 22:20:33 +0100
-Message-ID: <200710302220.34490.rjw__622.488643466745$1193778304$gmane$org@sisk.pl>
+Date: Tue, 30 Oct 2007 22:08:01 +0100
+Message-ID: <20071030210801.GA1767__18179.080336313$1193778626$gmane$org@elf.ucw.cz>
 References: <20071029201955.GA1955@titan.lahn.de>
+	<20071029212414.GD3692@elf.ucw.cz>
+	<20071029201955.GA1955@titan.lahn.de>
 	<200710292205.11459.rjw@sisk.pl>
 	<20071030083537.GA2797@titan.lahn.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071030083537.GA2797@titan.lahn.de>
 Content-Disposition: inline
+In-Reply-To: <20071030083537.GA2797@titan.lahn.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,11 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Cc: linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 30 October 2007 09:35, Philipp Matthias Hahn wrote:
+On Tue 2007-10-30 09:35:37, Philipp Matthias Hahn wrote:
 > Hello Rafael, Pavel!
 > 
 > Thank you both for the fast help.
@@ -53,10 +52,7 @@ On Tuesday, 30 October 2007 09:35, Philipp Matthias Hahn wrote:
 > > see what happens.
 > 
 > I'm already doing that.
-
-Well, have you tried doing "echo platform > /sys/power/disk" before hibernation
-instead?
-
+> 
 > > Also, is it an SMP kernel or UP?
 > 
 > UP.
@@ -69,14 +65,15 @@ instead?
 > 
 > 
 > But I still need to press some keys on suspend (7-12 key presses and
-> releases) to unhang it. On resume not key presses are needed any more.
-> 
-> During on suspend-resume cycle ACPI barfed afer resume spewing messages
-> without end (error during execution of methode \...THM, error evaulation
-> operand ...) I had to remove the battery and pull the power-plug to
-> reboot it.
+> releases) to unhang it. On resume not key presses are needed any
+> more.
 
-The ACPI platform firmware got confused, apparently.
+So it fixed resume but not suspend? strange. Try highres=off, too. And
+maybe irqpoll?
 
-Greetings,
-Rafael
+You may want to try cpu hotplug separately...
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
