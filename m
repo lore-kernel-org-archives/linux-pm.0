@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] PM: Add PM_RESUME_PREPARE and PM_POST_RESUME
-	notifiers
-Date: Thu, 1 Nov 2007 16:13:51 +0100
-Message-ID: <200711011613.52366.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0711011019440.4146-100000@iolanthe.rowland.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [BUG] Commit "Hibernation: Enter platform hibernation
+	state in a consistent way)" makes my system to resume instantly
+	from S4
+Date: Thu, 1 Nov 2007 17:25:30 +0200
+Message-ID: <200711011725.30619.maximlevitsky__36764.9681437344$1193930820$gmane$org@gmail.com>
+References: <200710271405.32908.maximlevitsky@gmail.com>
+	<200710300036.13186.maximlevitsky@gmail.com>
+	<200710300031.17355.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711011019440.4146-100000@iolanthe.rowland.org>
+In-Reply-To: <200710300031.17355.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,165 +23,113 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: USB development list <linux-usb-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, 1 November 2007 15:40, Alan Stern wrote:
-> On Wed, 31 Oct 2007, Rafael J. Wysocki wrote:
-> 
-> > > (Strictly speaking, we should have two different notification codes for 
-> > > PM_POST_HIBERNATION: one for use after the atomic snapshot has been 
-> > > created and one for use after it has been restored.  But I'm not going 
-> > > to worry about that right now.)
+On Tuesday 30 October 2007 01:31:13 Rafael J. Wysocki wrote:
+> On Monday, 29 October 2007 23:36, Maxim Levitsky wrote:
+> > On Monday 29 October 2007 22:37:37 Rafael J. Wysocki wrote:
+> > > On Monday, 29 October 2007 07:45, Maxim Levitsky wrote:
+> > > > On Sunday 28 October 2007 22:23:15 Rafael J. Wysocki wrote:
+> > > > > On Sunday, 28 October 2007 21:00, Maxim Levitsky wrote:
+> > > > > > On Saturday 27 October 2007 23:46:45 Rafael J. Wysocki wrote:
+> > > > > > > On Saturday, 27 October 2007 14:05, Maxim Levitsky wrote:
+> > > > > > > > Hi,
+> > > > > > > > 
+> > > > > > > > Recently I noticed that my system resumes just after suspend to disk.
+> > > > > > > > 
+> > > > > > > > I traced this to commit 9cd9a0058dd35268b24fa16795a92c800f4086d4.
+> > > > > > > > 
+> > > > > > > > Note:
+> > > > > > > > 
+> > > > > > > > This happens only if I enable WOL using /proc/acpi/wakeup
+> > > > > > > > (echo "ILAN" > /proc/acpi/wakeup)
+> > > > > > > 
+> > > > > > > What happens after a suspend to RAM?
+> > > > > > I do more testing tomorrow, but what I remember is that,
+> > > > > > I had no issues with suspend-to-ram.
+> > > > > > (And take into account the fact that _all_ wakeup devices were enabled always,
+> > > > > > the rc.local does that for me, and still I did quite a lot of suspends, but I
+> > > > > > got the immediate resume, only and always after suspend to disk.
+> > > > > 
+> > > > > Hm, can you please retest with the above commit applied, but with
+> > > > > device_suspend() in hibernation_platform_enter() replaced by device_shutdown()?
+> > > > Bingo! doing the above fixes this problem.
+> > > > And... strange, since I did test the system with e1000 unloaded, but still got same bug,
+> > > > back when I chased that bug, thus it is probably not related to e1000 and WOL.
+> > > > 
+> > > > the ACPI wake-up source (I have read the DSDT, and ICH datasheets, thus I know that this is a set of bits in southbridge)
+> > > > of e1000 is shared with EHCI and HDA sound codec.
+> > > > (But usb on my system only able to wake from S3, and the soundchip which can theoretically wake up from S3 too, doesn't have this ability)
+> > > > 
+> > > > (But disabling this wakeup source, fixes this bug too)
+> > > 
+> > > OK
+> > > 
+> > > Please get back to device_suspend() in hibernation_platform_enter() and try
+> > > to unload ehci_hcd before hibernation with the wakeup source enabled.
+> > Well, ... bingo! again!
 > > 
-> > IIRC, the notifiers are not called after creating the image.  Do you think that
-> > they should be called at that time?  If so, then why?
+> > Replacing back the device_suspend() , and unloading the ehci_hcd fixes the problem!
+> > Even more, loading this module back causes this problem to reappear, and vise-verso.
+> > All wakeup sources are enabled always.
+> > 
+> > Note that I don't have any USB 2.0 devices yet.
+> > The usb devices I have are: keyboard,mouse,and joystick.
+> > 
+> > So now this problem looks fixable, I take a look at ehci driver.
 > 
-> My mistake.  It's easy to forget that even though devices get resumed 
-> for writing after the image is created, tasks don't get thawed.  And 
-> since tasks don't get thawed, the notifiers shouldn't be called.
+> This is very similar to what I've been observing for some time on one of my
+> test boxes wrt suspending to RAM and in that case the problem is also related
+> to EHCI (this is a pretty old Celeron-based box with an Intel chipset).
 > 
-> > As far as the patch is concerned, I'd prefer not to add new ioctls(), mainly
-> > because there's userland out there that doesn't know about them and we can't
-> > make people switch overnight.  I'd prever to move the notifier calls to
-> > snapshot_open() and snapshot_release().
+> It looks like in some situations, on some platforms the EHCI controller
+> triggers a resume right after the suspend (or hibernation) if the driver's
+> .suspend() routine is executed before invoking the ACPI firmware to put the
+> system into the sleep state.
 > 
-> Okay, here's a patch to do things that way.
+> [The "ehci_hcd causes box to resume immediately after suspend to RAM" thread on
+> linux-pm was about this problem.]
+> 
+> Greetings,
+> Rafael
+> 
 
-Thanks.  [I was going to write that myself, but you were faster. :-)]
+Sorry, for a bit late response,
 
-The patch looks good.
+Do you meant that EHCI driver triggers the resume regardless of the above commit?
 
-Please sign it off and provide a changelog and I'll forward it to Len.
-
-Greetings,
-Rafael
+Now I have checked the source and understand that the above commit is 150% right.
+(Actually I always assumed that it was always there, and some developers did that too)
 
 
-> Index: usb-2.6/Documentation/power/notifiers.txt
-> ===================================================================
-> --- usb-2.6.orig/Documentation/power/notifiers.txt
-> +++ usb-2.6/Documentation/power/notifiers.txt
-> @@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory st
->  			hibernation.  Device drivers' .resume() callbacks have
->  			been executed and tasks have been thawed.
->  
-> +PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
-> +			If all goes well the restored kernel will issue a
-> +			PM_POST_HIBERNATION notification.
-> +
-> +PM_POST_RESTORE		An error occurred during the hibernation restore.
-> +			Device drivers' .resume() callbacks have been executed
-> +			and tasks have been thawed.
-> +
->  PM_SUSPEND_PREPARE	The system is preparing for a suspend.
->  
->  PM_POST_SUSPEND		The system has just resumed or an error occured during
-> Index: usb-2.6/include/linux/notifier.h
-> ===================================================================
-> --- usb-2.6.orig/include/linux/notifier.h
-> +++ usb-2.6/include/linux/notifier.h
-> @@ -230,6 +230,8 @@ static inline int notifier_to_errno(int 
->  #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
->  #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
->  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
-> +#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
-> +#define PM_POST_RESTORE		0x0006 /* Restore failed */
->  
->  /* Console keyboard events.
->   * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
-> Index: usb-2.6/kernel/power/disk.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/disk.c
-> +++ usb-2.6/kernel/power/disk.c
-> @@ -489,6 +489,10 @@ static int software_resume(void)
->  		goto Unlock;
->  	}
->  
-> +	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-> +	if (error)
-> +		goto Exit;
-> +
->  	error = create_basic_memory_bitmaps();
->  	if (error)
->  		goto Finish;
-> @@ -512,6 +516,8 @@ static int software_resume(void)
->   Done:
->  	free_basic_memory_bitmaps();
->   Finish:
-> +	pm_notifier_call_chain(PM_POST_RESTORE);
-> + Exit:
->  	atomic_inc(&snapshot_device_available);
->  	/* For success case, the suspend path will release the lock */
->   Unlock:
-> Index: usb-2.6/kernel/power/user.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/user.c
-> +++ usb-2.6/kernel/power/user.c
-> @@ -44,6 +44,7 @@ atomic_t snapshot_device_available = ATO
->  static int snapshot_open(struct inode *inode, struct file *filp)
->  {
->  	struct snapshot_data *data;
-> +	int error;
->  
->  	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
->  		return -EBUSY;
-> @@ -64,9 +65,15 @@ static int snapshot_open(struct inode *i
->  		data->swap = swsusp_resume_device ?
->  			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
->  		data->mode = O_RDONLY;
-> +		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
->  	} else {
->  		data->swap = -1;
->  		data->mode = O_WRONLY;
-> +		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-> +	}
-> +	if (error) {
-> +		atomic_inc(&snapshot_device_available);
-> +		return error;
->  	}
->  	data->frozen = 0;
->  	data->ready = 0;
-> @@ -88,6 +95,8 @@ static int snapshot_release(struct inode
->  		thaw_processes();
->  		mutex_unlock(&pm_mutex);
->  	}
-> +	pm_notifier_call_chain(data->mode == O_WRONLY ?
-> +			PM_POST_HIBERNATION : PM_POST_RESTORE);
->  	atomic_inc(&snapshot_device_available);
->  	return 0;
->  }
-> @@ -151,18 +160,13 @@ static int snapshot_ioctl(struct inode *
->  		if (data->frozen)
->  			break;
->  		mutex_lock(&pm_mutex);
-> -		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-> -		if (!error) {
-> -			printk("Syncing filesystems ... ");
-> -			sys_sync();
-> -			printk("done.\n");
-> -
-> -			error = freeze_processes();
-> -			if (error)
-> -				thaw_processes();
-> -		}
-> +		printk("Syncing filesystems ... ");
-> +		sys_sync();
-> +		printk("done.\n");
-> +
-> +		error = freeze_processes();
->  		if (error)
-> -			pm_notifier_call_chain(PM_POST_HIBERNATION);
-> +			thaw_processes();
->  		mutex_unlock(&pm_mutex);
->  		if (!error)
->  			data->frozen = 1;
-> @@ -173,7 +177,6 @@ static int snapshot_ioctl(struct inode *
->  			break;
->  		mutex_lock(&pm_mutex);
->  		thaw_processes();
-> -		pm_notifier_call_chain(PM_POST_HIBERNATION);
->  		mutex_unlock(&pm_mutex);
->  		data->frozen = 0;
->  		break;
+I assumed that on hibernation the sequence is:
+
+.suspend() - disable device + enable wake
+snapshot
+
+.resume() - enabled device + disable wake
+snapshot writeout
+.suspend() - disable device + enable wake
+
+
+But before the above commit was introduced, the last .suspend()
+didn't happen, and thus all the code that enables wake was disabled.
+For the same reason rtc-cmos didn't work, since its .resume disables the alarm.
+
+The mystery why my system did react to WOL in S4 is resolved by the fact that
+e1000 .shutdown() calls .suspend() to make WOL work in S5 too.
+(Btw, this is wrong that rtc-cmos disables alarm in .shutdown()  since it can be used in S5 too)
+
+
+So, this commit caused the EHCI .suspend to activate the wakeup, and this code probably contains a bug
+(Or a lack of hardware workaround)
+
+
+Thus, since the suspend to ram isn't affected by the above commit, I want to know
+whenever it affects the system you have seen resuming from ram instantly with ehci driver.
+
+
+Best regards,
+	Maxim Levitsky
