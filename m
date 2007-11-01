@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] PM: Add PM_RESTORE_PREPARE and PM_POST_RESTORE
-	notifiers
-Date: Thu, 1 Nov 2007 15:31:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0711011530400.4860-100000@iolanthe.rowland.org>
-References: <200711011613.52366.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] Hibernation: Add PM_RESTORE_PREPARE and
+	PM_POST_RESTORE notifiers
+Date: Thu, 1 Nov 2007 23:47:43 +0100
+Message-ID: <200711012347.44662.rjw__31259.1626694941$1193956335$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711011613.52366.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,22 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Nigel Cunningham <nigel@nigel.suspend2.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
+
+[Len, please add to the suspend branch.]
+---
+From: Alan Stern <stern@rowland.harvard.edu>
 
 This patch (as1006) adds PM_RESTORE_PREPARE and PM_POST_RESTORE
 notifiers to the PM core, to be used in analogy with the existing
 PM_HIBERNATION_PREPARE and PM_POST_HIBERNATION notifiers.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>
+Signed-off-by: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
+ Documentation/power/notifiers.txt |    8 ++++++++
+ include/linux/notifier.h          |    2 ++
+ kernel/power/disk.c               |    6 ++++++
+ kernel/power/user.c               |   27 +++++++++++++++------------
+ 4 files changed, 31 insertions(+), 12 deletions(-)
 
-Index: usb-2.6/Documentation/power/notifiers.txt
+Index: linux-2.6/Documentation/power/notifiers.txt
 ===================================================================
---- usb-2.6.orig/Documentation/power/notifiers.txt
-+++ usb-2.6/Documentation/power/notifiers.txt
+--- linux-2.6.orig/Documentation/power/notifiers.txt
++++ linux-2.6/Documentation/power/notifiers.txt
 @@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory st
  			hibernation.  Device drivers' .resume() callbacks have
  			been executed and tasks have been thawed.
@@ -48,10 +60,10 @@ Index: usb-2.6/Documentation/power/notifiers.txt
  PM_SUSPEND_PREPARE	The system is preparing for a suspend.
  
  PM_POST_SUSPEND		The system has just resumed or an error occured during
-Index: usb-2.6/include/linux/notifier.h
+Index: linux-2.6/include/linux/notifier.h
 ===================================================================
---- usb-2.6.orig/include/linux/notifier.h
-+++ usb-2.6/include/linux/notifier.h
+--- linux-2.6.orig/include/linux/notifier.h
++++ linux-2.6/include/linux/notifier.h
 @@ -230,6 +230,8 @@ static inline int notifier_to_errno(int 
  #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
  #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
@@ -61,10 +73,10 @@ Index: usb-2.6/include/linux/notifier.h
  
  /* Console keyboard events.
   * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
-Index: usb-2.6/kernel/power/disk.c
+Index: linux-2.6/kernel/power/disk.c
 ===================================================================
---- usb-2.6.orig/kernel/power/disk.c
-+++ usb-2.6/kernel/power/disk.c
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
 @@ -489,6 +489,10 @@ static int software_resume(void)
  		goto Unlock;
  	}
@@ -85,11 +97,11 @@ Index: usb-2.6/kernel/power/disk.c
  	atomic_inc(&snapshot_device_available);
  	/* For success case, the suspend path will release the lock */
   Unlock:
-Index: usb-2.6/kernel/power/user.c
+Index: linux-2.6/kernel/power/user.c
 ===================================================================
---- usb-2.6.orig/kernel/power/user.c
-+++ usb-2.6/kernel/power/user.c
-@@ -44,6 +44,7 @@ atomic_t snapshot_device_available = ATO
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -67,6 +67,7 @@ atomic_t snapshot_device_available = ATO
  static int snapshot_open(struct inode *inode, struct file *filp)
  {
  	struct snapshot_data *data;
@@ -97,7 +109,7 @@ Index: usb-2.6/kernel/power/user.c
  
  	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
  		return -EBUSY;
-@@ -64,9 +65,15 @@ static int snapshot_open(struct inode *i
+@@ -87,9 +88,15 @@ static int snapshot_open(struct inode *i
  		data->swap = swsusp_resume_device ?
  			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
  		data->mode = O_RDONLY;
@@ -113,7 +125,7 @@ Index: usb-2.6/kernel/power/user.c
  	}
  	data->frozen = 0;
  	data->ready = 0;
-@@ -88,6 +95,8 @@ static int snapshot_release(struct inode
+@@ -111,6 +118,8 @@ static int snapshot_release(struct inode
  		thaw_processes();
  		mutex_unlock(&pm_mutex);
  	}
@@ -122,7 +134,7 @@ Index: usb-2.6/kernel/power/user.c
  	atomic_inc(&snapshot_device_available);
  	return 0;
  }
-@@ -151,18 +160,13 @@ static int snapshot_ioctl(struct inode *
+@@ -174,18 +183,13 @@ static int snapshot_ioctl(struct inode *
  		if (data->frozen)
  			break;
  		mutex_lock(&pm_mutex);
@@ -147,7 +159,7 @@ Index: usb-2.6/kernel/power/user.c
  		mutex_unlock(&pm_mutex);
  		if (!error)
  			data->frozen = 1;
-@@ -173,7 +177,6 @@ static int snapshot_ioctl(struct inode *
+@@ -196,7 +200,6 @@ static int snapshot_ioctl(struct inode *
  			break;
  		mutex_lock(&pm_mutex);
  		thaw_processes();
