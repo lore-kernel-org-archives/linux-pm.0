@@ -1,18 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bugme-new] [Bug 8995] New: /proc/acpi/alarm worked;
-	update to 2.6.22.2 and /sys/class/rtc/rtc0/wakealarm don't
-Date: Sun, 4 Nov 2007 20:56:55 +0100
-Message-ID: <200711042056.56763.rjw__33307.1164008745$1194205287$gmane$org@sisk.pl>
-References: <bug-8995-10286@http.bugzilla.kernel.org/>
-	<200709091332.44709.rjw@sisk.pl>
-	<200711041125.35163.david-b@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+From: Frans Pop <elendil@planet.nl>
+Subject: Re: [RFC][PATCH 3/3] PM: Suspend/hibernation debug
+	documentation update (rev. 2)
+Date: Sat, 03 Nov 2007 21:08:30 +0100
+Message-ID: <E1IoPIE-0005qK-9U@faramir.fjphome.nl>
+References: <200711032054.40195.rjw@sisk.pl> <200711032058.23358.rjw@sisk.pl>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711041125.35163.david-b@pacbell.net>
-Content-Disposition: inline
+In-reply-To: <200711032058.23358.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +15,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, linux-acpi@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, huffcslists@gmail.com, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, 4 of November 2007, David Brownell wrote:
-> Re http://bugzilla.kernel.org/show_bug.cgi?id=8995 ...
-> 
-> On Sunday 09 September 2007, Rafael J. Wysocki wrote:
-> > I think the suspend/hibernation code ordering changes after
-> > 2.6.20 are to blame here.
-> 
-> So what's the status of this now ... are we back to having
-> the /sys/class/rtc/rtc0/wakealarm work with ACPI again, with
-> /sys/power/state written as "standby", "mem", or "disk"
+Rafael J. Wysocki wrote:
+> +core run in a test mode.  There are 5 test modes available:
+> +
+> +freezer - test the freezing of processes
+> +devices - test the freezing of processes and suspending of devices
+> +platform - test the freezing of processes, suspending of devices and platform
+> +           global control methods(*)
+> +processors - test the freezing of processes, suspending of devices, platform
+> +             global control methods(*) and the disabling of nonboot CPUs
+> +core - test the freezing of processes, suspending of devices, platform global
+> +       control methods(*), the disabling of nonboot CPUs and suspending of
+> +       platform/system devices
 
-Yes, it should work now.
+I'd suggest to indent this as follows:
+- freezer
+  Test the freezing of processes.
+- devices
+  Test the freezing of processes and suspending of devices.
+- platform
+  Test the freezing of processes, suspending of devices and platform global
+  control methods(*).
+- processors
+  Test the freezing of processes, suspending of devices, platform global
+  control methods(*) and the disabling of nonboot CPUs.
+- core
+  Test the freezing of processes, suspending of devices, platform global
+  control methods(*), the disabling of nonboot CPUs and suspending of
+  platform/system devices.
 
-The fix for the "disk" case is in the mainline:
-
-9cd9a0058dd35268b24fa16795a92c800f4086d4
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Thu Oct 18 03:04:56 2007 -0700
-
-    Hibernation: Enter platform hibernation state in a consistent way.
+Cheers,
+FJP
