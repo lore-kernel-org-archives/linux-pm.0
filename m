@@ -1,13 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: acpi_video_flags Reset on Resume-From-RAM
-Date: Sun, 4 Nov 2007 12:41:50 +0000
-Message-ID: <20071104124149.GD3921@ucw.cz>
-References: <20071009000038.GA23726@best.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] Hibernation: Fix lockdep report (v2)
+Date: Sun, 4 Nov 2007 14:59:22 +0100
+Message-ID: <200711041459.23082.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20071009000038.GA23726@best.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +17,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Leo L. Schwab" <ewhac@best.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2007-10-08 17:00:38, Leo L. Schwab wrote:
-> 	Suspend-to-RAM used to (mostly) work on this machine, but there
-> seems to have been a regression between 2.6.22.1 and 2.6.22.5.
-> 
-> 	I have a ThinkPad Z61t, with an Intel Core 2 Duo and Intel 945GM
-> graphics.  My kernel command line contains the argument,
-> "acpi_sleep=s3_bios,s3_mode", which is the same as setting
-> /proc/sys/kernel/acpi_video_flags to 3.  This setting is suggested by
-> ThinkWiki.org for getting the Intel graphics to recover properly after
-> suspend-to-RAM.
-> 
-> 	Under 2.6.22.1, this arrangement worked fine.  However, since I
-> upgraded the kernel to 2.6.22.5, the text console refuses to come back.
-> When I inspect acpi_video_flags, the value has been reset to zero.
-> 
-> 	Sequence:
-> 	- Boot system.
-> 	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 3.
-> 	- Trigger suspend-to-RAM (done via 'hibernate-ram').  I have
-> 	  configured 'hibernate' to leave acpi_video_flags alone.
-> 	- Resume system.  Text console does not come back.  I can force X to
-> 	  recover the display by pressing CTRL-ALT-F1 (switch to console)
-> 	  followed by ALT-F7 (switch to X).
-> 	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 0.
-> 	- Force acpi_video_flags back to 3:
-> 	  echo 3 > /proc/sys/kernel/acpi_video_flags
-> 	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 3.
-> 	- Trigger suspend-to-RAM.
-> 	- Resume system.  Text console does not come back.  acpi_video_flags
-> 	  contains zero again.
-> 
-> 	I'm running a custom-compiled kernel (config available upon
-> request).  The highlights are SMP, PREEMPT, and NOHZ.
-> 
-> 	Note that nothing short of a full reboot will restore the console.
-> Switching to a virtual console results in a blank screen.  Switching back to
-> X so far always works.  Since the console's busted, it's not immediately
-> clear how I might diagnose this further.  Suggestions?
+[Len, please add this patch to the suspend branch, thanks.]
+---
+From: Johannes Berg <johannes@sipsolutions.net>
 
-Try updating to 2.6.24-rc.... Or find out which patch causes the
-regression, and talk to its author.
+Lockdep reports a circular locking dependency in the hibernate code
+because
+ - during system boot hibernate code (from an initcall) locks pm_mutex
+   and then a sysfs buffer mutex via name_to_dev_t
+ - during regular operation hibernate code locks pm_mutex under a
+   sysfs buffer mutex because it's called from sysfs methods.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The deadlock can never happen because during initcall invocation nothing
+can write to sysfs yet. This removes the lockdep report by marking the
+initcall locking as being in a different class.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -456,7 +456,17 @@ static int software_resume(void)
+ 	int error;
+ 	unsigned int flags;
+ 
+-	mutex_lock(&pm_mutex);
++	/*
++	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
++	 * is configured into the kernel. Since the regular hibernate
++	 * trigger path is via sysfs which takes a buffer mutex before
++	 * calling hibernate functions (which take pm_mutex) this can
++	 * cause lockdep to complain about a possible ABBA deadlock
++	 * which cannot happen since we're in the boot code here and
++	 * sysfs can't be invoked yet. Therefore, we use a subclass
++	 * here to avoid lockdep complaining.
++	 */
++	mutex_lock_nested(&pm_mutex, SINGLE_DEPTH_NESTING);
+ 	if (!swsusp_resume_device) {
+ 		if (!strlen(resume_file)) {
+ 			mutex_unlock(&pm_mutex);
