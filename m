@@ -1,17 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 3/3] PM: Suspend/hibernation debug
-	documentation update (rev. 2)
-Date: Sat, 3 Nov 2007 21:54:48 +0100
-Message-ID: <200711032154.49758.rjw__1597.66772198981$1194123592$gmane$org@sisk.pl>
-References: <200711032054.40195.rjw@sisk.pl> <200711032058.23358.rjw@sisk.pl>
-	<E1IoPIE-0005qK-9U@faramir.fjphome.nl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: acpi_video_flags Reset on Resume-From-RAM
+Date: Sun, 4 Nov 2007 12:41:50 +0000
+Message-ID: <20071104124149.GD3921@ucw.cz>
+References: <20071009000038.GA23726@best.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <E1IoPIE-0005qK-9U@faramir.fjphome.nl>
 Content-Disposition: inline
+In-Reply-To: <20071009000038.GA23726@best.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,41 +17,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frans Pop <elendil@planet.nl>
-Cc: johannes@sipsolutions.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Leo L. Schwab" <ewhac@best.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, 3 November 2007 21:08, Frans Pop wrote:
-> Rafael J. Wysocki wrote:
-> > +core run in a test mode.  There are 5 test modes available:
-> > +
-> > +freezer - test the freezing of processes
-> > +devices - test the freezing of processes and suspending of devices
-> > +platform - test the freezing of processes, suspending of devices and platform
-> > +           global control methods(*)
-> > +processors - test the freezing of processes, suspending of devices, platform
-> > +             global control methods(*) and the disabling of nonboot CPUs
-> > +core - test the freezing of processes, suspending of devices, platform global
-> > +       control methods(*), the disabling of nonboot CPUs and suspending of
-> > +       platform/system devices
+On Mon 2007-10-08 17:00:38, Leo L. Schwab wrote:
+> 	Suspend-to-RAM used to (mostly) work on this machine, but there
+> seems to have been a regression between 2.6.22.1 and 2.6.22.5.
 > 
-> I'd suggest to indent this as follows:
-> - freezer
->   Test the freezing of processes.
-> - devices
->   Test the freezing of processes and suspending of devices.
-> - platform
->   Test the freezing of processes, suspending of devices and platform global
->   control methods(*).
-> - processors
->   Test the freezing of processes, suspending of devices, platform global
->   control methods(*) and the disabling of nonboot CPUs.
-> - core
->   Test the freezing of processes, suspending of devices, platform global
->   control methods(*), the disabling of nonboot CPUs and suspending of
->   platform/system devices.
+> 	I have a ThinkPad Z61t, with an Intel Core 2 Duo and Intel 945GM
+> graphics.  My kernel command line contains the argument,
+> "acpi_sleep=s3_bios,s3_mode", which is the same as setting
+> /proc/sys/kernel/acpi_video_flags to 3.  This setting is suggested by
+> ThinkWiki.org for getting the Intel graphics to recover properly after
+> suspend-to-RAM.
+> 
+> 	Under 2.6.22.1, this arrangement worked fine.  However, since I
+> upgraded the kernel to 2.6.22.5, the text console refuses to come back.
+> When I inspect acpi_video_flags, the value has been reset to zero.
+> 
+> 	Sequence:
+> 	- Boot system.
+> 	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 3.
+> 	- Trigger suspend-to-RAM (done via 'hibernate-ram').  I have
+> 	  configured 'hibernate' to leave acpi_video_flags alone.
+> 	- Resume system.  Text console does not come back.  I can force X to
+> 	  recover the display by pressing CTRL-ALT-F1 (switch to console)
+> 	  followed by ALT-F7 (switch to X).
+> 	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 0.
+> 	- Force acpi_video_flags back to 3:
+> 	  echo 3 > /proc/sys/kernel/acpi_video_flags
+> 	- Inspect /proc/sys/kernel/acpi_video_flags -- it contains 3.
+> 	- Trigger suspend-to-RAM.
+> 	- Resume system.  Text console does not come back.  acpi_video_flags
+> 	  contains zero again.
+> 
+> 	I'm running a custom-compiled kernel (config available upon
+> request).  The highlights are SMP, PREEMPT, and NOHZ.
+> 
+> 	Note that nothing short of a full reboot will restore the console.
+> Switching to a virtual console results in a blank screen.  Switching back to
+> X so far always works.  Since the console's busted, it's not immediately
+> clear how I might diagnose this further.  Suggestions?
 
-Yup, this way it looks better.
+Try updating to 2.6.24-rc.... Or find out which patch causes the
+regression, and talk to its author.
 
-Thanks,
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
