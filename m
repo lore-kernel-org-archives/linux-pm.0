@@ -1,16 +1,10 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: fix to earlier patch adding PM_RESTORE
-	notifiers
-Date: Mon, 5 Nov 2007 22:07:05 +0100
-Message-ID: <200711052207.06307.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0711051536330.2800-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PM: convert PM notifiers to out-of-line code
+Date: Mon, 5 Nov 2007 15:58:13 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711051556210.2800-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711051536330.2800-100000@iolanthe.rowland.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,78 +14,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 5 of November 2007, Alan Stern wrote:
-> This patch (as1007) fixes a mistake in the patch adding the PM RESTORE
-> notifiers.  The PM_POST_RESTORE notifier should be called if an error
-> occurs in the PM_RESTORE_PREPARE notifications.
+This patch (as1008) converts the PM notifier routines from inline
+calls to out-of-line code.  It also prevents pm_chain_head from
+being created when CONFIG_PM_SLEEP isn't enabled, and EXPORTs the
+notifier registration and unregistration routines.
 
-Ah, I see.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> ---
-> 
-> Rafael:
-> 
-> Len may prefer to merge this with the earlier patch rather than keeping
-> the two separate.  It's a very small update.
+---
 
-Yes.  I think I'll merge the two and send the result as the next revision of
-the previous patch.
-
-Greetings,
-Rafael
-
-
-> Index: usb-2.6/kernel/power/disk.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/disk.c
-> +++ usb-2.6/kernel/power/disk.c
-> @@ -491,7 +491,7 @@ static int software_resume(void)
->  
->  	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
->  	if (error)
-> -		goto Exit;
-> +		goto Finish;
->  
->  	error = create_basic_memory_bitmaps();
->  	if (error)
-> @@ -517,7 +517,6 @@ static int software_resume(void)
->  	free_basic_memory_bitmaps();
->   Finish:
->  	pm_notifier_call_chain(PM_POST_RESTORE);
-> - Exit:
->  	atomic_inc(&snapshot_device_available);
->  	/* For success case, the suspend path will release the lock */
->   Unlock:
-> Index: usb-2.6/kernel/power/user.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/user.c
-> +++ usb-2.6/kernel/power/user.c
-> @@ -66,10 +66,14 @@ static int snapshot_open(struct inode *i
->  			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
->  		data->mode = O_RDONLY;
->  		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-> +		if (error)
-> +			pm_notifier_call_chain(PM_POST_RESTORE);
->  	} else {
->  		data->swap = -1;
->  		data->mode = O_WRONLY;
->  		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-> +		if (error)
-> +			pm_notifier_call_chain(PM_POST_HIBERNATION);
->  	}
->  	if (error) {
->  		atomic_inc(&snapshot_device_available);
-> 
-> 
-> 
-
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Index: usb-2.6/include/linux/suspend.h
+===================================================================
+--- usb-2.6.orig/include/linux/suspend.h
++++ usb-2.6/include/linux/suspend.h
+@@ -216,17 +216,8 @@ void __save_processor_state(struct saved
+ void __restore_processor_state(struct saved_context *ctxt);
+ 
+ /* kernel/power/main.c */
+-extern struct blocking_notifier_head pm_chain_head;
+-
+-static inline int register_pm_notifier(struct notifier_block *nb)
+-{
+-	return blocking_notifier_chain_register(&pm_chain_head, nb);
+-}
+-
+-static inline int unregister_pm_notifier(struct notifier_block *nb)
+-{
+-	return blocking_notifier_chain_unregister(&pm_chain_head, nb);
+-}
++extern int register_pm_notifier(struct notifier_block *nb);
++extern int unregister_pm_notifier(struct notifier_block *nb);
+ 
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+Index: usb-2.6/kernel/power/main.c
+===================================================================
+--- usb-2.6.orig/kernel/power/main.c
++++ usb-2.6/kernel/power/main.c
+@@ -24,8 +24,6 @@
+ 
+ #include "power.h"
+ 
+-BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+-
+ DEFINE_MUTEX(pm_mutex);
+ 
+ #ifdef CONFIG_SUSPEND
+Index: usb-2.6/kernel/power/power.h
+===================================================================
+--- usb-2.6.orig/kernel/power/power.h
++++ usb-2.6/kernel/power/power.h
+@@ -203,11 +203,5 @@ static inline int suspend_devices_and_en
+ }
+ #endif /* !CONFIG_SUSPEND */
+ 
+-/* kernel/power/common.c */
+-extern struct blocking_notifier_head pm_chain_head;
+-
+-static inline int pm_notifier_call_chain(unsigned long val)
+-{
+-	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
+-			== NOTIFY_BAD) ? -EINVAL : 0;
+-}
++/* kernel/power/process.c */
++extern int pm_notifier_call_chain(unsigned long val);
+Index: usb-2.6/kernel/power/process.c
+===================================================================
+--- usb-2.6.orig/kernel/power/process.c
++++ usb-2.6/kernel/power/process.c
+@@ -283,3 +283,25 @@ void thaw_processes(void)
+ }
+ 
+ EXPORT_SYMBOL(refrigerator);
++
++/* Routines for PM-transition notifications */
++
++static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
++
++int register_pm_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&pm_chain_head, nb);
++}
++EXPORT_SYMBOL_GPL(register_pm_notifier);
++
++int unregister_pm_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&pm_chain_head, nb);
++}
++EXPORT_SYMBOL_GPL(unregister_pm_notifier);
++
++int pm_notifier_call_chain(unsigned long val)
++{
++	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
++			== NOTIFY_BAD) ? -EINVAL : 0;
++}
