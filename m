@@ -1,17 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [Bugme-new] [Bug 8995] New: /proc/acpi/alarm worked;
-	update to 2.6.22.2 and /sys/class/rtc/rtc0/wakealarm don't
-Date: Mon, 5 Nov 2007 08:11:17 -0800
-Message-ID: <200711050811.18256.david-b@pacbell.net>
-References: <bug-8995-10286@http.bugzilla.kernel.org/>
-	<200711041125.35163.david-b@pacbell.net>
-	<200711042056.56763.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/5] Hibernation: Clean up userland interface
+	(rev. 2)
+Date: Mon, 5 Nov 2007 12:50:21 -0500
+Message-ID: <200711051250.21172.lenb@kernel.org>
+References: <200710260055.02298.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711042056.56763.rjw@sisk.pl>
+In-Reply-To: <200710260055.02298.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,24 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, linux-acpi@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, huffcslists@gmail.com, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 04 November 2007, Rafael J. Wysocki wrote:
-> On Sunday, 4 of November 2007, David Brownell wrote:
-> >
-> > So what's the status of this now ... are we back to having
-> > the /sys/class/rtc/rtc0/wakealarm work with ACPI again
-> 
-> Yes, it should work now.
+On Thursday 25 October 2007 18:55, Rafael J. Wysocki wrote:
+> Hi,
+>=20
+> This series of patches is intended to eliminate some design problems wi=
+th the
+> hibernation userland interface.
+>=20
+> It makes the following changes:
+> * allow the user space utilities to get the size of the image via ioctl
+> * introduce ioctls to be used instead of SNAPSHOT_PMOPS
+> * mark the SNAPSHOT_SET_SWAP_FILE ioctl as deprecated
+> * introduce new ioctl definitions to replace the wrongly defined ones
+> * move the definitions of hibernation ioctls to a separate header file =
+located
+> =A0 in include/linux/ and export them to the user space
+> (the details are in the changelogs).
+>=20
+> Please add to the suspend branch.
 
-A current git kernel seemed to work for me on at least one
-system that had previously misbehaved ... both "standby" and
-"disk" suspend now let the wakealarm do its thing.  (And STR
-has the usual unrelated framebuffer issues.)  And I'm told 
-another person has seen it work again on his hardware.  I'll
-try it on a few other systems too, just to be sure.
+done.
 
-Thanks for the bugfix, and update!
+thanks for doing this in a way that doesn't break existing user-binaries.
 
-- Dave
+-Len
