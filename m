@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] Add the "icebox"
-Date: Mon, 5 Nov 2007 23:11:07 +0100
-Message-ID: <200711052311.08392.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0711051611190.2800-100000@iolanthe.rowland.org>
+Subject: [PATCH] Hibernation: Add PM_RESTORE_PREPARE and
+	PM_POST_RESTORE notifiers (rev. 2)
+Date: Mon, 5 Nov 2007 23:46:09 +0100
+Message-ID: <200711052346.10598.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711051611190.2800-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,253 +18,156 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Nigel Cunningham <nigel@suspend2.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, 5 of November 2007, Alan Stern wrote:
-> Rafael:
-> 
-> This patch adds the icebox, for use by kernel threads that want to 
-> freeze themselves without using the freezer -- which is likely to crop 
-> up when the freezer gets eliminated.
-> 
-> It's straightforward enough.  It could be used as-is, for example for 
-> freezing workqueue threads.  Using it for other sorts of kernel threads 
-> seems to be rather difficult, requiring a fair amount of extra code 
-> that's hard to centralize since each thread will have to be woken up 
-> its own way.
-> 
-> Do you have any particular suggestions?
+[Len, please disregard the previous iteration of this patch and add the one
+below to the suspend branch, thanks.]
+---
+From: Alan Stern <stern@rowland.harvard.edu>
 
-I like the idea, but I think that start_icebox() should be called after
-freeze_processes().  Similarly, IMO it's better to call stop_icebox() before
-thaw_processes().
+Add PM_RESTORE_PREPARE and PM_POST_RESTORE notifiers to the PM core, to be used
+in analogy with the existing PM_HIBERNATION_PREPARE and PM_POST_HIBERNATION
+notifiers.
 
-Greetings,
-Rafael
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>
+Signed-off-by: "Rafael J. Wysocki" <rjw@sisk.pl>
+---
+ Documentation/power/notifiers.txt |    8 ++++++++
+ include/linux/notifier.h          |    2 ++
+ kernel/power/disk.c               |    5 +++++
+ kernel/power/user.c               |   31 +++++++++++++++++++------------
+ 4 files changed, 34 insertions(+), 12 deletions(-)
 
-
-> Index: usb-2.6/include/linux/freezer.h
-> ===================================================================
-> --- usb-2.6.orig/include/linux/freezer.h
-> +++ usb-2.6/include/linux/freezer.h
-> @@ -157,6 +157,12 @@ static inline void set_freezable(void)
->  	} while (try_to_freeze());					\
->  	__retval;							\
->  })
-> +
-> +/*
-> + * Kernel threads that want to freeze themselves go into the icebox.
-> + */
-> +extern void icebox(void);
-> +
->  #else /* !CONFIG_PM_SLEEP */
->  static inline int frozen(struct task_struct *p) { return 0; }
->  static inline int freezing(struct task_struct *p) { return 0; }
-> @@ -181,6 +187,7 @@ static inline void set_freezable(void) {
->  #define wait_event_freezable_timeout(wq, condition, timeout)		\
->  		wait_event_interruptible_timeout(wq, condition, timeout)
->  
-> +static inline void icebox(void) {}
->  #endif /* !CONFIG_PM_SLEEP */
->  
->  #endif	/* FREEZER_H_INCLUDED */
-> Index: usb-2.6/kernel/power/power.h
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/power.h
-> +++ usb-2.6/kernel/power/power.h
-> @@ -205,3 +205,8 @@ static inline int suspend_devices_and_en
->  
->  /* kernel/power/process.c */
->  extern int pm_notifier_call_chain(unsigned long val);
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +extern void start_icebox(void);
-> +extern void stop_icebox(void);
-> +#endif
-> Index: usb-2.6/kernel/power/main.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/main.c
-> +++ usb-2.6/kernel/power/main.c
-> @@ -71,6 +71,8 @@ static int suspend_prepare(void)
->  	if (!suspend_ops || !suspend_ops->enter)
->  		return -EPERM;
->  
-> +	start_icebox();
-> +
->  	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
->  	if (error)
->  		goto Finish;
-> @@ -98,6 +100,7 @@ static int suspend_prepare(void)
->  	thaw_processes();
->  	pm_restore_console();
->   Finish:
-> +	stop_icebox();
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
->  	return error;
->  }
-> @@ -191,6 +194,7 @@ static void suspend_finish(void)
->  {
->  	thaw_processes();
->  	pm_restore_console();
-> +	stop_icebox();
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
->  }
->  
-> Index: usb-2.6/kernel/power/disk.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/disk.c
-> +++ usb-2.6/kernel/power/disk.c
-> @@ -389,6 +389,8 @@ int hibernate(void)
->  		goto Unlock;
->  	}
->  
-> +	start_icebox();
-> +
->  	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
->  	if (error)
->  		goto Exit;
-> @@ -431,6 +433,7 @@ int hibernate(void)
->   Finish:
->  	free_basic_memory_bitmaps();
->   Exit:
-> +	stop_icebox();
->  	pm_notifier_call_chain(PM_POST_HIBERNATION);
->  	atomic_inc(&snapshot_device_available);
->   Unlock:
-> @@ -489,6 +492,8 @@ static int software_resume(void)
->  		goto Unlock;
->  	}
->  
-> +	start_icebox();
-> +
->  	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
->  	if (error)
->  		goto Finish;
-> @@ -516,6 +521,7 @@ static int software_resume(void)
->   Done:
->  	free_basic_memory_bitmaps();
->   Finish:
-> +	stop_icebox();
->  	pm_notifier_call_chain(PM_POST_RESTORE);
->  	atomic_inc(&snapshot_device_available);
->  	/* For success case, the suspend path will release the lock */
-> Index: usb-2.6/kernel/power/user.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/user.c
-> +++ usb-2.6/kernel/power/user.c
-> @@ -45,6 +45,7 @@ static int snapshot_open(struct inode *i
->  {
->  	struct snapshot_data *data;
->  	int error;
-> +	unsigned long cancel;
->  
->  	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
->  		return -EBUSY;
-> @@ -61,21 +62,22 @@ static int snapshot_open(struct inode *i
->  	data = &snapshot_state;
->  	filp->private_data = data;
->  	memset(&data->handle, 0, sizeof(struct snapshot_handle));
-> +	start_icebox();
->  	if ((filp->f_flags & O_ACCMODE) == O_RDONLY) {
->  		data->swap = swsusp_resume_device ?
->  			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
->  		data->mode = O_RDONLY;
->  		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-> -		if (error)
-> -			pm_notifier_call_chain(PM_POST_RESTORE);
-> +		cancel = PM_POST_RESTORE;
->  	} else {
->  		data->swap = -1;
->  		data->mode = O_WRONLY;
->  		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-> -		if (error)
-> -			pm_notifier_call_chain(PM_POST_HIBERNATION);
-> +		cancel = PM_POST_HIBERNATION;
->  	}
->  	if (error) {
-> +		stop_icebox();
-> +		pm_notifier_call_chain(cancel);
->  		atomic_inc(&snapshot_device_available);
->  		return error;
->  	}
-> @@ -99,6 +101,7 @@ static int snapshot_release(struct inode
->  		thaw_processes();
->  		mutex_unlock(&pm_mutex);
->  	}
-> +	stop_icebox();
->  	pm_notifier_call_chain(data->mode == O_WRONLY ?
->  			PM_POST_HIBERNATION : PM_POST_RESTORE);
->  	atomic_inc(&snapshot_device_available);
-> Index: usb-2.6/kernel/power/process.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/process.c
-> +++ usb-2.6/kernel/power/process.c
-> @@ -14,6 +14,8 @@
->  #include <linux/syscalls.h>
->  #include <linux/freezer.h>
->  
-> +#include "power.h"
-> +
->  /* 
->   * Timeout for stopping processes
->   */
-> @@ -305,3 +307,49 @@ int pm_notifier_call_chain(unsigned long
->  	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
->  			== NOTIFY_BAD) ? -EINVAL : 0;
->  }
-> +
-> +/*
-> + * Routines for kernel threads that want to freeze themselves
-> + */
-> +static DECLARE_WAIT_QUEUE_HEAD(icebox_wait_queue_head);
-> +static int icebox_active;
-> +
-> +/**
-> + * start_icebox -- activate the icebox
-> + *
-> + * Kernel power code should call this routine before sending the
-> + * PM_HIBERNATION_PREPARE or PM_SUSPEND_PREPARE notifications.
-> + */
-> +void start_icebox(void)
-> +{
-> +	icebox_active = 1;
-> +}
-> +
-> +/**
-> + * stop_icebox -- deactivate the icebox and awaken waiting threads
-> + *
-> + * Kernel power code should call this routine before sending the
-> + * PM_POST_HIBERNATION or PM_POST_SUSPEND notifications.
-> + */
-> +void stop_icebox(void)
-> +{
-> +	icebox_active = 0;
-> +	wake_up_all(&icebox_wait_queue_head);
-> +}
-> +
-> +/**
-> + * icebox -- place for kernel threads to wait during suspend or hibernation
-> + *
-> + * Threads can call this routine at any time.  It will return immediately
-> + * unless a system suspend or hibernation has started and the icebox is
-> + * active, in which case it won't return until the suspend/hibernation
-> + * is over.
-> + *
-> + * Freezable kernel threads should use this routine rather than relying on
-> + * the freezer.
-> + */
-> +void icebox(void)
-> +{
-> +	wait_event(icebox_wait_queue_head, !icebox_active);
-> +}
-> +EXPORT_SYMBOL_GPL(icebox);
-> 
-> 
-> 
-
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Index: linux-2.6/Documentation/power/notifiers.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/notifiers.txt
++++ linux-2.6/Documentation/power/notifiers.txt
+@@ -28,6 +28,14 @@ PM_POST_HIBERNATION	The system memory st
+ 			hibernation.  Device drivers' .resume() callbacks have
+ 			been executed and tasks have been thawed.
+ 
++PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
++			If all goes well the restored kernel will issue a
++			PM_POST_HIBERNATION notification.
++
++PM_POST_RESTORE		An error occurred during the hibernation restore.
++			Device drivers' .resume() callbacks have been executed
++			and tasks have been thawed.
++
+ PM_SUSPEND_PREPARE	The system is preparing for a suspend.
+ 
+ PM_POST_SUSPEND		The system has just resumed or an error occured during
+Index: linux-2.6/include/linux/notifier.h
+===================================================================
+--- linux-2.6.orig/include/linux/notifier.h
++++ linux-2.6/include/linux/notifier.h
+@@ -230,6 +230,8 @@ static inline int notifier_to_errno(int 
+ #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+ #define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+ #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
++#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
++#define PM_POST_RESTORE		0x0006 /* Restore failed */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -489,6 +489,10 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
++	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++	if (error)
++		goto Finish;
++
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+ 		goto Finish;
+@@ -512,6 +516,7 @@ static int software_resume(void)
+  Done:
+ 	free_basic_memory_bitmaps();
+  Finish:
++	pm_notifier_call_chain(PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+Index: linux-2.6/kernel/power/user.c
+===================================================================
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -67,6 +67,7 @@ atomic_t snapshot_device_available = ATO
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
++	int error;
+ 
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
+ 		return -EBUSY;
+@@ -87,9 +88,19 @@ static int snapshot_open(struct inode *i
+ 		data->swap = swsusp_resume_device ?
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
++		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	} else {
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
++		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_HIBERNATION);
++	}
++	if (error) {
++		atomic_inc(&snapshot_device_available);
++		return error;
+ 	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+@@ -111,6 +122,8 @@ static int snapshot_release(struct inode
+ 		thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 	}
++	pm_notifier_call_chain(data->mode == O_WRONLY ?
++			PM_POST_HIBERNATION : PM_POST_RESTORE);
+ 	atomic_inc(&snapshot_device_available);
+ 	return 0;
+ }
+@@ -174,18 +187,13 @@ static int snapshot_ioctl(struct inode *
+ 		if (data->frozen)
+ 			break;
+ 		mutex_lock(&pm_mutex);
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+-		if (!error) {
+-			printk("Syncing filesystems ... ");
+-			sys_sync();
+-			printk("done.\n");
+-
+-			error = freeze_processes();
+-			if (error)
+-				thaw_processes();
+-		}
++		printk("Syncing filesystems ... ");
++		sys_sync();
++		printk("done.\n");
++
++		error = freeze_processes();
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+ 		if (!error)
+ 			data->frozen = 1;
+@@ -196,7 +204,6 @@ static int snapshot_ioctl(struct inode *
+ 			break;
+ 		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+-		pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 		mutex_unlock(&pm_mutex);
+ 		data->frozen = 0;
+ 		break;
