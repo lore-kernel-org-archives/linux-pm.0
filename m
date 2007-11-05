@@ -1,16 +1,11 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/5] Hibernation: Clean up userland interface
-	(rev. 2)
-Date: Mon, 5 Nov 2007 12:50:21 -0500
-Message-ID: <200711051250.21172.lenb@kernel.org>
-References: <200710260055.02298.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PM: fix to earlier patch adding PM_RESTORE
+	notifiers
+Date: Mon, 5 Nov 2007 15:39:56 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711051536330.2800-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200710260055.02298.rjw@sisk.pl>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,30 +16,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 25 October 2007 18:55, Rafael J. Wysocki wrote:
-> Hi,
->=20
-> This series of patches is intended to eliminate some design problems wi=
-th the
-> hibernation userland interface.
->=20
-> It makes the following changes:
-> * allow the user space utilities to get the size of the image via ioctl
-> * introduce ioctls to be used instead of SNAPSHOT_PMOPS
-> * mark the SNAPSHOT_SET_SWAP_FILE ioctl as deprecated
-> * introduce new ioctl definitions to replace the wrongly defined ones
-> * move the definitions of hibernation ioctls to a separate header file =
-located
-> =A0 in include/linux/ and export them to the user space
-> (the details are in the changelogs).
->=20
-> Please add to the suspend branch.
+This patch (as1007) fixes a mistake in the patch adding the PM RESTORE
+notifiers.  The PM_POST_RESTORE notifier should be called if an error
+occurs in the PM_RESTORE_PREPARE notifications.
 
-done.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-thanks for doing this in a way that doesn't break existing user-binaries.
+---
 
--Len
+Rafael:
+
+Len may prefer to merge this with the earlier patch rather than keeping
+the two separate.  It's a very small update.
+
+Alan Stern
+
+
+Index: usb-2.6/kernel/power/disk.c
+===================================================================
+--- usb-2.6.orig/kernel/power/disk.c
++++ usb-2.6/kernel/power/disk.c
+@@ -491,7 +491,7 @@ static int software_resume(void)
+ 
+ 	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+ 	if (error)
+-		goto Exit;
++		goto Finish;
+ 
+ 	error = create_basic_memory_bitmaps();
+ 	if (error)
+@@ -517,7 +517,6 @@ static int software_resume(void)
+ 	free_basic_memory_bitmaps();
+  Finish:
+ 	pm_notifier_call_chain(PM_POST_RESTORE);
+- Exit:
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+Index: usb-2.6/kernel/power/user.c
+===================================================================
+--- usb-2.6.orig/kernel/power/user.c
++++ usb-2.6/kernel/power/user.c
+@@ -66,10 +66,14 @@ static int snapshot_open(struct inode *i
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
+ 		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	} else {
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
+ 		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		if (error)
++			pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 	}
+ 	if (error) {
+ 		atomic_inc(&snapshot_device_available);
