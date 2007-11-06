@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: usb_id segfaulting on 2.6.23
-Date: Tue, 6 Nov 2007 11:11:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0711061108220.3883-100000@iolanthe.rowland.org>
-References: <47308229.5010207@gentoo.org>
+Subject: Re: [PATCH] PM: convert PM notifiers to out-of-line code
+Date: Tue, 6 Nov 2007 11:37:04 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711061135470.3883-100000@iolanthe.rowland.org>
+References: <200711052301.30112.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47308229.5010207@gentoo.org>
+In-Reply-To: <200711052301.30112.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,38 +16,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@gentoo.org>
-Cc: Oliver Neukum <oneukum@suse.de>, Kay Sievers <kay.sievers@vrfy.org>, linux-hotplug-devel@lists.sourceforge.net, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 6 Nov 2007, Daniel Drake wrote:
+This patch (as1008b) converts the PM notifier routines from inline
+calls to out-of-line code.  It also prevents pm_chain_head from
+being created when CONFIG_PM_SLEEP isn't enabled, and EXPORTs the
+notifier registration and unregistration routines.
 
-> Oliver Neukum wrote:
-> > Am Dienstag 06 November 2007 schrieb Daniel Drake:
-> >> Oliver Neukum wrote:
-> >>> Is bcdDevice present without CONFIG_SUSPEND? Which attributes are
-> >>> present?
-> > 
-> > Looks like a failure in drivers/usb/core/sysfs.c::usb_create_sysfs_dev_files()
-> > Can you put printks there to show where it fails?
-> 
-> Done. It fails here:
-> 
-> 	retval = add_power_attributes(dev);
-> 	if (retval)
-> 		goto error;
-> 
-> add_power_attributes returns -2.
-> 
-> Digging further, inside add_power_attributes(), the first call to 
-> sysfs_add_file_to_group() returns -2. The second one is therefore not 
-> attempted.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-Ah, okay.  This is a known problem, a configuration-related issue.  
-The PM core doesn't create a device's /sys/.../power subdirectory
-unless CONFIG_PM_SLEEP is set.  In fact it should be created whenever
-CONFIG_PM is set.
+---
 
-I haven't had time to write a patch for this yet.  Do you want to try?
+On Mon, 5 Nov 2007, Rafael J. Wysocki wrote:
+
+> I'd prefer to define the routines in main.c, because I really don't consider
+> them as being strictly related to the freezing of processes.
+
+Okay, here's a version which does that.
 
 Alan Stern
+
+
+Index: usb-2.6/include/linux/suspend.h
+===================================================================
+--- usb-2.6.orig/include/linux/suspend.h
++++ usb-2.6/include/linux/suspend.h
+@@ -216,17 +216,8 @@ void __save_processor_state(struct saved
+ void __restore_processor_state(struct saved_context *ctxt);
+ 
+ /* kernel/power/main.c */
+-extern struct blocking_notifier_head pm_chain_head;
+-
+-static inline int register_pm_notifier(struct notifier_block *nb)
+-{
+-	return blocking_notifier_chain_register(&pm_chain_head, nb);
+-}
+-
+-static inline int unregister_pm_notifier(struct notifier_block *nb)
+-{
+-	return blocking_notifier_chain_unregister(&pm_chain_head, nb);
+-}
++extern int register_pm_notifier(struct notifier_block *nb);
++extern int unregister_pm_notifier(struct notifier_block *nb);
+ 
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+Index: usb-2.6/kernel/power/main.c
+===================================================================
+--- usb-2.6.orig/kernel/power/main.c
++++ usb-2.6/kernel/power/main.c
+@@ -24,10 +24,34 @@
+ 
+ #include "power.h"
+ 
+-BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+-
+ DEFINE_MUTEX(pm_mutex);
+ 
++#ifdef CONFIG_PM_SLEEP
++
++/* Routines for PM-transition notifications */
++
++static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
++
++int register_pm_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&pm_chain_head, nb);
++}
++EXPORT_SYMBOL_GPL(register_pm_notifier);
++
++int unregister_pm_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&pm_chain_head, nb);
++}
++EXPORT_SYMBOL_GPL(unregister_pm_notifier);
++
++int pm_notifier_call_chain(unsigned long val)
++{
++	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
++			== NOTIFY_BAD) ? -EINVAL : 0;
++}
++
++#endif /* CONFIG_PM_SLEEP */
++
+ #ifdef CONFIG_SUSPEND
+ 
+ /* This is just an arbitrary number */
+Index: usb-2.6/kernel/power/power.h
+===================================================================
+--- usb-2.6.orig/kernel/power/power.h
++++ usb-2.6/kernel/power/power.h
+@@ -203,11 +203,7 @@ static inline int suspend_devices_and_en
+ }
+ #endif /* !CONFIG_SUSPEND */
+ 
+-/* kernel/power/common.c */
+-extern struct blocking_notifier_head pm_chain_head;
+-
+-static inline int pm_notifier_call_chain(unsigned long val)
+-{
+-	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
+-			== NOTIFY_BAD) ? -EINVAL : 0;
+-}
++#ifdef CONFIG_PM_SLEEP
++/* kernel/power/main.c */
++extern int pm_notifier_call_chain(unsigned long val);
++#endif
