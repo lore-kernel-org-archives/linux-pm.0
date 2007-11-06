@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Add the "icebox"
-Date: Tue, 6 Nov 2007 10:08:17 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0711060934260.3883-100000@iolanthe.rowland.org>
-References: <200711052311.08392.rjw@sisk.pl>
+Subject: Re: usb_id segfaulting on 2.6.23
+Date: Tue, 6 Nov 2007 11:11:12 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711061108220.3883-100000@iolanthe.rowland.org>
+References: <47308229.5010207@gentoo.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711052311.08392.rjw@sisk.pl>
+In-Reply-To: <47308229.5010207@gentoo.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,45 +16,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: Oliver Neukum <oneukum@suse.de>, Kay Sievers <kay.sievers@vrfy.org>, linux-hotplug-devel@lists.sourceforge.net, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 5 Nov 2007, Rafael J. Wysocki wrote:
+On Tue, 6 Nov 2007, Daniel Drake wrote:
 
-> On Monday, 5 of November 2007, Alan Stern wrote:
-> > Rafael:
+> Oliver Neukum wrote:
+> > Am Dienstag 06 November 2007 schrieb Daniel Drake:
+> >> Oliver Neukum wrote:
+> >>> Is bcdDevice present without CONFIG_SUSPEND? Which attributes are
+> >>> present?
 > > 
-> > This patch adds the icebox, for use by kernel threads that want to 
-> > freeze themselves without using the freezer -- which is likely to crop 
-> > up when the freezer gets eliminated.
-> > 
-> > It's straightforward enough.  It could be used as-is, for example for 
-> > freezing workqueue threads.  Using it for other sorts of kernel threads 
-> > seems to be rather difficult, requiring a fair amount of extra code 
-> > that's hard to centralize since each thread will have to be woken up 
-> > its own way.
-> > 
-> > Do you have any particular suggestions?
+> > Looks like a failure in drivers/usb/core/sysfs.c::usb_create_sysfs_dev_files()
+> > Can you put printks there to show where it fails?
 > 
-> I like the idea, but I think that start_icebox() should be called after
-> freeze_processes().  Similarly, IMO it's better to call stop_icebox() before
-> thaw_processes().
+> Done. It fails here:
+> 
+> 	retval = add_power_attributes(dev);
+> 	if (retval)
+> 		goto error;
+> 
+> add_power_attributes returns -2.
+> 
+> Digging further, inside add_power_attributes(), the first call to 
+> sysfs_add_file_to_group() returns -2. The second one is therefore not 
+> attempted.
 
-The same thought occurred to me.  But consider: If at some point we do 
-remove the freezer, then freezable kernel threads will rely on the 
-PM_HIBERNATION_PREPARE notification to know when they should go into 
-the icebox.  Hence the icebox has to be started before the 
-notifications are sent, and that means before freeze_processes.  (In 
-fact, once the freezer is gone it won't even make sense to ask whether 
-start_icebox comes before or after freeze_processes!)
+Ah, okay.  This is a known problem, a configuration-related issue.  
+The PM core doesn't create a device's /sys/.../power subdirectory
+unless CONFIG_PM_SLEEP is set.  In fact it should be created whenever
+CONFIG_PM is set.
 
-The experience of working on this has made we wonder whether we really 
-should get rid of the freezer entirely.  Even if it is kept merely for 
-freezing the handful of kernel threads (not user tasks!) that want to 
-be frozen, it's still likely to be more efficient that having a bunch
-of independent notifier routines, each sending a particular thread to 
-the icebox.  If we do keep the freezer then maybe it's okay to start 
-the icebox after the notications are sent.
+I haven't had time to write a patch for this yet.  Do you want to try?
 
 Alan Stern
