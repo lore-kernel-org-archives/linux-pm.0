@@ -1,12 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Add the "icebox"
-Date: Wed, 7 Nov 2007 15:02:26 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0711071500590.6432-100000@iolanthe.rowland.org>
-References: <20071107194934.GA31138@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH (2.6.25) 0/2] suspend/hibernate Kconfig
+	cleanups
+Date: Wed, 7 Nov 2007 23:17:47 +0100
+Message-ID: <200711072317.48023.rjw@sisk.pl>
+References: <20071107135758.100171000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071107194934.GA31138@linux.intel.com>
+In-Reply-To: <20071107135758.100171000@sipsolutions.net>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,23 +20,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Gross <mgross@linux.intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 7 Nov 2007, Mark Gross wrote:
+On Wednesday, 7 of November 2007, Johannes Berg wrote:
+> These two patches, intended for 2.6.25, clean up the
+> suspend/hibernate Kconfig.
 
-> On Mon, Nov 05, 2007 at 04:27:47PM -0500, Alan Stern wrote:
-> > Rafael:
-> > 
-> > This patch adds the icebox, for use by kernel threads that want to 
-> > freeze themselves without using the freezer -- which is likely to crop 
-> > up when the freezer gets eliminated.
-> 
-> Why can't we have a runque per cpu that never gets scheduled and we simply
-> migrate the treads to those?  no more yield loops.
+Both patches look good.
 
-Indeed.  Why stop there?  Why not eliminate wait_event() entirely, or
-rather, re-implement it as you suggest?  :-)
+Since they touch a couple of architectures, I think it's better to merge them
+through -mm.
 
-Alan Stern
+Greetings,
+Rafael
