@@ -1,8 +1,12 @@
-From: Daniel Drake <dsd@gentoo.org>
-Subject: [PATCH] create /sys/.../power when CONFIG_PM is set
-Date: Wed,  7 Nov 2007 10:10:43 +0000 (GMT)
-Message-ID: <20071107101043.2E64C9D4ECC__28164.3614791848$1194430324$gmane$org@zog.reactivated.net>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH (2.6.25) 1/2] hibernation: clean up Kconfig
+Date: Wed, 07 Nov 2007 14:57:59 +0100
+Message-ID: <20071107135848.417344000__4541.96763826094$1194448268$gmane$org@sipsolutions.net>
+References: <20071107135758.100171000@sipsolutions.net>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline; filename=025-hibernate-kconfig-cleanup.patch
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,133 +16,108 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-hotplug-devel@lists.sourceforge.net, kay.sievers@vrfy.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, oneukum@suse.de
+To: linux-pm@lists.linux-foundation.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-The CONFIG_SUSPEND changes in 2.6.23 caused a regression under certain
-configuration conditions (SUSPEND=n, USB_AUTOSUSPEND=y) where all USB device
-attributes in sysfs (idVendor, idProduct, ...) silently disappeared, causing
-udev breakage and more.
+This cleans up the hibernation Kconfig and removes the need to
+declare centrally which architectures support hibernation. All
+architectures that currently support hibernation are modified
+accordingly.
 
-The cause of this is that the /sys/.../power subdirectory is now only created
-when CONFIG_PM_SLEEP is set, however, it should be created whenever CONFIG_PM
-is set to handle the above situation. The following patch fixes the
-regression.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: linuxppc-dev@ozlabs.org
+Cc: linux-pm@lists.linux-foundation.org
 
-Signed-off-by: Daniel Drake <dsd@gentoo.org>
+---
+ arch/i386/Kconfig    |    4 ++++
+ arch/powerpc/Kconfig |   14 ++++++++++++--
+ arch/x86_64/Kconfig  |    3 +++
+ kernel/power/Kconfig |   18 +++---------------
+ 4 files changed, 22 insertions(+), 17 deletions(-)
 
-Index: linux-2.6.24-rc1-git14/drivers/base/core.c
-===================================================================
---- linux-2.6.24-rc1-git14.orig/drivers/base/core.c
-+++ linux-2.6.24-rc1-git14/drivers/base/core.c
-@@ -770,9 +770,10 @@ int device_add(struct device *dev)
- 	error = device_add_attrs(dev);
- 	if (error)
- 		goto AttrsError;
--	error = device_pm_add(dev);
-+	error = dpm_sysfs_add(dev);
- 	if (error)
- 		goto PMError;
-+	device_pm_add(dev);
- 	error = bus_add_device(dev);
- 	if (error)
- 		goto BusError;
-@@ -797,6 +798,7 @@ int device_add(struct device *dev)
- 	return error;
-  BusError:
- 	device_pm_remove(dev);
-+	dpm_sysfs_remove(dev);
-  PMError:
- 	if (dev->bus)
- 		blocking_notifier_call_chain(&dev->bus->bus_notifier,
-Index: linux-2.6.24-rc1-git14/drivers/base/power/Makefile
-===================================================================
---- linux-2.6.24-rc1-git14.orig/drivers/base/power/Makefile
-+++ linux-2.6.24-rc1-git14/drivers/base/power/Makefile
-@@ -1,5 +1,6 @@
- obj-y			:= shutdown.o
--obj-$(CONFIG_PM_SLEEP)	+= main.o sysfs.o
-+obj-$(CONFIG_PM)	+= sysfs.o
-+obj-$(CONFIG_PM_SLEEP)	+= main.o
- obj-$(CONFIG_PM_TRACE)	+= trace.o
+--- everything.orig/arch/powerpc/Kconfig	2007-11-07 13:52:14.641523382 +0100
++++ everything/arch/powerpc/Kconfig	2007-11-07 14:29:17.251530543 +0100
+@@ -140,9 +140,19 @@ config DEFAULT_UIMAGE
+ 	  Used to allow a board to specify it wants a uImage built by default
+ 	default n
  
- ifeq ($(CONFIG_DEBUG_DRIVER),y)
-Index: linux-2.6.24-rc1-git14/drivers/base/power/power.h
-===================================================================
---- linux-2.6.24-rc1-git14.orig/drivers/base/power/power.h
-+++ linux-2.6.24-rc1-git14/drivers/base/power/power.h
-@@ -18,9 +18,24 @@ static inline struct device * to_device(
- 	return container_of(entry, struct device, power.entry);
- }
+-config PPC64_SWSUSP
++config HIBERNATE_32
+ 	bool
+-	depends on PPC64 && (BROKEN || (PPC_PMAC64 && EXPERIMENTAL))
++	depends on (PPC_PMAC && !SMP) || BROKEN
++	default y
++
++config HIBERNATE_64
++	bool
++	depends on BROKEN || (PPC_PMAC64 && EXPERIMENTAL)
++	default y
++
++config ARCH_HIBERNATION_POSSIBLE
++	bool
++	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
+ 	default y
  
--extern int device_pm_add(struct device *);
-+extern void device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
+ config PPC_DCR_NATIVE
+--- everything.orig/kernel/power/Kconfig	2007-11-07 13:52:14.731524087 +0100
++++ everything/kernel/power/Kconfig	2007-11-07 14:29:17.351531628 +0100
+@@ -63,7 +63,8 @@ config PM_TRACE
  
-+#else /* CONFIG_PM_SLEEP */
-+
-+
-+static inline void device_pm_add(struct device * dev)
-+{
-+}
-+static inline void device_pm_remove(struct device * dev)
-+{
-+
-+}
-+
-+#endif
-+
-+#ifdef CONFIG_PM
-+
- /*
-  * sysfs.c
-  */
-@@ -28,16 +43,16 @@ extern void device_pm_remove(struct devi
- extern int dpm_sysfs_add(struct device *);
- extern void dpm_sysfs_remove(struct device *);
+ config PM_SLEEP_SMP
+ 	bool
+-	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
++	depends on SMP
++	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+ 	depends on PM_SLEEP
+ 	select HOTPLUG_CPU
+ 	default y
+@@ -97,22 +98,9 @@ config SUSPEND
+ 	  powered and thus its contents are preserved, such as the
+ 	  suspend-to-RAM state (i.e. the ACPI S3 state).
  
--#else /* CONFIG_PM_SLEEP */
-+#else /* CONFIG_PM */
- 
+-config HIBERNATION_UP_POSSIBLE
+-	bool
+-	depends on X86 || PPC64_SWSUSP || PPC32
+-	depends on !SMP
+-	default y
 -
--static inline int device_pm_add(struct device * dev)
-+static inline int dpm_sysfs_add(struct device * dev)
- {
- 	return 0;
- }
--static inline void device_pm_remove(struct device * dev)
-+static inline void dpm_sysfs_remove(struct device * dev)
- {
- 
- }
- 
--#endif
-+#endif /* CONFIG_PM */
-+
-Index: linux-2.6.24-rc1-git14/drivers/base/power/main.c
-===================================================================
---- linux-2.6.24-rc1-git14.orig/drivers/base/power/main.c
-+++ linux-2.6.24-rc1-git14/drivers/base/power/main.c
-@@ -38,20 +38,14 @@ static DEFINE_MUTEX(dpm_list_mtx);
- int (*platform_enable_wakeup)(struct device *dev, int is_on);
- 
- 
--int device_pm_add(struct device *dev)
-+void device_pm_add(struct device *dev)
- {
--	int error;
+-config HIBERNATION_SMP_POSSIBLE
+-	bool
+-	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
+-	depends on SMP
+-	default y
 -
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
- 	list_add_tail(&dev->power.entry, &dpm_active);
--	error = dpm_sysfs_add(dev);
--	if (error)
--		list_del(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
--	return error;
- }
+ config HIBERNATION
+ 	bool "Hibernation (aka 'suspend to disk')"
+-	depends on PM && SWAP
+-	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
++	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+ 	---help---
+ 	  Enable the suspend to disk (STD) functionality, which is usually
+ 	  called "hibernation" in user interfaces.  STD checkpoints the
+--- everything.orig/arch/i386/Kconfig	2007-11-07 13:54:07.811521157 +0100
++++ everything/arch/i386/Kconfig	2007-11-07 14:29:16.631526474 +0100
+@@ -1319,3 +1319,7 @@ config X86_TRAMPOLINE
+ config KTIME_SCALAR
+ 	bool
+ 	default y
++
++config ARCH_HIBERNATION_POSSIBLE
++	def_bool y
++	depends on !SMP || !X86_VOYAGER
+--- everything.orig/arch/x86_64/Kconfig	2007-11-07 13:57:35.091520777 +0100
++++ everything/arch/x86_64/Kconfig	2007-11-07 14:29:16.721529458 +0100
+@@ -716,6 +716,9 @@ menu "Power management options"
  
- void device_pm_remove(struct device *dev)
+ source kernel/power/Kconfig
+ 
++config ARCH_HIBERNATION_POSSIBLE
++	def_bool y
++
+ config ARCH_HIBERNATION_HEADER
+ 	bool
+ 	depends on HIBERNATION
+
+-- 
