@@ -1,12 +1,12 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC] Add the "icebox"
-Date: Wed, 07 Nov 2007 17:53:46 +0100
-Message-ID: <1194454426.4470.70.camel@johannes.berg>
-References: <Pine.LNX.4.44L0.0711071146550.4444-100000@iolanthe.rowland.org>
+Date: Wed, 7 Nov 2007 12:16:59 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711071210570.6349-100000@iolanthe.rowland.org>
+References: <200711052311.08392.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7233047774412791165=="
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711071146550.4444-100000@iolanthe.rowland.org>
+In-Reply-To: <200711052311.08392.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,68 +14,223 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 5 Nov 2007, Rafael J. Wysocki wrote:
 
---===============7233047774412791165==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-0XqFX83AJB6cEUGNyFkz"
+> I like the idea, but I think that start_icebox() should be called after
+> freeze_processes().  Similarly, IMO it's better to call stop_icebox() before
+> thaw_processes().
 
+Okay.  On the assumption that freezable kernel threads will continue to 
+use the freezer and won't try to use the icebox, I have updated the 
+patch.  Other comments?
 
---=-0XqFX83AJB6cEUGNyFkz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Alan Stern
 
-
-> > Right, ok. I wish I could change powerpc, I've been maintaining a patch
-> > for months now, but Paul seems to be dead set against it. Not only does
-> > that fix these things, but also we get to use the /sys/power/state
-> > API...
->=20
-> This is just the start.  Nothing will _really_ get fixed until lots of=20
-> drivers actually begin to use the icebox.
-
-No, I mean the patch that makes powerpc use the generic API fixes things
-because it makes it use the freezer.
-
-johannes
-
---=-0XqFX83AJB6cEUGNyFkz
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzHtmaVg1VMiehFYAQLDsQ//SmewQJj+6xPOR1kmOxeDhgRmfZPe2yJN
-AgbcZPU0I3SerMNIloigTP4S0EdfjoMUeH5rPtd9U41VEJc8FGBg/rfM3f7TATQn
-2ZmII9YepUuepU68Ix7Kj/++bRYdABZsRbVnP3fw/45ViSk9IOyIv9n/3dnFIk/4
-+pY35FEhnVsHjEovdQNdaDdDpskRxAvAFRMzU+CSWtZtAMSUfFXDuibv9MIMQL6l
-A1vSIanTl8+HNNPPzi5nsD/YhJ5iQUcGbYdW+T/UwMicJ6bTyTFCJUCSLjqmLy/3
-LCFJJOuVYqRjVPIgWQGD0mmuvFuhZ/xQe7UvdlFKLR8Kuag8ZYcuacpN7TFAAeBo
-dj3KAeDb0lULSOWCeX8Pa/NyM+0dUs5cTRr31HfirHwvMQm1uBppXOoYs1Qo1ohN
-IhDE/y+6jw11H10lvSDa6gSq1Q/n2B5cM0o3XS57j7V/Z7I5WQft1KUE1UiJp3Cd
-MlNZGKdKP+dy/026UH2dkHPHNFdxzgRaiMG655zPCEAsdXUYBH3oDVtNug0rH+Z2
-b3WSDWAR/NFFKh4U/+lUxpgH9LbpEECrWTrT0dPaDSc/WV8qgfI04++VitLuRNvk
-wTJwPBgaw1eKNVTrxEAiF4t9rAhCgVl8uOPwGyYoAYDmzTZ6CW89wRshFoEykrwY
-0d4YVj2gfj4=
-=XFGj
------END PGP SIGNATURE-----
-
---=-0XqFX83AJB6cEUGNyFkz--
+P.S.: What about mutual exclusion in kernel/power/user.c?  If we stop 
+freezing user tasks, there's nothing to prevent more than one task 
+holding an open file reference to the snapshot file and submitting 
+ioctls concurrently.  Maybe the regions covered by pm_mutex should be 
+expanded.
 
 
---===============7233047774412791165==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-
---===============7233047774412791165==--
+Index: usb-2.6/include/linux/freezer.h
+===================================================================
+--- usb-2.6.orig/include/linux/freezer.h
++++ usb-2.6/include/linux/freezer.h
+@@ -157,6 +157,12 @@ static inline void set_freezable(void)
+ 	} while (try_to_freeze());					\
+ 	__retval;							\
+ })
++
++/*
++ * Kernel threads that want to freeze themselves go into the icebox.
++ */
++extern void icebox(void);
++
+ #else /* !CONFIG_PM_SLEEP */
+ static inline int frozen(struct task_struct *p) { return 0; }
+ static inline int freezing(struct task_struct *p) { return 0; }
+@@ -181,6 +187,7 @@ static inline void set_freezable(void) {
+ #define wait_event_freezable_timeout(wq, condition, timeout)		\
+ 		wait_event_interruptible_timeout(wq, condition, timeout)
+ 
++static inline void icebox(void) {}
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+ #endif	/* FREEZER_H_INCLUDED */
+Index: usb-2.6/kernel/power/power.h
+===================================================================
+--- usb-2.6.orig/kernel/power/power.h
++++ usb-2.6/kernel/power/power.h
+@@ -207,3 +207,9 @@ static inline int suspend_devices_and_en
+ /* kernel/power/main.c */
+ extern int pm_notifier_call_chain(unsigned long val);
+ #endif
++
++#ifdef CONFIG_PM_SLEEP
++/* kerne/power/process.c */
++extern void start_icebox(void);
++extern void stop_icebox(void);
++#endif
+Index: usb-2.6/kernel/power/main.c
+===================================================================
+--- usb-2.6.orig/kernel/power/main.c
++++ usb-2.6/kernel/power/main.c
+@@ -108,6 +108,8 @@ static int suspend_prepare(void)
+ 		goto Thaw;
+ 	}
+ 
++	start_icebox();
++
+ 	free_pages = global_page_state(NR_FREE_PAGES);
+ 	if (free_pages < FREE_PAGE_NUMBER) {
+ 		pr_debug("PM: free some memory\n");
+@@ -120,6 +122,7 @@ static int suspend_prepare(void)
+ 	if (!error)
+ 		return 0;
+ 
++	stop_icebox();
+  Thaw:
+ 	thaw_processes();
+ 	pm_restore_console();
+@@ -215,6 +218,7 @@ int suspend_devices_and_enter(suspend_st
+  */
+ static void suspend_finish(void)
+ {
++	stop_icebox();
+ 	thaw_processes();
+ 	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+Index: usb-2.6/kernel/power/disk.c
+===================================================================
+--- usb-2.6.orig/kernel/power/disk.c
++++ usb-2.6/kernel/power/disk.c
+@@ -406,6 +406,8 @@ int hibernate(void)
+ 	if (error)
+ 		goto Finish;
+ 
++	start_icebox();
++
+ 	if (hibernation_mode == HIBERNATION_TESTPROC) {
+ 		printk("swsusp debug: Waiting for 5 seconds.\n");
+ 		mdelay(5000);
+@@ -427,6 +429,7 @@ int hibernate(void)
+ 		swsusp_free();
+ 	}
+  Thaw:
++	stop_icebox();
+ 	unprepare_processes();
+  Finish:
+ 	free_basic_memory_bitmaps();
+@@ -504,6 +507,8 @@ static int software_resume(void)
+ 		goto Done;
+ 	}
+ 
++	start_icebox();
++
+ 	pr_debug("PM: Reading swsusp image.\n");
+ 
+ 	error = swsusp_read(&flags);
+@@ -512,6 +517,7 @@ static int software_resume(void)
+ 
+ 	printk(KERN_ERR "PM: Restore failed, recovering.\n");
+ 	swsusp_free();
++	stop_icebox();
+ 	unprepare_processes();
+  Done:
+ 	free_basic_memory_bitmaps();
+Index: usb-2.6/kernel/power/user.c
+===================================================================
+--- usb-2.6.orig/kernel/power/user.c
++++ usb-2.6/kernel/power/user.c
+@@ -172,13 +172,16 @@ static int snapshot_ioctl(struct inode *
+ 		if (error)
+ 			thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+-		if (!error)
++		if (!error) {
+ 			data->frozen = 1;
++			start_icebox();
++		}
+ 		break;
+ 
+ 	case SNAPSHOT_UNFREEZE:
+ 		if (!data->frozen || data->ready)
+ 			break;
++		stop_icebox();
+ 		mutex_lock(&pm_mutex);
+ 		thaw_processes();
+ 		mutex_unlock(&pm_mutex);
+Index: usb-2.6/kernel/power/process.c
+===================================================================
+--- usb-2.6.orig/kernel/power/process.c
++++ usb-2.6/kernel/power/process.c
+@@ -14,6 +14,8 @@
+ #include <linux/syscalls.h>
+ #include <linux/freezer.h>
+ 
++#include "power.h"
++
+ /* 
+  * Timeout for stopping processes
+  */
+@@ -283,3 +285,52 @@ void thaw_processes(void)
+ }
+ 
+ EXPORT_SYMBOL(refrigerator);
++
++/*
++ * Routines for kernel threads that want to freeze themselves in the icebox
++ */
++static DECLARE_WAIT_QUEUE_HEAD(icebox_wait_queue_head);
++static int icebox_active;
++
++/**
++ * start_icebox -- activate the icebox
++ *
++ * Kernel power code should call this routine before sending the
++ * PM_HIBERNATION_PREPARE, PM_SUSPEND_PREPARE, or PM_RESTORE_PREPARE
++ * notifications.
++ */
++void start_icebox(void)
++{
++	icebox_active = 1;
++}
++
++/**
++ * stop_icebox -- deactivate the icebox and awaken waiting threads
++ *
++ * Kernel power code should call this routine before sending the
++ * PM_POST_HIBERNATION, PM_POST_SUSPEND, or PM_POST_RESTORE notifications.
++ */
++void stop_icebox(void)
++{
++	icebox_active = 0;
++	wake_up_all(&icebox_wait_queue_head);
++}
++
++/**
++ * icebox -- place for kernel threads to wait during suspend or hibernation
++ *
++ * Tasks can call this routine at any time.  It will return immediately
++ * unless a system suspend or hibernation has started and the icebox is
++ * active, in which case it won't return until the suspend/hibernation
++ * is over.
++ *
++ * This routine should be used by drivers that want to delay user-initiated
++ * I/O until a system sleep is over.  Kernel threads should not use it
++ * in place of the freezer, because the icebox doesn't get activated until
++ * after freezing is complete.
++ */
++void icebox(void)
++{
++	wait_event(icebox_wait_queue_head, !icebox_active);
++}
++EXPORT_SYMBOL_GPL(icebox);
