@@ -1,12 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] create /sys/.../power when CONFIG_PM is set
-Date: Wed, 7 Nov 2007 11:45:14 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0711071143200.4444-100000__899.116232949559$1194453982$gmane$org@iolanthe.rowland.org>
-References: <20071107101043.2E64C9D4ECC@zog.reactivated.net>
+Subject: Re: [RFC] Add the "icebox"
+Date: Wed, 7 Nov 2007 11:47:55 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0711071146550.4444-100000@iolanthe.rowland.org>
+References: <1194450893.4470.51.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071107101043.2E64C9D4ECC@zog.reactivated.net>
+In-Reply-To: <1194450893.4470.51.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,25 +16,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@gentoo.org>
-Cc: linux-hotplug-devel@lists.sourceforge.net, kay.sievers@vrfy.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, oneukum@suse.de
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 7 Nov 2007, Daniel Drake wrote:
+On Wed, 7 Nov 2007, Johannes Berg wrote:
 
-> The CONFIG_SUSPEND changes in 2.6.23 caused a regression under certain
-> configuration conditions (SUSPEND=n, USB_AUTOSUSPEND=y) where all USB device
-> attributes in sysfs (idVendor, idProduct, ...) silently disappeared, causing
-> udev breakage and more.
+> > The icebox would still be useful, however, for user tasks that try to
+> > do I/O after a system-sleep transition has begun.  Right now this can't
+> > happen, thanks to the freezer (except that it _can_ happen on PPC where
+> > the freezer isn't used for suspend).  Once the freezer no longer
+> > affects user tasks, kernel drivers will have to do _something_ when a
+> > user task submits an I/O request during a system sleep.  That
+> > "something" will be to go to the icebox.
 > 
-> The cause of this is that the /sys/.../power subdirectory is now only created
-> when CONFIG_PM_SLEEP is set, however, it should be created whenever CONFIG_PM
-> is set to handle the above situation. The following patch fixes the
-> regression.
-> 
-> Signed-off-by: Daniel Drake <dsd@gentoo.org>
+> Right, ok. I wish I could change powerpc, I've been maintaining a patch
+> for months now, but Paul seems to be dead set against it. Not only does
+> that fix these things, but also we get to use the /sys/power/state
+> API...
 
-I haven't tried applying this, but it looks okay to me.  There may be 
-some conflict with other changes already merged in the PM core.
+This is just the start.  Nothing will _really_ get fixed until lots of 
+drivers actually begin to use the icebox.
 
 Alan Stern
