@@ -1,12 +1,8 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC] Add the "icebox"
-Date: Wed, 07 Nov 2007 09:58:40 +0100
-Message-ID: <1194425920.4055.1.camel@johannes.berg>
-References: <Pine.LNX.4.44L0.0711051611190.2800-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0274139290799042584=="
+From: Daniel Drake <dsd@gentoo.org>
+Subject: [PATCH] create /sys/.../power when CONFIG_PM is set
+Date: Wed,  7 Nov 2007 10:10:43 +0000 (GMT)
+Message-ID: <20071107101043.2E64C9D4ECC__28164.3614791848$1194430324$gmane$org@zog.reactivated.net>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711051611190.2800-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,67 +10,135 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: rjw@sisk.pl
+Cc: linux-hotplug-devel@lists.sourceforge.net, kay.sievers@vrfy.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, oneukum@suse.de
 List-Id: linux-pm@vger.kernel.org
 
+The CONFIG_SUSPEND changes in 2.6.23 caused a regression under certain
+configuration conditions (SUSPEND=n, USB_AUTOSUSPEND=y) where all USB device
+attributes in sysfs (idVendor, idProduct, ...) silently disappeared, causing
+udev breakage and more.
 
---===============0274139290799042584==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-w7ggdrHC8jsrCFy+3q0W"
+The cause of this is that the /sys/.../power subdirectory is now only created
+when CONFIG_PM_SLEEP is set, however, it should be created whenever CONFIG_PM
+is set to handle the above situation. The following patch fixes the
+regression.
 
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
 
---=-w7ggdrHC8jsrCFy+3q0W
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-> This patch adds the icebox, for use by kernel threads that want to=20
-> freeze themselves without using the freezer -- which is likely to crop=20
-> up when the freezer gets eliminated.
-
-There obviously isn't a way to wait for all tasks that want to enter the
-icebox since there's no task flag for this, will tasks need to add extra
-locking? Or otherwise how do we make sure that a task hasn't *just* gone
-past icebox() and starts executing the code that the icebox() is
-supposed to prevent?
-
-johannes
-
---=-w7ggdrHC8jsrCFy+3q0W
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzF+P6Vg1VMiehFYAQLKrA/+KQPSmFsDd88803hrl2O+vOiiMDmZ0j1S
-9xm5z3yMRuMaHvXA8aXmQtX6S+y+urYWcDLbt//DKcUzmJEU/tWPZowA4lr5Tf55
-PzPlpZc7TGnDjDJZ3SnDn5tB0LZVb7HbQ1RZDLAOs0h2nJC/ksa8ocTY4pyIh1Zh
-BLLsodxqP2mE5AWHkggTuwfo54984r7hsADtIMI7iSXTXoNG36pJIBjvxppjDdx5
-/w69KoaC0nIabtoMLfZSnS5PRNV9aJs365V0B+hsIlfZ5T0wd+txFY55ETeekuI0
-+ZuqlC+Xz8ihEZtKwZp77giY96FdgXmmxAC3yTTEz212V/factnu4gy0Y2Gzmqrk
-947G2RVXwYy/b99s984nWhN3jcgsBpZtXxB9lJztv/P2RSDBEeoANpnyrLBrU6EQ
-IenhdBkr6dWS+4SGUu4ExItwJe+mrUxrOEpCRhut1WYCWjb/rJpU2Bc00O0xs989
-ErVxCQfm4N3S00nzivnWVxEXFyWKwR64h5YnlXJVpu4kvUvJPZBx1XITW/KZCsqJ
-BSeVTSp+p7LIkZN/JOAU8RTPRjBiGzZ4dCrPYPhod8HJT3ynXepP9cuGf4ucdjdl
-PBnn3MvTnyK/R87lHbPg2ZMgO+FYJtFbDr/fw+ZQZcZqt5dgxKdH8KmkVRhLw6HS
-Nrg+dEhALbc=
-=UBHK
------END PGP SIGNATURE-----
-
---=-w7ggdrHC8jsrCFy+3q0W--
-
-
---===============0274139290799042584==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0274139290799042584==--
+Index: linux-2.6.24-rc1-git14/drivers/base/core.c
+===================================================================
+--- linux-2.6.24-rc1-git14.orig/drivers/base/core.c
++++ linux-2.6.24-rc1-git14/drivers/base/core.c
+@@ -770,9 +770,10 @@ int device_add(struct device *dev)
+ 	error = device_add_attrs(dev);
+ 	if (error)
+ 		goto AttrsError;
+-	error = device_pm_add(dev);
++	error = dpm_sysfs_add(dev);
+ 	if (error)
+ 		goto PMError;
++	device_pm_add(dev);
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
+@@ -797,6 +798,7 @@ int device_add(struct device *dev)
+ 	return error;
+  BusError:
+ 	device_pm_remove(dev);
++	dpm_sysfs_remove(dev);
+  PMError:
+ 	if (dev->bus)
+ 		blocking_notifier_call_chain(&dev->bus->bus_notifier,
+Index: linux-2.6.24-rc1-git14/drivers/base/power/Makefile
+===================================================================
+--- linux-2.6.24-rc1-git14.orig/drivers/base/power/Makefile
++++ linux-2.6.24-rc1-git14/drivers/base/power/Makefile
+@@ -1,5 +1,6 @@
+ obj-y			:= shutdown.o
+-obj-$(CONFIG_PM_SLEEP)	+= main.o sysfs.o
++obj-$(CONFIG_PM)	+= sysfs.o
++obj-$(CONFIG_PM_SLEEP)	+= main.o
+ obj-$(CONFIG_PM_TRACE)	+= trace.o
+ 
+ ifeq ($(CONFIG_DEBUG_DRIVER),y)
+Index: linux-2.6.24-rc1-git14/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.24-rc1-git14.orig/drivers/base/power/power.h
++++ linux-2.6.24-rc1-git14/drivers/base/power/power.h
+@@ -18,9 +18,24 @@ static inline struct device * to_device(
+ 	return container_of(entry, struct device, power.entry);
+ }
+ 
+-extern int device_pm_add(struct device *);
++extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+ 
++#else /* CONFIG_PM_SLEEP */
++
++
++static inline void device_pm_add(struct device * dev)
++{
++}
++static inline void device_pm_remove(struct device * dev)
++{
++
++}
++
++#endif
++
++#ifdef CONFIG_PM
++
+ /*
+  * sysfs.c
+  */
+@@ -28,16 +43,16 @@ extern void device_pm_remove(struct devi
+ extern int dpm_sysfs_add(struct device *);
+ extern void dpm_sysfs_remove(struct device *);
+ 
+-#else /* CONFIG_PM_SLEEP */
++#else /* CONFIG_PM */
+ 
+-
+-static inline int device_pm_add(struct device * dev)
++static inline int dpm_sysfs_add(struct device * dev)
+ {
+ 	return 0;
+ }
+-static inline void device_pm_remove(struct device * dev)
++static inline void dpm_sysfs_remove(struct device * dev)
+ {
+ 
+ }
+ 
+-#endif
++#endif /* CONFIG_PM */
++
+Index: linux-2.6.24-rc1-git14/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.24-rc1-git14.orig/drivers/base/power/main.c
++++ linux-2.6.24-rc1-git14/drivers/base/power/main.c
+@@ -38,20 +38,14 @@ static DEFINE_MUTEX(dpm_list_mtx);
+ int (*platform_enable_wakeup)(struct device *dev, int is_on);
+ 
+ 
+-int device_pm_add(struct device *dev)
++void device_pm_add(struct device *dev)
+ {
+-	int error;
+-
+ 	pr_debug("PM: Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_add_tail(&dev->power.entry, &dpm_active);
+-	error = dpm_sysfs_add(dev);
+-	if (error)
+-		list_del(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+-	return error;
+ }
+ 
+ void device_pm_remove(struct device *dev)
