@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] Add the "icebox"
-Date: Wed, 7 Nov 2007 23:31:54 +0100
-Message-ID: <200711072331.54708.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0711071210570.6349-100000@iolanthe.rowland.org>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH (2.6.25) 2/2] suspend: clean up Kconfig
+Date: Wed, 7 Nov 2007 22:21:38 +0000
+Message-ID: <20071107222137.GB8801@flint.arm.linux.org.uk>
+References: <20071107135758.100171000@sipsolutions.net>
+	<20071107135849.207149000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0711071210570.6349-100000@iolanthe.rowland.org>
 Content-Disposition: inline
+In-Reply-To: <20071107135849.207149000@sipsolutions.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,229 +18,197 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Bryan Wu <bryan.wu@analog.com>, David Howells <dhowells@redhat.com>, linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>, linux-pm@lists.linux-foundation.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 7 of November 2007, Alan Stern wrote:
-> On Mon, 5 Nov 2007, Rafael J. Wysocki wrote:
+On Wed, Nov 07, 2007 at 02:58:00PM +0100, Johannes Berg wrote:
+> This cleans up the suspend Kconfig and removes the need to
+> declare centrally which architectures support suspend. All
+> architectures that currently support suspend are modified
+> accordingly.
 > 
-> > I like the idea, but I think that start_icebox() should be called after
-> > freeze_processes().  Similarly, IMO it's better to call stop_icebox() before
-> > thaw_processes().
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: linux-pm@lists.linux-foundation.org
+> Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Cc: Scott Wood <scottwood@freescale.com>
+> Cc: David Howells <dhowells@redhat.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Bryan Wu <bryan.wu@analog.com>
+
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+> ---
+> Architecture maintainers should evaluate whether their
+> ARCH_SUSPEND_POSSIBLE symbol should be set only under
+> stricter circumstances like I've done for powerpc.
 > 
-> Okay.  On the assumption that freezable kernel threads will continue to 
-> use the freezer and won't try to use the icebox, I have updated the 
-> patch.  Other comments?
-
-OK by me.
-
-> Alan Stern
+> Always setting it is not usually a problem, however, since the
+> infrastructure is only available for use after suspend_set_ops().
 > 
-> P.S.: What about mutual exclusion in kernel/power/user.c?  If we stop 
-> freezing user tasks, there's nothing to prevent more than one task 
-> holding an open file reference to the snapshot file and submitting 
-> ioctls concurrently.  Maybe the regions covered by pm_mutex should be 
-> expanded.
-
-/dev/snapshot can only be open once at a time.
-
-Greetings,
-Rafael
-
-
-> Index: usb-2.6/include/linux/freezer.h
-> ===================================================================
-> --- usb-2.6.orig/include/linux/freezer.h
-> +++ usb-2.6/include/linux/freezer.h
-> @@ -157,6 +157,12 @@ static inline void set_freezable(void)
->  	} while (try_to_freeze());					\
->  	__retval;							\
->  })
-> +
-> +/*
-> + * Kernel threads that want to freeze themselves go into the icebox.
-> + */
-> +extern void icebox(void);
-> +
->  #else /* !CONFIG_PM_SLEEP */
->  static inline int frozen(struct task_struct *p) { return 0; }
->  static inline int freezing(struct task_struct *p) { return 0; }
-> @@ -181,6 +187,7 @@ static inline void set_freezable(void) {
->  #define wait_event_freezable_timeout(wq, condition, timeout)		\
->  		wait_event_interruptible_timeout(wq, condition, timeout)
->  
-> +static inline void icebox(void) {}
->  #endif /* !CONFIG_PM_SLEEP */
->  
->  #endif	/* FREEZER_H_INCLUDED */
-> Index: usb-2.6/kernel/power/power.h
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/power.h
-> +++ usb-2.6/kernel/power/power.h
-> @@ -207,3 +207,9 @@ static inline int suspend_devices_and_en
->  /* kernel/power/main.c */
->  extern int pm_notifier_call_chain(unsigned long val);
->  #endif
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +/* kerne/power/process.c */
-> +extern void start_icebox(void);
-> +extern void stop_icebox(void);
-> +#endif
-> Index: usb-2.6/kernel/power/main.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/main.c
-> +++ usb-2.6/kernel/power/main.c
-> @@ -108,6 +108,8 @@ static int suspend_prepare(void)
->  		goto Thaw;
->  	}
->  
-> +	start_icebox();
-> +
->  	free_pages = global_page_state(NR_FREE_PAGES);
->  	if (free_pages < FREE_PAGE_NUMBER) {
->  		pr_debug("PM: free some memory\n");
-> @@ -120,6 +122,7 @@ static int suspend_prepare(void)
->  	if (!error)
->  		return 0;
->  
-> +	stop_icebox();
->   Thaw:
->  	thaw_processes();
->  	pm_restore_console();
-> @@ -215,6 +218,7 @@ int suspend_devices_and_enter(suspend_st
->   */
->  static void suspend_finish(void)
->  {
-> +	stop_icebox();
->  	thaw_processes();
->  	pm_restore_console();
->  	pm_notifier_call_chain(PM_POST_SUSPEND);
-> Index: usb-2.6/kernel/power/disk.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/disk.c
-> +++ usb-2.6/kernel/power/disk.c
-> @@ -406,6 +406,8 @@ int hibernate(void)
->  	if (error)
->  		goto Finish;
->  
-> +	start_icebox();
-> +
->  	if (hibernation_mode == HIBERNATION_TESTPROC) {
->  		printk("swsusp debug: Waiting for 5 seconds.\n");
->  		mdelay(5000);
-> @@ -427,6 +429,7 @@ int hibernate(void)
->  		swsusp_free();
->  	}
->   Thaw:
-> +	stop_icebox();
->  	unprepare_processes();
->   Finish:
->  	free_basic_memory_bitmaps();
-> @@ -504,6 +507,8 @@ static int software_resume(void)
->  		goto Done;
->  	}
->  
-> +	start_icebox();
-> +
->  	pr_debug("PM: Reading swsusp image.\n");
->  
->  	error = swsusp_read(&flags);
-> @@ -512,6 +517,7 @@ static int software_resume(void)
->  
->  	printk(KERN_ERR "PM: Restore failed, recovering.\n");
->  	swsusp_free();
-> +	stop_icebox();
->  	unprepare_processes();
->   Done:
->  	free_basic_memory_bitmaps();
-> Index: usb-2.6/kernel/power/user.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/user.c
-> +++ usb-2.6/kernel/power/user.c
-> @@ -172,13 +172,16 @@ static int snapshot_ioctl(struct inode *
->  		if (error)
->  			thaw_processes();
->  		mutex_unlock(&pm_mutex);
-> -		if (!error)
-> +		if (!error) {
->  			data->frozen = 1;
-> +			start_icebox();
-> +		}
->  		break;
->  
->  	case SNAPSHOT_UNFREEZE:
->  		if (!data->frozen || data->ready)
->  			break;
-> +		stop_icebox();
->  		mutex_lock(&pm_mutex);
->  		thaw_processes();
->  		mutex_unlock(&pm_mutex);
-> Index: usb-2.6/kernel/power/process.c
-> ===================================================================
-> --- usb-2.6.orig/kernel/power/process.c
-> +++ usb-2.6/kernel/power/process.c
-> @@ -14,6 +14,8 @@
->  #include <linux/syscalls.h>
->  #include <linux/freezer.h>
->  
-> +#include "power.h"
-> +
->  /* 
->   * Timeout for stopping processes
->   */
-> @@ -283,3 +285,52 @@ void thaw_processes(void)
->  }
->  
->  EXPORT_SYMBOL(refrigerator);
-> +
-> +/*
-> + * Routines for kernel threads that want to freeze themselves in the icebox
-> + */
-> +static DECLARE_WAIT_QUEUE_HEAD(icebox_wait_queue_head);
-> +static int icebox_active;
-> +
-> +/**
-> + * start_icebox -- activate the icebox
-> + *
-> + * Kernel power code should call this routine before sending the
-> + * PM_HIBERNATION_PREPARE, PM_SUSPEND_PREPARE, or PM_RESTORE_PREPARE
-> + * notifications.
-> + */
-> +void start_icebox(void)
-> +{
-> +	icebox_active = 1;
-> +}
-> +
-> +/**
-> + * stop_icebox -- deactivate the icebox and awaken waiting threads
-> + *
-> + * Kernel power code should call this routine before sending the
-> + * PM_POST_HIBERNATION, PM_POST_SUSPEND, or PM_POST_RESTORE notifications.
-> + */
-> +void stop_icebox(void)
-> +{
-> +	icebox_active = 0;
-> +	wake_up_all(&icebox_wait_queue_head);
-> +}
-> +
-> +/**
-> + * icebox -- place for kernel threads to wait during suspend or hibernation
-> + *
-> + * Tasks can call this routine at any time.  It will return immediately
-> + * unless a system suspend or hibernation has started and the icebox is
-> + * active, in which case it won't return until the suspend/hibernation
-> + * is over.
-> + *
-> + * This routine should be used by drivers that want to delay user-initiated
-> + * I/O until a system sleep is over.  Kernel threads should not use it
-> + * in place of the freezer, because the icebox doesn't get activated until
-> + * after freezing is complete.
-> + */
-> +void icebox(void)
-> +{
-> +	wait_event(icebox_wait_queue_head, !icebox_active);
-> +}
-> +EXPORT_SYMBOL_GPL(icebox);
+>  arch/arm/Kconfig      |    3 +++
+>  arch/blackfin/Kconfig |    4 ++++
+>  arch/frv/Kconfig      |    5 +++++
+>  arch/i386/Kconfig     |    4 ++++
+>  arch/mips/Kconfig     |    4 ++++
+>  arch/powerpc/Kconfig  |    4 ++++
+>  arch/sh/Kconfig       |    4 ++++
+>  arch/x86_64/Kconfig   |    3 +++
+>  kernel/power/Kconfig  |   21 +++------------------
+>  9 files changed, 34 insertions(+), 18 deletions(-)
 > 
+> --- everything.orig/arch/i386/Kconfig	2007-11-07 14:45:28.591544215 +0100
+> +++ everything/arch/i386/Kconfig	2007-11-07 14:45:28.631515461 +0100
+> @@ -1323,3 +1323,7 @@ config KTIME_SCALAR
+>  config ARCH_HIBERNATION_POSSIBLE
+>  	def_bool y
+>  	depends on !SMP || !X86_VOYAGER
+> +
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +	depends on !X86_VOYAGER
+> --- everything.orig/arch/x86_64/Kconfig	2007-11-07 14:45:28.591544215 +0100
+> +++ everything/arch/x86_64/Kconfig	2007-11-07 14:45:28.631515461 +0100
+> @@ -716,6 +716,9 @@ menu "Power management options"
+>  
+>  source kernel/power/Kconfig
+>  
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +
+>  config ARCH_HIBERNATION_POSSIBLE
+>  	def_bool y
+>  
+> --- everything.orig/kernel/power/Kconfig	2007-11-07 14:45:28.591544215 +0100
+> +++ everything/kernel/power/Kconfig	2007-11-07 14:45:28.641531465 +0100
+> @@ -64,7 +64,7 @@ config PM_TRACE
+>  config PM_SLEEP_SMP
+>  	bool
+>  	depends on SMP
+> -	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+> +	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+>  	depends on PM_SLEEP
+>  	select HOTPLUG_CPU
+>  	default y
+> @@ -74,29 +74,14 @@ config PM_SLEEP
+>  	depends on SUSPEND || HIBERNATION
+>  	default y
+>  
+> -config SUSPEND_UP_POSSIBLE
+> -	bool
+> -	depends on (X86 && !X86_VOYAGER) || PPC || ARM || BLACKFIN || MIPS \
+> -		   || SUPERH || FRV
+> -	depends on !SMP
+> -	default y
+> -
+> -config SUSPEND_SMP_POSSIBLE
+> -	bool
+> -	depends on (X86 && !X86_VOYAGER) \
+> -		   || (PPC && (PPC_PSERIES || PPC_PMAC)) || ARM
+> -	depends on SMP
+> -	default y
+> -
+>  config SUSPEND
+>  	bool "Suspend to RAM and standby"
+> -	depends on PM
+> -	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
+> +	depends on PM && ARCH_SUSPEND_POSSIBLE
+>  	default y
+>  	---help---
+>  	  Allow the system to enter sleep states in which main memory is
+>  	  powered and thus its contents are preserved, such as the
+> -	  suspend-to-RAM state (i.e. the ACPI S3 state).
+> +	  suspend-to-RAM state (e.g. the ACPI S3 state).
+>  
+>  config HIBERNATION
+>  	bool "Hibernation (aka 'suspend to disk')"
+> --- everything.orig/arch/blackfin/Kconfig	2007-11-07 14:44:55.551521971 +0100
+> +++ everything/arch/blackfin/Kconfig	2007-11-07 14:45:28.641531465 +0100
+> @@ -993,6 +993,10 @@ endmenu
+>  menu "Power management options"
+>  source "kernel/power/Kconfig"
+>  
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +	depends on !SMP
+> +
+>  choice
+>  	prompt "Select PM Wakeup Event Source"
+>  	default PM_WAKEUP_GPIO_BY_SIC_IWR
+> --- everything.orig/arch/arm/Kconfig	2007-11-07 14:44:55.651522948 +0100
+> +++ everything/arch/arm/Kconfig	2007-11-07 14:45:28.641531465 +0100
+> @@ -977,6 +977,9 @@ menu "Power management options"
+>  
+>  source "kernel/power/Kconfig"
+>  
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +
+>  endmenu
+>  
+>  source "net/Kconfig"
+> --- everything.orig/arch/mips/Kconfig	2007-11-07 14:44:55.701522460 +0100
+> +++ everything/arch/mips/Kconfig	2007-11-07 14:45:28.641531465 +0100
+> @@ -1999,6 +1999,10 @@ endmenu
+>  
+>  menu "Power management options"
+>  
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +	depends on !SMP
+> +
+>  source "kernel/power/Kconfig"
+>  
+>  endmenu
+> --- everything.orig/arch/sh/Kconfig	2007-11-07 14:44:55.801520344 +0100
+> +++ everything/arch/sh/Kconfig	2007-11-07 14:45:28.651528536 +0100
+> @@ -748,6 +748,10 @@ endmenu
+>  menu "Power management options (EXPERIMENTAL)"
+>  depends on EXPERIMENTAL && SYS_SUPPORTS_PM
+>  
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +	depends on !SMP
+> +
+>  source kernel/power/Kconfig
+>  
+>  endmenu
+> --- everything.orig/arch/frv/Kconfig	2007-11-07 14:44:55.861520941 +0100
+> +++ everything/arch/frv/Kconfig	2007-11-07 14:45:28.651528536 +0100
+> @@ -357,6 +357,11 @@ source "drivers/pcmcia/Kconfig"
+>  #	  should probably wait a while.
+>  
+>  menu "Power management options"
+> +
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +	depends on !SMP
+> +
+>  source kernel/power/Kconfig
+>  endmenu
+>  
+> --- everything.orig/arch/powerpc/Kconfig	2007-11-07 14:45:28.591544215 +0100
+> +++ everything/arch/powerpc/Kconfig	2007-11-07 14:45:28.651528536 +0100
+> @@ -155,6 +155,10 @@ config ARCH_HIBERNATION_POSSIBLE
+>  	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
+>  	default y
+>  
+> +config ARCH_SUSPEND_POSSIBLE
+> +	def_bool y
+> +	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200
+> +
+>  config PPC_DCR_NATIVE
+>  	bool
+>  	default n
+> 
+> -- 
+> 
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
