@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] create /sys/.../power when CONFIG_PM is set
-Date: Wed, 7 Nov 2007 23:24:55 +0100
-Message-ID: <200711072324.56125.rjw__8018.78099232471$1194473317$gmane$org@sisk.pl>
-References: <20071107101043.2E64C9D4ECC@zog.reactivated.net>
+Subject: Re: [RFC] Add the "icebox"
+Date: Wed, 7 Nov 2007 23:31:54 +0100
+Message-ID: <200711072331.54708.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0711071210570.6349-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071107101043.2E64C9D4ECC@zog.reactivated.net>
+In-Reply-To: <Pine.LNX.4.44L0.0711071210570.6349-100000@iolanthe.rowland.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,140 +19,229 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@gentoo.org>, greg@kroah.com
-Cc: linux-hotplug-devel@lists.sourceforge.net, kay.sievers@vrfy.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, oneukum@suse.de
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, 7 of November 2007, Daniel Drake wrote:
-> The CONFIG_SUSPEND changes in 2.6.23 caused a regression under certain
-> configuration conditions (SUSPEND=n, USB_AUTOSUSPEND=y) where all USB device
-> attributes in sysfs (idVendor, idProduct, ...) silently disappeared, causing
-> udev breakage and more.
+On Wednesday, 7 of November 2007, Alan Stern wrote:
+> On Mon, 5 Nov 2007, Rafael J. Wysocki wrote:
 > 
-> The cause of this is that the /sys/.../power subdirectory is now only created
-> when CONFIG_PM_SLEEP is set, however, it should be created whenever CONFIG_PM
-> is set to handle the above situation. The following patch fixes the
-> regression.
+> > I like the idea, but I think that start_icebox() should be called after
+> > freeze_processes().  Similarly, IMO it's better to call stop_icebox() before
+> > thaw_processes().
 > 
-> Signed-off-by: Daniel Drake <dsd@gentoo.org>
+> Okay.  On the assumption that freezable kernel threads will continue to 
+> use the freezer and won't try to use the icebox, I have updated the 
+> patch.  Other comments?
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+OK by me.
 
-Greg, I think this patch should go through your tree?
+> Alan Stern
+> 
+> P.S.: What about mutual exclusion in kernel/power/user.c?  If we stop 
+> freezing user tasks, there's nothing to prevent more than one task 
+> holding an open file reference to the snapshot file and submitting 
+> ioctls concurrently.  Maybe the regions covered by pm_mutex should be 
+> expanded.
 
-> Index: linux-2.6.24-rc1-git14/drivers/base/core.c
+/dev/snapshot can only be open once at a time.
+
+Greetings,
+Rafael
+
+
+> Index: usb-2.6/include/linux/freezer.h
 > ===================================================================
-> --- linux-2.6.24-rc1-git14.orig/drivers/base/core.c
-> +++ linux-2.6.24-rc1-git14/drivers/base/core.c
-> @@ -770,9 +770,10 @@ int device_add(struct device *dev)
->  	error = device_add_attrs(dev);
->  	if (error)
->  		goto AttrsError;
-> -	error = device_pm_add(dev);
-> +	error = dpm_sysfs_add(dev);
->  	if (error)
->  		goto PMError;
-> +	device_pm_add(dev);
->  	error = bus_add_device(dev);
->  	if (error)
->  		goto BusError;
-> @@ -797,6 +798,7 @@ int device_add(struct device *dev)
->  	return error;
->   BusError:
->  	device_pm_remove(dev);
-> +	dpm_sysfs_remove(dev);
->   PMError:
->  	if (dev->bus)
->  		blocking_notifier_call_chain(&dev->bus->bus_notifier,
-> Index: linux-2.6.24-rc1-git14/drivers/base/power/Makefile
+> --- usb-2.6.orig/include/linux/freezer.h
+> +++ usb-2.6/include/linux/freezer.h
+> @@ -157,6 +157,12 @@ static inline void set_freezable(void)
+>  	} while (try_to_freeze());					\
+>  	__retval;							\
+>  })
+> +
+> +/*
+> + * Kernel threads that want to freeze themselves go into the icebox.
+> + */
+> +extern void icebox(void);
+> +
+>  #else /* !CONFIG_PM_SLEEP */
+>  static inline int frozen(struct task_struct *p) { return 0; }
+>  static inline int freezing(struct task_struct *p) { return 0; }
+> @@ -181,6 +187,7 @@ static inline void set_freezable(void) {
+>  #define wait_event_freezable_timeout(wq, condition, timeout)		\
+>  		wait_event_interruptible_timeout(wq, condition, timeout)
+>  
+> +static inline void icebox(void) {}
+>  #endif /* !CONFIG_PM_SLEEP */
+>  
+>  #endif	/* FREEZER_H_INCLUDED */
+> Index: usb-2.6/kernel/power/power.h
 > ===================================================================
-> --- linux-2.6.24-rc1-git14.orig/drivers/base/power/Makefile
-> +++ linux-2.6.24-rc1-git14/drivers/base/power/Makefile
-> @@ -1,5 +1,6 @@
->  obj-y			:= shutdown.o
-> -obj-$(CONFIG_PM_SLEEP)	+= main.o sysfs.o
-> +obj-$(CONFIG_PM)	+= sysfs.o
-> +obj-$(CONFIG_PM_SLEEP)	+= main.o
->  obj-$(CONFIG_PM_TRACE)	+= trace.o
->  
->  ifeq ($(CONFIG_DEBUG_DRIVER),y)
-> Index: linux-2.6.24-rc1-git14/drivers/base/power/power.h
-> ===================================================================
-> --- linux-2.6.24-rc1-git14.orig/drivers/base/power/power.h
-> +++ linux-2.6.24-rc1-git14/drivers/base/power/power.h
-> @@ -18,9 +18,24 @@ static inline struct device * to_device(
->  	return container_of(entry, struct device, power.entry);
->  }
->  
-> -extern int device_pm_add(struct device *);
-> +extern void device_pm_add(struct device *);
->  extern void device_pm_remove(struct device *);
->  
-> +#else /* CONFIG_PM_SLEEP */
+> --- usb-2.6.orig/kernel/power/power.h
+> +++ usb-2.6/kernel/power/power.h
+> @@ -207,3 +207,9 @@ static inline int suspend_devices_and_en
+>  /* kernel/power/main.c */
+>  extern int pm_notifier_call_chain(unsigned long val);
+>  #endif
 > +
-> +
-> +static inline void device_pm_add(struct device * dev)
-> +{
-> +}
-> +static inline void device_pm_remove(struct device * dev)
-> +{
-> +
-> +}
-> +
+> +#ifdef CONFIG_PM_SLEEP
+> +/* kerne/power/process.c */
+> +extern void start_icebox(void);
+> +extern void stop_icebox(void);
 > +#endif
-> +
-> +#ifdef CONFIG_PM
-> +
->  /*
->   * sysfs.c
->   */
-> @@ -28,16 +43,16 @@ extern void device_pm_remove(struct devi
->  extern int dpm_sysfs_add(struct device *);
->  extern void dpm_sysfs_remove(struct device *);
->  
-> -#else /* CONFIG_PM_SLEEP */
-> +#else /* CONFIG_PM */
->  
-> -
-> -static inline int device_pm_add(struct device * dev)
-> +static inline int dpm_sysfs_add(struct device * dev)
->  {
->  	return 0;
->  }
-> -static inline void device_pm_remove(struct device * dev)
-> +static inline void dpm_sysfs_remove(struct device * dev)
->  {
->  
->  }
->  
-> -#endif
-> +#endif /* CONFIG_PM */
-> +
-> Index: linux-2.6.24-rc1-git14/drivers/base/power/main.c
+> Index: usb-2.6/kernel/power/main.c
 > ===================================================================
-> --- linux-2.6.24-rc1-git14.orig/drivers/base/power/main.c
-> +++ linux-2.6.24-rc1-git14/drivers/base/power/main.c
-> @@ -38,20 +38,14 @@ static DEFINE_MUTEX(dpm_list_mtx);
->  int (*platform_enable_wakeup)(struct device *dev, int is_on);
+> --- usb-2.6.orig/kernel/power/main.c
+> +++ usb-2.6/kernel/power/main.c
+> @@ -108,6 +108,8 @@ static int suspend_prepare(void)
+>  		goto Thaw;
+>  	}
 >  
+> +	start_icebox();
+> +
+>  	free_pages = global_page_state(NR_FREE_PAGES);
+>  	if (free_pages < FREE_PAGE_NUMBER) {
+>  		pr_debug("PM: free some memory\n");
+> @@ -120,6 +122,7 @@ static int suspend_prepare(void)
+>  	if (!error)
+>  		return 0;
 >  
-> -int device_pm_add(struct device *dev)
-> +void device_pm_add(struct device *dev)
+> +	stop_icebox();
+>   Thaw:
+>  	thaw_processes();
+>  	pm_restore_console();
+> @@ -215,6 +218,7 @@ int suspend_devices_and_enter(suspend_st
+>   */
+>  static void suspend_finish(void)
 >  {
-> -	int error;
-> -
->  	pr_debug("PM: Adding info for %s:%s\n",
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
->  	mutex_lock(&dpm_list_mtx);
->  	list_add_tail(&dev->power.entry, &dpm_active);
-> -	error = dpm_sysfs_add(dev);
-> -	if (error)
-> -		list_del(&dev->power.entry);
->  	mutex_unlock(&dpm_list_mtx);
-> -	return error;
+> +	stop_icebox();
+>  	thaw_processes();
+>  	pm_restore_console();
+>  	pm_notifier_call_chain(PM_POST_SUSPEND);
+> Index: usb-2.6/kernel/power/disk.c
+> ===================================================================
+> --- usb-2.6.orig/kernel/power/disk.c
+> +++ usb-2.6/kernel/power/disk.c
+> @@ -406,6 +406,8 @@ int hibernate(void)
+>  	if (error)
+>  		goto Finish;
+>  
+> +	start_icebox();
+> +
+>  	if (hibernation_mode == HIBERNATION_TESTPROC) {
+>  		printk("swsusp debug: Waiting for 5 seconds.\n");
+>  		mdelay(5000);
+> @@ -427,6 +429,7 @@ int hibernate(void)
+>  		swsusp_free();
+>  	}
+>   Thaw:
+> +	stop_icebox();
+>  	unprepare_processes();
+>   Finish:
+>  	free_basic_memory_bitmaps();
+> @@ -504,6 +507,8 @@ static int software_resume(void)
+>  		goto Done;
+>  	}
+>  
+> +	start_icebox();
+> +
+>  	pr_debug("PM: Reading swsusp image.\n");
+>  
+>  	error = swsusp_read(&flags);
+> @@ -512,6 +517,7 @@ static int software_resume(void)
+>  
+>  	printk(KERN_ERR "PM: Restore failed, recovering.\n");
+>  	swsusp_free();
+> +	stop_icebox();
+>  	unprepare_processes();
+>   Done:
+>  	free_basic_memory_bitmaps();
+> Index: usb-2.6/kernel/power/user.c
+> ===================================================================
+> --- usb-2.6.orig/kernel/power/user.c
+> +++ usb-2.6/kernel/power/user.c
+> @@ -172,13 +172,16 @@ static int snapshot_ioctl(struct inode *
+>  		if (error)
+>  			thaw_processes();
+>  		mutex_unlock(&pm_mutex);
+> -		if (!error)
+> +		if (!error) {
+>  			data->frozen = 1;
+> +			start_icebox();
+> +		}
+>  		break;
+>  
+>  	case SNAPSHOT_UNFREEZE:
+>  		if (!data->frozen || data->ready)
+>  			break;
+> +		stop_icebox();
+>  		mutex_lock(&pm_mutex);
+>  		thaw_processes();
+>  		mutex_unlock(&pm_mutex);
+> Index: usb-2.6/kernel/power/process.c
+> ===================================================================
+> --- usb-2.6.orig/kernel/power/process.c
+> +++ usb-2.6/kernel/power/process.c
+> @@ -14,6 +14,8 @@
+>  #include <linux/syscalls.h>
+>  #include <linux/freezer.h>
+>  
+> +#include "power.h"
+> +
+>  /* 
+>   * Timeout for stopping processes
+>   */
+> @@ -283,3 +285,52 @@ void thaw_processes(void)
 >  }
 >  
->  void device_pm_remove(struct device *dev)
-> 
+>  EXPORT_SYMBOL(refrigerator);
+> +
+> +/*
+> + * Routines for kernel threads that want to freeze themselves in the icebox
+> + */
+> +static DECLARE_WAIT_QUEUE_HEAD(icebox_wait_queue_head);
+> +static int icebox_active;
+> +
+> +/**
+> + * start_icebox -- activate the icebox
+> + *
+> + * Kernel power code should call this routine before sending the
+> + * PM_HIBERNATION_PREPARE, PM_SUSPEND_PREPARE, or PM_RESTORE_PREPARE
+> + * notifications.
+> + */
+> +void start_icebox(void)
+> +{
+> +	icebox_active = 1;
+> +}
+> +
+> +/**
+> + * stop_icebox -- deactivate the icebox and awaken waiting threads
+> + *
+> + * Kernel power code should call this routine before sending the
+> + * PM_POST_HIBERNATION, PM_POST_SUSPEND, or PM_POST_RESTORE notifications.
+> + */
+> +void stop_icebox(void)
+> +{
+> +	icebox_active = 0;
+> +	wake_up_all(&icebox_wait_queue_head);
+> +}
+> +
+> +/**
+> + * icebox -- place for kernel threads to wait during suspend or hibernation
+> + *
+> + * Tasks can call this routine at any time.  It will return immediately
+> + * unless a system suspend or hibernation has started and the icebox is
+> + * active, in which case it won't return until the suspend/hibernation
+> + * is over.
+> + *
+> + * This routine should be used by drivers that want to delay user-initiated
+> + * I/O until a system sleep is over.  Kernel threads should not use it
+> + * in place of the freezer, because the icebox doesn't get activated until
+> + * after freezing is complete.
+> + */
+> +void icebox(void)
+> +{
+> +	wait_event(icebox_wait_queue_head, !icebox_active);
+> +}
+> +EXPORT_SYMBOL_GPL(icebox);
 > 
