@@ -1,14 +1,11 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH (2.6.25) 2/2] suspend: clean up Kconfig
-Date: Thu, 8 Nov 2007 13:30:07 +1100
-Message-ID: <18226.29871.368838.584925__14325.8933829658$1194489214$gmane$org@cargo.ozlabs.ibm.com>
-References: <20071107135758.100171000@sipsolutions.net>
-	<20071107135849.207149000@sipsolutions.net>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] pm: make PM_TRACE more architecture independent
+Date: Thu, 08 Nov 2007 12:56:55 +0100
+Message-ID: <1194523015.6294.3.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20071107135849.207149000@sipsolutions.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,15 +15,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Bryan Wu <bryan.wu@analog.com>, linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Russell King <rmk@arm.linux.org.uk>
+To: Len Brown <len.brown@intel.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Johannes Berg writes:
+When trying to debug a suspend failure I started implementing
+PM_TRACE for powerpc. I then noticed that I'm debugging a suspend
+failure and so PM_TRACE isn't useful at all, but thought that
+nonetheless this could be useful in the future.
 
-> This cleans up the suspend Kconfig and removes the need to
-> declare centrally which architectures support suspend. All
-> architectures that currently support suspend are modified
-> accordingly.
+Basically, to support PM_TRACE, you add a Kconfig option that
+selects PM_TRACE and provides the infrastructure as per the
+help text of PM_TRACE.
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+---
+I don't really care much. I can let this patch collect dust until I
+actually want to implement PM_TRACE for powerpc or another architecture
+but since I had it I wanted to send it out too.
+
+ drivers/base/power/Makefile |    2 +-
+ kernel/power/Kconfig        |   23 ++++++++++++++++++++++-
+ 2 files changed, 23 insertions(+), 2 deletions(-)
+
+--- everything.orig/drivers/base/power/Makefile	2007-11-08 12:07:09.843121635 +0100
++++ everything/drivers/base/power/Makefile	2007-11-08 12:19:23.593081000 +0100
+@@ -1,6 +1,6 @@
+ obj-y			:= shutdown.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o sysfs.o
+-obj-$(CONFIG_PM_TRACE)	+= trace.o
++obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+ 
+ ifeq ($(CONFIG_DEBUG_DRIVER),y)
+ EXTRA_CFLAGS += -DDEBUG
+--- everything.orig/kernel/power/Kconfig	2007-11-08 12:04:51.443081271 +0100
++++ everything/kernel/power/Kconfig	2007-11-08 12:12:53.863072157 +0100
+@@ -44,9 +44,30 @@ config PM_VERBOSE
+ 	---help---
+ 	This option enables verbose messages from the Power Management code.
+ 
++config CAN_PM_TRACE
++	def_bool y
++	depends on PM_DEBUG && PM_SLEEP && EXPERIMENTAL
++
+ config PM_TRACE
++	bool
++	help
++	  This enables code to save the last PM event point across
++	  reboot. The architecture needs to support this, x86 for
++	  example does by saving things in the RTC, see below.
++
++	  The architecture specific code must provide the extern
++	  functions from <linux/resume-trace.h> as well as the
++	  <asm/resume-trace.h> header with a TRACE_RESUME() macro.
++
++	  The way the information is presented is architecture-
++	  dependent, x86 will print the information during a
++	  late_initcall.
++
++config PM_TRACE_RTC
+ 	bool "Suspend/resume event tracing"
+-	depends on PM_DEBUG && X86 && PM_SLEEP && EXPERIMENTAL
++	depends on CAN_PM_TRACE
++	depends on X86
++	select PM_TRACE
+ 	default n
+ 	---help---
+ 	This enables some cheesy code to save the last PM event point in the
