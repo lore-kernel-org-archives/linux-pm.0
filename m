@@ -1,14 +1,16 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH (2.6.25) 2/2] suspend: clean up Kconfig
-Date: Thu, 8 Nov 2007 09:48:25 +0000
-Message-ID: <20071108094825.GB10665__5636.95526584542$1194536295$gmane$org@linux-mips.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH (2.6.25) 0/2] suspend/hibernate Kconfig
+	cleanups
+Date: Thu, 8 Nov 2007 09:21:49 -0800
+Message-ID: <20071108092149.e27c5ba3.akpm@linux-foundation.org>
 References: <20071107135758.100171000@sipsolutions.net>
-	<20071107135849.207149000@sipsolutions.net>
+	<200711072317.48023.rjw@sisk.pl>
+	<1194533053.6294.42.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20071107135849.207149000@sipsolutions.net>
+In-Reply-To: <1194533053.6294.42.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,18 +21,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Bryan Wu <bryan.wu@analog.com>, David Howells <dhowells@redhat.com>, linux-mips@linux-mips.org, linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>, linux-pm@lists.linux-foundation.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Russell King <rmk@arm.linux.org.uk>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 07, 2007 at 02:58:00PM +0100, Johannes Berg wrote:
+> On Thu, 08 Nov 2007 15:44:13 +0100 Johannes Berg <johannes@sipsolutions.net> wrote:
+> 
+> > Since they touch a couple of architectures, I think it's better to merge them
+> > through -mm.
+> 
+> Ok. Andrew, do you want them now or wait until .24 settles down more?
+> 
 
-> This cleans up the suspend Kconfig and removes the need to
-> declare centrally which architectures support suspend. All
-> architectures that currently support suspend are modified
-> accordingly.
-
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-
-Cheers,
-
-  Ralf
+I don't know what you're referring to but whatever - send it over.
