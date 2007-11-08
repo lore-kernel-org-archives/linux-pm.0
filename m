@@ -1,15 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] powermac: proper sleep management
-Date: Fri, 09 Nov 2007 10:19:16 +1100
-Message-ID: <1194563956.6561.20.camel@pasglop>
-References: <1194523729.6294.18.camel@johannes.berg>
-	<47336035.4020609@freescale.com>
-Reply-To: benh@kernel.crashing.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/3] Suspend and hibernation test facility (rev.
+	2)
+Date: Fri, 9 Nov 2007 00:31:44 +0100
+Message-ID: <200711090031.45852.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <47336035.4020609@freescale.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Johannes Berg <johannes@sipsolutions.net>, David Woodhouse <dwmw2@infradead.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-On Thu, 2007-11-08 at 13:15 -0600, Scott Wood wrote:
-> Johannes Berg wrote:
-> > +/*
-> > + * overrides the weak arch_suspend_disable_irqs in kernel/power/main.c
-> > + *
-> > + * XXX: Once Scott Wood's patch is merged, this needs to use the ppc_md
-> > + *	hooks that patch adds!
-> > + */
-> > +void arch_suspend_disable_irqs(void)
-> > +{
-> > +#ifdef CONFIG_PMAC_BACKLIGHT
-> > +	/* Tell backlight code not to muck around with the chip anymore */
-> > +	pmu_backlight_set_sleep(1);
-> > +#endif
->  > +
-> > +	/* Call platform functions marked "on sleep" */
-> > +	pmac_pfunc_i2c_suspend();
-> > +	pmac_pfunc_base_suspend();
-> 
-> Shouldn't these be done from suspend methods of the relevant drivers?
-> I don't understand why this needs to go in the disable IRQ hook.
+This series of patches adds a new testing facility for suspend and hibernation.
 
-The pmac_pfunc thing is low level platform stuff, no driver involved
-there, this is the right place to do it.
+The first patch adds the possibility to test the suspend (STD) core code
+without actually suspending, which is useful for tracking problems with drivers
+etc.
 
-As for the backlight bits, that could indeed be moved around I suppose,
-I'd keep it there for now and look at cleaning the PMU driver
-suspend/resume path in a second step.
+The second one modifies the hibernation core so that it can use the same
+facility (it's a bit more powerful than the existing hibernation test modes,
+since they really can't test the ACPI global methods).
 
-Ben.
+The third one modified documentation in accordance with the two previous ones.
+
+Please add to the suspend branch.
+
+Greetings,
+Rafael
