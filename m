@@ -1,12 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [RFC] powermac: proper sleep management
-Date: Sun, 11 Nov 2007 13:35:48 +0000
-Message-ID: <20071111133548.GA5997@ucw.cz>
+Date: Mon, 12 Nov 2007 07:59:33 +1100
+Message-ID: <1194814773.6510.23.camel@pasglop>
 References: <1194523729.6294.18.camel@johannes.berg>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <1194523729.6294.18.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,14 +22,27 @@ To: Johannes Berg <johannes@sipsolutions.net>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
-> This adds platform_suspend_ops for PMU based machines, directly in
-> the PMU driver. This finally allows suspending via /sys/power/state
-> on powerbooks.
+> Just thought I'd send out the patch again, it has changed quite a bit
+> since last time because I cleaned up the code, made it depend on
+> CONFIG_SUSPEND, made the ioctl backward compatibility optional and some
+> other bits.
+> 
+> The feared freezer vs. fuse sync deadlock is no longer present in 2.6.24
+> because the sync is done before the freezer so maybe the patch stands a
+> chance now.
+> 
+> Scott: FYI, here's the use case for the ppc_md irq suspend/resume hooks.
 
-Thanks for doing this!
+Looks good to me, +/- a couple of things:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ - We _REALLY_ want the freezer to be optional and not enabled by
+default on PowerPC. Maybe make it a compile option ?
+
+ - Don't remove the pmu_polled_request() debug code. It's very useful
+for debugging and I don't want to have to re-invent it.
+
+Plus I also need to test it on some exotic hardware :-)
+
+Cheers,
+Ben.
