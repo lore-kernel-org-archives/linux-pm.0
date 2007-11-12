@@ -1,10 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Re: [RFC] powermac: proper sleep management
-Date: Mon, 12 Nov 2007 14:52:46 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0711121451210.1567-100000@netrider.rowland.org>
-References: <1194885177.5229.45.camel@johannes.berg>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC] powermac: proper sleep management
+Date: Tue, 13 Nov 2007 07:24:01 +1100
+Message-ID: <1194899041.18185.55.camel@pasglop>
+References: <1194523729.6294.18.camel@johannes.berg>
+	<1194814773.6510.23.camel@pasglop>
+	<1194885177.5229.45.camel@johannes.berg>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1194885177.5229.45.camel@johannes.berg>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -17,11 +21,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Scott Wood <scottwood@freescale.com>, linux-pm <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 12 Nov 2007, Johannes Berg wrote:
 
+On Mon, 2007-11-12 at 17:32 +0100, Johannes Berg wrote:
 > > Looks good to me, +/- a couple of things:
 > > 
 > >  - We _REALLY_ want the freezer to be optional and not enabled by
@@ -31,7 +35,16 @@ On Mon, 12 Nov 2007, Johannes Berg wrote:
 > confirmation for that I can do the test he suggested to you or Paul a
 > while ago.
 
-Isn't it true that the freezer _already_ isn't enabled on PPC?  So 
-leaving it off wouldn't break anything more than it is broken now.
+Then USB is broken today on powermacs and need to be fixed. We had a
+clear agreement at KS this year that the freezer was at best a band-aid
+and that drivers -had- to be fixed to cope regardless.
 
-Alan Stern
+> Obviously. I don't have any of that. I'd appreciate if somebody could
+> test on a 3400 powerbook to see if that pci config space save/restore
+> stuff is really necessary or even interferes with the regular stuff.
+
+Might not be that necessary anymore nowadays, the generic code ought to
+do it, but I'll give a go, I have one of those (paulus old one) though
+last I tried, the HD was dead.
+
+Ben.
