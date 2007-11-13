@@ -1,12 +1,11 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] Hibernation: Fix lockdep report (v2)
-Date: Tue, 13 Nov 2007 19:45:33 +0100
-Message-ID: <1194979533.4299.5.camel@johannes.berg>
-References: <200711041459.23082.rjw@sisk.pl>
+Subject: [PATCH] powermac: proper sleep management
+Date: Tue, 13 Nov 2007 20:25:33 +0100
+Message-ID: <1194981933.6695.17.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2353629889359461058=="
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200711041459.23082.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,73 +13,735 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+This adds platform_suspend_ops for PMU based machines, directly in
+the PMU driver. This finally allows suspending via /sys/power/state
+on powerbooks.
 
---===============2353629889359461058==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-MzfBkxbIAWQ+DbO8Q1CP"
+The patch also replaces the PMU ioctl with a simple call to
+pm_suspend(PM_SUSPEND_MEM) and puts the sleep-related PMU ioctls onto
+the feature-removal schedule, to be removed in early 2010 (just
+over two years from now).
 
+Additionally, it cleans up some debug code.
 
---=-MzfBkxbIAWQ+DbO8Q1CP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ Documentation/feature-removal-schedule.txt |   10 
+ drivers/macintosh/Kconfig                  |   12 
+ drivers/macintosh/via-pmu.c                |  462 +++++++++++++----------------
+ 3 files changed, 241 insertions(+), 243 deletions(-)
 
-
-On Sun, 2007-11-04 at 14:59 +0100, Rafael J. Wysocki wrote:
-> [Len, please add this patch to the suspend branch, thanks.]
-> ---
-> From: Johannes Berg <johannes@sipsolutions.net>
->=20
-> Lockdep reports a circular locking dependency in the hibernate code
-> because
->  - during system boot hibernate code (from an initcall) locks pm_mutex
->    and then a sysfs buffer mutex via name_to_dev_t
->  - during regular operation hibernate code locks pm_mutex under a
->    sysfs buffer mutex because it's called from sysfs methods.
-
-Ping? Do I need to follow this or will somebody take care to merge it
-before .24 closes?
-
-Thanks,
-Johannes
-
---=-MzfBkxbIAWQ+DbO8Q1CP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARznwzKVg1VMiehFYAQKUVBAAmOZPHwkF8Xb35MH9rR/glCBAusojVj57
-gxcNnTlN/YUm/pqfmx6vlqAjkIhwoHFNBajhROC6hRtxnrg3gnvl4AoIuJ+7bPdD
-4QhS4TaEI1enB+jVfoubJ5JgdbFjOOHpZkM7A7a2xN3Yl9waa6gx46ErUeklHEWM
-B69SzB/u5eiVJRgv/gHowu/tcUAmRBF4IZt43wgMIicXZcQC/MYwArQLbd4pfMXq
-3958dn197sweVSHHYfkbUbDXC2lceA/ZaOawyVO0k4jZ8PDCkQCDjbTpGeitG0hA
-O2QpSjB0QvB7dyPe+/OFN+WS5Kc9nPgLyT37Y3ss/JoZ+JLlgOTgpEeqFV5tTzHp
-T9SnbpGkR9XnLG7mvA6yyNiZizJnR1jDuicDetAnn6mUL898hZPfL9bvKv7tc/3U
-hSSvQnUmY5IMLzHcbyEsgePcR75yX7p+ddj2LZCnpbrwq1CrndWZUfoIdy/y5Fz4
-XdptAgAvIkIZKBI0PSzOkmQN5b6ISzzDrc2yzse278O+MdrnhStkv9KbKMkMghRf
-Mxo8uM6W0t1bJHCVRUMQ6Nscx+Fza5N2WgHE29dFZVlp5yULDiH9qYry4BgGff28
-xU0Ku6Yoa/3h6zdL44Hl9oFz5+qenmlepEGgBMUOy9uKZjw3QXkDnOYG2ES81jgV
-e/LskexrsaM=
-=rMRn
------END PGP SIGNATURE-----
-
---=-MzfBkxbIAWQ+DbO8Q1CP--
-
-
---===============2353629889359461058==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2353629889359461058==--
+--- everything.orig/drivers/macintosh/via-pmu.c	2007-11-13 20:16:51.196263726 +0100
++++ everything/drivers/macintosh/via-pmu.c	2007-11-13 20:24:29.056252331 +0100
+@@ -10,13 +10,13 @@
+  *
+  * Copyright (C) 1998 Paul Mackerras and Fabio Riccardi.
+  * Copyright (C) 2001-2002 Benjamin Herrenschmidt
++ * Copyright (C) 2006-2007 Johannes Berg
+  *
+  * THIS DRIVER IS BECOMING A TOTAL MESS !
+  *  - Cleanup atomically disabling reply to PMU events after
+  *    a sleep or a freq. switch
+- *  - Move sleep code out of here to pmac_pm, merge into new
+- *    common PM infrastructure
+- *  - Save/Restore PCI space properly
++ *  - check if powerbook 3400 really needs the extra PCI
++ *    save/restore code we have
+  *
+  */
+ #include <stdarg.h>
+@@ -64,7 +64,7 @@
+ #include "via-pmu-event.h"
+ 
+ /* Some compile options */
+-#define DEBUG_SLEEP
++#undef DEBUG_SLEEP
+ 
+ /* Misc minor number allocated for /dev/pmu */
+ #define PMU_MINOR		154
+@@ -149,12 +149,9 @@ static spinlock_t pmu_lock;
+ static u8 pmu_intr_mask;
+ static int pmu_version;
+ static int drop_interrupts;
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ static int option_lid_wakeup = 1;
+-#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
+-#if (defined(CONFIG_PM_SLEEP)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
+-static int sleep_in_progress;
+-#endif
++#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ static unsigned long async_req_locks;
+ static unsigned int pmu_irq_stats[11];
+ 
+@@ -220,7 +217,7 @@ extern void enable_kernel_fp(void);
+ 
+ #ifdef DEBUG_SLEEP
+ int pmu_polled_request(struct adb_request *req);
+-int pmu_wink(struct adb_request *req);
++void pmu_blink(int n);
+ #endif
+ 
+ /*
+@@ -871,7 +868,7 @@ proc_read_options(char *page, char **sta
+ {
+ 	char *p = page;
+ 
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ 	if (pmu_kind == PMU_KEYLARGO_BASED &&
+ 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
+ 		p += sprintf(p, "lid_wakeup=%d\n", option_lid_wakeup);
+@@ -912,7 +909,7 @@ proc_write_options(struct file *file, co
+ 	*(val++) = 0;
+ 	while(*val == ' ')
+ 		val++;
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ 	if (pmu_kind == PMU_KEYLARGO_BASED &&
+ 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
+ 		if (!strcmp(label, "lid_wakeup"))
+@@ -1718,7 +1715,7 @@ pmu_present(void)
+ 	return via != 0;
+ }
+ 
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ /*
+  * This struct is used to store config register values for
+  * PCI devices which may get powered off when we sleep.
+@@ -1821,42 +1818,6 @@ pbook_pci_restore(void)
+ 	}
+ }
+ 
+-#ifdef DEBUG_SLEEP
+-/* N.B. This doesn't work on the 3400 */
+-void 
+-pmu_blink(int n)
+-{
+-	struct adb_request req;
+-
+-	memset(&req, 0, sizeof(req));
+-
+-	for (; n > 0; --n) {
+-		req.nbytes = 4;
+-		req.done = NULL;
+-		req.data[0] = 0xee;
+-		req.data[1] = 4;
+-		req.data[2] = 0;
+-		req.data[3] = 1;
+-		req.reply[0] = ADB_RET_OK;
+-		req.reply_len = 1;
+-		req.reply_expected = 0;
+-		pmu_polled_request(&req);
+-		mdelay(50);
+-		req.nbytes = 4;
+-		req.done = NULL;
+-		req.data[0] = 0xee;
+-		req.data[1] = 4;
+-		req.data[2] = 0;
+-		req.data[3] = 0;
+-		req.reply[0] = ADB_RET_OK;
+-		req.reply_len = 1;
+-		req.reply_expected = 0;
+-		pmu_polled_request(&req);
+-		mdelay(50);
+-	}
+-	mdelay(50);
+-}
+-#endif
+ 
+ /*
+  * Put the powerbook to sleep.
+@@ -1894,122 +1855,6 @@ restore_via_state(void)
+ 
+ extern void pmu_backlight_set_sleep(int sleep);
+ 
+-static int
+-pmac_suspend_devices(void)
+-{
+-	int ret;
+-
+-	pm_prepare_console();
+-	
+-	/* Sync the disks. */
+-	/* XXX It would be nice to have some way to ensure that
+-	 * nobody is dirtying any new buffers while we wait. That
+-	 * could be achieved using the refrigerator for processes
+-	 * that swsusp uses
+-	 */
+-	sys_sync();
+-
+-	/* Send suspend call to devices, hold the device core's dpm_sem */
+-	ret = device_suspend(PMSG_SUSPEND);
+-	if (ret) {
+-		printk(KERN_ERR "Driver sleep failed\n");
+-		return -EBUSY;
+-	}
+-
+-#ifdef CONFIG_PMAC_BACKLIGHT
+-	/* Tell backlight code not to muck around with the chip anymore */
+-	pmu_backlight_set_sleep(1);
+-#endif
+-
+-	/* Call platform functions marked "on sleep" */
+-	pmac_pfunc_i2c_suspend();
+-	pmac_pfunc_base_suspend();
+-
+-	/* Stop preemption */
+-	preempt_disable();
+-
+-	/* Make sure the decrementer won't interrupt us */
+-	asm volatile("mtdec %0" : : "r" (0x7fffffff));
+-	/* Make sure any pending DEC interrupt occurring while we did
+-	 * the above didn't re-enable the DEC */
+-	mb();
+-	asm volatile("mtdec %0" : : "r" (0x7fffffff));
+-
+-	/* We can now disable MSR_EE. This code of course works properly only
+-	 * on UP machines... For SMP, if we ever implement sleep, we'll have to
+-	 * stop the "other" CPUs way before we do all that stuff.
+-	 */
+-	local_irq_disable();
+-
+-	/* Broadcast power down irq
+-	 * This isn't that useful in most cases (only directly wired devices can
+-	 * use this but still... This will take care of sysdev's as well, so
+-	 * we exit from here with local irqs disabled and PIC off.
+-	 */
+-	ret = device_power_down(PMSG_SUSPEND);
+-	if (ret) {
+-		wakeup_decrementer();
+-		local_irq_enable();
+-		preempt_enable();
+-		device_resume();
+-		printk(KERN_ERR "Driver powerdown failed\n");
+-		return -EBUSY;
+-	}
+-
+-	/* Wait for completion of async requests */
+-	while (!batt_req.complete)
+-		pmu_poll();
+-
+-	/* Giveup the lazy FPU & vec so we don't have to back them
+-	 * up from the low level code
+-	 */
+-	enable_kernel_fp();
+-
+-#ifdef CONFIG_ALTIVEC
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-		enable_kernel_altivec();
+-#endif /* CONFIG_ALTIVEC */
+-
+-	return 0;
+-}
+-
+-static int
+-pmac_wakeup_devices(void)
+-{
+-	mdelay(100);
+-
+-#ifdef CONFIG_PMAC_BACKLIGHT
+-	/* Tell backlight code it can use the chip again */
+-	pmu_backlight_set_sleep(0);
+-#endif
+-
+-	/* Power back up system devices (including the PIC) */
+-	device_power_up();
+-
+-	/* Force a poll of ADB interrupts */
+-	adb_int_pending = 1;
+-	via_pmu_interrupt(0, NULL);
+-
+-	/* Restart jiffies & scheduling */
+-	wakeup_decrementer();
+-
+-	/* Re-enable local CPU interrupts */
+-	local_irq_enable();
+-	mdelay(10);
+-	preempt_enable();
+-
+-	/* Call platform functions marked "on wake" */
+-	pmac_pfunc_base_resume();
+-	pmac_pfunc_i2c_resume();
+-
+-	/* Resume devices */
+-	device_resume();
+-
+-	pm_restore_console();
+-
+-	return 0;
+-}
+-
+ #define	GRACKLE_PM	(1<<7)
+ #define GRACKLE_DOZE	(1<<5)
+ #define	GRACKLE_NAP	(1<<4)
+@@ -2020,19 +1865,12 @@ static int powerbook_sleep_grackle(void)
+ 	unsigned long save_l2cr;
+ 	unsigned short pmcr1;
+ 	struct adb_request req;
+-	int ret;
+ 	struct pci_dev *grackle;
+ 
+ 	grackle = pci_get_bus_and_slot(0, 0);
+ 	if (!grackle)
+ 		return -ENODEV;
+ 
+-	ret = pmac_suspend_devices();
+-	if (ret) {
+-		printk(KERN_ERR "Sleep rejected by devices\n");
+-		return ret;
+-	}
+-	
+ 	/* Turn off various things. Darwin does some retry tests here... */
+ 	pmu_request(&req, NULL, 2, PMU_POWER_CTRL0, PMU_POW0_OFF|PMU_POW0_HARD_DRIVE);
+ 	pmu_wait_complete(&req);
+@@ -2095,8 +1933,6 @@ static int powerbook_sleep_grackle(void)
+ 			PMU_POW_ON|PMU_POW_BACKLIGHT|PMU_POW_CHARGER|PMU_POW_IRLED|PMU_POW_MEDIABAY);
+ 	pmu_wait_complete(&req);
+ 
+-	pmac_wakeup_devices();
+-
+ 	return 0;
+ }
+ 
+@@ -2106,7 +1942,6 @@ powerbook_sleep_Core99(void)
+ 	unsigned long save_l2cr;
+ 	unsigned long save_l3cr;
+ 	struct adb_request req;
+-	int ret;
+ 	
+ 	if (pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) < 0) {
+ 		printk(KERN_ERR "Sleep mode not supported on this machine\n");
+@@ -2116,12 +1951,6 @@ powerbook_sleep_Core99(void)
+ 	if (num_online_cpus() > 1 || cpu_is_offline(0))
+ 		return -EAGAIN;
+ 
+-	ret = pmac_suspend_devices();
+-	if (ret) {
+-		printk(KERN_ERR "Sleep rejected by devices\n");
+-		return ret;
+-	}
+-
+ 	/* Stop environment and ADB interrupts */
+ 	pmu_request(&req, NULL, 2, PMU_SET_INTR_MASK, 0);
+ 	pmu_wait_complete(&req);
+@@ -2192,41 +2021,24 @@ powerbook_sleep_Core99(void)
+ 	/* Restore LPJ, cpufreq will adjust the cpu frequency */
+ 	loops_per_jiffy /= 2;
+ 
+-	pmac_wakeup_devices();
+-
+ 	return 0;
+ }
+ 
+ #define PB3400_MEM_CTRL		0xf8000000
+ #define PB3400_MEM_CTRL_SLEEP	0x70
+ 
++static void __iomem *pb3400_mem_ctrl;
++
+ static int
+ powerbook_sleep_3400(void)
+ {
+-	int ret, i, x;
++	int i, x;
+ 	unsigned int hid0;
+ 	unsigned long p;
+ 	struct adb_request sleep_req;
+-	void __iomem *mem_ctrl;
+ 	unsigned int __iomem *mem_ctrl_sleep;
+ 
+-	/* first map in the memory controller registers */
+-	mem_ctrl = ioremap(PB3400_MEM_CTRL, 0x100);
+-	if (mem_ctrl == NULL) {
+-		printk("powerbook_sleep_3400: ioremap failed\n");
+-		return -ENOMEM;
+-	}
+-	mem_ctrl_sleep = mem_ctrl + PB3400_MEM_CTRL_SLEEP;
+-
+-	/* Allocate room for PCI save */
+-	pbook_alloc_pci_save();
+-
+-	ret = pmac_suspend_devices();
+-	if (ret) {
+-		pbook_free_pci_save();
+-		printk(KERN_ERR "Sleep rejected by devices\n");
+-		return ret;
+-	}
++	mem_ctrl_sleep = pb3400_mem_ctrl + PB3400_MEM_CTRL_SLEEP;
+ 
+ 	/* Save the state of PCI config space for some slots */
+ 	pbook_pci_save();
+@@ -2271,14 +2083,10 @@ powerbook_sleep_3400(void)
+ 	while (asleep)
+ 		mb();
+ 
+-	pmac_wakeup_devices();
+-	pbook_free_pci_save();
+-	iounmap(mem_ctrl);
+-
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
++#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ 
+ /*
+  * Support for /dev/pmu device
+@@ -2451,6 +2259,157 @@ pmu_release(struct inode *inode, struct 
+ 	return 0;
+ }
+ 
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
++static int powerbook_prepare_sleep(void)
++{
++	if (pmu_kind == PMU_OHARE_BASED) {
++		/* first map in the memory controller registers */
++		pb3400_mem_ctrl = ioremap(PB3400_MEM_CTRL, 0x100);
++		if (!pb3400_mem_ctrl) {
++			printk(KERN_ERR "powerbook_sleep_3400: "
++			       "ioremap failed\n");
++			return -ENOMEM;
++		}
++
++		/* Allocate room for PCI save */
++		pbook_alloc_pci_save();
++	}
++
++	return 0;
++}
++
++/*
++ * overrides the weak arch_suspend_disable_irqs in kernel/power/main.c
++ *
++ * XXX: Once Scott Wood's patch is merged, this needs to use the ppc_md
++ *	hooks that patch adds!
++ */
++void arch_suspend_disable_irqs(void)
++{
++#ifdef CONFIG_PMAC_BACKLIGHT
++	/* Tell backlight code not to muck around with the chip anymore */
++	pmu_backlight_set_sleep(1);
++#endif
++
++	/* Call platform functions marked "on sleep" */
++	pmac_pfunc_i2c_suspend();
++	pmac_pfunc_base_suspend();
++
++	/* Stop preemption */
++	preempt_disable();
++
++	/* Make sure the decrementer won't interrupt us */
++	asm volatile("mtdec %0" : : "r" (0x7fffffff));
++	/* Make sure any pending DEC interrupt occurring while we did
++	 * the above didn't re-enable the DEC */
++	mb();
++	asm volatile("mtdec %0" : : "r" (0x7fffffff));
++
++	local_irq_disable();
++}
++
++static int powerbook_sleep(suspend_state_t state)
++{
++	int error = 0;
++
++	/* Wait for completion of async requests */
++	while (!batt_req.complete)
++		pmu_poll();
++
++	/* Giveup the lazy FPU & vec so we don't have to back them
++	 * up from the low level code
++	 */
++	enable_kernel_fp();
++
++#ifdef CONFIG_ALTIVEC
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		enable_kernel_altivec();
++#endif /* CONFIG_ALTIVEC */
++
++	switch (pmu_kind) {
++	case PMU_OHARE_BASED:
++		error = powerbook_sleep_3400();
++		break;
++	case PMU_HEATHROW_BASED:
++	case PMU_PADDINGTON_BASED:
++		error = powerbook_sleep_grackle();
++		break;
++	case PMU_KEYLARGO_BASED:
++		error = powerbook_sleep_Core99();
++		break;
++	default:
++		return -ENOSYS;
++	}
++
++	if (error)
++		return error;
++
++	mdelay(100);
++
++#ifdef CONFIG_PMAC_BACKLIGHT
++	/* Tell backlight code it can use the chip again */
++	pmu_backlight_set_sleep(0);
++#endif
++
++	return 0;
++}
++
++/*
++ * overrides the weak arch_suspend_enable_irqs in kernel/power/main.c
++ *
++ * XXX: Once Scott Wood's patch is merged, this needs to use the ppc_md
++ *	hooks that patch adds!
++ */
++void arch_suspend_enable_irqs(void)
++{
++	/* Force a poll of ADB interrupts */
++	adb_int_pending = 1;
++	via_pmu_interrupt(0, NULL);
++
++	/* Restart jiffies & scheduling */
++	wakeup_decrementer();
++
++	/* Re-enable local CPU interrupts */
++	local_irq_enable();
++	mdelay(10);
++	preempt_enable();
++
++	/* Call platform functions marked "on wake" */
++	pmac_pfunc_base_resume();
++	pmac_pfunc_i2c_resume();
++}
++
++static void powerbook_finish_sleep(void)
++{
++	if (pmu_kind == PMU_OHARE_BASED) {
++		pbook_free_pci_save();
++		iounmap(pb3400_mem_ctrl);
++	}
++}
++
++static int pmu_sleep_valid(suspend_state_t state)
++{
++	return state == PM_SUSPEND_MEM
++		&& (pmac_call_feature(PMAC_FTR_SLEEP_STATE, NULL, 0, -1) >= 0);
++}
++
++static struct platform_suspend_ops pmu_pm_ops = {
++	.prepare = powerbook_prepare_sleep,
++	.enter = powerbook_sleep,
++	.finish = powerbook_finish_sleep,
++	.valid = pmu_sleep_valid,
++};
++
++static int register_pmu_pm_ops(void)
++{
++	suspend_set_ops(&pmu_pm_ops);
++
++	return 0;
++}
++
++device_initcall(register_pmu_pm_ops);
++#endif
++
+ static int
+ pmu_ioctl(struct inode * inode, struct file *filp,
+ 		     u_int cmd, u_long arg)
+@@ -2459,35 +2418,30 @@ pmu_ioctl(struct inode * inode, struct f
+ 	int error = -EINVAL;
+ 
+ 	switch (cmd) {
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_DEPRECATED_PMU_SLEEP_IOCTL)
+ 	case PMU_IOC_SLEEP:
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EACCES;
+-		if (sleep_in_progress)
+-			return -EBUSY;
+-		sleep_in_progress = 1;
+-		switch (pmu_kind) {
+-		case PMU_OHARE_BASED:
+-			error = powerbook_sleep_3400();
+-			break;
+-		case PMU_HEATHROW_BASED:
+-		case PMU_PADDINGTON_BASED:
+-			error = powerbook_sleep_grackle();
+-			break;
+-		case PMU_KEYLARGO_BASED:
+-			error = powerbook_sleep_Core99();
+-			break;
+-		default:
+-			error = -ENOSYS;
+-		}
+-		sleep_in_progress = 0;
++		printk(KERN_INFO
++		       "via-pmu: the PMU_IOC_SLEEP ioctl is deprecated.\n");
++		printk(KERN_INFO "via-pmu: use \"echo mem >"
++		       " /sys/power/state\"  instead!\n");
++		printk(KERN_INFO
++		       "via-pmu: this ioctl will be removed soon.\n");
++		error = pm_suspend(PM_SUSPEND_MEM);
+ 		break;
+ 	case PMU_IOC_CAN_SLEEP:
++		printk(KERN_INFO
++		       "via-pmu: the PMU_IOC_CAN_SLEEP ioctl is deprecated.\n");
++		printk(KERN_INFO
++		       "via-pmu: use \"grep mem /sys/power/state\" instead!\n");
++		printk(KERN_INFO
++		       "via-pmu: this ioctl will be removed soon.\n");
+ 		if (pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) < 0)
+ 			return put_user(0, argp);
+ 		else
+ 			return put_user(1, argp);
+-#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
++#endif /* CONFIG_DEPRECATED_PMU_SLEEP_IOCTL */
+ 
+ #ifdef CONFIG_PMAC_BACKLIGHT_LEGACY
+ 	/* Compatibility ioctl's for backlight */
+@@ -2495,9 +2449,6 @@ pmu_ioctl(struct inode * inode, struct f
+ 	{
+ 		int brightness;
+ 
+-		if (sleep_in_progress)
+-			return -EBUSY;
+-
+ 		brightness = pmac_backlight_get_legacy_brightness();
+ 		if (brightness < 0)
+ 			return brightness;
+@@ -2509,9 +2460,6 @@ pmu_ioctl(struct inode * inode, struct f
+ 	{
+ 		int brightness;
+ 
+-		if (sleep_in_progress)
+-			return -EBUSY;
+-
+ 		error = get_user(brightness, argp);
+ 		if (error)
+ 			return error;
+@@ -2638,15 +2586,43 @@ pmu_polled_request(struct adb_request *r
+ 	local_irq_restore(flags);
+ 	return 0;
+ }
+-#endif /* DEBUG_SLEEP */
+ 
++/* N.B. This doesn't work on the 3400 */
++void pmu_blink(int n)
++{
++	struct adb_request req;
+ 
+-/* FIXME: This is a temporary set of callbacks to enable us
+- * to do suspend-to-disk.
+- */
++	memset(&req, 0, sizeof(req));
+ 
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++	for (; n > 0; --n) {
++		req.nbytes = 4;
++		req.done = NULL;
++		req.data[0] = 0xee;
++		req.data[1] = 4;
++		req.data[2] = 0;
++		req.data[3] = 1;
++		req.reply[0] = ADB_RET_OK;
++		req.reply_len = 1;
++		req.reply_expected = 0;
++		pmu_polled_request(&req);
++		mdelay(50);
++		req.nbytes = 4;
++		req.done = NULL;
++		req.data[0] = 0xee;
++		req.data[1] = 4;
++		req.data[2] = 0;
++		req.data[3] = 0;
++		req.reply[0] = ADB_RET_OK;
++		req.reply_len = 1;
++		req.reply_expected = 0;
++		pmu_polled_request(&req);
++		mdelay(50);
++	}
++	mdelay(50);
++}
++#endif /* DEBUG_SLEEP */
+ 
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ int pmu_sys_suspended;
+ 
+ static int pmu_sys_suspend(struct sys_device *sysdev, pm_message_t state)
+@@ -2680,7 +2656,7 @@ static int pmu_sys_resume(struct sys_dev
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
++#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ 
+ static ssize_t show_kind(struct sys_device *sysdev, char *buf)
+ {
+@@ -2736,10 +2712,10 @@ static struct sys_device device_pmu = {
+ };
+ 
+ static struct sysdev_driver driver_pmu = {
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ 	.suspend	= &pmu_sys_suspend,
+ 	.resume		= &pmu_sys_resume,
+-#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
++#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ 	.add		= &pmu_sys_add,
+ };
+ 
+@@ -2775,10 +2751,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
+ EXPORT_SYMBOL(pmu_suspend);
+ EXPORT_SYMBOL(pmu_resume);
+ EXPORT_SYMBOL(pmu_unlock);
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
+ EXPORT_SYMBOL(pmu_enable_irled);
+ EXPORT_SYMBOL(pmu_battery_count);
+ EXPORT_SYMBOL(pmu_batteries);
+ EXPORT_SYMBOL(pmu_power_flags);
+-#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
++#endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ 
+--- everything.orig/Documentation/feature-removal-schedule.txt	2007-11-13 20:16:51.276261773 +0100
++++ everything/Documentation/feature-removal-schedule.txt	2007-11-13 20:17:08.966262261 +0100
+@@ -350,3 +350,13 @@ Why:	The PMU information can be obtained
+ Who:	Johannes Berg <johannes@sipsolutions.net>
+ 
+ ---------------------------
++
++What:	/dev/pmu suspend/can-suspend ioctls
++When:	January 2010
++Files:	drivers/macintosh/via-pmu.c
++Why:	powermac supports proper generic pm_ops now and can suspend with
++	"echo mem > /sys/power/state" instead of the ioctl, checking if
++	it can suspend can be done by reading /sys/power/state.
++Who:	Johannes Berg <johannes@sipsolutions.net>
++
++---------------------------
+--- everything.orig/drivers/macintosh/Kconfig	2007-11-13 20:16:51.226265462 +0100
++++ everything/drivers/macintosh/Kconfig	2007-11-13 20:17:08.966262261 +0100
+@@ -98,6 +98,18 @@ config DEPRECATED_PMU_INFO_IOCTLS
+ 
+ 	  If in doubt, say Y even if you will not use the ioctl.
+ 
++config DEPRECATED_PMU_SLEEP_IOCTL
++	bool "Support deprecated PMU sleep ioctl"
++	depends on ADB_PMU && SUSPEND && PPC32
++	default y
++	help
++	  The PMU code used to support suspending the machine via an ioctl
++	  before Linux had a generic suspend framework. Now the PMU supports
++	  suspending via the generic framework, this option adds the old
++	  PMU specific ioctl to the kernel.
++
++	  If in doubt, say Y even if you will not use the ioctl.
++
+ config ADB_PMU_LED
+ 	bool "Support for the Power/iBook front LED"
+ 	depends on ADB_PMU
