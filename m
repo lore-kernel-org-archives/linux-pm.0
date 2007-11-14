@@ -1,12 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] Hibernation: Fix lockdep report (v2)
-Date: Wed, 14 Nov 2007 22:25:57 +0100
-Message-ID: <200711142225.58033.rjw__18710.0332150751$1195074595$gmane$org@sisk.pl>
+Subject: Re: [PATCH] PM: make freezer optional for suspend
+Date: Wed, 14 Nov 2007 22:30:13 +0100
+Message-ID: <200711142230.14662.rjw@sisk.pl>
+References: <1194980670.6695.1.camel@johannes.berg>
+	<200711141421.15812.rjw@sisk.pl>
+	<1195051139.4091.12.camel@johannes.berg>
 Mime-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1195051139.4091.12.camel@johannes.berg>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,56 +21,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>, pm list <linux-pm@lists.linux-foundation.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, LKML <linux-kernel@vger.kernel.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Len Brown <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-[Andrew, please consider this as 2.6.24 material, thanks.]
----
-From: Johannes Berg <johannes@sipsolutions.net>
+On Wednesday, 14 of November 2007, Johannes Berg wrote:
+> 
+> > > +config SUSPEND_FREEZER
+> > > +	bool "Enable freezer for suspend to RAM/standby" if ADB_PMU || BROKEN
+> > 
+> > Hm, is ADB_PMU specific to powerpc?
+> 
+> Yes, and it's the only code that allows you to suspend w/o the freezer
+> right now (via PMU specific ioctls)
 
-Lockdep reports a circular locking dependency in the hibernate code
-because
-=A0- during system boot hibernate code (from an initcall) locks pm_mutex
-=A0 =A0and then a sysfs buffer mutex via name_to_dev_t
-=A0- during regular operation hibernate code locks pm_mutex under a
-=A0 =A0sysfs buffer mutex because it's called from sysfs methods.
+It's a bit confusing for someone who doesn't know what ADB_PMU is.
 
-The deadlock can never happen because during initcall invocation nothing
-can write to sysfs yet. This removes the lockdep report by marking the
-initcall locking as being in a different class.
+Perhaps it might depend on something like ARCH_CAN_DO_WITHOUT_FREEZER instead?
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/power/disk.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -456,7 +456,17 @@ static int software_resume(void)
- 	int error;
- 	unsigned int flags;
-=20
--	mutex_lock(&pm_mutex);
-+	/*
-+	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
-+	 * is configured into the kernel. Since the regular hibernate
-+	 * trigger path is via sysfs which takes a buffer mutex before
-+	 * calling hibernate functions (which take pm_mutex) this can
-+	 * cause lockdep to complain about a possible ABBA deadlock
-+	 * which cannot happen since we're in the boot code here and
-+	 * sysfs can't be invoked yet. Therefore, we use a subclass
-+	 * here to avoid lockdep complaining.
-+	 */
-+	mutex_lock_nested(&pm_mutex, SINGLE_DEPTH_NESTING);
- 	if (!swsusp_resume_device) {
- 		if (!strlen(resume_file)) {
- 			mutex_unlock(&pm_mutex);
+Rafael
